@@ -29,6 +29,30 @@ contract("ProducerContract", (accounts) => {
     await userContract.newAllowedCaller(instance.address);
     await instance.newAllowedCaller(ownerAddress);
   });
+  context("when access producer fields",() => {
+    it("should have fields", async () => {
+      await addProducer("Producer A", prod1Address);
+      const producer = await instance.getProducer(prod1Address);
+
+      assert.equal(producer.id, "1")
+      assert.equal(producer.producerWallet, prod1Address)
+      assert.equal(producer.userType, 1)
+      assert.equal(producer.name, "Producer A")
+      assert.equal(producer.document, "111.111.111-00")
+      assert.equal(producer.documentType, "CPF")
+      assert.equal(producer.totalRequests, 0)
+      assert.equal(producer.recentInspection, false)
+      assert.equal(producer.isa.isaAverage, "0")
+      assert.equal(producer.isa.isaScore, "0")
+      assert.equal(producer.tokenApprove.allowed, 0)
+      assert.equal(producer.tokenApprove.withdrewToken, false)
+
+      assert.equal(producer.propertyAddress.country, "Brazil")
+      assert.equal(producer.propertyAddress.state, "SP")
+      assert.equal(producer.propertyAddress.city, "Jundiai")
+      assert.equal(producer.propertyAddress.cep, "135465-005")
+    })
+  });
 
   context("when will create a producer (.addProducer)", () => {
     it("should create producer", async () => {
