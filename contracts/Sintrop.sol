@@ -98,7 +98,7 @@ contract Sintrop {
   /**
    * @dev Allow a activist realize a inspection and mark as INSPECTED
    * @param inspectionId The id of the inspection to be realized
-   * @param _isas The Isa[] of the inspection to be realized
+   * @param _isas The IsaIsaInspection[] of the inspection to be realized
    */
   function realizeInspection(uint256 inspectionId, IsaInspection[] memory _isas)
     public
