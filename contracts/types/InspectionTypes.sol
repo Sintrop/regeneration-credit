@@ -12,6 +12,7 @@ struct IsaInspection {
   uint256 categoryId;
   uint256 isaIndex;
   string report;
+  string proofPhoto;
 }
 
 struct Inspection {

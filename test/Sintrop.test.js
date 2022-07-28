@@ -65,17 +65,20 @@ contract("Sintrop", (accounts) => {
       {
         categoryId: 1,
         isaIndex: 0,
-        report: "Solo A totalmente sustentável"
+        report: "Solo A totalmente sustentável",
+        proofPhoto: "Hash_1"
       },
       {
         categoryId: 2,
         isaIndex: 0,
-        report: "Solo B totalmente sustentável"
+        report: "Solo B totalmente sustentável",
+        proofPhoto: "Hash_2"
       },
       {
         categoryId: 3,
         isaIndex: 1,
-        report: "Solo C totalmente sustentável"
+        report: "Solo C totalmente sustentável",
+        proofPhoto: "Hash_3"
       }
     ];
   }
@@ -172,7 +175,8 @@ contract("Sintrop", (accounts) => {
           const isas = [{
             categoryId: 1,
             isaIndex: 0,
-            report: "TOTALLY_SUSTAINABLE"
+            report: "TOTALLY_SUSTAINABLE",
+            proofPhoto: "Hash_1"
           }];
           await realizeInspection(1, isas, activistAddress);
         });
@@ -391,9 +395,9 @@ contract("Sintrop", (accounts) => {
 
       const isasResponse = await instance.getIsa(1);
       const isas_ = [
-        ["1","0","Solo A totalmente sustentável"],
-        ["2","0","Solo B totalmente sustentável"],
-        ["3","1","Solo C totalmente sustentável"]
+        ["1","0","Solo A totalmente sustentável", "Hash_1"],
+        ["2","0","Solo B totalmente sustentável", "Hash_2"],
+        ["3","1","Solo C totalmente sustentável", "Hash_3"]
       ];
 
       assert.equal(JSON.stringify(isasResponse), JSON.stringify(isas_));
@@ -408,7 +412,8 @@ contract("Sintrop", (accounts) => {
       const isas = [{
         categoryId: 1,
         isaIndex: 0,
-        report: "TOTALLY_SUSTAINABLE"
+        report: "TOTALLY_SUSTAINABLE",
+        proofPhoto: "Hash_1"
       }];
       await realizeInspection(1, isas, activistAddress);
 
@@ -426,7 +431,8 @@ contract("Sintrop", (accounts) => {
       const isas = [{
         categoryId: 1,
         isaIndex: 1,
-        report: "PARTIALLY_SUSTAINABLE"
+        report: "PARTIALLY_SUSTAINABLE",
+        proofPhoto: "Hash_1"
       }];
       await realizeInspection(1, isas, activistAddress);
 
@@ -444,7 +450,8 @@ contract("Sintrop", (accounts) => {
       const isas = [{
         categoryId: 1,
         isaIndex: 2,
-        report: "NEUTRO"
+        report: "NEUTRO",
+        proofPhoto: "Hash_1"
       }];
       await realizeInspection(1, isas, activistAddress);
 
@@ -462,7 +469,8 @@ contract("Sintrop", (accounts) => {
       const isas = [{
         categoryId: 1,
         isaIndex: 3,
-        report: "PARTIALLY_NOT_SUSTAINABLE"
+        report: "PARTIALLY_NOT_SUSTAINABLE",
+        proofPhoto: "Hash_1"
       }];
       await realizeInspection(1, isas, activistAddress);
 
@@ -480,7 +488,8 @@ contract("Sintrop", (accounts) => {
       const isas = [{
         categoryId: 1,
         isaIndex: 4,
-        report: "TOTALLY_NOT_SUSTAINABLE"
+        report: "TOTALLY_NOT_SUSTAINABLE",
+        proofPhoto: "Hash_1"
       }];
       await realizeInspection(1, isas, activistAddress);
 
@@ -498,7 +507,8 @@ contract("Sintrop", (accounts) => {
       const isas = [{
         categoryId: 1,
         isaIndex: 0,
-        report: "TOTALLY_SUSTAINABLE"
+        report: "TOTALLY_SUSTAINABLE",
+        proofPhoto: "Hash_1"
       }];
       await realizeInspection(1, isas, activistAddress);
 
@@ -517,7 +527,8 @@ contract("Sintrop", (accounts) => {
       const isas = [{
         categoryId: 1,
         isaIndex: 0,
-        report: "TOTALLY_SUSTAINABLE"
+        report: "TOTALLY_SUSTAINABLE",
+        proofPhoto: "Hash_1"
       }];
       await realizeInspection(1, isas, activistAddress);
 
@@ -535,7 +546,8 @@ contract("Sintrop", (accounts) => {
       const isas = [{
         categoryId: 1,
         isaIndex: 0,
-        report: "TOTALLY_SUSTAINABLE"
+        report: "TOTALLY_SUSTAINABLE",
+        proofPhoto: "Hash_1"
       }];
       await realizeInspection(1, isas, activistAddress);
 
@@ -553,7 +565,8 @@ contract("Sintrop", (accounts) => {
       const isas = [{
         categoryId: 1,
         isaIndex: 0,
-        report: "TOTALLY_SUSTAINABLE"
+        report: "TOTALLY_SUSTAINABLE",
+        proofPhoto: "Hash_1"
       }];
       await realizeInspection(1, isas, activistAddress);
 
@@ -571,7 +584,8 @@ contract("Sintrop", (accounts) => {
       const isas = [{
         categoryId: 1,
         isaIndex: 0,
-        report: "TOTALLY_SUSTAINABLE"
+        report: "TOTALLY_SUSTAINABLE",
+        proofPhoto: "Hash_1"
       }];
       await realizeInspection(1, isas, activistAddress);
 
@@ -589,7 +603,8 @@ contract("Sintrop", (accounts) => {
       const isas = [{
         categoryId: 1,
         isaIndex: 0,
-        report: "TOTALLY_SUSTAINABLE"
+        report: "TOTALLY_SUSTAINABLE",
+        proofPhoto: "Hash_1"
       }];
       await realizeInspection(1, isas, activistAddress);
 
@@ -607,7 +622,8 @@ contract("Sintrop", (accounts) => {
       const isas = [{
         categoryId: 1,
         isaIndex: 0,
-        report: "TOTALLY_SUSTAINABLE"
+        report: "TOTALLY_SUSTAINABLE",
+        proofPhoto: "Hash_1"
       }];
       await realizeInspection(1, isas, activistAddress);
 
