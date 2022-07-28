@@ -3,12 +3,13 @@ version: '3.6'
 services:
   sintrop-app:
     container_name: SINTROP-APP
-    command: ["sleep","infinity"]
     build:
       context: .
       dockerfile: Dockerfile
     ports: 
       - 8545:8545
+      - 5001:5001
+      - 8080:8080
     networks: 
       - app-tunnel
     volumes: 
