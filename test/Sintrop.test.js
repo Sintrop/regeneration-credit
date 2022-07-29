@@ -130,21 +130,6 @@ contract("Sintrop", (accounts) => {
     await addActivist("Activist A", activistAddress);
   });
 
-  it("should change inspection status to INSPECTED", async () => {
-    await instance.requestInspection({from: producerAddress});
-    await instance.acceptInspection(1, {from: activistAddress});
-
-    await addCategory("Solo A");
-    await addCategory("Solo B");
-    await addCategory("Solo C");
-    
-    await realizeInspection(1, isas(), activistAddress);
-
-    const inspection = await instance.getInspection(1);
-
-    assert.equal(inspection.status, STATUS.inspected);
-  });
-
   context("when producer try request inspection", () => {
     context("when is the first request", () => {
       it("should request inspection", async () => {
