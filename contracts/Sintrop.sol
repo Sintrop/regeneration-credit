@@ -38,8 +38,12 @@ contract Sintrop {
     return userInspections[msg.sender];
   }
 
-  function getIsa(uint256 categoryId) public view returns (IsaInspection[] memory) {
-    return isas[categoryId];
+  /**
+   * @dev List IsaInspection from inspection
+   * @param inspectionId The id of the inspection to get IsaInspection
+   */
+  function getIsa(uint256 inspectionId) public view returns (IsaInspection[] memory) {
+    return isas[inspectionId];
   }
 
   /**
