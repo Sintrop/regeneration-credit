@@ -4,6 +4,7 @@ const CategoryContract = artifacts.require("CategoryContract");
 const DeveloperPool = artifacts.require("DeveloperPool");
 const Sintrop = artifacts.require("Sintrop");
 const ProducerContract = artifacts.require("ProducerContract");
+const ResearcherContract = artifacts.require("ResearcherContract");
 const ActivistContract = artifacts.require("ActivistContract");
 const UserContract = artifacts.require("UserContract");
 
@@ -22,13 +23,17 @@ module.exports = function (deployer) {
     await deployer.deploy(ActivistContract, UserContract.address);
 
     await deployer.deploy(ProducerContract, UserContract.address);
-
+    
     await deployer.deploy(ActivistContract, UserContract.address);
 
     await deployer.deploy(ProducerContract, UserContract.address);
 
+    await deployer.deploy(ResearcherContract, UserContract.address);
+
     const activistContract = await ActivistContract.deployed();
     const producerContract = await ProducerContract.deployed();
+    const researcherContract = await ResearcherContract.deployed();
+
 
     await deployer.deploy(Sintrop,
       activistContract.address,
@@ -41,8 +46,11 @@ module.exports = function (deployer) {
     await activistContract.newAllowedCaller(sintrop.address);
     await producerContract.newAllowedCaller(sintrop.address);
 
+
     await userContract.newAllowedCaller(activistContract.address);
     await userContract.newAllowedCaller(producerContract.address);
+    await userContract.newAllowedCaller(researcherContract.address);
+
 
     const sacToken = await deployer.deploy(SacToken, args.totalTokens);
     
