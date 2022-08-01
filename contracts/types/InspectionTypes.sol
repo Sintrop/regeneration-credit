@@ -8,12 +8,18 @@ enum InspectionStatus {
   EXPIRED
 }
 
+struct IsaInspection {
+  uint256 categoryId;
+  uint256 isaIndex;
+  string report;
+  string proofPhoto;
+}
+
 struct Inspection {
   uint256 id;
   InspectionStatus status;
   address createdBy;
   address acceptedBy;
-  uint256[][] isas;
   int256 isaScore;
   uint256 createdAt;
   uint256 updatedAt;

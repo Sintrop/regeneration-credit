@@ -18,5 +18,12 @@ module.exports = {
         }
       },
     }
+  },
+  environments: {
+    development: {
+      ipfs: {
+        address: 'http://127.0.0.1:5001'
+      }
+    }
   }
 };

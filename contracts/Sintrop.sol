@@ -13,6 +13,7 @@ import "./types/InspectionTypes.sol";
 contract Sintrop {
   mapping(address => Inspection[]) internal userInspections;
   mapping(uint256 => Inspection) internal inspections;
+  mapping(uint256 => IsaInspection[]) public isas;
 
   ActivistContract public activistContract;
   ProducerContract public producerContract;
@@ -38,6 +39,14 @@ contract Sintrop {
   }
 
   /**
+   * @dev List IsaInspection from inspection
+   * @param inspectionId The id of the inspection to get IsaInspection
+   */
+  function getIsa(uint256 inspectionId) public view returns (IsaInspection[] memory) {
+    return isas[inspectionId];
+  }
+
+  /**
    * @dev Allows the current user (producer) request a inspection.
    */
   function requestInspection()
@@ -53,14 +62,11 @@ contract Sintrop {
   }
 
   function newRequest() internal {
-    uint256[][] memory isas;
-
     Inspection memory inspection = Inspection(
       inspectionsCount + 1,
       InspectionStatus.OPEN,
       msg.sender,
       msg.sender,
-      isas,
       0,
       block.number,
       0
@@ -96,9 +102,9 @@ contract Sintrop {
   /**
    * @dev Allow a activist realize a inspection and mark as INSPECTED
    * @param inspectionId The id of the inspection to be realized
-   * @param isas The uint[][] of categoryId and isaIndex. Ex: isas = [ [categoryId, isaIndex], [categoryId, isaIndex] ]
+   * @param _isas The IsaIsaInspection[] of the inspection to be realized
    */
-  function realizeInspection(uint256 inspectionId, uint256[][] memory isas)
+  function realizeInspection(uint256 inspectionId, IsaInspection[] memory _isas)
     public
     requireActivist
     requireInspectionExists(inspectionId)
@@ -108,52 +114,58 @@ contract Sintrop {
   {
     Inspection memory inspection = inspections[inspectionId];
 
-    markAsRealized(inspection, isas);
+    markAsRealized(inspection, _isas);
 
     afterRealizeInspection(inspection);
 
-    updateProducerIsa(inspection);
+    producerContract.updateIsaScore(inspection.createdBy, inspection.isaScore);
 
     producerContract.approveProducerNewTokens(inspection.createdBy, 2000);
 
     return true;
   }
 
-  /**
-   * @dev Calculate the ISA of the inspection based in the category and the ISA level of the category
-   * @param inspection Receive the inspected inspection with your isas levels
-   */
-  function calculateIsa(Inspection memory inspection) internal pure returns (int256) {
-    uint256[][] memory isas = inspection.isas;
-    int256 isaScore = sumIsaScore(isas);
-    return isaScore;
-  }
-
-  /**
-   * @dev Sum the ISA score
-   * @param isas The isas values as list of [[categoryId, isaIndex], [categoryId, isaIndex]]
-   */
-  function sumIsaScore(uint256[][] memory isas) internal pure returns (int256) {
-    int256[5] memory points = [int256(10), int256(5), int256(0), int256(-5), int256(-10)];
-    int256 isaScore = 0;
-
-    for (uint8 i = 0; i < isas.length; i++) {
-      uint256 isaIndex = isas[i][1];
-      isaScore += points[isaIndex];
-    }
-    return isaScore;
-  }
-
-  function markAsRealized(Inspection memory inspection, uint256[][] memory isas) internal {
-    inspection.isas = isas;
+  function markAsRealized(Inspection memory inspection, IsaInspection[] memory _isas) internal {
     inspection.status = InspectionStatus.INSPECTED;
     inspection.updatedAt = block.timestamp;
-    inspection.isaScore = calculateIsa(inspection);
+    inspection.isaScore = calculateIsa(inspection, _isas);
     inspections[inspection.id] = inspection;
   }
 
-  function updateProducerIsa(Inspection memory inspection) internal {
-    producerContract.updateIsaScore(inspection.createdBy, inspection.isaScore);
+  function calculateIsa(Inspection memory inspection, IsaInspection[] memory _isas)
+    internal
+    returns (int256)
+  {
+    int256[5] memory points = [int256(10), 5, 0, -5, -10];
+    int256 isaScore;
+
+    for (uint8 i = 0; i < _isas.length; i++) {
+      isas[inspection.id].push(_isas[i]);
+      uint256 isaIndex = _isas[i].isaIndex;
+      isaScore += points[isaIndex];
+    }
+
+    return isaScore;
+  }
+
+  /**
+   * @dev Inscrement producer and activist request action and mark both as no recent open requests and inspection
+   * @param inspection the inspected inspection
+   */
+  function afterRealizeInspection(Inspection memory inspection) internal {
+    address createdBy = inspection.createdBy;
+    address acceptedBy = inspection.acceptedBy;
+
+    // Increment actvist inspections and release to carry out new inspections
+    activistContract.recentInspection(acceptedBy, false);
+    activistContract.incrementRequests(acceptedBy);
+
+    // Increment producer requests and release to carry out new requests
+    producerContract.recentInspection(createdBy, false);
+    producerContract.incrementRequests(createdBy);
+
+    userInspections[createdBy].push(inspection);
+    userInspections[acceptedBy].push(inspection);
   }
 
   /**
@@ -199,26 +211,6 @@ contract Sintrop {
    */
   function inspectionExists(uint256 id) public view returns (bool) {
     return inspections[id].id >= 1;
-  }
-
-  /**
-   * @dev Inscrement producer and activist request action and mark both as no recent open requests and inspection
-   * @param inspection the inspected inspection
-   */
-  function afterRealizeInspection(Inspection memory inspection) internal {
-    address createdBy = inspection.createdBy;
-    address acceptedBy = inspection.acceptedBy;
-
-    // Increment actvist inspections and release to carry out new inspections
-    activistContract.recentInspection(acceptedBy, false);
-    activistContract.incrementRequests(acceptedBy);
-
-    // Increment producer requests and release to carry out new requests
-    producerContract.recentInspection(createdBy, false);
-    producerContract.incrementRequests(createdBy);
-
-    userInspections[createdBy].push(inspection);
-    userInspections[acceptedBy].push(inspection);
   }
 
   function isActivistOwner(uint256 inspectionId) internal view returns (bool) {

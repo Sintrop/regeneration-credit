@@ -60,6 +60,33 @@ contract("Sintrop", (accounts) => {
     );
   };
 
+  const isas = () => {
+    return [
+      {
+        categoryId: 1,
+        isaIndex: 0,
+        report: "Solo A totalmente sustentável",
+        proofPhoto: "Hash_1"
+      },
+      {
+        categoryId: 2,
+        isaIndex: 0,
+        report: "Solo B totalmente sustentável",
+        proofPhoto: "Hash_2"
+      },
+      {
+        categoryId: 3,
+        isaIndex: 1,
+        report: "Solo C totalmente sustentável",
+        proofPhoto: "Hash_3"
+      }
+    ];
+  }
+
+  const realizeInspection = async (id, isas_, from) => {
+    await instance.realizeInspection(id, isas_, {from: from});
+  };
+
   advanceBlock = async (blocksNumber) => {
     for (let i = 0; i < blocksNumber; i++) {
       let promise = new Promise((resolve, reject) => {
@@ -130,9 +157,13 @@ contract("Sintrop", (accounts) => {
           await instance.acceptInspection(1, {from: activistAddress});
           await addCategory("Solo A");
 
-          const isas = [[1, 0]];
-
-          await instance.realizeInspection(1, isas, {from: activistAddress});
+          const isas = [{
+            categoryId: 1,
+            isaIndex: 0,
+            report: "TOTALLY_SUSTAINABLE",
+            proofPhoto: "Hash_1"
+          }];
+          await realizeInspection(1, isas, activistAddress);
         });
 
         context("when last request is recent", () => {
@@ -182,9 +213,9 @@ contract("Sintrop", (accounts) => {
     });
 
     it("initial isas should be equal empty array", async () => {
-      const inspection = await instance.getInspection(1);
+      const isas = await instance.getIsa(1);
 
-      assert.equal(inspection.isas.length, 0);
+      assert.equal(isas.length, 0);
     });
 
     it("should increment total of inspections", async () => {
@@ -314,13 +345,8 @@ contract("Sintrop", (accounts) => {
       await addCategory("Solo A");
       await addCategory("Solo B");
       await addCategory("Solo C");
-
-      const isas = [
-        [1, 0],
-        [2, 0],
-        [3, 1],
-      ];
-      await instance.realizeInspection(1, isas, {from: activistAddress});
+      
+      await realizeInspection(1, isas(), activistAddress);
 
       const inspection = await instance.getInspection(1);
 
@@ -335,12 +361,7 @@ contract("Sintrop", (accounts) => {
       await addCategory("Solo B");
       await addCategory("Solo C");
 
-      const isas = [
-        [1, 0],
-        [2, 0],
-        [3, 1],
-      ];
-      await instance.realizeInspection(1, isas, {from: activistAddress});
+      await realizeInspection(1, isas(), activistAddress);
 
       const inspections = await instance.getInspections();
 
@@ -355,20 +376,16 @@ contract("Sintrop", (accounts) => {
       await addCategory("Solo B");
       await addCategory("Solo C");
 
-      const isas = [
-        ["1", "0"],
-        ["2", "0"],
-        ["3", "1"],
+      await realizeInspection(1, isas(), activistAddress);
+
+      const isasResponse = await instance.getIsa(1);
+      const isas_ = [
+        ["1","0","Solo A totalmente sustentável", "Hash_1"],
+        ["2","0","Solo B totalmente sustentável", "Hash_2"],
+        ["3","1","Solo C totalmente sustentável", "Hash_3"]
       ];
-      await instance.realizeInspection(1, isas, {from: activistAddress});
 
-      const inspection = await instance.getInspection(1);
-
-      const equal =
-        inspection.isas.length == isas.length &&
-        inspection.isas.every((v, i) => v.toString() === isas[i].toString());
-
-      assert.equal(equal, true);
+      assert.equal(JSON.stringify(isasResponse), JSON.stringify(isas_));
     });
 
     it("should add 10 isaScore to inspection when select totallySustainable", async () => {
@@ -377,8 +394,13 @@ contract("Sintrop", (accounts) => {
 
       await addCategory("Solo A");
 
-      const isas = [[1, 0]];
-      await instance.realizeInspection(1, isas, {from: activistAddress});
+      const isas = [{
+        categoryId: 1,
+        isaIndex: 0,
+        report: "TOTALLY_SUSTAINABLE",
+        proofPhoto: "Hash_1"
+      }];
+      await realizeInspection(1, isas, activistAddress);
 
       const inspection = await instance.getInspection(1);
 
@@ -391,8 +413,13 @@ contract("Sintrop", (accounts) => {
 
       await addCategory("Solo A");
 
-      const isas = [[1, 1]];
-      await instance.realizeInspection(1, isas, {from: activistAddress});
+      const isas = [{
+        categoryId: 1,
+        isaIndex: 1,
+        report: "PARTIALLY_SUSTAINABLE",
+        proofPhoto: "Hash_1"
+      }];
+      await realizeInspection(1, isas, activistAddress);
 
       const inspection = await instance.getInspection(1);
 
@@ -405,8 +432,13 @@ contract("Sintrop", (accounts) => {
 
       await addCategory("Solo A");
 
-      const isas = [[1, 2]];
-      await instance.realizeInspection(1, isas, {from: activistAddress});
+      const isas = [{
+        categoryId: 1,
+        isaIndex: 2,
+        report: "NEUTRO",
+        proofPhoto: "Hash_1"
+      }];
+      await realizeInspection(1, isas, activistAddress);
 
       const inspection = await instance.getInspection(1);
 
@@ -419,8 +451,13 @@ contract("Sintrop", (accounts) => {
 
       await addCategory("Solo A");
 
-      const isas = [[1, 3]];
-      await instance.realizeInspection(1, isas, {from: activistAddress});
+      const isas = [{
+        categoryId: 1,
+        isaIndex: 3,
+        report: "PARTIALLY_NOT_SUSTAINABLE",
+        proofPhoto: "Hash_1"
+      }];
+      await realizeInspection(1, isas, activistAddress);
 
       const inspection = await instance.getInspection(1);
 
@@ -433,8 +470,13 @@ contract("Sintrop", (accounts) => {
 
       await addCategory("Solo A");
 
-      const isas = [[1, 4]];
-      await instance.realizeInspection(1, isas, {from: activistAddress});
+      const isas = [{
+        categoryId: 1,
+        isaIndex: 4,
+        report: "TOTALLY_NOT_SUSTAINABLE",
+        proofPhoto: "Hash_1"
+      }];
+      await realizeInspection(1, isas, activistAddress);
 
       const inspection = await instance.getInspection(1);
 
@@ -447,8 +489,13 @@ contract("Sintrop", (accounts) => {
 
       await addCategory("Solo A");
 
-      const isas = [[1, 4]];
-      await instance.realizeInspection(1, isas, {from: activistAddress});
+      const isas = [{
+        categoryId: 1,
+        isaIndex: 0,
+        report: "TOTALLY_SUSTAINABLE",
+        proofPhoto: "Hash_1"
+      }];
+      await realizeInspection(1, isas, activistAddress);
 
       const inspection = await instance.getInspection(1);
       const producer = await producerContract.getProducer(producerAddress);
@@ -462,8 +509,13 @@ contract("Sintrop", (accounts) => {
 
       await addCategory("Solo A");
 
-      const isas = [[1, 0]];
-      await instance.realizeInspection(1, isas, {from: activistAddress});
+      const isas = [{
+        categoryId: 1,
+        isaIndex: 0,
+        report: "TOTALLY_SUSTAINABLE",
+        proofPhoto: "Hash_1"
+      }];
+      await realizeInspection(1, isas, activistAddress);
 
       const producer = await producerContract.getProducer(producerAddress);
 
@@ -476,8 +528,13 @@ contract("Sintrop", (accounts) => {
 
       await addCategory("Solo A");
 
-      const isas = [[1, 0]];
-      await instance.realizeInspection(1, isas, {from: activistAddress});
+      const isas = [{
+        categoryId: 1,
+        isaIndex: 0,
+        report: "TOTALLY_SUSTAINABLE",
+        proofPhoto: "Hash_1"
+      }];
+      await realizeInspection(1, isas, activistAddress);
 
       const activist = await activistContract.getActivist(activistAddress);
 
@@ -490,8 +547,13 @@ contract("Sintrop", (accounts) => {
 
       await addCategory("Solo A");
 
-      const isas = [[1, 0]];
-      await instance.realizeInspection(1, isas, {from: activistAddress});
+      const isas = [{
+        categoryId: 1,
+        isaIndex: 0,
+        report: "TOTALLY_SUSTAINABLE",
+        proofPhoto: "Hash_1"
+      }];
+      await realizeInspection(1, isas, activistAddress);
 
       const producer = await producerContract.getProducer(producerAddress);
 
@@ -504,8 +566,13 @@ contract("Sintrop", (accounts) => {
 
       await addCategory("Solo A");
 
-      const isas = [[1, 0]];
-      await instance.realizeInspection(1, isas, {from: activistAddress});
+      const isas = [{
+        categoryId: 1,
+        isaIndex: 0,
+        report: "TOTALLY_SUSTAINABLE",
+        proofPhoto: "Hash_1"
+      }];
+      await realizeInspection(1, isas, activistAddress);
 
       const activist = await activistContract.getActivist(activistAddress);
 
@@ -518,8 +585,13 @@ contract("Sintrop", (accounts) => {
 
       await addCategory("Solo A");
 
-      const isas = [[1, 0]];
-      await instance.realizeInspection(1, isas, {from: activistAddress});
+      const isas = [{
+        categoryId: 1,
+        isaIndex: 0,
+        report: "TOTALLY_SUSTAINABLE",
+        proofPhoto: "Hash_1"
+      }];
+      await realizeInspection(1, isas, activistAddress);
 
       const userInspections = await instance.getInspectionsHistory({from: activistAddress});
 
@@ -532,8 +604,13 @@ contract("Sintrop", (accounts) => {
 
       await addCategory("Solo A");
 
-      const isas = [[1, 0]];
-      await instance.realizeInspection(1, isas, {from: activistAddress});
+      const isas = [{
+        categoryId: 1,
+        isaIndex: 0,
+        report: "TOTALLY_SUSTAINABLE",
+        proofPhoto: "Hash_1"
+      }];
+      await realizeInspection(1, isas, activistAddress);
 
       const userInspections = await instance.getInspectionsHistory({from: producerAddress});
 
