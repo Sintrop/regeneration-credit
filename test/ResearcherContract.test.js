@@ -6,7 +6,7 @@ const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 contract("ResearcherContract", (accounts) => {
   let instance;
   let userContract;
-  let [ownerAddress, resea1Address, resea2Address] = accounts;
+  let [ownerAddress, resea1Address, resea2Address, resea3Address] = accounts;
 
   const addResearcher = async (name, address) => {
     await instance.addResearcher(
@@ -33,92 +33,104 @@ contract("ResearcherContract", (accounts) => {
 });
 
 context("when will create new researcher (.addResearcher)", () => {
-    context("when researcher exists", () => {
-      it("should return error", async () => {
-        await addResearcher("Researcher A", resea1Address);
-        await expectRevert(
-          addResearcher("Researcher A", resea1Address),
-          "This researcher already exist"
-        );
+    context("when is not an allowed user", () => {
+        it("should return error message", async () => {
+            await expectRevert(
+                addResearcher("Reseacher C", resea3Address),
+                "Not allowed user"
+            );
+        })
+    }
+    
+    );
+    context("when is and allowed user", () => {
+        context("when researcher exists", () => {
+        it("should return error", async () => {
+            await addResearcher("Researcher A", resea1Address);
+            await expectRevert(
+            addResearcher("Researcher A", resea1Address),
+            "This researcher already exist"
+            );
+        });
+
+        context("when researcher don't exists", () => {
+        it("should create researcher", async () => {
+            await addResearcher("Researcher A", resea1Address);
+            await addResearcher("Researcher B", resea2Address);
+            const researcher = await instance.getResearcher(resea1Address);
+
+            assert.equal(researcher.researcherWallet, resea1Address);
+        });
+
+        it("should increment researcherCount after create researcher", async () => {
+            await addResearcher("Researcher A", resea1Address);
+            await addResearcher("Researcher B", resea2Address);
+            const researchersCount = await instance.researchersCount();
+
+            assert.equal(researchersCount, 2);
+        });
+
+        it("should add created researcher in researcherList (array)", async () => {
+            await addResearcher("Researcher A", resea1Address);
+            await addResearcher("Researcher B", resea2Address);
+
+            const researchers = await instance.getResearchers();
+
+            assert.equal(researchers[0].researcherWallet, resea1Address);
+        });
+
+        it("should add created researcher in userType contract as a RESEARCHER", async () => {
+            await addResearcher("Researcher A", resea1Address);
+
+            const userType = await userContract.getUser(resea1Address);
+            const RESEARCHER = 3;
+
+            assert.equal(userType, RESEARCHER);
+        });
+        });
+    });
+    });
     });
 
-    context("when researcher don't exists", () => {
-      it("should create researcher", async () => {
-        await addResearcher("Researcher A", resea1Address);
-        await addResearcher("Researcher B", resea2Address);
-        const researcher = await instance.getResearcher(resea1Address);
-
-        assert.equal(researcher.researcherWallet, resea1Address);
-      });
-
-      it("should increment researcherCount after create researcher", async () => {
-        await addResearcher("Researcher A", resea1Address);
-        await addResearcher("Researcher B", resea2Address);
-        const researchersCount = await instance.researchersCount();
-
-        assert.equal(researchersCount, 2);
-      });
-
-      it("should add created researcher in researcherList (array)", async () => {
+    context("when will get researchers (.getResearchers)", () => {
+    it("should return researchers when has researchers", async () => {
         await addResearcher("Researcher A", resea1Address);
         await addResearcher("Researcher B", resea2Address);
 
         const researchers = await instance.getResearchers();
 
-        assert.equal(researchers[0].researcherWallet, resea1Address);
-      });
+        assert.equal(researchers.length, 2);
+    });
 
-      it("should add created researcher in userType contract as a RESEARCHER", async () => {
+    it("should return researchers equal zero when dont has it", async () => {
+        const researchers = await instance.getResearchers();
+
+        assert.equal(researchers.length, 0);
+    });
+    });
+
+    context("when will get researcher (.getResearcher)", () => {
+    it("should return a researcher", async () => {
         await addResearcher("Researcher A", resea1Address);
 
-        const userType = await userContract.getUser(resea1Address);
-        const RESEARCHER = 3;
+        const researcher = await instance.getResearcher(resea1Address);
 
-        assert.equal(userType, RESEARCHER);
-      });
+        assert.equal(researcher.researcherWallet, resea1Address);
     });
-  });
-});
+    });
 
-context("when will get researchers (.getResearchers)", () => {
-  it("should return researchers when has researchers", async () => {
-    await addResearcher("Researcher A", resea1Address);
-    await addResearcher("Researcher B", resea2Address);
+    context("when will check if researcher exists", () => {
+    it("should return true when exists", async () => {
+        await addResearcher("Researcher A", resea1Address);
+        const researcherExists = await instance.researcherExists(resea1Address);
 
-    const researchers = await instance.getResearchers();
+        assert.equal(researcherExists, true);
+    });
 
-    assert.equal(researchers.length, 2);
-  });
+    it("it should return false when don't excists", async () => {
+        const researcherExists = await instance.researcherExists(resea1Address);
 
-  it("should return researchers equal zero when dont has it", async () => {
-    const researchers = await instance.getResearchers();
-
-    assert.equal(researchers.length, 0);
-  });
-});
-
-context("when will get researcher (.getResearcher)", () => {
-  it("should return a researcher", async () => {
-    await addResearcher("Researcher A", resea1Address);
-
-    const researcher = await instance.getResearcher(resea1Address);
-
-    assert.equal(researcher.researcherWallet, resea1Address);
-  });
-});
-
-context("when will check if researcher exists", () => {
-  it("should return true when exists", async () => {
-    await addResearcher("Researcher A", resea1Address);
-    const researcherExists = await instance.researcherExists(resea1Address);
-
-    assert.equal(researcherExists, true);
-  });
-
-  it("it should return false when don't excists", async () => {
-    const researcherExists = await instance.researcherExists(resea1Address);
-
-    assert.equal(researcherExists, false);
-  })
-});
-}); 
+        assert.equal(researcherExists, false);
+    })
+    });
+    }); 
