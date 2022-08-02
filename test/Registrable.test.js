@@ -10,32 +10,40 @@ contract("Registrable", (accounts) => {
     instance = await Registrable.new();
   });
 
-  it("should return error when .newAllowedUser and is not owner", async () => {
-    await expectRevert(
-        instance.newAllowedUser(user1Address, {from: user1Address}),
-        "Ownable: caller is not the owner"
-      );
-    });
-  
-    it("should add .newAllowedUser when is owner", async () => {
-      await instance.newAllowedUser(owner);
-  
-      const allowedUser = await instance.allowedUsers(owner);
-  
-      assert.equal(allowedUser, true);
-    });
-  
-    it("should be able to add many callers .newAllowedUser when is owner", async () => {
-      await instance.newAllowedUser(owner);
-      await instance.newAllowedUser(user1Address);
-      await instance.newAllowedUser(user2Address);
-  
-      const allowedUser1 = await instance.allowedUsers(owner);
-      const allowedUser2 = await instance.allowedUsers(owner);
-      const allowedUser3 = await instance.allowedUsers(owner);
-  
-      assert.equal(allowedUser1, true);
-      assert.equal(allowedUser2, true);
-      assert.equal(allowedUser3, true);
+  context("when will add new allowed user", () => {
+    context("when is not owner", () => {
+      it("should return error message", async () => {
+        await expectRevert(
+          instance.newAllowedUser(user1Address, {from: user1Address}),
+          "Ownable: caller is not the owner"
+        );
+      });
+    })
+    
+    context("when is the owner", () => {
+      it("should add newAllowedUser", async () => {
+        await instance.newAllowedUser(owner);
+        const allowedUser = await instance.allowedUsers(owner);
+
+        assert.equal(allowedUser, true);
+      });
+
+      context("when try add many allowedUsers", () => {
+        it("should add all", async () => {
+          await instance.newAllowedUser(owner);
+          await instance.newAllowedUser(user1Address);
+          await instance.newAllowedUser(user2Address);
+
+          const allowedUser1 = await instance.allowedUsers(owner);
+          const allowedUser2 = await instance.allowedUsers(owner);
+          const allowedUser3 = await instance.allowedUsers(owner);
+
+          assert.equal(allowedUser1, true);
+          assert.equal(allowedUser2, true);
+          assert.equal(allowedUser3, true);
+        });
+      });
     });
   });
+});
+  
