@@ -6,7 +6,7 @@ const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 contract("ResearcherContract", (accounts) => {
   let instance;
   let userContract;
-  let [ownerAddress, resea1Address, resea2Address, resea3Address] = accounts;
+  let [ownerAddress, resea1Address, resea2Address] = accounts;
 
   const addResearcher = async (name, address) => {
     await instance.addResearcher(
@@ -48,7 +48,7 @@ contract("ResearcherContract", (accounts) => {
           await expectRevert(
             addResearcher("Researcher A", resea1Address),
             "This researcher already exist"
-          );
+        );
       });
 
       context("when researcher don't exists", () => {
