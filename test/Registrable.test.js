@@ -46,4 +46,3 @@ contract("Registrable", (accounts) => {
     });
   });
 });
-  
