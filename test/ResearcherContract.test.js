@@ -48,7 +48,8 @@ contract("ResearcherContract", (accounts) => {
           await expectRevert(
             addResearcher("Researcher A", resea1Address),
             "This researcher already exist"
-        );
+          );
+        });
       });
 
       context("when researcher don't exists", () => {
@@ -127,4 +128,3 @@ contract("ResearcherContract", (accounts) => {
       })
     });
   }); 
-});
