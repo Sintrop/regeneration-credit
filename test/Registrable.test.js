@@ -35,8 +35,8 @@ contract("Registrable", (accounts) => {
           await instance.newAllowedUser(user2Address);
 
           const allowedUser1 = await instance.allowedUsers(owner);
-          const allowedUser2 = await instance.allowedUsers(owner);
-          const allowedUser3 = await instance.allowedUsers(owner);
+          const allowedUser2 = await instance.allowedUsers(user1Address);
+          const allowedUser3 = await instance.allowedUsers(user2Address);
 
           assert.equal(allowedUser1, true);
           assert.equal(allowedUser2, true);
