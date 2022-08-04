@@ -39,8 +39,6 @@ contract ResearcherContract is Registrable {
     uint256 id = researchersCount + 1;
     UserType userType = UserType.RESEARCHER;
 
-    ResearcherAddress memory researcherAddress = ResearcherAddress(country, state, city, cep);
-
     Researcher memory researcher = Researcher(
       id,
       msg.sender,
@@ -48,7 +46,7 @@ contract ResearcherContract is Registrable {
       name,
       document,
       documentType,
-      researcherAddress
+      ResearcherAddress(country, state, city, cep)
     );
 
     researchers[msg.sender] = researcher;
