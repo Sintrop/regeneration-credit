@@ -21,18 +21,14 @@ module.exports = function (deployer) {
     const userContract = await UserContract.deployed();
 
     await deployer.deploy(ActivistContract, UserContract.address);
-
     await deployer.deploy(ProducerContract, UserContract.address);
-
-    await deployer.deploy(ActivistContract, UserContract.address);
-
-    await deployer.deploy(ProducerContract, UserContract.address);
-
-    await deployer.deploy(ResearcherContract,UserContract.address)
+    await deployer.deploy(ResearcherContract, UserContract.address);
+    await deployer.deploy(DeveloperContract, UserContract.address);
 
     const activistContract = await ActivistContract.deployed();
     const producerContract = await ProducerContract.deployed();
     const researcherContract = await ResearcherContract.deployed();
+    const developerContract = await DeveloperContract.deployed();
 
     await deployer.deploy(Sintrop,
       activistContract.address,
@@ -48,6 +44,7 @@ module.exports = function (deployer) {
     await userContract.newAllowedCaller(activistContract.address);
     await userContract.newAllowedCaller(producerContract.address);
     await userContract.newAllowedCaller(researcherContract.address);
+    await userContract.newAllowedCaller(developerContract.address);
 
     const sacToken = await deployer.deploy(SacToken, args.totalTokens);
     

@@ -67,14 +67,14 @@ contract ProducerContract is Callable {
    * @return Producer struct array
    */
   function getProducers() public view returns (Producer[] memory) {
-    Producer[] memory activistList = new Producer[](producersCount);
+    Producer[] memory producerList = new Producer[](producersCount);
 
     for (uint256 i = 0; i < producersCount; i++) {
       address acAddress = producersAddress[i];
-      activistList[i] = producers[acAddress];
+      producerList[i] = producers[acAddress];
     }
 
-    return activistList;
+    return producerList;
   }
 
   /**
@@ -96,7 +96,6 @@ contract ProducerContract is Callable {
   function recentInspection(address addr, bool state) public mustBeAllowedCaller {
     producers[addr].recentInspection = state;
   }
-
 
   function updateIsaScore(address addr, int256 isaScore) public mustBeAllowedCaller {
     producers[addr].isa.isaScore = isaScore;
