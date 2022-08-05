@@ -6,6 +6,7 @@ const Sintrop = artifacts.require("Sintrop");
 const ProducerContract = artifacts.require("ProducerContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
 const ActivistContract = artifacts.require("ActivistContract");
+const DeveloperContract = artifacts.require("DeveloperContract");
 const UserContract = artifacts.require("UserContract");
 
 module.exports = function (deployer) {
