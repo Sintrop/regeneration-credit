@@ -52,7 +52,7 @@ module.exports = function (deployer) {
     await deployer.deploy(IsaPool, SacToken.address);
     const isaPool = await IsaPool.deployed();
 
-    await deployer.deploy(CategoryContract, isaPool.address);
+    await deployer.deploy(CategoryContract, isaPool.address, researcherContract.address);
     const categoryContract = await CategoryContract.deployed();
 
     await isaPool.newAllowedCaller(categoryContract.address);

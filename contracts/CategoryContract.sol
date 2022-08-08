@@ -3,6 +3,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import "./PoolPassiveInterface.sol";
 import "./types/CategoryTypes.sol";
+import "./ResearcherContract.sol";
 
 /**
  * @author Sintrop
@@ -14,12 +15,15 @@ contract CategoryContract {
   mapping(uint256 => uint256) public votes;
   mapping(address => mapping(uint256 => uint256)) public voted;
 
+  ResearcherContract public researcherContract;
+
   Category public category;
   uint256 public categoryCounts;
   PoolPassiveInterface internal isaPool;
 
-  constructor(address _isaPoolAddress) {
+  constructor(address _isaPoolAddress, address researcherContractAddress) {
     isaPool = PoolPassiveInterface(_isaPoolAddress);
+    researcherContract = ResearcherContract(researcherContractAddress);
   }
 
   /**
@@ -41,7 +45,7 @@ contract CategoryContract {
     string memory neutro,
     string memory partiallyNotSustainable,
     string memory totallyNotSustainable
-  ) public returns (bool) {
+  ) public requireResearcher returns (bool) {
     category = Category(
       categoryCounts + 1,
       msg.sender,
@@ -133,6 +137,11 @@ contract CategoryContract {
 
   modifier mustHaveVoted(uint256 id) {
     require(voted[msg.sender][id] > 0, "You don't voted to this category");
+    _;
+  }
+
+  modifier requireResearcher() {
+    require(researcherContract.researcherExists(msg.sender), "Only allowed to researchers");
     _;
   }
 }
