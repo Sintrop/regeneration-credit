@@ -25,7 +25,7 @@ contract("CategoryContract", (accounts) => {
   };
 
   const addResearcher = async (name, address) => {
-    await instance.addResearcher(
+    await researcherContract.addResearcher(
       name,
       "111.111.111-00",
       "CPF",
@@ -35,7 +35,15 @@ contract("CategoryContract", (accounts) => {
       "135465-005",
       {from: address}
     );
-  };  
+  };
+  
+  const transferTokensTo = async (userAddress, tokens) => {
+    await sacToken.transfer(userAddress, tokens);
+  };
+
+  const balanceOf = async (userAddress) => {
+    return await sacToken.balanceOf(userAddress);
+  };
 
   beforeEach(async () => {
     sacToken = await SacToken.new("1500000000000000000000000000");
@@ -49,10 +57,10 @@ contract("CategoryContract", (accounts) => {
     instance = await CategoryContract.new(isaPool.address, researcherContract.address);
     await isaPool.newAllowedCaller(instance.address);
 
-    await userContract.newAllowedCaller(instance.address);
     await userContract.newAllowedCaller(researcherContract.address);
     await researcherContract.newAllowedUser(resea1Address);
-    await researcherContract.addResearcher("Researcher A", "111.111.111-00", "CPF", "Brazil", "SP", "Jundiai", "135465-005", {from: resea1Address});
+    await addResearcher("Researcher A", resea1Address);
+
   });
 
   context("When will add a new category", () => {
@@ -64,6 +72,16 @@ contract("CategoryContract", (accounts) => {
           "Only allowed to researchers"
         );
       })       
+    });
+    
+    context("When is a researcher", () => {
+      it("should create category", async () => {
+        const name = "Solo"  
+        await addCategory(name, resea1Address);
+        const categories = await instance.getCategories();
+    
+        assert.equal(categories[0].name, "Solo");
+      })  
     });
   });
 
