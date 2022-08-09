@@ -28,7 +28,7 @@ module.exports = function (deployer) {
 
     await deployer.deploy(ProducerContract, UserContract.address);
 
-    await deployer.deploy(ResearcherContract,UserContract.address)
+    await deployer.deploy(ResearcherContract, UserContract.address)
 
     const activistContract = await ActivistContract.deployed();
     const producerContract = await ProducerContract.deployed();
