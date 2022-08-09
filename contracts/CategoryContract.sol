@@ -21,7 +21,10 @@ contract CategoryContract {
   uint256 public categoryCounts;
   PoolPassiveInterface internal isaPool;
 
-  constructor(address _isaPoolAddress, address researcherContractAddress) {
+  constructor(
+    address _isaPoolAddress,
+    address researcherContractAddress
+    ) {
     isaPool = PoolPassiveInterface(_isaPoolAddress);
     researcherContract = ResearcherContract(researcherContractAddress);
   }
@@ -143,5 +146,5 @@ contract CategoryContract {
   modifier requireResearcher() {
     require(researcherContract.researcherExists(msg.sender), "Only allowed to researchers");
     _;
-  }
+  }  
 }
