@@ -5,6 +5,8 @@ const SacToken = artifacts.require("SacToken");
 const UserContract = artifacts.require("UserContract");
 const ActivistContract = artifacts.require("ActivistContract");
 const ProducerContract = artifacts.require("ProducerContract");
+const ResearcherContract = artifacts.require("ResearcherContract");
+
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
@@ -13,7 +15,8 @@ contract("Sintrop", (accounts) => {
   let userContract;
   let activistContract;
   let producerContract;
-  let [ownerAddress, producerAddress, producer2Address, activistAddress, activist2Address] =
+  let researcherContract;
+  let [ownerAddress, producerAddress, producer2Address, activistAddress, activist2Address, resea1Address] =
     accounts;
   const STATUS = {
     open: 0,
@@ -48,7 +51,20 @@ contract("Sintrop", (accounts) => {
     );
   };
 
-  const addCategory = async (name) => {
+  const addResearcher = async (name, address) => {
+    await researcherContract.addResearcher(
+      name,
+      "111.111.111-00",
+      "CPF",
+      "Brazil",
+      "SP",
+      "Jundiai",
+      "135465-005",
+      {from: address}
+    );
+  };
+
+  const addCategory = async (name, from) => {
     await categoryContract.addCategory(
       name,
       `Está categoria visa avaliar as qualidades do ${name}`,
@@ -56,7 +72,8 @@ contract("Sintrop", (accounts) => {
       `${name} parcialmente sustentável`,
       `${name} neutro`,
       `${name} parcialmente não sustentável`,
-      `${name} totalmente não sustentável`
+      `${name} totalmente não sustentável`,
+      {from: from}
     );
   };
 
@@ -114,20 +131,25 @@ contract("Sintrop", (accounts) => {
 
     producerContract = await ProducerContract.new(userContract.address);
     activistContract = await ActivistContract.new(userContract.address);
+    researcherContract = await ResearcherContract.new(userContract.address);
 
     sacToken = await SacToken.new("1500000000000000000000000000");
     isaPool = await IsaPool.new(sacToken.address);
 
-    categoryContract = await CategoryContract.new(isaPool.address);
+    categoryContract = await CategoryContract.new(isaPool.address, researcherContract.address);
     instance = await Sintrop.new(activistContract.address, producerContract.address, 20);
 
     await userContract.newAllowedCaller(activistContract.address);
     await userContract.newAllowedCaller(producerContract.address);
+    await userContract.newAllowedCaller(researcherContract.address);
     await activistContract.newAllowedCaller(instance.address);
     await producerContract.newAllowedCaller(instance.address);
+    await researcherContract.newAllowedUser(resea1Address);
 
     await addProducer("Producer A", producerAddress);
     await addActivist("Activist A", activistAddress);
+    await addResearcher("Researcher A", resea1Address);
+
   });
 
   context("when producer try request inspection", () => {
@@ -155,7 +177,7 @@ contract("Sintrop", (accounts) => {
         beforeEach(async () => {
           await instance.requestInspection({from: producerAddress});
           await instance.acceptInspection(1, {from: activistAddress});
-          await addCategory("Solo A");
+          await addCategory("Solo A", resea1Address);
 
           const isas = [{
             categoryId: 1,
@@ -342,9 +364,9 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
-      await addCategory("Solo B");
-      await addCategory("Solo C");
+      await addCategory("Solo A", resea1Address);
+      await addCategory("Solo B", resea1Address);
+      await addCategory("Solo C", resea1Address);
       
       await realizeInspection(1, isas(), activistAddress);
 
@@ -357,9 +379,9 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
-      await addCategory("Solo B");
-      await addCategory("Solo C");
+      await addCategory("Solo A", resea1Address);
+      await addCategory("Solo B", resea1Address);
+      await addCategory("Solo C", resea1Address);
 
       await realizeInspection(1, isas(), activistAddress);
 
@@ -372,9 +394,9 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
-      await addCategory("Solo B");
-      await addCategory("Solo C");
+      await addCategory("Solo A", resea1Address);
+      await addCategory("Solo B", resea1Address);
+      await addCategory("Solo C", resea1Address);
 
       await realizeInspection(1, isas(), activistAddress);
 
@@ -392,7 +414,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Solo A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -411,7 +433,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Solo A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -430,7 +452,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Solo A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -449,7 +471,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Solo A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -468,7 +490,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Solo A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -487,7 +509,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Solo A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -507,7 +529,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Solo A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -526,7 +548,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Solo A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -545,7 +567,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Solo A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -564,7 +586,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Solo A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -583,7 +605,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Solo A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -602,7 +624,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Solo A", resea1Address);
 
       const isas = [{
         categoryId: 1,
