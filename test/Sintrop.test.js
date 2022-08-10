@@ -148,7 +148,7 @@ contract("Sintrop", (accounts) => {
 
     await addProducer("Producer A", producerAddress);
     await addActivist("Activist A", activistAddress);
-    await addResearcher("Researcher A", resea1Address);
+    await addResearcher("Researcher 1", resea1Address);
 
   });
 
