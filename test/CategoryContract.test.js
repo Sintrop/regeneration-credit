@@ -12,9 +12,9 @@ contract("CategoryContract", (accounts) => {
   let isaPool;
   let userContract;
   let researcherContract;
-  let [msgSender, user1Address, resea1Address] = accounts;
+  let [msgSender, user1Address, user2Address, resea1Address] = accounts;
 
-  const addCategory = async (name) => {
+  const addCategory = async (name, from) => {
     await instance.addCategory(
       name,
       `Está categoria visa avaliar as qualidades do ${name}`,
@@ -22,7 +22,8 @@ contract("CategoryContract", (accounts) => {
       `${name} parcialmente sustentável`,
       `${name} neutro`,
       `${name} parcialmente não sustentável`,
-      `${name} totalmente não sustentável`
+      `${name} totalmente não sustentável`,
+      {from: from}
     );
   };
 
@@ -95,7 +96,7 @@ contract("CategoryContract", (accounts) => {
       const category = await instance.categories(1);
       
       assert.equal(category.id, 1);
-      assert.equal(category.createdBy, msgSender);
+      assert.equal(category.createdBy, resea1Address);
       assert.equal(category.name, "Solo");
       assert.equal(category.description, `Está categoria visa avaliar as qualidades do ${name}`);
       assert.equal(category.totallySustainable, `${name} totalmente sustentável`);
@@ -119,7 +120,7 @@ contract("CategoryContract", (accounts) => {
 
     const category = await instance.categories(1);
 
-    assert.equal(category.createdBy, msgSender);
+    assert.equal(category.createdBy, resea1Address);
   });
 
   it("should increment id of category when created", async () => {
