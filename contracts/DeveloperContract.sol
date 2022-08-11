@@ -4,7 +4,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 import "./UserContract.sol";
 import "./types/DeveloperTypes.sol";
 import "./Registrable.sol";
-
+import "./DeveloperPool.sol";
 /**
  * @title DeveloperContract
  * @dev Developer resource that represent dev
@@ -13,11 +13,13 @@ contract DeveloperContract is Registrable {
   mapping(address => Developer) public developers;
 
   UserContract internal userContract;
+  DeveloperPool internal developerPool;
   address[] internal developersAddress;
   uint256 public developersCount;
 
   constructor(address userContractAddress) {
     userContract = UserContract(userContractAddress);
+    developerPool = DeveloperPool(developerPoolAddress);
   }
 
   /**
