@@ -3,8 +3,9 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import "./UserContract.sol";
 import "./types/ContributorTypes.sol";
+import "./Registrable.sol";
 
-contract ContributorContract {
+contract ContributorContract is Registrable {
   mapping(address => Contributor) internal contributors;
 
   UserContract internal userContract;
@@ -34,7 +35,7 @@ contract ContributorContract {
     string memory state,
     string memory city,
     string memory cep
-  ) public uniqueContributor returns (Contributor memory) {
+  ) public mustBeAllowedUser uniqueContributor returns (Contributor memory) {
     uint256 id = contributorsCount + 1;
     UserType userType = UserType.CONTRIBUTOR;
 
