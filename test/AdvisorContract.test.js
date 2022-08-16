@@ -29,7 +29,6 @@ contract("AdvisorContract", (accounts) => {
     await userContract.newAllowedCaller(instance.address);
     await instance.newAllowedUser(adv1Address);
     await instance.newAllowedUser(adv3Address);
-
   });
 
   context("when will create new advisor (.addAdvisor)", () => {
