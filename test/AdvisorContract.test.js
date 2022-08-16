@@ -6,7 +6,7 @@ const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 contract("AdvisorContract", (accounts) => {
   let instance;
   let userContract;
-  let [ownerAddress, adv1Address, adv2Address] = accounts;
+  let [ownerAddress, adv1Address, adv2Address, adv3Address] = accounts;
 
   const addAdvisor = async (name, address) => {
     await instance.addAdvisor(
@@ -27,9 +27,21 @@ contract("AdvisorContract", (accounts) => {
     instance = await AdvisorContract.new(userContract.address);
     
     await userContract.newAllowedCaller(instance.address);
+    await instance.newAllowedUser(adv1Address);
+    await instance.newAllowedUser(adv3Address);
   });
 
   context("when will create new advisor (.addAdvisor)", () => {
+    context("when is not an allowed user", () => {
+      it("should return error message", async () => {
+        await expectRevert(
+          addAdvisor("Advisor B", adv2Address),
+          "Not allowed user"
+        );
+      });
+    })
+
+    context("when is an allowed user", () => {
       context("when advisor exists", () => {
         it("should return error", async () => {
           await addAdvisor("Advisor A", adv1Address);
@@ -38,11 +50,12 @@ contract("AdvisorContract", (accounts) => {
             "This advisor already exist"
           );
       });
+    });
 
       context("when advisor don't exists", () => {
         it("should create advisor", async () => {
           await addAdvisor("Advisor A", adv1Address);
-          await addAdvisor("Advisor B", adv2Address);
+          await addAdvisor("Advisor C", adv3Address);
           const advisor = await instance.getAdvisor(adv1Address);
 
           assert.equal(advisor.advisorWallet, adv1Address);
@@ -50,7 +63,7 @@ contract("AdvisorContract", (accounts) => {
 
         it("should increment advisorCount after create advisor", async () => {
           await addAdvisor("Advisor A", adv1Address);
-          await addAdvisor("Advisor B", adv2Address);
+          await addAdvisor("Advisor C", adv3Address);
           const advisorsCount = await instance.advisorsCount();
 
           assert.equal(advisorsCount, 2);
@@ -58,7 +71,7 @@ contract("AdvisorContract", (accounts) => {
 
         it("should add created advisor in advisorList (array)", async () => {
           await addAdvisor("Advisor A", adv1Address);
-          await addAdvisor("Advisor B", adv2Address);
+          await addAdvisor("Advisor C", adv3Address);
 
           const advisors = await instance.getAdvisors();
 
@@ -80,7 +93,7 @@ contract("AdvisorContract", (accounts) => {
   context("when will get advisors (.getAdvisors)", () => {
     it("should return advisors when has advisors", async () => {
       await addAdvisor("Advisor A", adv1Address);
-      await addAdvisor("Advisor B", adv2Address);
+      await addAdvisor("Advisor C", adv3Address);
 
       const advisors = await instance.getAdvisors();
 
