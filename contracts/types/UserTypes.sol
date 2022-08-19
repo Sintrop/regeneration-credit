@@ -11,3 +11,12 @@ enum UserType {
   CONTRIBUTOR,
   INVESTOR
 }
+
+struct Delation {
+  uint256 id;
+  address informer;
+  address reported;
+  string title;
+  string testimony;
+  string proofPhoto;
+}
