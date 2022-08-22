@@ -64,7 +64,6 @@ contract("CategoryContract", (accounts) => {
     await isaPool.newAllowedCaller(instance.address);
 
     await addResearcher("Researcher A", resea1Address);
-
   });
 
   context("When will add a new category", () => {
@@ -87,7 +86,39 @@ contract("CategoryContract", (accounts) => {
         assert.equal(categories[0].name, "Solo");
       })  
     });
-  });
+
+      it("should add msg.sender in createdBy", async () => {
+        await addCategory("Solo", resea1Address);
+  
+        const category = await instance.categories(1);
+  
+        assert.equal(category.createdBy, resea1Address);
+      });
+
+      it("should increment id of category when created", async () => {
+        await addCategory("Solo", resea1Address);
+        await addCategory("Solo 2", resea1Address);
+    
+        const categories = await instance.getCategories();
+    
+        assert.equal(categories[1].id, 2);
+      });
+    
+      it("should increment total of categories", async () => {
+        await addCategory("Solo", resea1Address);
+        await addCategory("Solo 2", resea1Address);
+        const categoryCounts = await instance.categoryCounts();
+    
+        assert.equal(categoryCounts, 2);
+      });
+      
+      it("should create category with votes equal 0", async () => {
+        await addCategory("Solo", resea1Address);
+        const categories = await instance.getCategories();
+    
+        assert.equal(parseInt(categories[0].votesCount), 0);
+      });            
+    });
 
   context("When access category fields", () => {
     it("should have fields", async () => {
@@ -108,38 +139,6 @@ contract("CategoryContract", (accounts) => {
     });
   });
 
-  it("should create category", async () => {
-    await addCategory("Solo", resea1Address);
-    const categories = await instance.getCategories();
-
-    assert.equal(categories[0].name, "Solo");
-  });
-
-  it("should add msg.sender in createdBy", async () => {
-    await addCategory("Solo", resea1Address);
-
-    const category = await instance.categories(1);
-
-    assert.equal(category.createdBy, resea1Address);
-  });
-
-  it("should increment id of category when created", async () => {
-    await addCategory("Solo", resea1Address);
-    await addCategory("Solo 2", resea1Address);
-
-    const categories = await instance.getCategories();
-
-    assert.equal(categories[1].id, 2);
-  });
-
-  it("should increment total of categories after a new is added", async () => {
-    await addCategory("Solo", resea1Address);
-    await addCategory("Solo 2", resea1Address);
-    const categoryCounts = await instance.categoryCounts();
-
-    assert.equal(categoryCounts, 2);
-  });
-
   it("should return category list after when call getCategories", async () => {
     await addCategory("Solo", resea1Address);
     await addCategory("Solo2", resea1Address);
@@ -155,13 +154,6 @@ contract("CategoryContract", (accounts) => {
     const category = await instance.categories(2);
 
     assert.equal(categoriesList[1].id, category.id);
-  });
-
-  it("should create category with votes equal 0", async () => {
-    await addCategory("Solo", resea1Address);
-    const categories = await instance.getCategories();
-
-    assert.equal(parseInt(categories[0].votesCount), 0);
   });
 
   it("when user try vote and category dont exists should return error message", async () => {
