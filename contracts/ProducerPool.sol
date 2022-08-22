@@ -14,11 +14,14 @@ contract ProducerPool is PoolInterface {
     sintrop = SintropInterface(sintropAddress);
   }
 
-  function approve() public override returns (bool) {
+  function approve(
+    address delegate,
+    uint256 level,
+    uint256 currentEra
+  ) public override {
     uint256 numTokens = sintrop.getProducerApprove(msg.sender);
 
     sacToken.approveWith(msg.sender, numTokens);
-    return true;
   }
 
   function withDraw() public override returns (bool) {

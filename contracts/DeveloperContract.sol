@@ -5,6 +5,7 @@ import "./UserContract.sol";
 import "./types/DeveloperTypes.sol";
 import "./Registrable.sol";
 import "./DeveloperPool.sol";
+
 /**
  * @title DeveloperContract
  * @dev Developer resource that represent dev
@@ -14,24 +15,16 @@ contract DeveloperContract is Registrable {
 
   UserContract internal userContract;
   DeveloperPool internal developerPool;
+
   address[] internal developersAddress;
   uint256 public developersCount;
+  uint256[18] public totalLevelsByEra;
 
-  constructor(address userContractAddress) {
+  constructor(address userContractAddress, address developerPoolAddress) {
     userContract = UserContract(userContractAddress);
     developerPool = DeveloperPool(developerPoolAddress);
   }
 
-  /**
-   * @dev Allow a new register of developer
-   * @param name the name of the developer
-   * @param document the document of developer
-   * @param documentType the document type of developer. CPF/CNPJ
-   * @param country the country where the developer is
-   * @param state the state of the developer
-   * @param city the of the developer
-   * @param cep the cep of the developer
-   */
   function addDeveloper(
     string memory name,
     string memory document,
@@ -42,6 +35,8 @@ contract DeveloperContract is Registrable {
     string memory cep
   ) public mustBeAllowedUser uniqueDeveloper {
     UserType userType = UserType.DEVELOPER;
+    uint256 poolEra = developerPoolEra();
+    uint256 level = 1;
 
     Developer memory developer = Developer(
       developersCount + 1,
@@ -50,21 +45,19 @@ contract DeveloperContract is Registrable {
       name,
       document,
       documentType,
-      Level(1, 1),
+      Level(level, poolEra),
       UserAddress(country, state, city, cep),
       block.number
     );
 
+    userContract.addUser(msg.sender, userType);
     developers[msg.sender] = developer;
     developersAddress.push(msg.sender);
-    userContract.addUser(msg.sender, userType);
     developersCount++;
+
+    addLevel(poolEra);
   }
 
-  /**
-   * @dev Returns all registered developers
-   * @return Developer struct array
-   */
   function getDevelopers() public view returns (Developer[] memory) {
     Developer[] memory developerList = new Developer[](developersCount);
 
@@ -76,23 +69,46 @@ contract DeveloperContract is Registrable {
     return developerList;
   }
 
-  /**
-   * @dev Return a specific developer
-   * @param addr the address of the developer.
-   */
   function getDeveloper(address addr) public view returns (Developer memory developer) {
     return developers[addr];
   }
 
-  /**
-   * @dev Check if a specific developer exists
-   * @return a bool that represent if a developer exists or not
-   */
   function developerExists(address addr) public view returns (bool) {
     return developers[addr].id > 0;
   }
 
+  function approve() public requireDeveloper returns (bool) {
+    Developer memory developer = developers[msg.sender];
+
+    developerPool.approve(
+      msg.sender,
+      developer.level.level,
+      developer.level.currentEra
+    );
+
+    developers[msg.sender].level.currentEra++;
+
+    return true;
+  }
+
+  function addLevel(uint256 fromEra) internal {
+    developerPool.addLevel(fromEra);
+  }
+
+  function developerPoolEra() internal view returns (uint256) {
+    return developerPool.currentContractEra();
+  }
+
+  function eraMax() internal view returns (uint256) {
+    return developerPool.eraMax();
+  }
+
   // MODIFIERS
+
+  modifier requireDeveloper() {
+    require(developerExists(msg.sender), "Pool only to developer");
+    _;
+  }
 
   modifier uniqueDeveloper() {
     require(!developerExists(msg.sender), "This developer already exist");

@@ -21,10 +21,19 @@ module.exports = function (deployer) {
     await deployer.deploy(UserContract);
     const userContract = await UserContract.deployed();
 
+    const sacToken = await deployer.deploy(SacToken, args.totalTokens);
+
+    await deployer.deploy(
+      DeveloperPool,
+      SacToken.address,
+      args.blocksPerEra,
+      args.eraMax
+    );
+
     await deployer.deploy(ActivistContract, UserContract.address);
     await deployer.deploy(ProducerContract, UserContract.address);
     await deployer.deploy(ResearcherContract, UserContract.address);
-    await deployer.deploy(DeveloperContract, UserContract.address);
+    await deployer.deploy(DeveloperContract, UserContract.address, DeveloperPool.address);
 
     const activistContract = await ActivistContract.deployed();
     const producerContract = await ProducerContract.deployed();
@@ -46,8 +55,6 @@ module.exports = function (deployer) {
     await userContract.newAllowedCaller(producerContract.address);
     await userContract.newAllowedCaller(researcherContract.address);
     await userContract.newAllowedCaller(developerContract.address);
-
-    const sacToken = await deployer.deploy(SacToken, args.totalTokens);
     
     await deployer.deploy(IsaPool, SacToken.address);
     const isaPool = await IsaPool.deployed();
@@ -56,14 +63,6 @@ module.exports = function (deployer) {
     const categoryContract = await CategoryContract.deployed();
 
     await isaPool.newAllowedCaller(categoryContract.address);
-
-    await deployer.deploy(
-      DeveloperPool,
-      SacToken.address,
-      args.tokensPerEra,
-      args.blocksPerEra,
-      args.eraMax
-    );
 
     await sacToken.addContractPool(isaPool.address, 0)
   });
