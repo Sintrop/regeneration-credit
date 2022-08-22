@@ -7,6 +7,9 @@ const ProducerContract = artifacts.require("ProducerContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
 const ActivistContract = artifacts.require("ActivistContract");
 const DeveloperContract = artifacts.require("DeveloperContract");
+const ContributorContract = artifacts.require("ContributorContract");
+const AdvisorContract = artifacts.require("AdvisorContract");
+const InvestorContract = artifacts.require("InvestorContract");
 const UserContract = artifacts.require("UserContract");
 
 module.exports = function (deployer) {
@@ -25,11 +28,17 @@ module.exports = function (deployer) {
     await deployer.deploy(ProducerContract, UserContract.address);
     await deployer.deploy(ResearcherContract, UserContract.address);
     await deployer.deploy(DeveloperContract, UserContract.address);
+    await deployer.deploy(ContributorContract, UserContract.address);
+    await deployer.deploy(AdvisorContract, UserContract.address);
+    await deployer.deploy(InvestorContract, UserContract.address);
 
     const activistContract = await ActivistContract.deployed();
     const producerContract = await ProducerContract.deployed();
     const researcherContract = await ResearcherContract.deployed();
     const developerContract = await DeveloperContract.deployed();
+    const contributorContract = await ContributorContract.deployed();
+    const advisorContract = await AdvisorContract.deployed();
+    const investorContract = await InvestorContract.deployed();
 
     await deployer.deploy(Sintrop,
       activistContract.address,
@@ -46,6 +55,9 @@ module.exports = function (deployer) {
     await userContract.newAllowedCaller(producerContract.address);
     await userContract.newAllowedCaller(researcherContract.address);
     await userContract.newAllowedCaller(developerContract.address);
+    await userContract.newAllowedCaller(contributorContract.address);
+    await userContract.newAllowedCaller(advisorContract.address);
+    await userContract.newAllowedCaller(investorContract.address);
 
     const sacToken = await deployer.deploy(SacToken, args.totalTokens);
     
