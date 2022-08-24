@@ -10,22 +10,24 @@ import "./Callable.sol";
  * @dev This contract work as a centralized user's system, where all users has your userType here
  */
 contract UserContract is Ownable, Callable {
-  
   mapping(address => UserType) internal users;
   mapping(address => Delation[]) private delations;
 
-  uint256 public delationIds;
+  address[] public delationsAddress;
+  uint256 public delationsCount;
   uint256 public usersCount;
-  
-  Delations[] public delation
-  address[] internal delationsAddress;
 
   /**
    * @dev Add new user in the system
    * @param addr The address of the user
    * @param userType The type of the user - enum UserType
    */
-  function addUser(address addr, UserType userType) public mustBeAllowedCaller mustNotExists(addr) mustBeValidType(userType) {
+  function addUser(address addr, UserType userType)
+    public
+    mustBeAllowedCaller
+    mustNotExists(addr)
+    mustBeValidType(userType)
+  {
     users[addr] = userType;
     usersCount++;
   }
@@ -70,7 +72,7 @@ contract UserContract is Ownable, Callable {
   /**
    * @dev Add new delation in the system
    * @param addr The address of the user
-   * @param title Title the delation 
+   * @param title Title the delation
    * @param testimony Content the delation
    * @param proofPhoto Photo proof the delation
    */
@@ -79,29 +81,33 @@ contract UserContract is Ownable, Callable {
     string memory title,
     string memory testimony,
     string memory proofPhoto
-    ) public {
-    delation.push(Delation(
-    delationId,
-    msg.sender,
-    addr,
-    title,
-    testimony,
-    proofPhoto
-    ));
-    delations[addr] = delation;
-    delationsAddress.push(msg.sender);
-    delationId++;
+  ) public callerMustExists reportedMustExists(addr) {
+    uint256 id = delationsCount + 1;
+
+    Delation memory delation = Delation(id, msg.sender, addr, title, testimony, proofPhoto);
+
+    delations[addr].push(delation);
+    delationsCount++;
   }
 
   /**
-   * @dev Returns all delations
+   * @dev Returns the user address delated
+   */
+  function getDelation(address addr) public view returns (Delation[] memory) {
+    return delations[addr];
+  }
+
+  /**
+   * @dev Returns all registered delations
    */
   function getDelations() public view returns (Delation[] memory) {
-    Delation[] memory delationsList = new Delation[](delationId);
-    for (uint i = 0; i < delationId; i++) {
-      address acAddress = delationsAddress[i];
-      delationsList[i] = delations[acAddress]
+    Delation[] memory delationsList = new Delation[](delationsCount);
+
+    for (uint256 i = 0; i < delationsCount; i++) {
+      address delAddress = delationsAddress[i];
+      delationsList[i] = delations[delAddress];
     }
+
     return delationsList;
   }
 
@@ -112,11 +118,21 @@ contract UserContract is Ownable, Callable {
     _;
   }
 
+  modifier callerMustExists() {
+    require(users[msg.sender] != UserType.UNDEFINED, "caller must be registered");
+    _;
+  }
+
+  modifier reportedMustExists(address addr) {
+    require(users[addr] != UserType.UNDEFINED, "user must be registered");
+    _;
+  }
+
   /**
    * @dev Modifier to check if user type is UNDEFINED when register
    */
   modifier mustBeValidType(UserType userType) {
     require(userType != UserType.UNDEFINED, "Invalid user type");
-     _;
+    _;
   }
 }
