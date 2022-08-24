@@ -18,6 +18,7 @@ contract("CategoryContract", (accounts) => {
     await instance.addCategory(
       name,
       `Está categoria visa avaliar as qualidades do ${name}`,
+      `Aqui deve ser descrito como ativistas devem avaliar o ${name}`,
       `${name} totalmente sustentável`,
       `${name} parcialmente sustentável`,
       `${name} neutro`,
@@ -130,6 +131,7 @@ contract("CategoryContract", (accounts) => {
       assert.equal(category.createdBy, resea1Address);
       assert.equal(category.name, "Solo");
       assert.equal(category.description, `Está categoria visa avaliar as qualidades do ${name}`);
+      assert.equal(category.tutorial, `Aqui deve ser descrito como ativistas devem avaliar o ${name}`)
       assert.equal(category.totallySustainable, `${name} totalmente sustentável`);
       assert.equal(category.partiallySustainable, `${name} parcialmente sustentável`);
       assert.equal(category.neutro, `${name} neutro`);
