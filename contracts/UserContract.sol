@@ -103,9 +103,13 @@ contract UserContract is Ownable, Callable {
   function getDelations() public view returns (Delation[] memory) {
     Delation[] memory delationsList = new Delation[](delationsCount);
 
-    for (uint256 i = 0; i < delationsCount; i++) {
-      address delAddress = delationsAddress[i];
-      delationsList[i] = delations[delAddress];
+    for (uint256 i = 0; i < delationsAddress.length; i++) {
+      Delation[] memory userDelatios = delations[delationsAddress[i]];
+
+      for (uint256 j = 0; j < userDelatios.length; j++) {
+        uint256 index = delationsList.length;
+        delationsList[index] = userDelatios[j];
+      }
     }
 
     return delationsList;
