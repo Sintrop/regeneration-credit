@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./UserContract.sol";
 import "./types/DeveloperTypes.sol";
 import "./Registrable.sol";
@@ -10,7 +11,7 @@ import "./DeveloperPool.sol";
  * @title DeveloperContract
  * @dev Developer resource that represent dev
  */
-contract DeveloperContract is Registrable {
+contract DeveloperContract is Ownable, Registrable {
   mapping(address => Developer) public developers;
 
   UserContract internal userContract;
@@ -55,7 +56,7 @@ contract DeveloperContract is Registrable {
     developersAddress.push(msg.sender);
     developersCount++;
 
-    addLevel(poolEra);
+    incrementEraLevel(poolEra);
   }
 
   function getDevelopers() public view returns (Developer[] memory) {
@@ -80,19 +81,38 @@ contract DeveloperContract is Registrable {
   function approve() public requireDeveloper returns (bool) {
     Developer memory developer = developers[msg.sender];
 
-    developerPool.approve(
-      msg.sender,
-      developer.level.level,
-      developer.level.currentEra
-    );
+    developerPool.approve(msg.sender, developer.level.level, developer.level.currentEra);
 
     developers[msg.sender].level.currentEra++;
 
     return true;
   }
 
-  function addLevel(uint256 fromEra) internal {
+  function addLevel(address addr) public onlyOwner {
+    Developer memory developer = developers[addr];
+    developer.level.level++;
+    developers[addr] = developer;
+
+    incrementEraLevel(developer.level.currentEra);
+  }
+
+  function removeLevel(address addr, uint256 levels) public onlyOwner {
+    Developer memory developer = developers[addr];
+
+    require(developer.level.level >= levels, "Invalid level to remove");
+
+    developer.level.level -= levels;
+    developers[addr] = developer;
+
+    decrementEraLevel(developer.level.currentEra, levels);
+  }
+
+  function incrementEraLevel(uint256 fromEra) internal {
     developerPool.addLevel(fromEra);
+  }
+
+  function decrementEraLevel(uint256 fromEra, uint256 levels) internal {
+    developerPool.removeLevel(fromEra, levels);
   }
 
   function developerPoolEra() internal view returns (uint256) {
