@@ -19,7 +19,6 @@ contract DeveloperContract is Ownable, Registrable {
 
   address[] internal developersAddress;
   uint256 public developersCount;
-  uint256[18] public totalLevelsByEra;
 
   constructor(address userContractAddress, address developerPoolAddress) {
     userContract = UserContract(userContractAddress);
