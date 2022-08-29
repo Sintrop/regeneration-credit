@@ -56,6 +56,9 @@ module.exports = function (deployer) {
     );
 
     const sintrop = await Sintrop.deployed();
+    const developerPool = await DeveloperPool.deployed();
+
+    await developerPool.newAllowedCaller(developerContract.address);
 
     await activistContract.newAllowedCaller(sintrop.address);
     await producerContract.newAllowedCaller(sintrop.address);
