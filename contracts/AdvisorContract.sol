@@ -3,8 +3,9 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import "./UserContract.sol";
 import "./types/AdvisorTypes.sol";
+import "./Registrable.sol";
 
-contract AdvisorContract {
+contract AdvisorContract is Registrable {
   mapping(address => Advisor) internal advisors;
 
   UserContract internal userContract;
@@ -34,7 +35,7 @@ contract AdvisorContract {
     string memory state,
     string memory city,
     string memory cep
-  ) public uniqueAdvisor returns (Advisor memory) {
+  ) public mustBeAllowedUser uniqueAdvisor returns (Advisor memory) {
     uint256 id = advisorsCount + 1;
     UserType userType = UserType.ADVISOR;
 
