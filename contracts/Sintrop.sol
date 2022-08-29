@@ -11,6 +11,7 @@ import "./types/InspectionTypes.sol";
  * @dev Sintrop application to certificated a rural producer
  */
 contract Sintrop {
+  mapping(address => mapping(address => bool)) internal activistInspected;
   mapping(address => Inspection[]) internal userInspections;
   mapping(uint256 => Inspection) internal inspections;
   mapping(uint256 => IsaInspection[]) public isas;
@@ -83,6 +84,7 @@ contract Sintrop {
     public
     requireActivist
     requireInspectionExists(inspectionId)
+    requireNotInspectedProducer(inspectionId)
     returns (bool)
   {
     Inspection memory inspection = inspections[inspectionId];
@@ -121,6 +123,8 @@ contract Sintrop {
     producerContract.updateIsaScore(inspection.createdBy, inspection.isaScore);
 
     producerContract.approveProducerNewTokens(inspection.createdBy, 2000);
+
+    activistInspected[msg.sender][inspection.createdBy] = true;
 
     return true;
   }
@@ -231,6 +235,12 @@ contract Sintrop {
   }
 
   // MODIFIERS
+  modifier requireNotInspectedProducer(uint256 inspectionId){
+    Inspection memory inspection = inspections[inspectionId];
+
+    require(!activistInspected[msg.sender][inspection.createdBy], "Already inspected this producer");
+    _;
+  }
 
   modifier requireActivist() {
     require(activistContract.activistExists(msg.sender), "Please register as activist");
