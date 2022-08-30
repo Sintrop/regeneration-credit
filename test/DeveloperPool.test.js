@@ -63,6 +63,19 @@ contract("DeveloperPool", (accounts) => {
     });
   });
 
+  context("#getEra", () => {
+    context("when access fields", () => {
+      it("should have fields", async () => {
+        const era = await instance.getEra(1);
+  
+        assert.equal(era.levels, 0);
+        assert.equal(era.tokens, 0);
+        assert.equal(era.developers, 0);
+        assert.equal(era.developerTokens.length, 0);
+      });
+    })
+  })
+
   context("when check time to next approve", () => {
     context("when cant approve", () => {
       it("should return integer > zero", async () => {
