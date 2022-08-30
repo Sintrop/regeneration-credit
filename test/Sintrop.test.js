@@ -34,7 +34,7 @@ contract("Sintrop", (accounts) => {
       "SP",
       "Jundiai",
       "135465-005",
-      { from: address }
+      {from: address}
     );
   };
 
@@ -47,7 +47,7 @@ contract("Sintrop", (accounts) => {
       "SP",
       "Jundiai",
       "135465-005",
-      { from: address }
+      {from: address}
     );
   };
 
@@ -60,7 +60,7 @@ contract("Sintrop", (accounts) => {
       "SP",
       "Jundiai",
       "135465-005",
-      { from: address }
+      {from: address}
     );
   };
 
@@ -73,7 +73,7 @@ contract("Sintrop", (accounts) => {
       `${name} neutro`,
       `${name} parcialmente não sustentável`,
       `${name} totalmente não sustentável`,
-      { from: from }
+      {from: from}
     );
   };
 
@@ -101,7 +101,7 @@ contract("Sintrop", (accounts) => {
   }
 
   const realizeInspection = async (id, isas_, from) => {
-    await instance.realizeInspection(id, isas_, { from: from });
+    await instance.realizeInspection(id, isas_, {from: from});
   };
 
   advanceBlock = async (blocksNumber) => {
@@ -155,7 +155,7 @@ contract("Sintrop", (accounts) => {
   context("when producer try request inspection", () => {
     context("when is the first request", () => {
       it("should request inspection", async () => {
-        await instance.requestInspection({ from: producerAddress });
+        await instance.requestInspection({from: producerAddress});
         const inspection = await instance.getInspection(1);
 
         assert.equal(inspection.createdBy, producerAddress);
@@ -165,9 +165,9 @@ contract("Sintrop", (accounts) => {
     context("when is not the first request", () => {
       context("when has request OPEN or ACCEPTED", () => {
         it("should return error message", async () => {
-          await instance.requestInspection({ from: producerAddress });
+          await instance.requestInspection({from: producerAddress});
           await expectRevert(
-            instance.requestInspection({ from: producerAddress }),
+            instance.requestInspection({from: producerAddress}),
             "Request OPEN or ACCEPTED"
           );
         });
@@ -175,8 +175,8 @@ contract("Sintrop", (accounts) => {
 
       context("when don't has request OPEN or ACCEPTED", () => {
         beforeEach(async () => {
-          await instance.requestInspection({ from: producerAddress });
-          await instance.acceptInspection(1, { from: activistAddress });
+          await instance.requestInspection({from: producerAddress});
+          await instance.acceptInspection(1, {from: activistAddress});
           await addCategory("Solo A", resea1Address);
 
           const isas = [{
@@ -191,7 +191,7 @@ contract("Sintrop", (accounts) => {
         context("when last request is recent", () => {
           it("should return error message", async () => {
             await expectRevert(
-              instance.requestInspection({ from: producerAddress }),
+              instance.requestInspection({from: producerAddress}),
               "Recent inspection"
             );
           });
@@ -201,7 +201,7 @@ contract("Sintrop", (accounts) => {
           it("should request inspection", async () => {
             await advanceBlock(20);
 
-            await instance.requestInspection({ from: producerAddress });
+            await instance.requestInspection({from: producerAddress});
             const inspection = await instance.getInspection(2);
 
             assert.equal(inspection.createdBy, producerAddress);
@@ -219,7 +219,7 @@ contract("Sintrop", (accounts) => {
 
   context("when create inspection", () => {
     beforeEach(async () => {
-      await instance.requestInspection({ from: producerAddress });
+      await instance.requestInspection({from: producerAddress});
     });
 
     it("initial status should be equal OPEN", async () => {
@@ -255,7 +255,7 @@ contract("Sintrop", (accounts) => {
 
   context("when check if inspection exist", () => {
     it("should return inspection", async () => {
-      await instance.requestInspection({ from: producerAddress });
+      await instance.requestInspection({from: producerAddress});
       const inspection = await instance.getInspection(1);
 
       assert.equal(inspection.id, 1);
@@ -270,7 +270,7 @@ contract("Sintrop", (accounts) => {
 
   context("when call getInspections", () => {
     it("should return inspections when has", async () => {
-      await instance.requestInspection({ from: producerAddress });
+      await instance.requestInspection({from: producerAddress});
 
       const inspectionsList = await instance.getInspections();
 
@@ -287,8 +287,8 @@ contract("Sintrop", (accounts) => {
     it("show return all inspection from mapping", async () => {
       await addProducer("Producer B", producer2Address);
 
-      await instance.requestInspection({ from: producerAddress });
-      await instance.requestInspection({ from: producer2Address });
+      await instance.requestInspection({from: producerAddress});
+      await instance.requestInspection({from: producer2Address});
 
       const inspectionsList = await instance.getInspections();
       const inspection1 = await instance.getInspection(1);
@@ -301,8 +301,8 @@ contract("Sintrop", (accounts) => {
 
   context("when activist accept inspection", () => {
     it("should accept inspection with success when is OPEN", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       const inspection = await instance.getInspection(1);
 
@@ -310,8 +310,8 @@ contract("Sintrop", (accounts) => {
     });
 
     it("should set address of activist in inspection", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       const inspection = await instance.getInspection(1);
 
@@ -319,8 +319,8 @@ contract("Sintrop", (accounts) => {
     });
 
     it("should set activist recentInspection", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       const activist = await activistContract.getActivist(activistAddress);
 
@@ -330,9 +330,9 @@ contract("Sintrop", (accounts) => {
 
   context("when is not activist try accept inspection", () => {
     it("should return error message", async () => {
-      await instance.requestInspection({ from: producerAddress });
+      await instance.requestInspection({from: producerAddress});
       await expectRevert(
-        instance.acceptInspection(1, { from: producerAddress }),
+        instance.acceptInspection(1, {from: producerAddress}),
         "Please register as activist"
       );
     });
@@ -341,7 +341,7 @@ contract("Sintrop", (accounts) => {
   context("when activist try accept inspection that don't exists", () => {
     it("should return error message", async () => {
       await expectRevert(
-        instance.acceptInspection(1, { from: activistAddress }),
+        instance.acceptInspection(1, {from: activistAddress}),
         "This inspection don't exists"
       );
     });
@@ -349,11 +349,11 @@ contract("Sintrop", (accounts) => {
 
   context("when activist try accept inspection not OPEN", () => {
     it("should return error message", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       await expectRevert(
-        instance.acceptInspection(1, { from: activistAddress }),
+        instance.acceptInspection(1, {from: activistAddress}),
         "This inspection is not OPEN"
       );
     });
@@ -361,8 +361,8 @@ contract("Sintrop", (accounts) => {
 
   context("when activist realize inspection", () => {
     it("should change inspection status to INSPECTED", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       await addCategory("Solo A", resea1Address);
       await addCategory("Solo B", resea1Address);
@@ -376,8 +376,8 @@ contract("Sintrop", (accounts) => {
     });
 
     it("should update inspectionList", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       await addCategory("Solo A", resea1Address);
       await addCategory("Solo B", resea1Address);
@@ -391,8 +391,8 @@ contract("Sintrop", (accounts) => {
     });
 
     it("should update inspection isas", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       await addCategory("Solo A", resea1Address);
       await addCategory("Solo B", resea1Address);
@@ -411,8 +411,8 @@ contract("Sintrop", (accounts) => {
     });
 
     it("should add 10 isaScore to inspection when select totallySustainable", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       await addCategory("Solo A", resea1Address);
 
@@ -430,8 +430,8 @@ contract("Sintrop", (accounts) => {
     });
 
     it("should add 5 isaScore to inspection when select partiallySustainable", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       await addCategory("Solo A", resea1Address);
 
@@ -449,8 +449,8 @@ contract("Sintrop", (accounts) => {
     });
 
     it("should add 0 isaScore to inspection when select neutro", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       await addCategory("Solo A", resea1Address);
 
@@ -468,8 +468,8 @@ contract("Sintrop", (accounts) => {
     });
 
     it("should remove 5 isaScore from inspection when select partiallyNotSustainable", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       await addCategory("Solo A", resea1Address);
 
@@ -487,8 +487,8 @@ contract("Sintrop", (accounts) => {
     });
 
     it("should remove 10 isaScore from inspection when select totallyNotSustainable", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       await addCategory("Solo A", resea1Address);
 
@@ -506,8 +506,8 @@ contract("Sintrop", (accounts) => {
     });
 
     it("should add isaScore in producer", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       await addCategory("Solo A", resea1Address);
 
@@ -526,8 +526,8 @@ contract("Sintrop", (accounts) => {
     });
 
     it("should set producer recentInspection to false", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       await addCategory("Solo A", resea1Address);
 
@@ -545,8 +545,8 @@ contract("Sintrop", (accounts) => {
     });
 
     it("should set activist recentInspection to false", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       await addCategory("Solo A", resea1Address);
 
@@ -564,8 +564,8 @@ contract("Sintrop", (accounts) => {
     });
 
     it("should increment producer totalRequests", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       await addCategory("Solo A", resea1Address);
 
@@ -583,8 +583,8 @@ contract("Sintrop", (accounts) => {
     });
 
     it("should increment activist totalInspections", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       await addCategory("Solo A", resea1Address);
 
@@ -602,8 +602,8 @@ contract("Sintrop", (accounts) => {
     });
 
     it("should add inspection to activist in userInspections", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       await addCategory("Solo A", resea1Address);
 
@@ -615,14 +615,14 @@ contract("Sintrop", (accounts) => {
       }];
       await realizeInspection(1, isas, activistAddress);
 
-      const userInspections = await instance.getInspectionsHistory({ from: activistAddress });
+      const userInspections = await instance.getInspectionsHistory({from: activistAddress});
 
       assert.equal(userInspections.length, 1);
     });
 
     it("should add inspection to producer in userInspections", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       await addCategory("Solo A", resea1Address);
 
@@ -634,7 +634,7 @@ contract("Sintrop", (accounts) => {
       }];
       await realizeInspection(1, isas, activistAddress);
 
-      const userInspections = await instance.getInspectionsHistory({ from: producerAddress });
+      const userInspections = await instance.getInspectionsHistory({from: producerAddress});
 
       assert.equal(userInspections.length, 1);
     });
@@ -642,12 +642,12 @@ contract("Sintrop", (accounts) => {
 
   context("when activist try realize inspection the same producer", () => {
     it("should return error message", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
-      await instance.realizeInspection(1, [], { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
+      await instance.realizeInspection(1, [], {from: activistAddress});
 
       await expectRevert(
-        instance.acceptInspection(1, { from: activistAddress }),
+        instance.acceptInspection(1, {from: activistAddress}),
         "Already inspected this producer"
       );
     });
@@ -655,10 +655,10 @@ contract("Sintrop", (accounts) => {
 
   context("when activist try realize inspection not accepted", () => {
     it("should return error message", async () => {
-      await instance.requestInspection({ from: producerAddress });
+      await instance.requestInspection({from: producerAddress});
 
       await expectRevert(
-        instance.realizeInspection(1, [], { from: activistAddress }),
+        instance.realizeInspection(1, [], {from: activistAddress}),
         "Accept this inspection before"
       );
     });
@@ -666,13 +666,13 @@ contract("Sintrop", (accounts) => {
 
   context("when activist try realize inspection accepted by other activist", () => {
     it("should return error message", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       await addActivist("Activist B", activist2Address);
 
       await expectRevert(
-        instance.realizeInspection(1, [], { from: activist2Address }),
+        instance.realizeInspection(1, [], {from: activist2Address}),
         "You not accepted this inspection"
       );
     });
@@ -680,11 +680,11 @@ contract("Sintrop", (accounts) => {
 
   context("when is not activist and try realize inspection", () => {
     it("should return error message", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
 
       await expectRevert(
-        instance.realizeInspection(1, [], { from: producerAddress }),
+        instance.realizeInspection(1, [], {from: producerAddress}),
         "Please register as activist"
       );
     });
@@ -693,7 +693,7 @@ contract("Sintrop", (accounts) => {
   context("when inspection don't exists and try realize inspection", () => {
     it("should return error message", async () => {
       await expectRevert(
-        instance.realizeInspection(1, [], { from: activistAddress }),
+        instance.realizeInspection(1, [], {from: activistAddress}),
         "This inspection don't exists"
       );
     });
