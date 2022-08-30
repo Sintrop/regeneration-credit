@@ -347,6 +347,22 @@ contract("Sintrop", (accounts) => {
     });
   });
 
+  context("when activist try realize inspection the same producer", () => {
+    it("should return error message", async () => {
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
+      await instance.realizeInspection(1, [], {from: activistAddress});
+
+      await advanceBlock(20);
+      await instance.requestInspection({from: producerAddress});
+
+      await expectRevert(
+        instance.acceptInspection(2, {from: activistAddress}),
+        "Already inspected this producer"
+      );
+    });
+  });
+
   context("when activist try accept inspection not OPEN", () => {
     it("should return error message", async () => {
       await instance.requestInspection({from: producerAddress});
@@ -637,19 +653,6 @@ contract("Sintrop", (accounts) => {
       const userInspections = await instance.getInspectionsHistory({from: producerAddress});
 
       assert.equal(userInspections.length, 1);
-    });
-  });
-
-  context("when activist try realize inspection the same producer", () => {
-    it("should return error message", async () => {
-      await instance.requestInspection({from: producerAddress});
-      await instance.acceptInspection(1, {from: activistAddress});
-      await instance.realizeInspection(1, [], {from: activistAddress});
-
-      await expectRevert(
-        instance.acceptInspection(1, {from: activistAddress}),
-        "Already inspected this producer"
-      );
     });
   });
 
