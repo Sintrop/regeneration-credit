@@ -33,10 +33,20 @@ contract DeveloperPool is Ownable, Blockable, Callable, PoolInterface {
     sacToken = SacTokenInterface(sacTokenAddress);
   }
 
+  /**
+   * @dev Returns a era
+   * @param era The number of the era
+   */
   function getEra(uint256 era) public view returns (Era memory) {
     return eras[era];
   }
 
+  /**
+   * @dev Allow developers to claim their tokens
+   * @param delegate The address of the delegate developer
+   * @param level The level the developer is at
+   * @param currentEra The currentEra of the developer
+   */
   function approve(
     address delegate,
     uint256 level,
@@ -54,26 +64,50 @@ contract DeveloperPool is Ownable, Blockable, Callable, PoolInterface {
     return true;
   }
 
+  /**
+   * @dev Returns the amount of tokens a developer can claim
+   */
   function allowance() public view override returns (uint256) {
     return sacToken.allowance(address(this), msg.sender);
   }
 
+  /**
+   * @dev Returns how much tokens the developer has
+   * @param tokenOwner The address of the developer
+   */
   function balanceOf(address tokenOwner) public view returns (uint256) {
     return sacToken.balanceOf(tokenOwner);
   }
 
+  /**
+   * @dev Returns how much tokens the contract has
+   */
   function balance() public view returns (uint256) {
     return balanceOf(address(this));
   }
 
+  /**
+   * @dev Allow add new level to eras
+   * @param fromEra The era to start adding levels
+   */
   function addLevel(uint256 fromEra) public mustBeAllowedCaller {
     upLevels(fromEra);
   }
 
+  /**
+   * @dev Allow remove levels from eras
+   * @param fromEra The era to start removing levels
+   * @param levels The amount of levels to remove
+   */
   function removeLevel(uint256 fromEra, uint256 levels) public mustBeAllowedCaller {
     downLevels(fromEra, levels);
   }
 
+  /**
+   * @dev Calc the amount of tokens a developer can claim
+   * @param level The level of the developer
+   * @param currentEra The current era of the developer
+   */
   function tokens(uint256 level, uint256 currentEra) internal view returns (uint256) {
     uint256 levels = eras[currentEra].levels;
     if (levels == 0) return 0;
@@ -81,12 +115,20 @@ contract DeveloperPool is Ownable, Blockable, Callable, PoolInterface {
     return level.mul((TOKENS_PER_ERA.div(levels)));
   }
 
+  /**
+   * @dev Increase the amount of levels in eras
+   * @param fromEra The era to start adding levels
+   */
   function upLevels(uint256 fromEra) internal {
     for (uint256 i = fromEra; i <= ERAS; i++) {
       eras[i].levels++;
     }
   }
 
+  /**
+   * @dev Decrease the amount of levels in eras
+   * @param fromEra The era to start removing levels
+   */
   function downLevels(uint256 fromEra, uint256 levels) internal {
     require(eras[fromEra].levels >= levels, "Not enough levels to remove");
 
