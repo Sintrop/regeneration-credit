@@ -30,6 +30,7 @@ contract CategoryContract {
    * @dev add a new category
    * @param name the name of category
    * @param description the description of category
+   * @param tutorial how activists should evaluate it.
    * @param totallySustainable the description text to this metric
    * @param partiallySustainable the description text to this metric
    * @param neutro the description text to this metric
@@ -40,6 +41,7 @@ contract CategoryContract {
   function addCategory(
     string memory name,
     string memory description,
+    string memory tutorial,
     string memory totallySustainable,
     string memory partiallySustainable,
     string memory neutro,
@@ -51,6 +53,7 @@ contract CategoryContract {
       msg.sender,
       name,
       description,
+      tutorial,
       totallySustainable,
       partiallySustainable,
       neutro,

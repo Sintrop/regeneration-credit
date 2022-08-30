@@ -14,6 +14,7 @@ struct Category {
   address createdBy;
   string name;
   string description;
+  string tutorial;
   string totallySustainable;
   string partiallySustainable;
   string neutro;

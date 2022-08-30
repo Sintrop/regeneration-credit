@@ -68,6 +68,7 @@ contract("Sintrop", (accounts) => {
     await categoryContract.addCategory(
       name,
       `Está categoria visa avaliar as qualidades do ${name}`,
+      `Aqui deve ser descrito como ativistas devem avaliar o ${name}`,
       `${name} totalmente sustentável`,
       `${name} parcialmente sustentável`,
       `${name} neutro`,
