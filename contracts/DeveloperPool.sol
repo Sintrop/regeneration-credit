@@ -10,7 +10,7 @@ import "./Blockable.sol";
 import "./Callable.sol";
 
 /**
- * @author Everson B. Silva
+ * @author Sintrop
  * @title DeveloperContract
  * @dev DeveloperPool is a contract to reward developers
  */
@@ -26,11 +26,11 @@ contract DeveloperPool is Ownable, Blockable, Callable, PoolInterface {
   mapping(uint256 => Era) public eras;
 
   constructor(
-    address _sacTokenAddress,
-    uint256 _blocksPerEra,
-    uint256 _eraMax
-  ) Blockable(_blocksPerEra, _eraMax) {
-    sacToken = SacTokenInterface(_sacTokenAddress);
+    address sacTokenAddress,
+    uint256 blocksPerEra,
+    uint256 eraMax
+  ) Blockable(blocksPerEra, eraMax) {
+    sacToken = SacTokenInterface(sacTokenAddress);
   }
 
   function getEra(uint256 era) public view returns (Era memory) {
@@ -49,13 +49,7 @@ contract DeveloperPool is Ownable, Blockable, Callable, PoolInterface {
     sacToken.approveWith(delegate, devTokens);
   }
 
-  function tokens(uint256 level, uint256 currentEra) internal view returns (uint256) {
-    uint256 levels = eras[currentEra].levels;
-    if (levels == 0) return 0;
-
-    return level.mul((TOKENS_PER_ERA.div(levels)));
-  }
-
+  //TODO: Implement withdraw method (pool and sacToken)
   function withDraw() public pure override returns (bool) {
     return true;
   }
@@ -78,6 +72,13 @@ contract DeveloperPool is Ownable, Blockable, Callable, PoolInterface {
 
   function removeLevel(uint256 fromEra, uint256 levels) public mustBeAllowedCaller {
     downLevels(fromEra, levels);
+  }
+
+  function tokens(uint256 level, uint256 currentEra) internal view returns (uint256) {
+    uint256 levels = eras[currentEra].levels;
+    if (levels == 0) return 0;
+
+    return level.mul((TOKENS_PER_ERA.div(levels)));
   }
 
   function upLevels(uint256 fromEra) internal {
