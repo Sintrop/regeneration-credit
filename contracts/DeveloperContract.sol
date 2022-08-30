@@ -58,6 +58,9 @@ contract DeveloperContract is Ownable, Registrable {
     incrementEraLevel(poolEra);
   }
 
+  /**
+   * @dev Returns all developers
+   */
   function getDevelopers() public view returns (Developer[] memory) {
     Developer[] memory developerList = new Developer[](developersCount);
 
@@ -69,14 +72,25 @@ contract DeveloperContract is Ownable, Registrable {
     return developerList;
   }
 
+  /**
+   * @dev Returns a developer
+   * @param addr The address of the developer
+   */
   function getDeveloper(address addr) public view returns (Developer memory developer) {
     return developers[addr];
   }
 
+  /**
+   * @dev Check if developer exists
+   * @param addr The address of the developer
+   */
   function developerExists(address addr) public view returns (bool) {
     return developers[addr].id > 0;
   }
 
+  /**
+   * @dev Call approve function from developerPool to try to claim tokens
+   */
   function approve() public requireDeveloper returns (bool) {
     Developer memory developer = developers[msg.sender];
 
@@ -87,6 +101,10 @@ contract DeveloperContract is Ownable, Registrable {
     return true;
   }
 
+  /**
+   * @dev Allow the owner to add a new level to the developer
+   * @param addr The address of the developer
+   */
   function addLevel(address addr) public onlyOwner {
     Developer memory developer = developers[addr];
     developer.level.level++;
@@ -95,6 +113,11 @@ contract DeveloperContract is Ownable, Registrable {
     incrementEraLevel(developer.level.currentEra);
   }
 
+  /**
+   * @dev Allow the owner to remove levels from the developer
+   * @param addr The address of the developer
+   * @param levels The number of levels to remove
+   */
   function removeLevel(address addr, uint256 levels) public onlyOwner {
     Developer memory developer = developers[addr];
 
@@ -106,18 +129,33 @@ contract DeveloperContract is Ownable, Registrable {
     decrementEraLevel(developer.level.currentEra, levels);
   }
 
+  /**
+   * @dev Increment the eras level
+   * @param fromEra The era to start incrementing
+   */
   function incrementEraLevel(uint256 fromEra) internal {
     developerPool.addLevel(fromEra);
   }
 
+  /**
+   * @dev Decrement the eras level
+   * @param fromEra The era to start decrementing
+   * @param levels The number of levels to decrement
+   */
   function decrementEraLevel(uint256 fromEra, uint256 levels) internal {
     developerPool.removeLevel(fromEra, levels);
   }
 
+  /**
+   * @dev Returns the current era of pool
+   */
   function developerPoolEra() internal view returns (uint256) {
     return developerPool.currentContractEra();
   }
 
+  /**
+   * @dev Returns max era of pool
+   */
   function eraMax() internal view returns (uint256) {
     return developerPool.eraMax();
   }
