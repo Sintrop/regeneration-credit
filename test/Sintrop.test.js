@@ -348,6 +348,22 @@ contract("Sintrop", (accounts) => {
     });
   });
 
+  context("when activist try realize inspection the same producer", () => {
+    it("should return error message", async () => {
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
+      await instance.realizeInspection(1, [], {from: activistAddress});
+
+      await advanceBlock(20);
+      await instance.requestInspection({from: producerAddress});
+
+      await expectRevert(
+        instance.acceptInspection(2, {from: activistAddress}),
+        "Already inspected this producer"
+      );
+    });
+  });
+
   context("when activist try accept inspection not OPEN", () => {
     it("should return error message", async () => {
       await instance.requestInspection({from: producerAddress});
@@ -368,7 +384,7 @@ contract("Sintrop", (accounts) => {
       await addCategory("Solo A", resea1Address);
       await addCategory("Solo B", resea1Address);
       await addCategory("Solo C", resea1Address);
-      
+
       await realizeInspection(1, isas(), activistAddress);
 
       const inspection = await instance.getInspection(1);
@@ -403,9 +419,9 @@ contract("Sintrop", (accounts) => {
 
       const isasResponse = await instance.getIsa(1);
       const isas_ = [
-        ["1","0","Solo A totalmente sustentável", "Hash_1"],
-        ["2","0","Solo B totalmente sustentável", "Hash_2"],
-        ["3","1","Solo C totalmente sustentável", "Hash_3"]
+        ["1", "0", "Solo A totalmente sustentável", "Hash_1"],
+        ["2", "0", "Solo B totalmente sustentável", "Hash_2"],
+        ["3", "1", "Solo C totalmente sustentável", "Hash_3"]
       ];
 
       assert.equal(JSON.stringify(isasResponse), JSON.stringify(isas_));
