@@ -80,5 +80,6 @@ module.exports = function (deployer) {
     await isaPool.newAllowedCaller(categoryContract.address);
 
     await sacToken.addContractPool(isaPool.address, 0)
+    await sacToken.addContractPool(developerPool.address, "15000000000000000000000000");
   });
 };
