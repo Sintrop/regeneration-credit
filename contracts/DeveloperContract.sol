@@ -25,6 +25,16 @@ contract DeveloperContract is Ownable, Registrable {
     developerPool = DeveloperPool(developerPoolAddress);
   }
 
+  /**
+   * @dev Allow a new register of developer
+   * @param name the name of the developer
+   * @param document the document of developer
+   * @param documentType the document type of developer. CPF/CNPJ
+   * @param country the country where the developer is
+   * @param state the state of the developer
+   * @param city the of the developer
+   * @param cep the cep of the developer
+   */
   function addDeveloper(
     string memory name,
     string memory document,
