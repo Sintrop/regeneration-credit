@@ -24,10 +24,19 @@ module.exports = function (deployer) {
     await deployer.deploy(UserContract);
     const userContract = await UserContract.deployed();
 
+    const sacToken = await deployer.deploy(SacToken, args.totalTokens);
+
+    await deployer.deploy(
+      DeveloperPool,
+      SacToken.address,
+      args.blocksPerEra,
+      args.eraMax
+    );
+
     await deployer.deploy(ActivistContract, UserContract.address);
     await deployer.deploy(ProducerContract, UserContract.address);
     await deployer.deploy(ResearcherContract, UserContract.address);
-    await deployer.deploy(DeveloperContract, UserContract.address);
+    await deployer.deploy(DeveloperContract, UserContract.address, DeveloperPool.address);
     await deployer.deploy(ContributorContract, UserContract.address);
     await deployer.deploy(AdvisorContract, UserContract.address);
     await deployer.deploy(InvestorContract, UserContract.address);
@@ -47,6 +56,9 @@ module.exports = function (deployer) {
     );
 
     const sintrop = await Sintrop.deployed();
+    const developerPool = await DeveloperPool.deployed();
+
+    await developerPool.newAllowedCaller(developerContract.address);
 
     await activistContract.newAllowedCaller(sintrop.address);
     await producerContract.newAllowedCaller(sintrop.address);
@@ -58,8 +70,6 @@ module.exports = function (deployer) {
     await userContract.newAllowedCaller(contributorContract.address);
     await userContract.newAllowedCaller(advisorContract.address);
     await userContract.newAllowedCaller(investorContract.address);
-
-    const sacToken = await deployer.deploy(SacToken, args.totalTokens);
     
     await deployer.deploy(IsaPool, SacToken.address);
     const isaPool = await IsaPool.deployed();
@@ -69,14 +79,7 @@ module.exports = function (deployer) {
 
     await isaPool.newAllowedCaller(categoryContract.address);
 
-    await deployer.deploy(
-      DeveloperPool,
-      SacToken.address,
-      args.tokensPerEra,
-      args.blocksPerEra,
-      args.eraMax
-    );
-
     await sacToken.addContractPool(isaPool.address, 0)
+    await sacToken.addContractPool(developerPool.address, "15000000000000000000000000");
   });
 };
