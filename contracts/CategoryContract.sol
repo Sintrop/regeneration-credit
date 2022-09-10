@@ -11,6 +11,7 @@ import "./ResearcherContract.sol";
  * @dev Category resource that is a part of Sintrop business
  */
 contract CategoryContract {
+  uint256 public constant LIMIT_VOTING = 100000000000000000000000;
   mapping(uint256 => Category) public categories;
   mapping(uint256 => uint256) public votes;
   mapping(address => mapping(uint256 => uint256)) public voted;
@@ -93,6 +94,7 @@ contract CategoryContract {
     categoryMustExists(id)
     mustHaveSacToken(tokens)
     mustSendSomeSacToken(tokens)
+    mustNotExceedLimitVoting(id, tokens)
     returns (bool)
   {
     isaPool.transferWith(msg.sender, tokens);
@@ -122,6 +124,11 @@ contract CategoryContract {
   }
 
   // MODIFIERS
+
+   modifier mustNotExceedLimitVoting(uint256 id, uint256 tokens){
+    require(voted[msg.sender][id] + tokens <= LIMIT_VOTING, "can't vote more than 100k tokens");
+    _;
+  }
 
   modifier categoryMustExists(uint256 id) {
     require(categories[id].id > 0, "This category don't exists");
