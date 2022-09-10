@@ -39,7 +39,7 @@ jobs:
       - name: Run Truffle Test with CI=true for Codechecks  
         run: CI=true truffle test
 
-  Code_Quality:
+  "Code Quality":
 
     runs-on: ubuntu-latest
 
