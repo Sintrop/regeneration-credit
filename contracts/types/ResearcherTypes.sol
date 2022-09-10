@@ -18,4 +18,4 @@ struct ResearcherAddress {
   string state;
   string city;
   string cep;
-} 
+}
