@@ -55,8 +55,8 @@ jobs:
       - name: Run Solhint
         run: npx solhint **/*.sol
       - name: Show solhint errors
-        continue-on-error: true
+        if: true
         run: echo -e 'Try run \033[1mnpx solhint **/*.sol\033[0m to show errors' 
       - name: Show helper (prettier:solidity)
-        continue-on-error: true
+        if: true
         run: echo -e 'Try run \033[1mnpm run prettier:solidity\033[0m to try resolve errors'
