@@ -50,5 +50,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '14'
+      - name: Install Dependencies
+        run: npm install
       - name: Run Solhint
         run: npx solhint **/*.sol
