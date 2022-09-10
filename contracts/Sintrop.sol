@@ -92,7 +92,7 @@ contract Sintrop {
     require(inspection.status == InspectionStatus.OPEN, "This inspection is not OPEN");
 
     inspection.status = InspectionStatus.ACCEPTED;
-    inspection.updatedAt = block.timestamp;
+    inspection.updatedAt = block.timestamp; // solhint-disable-line
     inspection.acceptedBy = msg.sender;
     inspections[inspectionId] = inspection;
 
@@ -131,7 +131,7 @@ contract Sintrop {
 
   function markAsRealized(Inspection memory inspection, IsaInspection[] memory _isas) internal {
     inspection.status = InspectionStatus.INSPECTED;
-    inspection.updatedAt = block.timestamp;
+    inspection.updatedAt = block.timestamp; // solhint-disable-line
     inspection.isaScore = calculateIsa(inspection, _isas);
     inspections[inspection.id] = inspection;
   }
@@ -235,10 +235,13 @@ contract Sintrop {
   }
 
   // MODIFIERS
-  modifier requireNotInspectedProducer(uint256 inspectionId){
+  modifier requireNotInspectedProducer(uint256 inspectionId) {
     Inspection memory inspection = inspections[inspectionId];
 
-    require(!activistInspected[msg.sender][inspection.createdBy], "Already inspected this producer");
+    require(
+      !activistInspected[msg.sender][inspection.createdBy],
+      "Already inspected this producer"
+    );
     _;
   }
 

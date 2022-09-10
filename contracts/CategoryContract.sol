@@ -146,5 +146,5 @@ contract CategoryContract {
   modifier requireResearcher() {
     require(researcherContract.researcherExists(msg.sender), "Only allowed to researchers");
     _;
-  }    
+  }
 }

@@ -3,7 +3,14 @@
   "rules": {
     "prettier/prettier": "error",
     "avoid-throw": "off",
+    "avoid-call-value": "error",
+    "multiple-sends": "warn",
     "avoid-suicide": "error",
+    "reentrancy": "warn",
+    "quotes": ["error","double"],
+    "func-visibility": ["warn", { "ignoreConstructors": true }],
+    "const-name-snakecase": "warn",
+    "visibility-modifier-order": "warn",
     "avoid-sha3": "warn",
     "compiler-version": ["error", ">=0.7.0 <=0.9.0"]
   },

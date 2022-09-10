@@ -94,4 +94,4 @@ contract ResearcherContract is Registrable {
     require(!researcherExists(msg.sender), "This researcher already exist");
     _;
   }
-} 
+}
