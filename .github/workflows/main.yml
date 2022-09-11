@@ -38,3 +38,25 @@ jobs:
         run: npm install
       - name: Run Truffle Test with CI=true for Codechecks  
         run: CI=true truffle test
+
+  Code_Quality:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup NodeJS 14
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install Dependencies
+        run: npm install
+      - name: Run Solhint
+        run: npx solhint **/*.sol
+      - name: Show solhint errors
+        if: always()
+        run: echo -e 'Try run \033[1mnpx solhint **/*.sol\033[0m to show errors' 
+      - name: Show helper (prettier:solidity)
+        if: always()
+        run: echo -e 'Try run \033[1mnpm run prettier:solidity\033[0m to try resolve errors'
