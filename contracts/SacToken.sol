@@ -49,15 +49,14 @@ contract SacToken is ERC20, Ownable {
     return numTokens;
   }
 
-  function transferWith(address tokenOwner, uint256 numTokens)
-    public
-    mustBeContractPool
-    mustHaveSacTokens(tokenOwner, numTokens)
-    returns (bool)
-  {
+  function transferWith(
+    address tokenOwner,
+    address receiver,
+    uint256 numTokens
+  ) public mustBeContractPool mustHaveSacTokens(tokenOwner, numTokens) returns (bool) {
     balances[tokenOwner] = balances[tokenOwner].sub(numTokens);
-    balances[msg.sender] = balances[msg.sender].add(numTokens);
-    emit Transfer(tokenOwner, msg.sender, numTokens);
+    balances[receiver] = balances[receiver].add(numTokens);
+    emit Transfer(tokenOwner, receiver, numTokens);
 
     return true;
   }

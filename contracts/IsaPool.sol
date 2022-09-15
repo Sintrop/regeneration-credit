@@ -68,8 +68,12 @@ contract IsaPool is PoolPassiveInterface, Ownable, Callable {
    * @param numTokens How much tokens the user want transfer
    * @return bool
    */
-  function transferWith(address tokenOwner, uint256 numTokens) public override returns (bool) {
-    sacToken.transferWith(tokenOwner, numTokens);
+  function transferWith(
+    address tokenOwner,
+    address receiver,
+    uint256 numTokens
+  ) public override mustBeAllowedCaller returns (bool) {
+    sacToken.transferWith(tokenOwner, receiver, numTokens);
     return true;
   }
 }
