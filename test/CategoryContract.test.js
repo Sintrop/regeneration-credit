@@ -24,7 +24,7 @@ contract("CategoryContract", (accounts) => {
       `${name} neutro`,
       `${name} parcialmente não sustentável`,
       `${name} totalmente não sustentável`,
-      { from: from }
+      {from: from}
     );
   };
 
@@ -37,7 +37,7 @@ contract("CategoryContract", (accounts) => {
       "SP",
       "Jundiai",
       "135465-005",
-      { from: address }
+      {from: address}
     );
   };
 
@@ -219,8 +219,8 @@ contract("CategoryContract", (accounts) => {
       await transferTokensTo(user1Address, "50000000000000000000000");
       await transferTokensTo(user2Address, "50000000000000000000000");
 
-      await instance.vote(1, "100000000000000000000", { from: user1Address });
-      await instance.vote(1, "100000000000000000000", { from: user2Address });
+      await instance.vote(1, "100000000000000000000", {from: user1Address});
+      await instance.vote(1, "100000000000000000000", {from: user2Address});
 
       const votes = await instance.votes(1);
 
@@ -233,8 +233,8 @@ contract("CategoryContract", (accounts) => {
       await transferTokensTo(user1Address, "50000000000000000000000");
       await transferTokensTo(user2Address, "50000000000000000000000");
 
-      await instance.vote(1, "100000000000000000000", { from: user1Address });
-      await instance.vote(1, "100000000000000000000", { from: user2Address });
+      await instance.vote(1, "100000000000000000000", {from: user1Address});
+      await instance.vote(1, "100000000000000000000", {from: user2Address});
 
       const votes1 = await instance.voted(user1Address, 1);
       const votes2 = await instance.voted(user2Address, 1);
@@ -243,10 +243,10 @@ contract("CategoryContract", (accounts) => {
       assert.equal(votes2, "100000000000000000000");
     });
 
-    it("should subtract tokens from user after vote in a category", async () => {
+    it("should subtract tokensfrom user after vote in a category", async () => {
       await addCategory("Solo", resea1Address);
       await transferTokensTo(user1Address, "50000000000000000000000");
-      await instance.vote(1, "1000000000000000000000", { from: user1Address });
+      await instance.vote(1, "1000000000000000000000", {from: user1Address});
 
       const balanceOf = await isaPool.balanceOf(user1Address);
 
@@ -256,7 +256,7 @@ contract("CategoryContract", (accounts) => {
     it("should add tokens to isa pool after vote in a category", async () => {
       await addCategory("Solo", resea1Address);
       await transferTokensTo(user1Address, "50000000000000000000000");
-      await instance.vote(1, "1000000000000000000000", { from: user1Address });
+      await instance.vote(1, "1000000000000000000000", {from: user1Address});
 
       const balance = await isaPool.balance();
 
@@ -267,8 +267,8 @@ contract("CategoryContract", (accounts) => {
       await addCategory("Solo", resea1Address);
       await transferTokensTo(user1Address, "50000000000000000000000");
       await transferTokensTo(user2Address, "50000000000000000000000");
-      await instance.vote(1, "1000000000000000000000", { from: user1Address });
-      await instance.vote(1, "5000000000000000000000", { from: user2Address });
+      await instance.vote(1, "1000000000000000000000", {from: user1Address});
+      await instance.vote(1, "5000000000000000000000", {from: user2Address});
 
       const balance = await isaPool.balance();
 
@@ -278,7 +278,7 @@ contract("CategoryContract", (accounts) => {
     context("When user dont have tokens", () => {
       it("should return error message when try vote and dont has SAC Tokens", async () => {
         await addCategory("Solo", resea1Address);
-        await expectRevert(instance.vote(1, 0, { from: user1Address }), "You don't have tokens to vote");
+        await expectRevert(instance.vote(1, 0, {from: user1Address}), "You don't have tokens to vote");
       });
     });
 
@@ -298,7 +298,7 @@ contract("CategoryContract", (accounts) => {
         await addCategory("Solo", resea1Address);
         await transferTokensTo(user1Address, "50000000000000000000000");
 
-        await instance.vote(1, "100000000000000000000", { from: user1Address });
+        await instance.vote(1, "100000000000000000000", {from: user1Address});
         await instance.vote(1, "100000000000000000000");
         await instance.unvote(1);
 
@@ -313,7 +313,7 @@ contract("CategoryContract", (accounts) => {
         await instance.vote(1, "100000000000000000000");
 
         await expectRevert(
-          instance.unvote(1, { from: user1Address }),
+          instance.unvote(1, {from: user1Address}),
           "You don't voted to this category"
         );
       });
@@ -344,12 +344,12 @@ contract("CategoryContract", (accounts) => {
 
         await transferTokensTo(user1Address, "50000000000000000000000");
 
-        await instance.vote(1, "1000000000000000000000", { from: user1Address });
-        await instance.vote(2, "5000000000000000000000", { from: user1Address });
+        await instance.vote(1, "1000000000000000000000", {from: user1Address});
+        await instance.vote(2, "5000000000000000000000", {from: user1Address});
 
-        await instance.unvote(1, { from: user1Address });
+        await instance.unvote(1, {from: user1Address});
 
-        const allowance = await isaPool.allowance({ from: user1Address });
+        const allowance = await isaPool.allowance({from: user1Address});
 
         assert.equal(allowance, "1000000000000000000000");
       });
