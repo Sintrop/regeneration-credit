@@ -98,7 +98,7 @@ contract CategoryContract {
     mustNotExceedLimitVoting(id, tokens)
     returns (bool)
   {
-    isaPool.transferWith(msg.sender, tokens);
+    isaPool.transferWith(msg.sender, address(isaPool), tokens);
 
     votes[id] += tokens;
     voted[msg.sender][id] += tokens;
@@ -115,7 +115,7 @@ contract CategoryContract {
   function unvote(uint256 id) public categoryMustExists(id) mustHaveVoted(id) returns (uint256) {
     uint256 tokens = voted[msg.sender][id];
 
-    isaPool.approveWith(msg.sender, tokens);
+    isaPool.transferWith(address(isaPool), msg.sender, tokens);
 
     votes[id] -= tokens;
     voted[msg.sender][id] = 0;
@@ -154,5 +154,5 @@ contract CategoryContract {
   modifier requireResearcher() {
     require(researcherContract.researcherExists(msg.sender), "Only allowed to researchers");
     _;
-  }    
+  }
 }
