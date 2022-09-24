@@ -394,76 +394,16 @@ contract("DeveloperContract", (accounts) => {
 
   context("when adding level to developer", () => {
     context("with owner", () => {
-      beforeEach(async () => {
-        await advanceBlock(developerPoolParams.blocksPerEra * 12 + 2);
-        await addDeveloper("Developer A", dev1Address);
-        await instance.addLevel(dev1Address, {from: owner});
-      });
+      context("when the developer is in era 6", () => {
+        beforeEach(async () => {
+          await advanceBlock(developerPoolParams.blocksPerEra * 5);
+          await addDeveloper("Developer A", dev1Address);
+          await advanceBlock(developerPoolParams.blocksPerEra * 7 + 2);
 
-      it("should add level to developer", async () => {
-        const developer = await instance.getDeveloper(dev1Address);
-
-        assert.equal(developer.level.level, 2);
-      });
-
-      it("should increment levels of the eras that the developer is ahead", async () => {
-        let era13 = await developerPool.getEra(13);
-        let era14 = await developerPool.getEra(14);
-        let era15 = await developerPool.getEra(15);
-        let era16 = await developerPool.getEra(16);
-        let era17 = await developerPool.getEra(17);
-        let era18 = await developerPool.getEra(18);
-
-        const LEVELS = 2;
-
-        assert.equal(era13.levels, LEVELS);
-        assert.equal(era14.levels, LEVELS);
-        assert.equal(era15.levels, LEVELS);
-        assert.equal(era16.levels, LEVELS);
-        assert.equal(era17.levels, LEVELS);
-        assert.equal(era18.levels, LEVELS);
-      });
-
-      it("shouldn't increment levels of the eras that the developer is behind", async () => {
-        let era12 = await developerPool.getEra(12);
-
-        assert.equal(era12.levels, 0);
-      });
-    });
-
-    context("with non owner", () => {
-      beforeEach(async () => {
-        await addDeveloper("Developer A", dev1Address);
-      });
-
-      it("should return error message", async () => {
-        await expectRevert(
-          instance.addLevel(dev1Address, {from: dev1Address}),
-          "Ownable: caller is not the owner"
-        );
-      });
-    });
-  });
-
-  context("when removing level to developer", () => {
-    context("with owner", () => {
-      beforeEach(async () => {
-        await addDeveloper("Developer A", dev1Address);
-        await instance.addLevel(dev1Address, {from: owner});
-        await advanceBlock(developerPoolParams.blocksPerEra * 2 + 2);
-
-        await instance.approve({from: dev1Address});
-        await instance.removeLevel(dev1Address, 1, {from: owner});
-      });
-
-      context("when the developer is in era 2", () => {
-        it("should remove level to developer", async () => {
-          const developer = await instance.getDeveloper(dev1Address);
-
-          assert.equal(developer.level.level, 1);
+          await instance.addLevel(dev1Address, {from: owner});
         });
 
-        it("should decrement levels of the eras that the developer is ahead", async () => {
+        it("should increment levels of the eras from current contract era ahead", async () => {
           let era1 = await developerPool.getEra(1);
           let era2 = await developerPool.getEra(2);
           let era3 = await developerPool.getEra(3);
@@ -483,26 +423,112 @@ contract("DeveloperContract", (accounts) => {
           let era17 = await developerPool.getEra(17);
           let era18 = await developerPool.getEra(18);
 
-          const LEVELS = 1;
+          const ZERO_LEVELS = 0;
+          const SAME_LEVELS = 1;
+          const NEW_LEVELS = 2;
 
-          assert.equal(era1.levels, 2);
-          assert.equal(era2.levels, LEVELS);
-          assert.equal(era3.levels, LEVELS);
-          assert.equal(era4.levels, LEVELS);
-          assert.equal(era5.levels, LEVELS);
-          assert.equal(era6.levels, LEVELS);
-          assert.equal(era7.levels, LEVELS);
-          assert.equal(era8.levels, LEVELS);
-          assert.equal(era9.levels, LEVELS);
-          assert.equal(era10.levels, LEVELS);
-          assert.equal(era11.levels, LEVELS);
-          assert.equal(era12.levels, LEVELS);
-          assert.equal(era13.levels, LEVELS);
-          assert.equal(era14.levels, LEVELS);
-          assert.equal(era15.levels, LEVELS);
-          assert.equal(era16.levels, LEVELS);
-          assert.equal(era17.levels, LEVELS);
-          assert.equal(era18.levels, LEVELS);
+          assert.equal(era1.levels, ZERO_LEVELS);
+          assert.equal(era2.levels, ZERO_LEVELS);
+          assert.equal(era3.levels, ZERO_LEVELS);
+          assert.equal(era4.levels, ZERO_LEVELS);
+          assert.equal(era5.levels, ZERO_LEVELS);
+
+          assert.equal(era6.levels, SAME_LEVELS);
+          assert.equal(era7.levels, SAME_LEVELS);
+          assert.equal(era8.levels, SAME_LEVELS);
+          assert.equal(era9.levels, SAME_LEVELS);
+          assert.equal(era10.levels, SAME_LEVELS);
+          assert.equal(era11.levels, SAME_LEVELS);
+          assert.equal(era12.levels, SAME_LEVELS);
+
+          assert.equal(era13.levels, NEW_LEVELS);
+          assert.equal(era14.levels, NEW_LEVELS);
+          assert.equal(era15.levels, NEW_LEVELS);
+          assert.equal(era16.levels, NEW_LEVELS);
+          assert.equal(era17.levels, NEW_LEVELS);
+          assert.equal(era18.levels, NEW_LEVELS);
+        });
+      });
+    });
+
+    context("with non owner", () => {
+      beforeEach(async () => {
+        await addDeveloper("Developer A", dev1Address);
+      });
+
+      it("should return error message", async () => {
+        await expectRevert(
+          instance.addLevel(dev1Address, {from: dev1Address}),
+          "Ownable: caller is not the owner"
+        );
+      });
+    });
+  });
+
+  context("when removing level of the developer", () => {
+    context("with owner", () => {
+      beforeEach(async () => {
+        await advanceBlock(developerPoolParams.blocksPerEra * 5);
+        await addDeveloper("Developer A", dev1Address);
+        await advanceBlock(developerPoolParams.blocksPerEra * 7 + 2);
+
+        await instance.addLevel(dev1Address, {from: owner});
+        await instance.addLevel(dev1Address, {from: owner});
+
+        await instance.removeLevel(dev1Address, 1, {from: owner});
+      });
+
+      context("when the developer is in era 6", () => {
+        it("should remove level to developer", async () => {
+          const developer = await instance.getDeveloper(dev1Address);
+
+          assert.equal(developer.level.level, 2);
+        });
+
+        it("should decrement levels of the eras from current contract era ahead", async () => {
+          let era1 = await developerPool.getEra(1);
+          let era2 = await developerPool.getEra(2);
+          let era3 = await developerPool.getEra(3);
+          let era4 = await developerPool.getEra(4);
+          let era5 = await developerPool.getEra(5);
+          let era6 = await developerPool.getEra(6);
+          let era7 = await developerPool.getEra(7);
+          let era8 = await developerPool.getEra(8);
+          let era9 = await developerPool.getEra(9);
+          let era10 = await developerPool.getEra(10);
+          let era11 = await developerPool.getEra(11);
+          let era12 = await developerPool.getEra(12);
+          let era13 = await developerPool.getEra(13);
+          let era14 = await developerPool.getEra(14);
+          let era15 = await developerPool.getEra(15);
+          let era16 = await developerPool.getEra(16);
+          let era17 = await developerPool.getEra(17);
+          let era18 = await developerPool.getEra(18);
+
+          const ZERO_LEVELS = 0;
+          const SAME_LEVELS = 1;
+          const NEW_LEVELS = 2;
+
+          assert.equal(era1.levels, ZERO_LEVELS);
+          assert.equal(era2.levels, ZERO_LEVELS);
+          assert.equal(era3.levels, ZERO_LEVELS);
+          assert.equal(era4.levels, ZERO_LEVELS);
+          assert.equal(era5.levels, ZERO_LEVELS);
+
+          assert.equal(era6.levels, SAME_LEVELS);
+          assert.equal(era7.levels, SAME_LEVELS);
+          assert.equal(era8.levels, SAME_LEVELS);
+          assert.equal(era9.levels, SAME_LEVELS);
+          assert.equal(era10.levels, SAME_LEVELS);
+          assert.equal(era11.levels, SAME_LEVELS);
+          assert.equal(era12.levels, SAME_LEVELS);
+
+          assert.equal(era13.levels, NEW_LEVELS);
+          assert.equal(era14.levels, NEW_LEVELS);
+          assert.equal(era15.levels, NEW_LEVELS);
+          assert.equal(era16.levels, NEW_LEVELS);
+          assert.equal(era17.levels, NEW_LEVELS);
+          assert.equal(era18.levels, NEW_LEVELS);
         });
       });
     });
