@@ -106,7 +106,7 @@ module.exports = function (deployer) {
     {from: producer2});
 
     await activistContract.addActivist(
-    "activist2",
+    "activist1",
     "22222222222222",
     "CPF",
     "Brazil",
