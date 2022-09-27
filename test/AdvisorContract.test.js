@@ -125,7 +125,7 @@ contract("AdvisorContract", (accounts) => {
       assert.equal(advisorExists, true);
     });
 
-    it("it should return false when don't excists", async () => {
+    it("it should return false when don't exist", async () => {
       const advisorExists = await instance.advisorExists(adv1Address);
 
       assert.equal(advisorExists, false);

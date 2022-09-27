@@ -83,7 +83,7 @@ contract("IsaPool", (accounts) => {
             it("should return error message", async () => {
               await expectRevert(
                 instance.transferWith(user2Address, instance.address, "1000000000000000000000"),
-                "You don't has SAC Tokens"
+                "You don't have SAC Tokens"
               );
             });
           });
