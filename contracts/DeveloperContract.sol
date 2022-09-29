@@ -120,7 +120,7 @@ contract DeveloperContract is Ownable, Registrable {
     developer.level.level++;
     developers[addr] = developer;
 
-    incrementEraLevel(developer.level.currentEra);
+    incrementEraLevel(developerPoolEra());
   }
 
   /**
@@ -136,7 +136,7 @@ contract DeveloperContract is Ownable, Registrable {
     developer.level.level -= levels;
     developers[addr] = developer;
 
-    decrementEraLevel(developer.level.currentEra, levels);
+    decrementEraLevel(developerPoolEra(), levels);
   }
 
   /**
