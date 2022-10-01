@@ -13,6 +13,7 @@ module.exports = function (deployer) {
         blocksPerEra: 10,
         eraMax: 18,
       };
+
     deployer.then(async () => {
         await deployer.deploy(UserContract);
         const userContract = await UserContract.deployed();
@@ -20,9 +21,6 @@ module.exports = function (deployer) {
         await deployer.deploy(SacToken, args.totalTokens);
         const sacToken = await SacToken.deployed();
 
-        await deployer.deploy(ActivistContract, UserContract.address);
-        await deployer.deploy(ProducerContract, UserContract.address);
-        await deployer.deploy(ResearcherContract, UserContract.address);
         const activistContract = await ActivistContract.deployed();
         const producerContract = await ProducerContract.deployed();
         const researcherContract = await ResearcherContract.deployed();
@@ -35,8 +33,6 @@ module.exports = function (deployer) {
     
         await userContract.newAllowedCaller(activistContract.address);
         await userContract.newAllowedCaller(producerContract.address);
-        await userContract.newAllowedCaller(researcherContract.address);
-        await isaPool.newAllowedCaller(categoryContract.address);
 
     let accounts = await web3.eth.getAccounts()
     let [producer1, producer2, activist1, activist2, researcher1] = accounts;
