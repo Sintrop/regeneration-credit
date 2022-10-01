@@ -1,3 +1,4 @@
+require("dotenv").config({path: __dirname + "/.env"});
 const SacToken = artifacts.require("SacToken");
 const IsaPool = artifacts.require("IsaPool");
 const CategoryContract = artifacts.require("CategoryContract");
@@ -12,25 +13,26 @@ const AdvisorContract = artifacts.require("AdvisorContract");
 const InvestorContract = artifacts.require("InvestorContract");
 const UserContract = artifacts.require("UserContract");
 
-module.exports = function (deployer) {
-  const args = {
-    totalTokens: "1500000000000000000000000000",
-    tokensPerEra: "833333333333333333333333",
-    blocksPerEra: 10,
-    eraMax: 18,
-  };
+const sacTokensTotalTokens = process.env["SAC_TOKENS_TOTAL_TOKENS"];
+const developerPoolEraMax = process.env["DEVELOPER_POOL_ERA_MAX"];
+const developerPoolBlocksPerEra = process.env["DEVELOPER_POOL_BLOCKS_PER_ERA"];
+const developerPoolFunds = process.env["DEVELOPER_POOL_FUNDS"];
+const isaPoolFunds = process.env["ISA_POOL_FUNDS"];
+const sintropTimeBetweenProducerInsertions =
+  process.env["SINTROP_TIME_BETWEEN_PRODUCER_INSPECTIONS"];
 
+module.exports = function (deployer) {
   deployer.then(async () => {
     await deployer.deploy(UserContract);
     const userContract = await UserContract.deployed();
 
-    const sacToken = await deployer.deploy(SacToken, args.totalTokens);
+    const sacToken = await deployer.deploy(SacToken, sacTokensTotalTokens);
 
     await deployer.deploy(
       DeveloperPool,
       SacToken.address,
-      args.blocksPerEra,
-      args.eraMax
+      developerPoolBlocksPerEra,
+      developerPoolEraMax
     );
 
     await deployer.deploy(ActivistContract, UserContract.address);
@@ -49,10 +51,12 @@ module.exports = function (deployer) {
     const advisorContract = await AdvisorContract.deployed();
     const investorContract = await InvestorContract.deployed();
 
-    await deployer.deploy(Sintrop,
+    console.log(sintropTimeBetweenProducerInsertions);
+    await deployer.deploy(
+      Sintrop,
       activistContract.address,
       producerContract.address,
-      1000
+      sintropTimeBetweenProducerInsertions
     );
 
     const sintrop = await Sintrop.deployed();
@@ -70,7 +74,7 @@ module.exports = function (deployer) {
     await userContract.newAllowedCaller(contributorContract.address);
     await userContract.newAllowedCaller(advisorContract.address);
     await userContract.newAllowedCaller(investorContract.address);
-    
+
     await deployer.deploy(IsaPool, SacToken.address);
     const isaPool = await IsaPool.deployed();
 
@@ -79,7 +83,7 @@ module.exports = function (deployer) {
 
     await isaPool.newAllowedCaller(categoryContract.address);
 
-    await sacToken.addContractPool(isaPool.address, 0)
-    await sacToken.addContractPool(developerPool.address, "15000000000000000000000000");
+    await sacToken.addContractPool(isaPool.address, isaPoolFunds);
+    await sacToken.addContractPool(developerPool.address, developerPoolFunds);
   });
 };
