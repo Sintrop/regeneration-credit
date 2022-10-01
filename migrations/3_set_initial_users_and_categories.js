@@ -13,6 +13,7 @@ module.exports = function (deployer) {
         blocksPerEra: 10,
         eraMax: 18,
       };
+      
     deployer.then(async () => {
         await deployer.deploy(UserContract);
         const userContract = await UserContract.deployed();
