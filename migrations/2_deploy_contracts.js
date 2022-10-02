@@ -1,4 +1,5 @@
 require("dotenv").config({path: __dirname + "/.env"});
+
 const SacToken = artifacts.require("SacToken");
 const IsaPool = artifacts.require("IsaPool");
 const CategoryContract = artifacts.require("CategoryContract");
@@ -51,7 +52,6 @@ module.exports = function (deployer) {
     const advisorContract = await AdvisorContract.deployed();
     const investorContract = await InvestorContract.deployed();
 
-    console.log(sintropTimeBetweenProducerInsertions);
     await deployer.deploy(
       Sintrop,
       activistContract.address,
