@@ -13,7 +13,6 @@ contract UserContract is Ownable, Callable {
   mapping(address => UserType) internal users;
   mapping(address => Delation[]) private delations;
 
-  address[] public delationsAddress;
   uint256 public delationsCount;
   uint256 public usersCount;
 
@@ -93,26 +92,8 @@ contract UserContract is Ownable, Callable {
   /**
    * @dev Returns the user address delated
    */
-  function getDelation(address addr) public view returns (Delation[] memory) {
+  function getUserDelations(address addr) public view returns (Delation[] memory) {
     return delations[addr];
-  }
-
-  /**
-   * @dev Returns all registered delations
-   */
-  function getDelations() public view returns (Delation[] memory) {
-    Delation[] memory delationsList = new Delation[](delationsCount);
-
-    for (uint256 i = 0; i < delationsAddress.length; i++) {
-      Delation[] memory userDelatios = delations[delationsAddress[i]];
-
-      for (uint256 j = 0; j < userDelatios.length; j++) {
-        uint256 index = delationsList.length;
-        delationsList[index] = userDelatios[j];
-      }
-    }
-
-    return delationsList;
   }
 
   // MODIFIER
@@ -123,12 +104,12 @@ contract UserContract is Ownable, Callable {
   }
 
   modifier callerMustExists() {
-    require(users[msg.sender] != UserType.UNDEFINED, "caller must be registered");
+    require(users[msg.sender] != UserType.UNDEFINED, "Caller must be registered");
     _;
   }
 
   modifier reportedMustExists(address addr) {
-    require(users[addr] != UserType.UNDEFINED, "user must be registered");
+    require(users[addr] != UserType.UNDEFINED, "User must be registered");
     _;
   }
 
