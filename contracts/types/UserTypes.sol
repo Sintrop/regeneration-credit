@@ -13,7 +13,7 @@ enum UserType {
 }
 
 struct Delation {
-  uint id;
+  uint256 id;
   address informer;
   address reported;
   string title;
