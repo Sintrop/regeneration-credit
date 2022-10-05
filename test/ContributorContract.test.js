@@ -6,7 +6,7 @@ const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 contract("ContributorContract", (accounts) => {
   let instance;
   let userContract;
-  let [ownerAddress, contr1Address, contr2Address] = accounts;
+  let [ownerAddress, contr1Address, contr2Address, contr3Address] = accounts;
 
   const addContributor = async (name, address) => {
     await instance.addContributor(
@@ -27,9 +27,21 @@ contract("ContributorContract", (accounts) => {
     instance = await ContributorContract.new(userContract.address);
     
     await userContract.newAllowedCaller(instance.address);
+    await instance.newAllowedUser(contr1Address);
+    await instance.newAllowedUser(contr3Address);
   });
 
   context("when will create new contributor (.addContributor)", () => {
+    context("when is not an allowed user", () => {
+      it("should return error message", async () => {
+        await expectRevert(
+          addContributor("Contributor B", contr2Address),
+          "Not allowed user"
+        );
+      });
+    })
+
+    context("when is an allowed user", () => { 
       context("when contributor exists", () => {
         it("should return error", async () => {
           await addContributor("Contributor A", contr1Address);
@@ -38,11 +50,12 @@ contract("ContributorContract", (accounts) => {
             "This contributor already exist"
           );
       });
-
-      context("when contributor don't exists", () => {
+    });
+    
+      context("when contributor don't exist", () => {
         it("should create contributor", async () => {
           await addContributor("Contributor A", contr1Address);
-          await addContributor("Contributor B", contr2Address);
+          await addContributor("Contributor C", contr3Address);
           const contributor = await instance.getContributor(contr1Address);
 
           assert.equal(contributor.contributorWallet, contr1Address);
@@ -50,7 +63,7 @@ contract("ContributorContract", (accounts) => {
 
         it("should increment contributorCount after create contributor", async () => {
           await addContributor("Contributor A", contr1Address);
-          await addContributor("Contributor B", contr2Address);
+          await addContributor("Contributor C", contr3Address);
           const contributorsCount = await instance.contributorsCount();
 
           assert.equal(contributorsCount, 2);
@@ -58,7 +71,7 @@ contract("ContributorContract", (accounts) => {
 
         it("should add created contributor in contributorList (array)", async () => {
           await addContributor("Contributor A", contr1Address);
-          await addContributor("Contributor B", contr2Address);
+          await addContributor("Contributor C", contr3Address);
 
           const contributors = await instance.getContributors();
 
@@ -80,7 +93,7 @@ contract("ContributorContract", (accounts) => {
   context("when will get contributors (.getContributors)", () => {
     it("should return contributors when has contributors", async () => {
       await addContributor("Contributor A", contr1Address);
-      await addContributor("Contributor B", contr2Address);
+      await addContributor("Contributor C", contr3Address);
 
       const contributors = await instance.getContributors();
 
@@ -112,7 +125,7 @@ contract("ContributorContract", (accounts) => {
       assert.equal(contributorExists, true);
     });
 
-    it("it should return false when don't excists", async () => {
+    it("it should return false when don't exist", async () => {
       const contributorExists = await instance.contributorExists(contr1Address);
 
       assert.equal(contributorExists, false);

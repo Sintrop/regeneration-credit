@@ -120,8 +120,8 @@ contract("ProducerContract", (accounts) => {
     });
   });
 
-  context("when producer don't exists", () => {
-    it("should return false when producer don't exists", async () => {
+  context("when producer don't exist", () => {
+    it("should return false when producer don't exist", async () => {
         const producerExists = await instance.producerExists(prod1Address);
 
         assert.equal(producerExists, false);

@@ -3,6 +3,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import "./PoolPassiveInterface.sol";
 import "./types/CategoryTypes.sol";
+import "./ResearcherContract.sol";
 
 /**
  * @author Sintrop
@@ -14,18 +15,22 @@ contract CategoryContract {
   mapping(uint256 => uint256) public votes;
   mapping(address => mapping(uint256 => uint256)) public voted;
 
+  ResearcherContract public researcherContract;
+
   Category public category;
   uint256 public categoryCounts;
   PoolPassiveInterface internal isaPool;
 
-  constructor(address _isaPoolAddress) {
+  constructor(address _isaPoolAddress, address researcherContractAddress) {
     isaPool = PoolPassiveInterface(_isaPoolAddress);
+    researcherContract = ResearcherContract(researcherContractAddress);
   }
 
   /**
    * @dev add a new category
    * @param name the name of category
    * @param description the description of category
+   * @param tutorial how activists should evaluate it.
    * @param totallySustainable the description text to this metric
    * @param partiallySustainable the description text to this metric
    * @param neutro the description text to this metric
@@ -36,17 +41,19 @@ contract CategoryContract {
   function addCategory(
     string memory name,
     string memory description,
+    string memory tutorial,
     string memory totallySustainable,
     string memory partiallySustainable,
     string memory neutro,
     string memory partiallyNotSustainable,
     string memory totallyNotSustainable
-  ) public returns (bool) {
+  ) public requireResearcher returns (bool) {
     category = Category(
       categoryCounts + 1,
       msg.sender,
       name,
       description,
+      tutorial,
       totallySustainable,
       partiallySustainable,
       neutro,
@@ -88,7 +95,7 @@ contract CategoryContract {
     mustSendSomeSacToken(tokens)
     returns (bool)
   {
-    isaPool.transferWith(msg.sender, tokens);
+    isaPool.transferWith(msg.sender, address(isaPool), tokens);
 
     votes[id] += tokens;
     voted[msg.sender][id] += tokens;
@@ -105,7 +112,7 @@ contract CategoryContract {
   function unvote(uint256 id) public categoryMustExists(id) mustHaveVoted(id) returns (uint256) {
     uint256 tokens = voted[msg.sender][id];
 
-    isaPool.approveWith(msg.sender, tokens);
+    isaPool.transferWith(address(isaPool), msg.sender, tokens);
 
     votes[id] -= tokens;
     voted[msg.sender][id] = 0;
@@ -133,6 +140,11 @@ contract CategoryContract {
 
   modifier mustHaveVoted(uint256 id) {
     require(voted[msg.sender][id] > 0, "You don't voted to this category");
+    _;
+  }
+
+  modifier requireResearcher() {
+    require(researcherContract.researcherExists(msg.sender), "Only allowed to researchers");
     _;
   }
 }

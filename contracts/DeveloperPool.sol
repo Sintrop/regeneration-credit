@@ -7,191 +7,133 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./types/DeveloperPoolTypes.sol";
 import "./Blockable.sol";
+import "./Callable.sol";
 
 /**
- * @author Everson B. Silva
+ * @author Sintrop
  * @title DeveloperContract
  * @dev DeveloperPool is a contract to reward developers
  */
-contract DeveloperPool is Ownable, Blockable, PoolInterface {
+contract DeveloperPool is Ownable, Blockable, Callable, PoolInterface {
   using SafeMath for uint256;
 
-  mapping(address => Developer) internal developers;
-  mapping(uint256 => Era) public eras;
-
-  address[] internal developersAddress;
-  uint256 public developersCount;
-  uint256[18] public levelsSumPerEra;
-  uint256 public tokensPerEra;
+  uint256 public constant FIXED_POINT = 10**18;
+  uint256 public constant TOKENS_PER_ERA = 833333000000000000000000;
+  uint256 public constant ERAS = 18;
 
   SacTokenInterface internal sacToken;
 
+  mapping(uint256 => Era) public eras;
+
   constructor(
-    address _sacTokenAddress,
-    uint256 _tokensPerEra,
-    uint256 _blocksPerEra,
-    uint256 _eraMax
-  ) Blockable(_blocksPerEra, _eraMax) {
-    sacToken = SacTokenInterface(_sacTokenAddress);
-    tokensPerEra = _tokensPerEra.mul(10**18);
+    address sacTokenAddress,
+    uint256 blocksPerEra,
+    uint256 eraMax
+  ) Blockable(blocksPerEra, eraMax) {
+    sacToken = SacTokenInterface(sacTokenAddress);
   }
 
   /**
-   * @dev Return a specific developer
-   * @param _address the address of the developer
+   * @dev Returns a era
+   * @param era The number of the era
    */
-  function getDeveloper(address _address) public view returns (Developer memory) {
-    return developers[_address];
+  function getEra(uint256 era) public view returns (Era memory) {
+    return eras[era];
   }
 
   /**
-   * @dev Return the developers address of the system
+   * @dev Allow developers to claim their tokens
+   * @param delegate The address of the delegate developer
+   * @param level The level the developer is at
+   * @param currentEra The currentEra of the developer
    */
-  function getDevelopersAddress() public view returns (address[] memory) {
-    return developersAddress;
+  function approve(
+    address delegate,
+    uint256 level,
+    uint256 currentEra
+  ) public override mustBeAllowedCaller {
+    require(canApprove(currentEra), "You can't approve yet");
+
+    uint256 devTokens = tokens(level, currentEra);
+
+    sacToken.approveWith(delegate, devTokens);
   }
 
-  /**
-   * @dev Add a new develop to the pool
-   * @param _address the address of the developer
-   */
-  function addDeveloper(address _address) public onlyOwner {
-    uint256 _currentEra = currentContractEra();
-    developers[_address] = Developer(_address, 1, _currentEra, block.timestamp);
-    upLevels(_currentEra);
-    developersCount++;
-    developersAddress.push(_address);
-  }
-
-  /**
-   * @dev Increment the levels + 1 per era always that a developer is added or the level is up
-   * @param _fromEra the era of developer
-   */
-  function upLevels(uint256 _fromEra) internal {
-    uint256[18] memory _levels = levelsSumPerEra;
-    uint256 _eraMax = eraMax;
-
-    for (uint256 i = _fromEra - 1; i < _eraMax; i++) {
-      _levels[i]++;
-    }
-
-    levelsSumPerEra = _levels;
-  }
-
-  /**
-   * @dev Decrement the levels of the undo developer
-   * @param _fromEra the era of developer
-   */
-  function downLevels(uint256 _fromEra, Developer memory developer) internal {
-    uint256[18] memory _levels = levelsSumPerEra;
-    uint256 _eraMax = eraMax;
-
-    for (uint256 i = _fromEra - 1; i < _eraMax; i++) {
-      _levels[i] -= developer.level;
-    }
-
-    levelsSumPerEra = _levels;
-  }
-
-  /**
-   * @dev Increment the level of the develop
-   * @param _address the address of the developer
-   */
-  function addLevel(address _address) public onlyOwner {
-    Developer memory developer = getDeveloper(_address);
-
-    developers[_address].level++;
-    upLevels(developer.currentEra);
-  }
-
-  /**
-   * @dev Set to zero the level of the develop
-   * @param _address the address of the developer
-   */
-  function undoLevel(address _address) public onlyOwner {
-    Developer memory developer = getDeveloper(_address);
-    downLevels(developer.currentEra, developer);
-    developers[_address].level = 0;
-  }
-
-  /**
-   * @dev Allow the developer to approve tokens from DeveloperPool address. DeveloperPool address must have tokens in SAC TOKEN
-   * TODO Check external code call - EXTCALL
-   */
-  function approve() public override mustBeAbleToApprove returns (bool) {
-    Developer memory developer = getDeveloper(msg.sender);
-
-    uint256 tokens = calcTokens(developer.level, developer.currentEra);
-
-    sacToken.approveWith(msg.sender, tokens);
-
-    setEraMetrics(developer.currentEra, tokens);
-
-    developerNextEra();
-
-    if (canApprove(developer.currentEra + 1)) approve();
-
+  //TODO: Implement withdraw method (pool and sacToken)
+  function withDraw() public pure override returns (bool) {
     return true;
   }
 
   /**
-   * @dev Add metrics actions to eras. The metrics are numbers of tokens and developers.
-   * @param _era The current era that the develop approve() tokens
-   * @param _tokens How much tokens the win to this era
-   */
-  function setEraMetrics(uint256 _era, uint256 _tokens) internal {
-    uint256 oneDev = 1;
-    Era memory newEra = Era(
-      _era,
-      _tokens.add(eras[_era].tokens),
-      oneDev.add(eras[_era].developers)
-    );
-    eras[_era] = newEra;
-  }
-
-  /**
-   * @dev Allow the dev withdraw tokens from DeveloperPool address to his address
-   * TODO Check external code call - EXTCALL
-   */
-  function withDraw() public override returns (bool) {
-    sacToken.transferFrom(address(this), msg.sender, allowance());
-    return true;
-  }
-
-  /**
-   * @dev Show how much tokens the developer can withdraw from DeveloperPool address
-   * TODO Check external code call - EXTCALL
+   * @dev Returns the amount of tokens a developer can claim
    */
   function allowance() public view override returns (uint256) {
     return sacToken.allowance(address(this), msg.sender);
   }
 
   /**
-   * @dev Increment a new era to a developer. This funcions called when the developer approve tokens
+   * @dev Returns how much tokens the developer has
+   * @param tokenOwner The address of the developer
    */
-  function developerNextEra() internal {
-    developers[msg.sender].currentEra++;
-  }
-
-  function currentDeveloper() internal view returns (Developer memory) {
-    return developers[msg.sender];
+  function balanceOf(address tokenOwner) public view returns (uint256) {
+    return sacToken.balanceOf(tokenOwner);
   }
 
   /**
-   * @dev Calc how much tokens the dev can approve in some era
-   * @param _level The level of the developer
-   * @param _era Era to calc in
+   * @dev Returns how much tokens the contract has
    */
-  function calcTokens(uint256 _level, uint256 _era) internal view returns (uint256) {
-    uint256 _levelsSum = levelsSumPerEra[_era - 1];
-    if (_levelsSum == 0) return 0;
-    return _level.mul((tokensPerEra.div(_levelsSum)));
+  function balance() public view returns (uint256) {
+    return balanceOf(address(this));
   }
 
-  // MODIFIERS
+  /**
+   * @dev Allow add new level to eras
+   * @param fromEra The era to start adding levels
+   */
+  function addLevel(uint256 fromEra) public mustBeAllowedCaller {
+    upLevels(fromEra);
+  }
 
-  modifier mustBeAbleToApprove() {
-    require(canApprove(currentDeveloper().currentEra), "You can't withdraw yet");
-    _;
+  /**
+   * @dev Allow remove levels from eras
+   * @param fromEra The era to start removing levels
+   * @param levels The amount of levels to remove
+   */
+  function removeLevel(uint256 fromEra, uint256 levels) public mustBeAllowedCaller {
+    downLevels(fromEra, levels);
+  }
+
+  /**
+   * @dev Calc the amount of tokens a developer can claim
+   * @param level The level of the developer
+   * @param currentEra The current era of the developer
+   */
+  function tokens(uint256 level, uint256 currentEra) internal view returns (uint256) {
+    uint256 levels = eras[currentEra].levels;
+    if (levels == 0) return 0;
+
+    return level.mul((TOKENS_PER_ERA.div(levels)));
+  }
+
+  /**
+   * @dev Increase the amount of levels in eras
+   * @param fromEra The era to start adding levels
+   */
+  function upLevels(uint256 fromEra) internal {
+    for (uint256 i = fromEra; i <= ERAS; i++) {
+      eras[i].levels++;
+    }
+  }
+
+  /**
+   * @dev Decrease the amount of levels in eras
+   * @param fromEra The era to start removing levels
+   */
+  function downLevels(uint256 fromEra, uint256 levels) internal {
+    require(eras[fromEra].levels >= levels, "Not enough levels to remove");
+
+    for (uint256 i = fromEra; i <= ERAS; i++) {
+      eras[i].levels -= levels;
+    }
   }
 }

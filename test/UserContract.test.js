@@ -40,7 +40,7 @@ contract("UserContract", (accounts) => {
 
   context("when adding a user", () => {
     context("with allowed caller", () => {
-      context("when the user not exists", () => {
+      context("when the user don't exist", () => {
         it("should add a user", async () => {
           await addUser(user1Address, userTypes.Producer, owner);
           const user = await instance.getUser(user1Address);
@@ -89,7 +89,7 @@ contract("UserContract", (accounts) => {
     });
   });
   
-  context("when don't has users", () => {
+  context("when don't have users", () => {
     it("should usersCount be zero", async () => {
       const usersCount = await instance.usersCount();
   

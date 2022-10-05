@@ -62,7 +62,7 @@ contract("ActivistContract", (accounts) => {
         });
       });
 
-      context("when activist don't exists", () => {
+      context("when activist don't exist", () => {
         it("should create activist", async () => {
           await addActivist("Activist A", activ1Address);
           await addActivist("Activist B", activ2Address);

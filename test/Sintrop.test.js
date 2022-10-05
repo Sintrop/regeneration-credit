@@ -5,6 +5,8 @@ const SacToken = artifacts.require("SacToken");
 const UserContract = artifacts.require("UserContract");
 const ActivistContract = artifacts.require("ActivistContract");
 const ProducerContract = artifacts.require("ProducerContract");
+const ResearcherContract = artifacts.require("ResearcherContract");
+
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
@@ -13,7 +15,8 @@ contract("Sintrop", (accounts) => {
   let userContract;
   let activistContract;
   let producerContract;
-  let [ownerAddress, producerAddress, producer2Address, activistAddress, activist2Address] =
+  let researcherContract;
+  let [ownerAddress, producerAddress, producer2Address, activistAddress, activist2Address, resea1Address] =
     accounts;
   const STATUS = {
     open: 0,
@@ -48,15 +51,30 @@ contract("Sintrop", (accounts) => {
     );
   };
 
-  const addCategory = async (name) => {
+  const addResearcher = async (name, address) => {
+    await researcherContract.addResearcher(
+      name,
+      "111.111.111-00",
+      "CPF",
+      "Brazil",
+      "SP",
+      "Jundiai",
+      "135465-005",
+      {from: address}
+    );
+  };
+
+  const addCategory = async (name, from) => {
     await categoryContract.addCategory(
       name,
-      `Está categoria visa avaliar as qualidades do ${name}`,
-      `${name} totalmente sustentável`,
-      `${name} parcialmente sustentável`,
+      `The description of ${name}`,
+      `How activists should evaluate ${name}`,
+      `${name} totally sustainable`,
+      `${name} partially sustainable`,
       `${name} neutro`,
-      `${name} parcialmente não sustentável`,
-      `${name} totalmente não sustentável`
+      `${name} partially not sustainable`,
+      `${name} totally not sustainable`,
+      {from: from}
     );
   };
 
@@ -65,19 +83,19 @@ contract("Sintrop", (accounts) => {
       {
         categoryId: 1,
         isaIndex: 0,
-        report: "Solo A totalmente sustentável",
+        report: "Soil A totally sustainable",
         proofPhoto: "Hash_1"
       },
       {
         categoryId: 2,
         isaIndex: 0,
-        report: "Solo B totalmente sustentável",
+        report: "Soil B totally sustainable",
         proofPhoto: "Hash_2"
       },
       {
         categoryId: 3,
         isaIndex: 1,
-        report: "Solo C totalmente sustentável",
+        report: "Soil C totally sustainable",
         proofPhoto: "Hash_3"
       }
     ];
@@ -114,20 +132,25 @@ contract("Sintrop", (accounts) => {
 
     producerContract = await ProducerContract.new(userContract.address);
     activistContract = await ActivistContract.new(userContract.address);
+    researcherContract = await ResearcherContract.new(userContract.address);
 
     sacToken = await SacToken.new("1500000000000000000000000000");
     isaPool = await IsaPool.new(sacToken.address);
 
-    categoryContract = await CategoryContract.new(isaPool.address);
+    categoryContract = await CategoryContract.new(isaPool.address, researcherContract.address);
     instance = await Sintrop.new(activistContract.address, producerContract.address, 20);
 
     await userContract.newAllowedCaller(activistContract.address);
     await userContract.newAllowedCaller(producerContract.address);
+    await userContract.newAllowedCaller(researcherContract.address);
     await activistContract.newAllowedCaller(instance.address);
     await producerContract.newAllowedCaller(instance.address);
+    await researcherContract.newAllowedUser(resea1Address);
 
     await addProducer("Producer A", producerAddress);
     await addActivist("Activist A", activistAddress);
+    await addResearcher("Researcher 1", resea1Address);
+
   });
 
   context("when producer try request inspection", () => {
@@ -155,7 +178,7 @@ contract("Sintrop", (accounts) => {
         beforeEach(async () => {
           await instance.requestInspection({from: producerAddress});
           await instance.acceptInspection(1, {from: activistAddress});
-          await addCategory("Solo A");
+          await addCategory("Soil A", resea1Address);
 
           const isas = [{
             categoryId: 1,
@@ -316,11 +339,27 @@ contract("Sintrop", (accounts) => {
     });
   });
 
-  context("when activist try accept inspection that don't exists", () => {
+  context("when activist try accept inspection that don't exist", () => {
     it("should return error message", async () => {
       await expectRevert(
         instance.acceptInspection(1, {from: activistAddress}),
-        "This inspection don't exists"
+        "This inspection don't exist"
+      );
+    });
+  });
+
+  context("when activist try realize inspection the same producer", () => {
+    it("should return error message", async () => {
+      await instance.requestInspection({from: producerAddress});
+      await instance.acceptInspection(1, {from: activistAddress});
+      await instance.realizeInspection(1, [], {from: activistAddress});
+
+      await advanceBlock(20);
+      await instance.requestInspection({from: producerAddress});
+
+      await expectRevert(
+        instance.acceptInspection(2, {from: activistAddress}),
+        "Already inspected this producer"
       );
     });
   });
@@ -342,10 +381,10 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
-      await addCategory("Solo B");
-      await addCategory("Solo C");
-      
+      await addCategory("Soil A", resea1Address);
+      await addCategory("Soil B", resea1Address);
+      await addCategory("Soil C", resea1Address);
+
       await realizeInspection(1, isas(), activistAddress);
 
       const inspection = await instance.getInspection(1);
@@ -357,9 +396,9 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
-      await addCategory("Solo B");
-      await addCategory("Solo C");
+      await addCategory("Soil A", resea1Address);
+      await addCategory("Soil B", resea1Address);
+      await addCategory("Soil C", resea1Address);
 
       await realizeInspection(1, isas(), activistAddress);
 
@@ -372,17 +411,17 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
-      await addCategory("Solo B");
-      await addCategory("Solo C");
+      await addCategory("Soil A", resea1Address);
+      await addCategory("Soil B", resea1Address);
+      await addCategory("Soil C", resea1Address);
 
       await realizeInspection(1, isas(), activistAddress);
 
       const isasResponse = await instance.getIsa(1);
       const isas_ = [
-        ["1","0","Solo A totalmente sustentável", "Hash_1"],
-        ["2","0","Solo B totalmente sustentável", "Hash_2"],
-        ["3","1","Solo C totalmente sustentável", "Hash_3"]
+        ["1", "0", "Soil A totally sustainable", "Hash_1"],
+        ["2", "0", "Soil B totally sustainable", "Hash_2"],
+        ["3", "1", "Soil C totally sustainable", "Hash_3"]
       ];
 
       assert.equal(JSON.stringify(isasResponse), JSON.stringify(isas_));
@@ -392,7 +431,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Soil A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -411,7 +450,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Soil A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -430,7 +469,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Soil A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -449,7 +488,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Soil A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -468,7 +507,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Soil A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -487,7 +526,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Soil A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -507,7 +546,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Soil A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -526,7 +565,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Soil A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -545,7 +584,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Soil A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -564,7 +603,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Soil A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -583,7 +622,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Soil A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -602,7 +641,7 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({from: producerAddress});
       await instance.acceptInspection(1, {from: activistAddress});
 
-      await addCategory("Solo A");
+      await addCategory("Soil A", resea1Address);
 
       const isas = [{
         categoryId: 1,
@@ -655,11 +694,11 @@ contract("Sintrop", (accounts) => {
     });
   });
 
-  context("when inspection don't exists and try realize inspection", () => {
+  context("when inspection don't exist and try realize inspection", () => {
     it("should return error message", async () => {
       await expectRevert(
         instance.realizeInspection(1, [], {from: activistAddress}),
-        "This inspection don't exists"
+        "This inspection don't exist"
       );
     });
   });

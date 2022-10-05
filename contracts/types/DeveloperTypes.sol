@@ -3,19 +3,26 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import "./UserTypes.sol";
 
-struct Researcher {
+struct Developer {
   uint256 id;
-  address researcherWallet;
+  address developerWallet;
   UserType userType;
   string name;
   string document;
   string documentType;
-  ResearcherAddress researcherAddress;
+  Level level;
+  UserAddress userAddress;
+  uint256 createdAt;
 }
 
-struct ResearcherAddress {
+struct UserAddress {
   string country;
   string state;
   string city;
   string cep;
+}
+
+struct Level {
+  uint256 level;
+  uint256 currentEra;
 }
