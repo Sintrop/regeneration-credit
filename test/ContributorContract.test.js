@@ -52,7 +52,7 @@ contract("ContributorContract", (accounts) => {
       });
     });
     
-      context("when contributor don't exists", () => {
+      context("when contributor don't exist", () => {
         it("should create contributor", async () => {
           await addContributor("Contributor A", contr1Address);
           await addContributor("Contributor C", contr3Address);
@@ -125,7 +125,7 @@ contract("ContributorContract", (accounts) => {
       assert.equal(contributorExists, true);
     });
 
-    it("it should return false when don't excists", async () => {
+    it("it should return false when don't exist", async () => {
       const contributorExists = await instance.contributorExists(contr1Address);
 
       assert.equal(contributorExists, false);

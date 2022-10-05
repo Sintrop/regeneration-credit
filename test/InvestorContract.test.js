@@ -39,7 +39,7 @@ contract("InvestorContract", (accounts) => {
                 );
             });
 
-            context("when investor don't exists", () => {
+            context("when investor don't exist", () => {
                 it("should create investor", async () => {
                     await addInvestor("Investor A", inv1Address);
                     await addInvestor("Investor B", inv2Address);
@@ -87,7 +87,7 @@ contract("InvestorContract", (accounts) => {
             assert.equal(investors.length, 2);
         });
 
-        it("should return investors equal zero when don't has it", async () => {
+        it("should return investors equal zero when don't have it", async () => {
             const investors = await instance.getInvestors();
 
             assert.equal(investors.length, 0);
@@ -112,7 +112,7 @@ contract("InvestorContract", (accounts) => {
             assert.equal(investorExists, true);
         });
 
-        it("it should return false when don't exists", async () => {
+        it("it should return false when don't exist", async () => {
             const investorExists = await instance.investorExists(inv1Address);
 
             assert.equal(investorExists, false);
