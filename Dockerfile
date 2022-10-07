@@ -30,8 +30,6 @@ RUN npm install
 
 COPY . $INSTALL_PATH
 
-RUN chmod 700 entrypoint.sh
-
 EXPOSE 8545
 EXPOSE 5001
 EXPOSE 8080
