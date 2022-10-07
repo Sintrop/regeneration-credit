@@ -4,7 +4,6 @@ const HDWalletProvider = require("@truffle/hdwallet-provider");
 const privateKey = process.env["PRIVATE_KEY_ACCOUNT_TO_DEPLOY_GOERLI"];
 const infuraKey = process.env["INFURA_API_KEY"];
 
-const provider = new HDWalletProvider(privateKey, `https://goerli.infura.io/v3/${infuraKey}`);
 
 module.exports = {
   networks: {
@@ -15,7 +14,7 @@ module.exports = {
     },
 
     goerli: {
-      provider: () => provider,
+      provider: () => new HDWalletProvider(privateKey, `https://goerli.infura.io/v3/${infuraKey}`),
       network_id: "5",
       gas: 4465030,
       gasPrice: 10000000000,
