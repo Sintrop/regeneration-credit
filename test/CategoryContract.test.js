@@ -344,7 +344,7 @@ contract("CategoryContract", (accounts) => {
           });
         });
 
-        context("when send at least 1 SAC token to vote", () => {
+        context("when dont send tokens to vote", () => {
           it("should return error message", async () => {
             await expectRevert(instance.vote(1, 0), "Send at least 1 SAC Token");
           });
