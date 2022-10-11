@@ -195,15 +195,6 @@ contract("ProducerContract", (accounts) => {
       assert.equal(producer.recentInspection, true);
     });
 
-    it("should success .updateIsaScore when is allowed caller", async () => {
-      await addProducer("Producer A", prod1Address);
-      await instance.updateIsaScore(prod1Address, 50);
-
-      const producer = await instance.getProducer(prod1Address);
-
-      assert.equal(producer.isa.isaScore, 50);
-    });
-    
     it("should success .incrementRequests when is allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
       await instance.incrementRequests(prod1Address);
@@ -232,14 +223,6 @@ contract("ProducerContract", (accounts) => {
       );
     });
 
-    it("should return error .updateIsaScore when is not allowed caller", async () => {
-      await addProducer("Producer A", prod1Address);
-      await expectRevert(
-        instance.updateIsaScore(prod1Address, 50, {from: prod1Address}),
-        "Not allowed caller"
-      );
-    });
-
     it("should return error .incrementRequests when is not allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
       await expectRevert(
@@ -254,6 +237,35 @@ contract("ProducerContract", (accounts) => {
         instance.approveProducerNewTokens(prod1Address, 1000, {from: prod1Address}),
         "Not allowed caller"
       );
+    });
+  });
+
+  describe("#updateIsaScore", () => {
+    context("with allowed user", () => {
+      beforeEach(async () => {
+        await addProducer("Producer A", prod1Address);
+        await instance.updateIsaScore(prod1Address, 50);
+      });
+      
+      it("update isaScore", async () => {
+        await instance.updateIsaScore(prod1Address, 70);
+        const producer = await instance.getProducer(prod1Address);
+
+        assert.equal(producer.isa.isaScore, 120);
+      });
+    });
+
+    context("with not allowed user", () => {
+      beforeEach(async () => {
+        await addProducer("Producer A", prod1Address);
+      });
+
+      it("should return error message", async () => {
+        await expectRevert(
+          instance.updateIsaScore(prod1Address, 50, {from: prod1Address}),
+          "Not allowed caller"
+        );
+      });
     });
   });
 });
