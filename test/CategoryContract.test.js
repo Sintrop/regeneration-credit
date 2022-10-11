@@ -344,18 +344,9 @@ contract("CategoryContract", (accounts) => {
           });
         });
 
-        context("when dont send tokens to vote", () => {
+        context("when send at least 1 SAC token to vote", () => {
           it("should return error message", async () => {
             await expectRevert(instance.vote(1, 0), "Send at least 1 SAC Token");
-          });
-        });
-
-        context("when try to vote more than 100k tokens", () => {
-          it("should return error message", async () => {
-            await expectRevert(
-              instance.vote(1, "100000000000000000001"),
-              "You can't vote more than 100k tokens"
-            );
           });
         });
       });
