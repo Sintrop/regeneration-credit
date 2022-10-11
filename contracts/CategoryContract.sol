@@ -12,7 +12,7 @@ import "./ResearcherContract.sol";
  */
 contract CategoryContract {
   uint256 public constant LIMIT_VOTING = 100000000000000000000000;
-  
+
   mapping(uint256 => Category) public categories;
   mapping(uint256 => uint256) public votes;
   mapping(address => mapping(uint256 => uint256)) public voted;
@@ -126,7 +126,7 @@ contract CategoryContract {
 
   // MODIFIERS
 
-  modifier mustNotExceedLimitVoting(uint256 id, uint256 tokens){
+  modifier mustNotExceedLimitVoting(uint256 id, uint256 tokens) {
     require(voted[msg.sender][id] + tokens <= LIMIT_VOTING, "can't vote more than 100k tokens");
     _;
   }
