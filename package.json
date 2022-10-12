@@ -1,7 +1,8 @@
 {
   "scripts": {
     "solhint": "./node_modules/.bin/solhint -f table contracts/**/**/*.sol",
-    "prettier:solidity": "./node_modules/.bin/prettier --write contracts/**/**/*.sol"
+    "prettier:solidity": "./node_modules/.bin/prettier --write contracts/**/**/*.sol",
+    "prettier:js": "./node_modules/.bin/prettier --write test/**/**/*.js"
   },
   "husky": {
     "hooks": {

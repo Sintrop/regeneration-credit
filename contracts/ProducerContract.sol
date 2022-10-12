@@ -105,7 +105,10 @@ contract ProducerContract is Callable {
     producers[addr].totalRequests++;
   }
 
-  function approveProducerNewTokens(address addr, uint256 numTokens) public mustBeAllowedCaller {
+  function approveProducerNewTokens(address addr, uint256 numTokens)
+    public
+    mustBeAllowedCaller
+  {
     uint256 tokens = producers[addr].tokenApprove.allowed;
     producers[addr].tokenApprove = TokenApprove(tokens += numTokens, false);
   }

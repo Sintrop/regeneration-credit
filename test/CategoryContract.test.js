@@ -24,7 +24,7 @@ contract("CategoryContract", (accounts) => {
       `${name} neutro`,
       `${name} partially not sustainable`,
       `${name} totally not sustainable`,
-      {from: from}
+      { from: from }
     );
   };
 
@@ -37,7 +37,7 @@ contract("CategoryContract", (accounts) => {
       "SP",
       "Jundiai",
       "135465-005",
-      {from: address}
+      { from: address }
     );
   };
 
@@ -71,7 +71,10 @@ contract("CategoryContract", (accounts) => {
     context("When is not a researcher", () => {
       it("should return error message", async () => {
         const name = "Soil";
-        await expectRevert(addCategory(name, user1Address), "Only allowed to researchers");
+        await expectRevert(
+          addCategory(name, user1Address),
+          "Only allowed to researchers"
+        );
       });
     });
 
@@ -128,10 +131,7 @@ contract("CategoryContract", (accounts) => {
       assert.equal(category.createdBy, resea1Address);
       assert.equal(category.name, "Soil");
       assert.equal(category.description, `The description of ${name}`);
-      assert.equal(
-        category.tutorial,
-        `How activists should evaluate ${name}`
-      );
+      assert.equal(category.tutorial, `How activists should evaluate ${name}`);
       assert.equal(category.totallySustainable, `${name} totally sustainable`);
       assert.equal(category.partiallySustainable, `${name} partially sustainable`);
       assert.equal(category.neutro, `${name} neutro`);
@@ -181,7 +181,7 @@ contract("CategoryContract", (accounts) => {
       context("when user dont has Sac Tokens", () => {
         it("should return error message", async () => {
           await expectRevert(
-            instance.vote(1, 0, {from: user1Address}),
+            instance.vote(1, 0, { from: user1Address }),
             "You don't have tokens to vote"
           );
         });
@@ -195,7 +195,9 @@ contract("CategoryContract", (accounts) => {
 
           context("when vote with 100 tokens", () => {
             beforeEach(async () => {
-              await instance.vote(1, "100000000000000000000", {from: user1Address});
+              await instance.vote(1, "100000000000000000000", {
+                from: user1Address,
+              });
             });
 
             it("should have 100 tokens to category votes", async () => {
@@ -219,12 +221,16 @@ contract("CategoryContract", (accounts) => {
 
           context("when already have voted with 50 tokens", () => {
             beforeEach(async () => {
-              await instance.vote(1, "50000000000000000000", {from: user1Address});
+              await instance.vote(1, "50000000000000000000", {
+                from: user1Address,
+              });
             });
 
             context("when vote with 100 tokens", () => {
               beforeEach(async () => {
-                await instance.vote(1, "100000000000000000000", {from: user1Address});
+                await instance.vote(1, "100000000000000000000", {
+                  from: user1Address,
+                });
               });
 
               it("should have 100 tokens to category votes", async () => {
@@ -263,8 +269,12 @@ contract("CategoryContract", (accounts) => {
             beforeEach(async () => {
               await addCategory("Soil 2", resea1Address);
 
-              await instance.vote(1, "100000000000000000000", {from: user1Address});
-              await instance.vote(2, "50000000000000000000", {from: user1Address});
+              await instance.vote(1, "100000000000000000000", {
+                from: user1Address,
+              });
+              await instance.vote(2, "50000000000000000000", {
+                from: user1Address,
+              });
             });
 
             it("should set amount of tokens that the user voted to category id when vote", async () => {
@@ -306,8 +316,12 @@ contract("CategoryContract", (accounts) => {
             beforeEach(async () => {
               await transferTokensTo(user2Address, "500000000000000000000");
 
-              await instance.vote(1, "100000000000000000000", {from: user1Address});
-              await instance.vote(1, "100000000000000000000", {from: user2Address});
+              await instance.vote(1, "100000000000000000000", {
+                from: user1Address,
+              });
+              await instance.vote(1, "100000000000000000000", {
+                from: user2Address,
+              });
             });
 
             it("category should 200 tokens votes", async () => {
@@ -363,8 +377,8 @@ contract("CategoryContract", (accounts) => {
         beforeEach(async () => {
           await transferTokensTo(user1Address, "500000000000000000000");
 
-          await instance.vote(1, "100000000000000000000", {from: user1Address});
-          await instance.unvote(1, {from: user1Address});
+          await instance.vote(1, "100000000000000000000", { from: user1Address });
+          await instance.unvote(1, { from: user1Address });
         });
 
         it("should decrement votesCount in 1", async () => {
@@ -403,13 +417,13 @@ contract("CategoryContract", (accounts) => {
           await addCategory("Soil 2", resea1Address);
           await transferTokensTo(user1Address, "500000000000000000000");
 
-          await instance.vote(1, "100000000000000000000", {from: user1Address});
-          await instance.vote(2, "50000000000000000000", {from: user1Address});
+          await instance.vote(1, "100000000000000000000", { from: user1Address });
+          await instance.vote(2, "50000000000000000000", { from: user1Address });
         });
 
         context("when unvote category1", () => {
           beforeEach(async () => {
-            await instance.unvote(1, {from: user1Address});
+            await instance.unvote(1, { from: user1Address });
           });
 
           it("should have your tokens back from category1", async () => {
@@ -433,8 +447,8 @@ contract("CategoryContract", (accounts) => {
 
         context("when unvote to category1 and category2", () => {
           beforeEach(async () => {
-            await instance.unvote(1, {from: user1Address});
-            await instance.unvote(2, {from: user1Address});
+            await instance.unvote(1, { from: user1Address });
+            await instance.unvote(2, { from: user1Address });
           });
 
           it("should have your tokens back", async () => {
