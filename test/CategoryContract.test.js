@@ -247,6 +247,18 @@ contract("CategoryContract", (accounts) => {
             });
           });
 
+          context("when try to vote with more than 100k", () => {
+            it("should return error", async () => {
+              const limit = "100000000000000000000000";
+              await addCategory("Solo", resea1Address);
+              await instance.vote(1, "1");
+              await expectRevert(
+                instance.vote(1, limit),
+                "can't vote more than 100k tokens"
+              );
+            });
+          });
+
           context("when voted to category 1 and 2", () => {
             beforeEach(async () => {
               await addCategory("Soil 2", resea1Address);
