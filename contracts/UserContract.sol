@@ -103,6 +103,10 @@ contract UserContract is Ownable, Callable {
     return delations[addr];
   }
 
+  function exists(address addr) public view returns (bool) {
+    return users[addr] != UserType.UNDEFINED;
+  }  
+
   // MODIFIER
 
   modifier mustNotExists(address addr) {
