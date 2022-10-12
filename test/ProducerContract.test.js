@@ -251,7 +251,7 @@ contract("ProducerContract", (accounts) => {
         await addProducer("Producer A", prod1Address);
         await instance.updateIsaScore(prod1Address, 50);
       });
-      
+
       it("update isaScore", async () => {
         await instance.updateIsaScore(prod1Address, 70);
         const producer = await instance.getProducer(prod1Address);
@@ -267,7 +267,7 @@ contract("ProducerContract", (accounts) => {
 
       it("should return error message", async () => {
         await expectRevert(
-          instance.updateIsaScore(prod1Address, 50, {from: prod1Address}),
+          instance.updateIsaScore(prod1Address, 50, { from: prod1Address }),
           "Not allowed caller"
         );
       });
