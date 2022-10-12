@@ -98,7 +98,7 @@ contract ProducerContract is Callable {
   }
 
   function updateIsaScore(address addr, int256 isaScore) public mustBeAllowedCaller {
-    producers[addr].isa.isaScore = isaScore;
+    producers[addr].isa.isaScore += isaScore;
   }
 
   function incrementRequests(address addr) public mustBeAllowedCaller {
