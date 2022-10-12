@@ -33,9 +33,15 @@ contract("UserContract", (accounts) => {
   };
 
   const addDelation = async (denouncedAddress, from) => {
-    await instance.addDelation(denouncedAddress, "title", "testimony", "proofPhoto", {
-      from: from,
-    });
+    await instance.addDelation(
+      denouncedAddress,
+      "title",
+      "testimony",
+      "proofPhoto",
+      {
+        from: from,
+      }
+    );
   };
 
   beforeEach(async () => {
@@ -243,7 +249,10 @@ contract("UserContract", (accounts) => {
       it("should return error message", async () => {
         await addUser(user2Address, userTypes.Producer, owner);
 
-        await expectRevert(addDelation(user1Address, user2Address), "User must be registered");
+        await expectRevert(
+          addDelation(user1Address, user2Address),
+          "User must be registered"
+        );
       });
     });
 
@@ -251,7 +260,10 @@ contract("UserContract", (accounts) => {
       it("should return error message", async () => {
         await addUser(user1Address, userTypes.Producer, owner);
 
-        await expectRevert(addDelation(user1Address, user2Address), "Caller must be registered");
+        await expectRevert(
+          addDelation(user1Address, user2Address),
+          "Caller must be registered"
+        );
       });
     });
   });

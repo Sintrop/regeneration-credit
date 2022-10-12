@@ -112,7 +112,12 @@ contract CategoryContract {
    * @param id the id of a category that receives a vote.
    * @return uint256
    */
-  function unvote(uint256 id) public categoryMustExists(id) mustHaveVoted(id) returns (uint256) {
+  function unvote(uint256 id)
+    public
+    categoryMustExists(id)
+    mustHaveVoted(id)
+    returns (uint256)
+  {
     uint256 tokens = voted[msg.sender][id];
 
     isaPool.transferWith(address(isaPool), msg.sender, tokens);
@@ -127,7 +132,10 @@ contract CategoryContract {
   // MODIFIERS
 
   modifier mustNotExceedLimitVoting(uint256 id, uint256 tokens) {
-    require(voted[msg.sender][id] + tokens <= LIMIT_VOTING, "can't vote more than 100k tokens");
+    require(
+      voted[msg.sender][id] + tokens <= LIMIT_VOTING,
+      "can't vote more than 100k tokens"
+    );
     _;
   }
 
@@ -152,7 +160,10 @@ contract CategoryContract {
   }
 
   modifier requireResearcher() {
-    require(researcherContract.researcherExists(msg.sender), "Only allowed to researchers");
+    require(
+      researcherContract.researcherExists(msg.sender),
+      "Only allowed to researchers"
+    );
     _;
   }
 }

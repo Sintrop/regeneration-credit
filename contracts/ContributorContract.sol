@@ -39,7 +39,12 @@ contract ContributorContract is Registrable {
     uint256 id = contributorsCount + 1;
     UserType userType = UserType.CONTRIBUTOR;
 
-    ContributorAddress memory contributorAddress = ContributorAddress(country, state, city, cep);
+    ContributorAddress memory contributorAddress = ContributorAddress(
+      country,
+      state,
+      city,
+      cep
+    );
 
     Contributor memory contributor = Contributor(
       id,

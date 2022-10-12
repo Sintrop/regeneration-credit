@@ -61,7 +61,10 @@ contract("CategoryContract", (accounts) => {
     await userContract.newAllowedCaller(researcherContract.address);
     await researcherContract.newAllowedUser(resea1Address);
 
-    instance = await CategoryContract.new(isaPool.address, researcherContract.address);
+    instance = await CategoryContract.new(
+      isaPool.address,
+      researcherContract.address
+    );
     await isaPool.newAllowedCaller(instance.address);
 
     await addResearcher("Researcher A", resea1Address);
@@ -71,7 +74,10 @@ contract("CategoryContract", (accounts) => {
     context("When is not a researcher", () => {
       it("should return error message", async () => {
         const name = "Soil";
-        await expectRevert(addCategory(name, user1Address), "Only allowed to researchers");
+        await expectRevert(
+          addCategory(name, user1Address),
+          "Only allowed to researchers"
+        );
       });
     });
 
@@ -130,10 +136,19 @@ contract("CategoryContract", (accounts) => {
       assert.equal(category.description, `The description of ${name}`);
       assert.equal(category.tutorial, `How activists should evaluate ${name}`);
       assert.equal(category.totallySustainable, `${name} totally sustainable`);
-      assert.equal(category.partiallySustainable, `${name} partially sustainable`);
+      assert.equal(
+        category.partiallySustainable,
+        `${name} partially sustainable`
+      );
       assert.equal(category.neutro, `${name} neutro`);
-      assert.equal(category.partiallyNotSustainable, `${name} partially not sustainable`);
-      assert.equal(category.totallyNotSustainable, `${name} totally not sustainable`);
+      assert.equal(
+        category.partiallyNotSustainable,
+        `${name} partially not sustainable`
+      );
+      assert.equal(
+        category.totallyNotSustainable,
+        `${name} totally not sustainable`
+      );
       assert.equal(category.votesCount, 0);
     });
   });
@@ -192,7 +207,9 @@ contract("CategoryContract", (accounts) => {
 
           context("when vote with 100 tokens", () => {
             beforeEach(async () => {
-              await instance.vote(1, "100000000000000000000", { from: user1Address });
+              await instance.vote(1, "100000000000000000000", {
+                from: user1Address,
+              });
             });
 
             it("should have 100 tokens to category votes", async () => {
@@ -216,12 +233,16 @@ contract("CategoryContract", (accounts) => {
 
           context("when already have voted with 50 tokens", () => {
             beforeEach(async () => {
-              await instance.vote(1, "50000000000000000000", { from: user1Address });
+              await instance.vote(1, "50000000000000000000", {
+                from: user1Address,
+              });
             });
 
             context("when vote with 100 tokens", () => {
               beforeEach(async () => {
-                await instance.vote(1, "100000000000000000000", { from: user1Address });
+                await instance.vote(1, "100000000000000000000", {
+                  from: user1Address,
+                });
               });
 
               it("should have 100 tokens to category votes", async () => {
@@ -249,7 +270,10 @@ contract("CategoryContract", (accounts) => {
               const limit = "100000000000000000000000";
               await addCategory("Solo", resea1Address);
               await instance.vote(1, "1");
-              await expectRevert(instance.vote(1, limit), "can't vote more than 100k tokens");
+              await expectRevert(
+                instance.vote(1, limit),
+                "can't vote more than 100k tokens"
+              );
             });
           });
 
@@ -257,8 +281,12 @@ contract("CategoryContract", (accounts) => {
             beforeEach(async () => {
               await addCategory("Soil 2", resea1Address);
 
-              await instance.vote(1, "100000000000000000000", { from: user1Address });
-              await instance.vote(2, "50000000000000000000", { from: user1Address });
+              await instance.vote(1, "100000000000000000000", {
+                from: user1Address,
+              });
+              await instance.vote(2, "50000000000000000000", {
+                from: user1Address,
+              });
             });
 
             it("should set amount of tokens that the user voted to category id when vote", async () => {
@@ -300,8 +328,12 @@ contract("CategoryContract", (accounts) => {
             beforeEach(async () => {
               await transferTokensTo(user2Address, "500000000000000000000");
 
-              await instance.vote(1, "100000000000000000000", { from: user1Address });
-              await instance.vote(1, "100000000000000000000", { from: user2Address });
+              await instance.vote(1, "100000000000000000000", {
+                from: user1Address,
+              });
+              await instance.vote(1, "100000000000000000000", {
+                from: user2Address,
+              });
             });
 
             it("category should 200 tokens votes", async () => {
@@ -447,7 +479,10 @@ contract("CategoryContract", (accounts) => {
 
       context("when dont voted to category", () => {
         it("should return error message", async () => {
-          await expectRevert(instance.unvote(1), "You don't voted to this category");
+          await expectRevert(
+            instance.unvote(1),
+            "You don't voted to this category"
+          );
         });
       });
     });

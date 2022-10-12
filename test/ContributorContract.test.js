@@ -34,7 +34,10 @@ contract("ContributorContract", (accounts) => {
   context("when will create new contributor (.addContributor)", () => {
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(addContributor("Contributor B", contr2Address), "Not allowed user");
+        await expectRevert(
+          addContributor("Contributor B", contr2Address),
+          "Not allowed user"
+        );
       });
     });
 

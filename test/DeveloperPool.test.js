@@ -37,11 +37,18 @@ contract("DeveloperPool", (accounts) => {
 
   beforeEach(async () => {
     const sacToken = await SacToken.new(args.totalSacTokens);
-    instance = await DeveloperPool.new(sacToken.address, args.blocksPerEra, args.eraMax);
+    instance = await DeveloperPool.new(
+      sacToken.address,
+      args.blocksPerEra,
+      args.eraMax
+    );
 
     await instance.newAllowedCaller(owner);
 
-    await sacToken.addContractPool(instance.address, args.totalDeveloperPoolTokens);
+    await sacToken.addContractPool(
+      instance.address,
+      args.totalDeveloperPoolTokens
+    );
   });
 
   context("when deploy contract", () => {
@@ -221,7 +228,10 @@ contract("DeveloperPool", (accounts) => {
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(instance.addLevel(1, { from: dev1Address }), "Not allowed caller");
+        await expectRevert(
+          instance.addLevel(1, { from: dev1Address }),
+          "Not allowed caller"
+        );
       });
     });
   });
@@ -327,14 +337,20 @@ contract("DeveloperPool", (accounts) => {
 
       context("when try remove more levels than era has", () => {
         it("should return error message", async () => {
-          await expectRevert(instance.removeLevel(1, 5), "Not enough levels to remove");
+          await expectRevert(
+            instance.removeLevel(1, 5),
+            "Not enough levels to remove"
+          );
         });
       });
     });
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(instance.removeLevel(1, 1, { from: dev1Address }), "Not allowed caller");
+        await expectRevert(
+          instance.removeLevel(1, 1, { from: dev1Address }),
+          "Not allowed caller"
+        );
       });
     });
   });
@@ -407,7 +423,10 @@ contract("DeveloperPool", (accounts) => {
 
       context("when cant approve", () => {
         it("should return error message", async () => {
-          await expectRevert(instance.approve(dev1Address, 1, 1), "You can't approve yet");
+          await expectRevert(
+            instance.approve(dev1Address, 1, 1),
+            "You can't approve yet"
+          );
         });
       });
     });

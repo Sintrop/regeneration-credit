@@ -116,7 +116,10 @@ contract("ProducerContract", (accounts) => {
     it("should return error when try create same producer", async () => {
       await addProducer("Producer A", prod1Address);
 
-      await expectRevert(addProducer("Producer A", prod1Address), "This producer already exist");
+      await expectRevert(
+        addProducer("Producer A", prod1Address),
+        "This producer already exist"
+      );
     });
   });
 
@@ -251,7 +254,9 @@ contract("ProducerContract", (accounts) => {
     it("should return error .approveProducerNewTokens when is not allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
       await expectRevert(
-        instance.approveProducerNewTokens(prod1Address, 1000, { from: prod1Address }),
+        instance.approveProducerNewTokens(prod1Address, 1000, {
+          from: prod1Address,
+        }),
         "Not allowed caller"
       );
     });

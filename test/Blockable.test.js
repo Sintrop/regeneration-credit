@@ -120,81 +120,90 @@ contract("Blockable", (accounts) => {
       });
     });
 
-    context("when currentContractEra is bigger in one than currentUserEra", () => {
-      context("with currentContractEra = 2 and currentUserEra = 1", () => {
-        beforeEach(async () => {
-          await advanceBlock(params.blocksPerEra + 2);
+    context(
+      "when currentContractEra is bigger in one than currentUserEra",
+      () => {
+        context("with currentContractEra = 2 and currentUserEra = 1", () => {
+          beforeEach(async () => {
+            await advanceBlock(params.blocksPerEra + 2);
+          });
+
+          const currentUserEra = 1;
+
+          it("should can aprove one times", async () => {
+            let canApproveTimes = await instance.canApproveTimes(currentUserEra);
+            canApproveTimes = Math.ceil(canApproveTimes / 10 ** blocksPrecision);
+            assert.equal(canApproveTimes, 1);
+          });
         });
 
-        const currentUserEra = 1;
+        context("with currentContractEra = 5 and currentUserEra = 4", () => {
+          beforeEach(async () => {
+            await advanceBlock(params.blocksPerEra * 4 + 2);
+          });
 
-        it("should can aprove one times", async () => {
-          let canApproveTimes = await instance.canApproveTimes(currentUserEra);
-          canApproveTimes = Math.ceil(canApproveTimes / 10 ** blocksPrecision);
-          assert.equal(canApproveTimes, 1);
+          const currentUserEra = 4;
+
+          it("should can aprove one times", async () => {
+            let canApproveTimes = await instance.canApproveTimes(currentUserEra);
+            canApproveTimes = Math.ceil(canApproveTimes / 10 ** blocksPrecision);
+            assert.equal(canApproveTimes, 1);
+          });
         });
-      });
+      }
+    );
 
-      context("with currentContractEra = 5 and currentUserEra = 4", () => {
-        beforeEach(async () => {
-          await advanceBlock(params.blocksPerEra * 4 + 2);
-        });
+    context(
+      "when currentContractEra is bigger in two than currentUserEra",
+      () => {
+        context("with currentContractEra = 3 and currentUserEra = 1", () => {
+          beforeEach(async () => {
+            await advanceBlock(2 * params.blocksPerEra + 2);
+          });
 
-        const currentUserEra = 4;
+          const currentUserEra = 1;
 
-        it("should can aprove one times", async () => {
-          let canApproveTimes = await instance.canApproveTimes(currentUserEra);
-          canApproveTimes = Math.ceil(canApproveTimes / 10 ** blocksPrecision);
-          assert.equal(canApproveTimes, 1);
-        });
-      });
-    });
-
-    context("when currentContractEra is bigger in two than currentUserEra", () => {
-      context("with currentContractEra = 3 and currentUserEra = 1", () => {
-        beforeEach(async () => {
-          await advanceBlock(2 * params.blocksPerEra + 2);
-        });
-
-        const currentUserEra = 1;
-
-        it("should can aprove 2 times", async () => {
-          let canApproveTimes = await instance.canApproveTimes(currentUserEra);
-          canApproveTimes = Math.ceil(canApproveTimes / 10 ** blocksPrecision);
-          assert.equal(canApproveTimes, 2);
-        });
-      });
-
-      context("with currentContractEra = 10 and currentUserEra = 8", () => {
-        beforeEach(async () => {
-          await advanceBlock(9 * params.blocksPerEra + 2);
+          it("should can aprove 2 times", async () => {
+            let canApproveTimes = await instance.canApproveTimes(currentUserEra);
+            canApproveTimes = Math.ceil(canApproveTimes / 10 ** blocksPrecision);
+            assert.equal(canApproveTimes, 2);
+          });
         });
 
-        const currentUserEra = 8;
+        context("with currentContractEra = 10 and currentUserEra = 8", () => {
+          beforeEach(async () => {
+            await advanceBlock(9 * params.blocksPerEra + 2);
+          });
 
-        it("should can aprove 2 times", async () => {
-          let canApproveTimes = await instance.canApproveTimes(currentUserEra);
-          canApproveTimes = Math.ceil(canApproveTimes / 10 ** blocksPrecision);
-          assert.equal(canApproveTimes, 2);
+          const currentUserEra = 8;
+
+          it("should can aprove 2 times", async () => {
+            let canApproveTimes = await instance.canApproveTimes(currentUserEra);
+            canApproveTimes = Math.ceil(canApproveTimes / 10 ** blocksPrecision);
+            assert.equal(canApproveTimes, 2);
+          });
         });
-      });
-    });
+      }
+    );
 
-    context("when currentContractEra is bigger in five than currentUserEra", () => {
-      context("with currentContractEra = 6 and currentUserEra = 1", () => {
-        beforeEach(async () => {
-          await advanceBlock(5 * params.blocksPerEra + 2);
+    context(
+      "when currentContractEra is bigger in five than currentUserEra",
+      () => {
+        context("with currentContractEra = 6 and currentUserEra = 1", () => {
+          beforeEach(async () => {
+            await advanceBlock(5 * params.blocksPerEra + 2);
+          });
+
+          const currentUserEra = 1;
+
+          it("should can aprove 4 times", async () => {
+            let canApproveTimes = await instance.canApproveTimes(currentUserEra);
+            canApproveTimes = Math.ceil(canApproveTimes / 10 ** blocksPrecision);
+            assert.equal(canApproveTimes, 5);
+          });
         });
-
-        const currentUserEra = 1;
-
-        it("should can aprove 4 times", async () => {
-          let canApproveTimes = await instance.canApproveTimes(currentUserEra);
-          canApproveTimes = Math.ceil(canApproveTimes / 10 ** blocksPrecision);
-          assert.equal(canApproveTimes, 5);
-        });
-      });
-    });
+      }
+    );
   });
 
   context("when call nextApproveIn", () => {

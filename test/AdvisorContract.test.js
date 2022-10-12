@@ -34,7 +34,10 @@ contract("AdvisorContract", (accounts) => {
   context("when will create new advisor (.addAdvisor)", () => {
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(addAdvisor("Advisor B", adv2Address), "Not allowed user");
+        await expectRevert(
+          addAdvisor("Advisor B", adv2Address),
+          "Not allowed user"
+        );
       });
     });
 
@@ -42,7 +45,10 @@ contract("AdvisorContract", (accounts) => {
       context("when advisor exists", () => {
         it("should return error", async () => {
           await addAdvisor("Advisor A", adv1Address);
-          await expectRevert(addAdvisor("Advisor A", adv1Address), "This advisor already exist");
+          await expectRevert(
+            addAdvisor("Advisor A", adv1Address),
+            "This advisor already exist"
+          );
         });
       });
 

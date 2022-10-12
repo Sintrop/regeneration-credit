@@ -33,7 +33,10 @@ contract("ResearcherContract", (accounts) => {
   context("when will create new researcher (.addResearcher)", () => {
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(addResearcher("Reseacher B", resea2Address), "Not allowed user");
+        await expectRevert(
+          addResearcher("Reseacher B", resea2Address),
+          "Not allowed user"
+        );
       });
     });
 
