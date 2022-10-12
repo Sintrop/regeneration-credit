@@ -249,10 +249,7 @@ contract("CategoryContract", (accounts) => {
               const limit = "100000000000000000000000";
               await addCategory("Solo", resea1Address);
               await instance.vote(1, "1");
-              await expectRevert(
-                instance.vote(1, limit),
-                "can't vote more than 100k tokens"
-              );
+              await expectRevert(instance.vote(1, limit), "can't vote more than 100k tokens");
             });
           });
 
