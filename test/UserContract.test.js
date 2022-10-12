@@ -33,15 +33,9 @@ contract("UserContract", (accounts) => {
   };
 
   const addDelation = async (denouncedAddress, from) => {
-    await instance.addDelation(
-      denouncedAddress,
-      "title",
-      "testimony",
-      "proofPhoto",
-      {
-        from: from,
-      }
-    );
+    await instance.addDelation(denouncedAddress, "title", "testimony", "proofPhoto", {
+      from: from,
+    });
   };
 
   beforeEach(async () => {

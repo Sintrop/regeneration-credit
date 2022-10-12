@@ -61,10 +61,7 @@ contract("CategoryContract", (accounts) => {
     await userContract.newAllowedCaller(researcherContract.address);
     await researcherContract.newAllowedUser(resea1Address);
 
-    instance = await CategoryContract.new(
-      isaPool.address,
-      researcherContract.address
-    );
+    instance = await CategoryContract.new(isaPool.address, researcherContract.address);
     await isaPool.newAllowedCaller(instance.address);
 
     await addResearcher("Researcher A", resea1Address);
@@ -136,19 +133,10 @@ contract("CategoryContract", (accounts) => {
       assert.equal(category.description, `The description of ${name}`);
       assert.equal(category.tutorial, `How activists should evaluate ${name}`);
       assert.equal(category.totallySustainable, `${name} totally sustainable`);
-      assert.equal(
-        category.partiallySustainable,
-        `${name} partially sustainable`
-      );
+      assert.equal(category.partiallySustainable, `${name} partially sustainable`);
       assert.equal(category.neutro, `${name} neutro`);
-      assert.equal(
-        category.partiallyNotSustainable,
-        `${name} partially not sustainable`
-      );
-      assert.equal(
-        category.totallyNotSustainable,
-        `${name} totally not sustainable`
-      );
+      assert.equal(category.partiallyNotSustainable, `${name} partially not sustainable`);
+      assert.equal(category.totallyNotSustainable, `${name} totally not sustainable`);
       assert.equal(category.votesCount, 0);
     });
   });
@@ -479,10 +467,7 @@ contract("CategoryContract", (accounts) => {
 
       context("when dont voted to category", () => {
         it("should return error message", async () => {
-          await expectRevert(
-            instance.unvote(1),
-            "You don't voted to this category"
-          );
+          await expectRevert(instance.unvote(1), "You don't voted to this category");
         });
       });
     });

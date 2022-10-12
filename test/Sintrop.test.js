@@ -146,11 +146,7 @@ contract("Sintrop", (accounts) => {
       isaPool.address,
       researcherContract.address
     );
-    instance = await Sintrop.new(
-      activistContract.address,
-      producerContract.address,
-      20
-    );
+    instance = await Sintrop.new(activistContract.address, producerContract.address, 20);
 
     await userContract.newAllowedCaller(activistContract.address);
     await userContract.newAllowedCaller(producerContract.address);
@@ -227,10 +223,7 @@ contract("Sintrop", (accounts) => {
 
   context("when is not producer and try request inspection", () => {
     it("should return message error", async () => {
-      await expectRevert(
-        instance.requestInspection(),
-        "Please register as producer"
-      );
+      await expectRevert(instance.requestInspection(), "Please register as producer");
     });
   });
 
@@ -712,22 +705,19 @@ contract("Sintrop", (accounts) => {
     });
   });
 
-  context(
-    "when activist try realize inspection accepted by other activist",
-    () => {
-      it("should return error message", async () => {
-        await instance.requestInspection({ from: producerAddress });
-        await instance.acceptInspection(1, { from: activistAddress });
+  context("when activist try realize inspection accepted by other activist", () => {
+    it("should return error message", async () => {
+      await instance.requestInspection({ from: producerAddress });
+      await instance.acceptInspection(1, { from: activistAddress });
 
-        await addActivist("Activist B", activist2Address);
+      await addActivist("Activist B", activist2Address);
 
-        await expectRevert(
-          instance.realizeInspection(1, [], { from: activist2Address }),
-          "You not accepted this inspection"
-        );
-      });
-    }
-  );
+      await expectRevert(
+        instance.realizeInspection(1, [], { from: activist2Address }),
+        "You not accepted this inspection"
+      );
+    });
+  });
 
   context("when is not activist and try realize inspection", () => {
     it("should return error message", async () => {

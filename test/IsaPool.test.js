@@ -17,10 +17,7 @@ contract("IsaPool", (accounts) => {
 
     instance = await IsaPool.new(sacToken.address);
 
-    await sacToken.addContractPool(
-      instance.address,
-      "15000000000000000000000000"
-    );
+    await sacToken.addContractPool(instance.address, "15000000000000000000000000");
     await transferTokensTo(user1Address, "500000000000000000000000");
   });
 
@@ -139,11 +136,7 @@ contract("IsaPool", (accounts) => {
     context("when is not a allowed caller", () => {
       it("should return error message", async () => {
         await expectRevert(
-          instance.transferWith(
-            user2Address,
-            instance.address,
-            "1000000000000000000000"
-          ),
+          instance.transferWith(user2Address, instance.address, "1000000000000000000000"),
           "Not allowed caller"
         );
       });
@@ -173,10 +166,7 @@ contract("IsaPool", (accounts) => {
         it("should return error message", async () => {
           await instance.newAllowedCaller(owner);
           await sacToken.removeContractPool(instance.address);
-          await expectRevert(
-            instance.approveWith(owner, 0),
-            "Not a contract pool"
-          );
+          await expectRevert(instance.approveWith(owner, 0), "Not a contract pool");
         });
       });
     });

@@ -61,20 +61,14 @@ contract("DeveloperContract", (accounts) => {
 
     userContract = await UserContract.new();
 
-    instance = await DeveloperContract.new(
-      userContract.address,
-      developerPool.address
-    );
+    instance = await DeveloperContract.new(userContract.address, developerPool.address);
 
     await userContract.newAllowedCaller(instance.address);
     await developerPool.newAllowedCaller(instance.address);
     await instance.newAllowedUser(dev1Address);
     await instance.newAllowedUser(dev2Address);
     await instance.newAllowedUser(owner);
-    await sacToken.addContractPool(
-      developerPool.address,
-      "15000000000000000000000000"
-    );
+    await sacToken.addContractPool(developerPool.address, "15000000000000000000000000");
   });
 
   context("when access developer fields", () => {
@@ -102,10 +96,7 @@ contract("DeveloperContract", (accounts) => {
   context("when will add developer", () => {
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          addDeveloper("Developer C", dev3Address),
-          "Not allowed user"
-        );
+        await expectRevert(addDeveloper("Developer C", dev3Address), "Not allowed user");
       });
     });
 

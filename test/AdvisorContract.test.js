@@ -34,10 +34,7 @@ contract("AdvisorContract", (accounts) => {
   context("when will create new advisor (.addAdvisor)", () => {
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          addAdvisor("Advisor B", adv2Address),
-          "Not allowed user"
-        );
+        await expectRevert(addAdvisor("Advisor B", adv2Address), "Not allowed user");
       });
     });
 
