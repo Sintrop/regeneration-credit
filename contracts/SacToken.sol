@@ -116,7 +116,7 @@ contract SacToken is ERC20, Ownable {
   }
 
   modifier mustHaveSacTokens(address tokenOwner, uint256 numTokens) {
-    require(numTokens <= balances[tokenOwner], "You don't has SAC Tokens");
+    require(numTokens <= balances[tokenOwner], "You don't have SAC Tokens");
     _;
   }
 }

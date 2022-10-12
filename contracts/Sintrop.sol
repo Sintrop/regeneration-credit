@@ -8,7 +8,7 @@ import "./types/InspectionTypes.sol";
 
 /**
  * @title SintropContract
- * @dev Sintrop application to certificated a rural producer
+ * @dev Sintrop application to certificate a rural producer
  */
 contract Sintrop {
   mapping(address => mapping(address => bool)) internal activistInspected;
@@ -210,7 +210,7 @@ contract Sintrop {
   }
 
   /**
-   * @dev Check if an inspections exists in mapping.
+   * @dev Check if an inspection exists in mapping.
    * @param id The id of the inspection that the activist want accept.
    */
   function inspectionExists(uint256 id) public view returns (bool) {

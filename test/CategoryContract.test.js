@@ -17,13 +17,13 @@ contract("CategoryContract", (accounts) => {
   const addCategory = async (name, from) => {
     await instance.addCategory(
       name,
-      `Está categoria visa avaliar as qualidades do ${name}`,
-      `Aqui deve ser descrito como ativistas devem avaliar o ${name}`,
-      `${name} totalmente sustentável`,
-      `${name} parcialmente sustentável`,
+      `The description of ${name}`,
+      `How activists should evaluate ${name}`,
+      `${name} totally sustainable`,
+      `${name} partially sustainable`,
       `${name} neutro`,
-      `${name} parcialmente não sustentável`,
-      `${name} totalmente não sustentável`,
+      `${name} partially not sustainable`,
+      `${name} totally not sustainable`,
       {from: from}
     );
   };
@@ -70,22 +70,22 @@ contract("CategoryContract", (accounts) => {
   describe("#addCategory", () => {
     context("When is not a researcher", () => {
       it("should return error message", async () => {
-        const name = "Solo";
+        const name = "Soil";
         await expectRevert(addCategory(name, user1Address), "Only allowed to researchers");
       });
     });
 
     context("When is a researcher", () => {
       it("should create category", async () => {
-        const name = "Solo";
+        const name = "Soil";
         await addCategory(name, resea1Address);
         const categories = await instance.getCategories();
 
-        assert.equal(categories[0].name, "Solo");
+        assert.equal(categories[0].name, "Soil");
       });
 
       it("should add msg.sender in createdBy", async () => {
-        await addCategory("Solo", resea1Address);
+        await addCategory("Soil", resea1Address);
 
         const category = await instance.categories(1);
 
@@ -93,8 +93,8 @@ contract("CategoryContract", (accounts) => {
       });
 
       it("should increment id of category when created", async () => {
-        await addCategory("Solo", resea1Address);
-        await addCategory("Solo 2", resea1Address);
+        await addCategory("Soil", resea1Address);
+        await addCategory("Soil 2", resea1Address);
 
         const categories = await instance.getCategories();
 
@@ -102,15 +102,15 @@ contract("CategoryContract", (accounts) => {
       });
 
       it("should increment total of categories", async () => {
-        await addCategory("Solo", resea1Address);
-        await addCategory("Solo 2", resea1Address);
+        await addCategory("Soil", resea1Address);
+        await addCategory("Soil 2", resea1Address);
         const categoryCounts = await instance.categoryCounts();
 
         assert.equal(categoryCounts, 2);
       });
 
       it("should create category with votes equal 0", async () => {
-        await addCategory("Solo", resea1Address);
+        await addCategory("Soil", resea1Address);
         const categories = await instance.getCategories();
 
         assert.equal(parseInt(categories[0].votesCount), 0);
@@ -120,31 +120,31 @@ contract("CategoryContract", (accounts) => {
 
   context("When access category fields", () => {
     it("should have fields", async () => {
-      const name = "Solo";
+      const name = "Soil";
       await addCategory(name, resea1Address);
       const category = await instance.categories(1);
 
       assert.equal(category.id, 1);
       assert.equal(category.createdBy, resea1Address);
-      assert.equal(category.name, "Solo");
-      assert.equal(category.description, `Está categoria visa avaliar as qualidades do ${name}`);
+      assert.equal(category.name, "Soil");
+      assert.equal(category.description, `The description of ${name}`);
       assert.equal(
         category.tutorial,
-        `Aqui deve ser descrito como ativistas devem avaliar o ${name}`
+        `How activists should evaluate ${name}`
       );
-      assert.equal(category.totallySustainable, `${name} totalmente sustentável`);
-      assert.equal(category.partiallySustainable, `${name} parcialmente sustentável`);
+      assert.equal(category.totallySustainable, `${name} totally sustainable`);
+      assert.equal(category.partiallySustainable, `${name} partially sustainable`);
       assert.equal(category.neutro, `${name} neutro`);
-      assert.equal(category.partiallyNotSustainable, `${name} parcialmente não sustentável`);
-      assert.equal(category.totallyNotSustainable, `${name} totalmente não sustentável`);
+      assert.equal(category.partiallyNotSustainable, `${name} partially not sustainable`);
+      assert.equal(category.totallyNotSustainable, `${name} totally not sustainable`);
       assert.equal(category.votesCount, 0);
     });
   });
 
   describe("#getCategories", () => {
     it("should return category list", async () => {
-      await addCategory("Solo", resea1Address);
-      await addCategory("Solo2", resea1Address);
+      await addCategory("Soil", resea1Address);
+      await addCategory("Soil2", resea1Address);
       const categories = await instance.getCategories();
 
       assert.equal(categories.length, 2);
@@ -153,8 +153,8 @@ contract("CategoryContract", (accounts) => {
 
   describe("#voted", () => {
     beforeEach(async () => {
-      await addCategory("Solo 1", resea1Address);
-      await addCategory("Solo 2", resea1Address);
+      await addCategory("Soil 1", resea1Address);
+      await addCategory("Soil 2", resea1Address);
     });
 
     it("should start with voted zero categories", async () => {
@@ -169,13 +169,13 @@ contract("CategoryContract", (accounts) => {
   describe("#vote", () => {
     context("when category dont exists", () => {
       it("should return error message", async () => {
-        await expectRevert(instance.vote(1, 0), "This category don't exists");
+        await expectRevert(instance.vote(1, 0), "This category don't exist");
       });
     });
 
     context("when category exists", () => {
       beforeEach(async () => {
-        await addCategory("Solo", resea1Address);
+        await addCategory("Soil", resea1Address);
       });
 
       context("when user dont has Sac Tokens", () => {
@@ -247,9 +247,21 @@ contract("CategoryContract", (accounts) => {
             });
           });
 
+          context("when try to vote with more than 100k", () => {
+            it("should return error", async () => {
+              const limit = "100000000000000000000000";
+              await addCategory("Solo", resea1Address);
+              await instance.vote(1, "1");
+              await expectRevert(
+                instance.vote(1, limit),
+                "can't vote more than 100k tokens"
+              );
+            });
+          });
+
           context("when voted to category 1 and 2", () => {
             beforeEach(async () => {
-              await addCategory("Solo 2", resea1Address);
+              await addCategory("Soil 2", resea1Address);
 
               await instance.vote(1, "100000000000000000000", {from: user1Address});
               await instance.vote(2, "50000000000000000000", {from: user1Address});
@@ -344,7 +356,7 @@ contract("CategoryContract", (accounts) => {
   describe("#unvote", () => {
     context("when category exists", () => {
       beforeEach(async () => {
-        await addCategory("Solo 1", resea1Address);
+        await addCategory("Soil 1", resea1Address);
       });
 
       context("when voted to one category", () => {
@@ -388,7 +400,7 @@ contract("CategoryContract", (accounts) => {
 
       context("when voted to category1 and category2", () => {
         beforeEach(async () => {
-          await addCategory("Solo 2", resea1Address);
+          await addCategory("Soil 2", resea1Address);
           await transferTokensTo(user1Address, "500000000000000000000");
 
           await instance.vote(1, "100000000000000000000", {from: user1Address});

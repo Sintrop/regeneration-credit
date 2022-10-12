@@ -112,7 +112,7 @@ contract("DeveloperContract", (accounts) => {
         });
       });
 
-      context("when developer does not exists", () => {
+      context("when developer does not exist", () => {
         it("should add developer", async () => {
           await addDeveloper("Developer A", dev1Address);
           const developer = await instance.getDeveloper(dev1Address);
@@ -222,7 +222,7 @@ contract("DeveloperContract", (accounts) => {
       assert.equal(developerExists, true);
     });
 
-    it("it should return false when don't excists", async () => {
+    it("it should return false when don't exists", async () => {
       const developerExists = await instance.developerExists(dev1Address);
 
       assert.equal(developerExists, false);
