@@ -17,7 +17,7 @@ contract("ContributorContract", (accounts) => {
       "SP",
       "Jundiai",
       "135465-005",
-      {from: address}
+      { from: address }
     );
   };
 
@@ -25,7 +25,7 @@ contract("ContributorContract", (accounts) => {
     userContract = await UserContract.new();
 
     instance = await ContributorContract.new(userContract.address);
-    
+
     await userContract.newAllowedCaller(instance.address);
     await instance.newAllowedUser(contr1Address);
     await instance.newAllowedUser(contr3Address);
@@ -34,14 +34,11 @@ contract("ContributorContract", (accounts) => {
   context("when will create new contributor (.addContributor)", () => {
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          addContributor("Contributor B", contr2Address),
-          "Not allowed user"
-        );
+        await expectRevert(addContributor("Contributor B", contr2Address), "Not allowed user");
       });
-    })
+    });
 
-    context("when is an allowed user", () => { 
+    context("when is an allowed user", () => {
       context("when contributor exists", () => {
         it("should return error", async () => {
           await addContributor("Contributor A", contr1Address);
@@ -49,9 +46,9 @@ contract("ContributorContract", (accounts) => {
             addContributor("Contributor A", contr1Address),
             "This contributor already exist"
           );
+        });
       });
-    });
-    
+
       context("when contributor don't exist", () => {
         it("should create contributor", async () => {
           await addContributor("Contributor A", contr1Address);
@@ -129,6 +126,6 @@ contract("ContributorContract", (accounts) => {
       const contributorExists = await instance.contributorExists(contr1Address);
 
       assert.equal(contributorExists, false);
-    })
+    });
   });
 });

@@ -12,7 +12,7 @@ contract("Callable", (accounts) => {
 
   it("should return error when .newAllowedCaller and is not owner", async () => {
     await expectRevert(
-      instance.newAllowedCaller(user1Address, {from: user1Address}),
+      instance.newAllowedCaller(user1Address, { from: user1Address }),
       "Ownable: caller is not the owner"
     );
   });
