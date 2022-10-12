@@ -52,7 +52,11 @@ contract Blockable {
     return currentEra <= eraMax;
   }
 
-  function currentUserBlockNumber(uint256 currentUserEra) internal view returns (uint256) {
+  function currentUserBlockNumber(uint256 currentUserEra)
+    internal
+    view
+    returns (uint256)
+  {
     return deployedAt.add(blocksPerEra.mul(currentUserEra));
   }
 

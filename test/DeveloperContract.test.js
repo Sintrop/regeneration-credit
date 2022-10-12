@@ -25,7 +25,7 @@ contract("DeveloperContract", (accounts) => {
       "SP",
       "Jundiai",
       "135465-005",
-      {from: from}
+      { from: from }
     );
   };
 
@@ -238,7 +238,7 @@ contract("DeveloperContract", (accounts) => {
       context("when Developer is in era 1 and contract is in era 2", () => {
         beforeEach(async () => {
           await advanceBlock(developerPoolParams.blocksPerEra + 2);
-          await instance.approve({from: dev1Address});
+          await instance.approve({ from: dev1Address });
         });
 
         it("should add developer to era 2", async () => {
@@ -248,7 +248,7 @@ contract("DeveloperContract", (accounts) => {
         });
 
         it("should can allowance all tokens from era", async () => {
-          let allowance = await developerPool.allowance({from: dev1Address});
+          let allowance = await developerPool.allowance({ from: dev1Address });
 
           let tokensPerEra = 833333000000000000000000;
 
@@ -266,8 +266,8 @@ contract("DeveloperContract", (accounts) => {
         context("when Developers is in era 1 and contract is in era 2", () => {
           beforeEach(async () => {
             await advanceBlock(developerPoolParams.blocksPerEra + 2);
-            await instance.approve({from: dev1Address});
-            await instance.approve({from: dev2Address});
+            await instance.approve({ from: dev1Address });
+            await instance.approve({ from: dev2Address });
           });
 
           it("should add developer1 to era 2", async () => {
@@ -283,7 +283,7 @@ contract("DeveloperContract", (accounts) => {
           });
 
           it("should can allowance 1/2 of tokens from era", async () => {
-            let allowance = await developerPool.allowance({from: dev1Address});
+            let allowance = await developerPool.allowance({ from: dev1Address });
 
             let tokensPerEra = 416666500000000000000000;
 
@@ -291,7 +291,7 @@ contract("DeveloperContract", (accounts) => {
           });
 
           it("should can allowance 1/2 of tokens from era", async () => {
-            let allowance = await developerPool.allowance({from: dev2Address});
+            let allowance = await developerPool.allowance({ from: dev2Address });
 
             let tokensPerEra = 416666500000000000000000;
 
@@ -302,14 +302,14 @@ contract("DeveloperContract", (accounts) => {
 
       context("with different levels", () => {
         beforeEach(async () => {
-          await instance.addLevel(dev1Address, {from: owner});
+          await instance.addLevel(dev1Address, { from: owner });
         });
 
         context("when Developers is in era 1 and contract is in era 2", () => {
           beforeEach(async () => {
             await advanceBlock(developerPoolParams.blocksPerEra + 2);
-            await instance.approve({from: dev1Address});
-            await instance.approve({from: dev2Address});
+            await instance.approve({ from: dev1Address });
+            await instance.approve({ from: dev2Address });
           });
 
           it("should add developer1 to era 2", async () => {
@@ -325,7 +325,7 @@ contract("DeveloperContract", (accounts) => {
           });
 
           it("should developer1 can allowance more tokens from era", async () => {
-            let allowance = await developerPool.allowance({from: dev1Address});
+            let allowance = await developerPool.allowance({ from: dev1Address });
 
             let tokensPerEra = 555555333333333333333332;
 
@@ -333,7 +333,7 @@ contract("DeveloperContract", (accounts) => {
           });
 
           it("should developer2 can allowance less tokens from era", async () => {
-            let allowance = await developerPool.allowance({from: dev2Address});
+            let allowance = await developerPool.allowance({ from: dev2Address });
 
             let tokensPerEra = 277777666666666666666666;
 
@@ -350,13 +350,19 @@ contract("DeveloperContract", (accounts) => {
     });
 
     it("should return error message", async () => {
-      await expectRevert(instance.approve({from: dev1Address}), "You can't approve yet");
+      await expectRevert(
+        instance.approve({ from: dev1Address }),
+        "You can't approve yet"
+      );
     });
   });
 
   context("when non developer try approve tokens", () => {
     it("should return error message", async () => {
-      await expectRevert(instance.approve({from: dev1Address}), "Pool only to developer");
+      await expectRevert(
+        instance.approve({ from: dev1Address }),
+        "Pool only to developer"
+      );
     });
   });
 
@@ -368,23 +374,26 @@ contract("DeveloperContract", (accounts) => {
     context("when can approve only to one era and try approve again", () => {
       beforeEach(async () => {
         await advanceBlock(developerPoolParams.blocksPerEra + 2);
-        await instance.approve({from: dev1Address});
+        await instance.approve({ from: dev1Address });
       });
 
       it("should return error message", async () => {
-        await expectRevert(instance.approve({from: dev1Address}), "You can't approve yet");
+        await expectRevert(
+          instance.approve({ from: dev1Address }),
+          "You can't approve yet"
+        );
       });
     });
 
     context("when can approve to two eras and try approve again", () => {
       beforeEach(async () => {
         await advanceBlock(developerPoolParams.blocksPerEra * 2 + 2);
-        await instance.approve({from: dev1Address});
+        await instance.approve({ from: dev1Address });
       });
 
       it("should can approve in two eras", async () => {
-        await instance.approve({from: dev1Address});
-        let allowance = await developerPool.allowance({from: dev1Address});
+        await instance.approve({ from: dev1Address });
+        let allowance = await developerPool.allowance({ from: dev1Address });
         let tokensPerEra = 1666666000000000000000000;
 
         assert.equal(allowance, tokensPerEra);
@@ -400,7 +409,7 @@ contract("DeveloperContract", (accounts) => {
           await addDeveloper("Developer A", dev1Address);
           await advanceBlock(developerPoolParams.blocksPerEra * 7 + 2);
 
-          await instance.addLevel(dev1Address, {from: owner});
+          await instance.addLevel(dev1Address, { from: owner });
         });
 
         it("should increment levels of the eras from current contract era ahead", async () => {
@@ -458,7 +467,7 @@ contract("DeveloperContract", (accounts) => {
 
       it("should return error message", async () => {
         await expectRevert(
-          instance.addLevel(dev1Address, {from: dev1Address}),
+          instance.addLevel(dev1Address, { from: dev1Address }),
           "Ownable: caller is not the owner"
         );
       });
@@ -472,10 +481,10 @@ contract("DeveloperContract", (accounts) => {
         await addDeveloper("Developer A", dev1Address);
         await advanceBlock(developerPoolParams.blocksPerEra * 7 + 2);
 
-        await instance.addLevel(dev1Address, {from: owner});
-        await instance.addLevel(dev1Address, {from: owner});
+        await instance.addLevel(dev1Address, { from: owner });
+        await instance.addLevel(dev1Address, { from: owner });
 
-        await instance.removeLevel(dev1Address, 1, {from: owner});
+        await instance.removeLevel(dev1Address, 1, { from: owner });
       });
 
       context("when the developer is in era 6", () => {
@@ -540,7 +549,7 @@ contract("DeveloperContract", (accounts) => {
 
       it("should return error message", async () => {
         await expectRevert(
-          instance.removeLevel(dev1Address, 1, {from: dev1Address}),
+          instance.removeLevel(dev1Address, 1, { from: dev1Address }),
           "Ownable: caller is not the owner"
         );
       });
@@ -553,7 +562,7 @@ contract("DeveloperContract", (accounts) => {
 
       it("should return error message", async () => {
         await expectRevert(
-          instance.removeLevel(dev1Address, 5, {from: owner}),
+          instance.removeLevel(dev1Address, 5, { from: owner }),
           "Invalid level to remove"
         );
       });

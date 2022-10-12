@@ -129,7 +129,9 @@ contract Sintrop {
     return true;
   }
 
-  function markAsRealized(Inspection memory inspection, IsaInspection[] memory _isas) internal {
+  function markAsRealized(Inspection memory inspection, IsaInspection[] memory _isas)
+    internal
+  {
     inspection.status = InspectionStatus.INSPECTED;
     inspection.updatedAt = block.timestamp; // solhint-disable-line
     inspection.isaScore = calculateIsa(inspection, _isas);
@@ -261,7 +263,10 @@ contract Sintrop {
   }
 
   modifier requireNoInspectionsOpen() {
-    require(!producerContract.getProducer(msg.sender).recentInspection, "Request OPEN or ACCEPTED");
+    require(
+      !producerContract.getProducer(msg.sender).recentInspection,
+      "Request OPEN or ACCEPTED"
+    );
     _;
   }
 

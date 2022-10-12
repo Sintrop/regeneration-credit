@@ -29,11 +29,13 @@ contract("UserContract", (accounts) => {
   };
 
   const addUser = async (address, userType, caller) => {
-    await instance.addUser(address, userType, {from: caller});
+    await instance.addUser(address, userType, { from: caller });
   };
 
   const addDelation = async (denouncedAddress, from) => {
-    await instance.addDelation(denouncedAddress, "title", "testimony", "proofPhoto", {from: from});
+    await instance.addDelation(denouncedAddress, "title", "testimony", "proofPhoto", {
+      from: from,
+    });
   };
 
   beforeEach(async () => {
@@ -183,14 +185,14 @@ contract("UserContract", (accounts) => {
   context("when adding new allowed caller", () => {
     context("with owner", () => {
       it("should add new allowed caller with sucess when is owner", async () => {
-        await instance.newAllowedCaller(user1Address, {from: owner});
+        await instance.newAllowedCaller(user1Address, { from: owner });
       });
     });
 
     context("without owner", () => {
       it("should return error message when try add new allowed caller and is not owner", async () => {
         await expectRevert(
-          instance.newAllowedCaller(user1Address, {from: user1Address}),
+          instance.newAllowedCaller(user1Address, { from: user1Address }),
           "Ownable: caller is not the owner"
         );
       });
@@ -241,7 +243,10 @@ contract("UserContract", (accounts) => {
       it("should return error message", async () => {
         await addUser(user2Address, userTypes.Producer, owner);
 
-        await expectRevert(addDelation(user1Address, user2Address), "User must be registered");
+        await expectRevert(
+          addDelation(user1Address, user2Address),
+          "User must be registered"
+        );
       });
     });
 
@@ -249,7 +254,10 @@ contract("UserContract", (accounts) => {
       it("should return error message", async () => {
         await addUser(user1Address, userTypes.Producer, owner);
 
-        await expectRevert(addDelation(user1Address, user2Address), "Caller must be registered");
+        await expectRevert(
+          addDelation(user1Address, user2Address),
+          "Caller must be registered"
+        );
       });
     });
   });

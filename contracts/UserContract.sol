@@ -83,7 +83,14 @@ contract UserContract is Ownable, Callable {
   ) public callerMustExists reportedMustExists(addr) {
     uint256 id = delationsCount + 1;
 
-    Delation memory delation = Delation(id, msg.sender, addr, title, testimony, proofPhoto);
+    Delation memory delation = Delation(
+      id,
+      msg.sender,
+      addr,
+      title,
+      testimony,
+      proofPhoto
+    );
 
     delations[addr].push(delation);
     delationsCount++;

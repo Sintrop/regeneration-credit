@@ -17,7 +17,7 @@ contract("ProducerContract", (accounts) => {
       "SP",
       "Jundiai",
       "135465-005",
-      {from: address}
+      { from: address }
     );
   };
 
@@ -29,29 +29,29 @@ contract("ProducerContract", (accounts) => {
     await userContract.newAllowedCaller(instance.address);
     await instance.newAllowedCaller(ownerAddress);
   });
-  context("when access producer fields",() => {
+  context("when access producer fields", () => {
     it("should have fields", async () => {
       await addProducer("Producer A", prod1Address);
       const producer = await instance.getProducer(prod1Address);
 
-      assert.equal(producer.id, "1")
-      assert.equal(producer.producerWallet, prod1Address)
-      assert.equal(producer.userType, 1)
-      assert.equal(producer.name, "Producer A")
-      assert.equal(producer.document, "111.111.111-00")
-      assert.equal(producer.documentType, "CPF")
-      assert.equal(producer.totalRequests, 0)
-      assert.equal(producer.recentInspection, false)
-      assert.equal(producer.isa.isaAverage, "0")
-      assert.equal(producer.isa.isaScore, "0")
-      assert.equal(producer.tokenApprove.allowed, 0)
-      assert.equal(producer.tokenApprove.withdrewToken, false)
+      assert.equal(producer.id, "1");
+      assert.equal(producer.producerWallet, prod1Address);
+      assert.equal(producer.userType, 1);
+      assert.equal(producer.name, "Producer A");
+      assert.equal(producer.document, "111.111.111-00");
+      assert.equal(producer.documentType, "CPF");
+      assert.equal(producer.totalRequests, 0);
+      assert.equal(producer.recentInspection, false);
+      assert.equal(producer.isa.isaAverage, "0");
+      assert.equal(producer.isa.isaScore, "0");
+      assert.equal(producer.tokenApprove.allowed, 0);
+      assert.equal(producer.tokenApprove.withdrewToken, false);
 
-      assert.equal(producer.propertyAddress.country, "Brazil")
-      assert.equal(producer.propertyAddress.state, "SP")
-      assert.equal(producer.propertyAddress.city, "Jundiai")
-      assert.equal(producer.propertyAddress.cep, "135465-005")
-    })
+      assert.equal(producer.propertyAddress.country, "Brazil");
+      assert.equal(producer.propertyAddress.state, "SP");
+      assert.equal(producer.propertyAddress.city, "Jundiai");
+      assert.equal(producer.propertyAddress.cep, "135465-005");
+    });
   });
 
   context("when will create a producer (.addProducer)", () => {
@@ -59,7 +59,7 @@ contract("ProducerContract", (accounts) => {
       await addProducer("Producer A", prod1Address);
       await addProducer("Producer B", prod2Address);
       const producer = await instance.getProducer(prod1Address);
-  
+
       assert.equal(producer.producerWallet, prod1Address);
     });
 
@@ -75,68 +75,71 @@ contract("ProducerContract", (accounts) => {
       await addProducer("Producer A", prod1Address);
       const producer = await instance.getProducer(prod1Address);
 
-      assert.equal(producer.isa.isaAverage, "0")
+      assert.equal(producer.isa.isaAverage, "0");
     });
 
-  it("should be created with isaScore equal zero", async () => {
-    await addProducer("Producer A", prod1Address);
+    it("should be created with isaScore equal zero", async () => {
+      await addProducer("Producer A", prod1Address);
 
-    const producer = await instance.getProducer(prod1Address);
+      const producer = await instance.getProducer(prod1Address);
 
-    assert.equal(producer.isa.isaScore, 0);
-  });
+      assert.equal(producer.isa.isaScore, 0);
+    });
 
-  it("should be created with lastRequestAt equal zero", async () => {
-    await addProducer("Producer A", prod1Address);
+    it("should be created with lastRequestAt equal zero", async () => {
+      await addProducer("Producer A", prod1Address);
 
-    const producer = await instance.getProducer(prod1Address);
+      const producer = await instance.getProducer(prod1Address);
 
-    assert.equal(producer.lastRequestAt, 0);
-  });
+      assert.equal(producer.lastRequestAt, 0);
+    });
 
-  it("should increment producersCount after create producer", async () => {
+    it("should increment producersCount after create producer", async () => {
       await addProducer("Producer A", prod1Address);
       await addProducer("Producer B", prod2Address);
       const producersCount = await instance.producersCount();
 
       assert.equal(producersCount, 2);
     });
-    
-  it("should add created producer in userType contract as a PRODUCER", async () => {
-    await addProducer("Producer A", prod1Address);
 
-    const userType = await userContract.getUser(prod1Address);
-    const PRODUCER = 1;
+    it("should add created producer in userType contract as a PRODUCER", async () => {
+      await addProducer("Producer A", prod1Address);
 
-    assert.equal(userType, PRODUCER);
+      const userType = await userContract.getUser(prod1Address);
+      const PRODUCER = 1;
+
+      assert.equal(userType, PRODUCER);
+    });
   });
-  });
-  
+
   context("when producer alredy exists", () => {
     it("should return error when try create same producer", async () => {
       await addProducer("Producer A", prod1Address);
-  
-      await expectRevert(addProducer("Producer A", prod1Address), "This producer already exist");
+
+      await expectRevert(
+        addProducer("Producer A", prod1Address),
+        "This producer already exist"
+      );
     });
   });
 
   context("when producer don't exist", () => {
     it("should return false when producer don't exist", async () => {
-        const producerExists = await instance.producerExists(prod1Address);
+      const producerExists = await instance.producerExists(prod1Address);
 
-        assert.equal(producerExists, false);
-      });
+      assert.equal(producerExists, false);
+    });
   });
-  
+
   context("when producer exists", () => {
     it("should return true when producer exists", async () => {
-        await addProducer("Producer A", prod1Address);
+      await addProducer("Producer A", prod1Address);
 
-        const producerExists = await instance.producerExists(prod1Address);
+      const producerExists = await instance.producerExists(prod1Address);
 
-        assert.equal(producerExists, true);
-      });
-  });  
+      assert.equal(producerExists, true);
+    });
+  });
 
   context("when can't allow tokens", () => {
     it("should return zero when can't allowed tokens", async () => {
@@ -165,13 +168,13 @@ contract("ProducerContract", (accounts) => {
 
       assert.equal(producers.length, 2);
     });
-    
+
     it("should return producers zero when call getProducers and dont has it", async () => {
       const producers = await instance.getProducers();
 
       assert.equal(producers.length, 0);
     });
-    
+
     it("should return same producer in mapping and array list", async () => {
       await addProducer("Producer A", prod1Address);
       await addProducer("Producer A", prod2Address);
@@ -203,7 +206,7 @@ contract("ProducerContract", (accounts) => {
 
       assert.equal(producer.isa.isaScore, 50);
     });
-    
+
     it("should success .incrementRequests when is allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
       await instance.incrementRequests(prod1Address);
@@ -216,9 +219,9 @@ contract("ProducerContract", (accounts) => {
     it("should success .approveProducerNewTokens when is allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
       await instance.approveProducerNewTokens(prod1Address, 1000);
-  
+
       const producer = await instance.getProducer(prod1Address);
-  
+
       assert.equal(producer.tokenApprove.allowed, 1000);
     });
   });
@@ -227,7 +230,7 @@ contract("ProducerContract", (accounts) => {
     it("should return error .recentInspection when is not allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
       await expectRevert(
-        instance.recentInspection(prod1Address, true, {from: prod1Address}),
+        instance.recentInspection(prod1Address, true, { from: prod1Address }),
         "Not allowed caller"
       );
     });
@@ -235,7 +238,7 @@ contract("ProducerContract", (accounts) => {
     it("should return error .updateIsaScore when is not allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
       await expectRevert(
-        instance.updateIsaScore(prod1Address, 50, {from: prod1Address}),
+        instance.updateIsaScore(prod1Address, 50, { from: prod1Address }),
         "Not allowed caller"
       );
     });
@@ -243,7 +246,7 @@ contract("ProducerContract", (accounts) => {
     it("should return error .incrementRequests when is not allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
       await expectRevert(
-        instance.incrementRequests(prod1Address, {from: prod1Address}),
+        instance.incrementRequests(prod1Address, { from: prod1Address }),
         "Not allowed caller"
       );
     });
@@ -251,7 +254,9 @@ contract("ProducerContract", (accounts) => {
     it("should return error .approveProducerNewTokens when is not allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
       await expectRevert(
-        instance.approveProducerNewTokens(prod1Address, 1000, {from: prod1Address}),
+        instance.approveProducerNewTokens(prod1Address, 1000, {
+          from: prod1Address,
+        }),
         "Not allowed caller"
       );
     });
