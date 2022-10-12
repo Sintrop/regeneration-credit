@@ -24,12 +24,14 @@ contract("IsaPool", (accounts) => {
   describe("#allowance", () => {
     beforeEach(async () => {
       await instance.newAllowedCaller(user2Address);
-      await instance.approveWith(user2Address, "1500000000000000000000", {from: user2Address});
+      await instance.approveWith(user2Address, "1500000000000000000000", {
+        from: user2Address,
+      });
     });
 
     it("should return how much token the user has approved from this pool", async () => {
-      const allowance = await instance.allowance({from: user1Address});
-      const allowance2 = await instance.allowance({from: user2Address});
+      const allowance = await instance.allowance({ from: user1Address });
+      const allowance2 = await instance.allowance({ from: user2Address });
 
       assert.equal(allowance, 0);
       assert.equal(allowance2, 1500000000000000000000);
@@ -71,7 +73,11 @@ contract("IsaPool", (accounts) => {
 
         it("should return error message", async () => {
           await expectRevert(
-            instance.transferWith(user2Address, instance.address, "1000000000000000000000"),
+            instance.transferWith(
+              user2Address,
+              instance.address,
+              "1000000000000000000000"
+            ),
             "Not a contract pool"
           );
         });
@@ -82,7 +88,11 @@ contract("IsaPool", (accounts) => {
           context("when user dont has tokens", () => {
             it("should return error message", async () => {
               await expectRevert(
-                instance.transferWith(user2Address, instance.address, "1000000000000000000000"),
+                instance.transferWith(
+                  user2Address,
+                  instance.address,
+                  "1000000000000000000000"
+                ),
                 "You don't have SAC Tokens"
               );
             });
@@ -90,7 +100,11 @@ contract("IsaPool", (accounts) => {
 
           context("when user has tokens", () => {
             it("should transfer tokens to contract pool address", async () => {
-              await instance.transferWith(user1Address, instance.address, "1000000000000000000000");
+              await instance.transferWith(
+                user1Address,
+                instance.address,
+                "1000000000000000000000"
+              );
 
               const balance = await instance.balance();
               const balanceOf = await instance.balanceOf(user1Address);
@@ -103,7 +117,11 @@ contract("IsaPool", (accounts) => {
 
         context("when contract pool try send tokens to user", () => {
           it("should transfer tokens to user", async () => {
-            await instance.transferWith(instance.address, user1Address, "1000000000000000000000");
+            await instance.transferWith(
+              instance.address,
+              user1Address,
+              "1000000000000000000000"
+            );
 
             const balance = await instance.balance();
             const balanceOf = await instance.balanceOf(user1Address);
@@ -178,7 +196,7 @@ contract("IsaPool", (accounts) => {
     context("when is not owner", () => {
       it("should return error message", async () => {
         await expectRevert(
-          instance.newAllowedCaller(user1Address, {from: user1Address}),
+          instance.newAllowedCaller(user1Address, { from: user1Address }),
           "Ownable: caller is not the owner"
         );
       });

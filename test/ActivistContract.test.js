@@ -34,19 +34,19 @@ contract("ActivistContract", (accounts) => {
       await addActivist("Activist A", activ1Address);
       const activist = await instance.getActivist(activ1Address);
 
-      assert.equal(activist.id, "1")
-      assert.equal(activist.activistWallet, activ1Address)
-      assert.equal(activist.userType, "2")
-      assert.equal(activist.name, "Activist A")
-      assert.equal(activist.document, "111.111.111-00")
-      assert.equal(activist.documentType, "CPF")
-      assert.equal(activist.recentInspection, false)
-      assert.equal(activist.totalInspections, "0")
+      assert.equal(activist.id, "1");
+      assert.equal(activist.activistWallet, activ1Address);
+      assert.equal(activist.userType, "2");
+      assert.equal(activist.name, "Activist A");
+      assert.equal(activist.document, "111.111.111-00");
+      assert.equal(activist.documentType, "CPF");
+      assert.equal(activist.recentInspection, false);
+      assert.equal(activist.totalInspections, "0");
 
-      assert.equal(activist.activistAddress.country, "Brazil")
-      assert.equal(activist.activistAddress.state, "SP")
-      assert.equal(activist.activistAddress.city, "Jundiai")
-      assert.equal(activist.activistAddress.cep, "135465-005")
+      assert.equal(activist.activistAddress.country, "Brazil");
+      assert.equal(activist.activistAddress.state, "SP");
+      assert.equal(activist.activistAddress.city, "Jundiai");
+      assert.equal(activist.activistAddress.cep, "135465-005");
     });
   });
 

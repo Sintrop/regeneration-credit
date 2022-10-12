@@ -14,12 +14,12 @@ contract("Registrable", (accounts) => {
     context("when is not owner", () => {
       it("should return error message", async () => {
         await expectRevert(
-          instance.newAllowedUser(user1Address, {from: user1Address}),
+          instance.newAllowedUser(user1Address, { from: user1Address }),
           "Ownable: caller is not the owner"
         );
       });
-    })
-    
+    });
+
     context("when is the owner", () => {
       it("should add newAllowedUser", async () => {
         await instance.newAllowedUser(owner);

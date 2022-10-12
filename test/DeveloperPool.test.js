@@ -67,14 +67,14 @@ contract("DeveloperPool", (accounts) => {
     context("when access fields", () => {
       it("should have fields", async () => {
         const era = await instance.getEra(1);
-  
+
         assert.equal(era.levels, 0);
         assert.equal(era.tokens, 0);
         assert.equal(era.developers, 0);
         assert.equal(era.developerTokens.length, 0);
       });
-    })
-  })
+    });
+  });
 
   context("when check time to next approve", () => {
     context("when cant approve", () => {
@@ -101,7 +101,7 @@ contract("DeveloperPool", (accounts) => {
   context("#allowance", () => {
     context("when can allowance", () => {
       it("should return zero from DeveloperPool", async () => {
-        const allowance = await instance.allowance({from: dev1Address});
+        const allowance = await instance.allowance({ from: dev1Address });
 
         assert.equal(allowance, 0);
       });
@@ -221,7 +221,10 @@ contract("DeveloperPool", (accounts) => {
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(instance.addLevel(1, {from: dev1Address}), "Not allowed caller");
+        await expectRevert(
+          instance.addLevel(1, { from: dev1Address }),
+          "Not allowed caller"
+        );
       });
     });
   });
@@ -334,7 +337,10 @@ contract("DeveloperPool", (accounts) => {
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(instance.removeLevel(1, 1, {from: dev1Address}), "Not allowed caller");
+        await expectRevert(
+          instance.removeLevel(1, 1, { from: dev1Address }),
+          "Not allowed caller"
+        );
       });
     });
   });
@@ -379,7 +385,7 @@ contract("DeveloperPool", (accounts) => {
           context("when developer level is one", () => {
             it("shoud approve 277777666666666666666666 tokens", async () => {
               await instance.approve(dev1Address, 1, 1);
-              const allowance = await instance.allowance({from: dev1Address});
+              const allowance = await instance.allowance({ from: dev1Address });
 
               assert.equal(allowance, "277777666666666666666666");
             });
@@ -388,7 +394,7 @@ contract("DeveloperPool", (accounts) => {
           context("when developer level is two", () => {
             it("shoud approve 555555333333333333333332 tokens", async () => {
               await instance.approve(dev1Address, 2, 1);
-              const allowance = await instance.allowance({from: dev1Address});
+              const allowance = await instance.allowance({ from: dev1Address });
 
               assert.equal(allowance, "555555333333333333333332");
             });
@@ -397,7 +403,7 @@ contract("DeveloperPool", (accounts) => {
           context("when developer level is three", () => {
             it("shoud approve 833332999999999999999998 tokens", async () => {
               await instance.approve(dev1Address, 3, 1);
-              const allowance = await instance.allowance({from: dev1Address});
+              const allowance = await instance.allowance({ from: dev1Address });
 
               assert.equal(allowance, "833332999999999999999998");
             });
@@ -407,7 +413,10 @@ contract("DeveloperPool", (accounts) => {
 
       context("when cant approve", () => {
         it("should return error message", async () => {
-          await expectRevert(instance.approve(dev1Address, 1, 1), "You can't approve yet");
+          await expectRevert(
+            instance.approve(dev1Address, 1, 1),
+            "You can't approve yet"
+          );
         });
       });
     });
@@ -415,7 +424,7 @@ contract("DeveloperPool", (accounts) => {
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
         await expectRevert(
-          instance.approve(dev1Address, 1, 1, {from: dev1Address}),
+          instance.approve(dev1Address, 1, 1, { from: dev1Address }),
           "Not allowed caller"
         );
       });

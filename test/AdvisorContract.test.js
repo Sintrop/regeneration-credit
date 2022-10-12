@@ -17,7 +17,7 @@ contract("AdvisorContract", (accounts) => {
       "SP",
       "Jundiai",
       "135465-005",
-      {from: address}
+      { from: address }
     );
   };
 
@@ -25,7 +25,7 @@ contract("AdvisorContract", (accounts) => {
     userContract = await UserContract.new();
 
     instance = await AdvisorContract.new(userContract.address);
-    
+
     await userContract.newAllowedCaller(instance.address);
     await instance.newAllowedUser(adv1Address);
     await instance.newAllowedUser(adv3Address);
@@ -34,12 +34,9 @@ contract("AdvisorContract", (accounts) => {
   context("when will create new advisor (.addAdvisor)", () => {
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          addAdvisor("Advisor B", adv2Address),
-          "Not allowed user"
-        );
+        await expectRevert(addAdvisor("Advisor B", adv2Address), "Not allowed user");
       });
-    })
+    });
 
     context("when is an allowed user", () => {
       context("when advisor exists", () => {
@@ -49,8 +46,8 @@ contract("AdvisorContract", (accounts) => {
             addAdvisor("Advisor A", adv1Address),
             "This advisor already exist"
           );
+        });
       });
-    });
 
       context("when advisor don't exists", () => {
         it("should create advisor", async () => {
@@ -129,6 +126,6 @@ contract("AdvisorContract", (accounts) => {
       const advisorExists = await instance.advisorExists(adv1Address);
 
       assert.equal(advisorExists, false);
-    })
+    });
   });
 });
