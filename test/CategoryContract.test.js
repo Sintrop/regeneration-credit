@@ -12,13 +12,7 @@ contract("CategoryContract", (accounts) => {
   let isaPool;
   let userContract;
   let researcherContract;
-  let [
-    msgSender,
-    user1Address,
-    user2Address,
-    resea1Address,
-    resea2Address,
-  ] = accounts;
+  let [msgSender, user1Address, user2Address, resea1Address, resea2Address] = accounts;
 
   const addCategory = async (name, from) => {
     await instance.addCategory(
