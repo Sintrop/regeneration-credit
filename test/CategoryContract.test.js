@@ -191,6 +191,15 @@ contract("CategoryContract", (accounts) => {
         });
       });
 
+      context("when is not a registered user", () => {
+        it("should return error message", async () => {
+          await expectRevert(
+            instance.vote(1, "100000000000000000000"), 
+            "Only registered users"
+          );
+        });
+      });    
+
       context("when user has Sac Tokens", () => {
         context("when send tokens to vote", () => {
           beforeEach(async () => {
@@ -266,9 +275,7 @@ contract("CategoryContract", (accounts) => {
                 from: resea1Address,
               });
               await expectRevert(
-                instance.vote(1, limit, {
-                  from: resea1Address,
-                }),
+                instance.vote(1, limit, {from: resea1Address}),
                 "can't vote more than 100k tokens"
               );
             });
@@ -369,9 +376,7 @@ contract("CategoryContract", (accounts) => {
 
         context("when dont send tokens to vote", () => {
           it("should return error message", async () => {
-            await expectRevert(instance.vote(1, 0, {
-              from: resea1Address,
-            }), "Send at least 1 SAC Token");
+            await expectRevert(instance.vote(1, 0, {from: resea1Address}), "Send at least 1 SAC Token");
           });
         });
       });
