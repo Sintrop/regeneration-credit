@@ -174,5 +174,6 @@ contract CategoryContract {
   modifier requireUserExists() {
     require(userContract.exists(msg.sender), "Only registered users");
     _;
-  }  
+  }
+    
 }
