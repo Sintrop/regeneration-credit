@@ -18,7 +18,6 @@ contract("CategoryContract", (accounts) => {
     user2Address,
     resea1Address,
     resea2Address,
-    resea3Address,
   ] = accounts;
 
   const addCategory = async (name, from) => {
@@ -68,7 +67,6 @@ contract("CategoryContract", (accounts) => {
     await userContract.newAllowedCaller(researcherContract.address);
     await researcherContract.newAllowedUser(resea1Address);
     await researcherContract.newAllowedUser(resea2Address);
-    await researcherContract.newAllowedUser(resea3Address);
 
     instance = await CategoryContract.new(
       isaPool.address,
@@ -79,7 +77,6 @@ contract("CategoryContract", (accounts) => {
 
     await addResearcher("Researcher A", resea1Address);
     await addResearcher("Researcher B", resea2Address);
-    await addResearcher("Researcher C", resea3Address);
   });
 
   describe("#addCategory", () => {
