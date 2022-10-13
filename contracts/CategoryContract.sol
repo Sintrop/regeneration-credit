@@ -25,7 +25,7 @@ contract CategoryContract {
   uint256 public categoryCounts;
   PoolPassiveInterface internal isaPool;
 
-  constructor(    address _isaPoolAddress,    address researcherContractAddress,    address userContractAddress  ) {
+  constructor(address _isaPoolAddress, address researcherContractAddress, address userContractAddress) {
     isaPool = PoolPassiveInterface(_isaPoolAddress);
     researcherContract = ResearcherContract(researcherContractAddress);
     userContract = UserContract(userContractAddress);
