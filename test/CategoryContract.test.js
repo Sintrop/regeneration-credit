@@ -12,7 +12,7 @@ contract("CategoryContract", (accounts) => {
   let isaPool;
   let userContract;
   let researcherContract;
-  let [msgSender, user1Address, user2Address, resea1Address, resea2Address] = accounts;
+  let [msgSender, user1Address, user2Address, resea1Address, resea2Address, resea3Address] = accounts;
 
   const addCategory = async (name, from) => {
     await instance.addCategory(
@@ -61,12 +61,14 @@ contract("CategoryContract", (accounts) => {
     await userContract.newAllowedCaller(researcherContract.address);
     await researcherContract.newAllowedUser(resea1Address);
     await researcherContract.newAllowedUser(resea2Address);
+    await researcherContract.newAllowedUser(resea3Address);
 
     instance = await CategoryContract.new(isaPool.address, researcherContract.address, userContract.address);
     await isaPool.newAllowedCaller(instance.address);
 
     await addResearcher("Researcher A", resea1Address);
     await addResearcher("Researcher B", resea2Address);
+    await addResearcher("Researcher C", resea3Address);
   });
 
   describe("#addCategory", () => {
@@ -271,11 +273,14 @@ contract("CategoryContract", (accounts) => {
             it("should return error", async () => {
               const limit = "100000000000000000000000";
               await addCategory("Solo", resea1Address);
+              await transferTokensTo(resea3Address, "500000000000000000000000");
               await instance.vote(1, "1", {
-                from: resea1Address,
+                from: resea3Address,
               });
               await expectRevert(
-                instance.vote(1, limit, {from: resea1Address}),
+                instance.vote(1, limit, {
+                  from: resea3Address,
+                }),
                 "can't vote more than 100k tokens"
               );
             });
@@ -374,9 +379,10 @@ contract("CategoryContract", (accounts) => {
           });
         });
 
-        context("when dont send tokens to vote", () => {
+        context("when dont send tokens to vote", () => {          
           it("should return error message", async () => {
-            await expectRevert(instance.vote(1, 0, {from: resea1Address}), "Send at least 1 SAC Token");
+            await transferTokensTo(resea3Address, "500000000000000000000000");
+            await expectRevert(instance.vote(1, 0, {from: resea3Address}), "Send at least 1 SAC Token");
           });
         });
       });
