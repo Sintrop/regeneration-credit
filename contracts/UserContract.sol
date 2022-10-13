@@ -105,7 +105,7 @@ contract UserContract is Ownable, Callable {
 
   function exists(address addr) public view returns (bool) {
     return users[addr] != UserType.UNDEFINED;
-  }  
+  }
 
   // MODIFIER
 

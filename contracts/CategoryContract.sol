@@ -19,7 +19,7 @@ contract CategoryContract {
   mapping(address => mapping(uint256 => uint256)) public voted;
 
   ResearcherContract public researcherContract;
-  UserContract public userContract;  
+  UserContract public userContract;
 
   Category public category;
   uint256 public categoryCounts;
@@ -175,5 +175,4 @@ contract CategoryContract {
     require(userContract.exists(msg.sender), "Only registered users");
     _;
   }
-    
 }
