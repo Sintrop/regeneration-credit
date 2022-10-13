@@ -287,13 +287,13 @@ contract("CategoryContract", (accounts) => {
             it("should return error", async () => {
               const limit = "100000000000000000000000";
               await addCategory("Solo", resea1Address);
-              await transferTokensTo(resea3Address, "500000000000000000000000");
+              await transferTokensTo(resea1Address, "500000000000000000000000");
               await instance.vote(1, "1", {
-                from: resea3Address,
+                from: resea1Address,
               });
               await expectRevert(
                 instance.vote(1, limit, {
-                  from: resea3Address,
+                  from: resea1Address,
                 }),
                 "can't vote more than 100k tokens"
               );
@@ -395,9 +395,9 @@ contract("CategoryContract", (accounts) => {
 
         context("when dont send tokens to vote", () => {
           it("should return error message", async () => {
-            await transferTokensTo(resea3Address, "500000000000000000000000");
+            await transferTokensTo(resea1Address, "500000000000000000000000");
             await expectRevert(
-              instance.vote(1, 0, { from: resea3Address }),
+              instance.vote(1, 0, { from: resea1Address }),
               "Send at least 1 SAC Token"
             );
           });
