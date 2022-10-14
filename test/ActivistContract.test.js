@@ -46,7 +46,7 @@ contract("ActivistContract", (accounts) => {
       assert.equal(activist.activistAddress.country, "Brazil");
       assert.equal(activist.activistAddress.state, "SP");
       assert.equal(activist.activistAddress.city, "Jundiai");
-      assert.equal(activist.activistAddress.cep, "135465-005");    
+      assert.equal(activist.activistAddress.cep, "135465-005");
     });
   });
 
