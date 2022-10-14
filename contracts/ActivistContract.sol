@@ -40,7 +40,7 @@ contract ActivistContract is Callable {
     uint256 id = activistsCount + 1;
     UserType userType = UserType.ACTIVIST;
 
-    ActivistAddress memory activistAddress = ActivistAddress(country, state, city, cep);
+    ActivistAddress memory activistAddress = ActivistAddress(country, state, city, cep  );
 
     Activist memory activist = Activist(
       id,
