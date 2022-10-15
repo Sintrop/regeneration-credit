@@ -4,7 +4,6 @@ const HDWalletProvider = require("@truffle/hdwallet-provider");
 const privateKey = process.env["PRIVATE_KEY_ACCOUNT_TO_DEPLOY_GOERLI"];
 const infuraKey = process.env["INFURA_API_KEY"];
 
-
 module.exports = {
   networks: {
     development: {
