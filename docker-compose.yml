@@ -3,6 +3,7 @@ version: '3.6'
 services:
   sintrop-app:
     container_name: SINTROP-APP
+    command: ["sleep", "infinity"]
     build:
       context: .
       dockerfile: Dockerfile
