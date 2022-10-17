@@ -12,6 +12,14 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+  
+env:
+  SAC_TOKENS_TOTAL_TOKENS: "1500000000000000000000000000"
+  DEVELOPER_POOL_BLOCKS_PER_ERA: 10
+  DEVELOPER_POOL_ERA_MAX: 18
+  DEVELOPER_POOL_FUNDS: "15000000000000000000000000"
+  ISA_POOL_FUNDS: 0
+  SINTROP_TIME_BETWEEN_PRODUCER_INSPECTIONS: 1000
 
 jobs:
 
@@ -31,7 +39,7 @@ jobs:
       - name: Instal Ganache
         run: npm install -g ganache-cli
       - name: Run Ganache
-        run: ganache-cli -a 10 -e 200 -q &
+        run: npm run ganache:start -q &
       - name: Install Truffle
         run: npm install truffle -g
       - name: Install Truffle Dependencies
@@ -52,5 +60,7 @@ jobs:
           node-version: '14'
       - name: Install Dependencies
         run: npm install
-      - name: Run Linter
-        run: npx solhint **/*.sol && npx prettier -c test/
+      - name: Run Solhint
+        run: npx solhint **/*.sol
+      - name: Run Prettier
+        run: npx prettier -c test/

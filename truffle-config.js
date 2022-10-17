@@ -9,7 +9,15 @@ module.exports = {
     development: {
       host: "127.0.0.1",
       port: 8545,
-      network_id: "*"
+      network_id: "*",
+    },
+
+    goerli: {
+      provider: () => new HDWalletProvider(privateKey, `https://goerli.infura.io/v3/${infuraKey}`),
+      network_id: "5",
+      gas: 4465030,
+      gasPrice: 10000000000,
+      skipDryRun: true,
     },
   },
   contracts_directory: "./contracts/",
