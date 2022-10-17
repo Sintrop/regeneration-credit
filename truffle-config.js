@@ -1,3 +1,9 @@
+require("dotenv").config({path: __dirname + "/.env"});
+const HDWalletProvider = require("@truffle/hdwallet-provider");
+
+const privateKey = process.env["PRIVATE_KEY_ACCOUNT_TO_DEPLOY_GOERLI"];
+const infuraKey = process.env["INFURA_API_KEY"];
+
 module.exports = {
   networks: {
     development: {
@@ -6,24 +12,24 @@ module.exports = {
       network_id: "*"
     },
   },
-  contracts_directory: './contracts/',
-  contracts_build_directory: './abis/', 
+  contracts_directory: "./contracts/",
+  contracts_build_directory: "./abis/",
   compilers: {
     solc: {
       version: "0.8.2",
-      settings: { 
+      settings: {
         optimizer: {
-          enabled: false,
-          runs: 200 
-        }
+          enabled: true,
+          runs: 200,
+        },
       },
-    }
+    },
   },
   environments: {
     development: {
       ipfs: {
-        address: 'http://127.0.0.1:5001'
-      }
-    }
-  }
+        address: "http://127.0.0.1:5001",
+      },
+    },
+  },
 };
