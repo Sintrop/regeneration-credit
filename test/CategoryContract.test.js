@@ -12,7 +12,7 @@ contract("CategoryContract", (accounts) => {
   let isaPool;
   let userContract;
   let researcherContract;
-  let [msgSender, user1Address, resea1Address] = accounts;
+  let [msgSender, user1Address, user2Address, resea1Address] = accounts;
 
   const addCategory = async (name, from) => {
     await instance.addCategory(
@@ -61,6 +61,7 @@ contract("CategoryContract", (accounts) => {
     await userContract.newAllowedCaller(researcherContract.address);
     await researcherContract.newAllowedUser(resea1Address);
     await researcherContract.newAllowedUser(user1Address);
+    await researcherContract.newAllowedUser(user2Address);
 
     instance = await CategoryContract.new(
       isaPool.address,
@@ -187,6 +188,7 @@ contract("CategoryContract", (accounts) => {
       beforeEach(async () => {
         await addCategory("Soil", resea1Address);
         await addResearcher("Researcher B", user1Address);
+        await addResearcher("Researcher C", user2Address);
       });
 
       context("when user dont has Sac Tokens", () => {
@@ -210,8 +212,8 @@ contract("CategoryContract", (accounts) => {
       context("when user has Sac Tokens", () => {
         context("when send tokens to vote", () => {
           beforeEach(async () => {
-            await transferTokensTo(resea1Address, "500000000000000000000");
             await transferTokensTo(user1Address, "500000000000000000000");
+            await transferTokensTo(user2Address, "500000000000000000000");
           });
 
           context("when vote with 100 tokens", () => {
@@ -341,10 +343,10 @@ contract("CategoryContract", (accounts) => {
           context("when different users vote 100 tokens in same category", () => {
             beforeEach(async () => {
               await instance.vote(1, "100000000000000000000", {
-                from: resea1Address,
+                from: user1Address,
               });
               await instance.vote(1, "100000000000000000000", {
-                from: user1Address,
+                from: user2Address,
               });
             });
 
@@ -355,21 +357,21 @@ contract("CategoryContract", (accounts) => {
             });
 
             it("each user must have your part of votes", async () => {
-              const votes1 = await instance.voted(resea1Address, 1);
-              const votes2 = await instance.voted(user1Address, 1);
+              const votes1 = await instance.voted(user1Address, 1);
+              const votes2 = await instance.voted(user2Address, 1);
 
               assert.equal(votes1, "100000000000000000000");
               assert.equal(votes2, "100000000000000000000");
             });
 
             it("should subtract 100 tokens from user1", async () => {
-              const balanceOf = await isaPool.balanceOf(resea1Address);
+              const balanceOf = await isaPool.balanceOf(user1Address);
 
               assert.equal(balanceOf, "400000000000000000000");
             });
 
             it("should subtract 100 tokens from user2", async () => {
-              const balanceOf = await isaPool.balanceOf(user1Address);
+              const balanceOf = await isaPool.balanceOf(user2Address);
 
               assert.equal(balanceOf, "400000000000000000000");
             });
