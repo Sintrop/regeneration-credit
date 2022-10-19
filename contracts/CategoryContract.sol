@@ -4,6 +4,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 import "./PoolPassiveInterface.sol";
 import "./types/CategoryTypes.sol";
 import "./ResearcherContract.sol";
+import "./UserContract.sol";
 
 /**
  * @author Sintrop
@@ -18,14 +19,20 @@ contract CategoryContract {
   mapping(address => mapping(uint256 => uint256)) public voted;
 
   ResearcherContract public researcherContract;
+  UserContract public userContract;
 
   Category public category;
   uint256 public categoryCounts;
   PoolPassiveInterface internal isaPool;
 
-  constructor(address _isaPoolAddress, address researcherContractAddress) {
+  constructor(
+    address _isaPoolAddress,
+    address researcherContractAddress,
+    address userContractAddress
+  ) {
     isaPool = PoolPassiveInterface(_isaPoolAddress);
     researcherContract = ResearcherContract(researcherContractAddress);
+    userContract = UserContract(userContractAddress);
   }
 
   /**
@@ -92,6 +99,7 @@ contract CategoryContract {
    */
   function vote(uint256 id, uint256 tokens)
     public
+    requireUserExists
     categoryMustExists(id)
     mustHaveSacToken(tokens)
     mustSendSomeSacToken(tokens)
@@ -164,6 +172,11 @@ contract CategoryContract {
       researcherContract.researcherExists(msg.sender),
       "Only allowed to researchers"
     );
+    _;
+  }
+
+  modifier requireUserExists() {
+    require(userContract.exists(msg.sender), "Only registered users");
     _;
   }
 }

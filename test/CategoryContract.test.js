@@ -60,8 +60,14 @@ contract("CategoryContract", (accounts) => {
 
     await userContract.newAllowedCaller(researcherContract.address);
     await researcherContract.newAllowedUser(resea1Address);
+    await researcherContract.newAllowedUser(user1Address);
+    await researcherContract.newAllowedUser(user2Address);
 
-    instance = await CategoryContract.new(isaPool.address, researcherContract.address);
+    instance = await CategoryContract.new(
+      isaPool.address,
+      researcherContract.address,
+      userContract.address
+    );
     await isaPool.newAllowedCaller(instance.address);
 
     await addResearcher("Researcher A", resea1Address);
@@ -169,13 +175,20 @@ contract("CategoryContract", (accounts) => {
   describe("#vote", () => {
     context("when category dont exists", () => {
       it("should return error message", async () => {
-        await expectRevert(instance.vote(1, 0), "This category don't exist");
+        await expectRevert(
+          instance.vote(1, 0, {
+            from: resea1Address,
+          }),
+          "This category don't exist"
+        );
       });
     });
 
     context("when category exists", () => {
       beforeEach(async () => {
         await addCategory("Soil", resea1Address);
+        await addResearcher("Researcher B", user1Address);
+        await addResearcher("Researcher C", user2Address);
       });
 
       context("when user dont has Sac Tokens", () => {
@@ -187,10 +200,20 @@ contract("CategoryContract", (accounts) => {
         });
       });
 
+      context("when is not a registered user", () => {
+        it("should return error message", async () => {
+          await expectRevert(
+            instance.vote(1, "100000000000000000000"),
+            "Only registered users"
+          );
+        });
+      });
+
       context("when user has Sac Tokens", () => {
         context("when send tokens to vote", () => {
           beforeEach(async () => {
             await transferTokensTo(user1Address, "500000000000000000000");
+            await transferTokensTo(user2Address, "500000000000000000000");
           });
 
           context("when vote with 100 tokens", () => {
@@ -257,9 +280,14 @@ contract("CategoryContract", (accounts) => {
             it("should return error", async () => {
               const limit = "100000000000000000000000";
               await addCategory("Solo", resea1Address);
-              await instance.vote(1, "1");
+              await transferTokensTo(user1Address, "500000000000000000000000");
+              await instance.vote(1, "1", {
+                from: user1Address,
+              });
               await expectRevert(
-                instance.vote(1, limit),
+                instance.vote(1, limit, {
+                  from: user1Address,
+                }),
                 "can't vote more than 100k tokens"
               );
             });
@@ -314,8 +342,6 @@ contract("CategoryContract", (accounts) => {
 
           context("when different users vote 100 tokens in same category", () => {
             beforeEach(async () => {
-              await transferTokensTo(user2Address, "500000000000000000000");
-
               await instance.vote(1, "100000000000000000000", {
                 from: user1Address,
               });
@@ -360,7 +386,11 @@ contract("CategoryContract", (accounts) => {
 
         context("when dont send tokens to vote", () => {
           it("should return error message", async () => {
-            await expectRevert(instance.vote(1, 0), "Send at least 1 SAC Token");
+            await transferTokensTo(user1Address, "500000000000000000000000");
+            await expectRevert(
+              instance.vote(1, 0, { from: user1Address }),
+              "Send at least 1 SAC Token"
+            );
           });
         });
       });
@@ -371,6 +401,7 @@ contract("CategoryContract", (accounts) => {
     context("when category exists", () => {
       beforeEach(async () => {
         await addCategory("Soil 1", resea1Address);
+        await addResearcher("Researcher B", user1Address);
       });
 
       context("when voted to one category", () => {
