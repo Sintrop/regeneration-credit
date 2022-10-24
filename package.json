@@ -3,7 +3,7 @@
     "solhint": "./node_modules/.bin/solhint -f table contracts/**/**/*.sol",
     "prettier:solidity": "./node_modules/.bin/prettier --write contracts/**/**/*.sol",
     "prettier:js": "./node_modules/.bin/prettier --write test/**/**/*.js",
-    "ganache:start": "ganache-cli -d -m 'sintrop' -a 10 -e 200 -h 0.0.0.0",
+    "ganache:start": "ganache-cli -d -m 'sintrop' -a 10 -e 200 -i 300 --chainId 5777 -h 0.0.0.0",
     "truffle:migrate": "truffle migrate",
     "truffle:migrate:reset": "truffle migrate --reset",
     "truffle:migrate:goerli": "truffle migrate --network goerli",
