@@ -11,11 +11,14 @@ contract("ProducerContract", (accounts) => {
   const addProducer = async (name, address) => {
     await instance.addProducer(
       name,
+      "photoURL",
       "111.111.111-00",
       "CPF",
       "Brazil",
       "SP",
       "Jundiai",
+      "Rua XV",
+      "Complemento",
       "135465-005",
       { from: address }
     );
@@ -38,6 +41,7 @@ contract("ProducerContract", (accounts) => {
       assert.equal(producer.producerWallet, prod1Address);
       assert.equal(producer.userType, 1);
       assert.equal(producer.name, "Producer A");
+      assert.equal(producer.familyPhoto, "photoURL");
       assert.equal(producer.document, "111.111.111-00");
       assert.equal(producer.documentType, "CPF");
       assert.equal(producer.totalRequests, 0);
@@ -50,6 +54,8 @@ contract("ProducerContract", (accounts) => {
       assert.equal(producer.propertyAddress.country, "Brazil");
       assert.equal(producer.propertyAddress.state, "SP");
       assert.equal(producer.propertyAddress.city, "Jundiai");
+      assert.equal(producer.propertyAddress.street, "Rua XV");
+      assert.equal(producer.propertyAddress.complement, "Complemento");
       assert.equal(producer.propertyAddress.cep, "135465-005");
     });
   });
