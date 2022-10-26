@@ -37,6 +37,8 @@ contract ProducerContract is Callable {
     string memory country,
     string memory state,
     string memory city,
+    string memory street,
+    string memory complement,
     string memory cep
   ) public uniqueProducer {
     UserType userType = UserType.PRODUCER;
@@ -53,7 +55,7 @@ contract ProducerContract is Callable {
       0,
       Isa(0, 0),
       TokenApprove(0, false),
-      PropertyAddress(country, state, city, cep)
+      PropertyAddress(country, state, city, street, complement, cep)
     );
 
     producers[msg.sender] = producer;
