@@ -30,6 +30,7 @@ contract ActivistContract is Callable {
   // TODO Add mustBeAllowedCaller
   function addActivist(
     string memory name,
+    string memory proofPhoto,
     string memory document,
     string memory documentType,
     string memory country,
@@ -47,6 +48,7 @@ contract ActivistContract is Callable {
       msg.sender,
       userType,
       name,
+      proofPhoto,
       document,
       documentType,
       false,
