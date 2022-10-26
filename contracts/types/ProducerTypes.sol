@@ -8,6 +8,7 @@ struct Producer {
   address producerWallet;
   UserType userType;
   string name;
+  string familyPhoto;
   string document;
   string documentType;
   bool recentInspection;
