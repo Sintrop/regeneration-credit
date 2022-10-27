@@ -41,7 +41,7 @@ contract("ProducerContract", (accounts) => {
       assert.equal(producer.producerWallet, prod1Address);
       assert.equal(producer.userType, 1);
       assert.equal(producer.name, "Producer A");
-      assert.equal(producer.familyPhoto, "photoURL");
+      assert.equal(producer.proofPhoto, "photoURL");
       assert.equal(producer.document, "111.111.111-00");
       assert.equal(producer.documentType, "CPF");
       assert.equal(producer.totalRequests, 0);

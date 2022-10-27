@@ -32,7 +32,7 @@ contract ProducerContract is Callable {
    */
   function addProducer(
     string memory name,
-    string memory familyPhoto,
+    string memory proofPhoto,
     string memory document,
     string memory documentType,
     string memory country,
@@ -49,7 +49,7 @@ contract ProducerContract is Callable {
       msg.sender,
       userType,
       name,
-      familyPhoto,
+      proofPhoto,
       document,
       documentType,
       false,
