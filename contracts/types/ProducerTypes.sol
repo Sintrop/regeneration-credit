@@ -9,8 +9,7 @@ struct Producer {
   UserType userType;
   string name;
   string proofPhoto;
-  string document;
-  string documentType;
+  UserDocument userDocument;
   bool recentInspection;
   uint256 totalRequests;
   uint256 lastRequestAt;
@@ -36,4 +35,9 @@ struct PropertyAddress {
   string street;
   string complement;
   string cep;
+}
+
+struct UserDocument {
+  string document;
+  string documentType;
 }
