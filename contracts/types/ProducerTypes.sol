@@ -8,8 +8,8 @@ struct Producer {
   address producerWallet;
   UserType userType;
   string name;
-  string document;
-  string documentType;
+  string proofPhoto;
+  UserDocument userDocument;
   bool recentInspection;
   uint256 totalRequests;
   uint256 lastRequestAt;
@@ -32,5 +32,12 @@ struct PropertyAddress {
   string country;
   string state;
   string city;
+  string street;
+  string complement;
   string cep;
+}
+
+struct UserDocument {
+  string document;
+  string documentType;
 }

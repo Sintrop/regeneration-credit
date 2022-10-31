@@ -8,6 +8,7 @@ struct Activist {
   address activistWallet;
   UserType userType;
   string name;
+  string proofPhoto;
   string document;
   string documentType;
   bool recentInspection;

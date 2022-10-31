@@ -11,6 +11,7 @@ contract("ActivistContract", (accounts) => {
   const addActivist = async (name, address) => {
     await instance.addActivist(
       name,
+      "photoURL",
       "111.111.111-00",
       "CPF",
       "Brazil",
@@ -38,6 +39,7 @@ contract("ActivistContract", (accounts) => {
       assert.equal(activist.activistWallet, activ1Address);
       assert.equal(activist.userType, "2");
       assert.equal(activist.name, "Activist A");
+      assert.equal(activist.proofPhoto, "photoURL");
       assert.equal(activist.document, "111.111.111-00");
       assert.equal(activist.documentType, "CPF");
       assert.equal(activist.recentInspection, false);
