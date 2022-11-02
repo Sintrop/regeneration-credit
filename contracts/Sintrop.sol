@@ -71,7 +71,7 @@ contract Sintrop {
       0,
       block.number,
       block.timestamp,
-      0,      
+      0,
       0
     );
     inspections[inspection.id] = inspection;
