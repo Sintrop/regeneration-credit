@@ -70,6 +70,8 @@ contract Sintrop {
       msg.sender,
       0,
       block.number,
+      block.timestamp,
+      0,      
       0
     );
     inspections[inspection.id] = inspection;
@@ -92,7 +94,7 @@ contract Sintrop {
     require(inspection.status == InspectionStatus.OPEN, "This inspection is not OPEN");
 
     inspection.status = InspectionStatus.ACCEPTED;
-    inspection.updatedAt = block.timestamp; // solhint-disable-line
+    inspection.acceptedAt = block.timestamp; // solhint-disable-line
     inspection.acceptedBy = msg.sender;
     inspections[inspectionId] = inspection;
 
@@ -133,7 +135,7 @@ contract Sintrop {
     internal
   {
     inspection.status = InspectionStatus.INSPECTED;
-    inspection.updatedAt = block.timestamp; // solhint-disable-line
+    inspection.inspectedAt = block.timestamp; // solhint-disable-line
     inspection.isaScore = calculateIsa(inspection, _isas);
     inspections[inspection.id] = inspection;
   }

@@ -22,5 +22,7 @@ struct Inspection {
   address acceptedBy;
   int256 isaScore;
   uint256 createdAt;
-  uint256 updatedAt;
+  uint256 createdAtTimeStamp;
+  uint256 acceptedAt;
+  uint256 inspectedAt;
 }
