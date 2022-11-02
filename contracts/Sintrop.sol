@@ -21,15 +21,18 @@ contract Sintrop {
 
   uint256 public inspectionsCount;
   uint256 internal timeBetweenInspections;
+  uint256 internal timeToExpire;
 
   constructor(
     address activistContractAddress,
     address producerContractAddress,
-    uint256 timeBetweenInspections_
+    uint256 timeBetweenInspections_,
+    uint256 timeToExpire_
   ) {
     activistContract = ActivistContract(activistContractAddress);
     producerContract = ProducerContract(producerContractAddress);
     timeBetweenInspections = timeBetweenInspections_;
+    timeToExpire = timeToExpire_;
   }
 
   /**
@@ -115,6 +118,7 @@ contract Sintrop {
     requireActivist
     requireInspectionExists(inspectionId)
     requireInspectionAccepted(inspectionId)
+    requireNotExpired(inspectionId)
     requireInspectionOwner(inspectionId)
     returns (bool)
   {
@@ -240,6 +244,18 @@ contract Sintrop {
     return canRequest || lastRequestAt == 0;
   }
 
+  function checkExpireData(uint256 inspectionId) internal view returns (bool) {
+    Inspection memory inspection = inspections[inspectionId];
+    uint256 acceptedBlock = inspection.acceptedAt;
+    uint256 blocksToExpire = timeToExpire;
+
+    if (block.number < acceptedBlock + blocksToExpire) {
+      return true;
+    }
+    
+    return false;
+  }
+
   // MODIFIERS
   modifier requireNotInspectedProducer(uint256 inspectionId) {
     Inspection memory inspection = inspections[inspectionId];
@@ -286,6 +302,11 @@ contract Sintrop {
 
   modifier requireInspectionOwner(uint256 inspectionId) {
     require(isActivistOwner(inspectionId), "You not accepted this inspection");
+    _;
+  }
+
+  modifier requireNotExpired(uint256 inspectionId) {
+    require(checkExpireData(inspectionId), "Inspection Expired");
     _;
   }
 }
