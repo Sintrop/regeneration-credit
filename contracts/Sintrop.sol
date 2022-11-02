@@ -72,6 +72,7 @@ contract Sintrop {
       block.number,
       block.timestamp,
       0,
+      0,
       0
     );
     inspections[inspection.id] = inspection;
@@ -94,7 +95,8 @@ contract Sintrop {
     require(inspection.status == InspectionStatus.OPEN, "This inspection is not OPEN");
 
     inspection.status = InspectionStatus.ACCEPTED;
-    inspection.acceptedAt = block.timestamp; // solhint-disable-line
+    inspection.acceptedAt = block.number;
+    inspection.acceptedAtTimeStamp = block.timestamp; // solhint-disable-line
     inspection.acceptedBy = msg.sender;
     inspections[inspectionId] = inspection;
 

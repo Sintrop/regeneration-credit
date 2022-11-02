@@ -24,5 +24,6 @@ struct Inspection {
   uint256 createdAt;
   uint256 createdAtTimeStamp;
   uint256 acceptedAt;
+  uint256 acceptedAtTimeStamp;
   uint256 inspectedAt;
 }
