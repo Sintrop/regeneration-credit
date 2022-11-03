@@ -151,7 +151,12 @@ contract("Sintrop", (accounts) => {
       researcherContract.address,
       userContract.address
     );
-    instance = await Sintrop.new(activistContract.address, producerContract.address, 20);
+    instance = await Sintrop.new(
+      activistContract.address,
+      producerContract.address,
+      20,
+      5
+    );
 
     await userContract.newAllowedCaller(activistContract.address);
     await userContract.newAllowedCaller(producerContract.address);
@@ -374,6 +379,19 @@ contract("Sintrop", (accounts) => {
       await expectRevert(
         instance.acceptInspection(2, { from: activistAddress }),
         "Already inspected this producer"
+      );
+    });
+  });
+
+  context("when activist try to realize expired inspection", () => {
+    it("should return error message", async () => {
+      await instance.requestInspection({ from: producerAddress });
+      await instance.acceptInspection(1, { from: activistAddress });
+
+      await advanceBlock(20);
+      await expectRevert(
+        instance.realizeInspection(1, [], { from: activistAddress }),
+        "Inspection Expired"
       );
     });
   });
