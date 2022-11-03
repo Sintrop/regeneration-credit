@@ -247,14 +247,14 @@ contract Sintrop {
   function checkExpireData(uint256 inspectionId) internal view returns (bool) {
     Inspection memory inspection = inspections[inspectionId];
     uint256 acceptedBlock = inspection.acceptedAt;
-    uint256 blocksToExpire = timeToExpire;
 
-    if (block.number < acceptedBlock + blocksToExpire) {
+    if (block.number < acceptedBlock + timeToExpire) {
       return true;
     }
    
     return false;
   }
+
 
   // MODIFIERS
   modifier requireNotInspectedProducer(uint256 inspectionId) {
