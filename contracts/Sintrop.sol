@@ -252,7 +252,7 @@ contract Sintrop {
     if (block.number < acceptedBlock + blocksToExpire) {
       return true;
     }
-    
+
     return false;
   }
 
