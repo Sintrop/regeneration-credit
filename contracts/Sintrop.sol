@@ -22,6 +22,7 @@ contract Sintrop {
   uint256 public inspectionsCount;
   uint256 internal timeBetweenInspections;
   uint256 internal timeToExpire;
+  uint256 internal activistGiveUps;
 
   constructor(
     address activistContractAddress,
@@ -104,6 +105,7 @@ contract Sintrop {
     inspections[inspectionId] = inspection;
 
     activistContract.recentInspection(msg.sender, true);
+    activistContract.incrementGiveUps(msg.sender);
 
     return true;
   }
@@ -173,6 +175,7 @@ contract Sintrop {
     // Increment actvist inspections and release to carry out new inspections
     activistContract.recentInspection(acceptedBy, false);
     activistContract.incrementRequests(acceptedBy);
+    activistContract.decreaseGiveUps(acceptedBy);
 
     // Increment producer requests and release to carry out new requests
     producerContract.recentInspection(createdBy, false);

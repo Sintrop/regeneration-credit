@@ -338,6 +338,15 @@ contract("Sintrop", (accounts) => {
       assert.equal(inspection.acceptedBy, activistAddress);
     });
 
+    it("should increment activist giveUps by 1", async () => {
+      await instance.requestInspection({ from: producerAddress });
+      await instance.acceptInspection(1, { from: activistAddress });
+
+      const activist = await activistContract.getActivist(activistAddress);
+
+      assert.equal(activist.giveUps, "1");
+    });
+
     it("should set activist recentInspection", async () => {
       await instance.requestInspection({ from: producerAddress });
       await instance.acceptInspection(1, { from: activistAddress });
@@ -422,6 +431,21 @@ contract("Sintrop", (accounts) => {
       const inspection = await instance.getInspection(1);
 
       assert.equal(inspection.status, STATUS.inspected);
+    });
+
+    it("should decrease activist giveUps by 1", async () => {
+      await instance.requestInspection({ from: producerAddress });
+      await instance.acceptInspection(1, { from: activistAddress });
+
+      await addCategory("Soil A", resea1Address);
+      await addCategory("Soil B", resea1Address);
+      await addCategory("Soil C", resea1Address);
+
+      await realizeInspection(1, isas(), activistAddress);
+
+      const activist = await activistContract.getActivist(activistAddress);
+
+      assert.equal(activist.giveUps, "0");
     });
 
     it("should update inspectionList", async () => {

@@ -44,6 +44,7 @@ contract("ActivistContract", (accounts) => {
       assert.equal(activist.documentType, "CPF");
       assert.equal(activist.recentInspection, false);
       assert.equal(activist.totalInspections, "0");
+      assert.equal(activist.giveUps, "0");
 
       assert.equal(activist.activistAddress.country, "Brazil");
       assert.equal(activist.activistAddress.state, "SP");

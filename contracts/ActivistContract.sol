@@ -53,6 +53,7 @@ contract ActivistContract is Callable {
       documentType,
       false,
       0,
+      0,
       activistAddress
     );
 
@@ -101,6 +102,14 @@ contract ActivistContract is Callable {
 
   function incrementRequests(address addr) public mustBeAllowedCaller {
     activists[addr].totalInspections++;
+  }
+
+  function incrementGiveUps(address addr) public mustBeAllowedCaller {
+    activists[addr].giveUps++;
+  }
+
+  function decreaseGiveUps(address addr) public mustBeAllowedCaller {
+    activists[addr].giveUps--;
   }
 
   // MODIFIERS
