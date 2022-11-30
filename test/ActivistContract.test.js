@@ -89,7 +89,7 @@ contract("ActivistContract", (accounts) => {
           const activist = await instance.getActivist(activ1Address);
 
           assert.equal(activist.giveUps, 0);
-        });        
+        });
 
         it("should be created with recentInspection equal false", async () => {
           await addActivist("Activist A", activ1Address);

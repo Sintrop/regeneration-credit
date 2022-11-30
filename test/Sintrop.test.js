@@ -330,13 +330,13 @@ contract("Sintrop", (accounts) => {
       await expectRevert(
         instance.acceptInspection(2, { from: activistAddress }),
         "Can't accept yet"
-        );
+      );
     });
 
     it("should accept inspection with success after timeToExpire", async () => {
       await instance.requestInspection({ from: producerAddress });
       await instance.acceptInspection(1, { from: activistAddress });
-      
+
       await addProducer("Producer B", producer2Address);
       await instance.requestInspection({ from: producer2Address });
 
