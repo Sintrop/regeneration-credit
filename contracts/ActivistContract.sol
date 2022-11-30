@@ -54,7 +54,8 @@ contract ActivistContract is Callable {
       false,
       0,
       0,
-      activistAddress
+      activistAddress,
+      0
     );
 
     activists[msg.sender] = activist;
@@ -110,6 +111,10 @@ contract ActivistContract is Callable {
 
   function decreaseGiveUps(address addr) public mustBeAllowedCaller {
     activists[addr].giveUps--;
+  }
+
+  function lastAcceptedAt(address addr, uint256 blocksNumber) public mustBeAllowedCaller {
+    activists[addr].lastAcceptedAt = blocksNumber;
   }
 
   // MODIFIERS

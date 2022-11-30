@@ -45,6 +45,7 @@ contract("ActivistContract", (accounts) => {
       assert.equal(activist.recentInspection, false);
       assert.equal(activist.totalInspections, "0");
       assert.equal(activist.giveUps, "0");
+      assert.equal(activist.lastAcceptedAt, "0");
 
       assert.equal(activist.activistAddress.country, "Brazil");
       assert.equal(activist.activistAddress.state, "SP");
@@ -81,6 +82,14 @@ contract("ActivistContract", (accounts) => {
 
           assert.equal(activist.totalInspections, 0);
         });
+
+        it("should be created with giveUps equal zero", async () => {
+          await addActivist("Activist A", activ1Address);
+
+          const activist = await instance.getActivist(activ1Address);
+
+          assert.equal(activist.giveUps, 0);
+        });        
 
         it("should be created with recentInspection equal false", async () => {
           await addActivist("Activist A", activ1Address);
@@ -193,7 +202,7 @@ contract("ActivistContract", (accounts) => {
     });
   });
 
-  context("with don't allowed caller", async () => {
+  context("without allowed caller", async () => {
     it("should return error when is not allowed caller", async () => {
       await addActivist("Activist A", activ1Address);
       await expectRevert(

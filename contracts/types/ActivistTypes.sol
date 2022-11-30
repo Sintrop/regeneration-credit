@@ -15,6 +15,7 @@ struct Activist {
   uint256 totalInspections;
   uint256 giveUps;
   ActivistAddress activistAddress;
+  uint256 lastAcceptedAt;
 }
 
 struct ActivistAddress {

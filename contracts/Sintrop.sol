@@ -92,9 +92,11 @@ contract Sintrop {
     requireActivist
     requireInspectionExists(inspectionId)
     requireNotInspectedProducer(inspectionId)
+    requireCanAccept
     returns (bool)
   {
     Inspection memory inspection = inspections[inspectionId];
+    address createdBy = inspection.createdBy;
 
     require(inspection.status == InspectionStatus.OPEN, "This inspection is not OPEN");
 
@@ -105,7 +107,10 @@ contract Sintrop {
     inspections[inspectionId] = inspection;
 
     activistContract.recentInspection(msg.sender, true);
+    producerContract.recentInspection(createdBy, false);
     activistContract.incrementGiveUps(msg.sender);
+
+    activistContract.lastAcceptedAt(msg.sender, block.number);
 
     return true;
   }
@@ -177,8 +182,7 @@ contract Sintrop {
     activistContract.incrementRequests(acceptedBy);
     activistContract.decreaseGiveUps(acceptedBy);
 
-    // Increment producer requests and release to carry out new requests
-    producerContract.recentInspection(createdBy, false);
+    // Increment producer requests
     producerContract.incrementRequests(createdBy);
 
     userInspections[createdBy].push(inspection);
@@ -257,11 +261,20 @@ contract Sintrop {
     return false;
   }
 
-  function calculateBlocksToExpire(uint256 inspectionId) public view returns (uint256) {
+  function calculateBlocksToExpire(uint256 inspectionId) internal view returns (uint256) {
     Inspection memory inspection = inspections[inspectionId];
     uint256 blocksToExpire = inspection.acceptedAt + timeToExpire - block.number;
 
     return blocksToExpire;
+  }
+
+  function canAcceptInspection() internal view returns (bool) {
+    Activist memory activist = activistContract.getActivist(msg.sender);
+    uint256 lastAcceptedAt = activist.lastAcceptedAt;
+
+    bool canAccept = block.number > lastAcceptedAt + timeToExpire;
+
+    return canAccept || lastAcceptedAt == 0;
   }
 
   // MODIFIERS
@@ -315,6 +328,11 @@ contract Sintrop {
 
   modifier requireNotExpired(uint256 inspectionId) {
     require(checkExpireData(inspectionId), "Inspection Expired");
+    _;
+  }
+
+  modifier requireCanAccept() {
+    require(canAcceptInspection(), "Can't accept yet");
     _;
   }
 }

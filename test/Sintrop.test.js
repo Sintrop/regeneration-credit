@@ -155,7 +155,7 @@ contract("Sintrop", (accounts) => {
       activistContract.address,
       producerContract.address,
       20,
-      5
+      15
     );
 
     await userContract.newAllowedCaller(activistContract.address);
@@ -320,6 +320,34 @@ contract("Sintrop", (accounts) => {
   });
 
   context("when activist accept inspection", () => {
+    it("should return error when before timeToExpire", async () => {
+      await instance.requestInspection({ from: producerAddress });
+      await instance.acceptInspection(1, { from: activistAddress });
+
+      await addProducer("Producer B", producer2Address);
+      await instance.requestInspection({ from: producer2Address });
+
+      await expectRevert(
+        instance.acceptInspection(2, { from: activistAddress }),
+        "Can't accept yet"
+        );
+    });
+
+    it("should accept inspection with success after timeToExpire", async () => {
+      await instance.requestInspection({ from: producerAddress });
+      await instance.acceptInspection(1, { from: activistAddress });
+      
+      await addProducer("Producer B", producer2Address);
+      await instance.requestInspection({ from: producer2Address });
+
+      await advanceBlock(20);
+      await instance.acceptInspection(2, { from: activistAddress });
+
+      const inspection = await instance.getInspection(2);
+
+      assert.equal(inspection.status, STATUS.accepted);
+    });
+
     it("should accept inspection with success when is OPEN", async () => {
       await instance.requestInspection({ from: producerAddress });
       await instance.acceptInspection(1, { from: activistAddress });
@@ -410,8 +438,10 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({ from: producerAddress });
       await instance.acceptInspection(1, { from: activistAddress });
 
+      await addActivist("Activist B", activist2Address);
+
       await expectRevert(
-        instance.acceptInspection(1, { from: activistAddress }),
+        instance.acceptInspection(1, { from: activist2Address }),
         "This inspection is not OPEN"
       );
     });
