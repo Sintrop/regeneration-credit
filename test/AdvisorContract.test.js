@@ -11,6 +11,7 @@ contract("AdvisorContract", (accounts) => {
   const addAdvisor = async (name, address) => {
     await instance.addAdvisor(
       name,
+      "photoURL",
       "111.111.111-00",
       "CPF",
       "Brazil",

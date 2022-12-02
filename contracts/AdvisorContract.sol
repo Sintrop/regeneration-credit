@@ -29,6 +29,7 @@ contract AdvisorContract is Registrable {
    */
   function addAdvisor(
     string memory name,
+    string memory proofPhoto,
     string memory document,
     string memory documentType,
     string memory country,
@@ -46,6 +47,7 @@ contract AdvisorContract is Registrable {
       msg.sender,
       userType,
       name,
+      proofPhoto,
       document,
       documentType,
       advisorAddress

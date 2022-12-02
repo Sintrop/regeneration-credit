@@ -8,6 +8,7 @@ struct Researcher {
   address researcherWallet;
   UserType userType;
   string name;
+  string proofPhoto;
   string document;
   string documentType;
   ResearcherAddress researcherAddress;

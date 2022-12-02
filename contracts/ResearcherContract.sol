@@ -29,6 +29,7 @@ contract ResearcherContract is Registrable {
    */
   function addResearcher(
     string memory name,
+    string memory proofPhoto,
     string memory document,
     string memory documentType,
     string memory country,
@@ -44,6 +45,7 @@ contract ResearcherContract is Registrable {
       msg.sender,
       userType,
       name,
+      proofPhoto,
       document,
       documentType,
       ResearcherAddress(country, state, city, cep)
