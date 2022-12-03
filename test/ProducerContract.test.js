@@ -1,11 +1,15 @@
 const ProducerContract = artifacts.require("ProducerContract");
 const UserContract = artifacts.require("UserContract");
+const ProducerPool = artifacts.require("ProducerPool");
+const SacToken = artifacts.require("SacToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
 contract("ProducerContract", (accounts) => {
   let instance;
+  let sacToken;
   let userContract;
+  let producerPool;
   let [ownerAddress, prod1Address, prod2Address] = accounts;
 
   const addProducer = async (name, address) => {
@@ -24,14 +28,55 @@ contract("ProducerContract", (accounts) => {
     );
   };
 
+  advanceBlock = async (blocksNumber) => {
+    for (let i = 0; i < blocksNumber; i++) {
+      let promise = new Promise((resolve, reject) => {
+        web3.currentProvider.send(
+          {
+            jsonrpc: "2.0",
+            method: "evm_mine",
+            id: new Date().getTime(),
+          },
+          (err, result) => {
+            if (err) {
+              return reject(err);
+            }
+            const newBlockHash = web3.eth.getBlock("latest").hash;
+
+            return resolve(newBlockHash);
+          }
+        );
+      });
+    }
+  };
+
+  const producerPoolArgs = {
+    totalTokens: "750000000000000000000000000",
+    halving: 50,
+    totalEras: 50,
+    blocksPerEra: 50,
+  };
+
   beforeEach(async () => {
+    sacToken = await SacToken.new("1500000000000000000000000000");
+
     userContract = await UserContract.new();
 
-    instance = await ProducerContract.new(userContract.address);
+    producerPool = await ProducerPool.new(
+      sacToken.address,
+      producerPoolArgs.halving,
+      producerPoolArgs.totalEras,
+      producerPoolArgs.blocksPerEra
+    );
 
+    instance = await ProducerContract.new(userContract.address, producerPool.address);
+
+    await sacToken.addContractPool(producerPool.address, producerPoolArgs.totalTokens);
     await userContract.newAllowedCaller(instance.address);
     await instance.newAllowedCaller(ownerAddress);
+    await producerPool.newAllowedCaller(instance.address);
   });
+
   context("when access producer fields", () => {
     it("should have fields", async () => {
       await addProducer("Producer A", prod1Address);
@@ -44,12 +89,12 @@ contract("ProducerContract", (accounts) => {
       assert.equal(producer.proofPhoto, "photoURL");
       assert.equal(producer.userDocument.document, "111.111.111-00");
       assert.equal(producer.userDocument.documentType, "CPF");
-      assert.equal(producer.totalRequests, 0);
+      assert.equal(producer.totalInspections, 0);
       assert.equal(producer.recentInspection, false);
       assert.equal(producer.isa.isaAverage, "0");
       assert.equal(producer.isa.isaScore, "0");
-      assert.equal(producer.tokenApprove.allowed, 0);
-      assert.equal(producer.tokenApprove.withdrewToken, false);
+
+      assert.equal(producer.pool.currentEra, 1);
 
       assert.equal(producer.propertyAddress.country, "Brazil");
       assert.equal(producer.propertyAddress.state, "SP");
@@ -74,7 +119,7 @@ contract("ProducerContract", (accounts) => {
 
       const producer = await instance.getProducer(prod1Address);
 
-      assert.equal(producer.totalRequests, 0);
+      assert.equal(producer.totalInspections, 0);
     });
 
     it("should be created with isaAvarage equal zero", async () => {
@@ -147,16 +192,6 @@ contract("ProducerContract", (accounts) => {
     });
   });
 
-  context("when can't allow tokens", () => {
-    it("should return zero when can't allowed tokens", async () => {
-      await addProducer("Producer A", prod1Address);
-
-      const tokensApprove = await instance.getProducerApprove(prod1Address);
-
-      assert.equal(tokensApprove, 0);
-    });
-  });
-
   context("when call getProducer", () => {
     it("should return a producer", async () => {
       await addProducer("Producer A", prod1Address);
@@ -204,22 +239,13 @@ contract("ProducerContract", (accounts) => {
       assert.equal(producer.recentInspection, true);
     });
 
-    it("should success .incrementRequests when is allowed caller", async () => {
+    it("should success .incrementInspections when is allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
-      await instance.incrementRequests(prod1Address);
+      await instance.incrementInspections(prod1Address);
 
       const producer = await instance.getProducer(prod1Address);
 
-      assert.equal(producer.totalRequests, 1);
-    });
-
-    it("should success .approveProducerNewTokens when is allowed caller", async () => {
-      await addProducer("Producer A", prod1Address);
-      await instance.approveProducerNewTokens(prod1Address, 1000);
-
-      const producer = await instance.getProducer(prod1Address);
-
-      assert.equal(producer.tokenApprove.allowed, 1000);
+      assert.equal(producer.totalInspections, 1);
     });
   });
 
@@ -232,50 +258,428 @@ contract("ProducerContract", (accounts) => {
       );
     });
 
-    it("should return error .incrementRequests when is not allowed caller", async () => {
+    it("should return error .incrementInspections when is not allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
       await expectRevert(
-        instance.incrementRequests(prod1Address, { from: prod1Address }),
-        "Not allowed caller"
-      );
-    });
-
-    it("should return error .approveProducerNewTokens when is not allowed caller", async () => {
-      await addProducer("Producer A", prod1Address);
-      await expectRevert(
-        instance.approveProducerNewTokens(prod1Address, 1000, {
-          from: prod1Address,
-        }),
+        instance.incrementInspections(prod1Address, { from: prod1Address }),
         "Not allowed caller"
       );
     });
   });
 
-  describe("#updateIsaScore", () => {
+  describe("#setIsaScore", () => {
+    beforeEach(async () => {
+      await addProducer("Producer A", prod1Address);
+    });
+
     context("with allowed user", () => {
-      beforeEach(async () => {
-        await addProducer("Producer A", prod1Address);
-        await instance.updateIsaScore(prod1Address, 50);
+      context("when dont have producers sustainable", () => {
+        context("when have 1 producer", () => {
+          beforeEach(async () => {
+            await instance.setIsaScore(prod1Address, 600);
+          });
+
+          context("when new score + producer score is smaller than limit score", () => {
+            beforeEach(async () => {
+              await instance.setIsaScore(prod1Address, 70);
+            });
+
+            it("producer isa score must be 670", async () => {
+              const producer = await instance.getProducer(prod1Address);
+
+              assert.equal(producer.isa.isaScore, 670);
+            });
+
+            it("producer must not be sustainable", async () => {
+              const producer = await instance.getProducer(prod1Address);
+
+              assert.equal(producer.isa.sustainable, false);
+            });
+
+            it("producersTotalScore must be 670", async () => {
+              const producersTotalScore = await instance.producersTotalScore();
+
+              assert.equal(producersTotalScore, 670);
+            });
+          });
+
+          context("when new score is negative", () => {
+            beforeEach(async () => {
+              await instance.setIsaScore(prod1Address, -70);
+            });
+
+            it("producer isa score must be 530", async () => {
+              const producer = await instance.getProducer(prod1Address);
+
+              assert.equal(producer.isa.isaScore, 530);
+            });
+
+            it("producer must not be sustainable", async () => {
+              const producer = await instance.getProducer(prod1Address);
+
+              assert.equal(producer.isa.sustainable, false);
+            });
+
+            it("producersTotalScore must be 530", async () => {
+              const producersTotalScore = await instance.producersTotalScore();
+
+              assert.equal(producersTotalScore, 530);
+            });
+          });
+
+          context("when new score + producer score result in a negative value", () => {
+            beforeEach(async () => {
+              await instance.setIsaScore(prod1Address, -610);
+            });
+
+            it("producer isa score must be -10", async () => {
+              const producer = await instance.getProducer(prod1Address);
+
+              assert.equal(producer.isa.isaScore, -10);
+            });
+
+            it("producer must not be sustainable", async () => {
+              const producer = await instance.getProducer(prod1Address);
+
+              assert.equal(producer.isa.sustainable, false);
+            });
+
+            it("producersTotalScore must be 0", async () => {
+              const producersTotalScore = await instance.producersTotalScore();
+
+              assert.equal(producersTotalScore, 0);
+            });
+          });
+
+          context(
+            "when new score + producer score is equal or bigger limit score",
+            () => {
+              beforeEach(async () => {
+                await instance.setIsaScore(prod1Address, 400);
+              });
+
+              it("producer isa score must be 1000", async () => {
+                const producer = await instance.getProducer(prod1Address);
+
+                assert.equal(producer.isa.isaScore, 1000);
+              });
+
+              it("producer must be sustainable", async () => {
+                const producer = await instance.getProducer(prod1Address);
+
+                assert.equal(producer.isa.sustainable, true);
+              });
+
+              it("producers sustainable must increment", async () => {
+                const producersSustainable = await instance.producersSustainable();
+
+                assert.equal(producersSustainable, 1);
+              });
+
+              it("must remove producer score from total score", async () => {
+                const producersTotalScore = await instance.producersTotalScore();
+
+                assert.equal(producersTotalScore, 0);
+              });
+            }
+          );
+        });
+
+        context("when have more tha one producer", () => {
+          beforeEach(async () => {
+            await instance.setIsaScore(prod1Address, 600);
+            await addProducer("Producer B", prod2Address);
+            await instance.setIsaScore(prod2Address, 800);
+          });
+
+          context("when new score + producer A score is smaller than limit score", () => {
+            beforeEach(async () => {
+              await instance.setIsaScore(prod1Address, 70);
+            });
+
+            it("producer isa score must be 670", async () => {
+              const producer = await instance.getProducer(prod1Address);
+
+              assert.equal(producer.isa.isaScore, 670);
+            });
+
+            it("producer must not be sustainable", async () => {
+              const producer = await instance.getProducer(prod1Address);
+
+              assert.equal(producer.isa.sustainable, false);
+            });
+
+            it("producersTotalScore must be 1470", async () => {
+              const producersTotalScore = await instance.producersTotalScore();
+
+              assert.equal(producersTotalScore, 1470);
+            });
+          });
+
+          context("when new score + producer A score is equal than limit score", () => {
+            beforeEach(async () => {
+              await instance.setIsaScore(prod1Address, 400);
+            });
+
+            it("producer A isa score must be 1000", async () => {
+              const producer = await instance.getProducer(prod1Address);
+
+              assert.equal(producer.isa.isaScore, 1000);
+            });
+
+            it("producer A must be sustainable", async () => {
+              const producer = await instance.getProducer(prod1Address);
+
+              assert.equal(producer.isa.sustainable, true);
+            });
+
+            it("producers sustainable must increment", async () => {
+              const producersSustainable = await instance.producersSustainable();
+
+              assert.equal(producersSustainable, 1);
+            });
+
+            it("must remove producer A score from total score", async () => {
+              const producersTotalScore = await instance.producersTotalScore();
+
+              assert.equal(producersTotalScore, 800);
+            });
+          });
+
+          context("when new score + producer score result in a negative value", () => {
+            beforeEach(async () => {
+              await instance.setIsaScore(prod1Address, -610);
+            });
+
+            it("producer isa score must be -10", async () => {
+              const producer = await instance.getProducer(prod1Address);
+
+              assert.equal(producer.isa.isaScore, -10);
+            });
+
+            it("producer must not be sustainable", async () => {
+              const producer = await instance.getProducer(prod1Address);
+
+              assert.equal(producer.isa.sustainable, false);
+            });
+
+            it("must remove producer score from total score", async () => {
+              const producersTotalScore = await instance.producersTotalScore();
+
+              assert.equal(producersTotalScore, 800);
+            });
+          });
+        });
       });
 
-      it("update isaScore", async () => {
-        await instance.updateIsaScore(prod1Address, 70);
-        const producer = await instance.getProducer(prod1Address);
+      context("when have producers sustainable", () => {
+        context("when have 1 producer", () => {
+          beforeEach(async () => {
+            await instance.setIsaScore(prod1Address, 1000);
+          });
 
-        assert.equal(producer.isa.isaScore, 120);
+          context("when producer receive more 100 isa score", () => {
+            beforeEach(async () => {
+              await instance.setIsaScore(prod1Address, 100);
+            });
+
+            it("producer isa score must be 1100", async () => {
+              const producer = await instance.getProducer(prod1Address);
+
+              assert.equal(producer.isa.isaScore, 1100);
+            });
+
+            it("producer must be sustainable", async () => {
+              const producer = await instance.getProducer(prod1Address);
+
+              assert.equal(producer.isa.sustainable, true);
+            });
+
+            it("must dont add new isa score to total score", async () => {
+              const producersTotalScore = await instance.producersTotalScore();
+
+              assert.equal(producersTotalScore, 0);
+            });
+          });
+        });
+
+        context("when have more than one producer", () => {
+          beforeEach(async () => {
+            await instance.setIsaScore(prod1Address, 1000);
+            await addProducer("Producer B", prod2Address);
+            await instance.setIsaScore(prod2Address, 800);
+          });
+
+          context("when producer A receive more 100 isa score", () => {
+            beforeEach(async () => {
+              await instance.setIsaScore(prod1Address, 100);
+            });
+
+            it("producer A isa score must be 1100", async () => {
+              const producer = await instance.getProducer(prod1Address);
+
+              assert.equal(producer.isa.isaScore, 1100);
+            });
+
+            it("must dont add new isa score to total score", async () => {
+              const producersTotalScore = await instance.producersTotalScore();
+
+              assert.equal(producersTotalScore, 800);
+            });
+          });
+
+          context("when producer B receive more 100 isa score", () => {
+            beforeEach(async () => {
+              await instance.setIsaScore(prod2Address, 100);
+            });
+
+            it("producer B isa score must be 900", async () => {
+              const producer = await instance.getProducer(prod2Address);
+
+              assert.equal(producer.isa.isaScore, 900);
+            });
+
+            it("must add new isa score to total score", async () => {
+              const producersTotalScore = await instance.producersTotalScore();
+
+              assert.equal(producersTotalScore, 900);
+            });
+          });
+        });
       });
     });
 
     context("with not allowed user", () => {
-      beforeEach(async () => {
-        await addProducer("Producer A", prod1Address);
-      });
-
       it("should return error message", async () => {
         await expectRevert(
-          instance.updateIsaScore(prod1Address, 50, { from: prod1Address }),
+          instance.setIsaScore(prod1Address, 50, { from: prod1Address }),
           "Not allowed caller"
         );
+      });
+    });
+  });
+
+  describe("#withdraw", () => {
+    context("with producer", () => {
+      beforeEach(async () => {
+        await addProducer("Producer A", prod1Address);
+        await addProducer("Producer B", prod2Address);
+      });
+
+      context("when can approve #blockable", () => {
+        beforeEach(async () => {
+          await advanceBlock(producerPoolArgs.blocksPerEra);
+        });
+
+        context("when producer have minimum inspections", () => {
+          context("when producersTotalScore is 100", () => {
+            beforeEach(async () => {
+              await instance.incrementInspections(prod1Address);
+              await instance.incrementInspections(prod1Address);
+              await instance.incrementInspections(prod1Address);
+            });
+
+            context("when producer have isaScore 50", () => {
+              beforeEach(async () => {
+                await instance.incrementInspections(prod2Address);
+                await instance.incrementInspections(prod2Address);
+                await instance.incrementInspections(prod2Address);
+
+                await instance.setIsaScore(prod1Address, 50);
+                await instance.setIsaScore(prod2Address, 50);
+
+                await instance.withdraw({ from: prod1Address });
+                await instance.withdraw({ from: prod2Address });
+              });
+
+              it("producer A must withdraw 3600000000000000000000000n tokens", async () => {
+                const balanceOf = await producerPool.balanceOf(prod1Address);
+
+                assert.equal(balanceOf, 3600000000000000000000000n);
+              });
+
+              it("producer B must withdraw 3600000000000000000000000n tokens", async () => {
+                const balanceOf = await producerPool.balanceOf(prod2Address);
+
+                assert.equal(balanceOf, 3600000000000000000000000n);
+              });
+
+              it("producer A current era must be incremented", async () => {
+                const producer = await instance.getProducer(prod1Address);
+
+                assert.equal(producer.pool.currentEra, 2);
+              });
+
+              it("producer B current era must be incremented", async () => {
+                const producer = await instance.getProducer(prod2Address);
+
+                assert.equal(producer.pool.currentEra, 2);
+              });
+            });
+
+            context("when producer have isaScore 100", () => {
+              beforeEach(async () => {
+                await instance.setIsaScore(prod1Address, 100);
+                await instance.withdraw({ from: prod1Address });
+              });
+
+              it("must withdraw 7200000000000000000000000n tokens", async () => {
+                const balanceOf = await producerPool.balanceOf(prod1Address);
+
+                assert.equal(balanceOf, 7200000000000000000000000n);
+              });
+
+              it("producer current era must be increment", async () => {
+                const producer = await instance.getProducer(prod1Address);
+
+                assert.equal(producer.pool.currentEra, 2);
+              });
+            });
+
+            context("when producer have isa score >= limiteIsaScore", () => {
+              beforeEach(async () => {
+                await instance.setIsaScore(prod1Address, 1000);
+              });
+
+              it("should return error message", async () => {
+                await expectRevert(
+                  instance.withdraw({ from: prod1Address }),
+                  "Limit ISA Score"
+                );
+              });
+            });
+          });
+        });
+
+        context("when producer dont have minimum inspections", () => {
+          it("should return error message", async () => {
+            await expectRevert(
+              instance.withdraw({ from: prod1Address }),
+              "minimum inspections"
+            );
+          });
+        });
+      });
+
+      context("when cant approve #blockable", () => {
+        beforeEach(async () => {
+          await instance.incrementInspections(prod1Address);
+          await instance.incrementInspections(prod1Address);
+          await instance.incrementInspections(prod1Address);
+        });
+
+        it("should return error message", async () => {
+          await expectRevert(
+            instance.withdraw({ from: prod1Address }),
+            "You can't approve yet"
+          );
+        });
+      });
+    });
+
+    context("with not producer", () => {
+      it("should return error message", async () => {
+        await expectRevert(instance.withdraw(), "Only producers pool");
       });
     });
   });

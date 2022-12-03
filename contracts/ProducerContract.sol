@@ -4,6 +4,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 import "./UserContract.sol";
 import "./types/ProducerTypes.sol";
 import "./Callable.sol";
+import "./ProducerPool.sol";
 
 /**
  * @title ProducerContract
@@ -12,12 +13,20 @@ import "./Callable.sol";
 contract ProducerContract is Callable {
   mapping(address => Producer) public producers;
 
+  uint256 internal constant MINIMUM_INSPECTION_POOL = 3;
+  int256 internal constant MAXIMUM_ISA_SCORE_POOL = 1000;
+
   UserContract internal userContract;
+  ProducerPool internal producerPool;
+
   address[] internal producersAddress;
   uint256 public producersCount;
+  uint256 public producersSustainable;
+  int256 public producersTotalScore;
 
-  constructor(address userContractAddress) {
+  constructor(address userContractAddress, address producerPoolAddress) {
     userContract = UserContract(userContractAddress);
+    producerPool = ProducerPool(producerPoolAddress);
   }
 
   /**
@@ -44,6 +53,7 @@ contract ProducerContract is Callable {
   ) public uniqueProducer {
     UserType userType = UserType.PRODUCER;
 
+    // TODO: Create issue to create producer instance before, so add just the required fields
     Producer memory producer = Producer(
       producersCount + 1,
       msg.sender,
@@ -54,9 +64,9 @@ contract ProducerContract is Callable {
       false,
       0,
       0,
-      Isa(0, 0),
-      TokenApprove(0, false),
-      PropertyAddress(country, state, city, street, complement, cep)
+      Isa(0, 0, false),
+      PropertyAddress(country, state, city, street, complement, cep),
+      Pool(producerPool.currentContractEra())
     );
 
     producers[msg.sender] = producer;
@@ -88,6 +98,33 @@ contract ProducerContract is Callable {
     return producers[addr];
   }
 
+  function withdraw() public {
+    require(producerExists(msg.sender), "Only producers pool");
+
+    Producer memory producer = producers[msg.sender];
+
+    require(minimumInspections(producer.totalInspections), "minimum inspections");
+    require(!maximumIsaScore(producer.isa.isaScore), "Limit ISA Score");
+    // TODO: Create issue to add validation by last 12 eras
+
+    producerPool.withdraw(
+      msg.sender,
+      producersTotalScore,
+      producer.isa.isaScore,
+      producer.pool.currentEra
+    );
+
+    incrementCurrentEra(msg.sender);
+  }
+
+  function minimumInspections(uint256 totalInspections) internal pure returns (bool) {
+    return totalInspections >= MINIMUM_INSPECTION_POOL;
+  }
+
+  function maximumIsaScore(int256 isaScore) internal pure returns (bool) {
+    return isaScore >= MAXIMUM_ISA_SCORE_POOL;
+  }
+
   /**
    * @dev Check if a specific producer exists
    * @return a bool that represent if a producer exists or not
@@ -100,37 +137,46 @@ contract ProducerContract is Callable {
     producers[addr].recentInspection = state;
   }
 
-  function updateIsaScore(address addr, int256 isaScore) public mustBeAllowedCaller {
-    producers[addr].isa.isaScore += isaScore;
+  // TODO: Create issue to refact this function (setIsaScore, checkSustainable)
+  function setIsaScore(address addr, int256 isaScore) public mustBeAllowedCaller {
+    Producer memory producer = producers[addr];
+
+    int256 score = producer.isa.isaScore + isaScore;
+
+    producer.isa.isaScore += isaScore;
+    producers[addr] = producer;
+
+    if (!producer.isa.sustainable) {
+      if (score < 0) isaScore = isaScore - (-10);
+
+      producersTotalScore += isaScore;
+    }
+
+    checkSustainable(producer);
   }
 
-  function incrementRequests(address addr) public mustBeAllowedCaller {
-    producers[addr].totalRequests++;
+  // TODO: Create issue to refact this function
+  function checkSustainable(Producer memory producer) internal {
+    if (!producer.isa.sustainable && maximumIsaScore(producer.isa.isaScore)) {
+      producersSustainable++;
+      producers[producer.producerWallet].isa.sustainable = true;
+      producersTotalScore -= producer.isa.isaScore;
+    }
   }
 
-  function approveProducerNewTokens(address addr, uint256 numTokens)
-    public
-    mustBeAllowedCaller
-  {
-    uint256 tokens = producers[addr].tokenApprove.allowed;
-    producers[addr].tokenApprove = TokenApprove(tokens += numTokens, false);
+  function incrementCurrentEra(address addr) internal {
+    producers[addr].pool.currentEra++;
+  }
+
+  function incrementInspections(address addr) public mustBeAllowedCaller {
+    producers[addr].totalInspections++;
   }
 
   function lastRequestAt(address addr, uint256 blocksNumber) public mustBeAllowedCaller {
     producers[addr].lastRequestAt = blocksNumber;
   }
 
-  function getProducerApprove(address address_) public view returns (uint256) {
-    return producers[address_].tokenApprove.allowed;
-  }
-
-  function undoProducerApprove() internal returns (bool) {
-    producers[msg.sender].tokenApprove = TokenApprove(0, false);
-    return true;
-  }
-
-  // MODIFIERS
-
+  // TODO: Add require inside funtion addProducer and remove modifier
   modifier uniqueProducer() {
     require(!producerExists(msg.sender), "This producer already exist");
     _;

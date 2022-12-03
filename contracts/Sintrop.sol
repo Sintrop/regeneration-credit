@@ -112,7 +112,6 @@ contract Sintrop {
     requireInspectionExists(inspectionId)
     requireInspectionAccepted(inspectionId)
     requireInspectionOwner(inspectionId)
-    returns (bool)
   {
     Inspection memory inspection = inspections[inspectionId];
 
@@ -120,13 +119,9 @@ contract Sintrop {
 
     afterRealizeInspection(inspection);
 
-    producerContract.updateIsaScore(inspection.createdBy, inspection.isaScore);
-
-    producerContract.approveProducerNewTokens(inspection.createdBy, 2000);
+    producerContract.setIsaScore(inspection.createdBy, inspection.isaScore);
 
     activistInspected[msg.sender][inspection.createdBy] = true;
-
-    return true;
   }
 
   function markAsRealized(Inspection memory inspection, IsaInspection[] memory _isas)
@@ -168,7 +163,7 @@ contract Sintrop {
 
     // Increment producer requests and release to carry out new requests
     producerContract.recentInspection(createdBy, false);
-    producerContract.incrementRequests(createdBy);
+    producerContract.incrementInspections(createdBy);
 
     userInspections[createdBy].push(inspection);
     userInspections[acceptedBy].push(inspection);
