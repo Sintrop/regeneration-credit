@@ -14,7 +14,7 @@ import "./Callable.sol";
  * @title DeveloperContract
  * @dev DeveloperPool is a contract to reward developers
  */
-contract DeveloperPool is Ownable, Blockable, Callable, PoolInterface {
+contract DeveloperPool is Ownable, Blockable, Callable {
   using SafeMath for uint256;
 
   uint256 public constant FIXED_POINT = 10**18;
@@ -47,27 +47,23 @@ contract DeveloperPool is Ownable, Blockable, Callable, PoolInterface {
    * @param level The level the developer is at
    * @param currentEra The currentEra of the developer
    */
-  function approve(
+  function withdraw(
     address delegate,
     uint256 level,
     uint256 currentEra
-  ) public override mustBeAllowedCaller {
-    require(canApprove(currentEra), "You can't approve yet");
+  ) public mustBeAllowedCaller {
+    require(canApprove(currentEra), "You can't withdraw yet");
 
     uint256 devTokens = tokens(level, currentEra);
 
-    sacToken.approveWith(delegate, devTokens);
+    sacToken.transferWith(address(this), delegate, devTokens);
   }
 
-  //TODO: Implement withdraw method (pool and sacToken)
-  function withDraw() public pure override returns (bool) {
-    return true;
-  }
-
+  // TODO: Remove this function. Its not necessary when use transferWith
   /**
    * @dev Returns the amount of tokens a developer can claim
    */
-  function allowance() public view override returns (uint256) {
+  function allowance() public view returns (uint256) {
     return sacToken.allowance(address(this), msg.sender);
   }
 
