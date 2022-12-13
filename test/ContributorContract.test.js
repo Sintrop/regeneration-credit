@@ -11,6 +11,7 @@ contract("ContributorContract", (accounts) => {
   const addContributor = async (name, address) => {
     await instance.addContributor(
       name,
+      "photoURL",
       "111.111.111-00",
       "CPF",
       "Brazil",

@@ -37,6 +37,7 @@ contract DeveloperContract is Ownable, Registrable {
    */
   function addDeveloper(
     string memory name,
+    string memory proofPhoto,
     string memory document,
     string memory documentType,
     string memory country,
@@ -53,6 +54,7 @@ contract DeveloperContract is Ownable, Registrable {
       msg.sender,
       userType,
       name,
+      proofPhoto,
       document,
       documentType,
       Level(level, poolEra),

@@ -29,6 +29,7 @@ contract ContributorContract is Registrable {
    */
   function addContributor(
     string memory name,
+    string memory proofPhoto,
     string memory document,
     string memory documentType,
     string memory country,
@@ -51,6 +52,7 @@ contract ContributorContract is Registrable {
       msg.sender,
       userType,
       name,
+      proofPhoto,
       document,
       documentType,
       contributorAddress

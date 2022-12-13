@@ -69,6 +69,7 @@ module.exports = function (deployer) {
 
     await researcherContract.addResearcher(
       "Researcher Tom",
+      "photoURL",
       "444444444444444",
       "CPF",
       "Brazil",
