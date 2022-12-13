@@ -257,7 +257,9 @@ contract Sintrop {
 
   function calculateBlocksToExpire(uint256 inspectionId) internal view returns (uint256) {
     Inspection memory inspection = inspections[inspectionId];
-    uint256 blocksToExpire = inspection.acceptedAt + timeToExpireInspection - block.number;
+    uint256 blocksToExpire = inspection.acceptedAt +
+      timeToExpireInspection -
+      block.number;
 
     return blocksToExpire;
   }
