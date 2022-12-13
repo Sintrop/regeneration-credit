@@ -158,11 +158,11 @@ contract("ResearcherContract", (accounts) => {
       await addResearcher("Researcher A", resea1Address);
       await addResearch(resea1Address);
       const researcher = await instance.getResearcher(resea1Address);
-      
+
       assert.equal(researcher.publishedWorks, 1);
     });
   });
-  
+
   describe("#getWorks", () => {
     it("should return published works list", async () => {
       await addResearcher("Researcher A", resea1Address);

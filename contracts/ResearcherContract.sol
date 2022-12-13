@@ -9,7 +9,6 @@ contract ResearcherContract is Registrable {
   mapping(address => Researcher) internal researchers;
   mapping(uint256 => Work) internal works;
 
-
   UserContract internal userContract;
   address[] internal researchersAddress;
   uint256 public researchersCount;
@@ -104,16 +103,9 @@ contract ResearcherContract is Registrable {
     require(researcherExists(msg.sender), "Only allowed to researchers");
     uint256 id = worksCount + 1;
 
-    work = Work(
-      id,
-      msg.sender,
-      title,
-      thesis,
-      file,
-      block.timestamp
-    );
+    work = Work(id, msg.sender, title, thesis, file, block.timestamp);
 
-    works[id] = work; 
+    works[id] = work;
     worksCount++;
     researchers[msg.sender].publishedWorks++;
   }
