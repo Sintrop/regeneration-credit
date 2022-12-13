@@ -63,6 +63,7 @@ contract("Sintrop", (accounts) => {
   const addResearcher = async (name, address) => {
     await researcherContract.addResearcher(
       name,
+      "photoURL",
       "111.111.111-00",
       "CPF",
       "Brazil",

@@ -8,6 +8,7 @@ struct Developer {
   address developerWallet;
   UserType userType;
   string name;
+  string proofPhoto;
   string document;
   string documentType;
   Level level;

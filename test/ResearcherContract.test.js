@@ -11,6 +11,7 @@ contract("ResearcherContract", (accounts) => {
   const addResearcher = async (name, address) => {
     await instance.addResearcher(
       name,
+      "photoURL",
       "111.111.111-00",
       "CPF",
       "Brazil",

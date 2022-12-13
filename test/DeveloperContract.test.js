@@ -19,6 +19,7 @@ contract("DeveloperContract", (accounts) => {
   const addDeveloper = async (name, from) => {
     await instance.addDeveloper(
       name,
+      "photoURL",
       "111.111.111-00",
       "CPF",
       "Brazil",
@@ -80,6 +81,7 @@ contract("DeveloperContract", (accounts) => {
       assert.equal(developer.developerWallet, dev1Address);
       assert.equal(developer.userType, 4);
       assert.equal(developer.name, "Developer A");
+      assert.equal(developer.proofPhoto, "photoURL");
       assert.equal(developer.document, "111.111.111-00");
       assert.equal(developer.documentType, "CPF");
 
