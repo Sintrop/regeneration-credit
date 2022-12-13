@@ -9,11 +9,7 @@ contract("AdvisorContract", (accounts) => {
   let [ownerAddress, adv1Address, adv2Address, adv3Address] = accounts;
 
   const addAdvisor = async (name, address) => {
-    await instance.addAdvisor(
-      name,
-      "photoURL",
-      { from: address }
-    );
+    await instance.addAdvisor(name, "photoURL", { from: address });
   };
 
   beforeEach(async () => {

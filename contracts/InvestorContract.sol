@@ -20,18 +20,15 @@ contract InvestorContract {
    * @param name the name of the investor
    * @return a investor
    */
-  function addInvestor(
-    string memory name
-  ) public uniqueInvestor returns (Investor memory) {
+  function addInvestor(string memory name)
+    public
+    uniqueInvestor
+    returns (Investor memory)
+  {
     uint256 id = investorsCount + 1;
     UserType userType = UserType.INVESTOR;
 
-    Investor memory investor = Investor(
-      id,
-      msg.sender,
-      userType,
-      name
-    );
+    Investor memory investor = Investor(id, msg.sender, userType, name);
 
     investors[msg.sender] = investor;
     investorsAddress.push(msg.sender);

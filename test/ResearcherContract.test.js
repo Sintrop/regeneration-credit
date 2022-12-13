@@ -9,11 +9,7 @@ contract("ResearcherContract", (accounts) => {
   let [ownerAddress, resea1Address, resea2Address] = accounts;
 
   const addResearcher = async (name, address) => {
-    await instance.addResearcher(
-      name,
-      "photoURL",
-      { from: address }
-    );
+    await instance.addResearcher(name, "photoURL", { from: address });
   };
 
   beforeEach(async () => {

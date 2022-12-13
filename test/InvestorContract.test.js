@@ -9,10 +9,7 @@ contract("InvestorContract", (accounts) => {
   let [ownerAddress, inv1Address, inv2Address] = accounts;
 
   const addInvestor = async (name, address) => {
-    await instance.addInvestor(
-      name,
-      { from: address }
-    );
+    await instance.addInvestor(name, { from: address });
   };
 
   beforeEach(async () => {

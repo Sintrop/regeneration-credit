@@ -9,11 +9,7 @@ contract("ContributorContract", (accounts) => {
   let [ownerAddress, contr1Address, contr2Address, contr3Address] = accounts;
 
   const addContributor = async (name, address) => {
-    await instance.addContributor(
-      name,
-      "photoURL",
-      { from: address }
-    );
+    await instance.addContributor(name, "photoURL", { from: address });
   };
 
   beforeEach(async () => {

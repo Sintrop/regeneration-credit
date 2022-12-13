@@ -21,20 +21,16 @@ contract ResearcherContract is Registrable {
    * @param name the name of the researcher
    * @return a Researcher
    */
-  function addResearcher(
-    string memory name,
-    string memory proofPhoto
-  ) public uniqueResearcher mustBeAllowedUser returns (Researcher memory) {
+  function addResearcher(string memory name, string memory proofPhoto)
+    public
+    uniqueResearcher
+    mustBeAllowedUser
+    returns (Researcher memory)
+  {
     uint256 id = researchersCount + 1;
     UserType userType = UserType.RESEARCHER;
 
-    Researcher memory researcher = Researcher(
-      id,
-      msg.sender,
-      userType,
-      name,
-      proofPhoto
-    );
+    Researcher memory researcher = Researcher(id, msg.sender, userType, name, proofPhoto);
 
     researchers[msg.sender] = researcher;
     researchersAddress.push(msg.sender);

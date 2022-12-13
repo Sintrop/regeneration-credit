@@ -17,11 +17,7 @@ contract("DeveloperContract", (accounts) => {
   };
 
   const addDeveloper = async (name, from) => {
-    await instance.addDeveloper(
-      name,
-      "photoURL",
-      { from: from }
-    );
+    await instance.addDeveloper(name, "photoURL", { from: from });
   };
 
   advanceBlock = async (blocksNumber) => {

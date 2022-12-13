@@ -21,20 +21,16 @@ contract AdvisorContract is Registrable {
    * @param name the name of the advisor
    * @return a Advisor
    */
-  function addAdvisor(
-    string memory name,
-    string memory proofPhoto
-  ) public mustBeAllowedUser uniqueAdvisor returns (Advisor memory) {
+  function addAdvisor(string memory name, string memory proofPhoto)
+    public
+    mustBeAllowedUser
+    uniqueAdvisor
+    returns (Advisor memory)
+  {
     uint256 id = advisorsCount + 1;
     UserType userType = UserType.ADVISOR;
 
-    Advisor memory advisor = Advisor(
-      id,
-      msg.sender,
-      userType,
-      name,
-      proofPhoto
-    );
+    Advisor memory advisor = Advisor(id, msg.sender, userType, name, proofPhoto);
 
     advisors[msg.sender] = advisor;
     advisorsAddress.push(msg.sender);
