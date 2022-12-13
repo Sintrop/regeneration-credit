@@ -19,23 +19,11 @@ contract ResearcherContract is Registrable {
   /**
    * @dev Allow a new register of researcher
    * @param name the name of the researcher
-   * @param document the document of researcher
-   * @param documentType the document type type of researcher. CPF/CNPJ
-   * @param country the country where the researcher is
-   * @param state the state of the researcher
-   * @param city the of the researcher
-   * @param cep the cep of the researcher
    * @return a Researcher
    */
   function addResearcher(
     string memory name,
-    string memory proofPhoto,
-    string memory document,
-    string memory documentType,
-    string memory country,
-    string memory state,
-    string memory city,
-    string memory cep
+    string memory proofPhoto
   ) public uniqueResearcher mustBeAllowedUser returns (Researcher memory) {
     uint256 id = researchersCount + 1;
     UserType userType = UserType.RESEARCHER;
@@ -45,10 +33,7 @@ contract ResearcherContract is Registrable {
       msg.sender,
       userType,
       name,
-      proofPhoto,
-      document,
-      documentType,
-      ResearcherAddress(country, state, city, cep)
+      proofPhoto
     );
 
     researchers[msg.sender] = researcher;

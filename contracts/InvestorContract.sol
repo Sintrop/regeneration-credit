@@ -18,36 +18,19 @@ contract InvestorContract {
   /**
    * @dev Allow a new register of investor
    * @param name the name of the investor
-   * @param document the document of investor
-   * @param documentType the document type type of investor. CPF/CNPJ
-   * @param country the country where the investor is
-   * @param state the state of the investor
-   * @param city the of the investor
-   * @param cep the cep of the investor
    * @return a investor
    */
   function addInvestor(
-    string memory name,
-    string memory document,
-    string memory documentType,
-    string memory country,
-    string memory state,
-    string memory city,
-    string memory cep
+    string memory name
   ) public uniqueInvestor returns (Investor memory) {
     uint256 id = investorsCount + 1;
     UserType userType = UserType.INVESTOR;
-
-    InvestorAddress memory investorAddress = InvestorAddress(country, state, city, cep);
 
     Investor memory investor = Investor(
       id,
       msg.sender,
       userType,
-      name,
-      document,
-      documentType,
-      investorAddress
+      name
     );
 
     investors[msg.sender] = investor;

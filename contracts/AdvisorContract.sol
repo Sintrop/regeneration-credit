@@ -19,38 +19,21 @@ contract AdvisorContract is Registrable {
   /**
    * @dev Allow a new register of advisor
    * @param name the name of the advisor
-   * @param document the document of advisor
-   * @param documentType the document type type of advisor. CPF/CNPJ
-   * @param country the country where the advisor is
-   * @param state the state of the advisor
-   * @param city the of the advisor
-   * @param cep the cep of the advisor
    * @return a Advisor
    */
   function addAdvisor(
     string memory name,
-    string memory proofPhoto,
-    string memory document,
-    string memory documentType,
-    string memory country,
-    string memory state,
-    string memory city,
-    string memory cep
+    string memory proofPhoto
   ) public mustBeAllowedUser uniqueAdvisor returns (Advisor memory) {
     uint256 id = advisorsCount + 1;
     UserType userType = UserType.ADVISOR;
-
-    AdvisorAddress memory advisorAddress = AdvisorAddress(country, state, city, cep);
 
     Advisor memory advisor = Advisor(
       id,
       msg.sender,
       userType,
       name,
-      proofPhoto,
-      document,
-      documentType,
-      advisorAddress
+      proofPhoto
     );
 
     advisors[msg.sender] = advisor;

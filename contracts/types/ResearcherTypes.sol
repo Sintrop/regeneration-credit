@@ -9,14 +9,4 @@ struct Researcher {
   UserType userType;
   string name;
   string proofPhoto;
-  string document;
-  string documentType;
-  ResearcherAddress researcherAddress;
-}
-
-struct ResearcherAddress {
-  string country;
-  string state;
-  string city;
-  string cep;
 }

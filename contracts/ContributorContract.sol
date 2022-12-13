@@ -19,43 +19,21 @@ contract ContributorContract is Registrable {
   /**
    * @dev Allow a new register of contributor
    * @param name the name of the contributor
-   * @param document the document of contributor
-   * @param documentType the document type type of contributor. CPF/CNPJ
-   * @param country the country where the contributor is
-   * @param state the state of the contributor
-   * @param city the of the contributor
-   * @param cep the cep of the contributor
    * @return a Contributor
    */
   function addContributor(
     string memory name,
-    string memory proofPhoto,
-    string memory document,
-    string memory documentType,
-    string memory country,
-    string memory state,
-    string memory city,
-    string memory cep
+    string memory proofPhoto
   ) public mustBeAllowedUser uniqueContributor returns (Contributor memory) {
     uint256 id = contributorsCount + 1;
     UserType userType = UserType.CONTRIBUTOR;
-
-    ContributorAddress memory contributorAddress = ContributorAddress(
-      country,
-      state,
-      city,
-      cep
-    );
 
     Contributor memory contributor = Contributor(
       id,
       msg.sender,
       userType,
       name,
-      proofPhoto,
-      document,
-      documentType,
-      contributorAddress
+      proofPhoto
     );
 
     contributors[msg.sender] = contributor;

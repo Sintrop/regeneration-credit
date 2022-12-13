@@ -9,18 +9,8 @@ struct Developer {
   UserType userType;
   string name;
   string proofPhoto;
-  string document;
-  string documentType;
   Level level;
-  UserAddress userAddress;
   uint256 createdAt;
-}
-
-struct UserAddress {
-  string country;
-  string state;
-  string city;
-  string cep;
 }
 
 struct Level {

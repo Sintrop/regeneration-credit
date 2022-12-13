@@ -12,12 +12,6 @@ contract("ContributorContract", (accounts) => {
     await instance.addContributor(
       name,
       "photoURL",
-      "111.111.111-00",
-      "CPF",
-      "Brazil",
-      "SP",
-      "Jundiai",
-      "135465-005",
       { from: address }
     );
   };
