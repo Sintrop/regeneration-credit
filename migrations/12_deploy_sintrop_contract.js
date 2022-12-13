@@ -5,7 +5,8 @@ const ProducerContract = artifacts.require("ProducerContract");
 const sintropTimeBetweenProducerInsertions =
   process.env["SINTROP_TIME_BETWEEN_PRODUCER_INSPECTIONS"];
 
-const sintropTimeToExpire = 10; 
+const sintropTimeToExpireInspection =
+  process.env["SINTROP_TIME_TO_EXPIRE_INSPECTION"];
 
 module.exports = function (deployer) {
   deployer.then(async () => {
@@ -16,7 +17,7 @@ module.exports = function (deployer) {
       activistContract.address,
       producerContract.address,
       sintropTimeBetweenProducerInsertions,
-      sintropTimeToExpire
+      sintropTimeToExpireInspection
     );
   });
 };

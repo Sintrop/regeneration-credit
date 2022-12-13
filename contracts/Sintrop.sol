@@ -21,19 +21,19 @@ contract Sintrop {
 
   uint256 public inspectionsCount;
   uint256 internal timeBetweenInspections;
-  uint256 internal timeToExpire;
+  uint256 internal timeToExpireInspection;
   uint256 internal activistGiveUps;
 
   constructor(
     address activistContractAddress,
     address producerContractAddress,
     uint256 timeBetweenInspections_,
-    uint256 timeToExpire_
+    uint256 timeToExpireInspection_
   ) {
     activistContract = ActivistContract(activistContractAddress);
     producerContract = ProducerContract(producerContractAddress);
     timeBetweenInspections = timeBetweenInspections_;
-    timeToExpire = timeToExpire_;
+    timeToExpireInspection = timeToExpireInspection_;
   }
 
   /**
@@ -96,7 +96,6 @@ contract Sintrop {
     returns (bool)
   {
     Inspection memory inspection = inspections[inspectionId];
-    address createdBy = inspection.createdBy;
 
     require(inspection.status == InspectionStatus.OPEN, "This inspection is not OPEN");
 
@@ -107,7 +106,7 @@ contract Sintrop {
     inspections[inspectionId] = inspection;
 
     activistContract.recentInspection(msg.sender, true);
-    producerContract.recentInspection(createdBy, false);
+    producerContract.recentInspection(inspection.createdBy, false);
     activistContract.incrementGiveUps(msg.sender);
 
     activistContract.lastAcceptedAt(msg.sender, block.number);
@@ -253,17 +252,14 @@ contract Sintrop {
 
   function checkExpireData(uint256 inspectionId) internal view returns (bool) {
     Inspection memory inspection = inspections[inspectionId];
+    uint256 expireInspectionAt = inspection.acceptedAt + timeToExpireInspection;
 
-    if (block.number < inspection.acceptedAt + timeToExpire) {
-      return true;
-    }
-
-    return false;
+    return block.number < expireInspectionAt;
   }
 
   function calculateBlocksToExpire(uint256 inspectionId) internal view returns (uint256) {
     Inspection memory inspection = inspections[inspectionId];
-    uint256 blocksToExpire = inspection.acceptedAt + timeToExpire - block.number;
+    uint256 blocksToExpire = inspection.acceptedAt + timeToExpireInspection - block.number;
 
     return blocksToExpire;
   }
@@ -272,7 +268,7 @@ contract Sintrop {
     Activist memory activist = activistContract.getActivist(msg.sender);
     uint256 lastAcceptedAt = activist.lastAcceptedAt;
 
-    bool canAccept = block.number > lastAcceptedAt + timeToExpire;
+    bool canAccept = block.number > lastAcceptedAt + timeToExpireInspection;
 
     return canAccept || lastAcceptedAt == 0;
   }
