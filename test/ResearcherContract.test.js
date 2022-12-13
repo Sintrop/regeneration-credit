@@ -6,7 +6,7 @@ const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 contract("ResearcherContract", (accounts) => {
   let instance;
   let userContract;
-  let [ownerAddress, resea1Address, resea2Address] = accounts;
+  let [ownerAddress, user1Address, resea1Address, resea2Address] = accounts;
 
   const addResearcher = async (name, address) => {
     await instance.addResearcher(
@@ -20,6 +20,12 @@ contract("ResearcherContract", (accounts) => {
       "135465-005",
       { from: address }
     );
+  };
+
+  const addResearch = async (from) => {
+    await instance.addResearch("title", "thesis", "fileURL", {
+      from: from,
+    });
   };
 
   beforeEach(async () => {
@@ -83,6 +89,13 @@ contract("ResearcherContract", (accounts) => {
 
           assert.equal(userType, RESEARCHER);
         });
+
+        it("should add created researcher with 0 published works", async () => {
+          await addResearcher("Researcher A", resea1Address);
+          const researcher = await instance.getResearcher(resea1Address);
+
+          assert.equal(researcher.publishedWorks, 0);
+        });
       });
     });
   });
@@ -125,6 +138,38 @@ contract("ResearcherContract", (accounts) => {
       const researcherExists = await instance.researcherExists(resea1Address);
 
       assert.equal(researcherExists, false);
+    });
+  });
+
+  context("when add a research", () => {
+    it("should return error when is not a researcher", async () => {
+      await expectRevert(addResearch(), "Only allowed to researchers");
+    });
+
+    it("should add a work when is a researcher", async () => {
+      await addResearcher("Researcher A", resea1Address);
+      await addResearch(resea1Address);
+      const firstWork = await instance.worksCount();
+
+      assert.equal(firstWork, 1);
+    });
+
+    it("should add 1 to researcher publishedWorks", async () => {
+      await addResearcher("Researcher A", resea1Address);
+      await addResearch(resea1Address);
+      const researcher = await instance.getResearcher(resea1Address);
+      
+      assert.equal(researcher.publishedWorks, 1);
+    });
+  });
+  
+  describe("#getWorks", () => {
+    it("should return published works list", async () => {
+      await addResearcher("Researcher A", resea1Address);
+      await addResearch(resea1Address);
+      const works = await instance.getResearches();
+
+      assert.equal(works.length, 1);
     });
   });
 });

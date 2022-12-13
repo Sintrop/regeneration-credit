@@ -7,10 +7,15 @@ import "./Registrable.sol";
 
 contract ResearcherContract is Registrable {
   mapping(address => Researcher) internal researchers;
+  mapping(uint256 => Work) internal works;
+
 
   UserContract internal userContract;
   address[] internal researchersAddress;
   uint256 public researchersCount;
+  uint256 public worksCount;
+
+  Work public work;
 
   constructor(address userContractAddress) {
     userContract = UserContract(userContractAddress);
@@ -48,7 +53,8 @@ contract ResearcherContract is Registrable {
       proofPhoto,
       document,
       documentType,
-      ResearcherAddress(country, state, city, cep)
+      ResearcherAddress(country, state, city, cep),
+      0
     );
 
     researchers[msg.sender] = researcher;
@@ -88,6 +94,38 @@ contract ResearcherContract is Registrable {
    */
   function researcherExists(address addr) public view returns (bool) {
     return bytes(researchers[addr].name).length > 0;
+  }
+
+  function addResearch(
+    string memory title,
+    string memory thesis,
+    string memory file
+  ) public {
+    require(researcherExists(msg.sender), "Only allowed to researchers");
+    uint256 id = worksCount + 1;
+
+    work = Work(
+      id,
+      msg.sender,
+      title,
+      thesis,
+      file,
+      block.timestamp
+    );
+
+    works[id] = work; 
+    worksCount++;
+    researchers[msg.sender].publishedWorks++;
+  }
+
+  function getResearches() public view returns (Work[] memory) {
+    Work[] memory worksList = new Work[](worksCount);
+
+    for (uint256 i = 0; i < worksCount; i++) {
+      worksList[i] = works[i + 1];
+    }
+
+    return worksList;
   }
 
   // MODIFIERS

@@ -12,6 +12,7 @@ struct Researcher {
   string document;
   string documentType;
   ResearcherAddress researcherAddress;
+  uint256 publishedWorks;
 }
 
 struct ResearcherAddress {
@@ -19,4 +20,13 @@ struct ResearcherAddress {
   string state;
   string city;
   string cep;
+}
+
+struct Work {
+  uint256 id;
+  address createdBy;
+  string title;
+  string thesis;
+  string file;
+  uint256 createdAt;
 }
