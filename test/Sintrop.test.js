@@ -375,15 +375,6 @@ contract("Sintrop", (accounts) => {
 
       assert.equal(activist.giveUps, "1");
     });
-
-    it("should set activist recentInspection", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
-
-      const activist = await activistContract.getActivist(activistAddress);
-
-      assert.equal(activist.recentInspection, true);
-    });
   });
 
   context("when is not activist try accept inspection", () => {
@@ -660,27 +651,6 @@ contract("Sintrop", (accounts) => {
       const producer = await producerContract.getProducer(producerAddress);
 
       assert.equal(producer.recentInspection, false);
-    });
-
-    it("should set activist recentInspection to false", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
-
-      await addCategory("Soil A", resea1Address);
-
-      const isas = [
-        {
-          categoryId: 1,
-          isaIndex: 0,
-          report: "TOTALLY_SUSTAINABLE",
-          proofPhoto: "Hash_1",
-        },
-      ];
-      await realizeInspection(1, isas, activistAddress);
-
-      const activist = await activistContract.getActivist(activistAddress);
-
-      assert.equal(activist.recentInspection, false);
     });
 
     it("should increment producer totalRequests", async () => {

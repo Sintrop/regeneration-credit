@@ -42,7 +42,6 @@ contract("ActivistContract", (accounts) => {
       assert.equal(activist.proofPhoto, "photoURL");
       assert.equal(activist.document, "111.111.111-00");
       assert.equal(activist.documentType, "CPF");
-      assert.equal(activist.recentInspection, false);
       assert.equal(activist.totalInspections, "0");
       assert.equal(activist.giveUps, "0");
       assert.equal(activist.lastAcceptedAt, "0");

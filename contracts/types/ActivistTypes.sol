@@ -11,7 +11,6 @@ struct Activist {
   string proofPhoto;
   string document;
   string documentType;
-  bool recentInspection;
   uint256 totalInspections;
   uint256 giveUps;
   ActivistAddress activistAddress;

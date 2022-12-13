@@ -51,7 +51,6 @@ contract ActivistContract is Callable {
       proofPhoto,
       document,
       documentType,
-      false,
       0,
       0,
       activistAddress,
@@ -95,10 +94,6 @@ contract ActivistContract is Callable {
    */
   function activistExists(address addr) public view returns (bool) {
     return bytes(activists[addr].name).length > 0;
-  }
-
-  function recentInspection(address addr, bool state) public mustBeAllowedCaller {
-    activists[addr].recentInspection = state;
   }
 
   function incrementRequests(address addr) public mustBeAllowedCaller {

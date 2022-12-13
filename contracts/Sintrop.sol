@@ -58,7 +58,7 @@ contract Sintrop {
     public
     requireProducer
     requireNoInspectionsOpen
-    requireNoRecentInspection
+    requireCanRequest
   {
     newRequest();
 
@@ -105,7 +105,6 @@ contract Sintrop {
     inspection.acceptedBy = msg.sender;
     inspections[inspectionId] = inspection;
 
-    activistContract.recentInspection(msg.sender, true);
     producerContract.recentInspection(inspection.createdBy, false);
     activistContract.incrementGiveUps(msg.sender);
 
@@ -169,7 +168,7 @@ contract Sintrop {
   }
 
   /**
-   * @dev Inscrement producer and activist request action and mark both as no recent open requests and inspection
+   * @dev Inscrement producer and activist request actions
    * @param inspection the inspected inspection
    */
   function afterRealizeInspection(Inspection memory inspection) internal {
@@ -177,7 +176,6 @@ contract Sintrop {
     address acceptedBy = inspection.acceptedBy;
 
     // Increment actvist inspections and release to carry out new inspections
-    activistContract.recentInspection(acceptedBy, false);
     activistContract.incrementRequests(acceptedBy);
     activistContract.decreaseGiveUps(acceptedBy);
 
@@ -307,7 +305,7 @@ contract Sintrop {
     _;
   }
 
-  modifier requireNoRecentInspection() {
+  modifier requireCanRequest() {
     require(canRequestInspection(), "Recent inspection");
     _;
   }
