@@ -38,7 +38,7 @@ contract("SacToken", (accounts) => {
 
     });
   });
-  
+
   context("when deploy the token contract", () => {
     it("total suply should be equal to 1500000000000000000000000000", async () => {
       const totalSupply = await instance.totalSupply();
@@ -63,6 +63,16 @@ contract("SacToken", (accounts) => {
         instance.transfer(user1Address, 100, { from: investor1Address }),
         "Insufficient balance."
       );
+    });
+  });
+
+  context("when a user try to burn 50 tokens", () => {
+    it("should burn when has tokens", async () => {
+      await instance.transfer(user1Address, 100);
+      await instance.burnTokens(50, {from: user1Address});      
+      const burnedTokens = await instance.balanceOf(user1Address);
+
+      assert.equal(burnedTokens, 50);
     });
   });
 
