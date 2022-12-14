@@ -29,11 +29,7 @@ contract("CategoryContract", (accounts) => {
   };
 
   const addResearcher = async (name, address) => {
-    await researcherContract.addResearcher(
-      name,
-      "photoURL",
-      { from: address }
-    );
+    await researcherContract.addResearcher(name, "photoURL", { from: address });
   };
 
   const transferTokensTo = async (userAddress, tokens) => {
