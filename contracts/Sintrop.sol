@@ -54,12 +54,9 @@ contract Sintrop {
   /**
    * @dev Allows the current user (producer) request a inspection.
    */
-  function requestInspection()
-    public
-    requireProducer
-    requireNoInspectionsOpen
-    requireCanRequest
-  {
+  function requestInspection() public requireProducer requireNoInspectionsOpen {
+    require(canRequestInspection(), "Recent inspection");
+
     newRequest();
 
     producerContract.recentInspection(msg.sender, true);
@@ -92,11 +89,11 @@ contract Sintrop {
     requireActivist
     requireInspectionExists(inspectionId)
     requireNotInspectedProducer(inspectionId)
-    requireCanAccept
     returns (bool)
   {
     Inspection memory inspection = inspections[inspectionId];
 
+    require(canAcceptInspection(), "Can't accept yet");
     require(inspection.status == InspectionStatus.OPEN, "This inspection is not OPEN");
 
     inspection.status = InspectionStatus.ACCEPTED;
@@ -307,11 +304,6 @@ contract Sintrop {
     _;
   }
 
-  modifier requireCanRequest() {
-    require(canRequestInspection(), "Recent inspection");
-    _;
-  }
-
   modifier requireInspectionAccepted(uint256 inspectionId) {
     require(isAccepted(inspectionId), "Accept this inspection before");
     _;
@@ -324,11 +316,6 @@ contract Sintrop {
 
   modifier requireNotExpired(uint256 inspectionId) {
     require(checkExpireData(inspectionId), "Inspection Expired");
-    _;
-  }
-
-  modifier requireCanAccept() {
-    require(canAcceptInspection(), "Can't accept yet");
     _;
   }
 }
