@@ -115,6 +115,11 @@ contract SacToken is ERC20, Ownable {
     return true;
   }
 
+  function burnTokens(uint256 amount) public {
+    _burn(_msgSender(), amount);
+    
+  }
+
   modifier mustBeContractPool() {
     require(contractPool(msg.sender), "Not a contract pool");
     _;
