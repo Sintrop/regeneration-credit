@@ -62,12 +62,6 @@ contract("Sintrop", (accounts) => {
     await researcherContract.addResearcher(
       name,
       "photoURL",
-      "111.111.111-00",
-      "CPF",
-      "Brazil",
-      "SP",
-      "Jundiai",
-      "135465-005",
       { from: address }
     );
   };
