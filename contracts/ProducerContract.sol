@@ -13,8 +13,8 @@ import "./ProducerPool.sol";
 contract ProducerContract is Callable {
   mapping(address => Producer) public producers;
 
-  uint256 internal constant MINIMUM_INSPECTION_POOL = 3;
-  int256 internal constant MAXIMUM_ISA_SCORE_POOL = 1000;
+  uint256 internal constant MINIMUM_INSPECTION = 3;
+  int256 internal constant MAXIMUM_ISA_SCORE = 1000;
 
   UserContract internal userContract;
   ProducerPool internal producerPool;
@@ -103,7 +103,7 @@ contract ProducerContract is Callable {
 
     Producer memory producer = producers[msg.sender];
 
-    require(minimumInspections(producer.totalInspections), "minimum inspections");
+    require(minimumInspections(producer.totalInspections), "Minimum inspections");
     require(!maximumIsaScore(producer.isa.isaScore), "Limit ISA Score");
     // TODO: Create issue to add validation by last 12 eras
 
@@ -118,11 +118,11 @@ contract ProducerContract is Callable {
   }
 
   function minimumInspections(uint256 totalInspections) internal pure returns (bool) {
-    return totalInspections >= MINIMUM_INSPECTION_POOL;
+    return totalInspections >= MINIMUM_INSPECTION;
   }
 
   function maximumIsaScore(int256 isaScore) internal pure returns (bool) {
-    return isaScore >= MAXIMUM_ISA_SCORE_POOL;
+    return isaScore >= MAXIMUM_ISA_SCORE;
   }
 
   /**
@@ -137,31 +137,32 @@ contract ProducerContract is Callable {
     producers[addr].recentInspection = state;
   }
 
-  // TODO: Create issue to refact this function (setIsaScore, checkSustainable)
-  function setIsaScore(address addr, int256 isaScore) public mustBeAllowedCaller {
+  function setIsaScore(address addr, int256 isaScore)
+    public
+    mustBeAllowedCaller
+    returns (bool)
+  {
     Producer memory producer = producers[addr];
-
-    int256 score = producer.isa.isaScore + isaScore;
 
     producer.isa.isaScore += isaScore;
     producers[addr] = producer;
+    int256 newScore = producer.isa.isaScore;
 
-    if (!producer.isa.sustainable) {
-      if (score < 0) isaScore = isaScore - (-10);
+    if (producer.isa.sustainable) return true;
+    if (newScore < 0) isaScore = isaScore - (newScore);
+    if (maximumIsaScore(producer.isa.isaScore)) changeProducerToSustainable(producer);
 
-      producersTotalScore += isaScore;
-    }
+    producersTotalScore += isaScore;
 
-    checkSustainable(producer);
+    return true;
   }
 
-  // TODO: Create issue to refact this function
-  function checkSustainable(Producer memory producer) internal {
-    if (!producer.isa.sustainable && maximumIsaScore(producer.isa.isaScore)) {
-      producersSustainable++;
-      producers[producer.producerWallet].isa.sustainable = true;
-      producersTotalScore -= producer.isa.isaScore;
-    }
+  function changeProducerToSustainable(Producer memory producer) internal returns (bool) {
+    producersSustainable++;
+    producers[producer.producerWallet].isa.sustainable = true;
+    producersTotalScore -= producer.isa.isaScore;
+
+    return true;
   }
 
   function incrementCurrentEra(address addr) internal {
