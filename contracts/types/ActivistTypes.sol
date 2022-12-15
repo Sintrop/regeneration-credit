@@ -9,8 +9,6 @@ struct Activist {
   UserType userType;
   string name;
   string proofPhoto;
-  string document;
-  string documentType;
   bool recentInspection;
   uint256 totalInspections;
   ActivistAddress activistAddress;
