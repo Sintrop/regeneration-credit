@@ -45,9 +45,7 @@ module.exports = function (deployer) {
 
     await activistContract.addActivist(
       "John Johnson",
-      "22222222222222",
       "photoURL",
-      "CPF",
       "Brazil",
       "SP",
       "Ribeirão Preto",
@@ -58,8 +56,6 @@ module.exports = function (deployer) {
     await activistContract.addActivist(
       "Peter Parker",
       "photoURL",
-      "3333333333333",
-      "CPF",
       "Brazil",
       "SP",
       "Marília",
@@ -70,12 +66,6 @@ module.exports = function (deployer) {
     await researcherContract.addResearcher(
       "Researcher Tom",
       "photoURL",
-      "444444444444444",
-      "CPF",
-      "Brazil",
-      "SP",
-      "Bauru",
-      "44444444444444",
       {from: researcher1}
     );
 
