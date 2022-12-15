@@ -11,10 +11,10 @@ import "./ProducerPool.sol";
  * @dev Producer resource that represent a user that can request a inspection
  */
 contract ProducerContract is Callable {
-  mapping(address => Producer) public producers;
-
   uint256 internal constant MINIMUM_INSPECTION = 3;
   int256 internal constant MAXIMUM_ISA_SCORE = 1000;
+
+  mapping(address => Producer) public producers;
 
   UserContract internal userContract;
   ProducerPool internal producerPool;
