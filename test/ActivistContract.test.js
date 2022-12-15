@@ -12,8 +12,6 @@ contract("ActivistContract", (accounts) => {
     await instance.addActivist(
       name,
       "photoURL",
-      "111.111.111-00",
-      "CPF",
       "Brazil",
       "SP",
       "Jundiai",
