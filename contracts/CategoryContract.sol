@@ -37,7 +37,6 @@ contract CategoryContract {
     userContract = UserContract(userContractAddress);
   }
 
-
   // TODO: remove modifier and use require direct in the function (modifier is not reutilized)
   /**
    * @dev add a new category

@@ -163,7 +163,6 @@ contract Sintrop {
     return isaScore;
   }
 
-
   // TODO: Refact this function
   /**
    * @dev Inscrement producer and activist request action and mark both as no recent open requests and inspection
