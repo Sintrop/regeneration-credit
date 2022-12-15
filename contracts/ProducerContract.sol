@@ -50,7 +50,9 @@ contract ProducerContract is Callable {
     string memory street,
     string memory complement,
     string memory cep
-  ) public uniqueProducer {
+  ) public {
+    require(!producerExists(msg.sender), "This producer already exist");
+
     UserType userType = UserType.PRODUCER;
 
     // TODO: Create issue to create producer instance before, so add just the required fields
@@ -153,7 +155,6 @@ contract ProducerContract is Callable {
     if (maximumIsaScore(producer.isa.isaScore)) changeProducerToSustainable(producer);
 
     producersTotalScore += isaScore;
-
     return true;
   }
 
@@ -161,7 +162,6 @@ contract ProducerContract is Callable {
     producersSustainable++;
     producers[producer.producerWallet].isa.sustainable = true;
     producersTotalScore -= producer.isa.isaScore;
-
     return true;
   }
 
@@ -175,11 +175,5 @@ contract ProducerContract is Callable {
 
   function lastRequestAt(address addr, uint256 blocksNumber) public mustBeAllowedCaller {
     producers[addr].lastRequestAt = blocksNumber;
-  }
-
-  // TODO: Add require inside funtion addProducer and remove modifier
-  modifier uniqueProducer() {
-    require(!producerExists(msg.sender), "This producer already exist");
-    _;
   }
 }
