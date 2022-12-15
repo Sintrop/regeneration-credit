@@ -18,5 +18,5 @@ struct Work {
   string title;
   string thesis;
   string file;
-  uint256 createdAt;
+  uint256 createdAtTimeStamp;
 }

@@ -14,8 +14,6 @@ contract ResearcherContract is Registrable {
   uint256 public researchersCount;
   uint256 public worksCount;
 
-  Work public work;
-
   constructor(address userContractAddress) {
     userContract = UserContract(userContractAddress);
   }
@@ -88,9 +86,10 @@ contract ResearcherContract is Registrable {
     string memory file
   ) public {
     require(researcherExists(msg.sender), "Only allowed to researchers");
+
     uint256 id = worksCount + 1;
 
-    work = Work(id, msg.sender, title, thesis, file, block.timestamp);
+    Work memory work = Work(id, msg.sender, title, thesis, file, block.timestamp); // solhint-disable-line
 
     works[id] = work;
     worksCount++;
