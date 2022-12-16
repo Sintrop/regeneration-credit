@@ -140,7 +140,12 @@ contract("Sintrop", (accounts) => {
       researcherContract.address,
       userContract.address
     );
-    instance = await Sintrop.new(activistContract.address, producerContract.address, 20);
+    instance = await Sintrop.new(
+      activistContract.address,
+      producerContract.address,
+      20,
+      15
+    );
 
     await userContract.newAllowedCaller(activistContract.address);
     await userContract.newAllowedCaller(producerContract.address);
@@ -304,6 +309,34 @@ contract("Sintrop", (accounts) => {
   });
 
   context("when activist accept inspection", () => {
+    it("should return error when is before blocksToExpireAcceptedInspection", async () => {
+      await instance.requestInspection({ from: producerAddress });
+      await instance.acceptInspection(1, { from: activistAddress });
+
+      await addProducer("Producer B", producer2Address);
+      await instance.requestInspection({ from: producer2Address });
+
+      await expectRevert(
+        instance.acceptInspection(2, { from: activistAddress }),
+        "Can't accept yet"
+      );
+    });
+
+    it("should accept inspection with success after blocksToExpireAcceptedInspection", async () => {
+      await instance.requestInspection({ from: producerAddress });
+      await instance.acceptInspection(1, { from: activistAddress });
+
+      await addProducer("Producer B", producer2Address);
+      await instance.requestInspection({ from: producer2Address });
+
+      await advanceBlock(20);
+      await instance.acceptInspection(2, { from: activistAddress });
+
+      const inspection = await instance.getInspection(2);
+
+      assert.equal(inspection.status, STATUS.accepted);
+    });
+
     it("should accept inspection with success when is OPEN", async () => {
       await instance.requestInspection({ from: producerAddress });
       await instance.acceptInspection(1, { from: activistAddress });
@@ -322,13 +355,13 @@ contract("Sintrop", (accounts) => {
       assert.equal(inspection.acceptedBy, activistAddress);
     });
 
-    it("should set activist recentInspection", async () => {
+    it("should increment activist giveUps by 1", async () => {
       await instance.requestInspection({ from: producerAddress });
       await instance.acceptInspection(1, { from: activistAddress });
 
       const activist = await activistContract.getActivist(activistAddress);
 
-      assert.equal(activist.recentInspection, true);
+      assert.equal(activist.giveUps, "1");
     });
   });
 
@@ -367,13 +400,28 @@ contract("Sintrop", (accounts) => {
     });
   });
 
+  context("when activist try to realize expired inspection", () => {
+    it("should return error message", async () => {
+      await instance.requestInspection({ from: producerAddress });
+      await instance.acceptInspection(1, { from: activistAddress });
+
+      await advanceBlock(20);
+      await expectRevert(
+        instance.realizeInspection(1, [], { from: activistAddress }),
+        "Inspection Expired"
+      );
+    });
+  });
+
   context("when activist try accept inspection not OPEN", () => {
     it("should return error message", async () => {
       await instance.requestInspection({ from: producerAddress });
       await instance.acceptInspection(1, { from: activistAddress });
 
+      await addActivist("Activist B", activist2Address);
+
       await expectRevert(
-        instance.acceptInspection(1, { from: activistAddress }),
+        instance.acceptInspection(1, { from: activist2Address }),
         "This inspection is not OPEN"
       );
     });
@@ -393,6 +441,21 @@ contract("Sintrop", (accounts) => {
       const inspection = await instance.getInspection(1);
 
       assert.equal(inspection.status, STATUS.inspected);
+    });
+
+    it("should decrease activist giveUps by 1", async () => {
+      await instance.requestInspection({ from: producerAddress });
+      await instance.acceptInspection(1, { from: activistAddress });
+
+      await addCategory("Soil A", resea1Address);
+      await addCategory("Soil B", resea1Address);
+      await addCategory("Soil C", resea1Address);
+
+      await realizeInspection(1, isas(), activistAddress);
+
+      const activist = await activistContract.getActivist(activistAddress);
+
+      assert.equal(activist.giveUps, "0");
     });
 
     it("should update inspectionList", async () => {
@@ -576,27 +639,6 @@ contract("Sintrop", (accounts) => {
       const producer = await producerContract.getProducer(producerAddress);
 
       assert.equal(producer.recentInspection, false);
-    });
-
-    it("should set activist recentInspection to false", async () => {
-      await instance.requestInspection({ from: producerAddress });
-      await instance.acceptInspection(1, { from: activistAddress });
-
-      await addCategory("Soil A", resea1Address);
-
-      const isas = [
-        {
-          categoryId: 1,
-          isaIndex: 0,
-          report: "TOTALLY_SUSTAINABLE",
-          proofPhoto: "Hash_1",
-        },
-      ];
-      await realizeInspection(1, isas, activistAddress);
-
-      const activist = await activistContract.getActivist(activistAddress);
-
-      assert.equal(activist.recentInspection, false);
     });
 
     it("should increment producer totalRequests", async () => {
