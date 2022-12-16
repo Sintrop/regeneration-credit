@@ -16,6 +16,7 @@ contract UserContract is Ownable, Callable {
   uint256 public delationsCount;
   uint256 public usersCount;
 
+  // TODO: Add requires of modifiers mustNotExists and mustBeValidType inside function and remove modifier
   /**
    * @dev Add new user in the system
    * @param addr The address of the user
@@ -39,6 +40,7 @@ contract UserContract is Ownable, Callable {
     return users[addr];
   }
 
+  // TODO: have a better way to return types?
   /**
    * @dev Returns the enum UserType of the system
    */
@@ -68,6 +70,7 @@ contract UserContract is Ownable, Callable {
     );
   }
 
+  // TODO: Add modifiers requires inside the function and remove modifiers
   /**
    * @dev Add new delation in the system
    * @param addr The address of the user

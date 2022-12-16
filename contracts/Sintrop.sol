@@ -32,6 +32,7 @@ contract Sintrop {
     timeBetweenInspections = timeBetweenInspections_;
   }
 
+  // TODO: Refact this mapping to not duplicate inspections
   /**
    * @dev Allows the current user producer/activist get all yours inspections with status INSPECTED
    */
@@ -47,6 +48,7 @@ contract Sintrop {
     return isas[inspectionId];
   }
 
+  // TODO: Remove not reutilized modifiers and use require direct in the function
   /**
    * @dev Allows the current user (producer) request a inspection.
    */
@@ -58,11 +60,14 @@ contract Sintrop {
   {
     newRequest();
 
+    // TODO: create a function to realize actions above in a single transaction?
     producerContract.recentInspection(msg.sender, true);
     producerContract.lastRequestAt(msg.sender, block.number);
   }
 
+  // TODO: use default address as the acceptedBy address
   function newRequest() internal {
+    // TODO: create instance before, so add just the required fields
     Inspection memory inspection = Inspection(
       inspectionsCount + 1,
       InspectionStatus.OPEN,
@@ -76,6 +81,7 @@ contract Sintrop {
     inspectionsCount++;
   }
 
+  // TODO: Remove not reutilized modifiers and use require direct in the function
   /**
    * @dev Allows the current user (activist) accept a inspection.
    * @param inspectionId The id of the inspection that the activist want accept.
@@ -98,9 +104,11 @@ contract Sintrop {
 
     activistContract.recentInspection(msg.sender, true);
 
+    // TODO: Remove return?
     return true;
   }
 
+  // TODO: Remove not reutilized modifiers and use require direct in the function
   /**
    * @dev Allow a activist realize a inspection and mark as INSPECTED
    * @param inspectionId The id of the inspection to be realized
@@ -142,6 +150,7 @@ contract Sintrop {
     internal
     returns (int256)
   {
+    // TODO: Add isaScore points in state
     int256[5] memory points = [int256(10), 5, 0, -5, -10];
     int256 isaScore;
 
@@ -154,6 +163,7 @@ contract Sintrop {
     return isaScore;
   }
 
+  // TODO: Refact this function
   /**
    * @dev Inscrement producer and activist request action and mark both as no recent open requests and inspection
    * @param inspection the inspected inspection
@@ -195,6 +205,7 @@ contract Sintrop {
     return inspectionsList;
   }
 
+  // TODO: Have a better way to return this?
   /**
    * @dev Returns all inpections status string.
    */
@@ -227,6 +238,7 @@ contract Sintrop {
     return inspections[inspectionId].status == InspectionStatus.ACCEPTED;
   }
 
+  // TODO: Refact this action
   function canRequestInspection() public view returns (bool) {
     Producer memory producer = producerContract.getProducer(msg.sender);
 
