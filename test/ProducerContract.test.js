@@ -655,7 +655,7 @@ contract("ProducerContract", (accounts) => {
           it("should return error message", async () => {
             await expectRevert(
               instance.withdraw({ from: prod1Address }),
-              "minimum inspections"
+              "Minimum inspections"
             );
           });
         });
