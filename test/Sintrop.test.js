@@ -309,7 +309,7 @@ contract("Sintrop", (accounts) => {
   });
 
   context("when activist accept inspection", () => {
-    it("should return error when before timeToExpire", async () => {
+    it("should return error when is before blocksToExpireAcceptedInspection", async () => {
       await instance.requestInspection({ from: producerAddress });
       await instance.acceptInspection(1, { from: activistAddress });
 
@@ -322,7 +322,7 @@ contract("Sintrop", (accounts) => {
       );
     });
 
-    it("should accept inspection with success after timeToExpire", async () => {
+    it("should accept inspection with success after blocksToExpireAcceptedInspection", async () => {
       await instance.requestInspection({ from: producerAddress });
       await instance.acceptInspection(1, { from: activistAddress });
 
