@@ -3,7 +3,7 @@ const InvestorContract = artifacts.require("InvestorContract");
 const UserContract = artifacts.require("UserContract");
 
 const { balance } = require("@openzeppelin/test-helpers");
-const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
+const ZERO_ADDRESS = require("@openzeppelin/test-helpers/src/constants");
 const expectRevert = require("@openzeppelin/test-helpers/src/expectRevert");
 
 contract("SacToken", (accounts) => {
@@ -21,10 +21,6 @@ contract("SacToken", (accounts) => {
       name,
       { from: address }
     );
-  };
-
-  const transferTokensTo = async (userAddress, tokens) => {
-    await instance.transfer(userAddress, tokens);
   };
 
   beforeEach(async () => {
@@ -66,14 +62,28 @@ contract("SacToken", (accounts) => {
     });
   });
 
-  context("when a user try to burn 100 tokens", () => {
+  context.only("when a user try to burn 100 tokens", () => {
     it("should burn when has tokens", async () => {
-        await transferTokensTo(user1Address, "500000000000000000000");
-        await instance.burnTokens("100000000000000000000", {from: user1Address});      
+      await instance.transfer(user1Address, 200);
+      await instance.burnTokens(100, {from: user1Address});      
       const burnedTokens = await instance.balanceOf(user1Address);
 
-      assert.equal(burnedTokens, "400000000000000000000");
+      assert.equal(burnedTokens, "100");
     });
+
+    it("should not burn when don't have tokens", async () => {
+      await expectRevert(
+        await instance.burnTokens(100, {from: user1Address}),
+        "Burn amount exceeds balance"
+      );
+    });
+
+    it("it should set to 100 msg.sender burned", async () => {
+      await expectRevert(
+        await instance.burnTokens(100, {from: user1Address}),
+        "Burn amount exceeds balance"
+      );
+    });    
   });
 
 });
