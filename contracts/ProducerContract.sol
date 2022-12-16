@@ -12,7 +12,7 @@ import "./ProducerPool.sol";
  */
 contract ProducerContract is Callable {
   uint256 internal constant MINIMUM_INSPECTION = 3;
-  int256 internal constant MAXIMUM_ISA_SCORE = 1000;
+  int256 internal constant LIMIT_ISA_SCORE = 1000;
 
   mapping(address => Producer) public producers;
 
@@ -106,7 +106,7 @@ contract ProducerContract is Callable {
     Producer memory producer = producers[msg.sender];
 
     require(minimumInspections(producer.totalInspections), "Minimum inspections");
-    require(!maximumIsaScore(producer.isa.isaScore), "Limit ISA Score");
+    require(!limitIsaScore(producer.isa.isaScore), "Limit ISA Score");
     // TODO: Create issue to add validation by last 12 eras
 
     producerPool.withdraw(
@@ -123,8 +123,8 @@ contract ProducerContract is Callable {
     return totalInspections >= MINIMUM_INSPECTION;
   }
 
-  function maximumIsaScore(int256 isaScore) internal pure returns (bool) {
-    return isaScore >= MAXIMUM_ISA_SCORE;
+  function limitIsaScore(int256 isaScore) internal pure returns (bool) {
+    return isaScore >= LIMIT_ISA_SCORE;
   }
 
   /**
@@ -148,13 +148,15 @@ contract ProducerContract is Callable {
 
     producer.isa.isaScore += isaScore;
     producers[addr] = producer;
-    int256 newScore = producer.isa.isaScore;
+    int256 newProducerScore = producer.isa.isaScore;
 
     if (producer.isa.sustainable) return true;
-    if (newScore < 0) isaScore = isaScore - (newScore);
-    if (maximumIsaScore(producer.isa.isaScore)) changeProducerToSustainable(producer);
+    if (newProducerScore < 0) isaScore = isaScore - (newProducerScore);
 
     producersTotalScore += isaScore;
+
+    if (limitIsaScore(producer.isa.isaScore)) changeProducerToSustainable(producer);
+
     return true;
   }
 
