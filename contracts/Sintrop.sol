@@ -21,19 +21,18 @@ contract Sintrop {
 
   uint256 public inspectionsCount;
   uint256 internal timeBetweenInspections;
-  uint256 internal timeToExpireInspection;
-  uint256 internal activistGiveUps;
+  uint256 internal blocksToExpireAcceptedInspection;
 
   constructor(
     address activistContractAddress,
     address producerContractAddress,
     uint256 timeBetweenInspections_,
-    uint256 timeToExpireInspection_
+    uint256 blocksToExpireAcceptedInspection_
   ) {
     activistContract = ActivistContract(activistContractAddress);
     producerContract = ProducerContract(producerContractAddress);
     timeBetweenInspections = timeBetweenInspections_;
-    timeToExpireInspection = timeToExpireInspection_;
+    blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
   }
 
   /**
@@ -98,11 +97,11 @@ contract Sintrop {
 
     inspection.status = InspectionStatus.ACCEPTED;
     inspection.acceptedAt = block.number;
-    inspection.acceptedAtTimeStamp = block.timestamp; // solhint-disable-line
+    inspection.acceptedAtTimestamp = block.timestamp; // solhint-disable-line
     inspection.acceptedBy = msg.sender;
     inspections[inspectionId] = inspection;
 
-    producerContract.recentInspection(inspection.createdBy, false);
+    producerContract.recentInspection(inspection.createdBy, false); // Talvez não precise, pois estamos usando a expiração da inspeção pra checar se o produtor pode solicitar uma nova inspeção
     activistContract.incrementGiveUps(msg.sender);
 
     activistContract.lastAcceptedAt(msg.sender, block.number);
@@ -120,11 +119,12 @@ contract Sintrop {
     requireActivist
     requireInspectionExists(inspectionId)
     requireInspectionAccepted(inspectionId)
-    requireNotExpired(inspectionId)
     requireInspectionOwner(inspectionId)
     returns (bool)
   {
     Inspection memory inspection = inspections[inspectionId];
+
+    require(!expiredInspection(inspectionId), "Inspection Expired");
 
     markAsRealized(inspection, _isas);
 
@@ -143,7 +143,7 @@ contract Sintrop {
     internal
   {
     inspection.status = InspectionStatus.INSPECTED;
-    inspection.inspectedAt = block.timestamp; // solhint-disable-line
+    inspection.inspectedAtTimestamp = block.timestamp; // solhint-disable-line
     inspection.isaScore = calculateIsa(inspection, _isas);
     inspections[inspection.id] = inspection;
   }
@@ -245,27 +245,24 @@ contract Sintrop {
     return canRequest || lastRequestAt == 0;
   }
 
-  function checkExpireData(uint256 inspectionId) internal view returns (bool) {
+  function expiredInspection(uint256 inspectionId) internal view returns (bool) {
     Inspection memory inspection = inspections[inspectionId];
-    uint256 expireInspectionAt = inspection.acceptedAt + timeToExpireInspection;
+    uint256 expireInspectionAt = inspection.acceptedAt + blocksToExpireAcceptedInspection;
 
-    return block.number < expireInspectionAt;
+    return block.number > expireInspectionAt;
   }
 
-  function calculateBlocksToExpire(uint256 inspectionId) internal view returns (uint256) {
+  function calculateBlocksToExpire(uint256 inspectionId) public view returns (uint256) {
     Inspection memory inspection = inspections[inspectionId];
-    uint256 blocksToExpire = inspection.acceptedAt +
-      timeToExpireInspection -
-      block.number;
 
-    return blocksToExpire;
+    return inspection.acceptedAt + blocksToExpireAcceptedInspection - block.number;
   }
 
   function canAcceptInspection() internal view returns (bool) {
     Activist memory activist = activistContract.getActivist(msg.sender);
     uint256 lastAcceptedAt = activist.lastAcceptedAt;
 
-    bool canAccept = block.number > lastAcceptedAt + timeToExpireInspection;
+    bool canAccept = block.number > lastAcceptedAt + blocksToExpireAcceptedInspection;
 
     return canAccept || lastAcceptedAt == 0;
   }
@@ -311,11 +308,6 @@ contract Sintrop {
 
   modifier requireInspectionOwner(uint256 inspectionId) {
     require(isActivistOwner(inspectionId), "You not accepted this inspection");
-    _;
-  }
-
-  modifier requireNotExpired(uint256 inspectionId) {
-    require(checkExpireData(inspectionId), "Inspection Expired");
     _;
   }
 }
