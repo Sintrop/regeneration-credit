@@ -6,7 +6,7 @@ const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 contract("ResearcherContract", (accounts) => {
   let instance;
   let userContract;
-  let [ownerAddress, user1Address, resea1Address, resea2Address] = accounts;
+  let [ownerAddress, resea1Address, resea2Address] = accounts;
 
   const addResearcher = async (name, address) => {
     await instance.addResearcher(name, "photoURL", { from: address });
@@ -131,25 +131,29 @@ contract("ResearcherContract", (accounts) => {
     });
   });
 
-  context("when add a research", () => {
-    it("should return error when is not a researcher", async () => {
-      await expectRevert(addResearch(), "Only allowed to researchers");
+  describe("#addResearch", () => {
+    context("when is not a researcher", () => {
+      it("should return error", async () => {
+        await expectRevert(addResearch(), "Only allowed to researchers");
+      });
     });
 
-    it("should add a work when is a researcher", async () => {
-      await addResearcher("Researcher A", resea1Address);
-      await addResearch(resea1Address);
-      const firstWork = await instance.worksCount();
+    context("when is a researcher", () => {
+      it("should add a work", async () => {
+        await addResearcher("Researcher A", resea1Address);
+        await addResearch(resea1Address);
+        const firstWork = await instance.worksCount();
 
-      assert.equal(firstWork, 1);
-    });
+        assert.equal(firstWork, 1);
+      });
 
-    it("should add 1 to researcher publishedWorks", async () => {
-      await addResearcher("Researcher A", resea1Address);
-      await addResearch(resea1Address);
-      const researcher = await instance.getResearcher(resea1Address);
+      it("should add 1 to researcher publishedWorks", async () => {
+        await addResearcher("Researcher A", resea1Address);
+        await addResearch(resea1Address);
+        const researcher = await instance.getResearcher(resea1Address);
 
-      assert.equal(researcher.publishedWorks, 1);
+        assert.equal(researcher.publishedWorks, 1);
+      });
     });
   });
 
