@@ -6,6 +6,7 @@ const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 contract("InvestorContract", (accounts) => {
   let instance;
   let userContract;
+  let sacToken;
   let [ownerAddress, inv1Address, inv2Address] = accounts;
 
   const addInvestor = async (name, address) => {
@@ -22,9 +23,12 @@ contract("InvestorContract", (accounts) => {
   };
 
   beforeEach(async () => {
+    sacToken = await SacToken.new(args.totalSacTokens);
+
     userContract = await UserContract.new();
 
-    instance = await InvestorContract.new(userContract.address);
+    instance = await InvestorContract.new(userContract.address, sacToken.address);
+    
 
     await userContract.newAllowedCaller(instance.address);
   });

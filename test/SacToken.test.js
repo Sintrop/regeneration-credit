@@ -1,5 +1,4 @@
 const SacToken = artifacts.require("SacToken");
-const InvestorContract = artifacts.require("InvestorContract");
 const UserContract = artifacts.require("UserContract");
 
 const { balance } = require("@openzeppelin/test-helpers");
@@ -8,7 +7,6 @@ const expectRevert = require("@openzeppelin/test-helpers/src/expectRevert");
 
 contract("SacToken", (accounts) => {
   let instance;
-  let investorContract;
   let userContract;
   let [ownerAddress, user1Address, investor1Address] = accounts;
 
@@ -24,9 +22,8 @@ contract("SacToken", (accounts) => {
   };
 
   beforeEach(async () => {
-    userContract = await UserContract.new();
-    investorContract = await InvestorContract.new(userContract.address);
     instance = await SacToken.new(args.totalSacTokens);
+    userContract = await UserContract.new();
   })
 
   context("", () => {
@@ -73,17 +70,9 @@ contract("SacToken", (accounts) => {
 
     it("should not burn when don't have tokens", async () => {
       await expectRevert(
-        await instance.burnTokens(100, {from: user1Address}),
+        instance.burnTokens(100, {from: user1Address}),
         "Burn amount exceeds balance"
       );
-    });
-
-    it("it should set to 100 msg.sender burned", async () => {
-      await expectRevert(
-        await instance.burnTokens(100, {from: user1Address}),
-        "Burn amount exceeds balance"
-      );
-    });    
+    });  
   });
-
 });
