@@ -80,7 +80,7 @@ contract ResearcherContract is Registrable {
     return bytes(researchers[addr].name).length > 0;
   }
 
-  function addResearch(
+  function addWork(
     string memory title,
     string memory thesis,
     string memory file
@@ -96,10 +96,11 @@ contract ResearcherContract is Registrable {
     researchers[msg.sender].publishedWorks++;
   }
 
-  function getResearches() public view returns (Work[] memory) {
+  function getWorks() public view returns (Work[] memory) {
     Work[] memory worksList = new Work[](worksCount);
+    uint256 count = worksCount;
 
-    for (uint256 i = 0; i < worksCount; i++) {
+    for (uint256 i = 0; i < count; i++) {
       worksList[i] = works[i + 1];
     }
 

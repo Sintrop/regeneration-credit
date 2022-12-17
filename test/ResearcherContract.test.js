@@ -12,8 +12,8 @@ contract("ResearcherContract", (accounts) => {
     await instance.addResearcher(name, "photoURL", { from: address });
   };
 
-  const addResearch = async (from) => {
-    await instance.addResearch("title", "thesis", "fileURL", {
+  const addWork = async (from) => {
+    await instance.addWork("title", "thesis", "fileURL", {
       from: from,
     });
   };
@@ -131,17 +131,17 @@ contract("ResearcherContract", (accounts) => {
     });
   });
 
-  describe("#addResearch", () => {
+  describe("#addWork", () => {
     context("when is not a researcher", () => {
       it("should return error", async () => {
-        await expectRevert(addResearch(), "Only allowed to researchers");
+        await expectRevert(addWork(), "Only allowed to researchers");
       });
     });
 
     context("when is a researcher", () => {
       it("should add a work", async () => {
         await addResearcher("Researcher A", resea1Address);
-        await addResearch(resea1Address);
+        await addWork(resea1Address);
         const firstWork = await instance.worksCount();
 
         assert.equal(firstWork, 1);
@@ -149,7 +149,7 @@ contract("ResearcherContract", (accounts) => {
 
       it("should add 1 to researcher publishedWorks", async () => {
         await addResearcher("Researcher A", resea1Address);
-        await addResearch(resea1Address);
+        await addWork(resea1Address);
         const researcher = await instance.getResearcher(resea1Address);
 
         assert.equal(researcher.publishedWorks, 1);
@@ -160,8 +160,8 @@ contract("ResearcherContract", (accounts) => {
   describe("#getWorks", () => {
     it("should return published works list", async () => {
       await addResearcher("Researcher A", resea1Address);
-      await addResearch(resea1Address);
-      const works = await instance.getResearches();
+      await addWork(resea1Address);
+      const works = await instance.getWorks();
 
       assert.equal(works.length, 1);
     });
