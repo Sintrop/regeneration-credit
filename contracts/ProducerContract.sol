@@ -11,8 +11,8 @@ import "./ProducerPool.sol";
  * @dev Producer resource that represent a user that can request a inspection
  */
 contract ProducerContract is Callable {
-  uint256 internal constant MINIMUM_INSPECTION = 3;
-  int256 internal constant LIMIT_ISA_SCORE = 1000;
+  uint256 internal constant MINIMUM_INSPECTION_TO_POOL = 1;
+  int256 internal constant LIMIT_ISA_SCORE_TO_POOL = 1000;
 
   mapping(address => Producer) public producers;
 
@@ -102,10 +102,9 @@ contract ProducerContract is Callable {
   }
 
   function withdraw() public {
-    require(producerExists(msg.sender), "Only producers pool");
-
     Producer memory producer = producers[msg.sender];
 
+    require(producerExists(msg.sender), "Only producers pool");
     require(minimumInspections(producer.totalInspections), "Minimum inspections");
     require(!limitIsaScore(producer.isa.isaScore), "Limit ISA Score");
     // TODO: Create issue to add validation by last 12 eras
@@ -121,11 +120,11 @@ contract ProducerContract is Callable {
   }
 
   function minimumInspections(uint256 totalInspections) internal pure returns (bool) {
-    return totalInspections >= MINIMUM_INSPECTION;
+    return totalInspections >= MINIMUM_INSPECTION_TO_POOL;
   }
 
   function limitIsaScore(int256 isaScore) internal pure returns (bool) {
-    return isaScore >= LIMIT_ISA_SCORE;
+    return isaScore >= LIMIT_ISA_SCORE_TO_POOL;
   }
 
   /**
@@ -161,11 +160,10 @@ contract ProducerContract is Callable {
     return true;
   }
 
-  function changeProducerToSustainable(Producer memory producer) internal returns (bool) {
+  function changeProducerToSustainable(Producer memory producer) internal {
     producersSustainable++;
     producers[producer.producerWallet].isa.sustainable = true;
     producersTotalScore -= producer.isa.isaScore;
-    return true;
   }
 
   function incrementCurrentEra(address addr) internal {
