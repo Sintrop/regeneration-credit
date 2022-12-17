@@ -17,17 +17,7 @@ contract("DeveloperContract", (accounts) => {
   };
 
   const addDeveloper = async (name, from) => {
-    await instance.addDeveloper(
-      name,
-      "photoURL",
-      "111.111.111-00",
-      "CPF",
-      "Brazil",
-      "SP",
-      "Jundiai",
-      "135465-005",
-      { from: from }
-    );
+    await instance.addDeveloper(name, "photoURL", { from: from });
   };
 
   advanceBlock = async (blocksNumber) => {
@@ -82,16 +72,9 @@ contract("DeveloperContract", (accounts) => {
       assert.equal(developer.userType, 4);
       assert.equal(developer.name, "Developer A");
       assert.equal(developer.proofPhoto, "photoURL");
-      assert.equal(developer.document, "111.111.111-00");
-      assert.equal(developer.documentType, "CPF");
 
       assert.equal(developer.level.level, 1);
       assert.equal(developer.level.currentEra, 1);
-
-      assert.equal(developer.userAddress.country, "Brazil");
-      assert.equal(developer.userAddress.state, "SP");
-      assert.equal(developer.userAddress.city, "Jundiai");
-      assert.equal(developer.userAddress.cep, "135465-005");
     });
   });
 

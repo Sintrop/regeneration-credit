@@ -12,8 +12,6 @@ contract("ActivistContract", (accounts) => {
     await instance.addActivist(
       name,
       "photoURL",
-      "111.111.111-00",
-      "CPF",
       "Brazil",
       "SP",
       "Jundiai",
@@ -40,10 +38,9 @@ contract("ActivistContract", (accounts) => {
       assert.equal(activist.userType, "2");
       assert.equal(activist.name, "Activist A");
       assert.equal(activist.proofPhoto, "photoURL");
-      assert.equal(activist.document, "111.111.111-00");
-      assert.equal(activist.documentType, "CPF");
-      assert.equal(activist.recentInspection, false);
       assert.equal(activist.totalInspections, "0");
+      assert.equal(activist.giveUps, "0");
+      assert.equal(activist.lastAcceptedAt, "0");
 
       assert.equal(activist.activistAddress.country, "Brazil");
       assert.equal(activist.activistAddress.state, "SP");
@@ -81,12 +78,12 @@ contract("ActivistContract", (accounts) => {
           assert.equal(activist.totalInspections, 0);
         });
 
-        it("should be created with recentInspection equal false", async () => {
+        it("should be created with giveUps equal zero", async () => {
           await addActivist("Activist A", activ1Address);
 
           const activist = await instance.getActivist(activ1Address);
 
-          assert.equal(activist.recentInspection, false);
+          assert.equal(activist.giveUps, 0);
         });
 
         it("should increment activistsCount after create activist", async () => {
@@ -156,29 +153,6 @@ contract("ActivistContract", (accounts) => {
     // Todo Add when not exists
   });
 
-  context("when will update recentInspection (.recentInspection)", () => {
-    context("with allowed caller", () => {
-      it("should update", async () => {
-        await addActivist("Activist A", activ1Address);
-        await instance.recentInspection(activ1Address, true);
-
-        const activist = await instance.getActivist(activ1Address);
-
-        assert.equal(activist.recentInspection, true);
-      });
-    });
-
-    context("with don't allowed caller", () => {
-      it("should return error", async () => {
-        await addActivist("Activist A", activ1Address);
-        await expectRevert(
-          instance.recentInspection(activ1Address, true, { from: activ1Address }),
-          "Not allowed caller"
-        );
-      });
-    });
-  });
-
   context("when will update incrementRequests (.incrementRequests)", () => {
     context("with allowed caller", () => {
       it("should success when is allowed caller", async () => {
@@ -192,7 +166,7 @@ contract("ActivistContract", (accounts) => {
     });
   });
 
-  context("with don't allowed caller", async () => {
+  context("without allowed caller", async () => {
     it("should return error when is not allowed caller", async () => {
       await addActivist("Activist A", activ1Address);
       await expectRevert(

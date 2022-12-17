@@ -9,14 +9,4 @@ struct Advisor {
   UserType userType;
   string name;
   string proofPhoto;
-  string document;
-  string documentType;
-  AdvisorAddress advisorAddress;
-}
-
-struct AdvisorAddress {
-  string country;
-  string state;
-  string city;
-  string cep;
 }
