@@ -8,14 +8,4 @@ struct Investor {
   address investorWallet;
   UserType userType;
   string name;
-  string document;
-  string documentType;
-  InvestorAddress investorAddress;
-}
-
-struct InvestorAddress {
-  string country;
-  string state;
-  string city;
-  string cep;
 }

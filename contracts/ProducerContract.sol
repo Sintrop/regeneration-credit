@@ -84,6 +84,7 @@ contract ProducerContract is Callable {
   function getProducers() public view returns (Producer[] memory) {
     Producer[] memory producerList = new Producer[](producersCount);
 
+    // TODO: Add producersCount in a memory variable before call in the for loop
     for (uint256 i = 0; i < producersCount; i++) {
       address acAddress = producersAddress[i];
       producerList[i] = producers[acAddress];

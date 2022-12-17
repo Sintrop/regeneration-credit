@@ -8,14 +8,5 @@ struct Researcher {
   address researcherWallet;
   UserType userType;
   string name;
-  string document;
-  string documentType;
-  ResearcherAddress researcherAddress;
-}
-
-struct ResearcherAddress {
-  string country;
-  string state;
-  string city;
-  string cep;
+  string proofPhoto;
 }

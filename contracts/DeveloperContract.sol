@@ -28,22 +28,12 @@ contract DeveloperContract is Ownable, Registrable {
   /**
    * @dev Allow a new register of developer
    * @param name the name of the developer
-   * @param document the document of developer
-   * @param documentType the document type of developer. CPF/CNPJ
-   * @param country the country where the developer is
-   * @param state the state of the developer
-   * @param city the of the developer
-   * @param cep the cep of the developer
    */
-  function addDeveloper(
-    string memory name,
-    string memory document,
-    string memory documentType,
-    string memory country,
-    string memory state,
-    string memory city,
-    string memory cep
-  ) public mustBeAllowedUser uniqueDeveloper {
+  function addDeveloper(string memory name, string memory proofPhoto)
+    public
+    mustBeAllowedUser
+    uniqueDeveloper
+  {
     UserType userType = UserType.DEVELOPER;
     uint256 poolEra = developerPoolEra();
     uint256 level = 1;
@@ -53,10 +43,8 @@ contract DeveloperContract is Ownable, Registrable {
       msg.sender,
       userType,
       name,
-      document,
-      documentType,
+      proofPhoto,
       Level(level, poolEra),
-      UserAddress(country, state, city, cep),
       block.number
     );
 

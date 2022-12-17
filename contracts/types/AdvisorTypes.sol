@@ -8,14 +8,5 @@ struct Advisor {
   address advisorWallet;
   UserType userType;
   string name;
-  string document;
-  string documentType;
-  AdvisorAddress advisorAddress;
-}
-
-struct AdvisorAddress {
-  string country;
-  string state;
-  string city;
-  string cep;
+  string proofPhoto;
 }

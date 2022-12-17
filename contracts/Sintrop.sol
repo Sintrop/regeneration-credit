@@ -21,17 +21,21 @@ contract Sintrop {
 
   uint256 public inspectionsCount;
   uint256 internal timeBetweenInspections;
+  uint256 internal blocksToExpireAcceptedInspection;
 
   constructor(
     address activistContractAddress,
     address producerContractAddress,
-    uint256 timeBetweenInspections_
+    uint256 timeBetweenInspections_,
+    uint256 blocksToExpireAcceptedInspection_
   ) {
     activistContract = ActivistContract(activistContractAddress);
     producerContract = ProducerContract(producerContractAddress);
     timeBetweenInspections = timeBetweenInspections_;
+    blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
   }
 
+  // TODO: Refact this mapping to not duplicate inspections
   /**
    * @dev Allows the current user producer/activist get all yours inspections with status INSPECTED
    */
@@ -47,22 +51,23 @@ contract Sintrop {
     return isas[inspectionId];
   }
 
+  // TODO: Remove not reutilized modifiers and use require direct in the function
   /**
    * @dev Allows the current user (producer) request a inspection.
    */
-  function requestInspection()
-    public
-    requireProducer
-    requireNoInspectionsOpen
-    requireNoRecentInspection
-  {
+  function requestInspection() public requireProducer requireNoInspectionsOpen {
+    require(canRequestInspection(), "Recent inspection");
+
     newRequest();
 
+    // TODO: create a function to realize actions above in a single transaction?
     producerContract.recentInspection(msg.sender, true);
     producerContract.lastRequestAt(msg.sender, block.number);
   }
 
+  // TODO: use default address as the acceptedBy address
   function newRequest() internal {
+    // TODO: create instance before, so add just the required fields
     Inspection memory inspection = Inspection(
       inspectionsCount + 1,
       InspectionStatus.OPEN,
@@ -70,12 +75,16 @@ contract Sintrop {
       msg.sender,
       0,
       block.number,
+      block.timestamp,
+      0,
+      0,
       0
     );
     inspections[inspection.id] = inspection;
     inspectionsCount++;
   }
 
+  // TODO: Remove not reutilized modifiers and use require direct in the function
   /**
    * @dev Allows the current user (activist) accept a inspection.
    * @param inspectionId The id of the inspection that the activist want accept.
@@ -89,18 +98,25 @@ contract Sintrop {
   {
     Inspection memory inspection = inspections[inspectionId];
 
+    require(canAcceptInspection(), "Can't accept yet");
     require(inspection.status == InspectionStatus.OPEN, "This inspection is not OPEN");
 
     inspection.status = InspectionStatus.ACCEPTED;
-    inspection.updatedAt = block.timestamp; // solhint-disable-line
+    inspection.acceptedAt = block.number;
+    inspection.acceptedAtTimestamp = block.timestamp; // solhint-disable-line
     inspection.acceptedBy = msg.sender;
     inspections[inspectionId] = inspection;
 
-    activistContract.recentInspection(msg.sender, true);
+    producerContract.recentInspection(inspection.createdBy, false); // Talvez não precise, pois estamos usando a expiração da inspeção pra checar se o produtor pode solicitar uma nova inspeção
+    activistContract.incrementGiveUps(msg.sender);
 
+    activistContract.lastAcceptedAt(msg.sender, block.number);
+
+    // TODO: Remove return?
     return true;
   }
 
+  // TODO: Remove not reutilized modifiers and use require direct in the function
   /**
    * @dev Allow a activist realize a inspection and mark as INSPECTED
    * @param inspectionId The id of the inspection to be realized
@@ -115,6 +131,8 @@ contract Sintrop {
   {
     Inspection memory inspection = inspections[inspectionId];
 
+    require(!expiredInspection(inspectionId), "Inspection Expired");
+
     markAsRealized(inspection, _isas);
 
     afterRealizeInspection(inspection);
@@ -128,7 +146,7 @@ contract Sintrop {
     internal
   {
     inspection.status = InspectionStatus.INSPECTED;
-    inspection.updatedAt = block.timestamp; // solhint-disable-line
+    inspection.inspectedAtTimestamp = block.timestamp; // solhint-disable-line
     inspection.isaScore = calculateIsa(inspection, _isas);
     inspections[inspection.id] = inspection;
   }
@@ -137,6 +155,7 @@ contract Sintrop {
     internal
     returns (int256)
   {
+    // TODO: Add isaScore points in state
     int256[5] memory points = [int256(10), 5, 0, -5, -10];
     int256 isaScore;
 
@@ -149,8 +168,9 @@ contract Sintrop {
     return isaScore;
   }
 
+  // TODO: Refact this function
   /**
-   * @dev Inscrement producer and activist request action and mark both as no recent open requests and inspection
+   * @dev Inscrement producer and activist request actions
    * @param inspection the inspected inspection
    */
   function afterRealizeInspection(Inspection memory inspection) internal {
@@ -158,11 +178,10 @@ contract Sintrop {
     address acceptedBy = inspection.acceptedBy;
 
     // Increment actvist inspections and release to carry out new inspections
-    activistContract.recentInspection(acceptedBy, false);
     activistContract.incrementRequests(acceptedBy);
+    activistContract.decreaseGiveUps(acceptedBy);
 
-    // Increment producer requests and release to carry out new requests
-    producerContract.recentInspection(createdBy, false);
+    // Increment producer requests
     producerContract.incrementInspections(createdBy);
 
     userInspections[createdBy].push(inspection);
@@ -190,6 +209,7 @@ contract Sintrop {
     return inspectionsList;
   }
 
+  // TODO: Have a better way to return this?
   /**
    * @dev Returns all inpections status string.
    */
@@ -222,6 +242,7 @@ contract Sintrop {
     return inspections[inspectionId].status == InspectionStatus.ACCEPTED;
   }
 
+  // TODO: Refact this action
   function canRequestInspection() public view returns (bool) {
     Producer memory producer = producerContract.getProducer(msg.sender);
 
@@ -229,6 +250,28 @@ contract Sintrop {
     bool canRequest = block.number > lastRequestAt + timeBetweenInspections;
 
     return canRequest || lastRequestAt == 0;
+  }
+
+  function expiredInspection(uint256 inspectionId) internal view returns (bool) {
+    Inspection memory inspection = inspections[inspectionId];
+    uint256 expireInspectionAt = inspection.acceptedAt + blocksToExpireAcceptedInspection;
+
+    return block.number > expireInspectionAt;
+  }
+
+  function calculateBlocksToExpire(uint256 inspectionId) public view returns (uint256) {
+    Inspection memory inspection = inspections[inspectionId];
+
+    return inspection.acceptedAt + blocksToExpireAcceptedInspection - block.number;
+  }
+
+  function canAcceptInspection() internal view returns (bool) {
+    Activist memory activist = activistContract.getActivist(msg.sender);
+    uint256 lastAcceptedAt = activist.lastAcceptedAt;
+
+    bool canAccept = block.number > lastAcceptedAt + blocksToExpireAcceptedInspection;
+
+    return canAccept || lastAcceptedAt == 0;
   }
 
   // MODIFIERS
@@ -262,11 +305,6 @@ contract Sintrop {
       !producerContract.getProducer(msg.sender).recentInspection,
       "Request OPEN or ACCEPTED"
     );
-    _;
-  }
-
-  modifier requireNoRecentInspection() {
-    require(canRequestInspection(), "Recent inspection");
     _;
   }
 

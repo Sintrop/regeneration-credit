@@ -21,10 +21,12 @@ contract CategoryContract {
   ResearcherContract public researcherContract;
   UserContract public userContract;
 
+  // TODO: Remove state category (unused)
   Category public category;
   uint256 public categoryCounts;
   PoolPassiveInterface internal isaPool;
 
+  // TODO: Remove researcherContract and use only userContract to check if exists or if is a researcher
   constructor(
     address _isaPoolAddress,
     address researcherContractAddress,
@@ -35,6 +37,7 @@ contract CategoryContract {
     userContract = UserContract(userContractAddress);
   }
 
+  // TODO: remove modifier and use require direct in the function (modifier is not reutilized)
   /**
    * @dev add a new category
    * @param name the name of category
@@ -84,6 +87,7 @@ contract CategoryContract {
   function getCategories() public view returns (Category[] memory) {
     Category[] memory categoriesList = new Category[](categoryCounts);
 
+    // TODO: Add categoryCounts in a memory variable before the loop
     for (uint256 i = 0; i < categoryCounts; i++) {
       categoriesList[i] = categories[i + 1];
     }
@@ -91,6 +95,7 @@ contract CategoryContract {
     return categoriesList;
   }
 
+  // TODO: Remove not reutilized modifiers and use require direct in the function
   /**
    * @dev Allow a user vote in a category sending tokens amount to this
    * @param id the id of a category that receives a vote.
@@ -115,6 +120,7 @@ contract CategoryContract {
     return true;
   }
 
+  // TODO: Remove not reutilized modifiers and use require direct in the function
   /**
    * @dev Allow a user unvote in a category and get your tokens again
    * @param id the id of a category that receives a vote.
