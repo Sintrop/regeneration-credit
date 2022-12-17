@@ -1,5 +1,6 @@
 const InvestorContract = artifacts.require("InvestorContract");
 const UserContract = artifacts.require("UserContract");
+const SacToken = artifacts.require("SacToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
@@ -8,6 +9,10 @@ contract("InvestorContract", (accounts) => {
   let userContract;
   let sacToken;
   let [ownerAddress, inv1Address, inv2Address] = accounts;
+
+  let args = {
+    totalSacTokens: "1500000000000000000000000000",
+  };
 
   const addInvestor = async (name, address) => {
     await instance.addInvestor(name, { from: address });
@@ -19,7 +24,6 @@ contract("InvestorContract", (accounts) => {
     userContract = await UserContract.new();
 
     instance = await InvestorContract.new(userContract.address, sacToken.address);
-    
 
     await userContract.newAllowedCaller(instance.address);
   });
@@ -111,6 +115,27 @@ contract("InvestorContract", (accounts) => {
       const investorExists = await instance.investorExists(inv1Address);
 
       assert.equal(investorExists, false);
+    });
+  });
+
+  context("when a user burn 100 tokens", () => {
+    it("should add 100 to burned mapping", async () => {
+      await sacToken.transfer(inv1Address, 200);
+      await sacToken.burnTokens(100, { from: inv1Address });
+      const burnedTokens = await instance.getCertificate(inv1Address);
+
+      assert.equal(burnedTokens, "100");
+    });
+  });
+
+  context("when a user burn 100 tokens and after burn another 100 tokens", () => {
+    it("should add 200 to burned mapping", async () => {
+      await sacToken.transfer(inv1Address, 200);
+      await sacToken.burnTokens(100, { from: inv1Address });
+      await sacToken.burnTokens(100, { from: inv1Address });
+      const burnedTokens = await instance.getCertificate(inv1Address);
+
+      assert.equal(burnedTokens, "200");
     });
   });
 });

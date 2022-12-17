@@ -8,28 +8,15 @@ const expectRevert = require("@openzeppelin/test-helpers/src/expectRevert");
 contract("SacToken", (accounts) => {
   let instance;
   let userContract;
-  let [ownerAddress, user1Address, investor1Address] = accounts;
+  let [ownerAddress, user1Address, user2Address] = accounts;
 
   let args = {
     totalSacTokens: "1500000000000000000000000000",
   };
 
-  const addInvestor = async (name, address) => {
-    await investorContract.addInvestor(
-      name,
-      { from: address }
-    );
-  };
-
   beforeEach(async () => {
     instance = await SacToken.new(args.totalSacTokens);
     userContract = await UserContract.new();
-  })
-
-  context("", () => {
-    it("", async () => {
-
-    });
   });
 
   context("when deploy the token contract", () => {
@@ -53,16 +40,16 @@ contract("SacToken", (accounts) => {
 
     it("it should not transfer when user has no tokens", async () => {
       await expectRevert(
-        instance.transfer(user1Address, 100, { from: investor1Address }),
+        instance.transfer(user1Address, 100, { from: user2Address }),
         "Insufficient balance."
       );
     });
   });
 
-  context.only("when a user try to burn 100 tokens", () => {
+  context("when a user try to burn 100 tokens", () => {
     it("should burn when has tokens", async () => {
       await instance.transfer(user1Address, 200);
-      await instance.burnTokens(100, {from: user1Address});      
+      await instance.burnTokens(100, { from: user1Address });
       const burnedTokens = await instance.balanceOf(user1Address);
 
       assert.equal(burnedTokens, "100");
@@ -70,9 +57,9 @@ contract("SacToken", (accounts) => {
 
     it("should not burn when don't have tokens", async () => {
       await expectRevert(
-        instance.burnTokens(100, {from: user1Address}),
+        instance.burnTokens(100, { from: user1Address }),
         "Burn amount exceeds balance"
       );
-    });  
+    });
   });
 });

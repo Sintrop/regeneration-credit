@@ -72,7 +72,7 @@ contract InvestorContract {
     return bytes(investors[addr].name).length > 0;
   }
 
-  function getCertificate(address addr) public view returns(uint256) {
+  function getCertificate(address addr) public view returns (uint256) {
     return sacToken.burned(addr);
   }
 
