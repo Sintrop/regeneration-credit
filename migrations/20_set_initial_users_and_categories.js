@@ -2,6 +2,7 @@ const CategoryContract = artifacts.require("CategoryContract");
 const ProducerContract = artifacts.require("ProducerContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
 const ActivistContract = artifacts.require("ActivistContract");
+const Sintrop = artifacts.require("Sintrop");
 
 module.exports = function (deployer) {
   deployer.then(async () => {
@@ -12,6 +13,7 @@ module.exports = function (deployer) {
     const activistContract = await ActivistContract.deployed();
     const producerContract = await ProducerContract.deployed();
     const researcherContract = await ResearcherContract.deployed();
+    const sintrop = await Sintrop.deployed();
 
     await researcherContract.newAllowedUser(researcher1);
 
@@ -210,5 +212,9 @@ module.exports = function (deployer) {
       `Ep > 1000`,
       { from: researcher1 }
     );
+
+    await sintrop.requestInspection({ from: producer1 });
+    await sintrop.requestInspection({ from: producer2 });
+
   });
 };
