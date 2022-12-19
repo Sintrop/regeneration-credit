@@ -1,8 +1,6 @@
 const SacToken = artifacts.require("SacToken");
 const UserContract = artifacts.require("UserContract");
 
-const { balance } = require("@openzeppelin/test-helpers");
-const ZERO_ADDRESS = require("@openzeppelin/test-helpers/src/constants");
 const expectRevert = require("@openzeppelin/test-helpers/src/expectRevert");
 
 contract("SacToken", (accounts) => {
@@ -31,35 +29,39 @@ contract("SacToken", (accounts) => {
     });
   });
 
-  context("when a user transfer 100 sac token", () => {
-    it("it should transfer when user has tokens", async () => {
-      await instance.transfer(user1Address, 100);
-      const balanceOf = await instance.balanceOf(user1Address);
-      assert.equal(balanceOf, 100);
-    });
+  describe("#transfer", () => {
+    context("when a user transfer 100 sac token", () => {
+      it("it should transfer when user has tokens", async () => {
+        await instance.transfer(user1Address, 100);
+        const balanceOf = await instance.balanceOf(user1Address);
+        assert.equal(balanceOf, 100);
+      });
 
-    it("it should not transfer when user has no tokens", async () => {
-      await expectRevert(
-        instance.transfer(user1Address, 100, { from: user2Address }),
-        "Insufficient balance."
-      );
+      it("it should not transfer when user has no tokens", async () => {
+        await expectRevert(
+          instance.transfer(user1Address, 100, { from: user2Address }),
+          "Insufficient balance."
+        );
+      });
     });
   });
 
-  context("when a user try to burn 100 tokens", () => {
-    it("should burn when has tokens", async () => {
-      await instance.transfer(user1Address, 200);
-      await instance.burnTokens(100, { from: user1Address });
-      const burnedTokens = await instance.balanceOf(user1Address);
+  describe("#burnTokens", () => {
+    context("when a user try to burn 100 tokens", () => {
+      it("should burn when has tokens", async () => {
+        await instance.transfer(user1Address, 200);
+        await instance.burnTokens(100, { from: user1Address });
+        const burnedTokens = await instance.balanceOf(user1Address);
 
-      assert.equal(burnedTokens, "100");
-    });
+        assert.equal(burnedTokens, "100");
+      });
 
-    it("should not burn when don't have tokens", async () => {
-      await expectRevert(
-        instance.burnTokens(100, { from: user1Address }),
-        "Burn amount exceeds balance"
-      );
+      it("should not burn when don't have tokens", async () => {
+        await expectRevert(
+          instance.burnTokens(100, { from: user1Address }),
+          "Burn amount exceeds balance"
+        );
+      });
     });
   });
 });

@@ -118,24 +118,33 @@ contract("InvestorContract", (accounts) => {
     });
   });
 
-  context("when a user burn 100 tokens", () => {
-    it("should add 100 to burned mapping", async () => {
-      await sacToken.transfer(inv1Address, 200);
-      await sacToken.burnTokens(100, { from: inv1Address });
-      const burnedTokens = await instance.getCertificate(inv1Address);
+  describe("#burnTokens", () => {
+    context("when a user burn 100000000000000000000 tokens", () => {
+      beforeEach(async () => {
+        await sacToken.transfer(inv1Address, 200);
+        await sacToken.burnTokens(100, { from: inv1Address });
+      });
 
-      assert.equal(burnedTokens, "100");
-    });
-  });
+      it("should add 100000000000000000000 to burned mapping", async () => {
+        const burnedTokens = await instance.getCertificate(inv1Address);
 
-  context("when a user burn 100 tokens and after burn another 100 tokens", () => {
-    it("should add 200 to burned mapping", async () => {
-      await sacToken.transfer(inv1Address, 200);
-      await sacToken.burnTokens(100, { from: inv1Address });
-      await sacToken.burnTokens(100, { from: inv1Address });
-      const burnedTokens = await instance.getCertificate(inv1Address);
+        assert.equal(burnedTokens, "100");
+      });
 
-      assert.equal(burnedTokens, "200");
+      context(
+        "when a user burn 100000000000000000000 tokens and after burn another 100000000000000000000 tokens",
+        () => {
+          beforeEach(async () => {
+            await sacToken.burnTokens(100, { from: inv1Address });
+          });
+
+          it("should add 200000000000000000000 to burned mapping", async () => {
+            const burnedTokens = await instance.getCertificate(inv1Address);
+
+            assert.equal(burnedTokens, "200");
+          });
+        }
+      );
     });
   });
 });
