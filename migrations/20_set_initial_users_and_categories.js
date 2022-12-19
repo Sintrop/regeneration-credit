@@ -16,35 +16,35 @@ module.exports = function (deployer) {
     await researcherContract.newAllowedUser(researcher1);
 
     await producerContract.addProducer(
-      "Beans Farm",
+      "Fazenda Ouro Fino",
       "photoURL",
       "123456789123456",
       "CNPJ",
       "Brazil",
-      "São Paulo",
-      "São Carlos",
-      "Rua XV",
+      "Bahia",
+      "Jequié",
+      "Rua Exemplo",
       "Informação adicional",
-      "123456789123456",
+      "1234567",
       { from: producer1 }
     );
 
     await producerContract.addProducer(
-      "Soy Plantation",
+      "Fazenda Guirra",
       "photoURL",
       "11111111111111",
       "CNPJ",
       "Brazil",
       "São Paulo",
-      "Piracicaba",
-      "Rua XV",
+      "São José dos Campos",
+      "Rua Exemplo",
       "Como chegar",
       "1111111111111",
       { from: producer2 }
     );
 
     await activistContract.addActivist(
-      "John Johnson",
+      "Marcos da Silva",
       "photoURL",
       "Brazil",
       "SP",
@@ -54,28 +54,28 @@ module.exports = function (deployer) {
     );
 
     await activistContract.addActivist(
-      "Peter Parker",
+      "Rafaela Carvalho",
       "photoURL",
       "Brazil",
-      "SP",
-      "Marília",
+      "SC",
+      "Florianopolis",
       "333333333333333",
       { from: activist2 }
     );
 
-    await researcherContract.addResearcher("Researcher Tom", "photoURL", {
+    await researcherContract.addResearcher("André de Oliveira Ravagnani", "photoURL", {
       from: researcher1,
     });
 
     await categoryContract.addCategory(
-      "Pesticides use",
-      `the description of category1`,
-      `how activists should evaluate category1`,
-      `category1 totallySustainable`,
-      `category1 partiallySustainable`,
-      `category1 neutro`,
-      `category1 partiallyNotSustainable`,
-      `category1 totallyNotSustainable`,
+      "Origem da Água",
+      `Categoria para medir a origem da água utilizada na produção. Variáveis: A [m2] = área propriedade, We [m3] = água concessionária comprada, Wc [m3] = água coletada na própria propriedade; Wn [m3] = água coletada fora da propriedade; W [m3] = consumo total. IuA = Wc - ( We + Wn ). Considerando o consumo no período de 1 era, qual foi o índice de uso da água (IuA) do produtor avaliado? `,
+      `Para medir o Wc, analise se o produtor coleta água da chuva ou de poços localmente. Faça uma estimativa do volume de água coletada por era dessa forma. Para medir o We, verifique se o produtor compra algo de terceiros e cooperativas com contratos públicos. Tire foto do sistema. Avalie o volume comprado. Tire foto da conta cobrada ou de nota fiscal emitida. Para avaliar água coletada fora da propriedade, estime o consumo e verifique a origem. Calcule IuA e exiba o cálculo e valores encontrados.`,
+      ` IuA > 0 e We = 0`,
+      `IuA > 0 e We ≠ 0`,
+      `Não se aplica`,
+      `IuA < 0 e Wc > 0`,
+      `IuA < 0 e Wc = 0`,
       { from: researcher1 }
     );
   });
