@@ -132,11 +132,6 @@ contract("ResearcherContract", (accounts) => {
   });
 
   describe("#addWork", () => {
-    beforeEach(async () => {
-      await addResearcher("Researcher A", resea1Address);
-      await addWork(resea1Address);
-    });
-
     context("when is not a researcher", () => {
       it("should return error", async () => {
         await expectRevert(addWork(), "Only allowed to researchers");
@@ -144,6 +139,11 @@ contract("ResearcherContract", (accounts) => {
     });
 
     context("when is a researcher", () => {
+      beforeEach(async () => {
+        await addResearcher("Researcher A", resea1Address);
+        await addWork(resea1Address);
+      });
+
       it("should add a work", async () => {
         const firstWork = await instance.worksCount();
 
