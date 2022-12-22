@@ -45,9 +45,10 @@ contract ActivistContract is Callable {
       userType,
       name,
       proofPhoto,
-      false,
       0,
-      activistAddress
+      0,
+      activistAddress,
+      0
     );
 
     activists[msg.sender] = activist;
@@ -89,12 +90,20 @@ contract ActivistContract is Callable {
     return bytes(activists[addr].name).length > 0;
   }
 
-  function recentInspection(address addr, bool state) public mustBeAllowedCaller {
-    activists[addr].recentInspection = state;
-  }
-
   function incrementRequests(address addr) public mustBeAllowedCaller {
     activists[addr].totalInspections++;
+  }
+
+  function incrementGiveUps(address addr) public mustBeAllowedCaller {
+    activists[addr].giveUps++;
+  }
+
+  function decreaseGiveUps(address addr) public mustBeAllowedCaller {
+    activists[addr].giveUps--;
+  }
+
+  function lastAcceptedAt(address addr, uint256 blocksNumber) public mustBeAllowedCaller {
+    activists[addr].lastAcceptedAt = blocksNumber;
   }
 
   // MODIFIERS
