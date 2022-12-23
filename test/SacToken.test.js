@@ -30,16 +30,16 @@ contract("SacToken", (accounts) => {
   });
 
   describe("#transfer", () => {
-    context("when a user transfer 100 sac token", () => {
+    context("when a user transfer 100000000000000000000 sac token", () => {
       it("it should transfer when user has tokens", async () => {
-        await instance.transfer(user1Address, 100);
+        await instance.transfer(user1Address, 100000000000000000000);
         const balanceOf = await instance.balanceOf(user1Address);
-        assert.equal(balanceOf, 100);
+        assert.equal(balanceOf, 100000000000000000000);
       });
 
       it("it should not transfer when user has no tokens", async () => {
         await expectRevert(
-          instance.transfer(user1Address, 100, { from: user2Address }),
+          instance.transfer(user1Address, 100000000000000000000, { from: user2Address }),
           "Insufficient balance."
         );
       });
@@ -47,18 +47,18 @@ contract("SacToken", (accounts) => {
   });
 
   describe("#burnTokens", () => {
-    context("when a user try to burn 100 tokens", () => {
+    context("when a user try to burn 100000000000000000000 tokens", () => {
       it("should burn when has tokens", async () => {
-        await instance.transfer(user1Address, 200);
-        await instance.burnTokens(100, { from: user1Address });
+        await instance.transfer(user1Address, 200000000000000000000);
+        await instance.burnTokens(100000000000000000000, { from: user1Address });
         const burnedTokens = await instance.balanceOf(user1Address);
 
-        assert.equal(burnedTokens, "100");
+        assert.equal(burnedTokens, "100000000000000000000");
       });
 
       it("should not burn when don't have tokens", async () => {
         await expectRevert(
-          instance.burnTokens(100, { from: user1Address }),
+          instance.burnTokens(100000000000000000000, { from: user1Address }),
           "Burn amount exceeds balance"
         );
       });

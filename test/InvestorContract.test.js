@@ -132,7 +132,7 @@ contract("InvestorContract", (accounts) => {
       });
 
       context(
-        "when a user burn 100000000000000000000 tokens and after burn another 100000000000000000000 tokens",
+        "when a user burn another 100000000000000000000 tokens",
         () => {
           beforeEach(async () => {
             await sacToken.burnTokens(100, { from: inv1Address });
