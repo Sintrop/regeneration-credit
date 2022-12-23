@@ -131,20 +131,17 @@ contract("InvestorContract", (accounts) => {
         assert.equal(burnedTokens, "100");
       });
 
-      context(
-        "when a user burn another 100000000000000000000 tokens",
-        () => {
-          beforeEach(async () => {
-            await sacToken.burnTokens(100, { from: inv1Address });
-          });
+      context("when a user burn another 100000000000000000000 tokens", () => {
+        beforeEach(async () => {
+          await sacToken.burnTokens(100, { from: inv1Address });
+        });
 
-          it("should add 200000000000000000000 to burned mapping", async () => {
-            const burnedTokens = await instance.getCertificate(inv1Address);
+        it("should add 200000000000000000000 to burned mapping", async () => {
+          const burnedTokens = await instance.getCertificate(inv1Address);
 
-            assert.equal(burnedTokens, "200");
-          });
-        }
-      );
+          assert.equal(burnedTokens, "200");
+        });
+      });
     });
   });
 });

@@ -5,7 +5,6 @@ const expectRevert = require("@openzeppelin/test-helpers/src/expectRevert");
 
 contract("SacToken", (accounts) => {
   let instance;
-  let userContract;
   let [ownerAddress, user1Address, user2Address] = accounts;
 
   let args = {
