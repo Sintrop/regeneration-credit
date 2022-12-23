@@ -9,4 +9,14 @@ struct Researcher {
   UserType userType;
   string name;
   string proofPhoto;
+  uint256 publishedWorks;
+}
+
+struct Work {
+  uint256 id;
+  address createdBy;
+  string title;
+  string thesis;
+  string file;
+  uint256 createdAtTimeStamp;
 }

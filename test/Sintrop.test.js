@@ -6,6 +6,7 @@ const UserContract = artifacts.require("UserContract");
 const ActivistContract = artifacts.require("ActivistContract");
 const ProducerContract = artifacts.require("ProducerContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
+const ProducerPool = artifacts.require("ProducerPool");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
@@ -125,15 +126,33 @@ contract("Sintrop", (accounts) => {
     }
   };
 
+  const producerPoolArgs = {
+    totalTokens: "750000000000000000000000000",
+    halving: 50,
+    totalEras: 50,
+    blocksPerEra: 50,
+  };
+
   beforeEach(async () => {
     userContract = await UserContract.new();
 
-    producerContract = await ProducerContract.new(userContract.address);
     activistContract = await ActivistContract.new(userContract.address);
     researcherContract = await ResearcherContract.new(userContract.address);
 
     sacToken = await SacToken.new("1500000000000000000000000000");
     isaPool = await IsaPool.new(sacToken.address);
+
+    producerPool = await ProducerPool.new(
+      sacToken.address,
+      producerPoolArgs.halving,
+      producerPoolArgs.totalEras,
+      producerPoolArgs.blocksPerEra
+    );
+
+    producerContract = await ProducerContract.new(
+      userContract.address,
+      producerPool.address
+    );
 
     categoryContract = await CategoryContract.new(
       isaPool.address,
@@ -659,7 +678,7 @@ contract("Sintrop", (accounts) => {
 
       const producer = await producerContract.getProducer(producerAddress);
 
-      assert.equal(producer.totalRequests, 1);
+      assert.equal(producer.totalInspections, 1);
     });
 
     it("should increment activist totalInspections", async () => {
