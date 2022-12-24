@@ -8,14 +8,15 @@ struct Researcher {
   address researcherWallet;
   UserType userType;
   string name;
-  string document;
-  string documentType;
-  ResearcherAddress researcherAddress;
+  string proofPhoto;
+  uint256 publishedWorks;
 }
 
-struct ResearcherAddress {
-  string country;
-  string state;
-  string city;
-  string cep;
+struct Work {
+  uint256 id;
+  address createdBy;
+  string title;
+  string thesis;
+  string file;
+  uint256 createdAtTimeStamp;
 }

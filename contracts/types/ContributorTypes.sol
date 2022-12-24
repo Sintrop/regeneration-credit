@@ -8,14 +8,5 @@ struct Contributor {
   address contributorWallet;
   UserType userType;
   string name;
-  string document;
-  string documentType;
-  ContributorAddress contributorAddress;
-}
-
-struct ContributorAddress {
-  string country;
-  string state;
-  string city;
-  string cep;
+  string proofPhoto;
 }

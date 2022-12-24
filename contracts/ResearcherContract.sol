@@ -7,10 +7,12 @@ import "./Registrable.sol";
 
 contract ResearcherContract is Registrable {
   mapping(address => Researcher) internal researchers;
+  mapping(uint256 => Work) internal works;
 
   UserContract internal userContract;
   address[] internal researchersAddress;
   uint256 public researchersCount;
+  uint256 public worksCount;
 
   constructor(address userContractAddress) {
     userContract = UserContract(userContractAddress);
@@ -19,23 +21,14 @@ contract ResearcherContract is Registrable {
   /**
    * @dev Allow a new register of researcher
    * @param name the name of the researcher
-   * @param document the document of researcher
-   * @param documentType the document type type of researcher. CPF/CNPJ
-   * @param country the country where the researcher is
-   * @param state the state of the researcher
-   * @param city the of the researcher
-   * @param cep the cep of the researcher
    * @return a Researcher
    */
-  function addResearcher(
-    string memory name,
-    string memory document,
-    string memory documentType,
-    string memory country,
-    string memory state,
-    string memory city,
-    string memory cep
-  ) public uniqueResearcher mustBeAllowedUser returns (Researcher memory) {
+  function addResearcher(string memory name, string memory proofPhoto)
+    public
+    uniqueResearcher
+    mustBeAllowedUser
+    returns (Researcher memory)
+  {
     uint256 id = researchersCount + 1;
     UserType userType = UserType.RESEARCHER;
 
@@ -44,9 +37,8 @@ contract ResearcherContract is Registrable {
       msg.sender,
       userType,
       name,
-      document,
-      documentType,
-      ResearcherAddress(country, state, city, cep)
+      proofPhoto,
+      0
     );
 
     researchers[msg.sender] = researcher;
@@ -86,6 +78,33 @@ contract ResearcherContract is Registrable {
    */
   function researcherExists(address addr) public view returns (bool) {
     return bytes(researchers[addr].name).length > 0;
+  }
+
+  function addWork(
+    string memory title,
+    string memory thesis,
+    string memory file
+  ) public {
+    require(researcherExists(msg.sender), "Only allowed to researchers");
+
+    uint256 id = worksCount + 1;
+
+    Work memory work = Work(id, msg.sender, title, thesis, file, block.timestamp); // solhint-disable-line
+
+    works[id] = work;
+    worksCount++;
+    researchers[msg.sender].publishedWorks++;
+  }
+
+  function getWorks() public view returns (Work[] memory) {
+    Work[] memory worksList = new Work[](worksCount);
+    uint256 count = worksCount;
+
+    for (uint256 i = 0; i < count; i++) {
+      worksList[i] = works[i + 1];
+    }
+
+    return worksList;
   }
 
   // MODIFIERS

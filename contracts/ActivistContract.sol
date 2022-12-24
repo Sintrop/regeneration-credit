@@ -19,8 +19,6 @@ contract ActivistContract is Callable {
   /**
    * @dev Allow a new register of activist
    * @param name the name of the activist
-   * @param document the document of activist
-   * @param documentType the document type type of activist. CPF/CNPJ
    * @param country the country where the activist is
    * @param state the state of the activist
    * @param city the of the activist
@@ -31,8 +29,6 @@ contract ActivistContract is Callable {
   function addActivist(
     string memory name,
     string memory proofPhoto,
-    string memory document,
-    string memory documentType,
     string memory country,
     string memory state,
     string memory city,
@@ -49,11 +45,10 @@ contract ActivistContract is Callable {
       userType,
       name,
       proofPhoto,
-      document,
-      documentType,
-      false,
       0,
-      activistAddress
+      0,
+      activistAddress,
+      0
     );
 
     activists[msg.sender] = activist;
@@ -95,12 +90,20 @@ contract ActivistContract is Callable {
     return bytes(activists[addr].name).length > 0;
   }
 
-  function recentInspection(address addr, bool state) public mustBeAllowedCaller {
-    activists[addr].recentInspection = state;
-  }
-
   function incrementRequests(address addr) public mustBeAllowedCaller {
     activists[addr].totalInspections++;
+  }
+
+  function incrementGiveUps(address addr) public mustBeAllowedCaller {
+    activists[addr].giveUps++;
+  }
+
+  function decreaseGiveUps(address addr) public mustBeAllowedCaller {
+    activists[addr].giveUps--;
+  }
+
+  function lastAcceptedAt(address addr, uint256 blocksNumber) public mustBeAllowedCaller {
+    activists[addr].lastAcceptedAt = blocksNumber;
   }
 
   // MODIFIERS

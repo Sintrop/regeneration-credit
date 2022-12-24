@@ -6,7 +6,7 @@ const ActivistContract = artifacts.require("ActivistContract");
 module.exports = function (deployer) {
   deployer.then(async () => {
     let accounts = await web3.eth.getAccounts();
-    let [producer1, producer2, activist1, activist2, researcher1] = accounts;
+    let [_, producer1, producer2, activist1, activist2, researcher1] = accounts;
 
     const categoryContract = await CategoryContract.deployed();
     const activistContract = await ActivistContract.deployed();
@@ -26,7 +26,7 @@ module.exports = function (deployer) {
       "Rua XV",
       "Informação adicional",
       "123456789123456",
-      {from: producer1}
+      { from: producer1 }
     );
 
     await producerContract.addProducer(
@@ -40,43 +40,32 @@ module.exports = function (deployer) {
       "Rua XV",
       "Como chegar",
       "1111111111111",
-      {from: producer2}
+      { from: producer2 }
     );
 
     await activistContract.addActivist(
       "John Johnson",
-      "22222222222222",
       "photoURL",
-      "CPF",
       "Brazil",
       "SP",
       "Ribeirão Preto",
       "2222222222222222",
-      {from: activist1}
+      { from: activist1 }
     );
 
     await activistContract.addActivist(
       "Peter Parker",
       "photoURL",
-      "3333333333333",
-      "CPF",
       "Brazil",
       "SP",
       "Marília",
       "333333333333333",
-      {from: activist2}
+      { from: activist2 }
     );
 
-    await researcherContract.addResearcher(
-      "Researcher Tom",
-      "444444444444444",
-      "CPF",
-      "Brazil",
-      "SP",
-      "Bauru",
-      "44444444444444",
-      {from: researcher1}
-    );
+    await researcherContract.addResearcher("Researcher Tom", "photoURL", {
+      from: researcher1,
+    });
 
     await categoryContract.addCategory(
       "Pesticides use",
@@ -87,7 +76,7 @@ module.exports = function (deployer) {
       `category1 neutro`,
       `category1 partiallyNotSustainable`,
       `category1 totallyNotSustainable`,
-      {from: researcher1}
+      { from: researcher1 }
     );
   });
 };
