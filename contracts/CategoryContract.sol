@@ -143,6 +143,10 @@ contract CategoryContract {
     return tokens;
   }
 
+  function exists(uint256 id) public view returns (bool) {
+    return categories[id].id > 0;
+  }
+
   // MODIFIERS
 
   modifier mustNotExceedLimitVoting(uint256 id, uint256 tokens) {
@@ -154,7 +158,7 @@ contract CategoryContract {
   }
 
   modifier categoryMustExists(uint256 id) {
-    require(categories[id].id > 0, "This category don't exists");
+    require(exists(id), "This category don't exists");
     _;
   }
 

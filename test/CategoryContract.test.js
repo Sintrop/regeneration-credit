@@ -118,6 +118,28 @@ contract("CategoryContract", (accounts) => {
     });
   });
 
+  describe.only("#exists", () => {
+    context("When category not exists", () => {
+      it("should return false", async () => {
+        const exists = await instance.exists(1);
+
+        assert.equal(exists, false);
+      });
+    });
+
+    context("When category exists", () => {
+      beforeEach(async () => {
+        await addCategory("Soil", resea1Address);
+      });
+
+      it("should return true", async () => {
+        const exists = await instance.exists(1);
+
+        assert.equal(exists, true);
+      });
+    });
+  });
+
   context("When access category fields", () => {
     it("should have fields", async () => {
       const name = "Soil";
