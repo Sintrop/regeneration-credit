@@ -118,7 +118,7 @@ contract("CategoryContract", (accounts) => {
     });
   });
 
-  describe.only("#exists", () => {
+  describe("#exists", () => {
     context("When category not exists", () => {
       it("should return false", async () => {
         const exists = await instance.exists(1);
