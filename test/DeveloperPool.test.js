@@ -370,9 +370,9 @@ contract("DeveloperPool", (accounts) => {
     });
   });
 
-  context("#approve", () => {
+  context("#withdraw", () => {
     context("with allowed caller", () => {
-      context("when can approve", () => {
+      context("when can withdraw", () => {
         context("when total of levels in era is three", () => {
           beforeEach(async () => {
             await instance.addLevel(1);
@@ -383,39 +383,39 @@ contract("DeveloperPool", (accounts) => {
           });
 
           context("when developer level is one", () => {
-            it("shoud approve 277777666666666666666666 tokens", async () => {
-              await instance.approve(dev1Address, 1, 1);
-              const allowance = await instance.allowance({ from: dev1Address });
+            it("shoud withdraw 277777666666666666666666 tokens", async () => {
+              await instance.withdraw(dev1Address, 1, 1);
+              const balanceOf = await instance.balanceOf(dev1Address);
 
-              assert.equal(allowance, "277777666666666666666666");
+              assert.equal(balanceOf, "277777666666666666666666");
             });
           });
 
           context("when developer level is two", () => {
-            it("shoud approve 555555333333333333333332 tokens", async () => {
-              await instance.approve(dev1Address, 2, 1);
-              const allowance = await instance.allowance({ from: dev1Address });
+            it("shoud withdraw 555555333333333333333332 tokens", async () => {
+              await instance.withdraw(dev1Address, 2, 1);
+              const balanceOf = await instance.balanceOf(dev1Address);
 
-              assert.equal(allowance, "555555333333333333333332");
+              assert.equal(balanceOf, "555555333333333333333332");
             });
           });
 
           context("when developer level is three", () => {
-            it("shoud approve 833332999999999999999998 tokens", async () => {
-              await instance.approve(dev1Address, 3, 1);
-              const allowance = await instance.allowance({ from: dev1Address });
+            it("shoud withdraw 833332999999999999999998 tokens", async () => {
+              await instance.withdraw(dev1Address, 3, 1);
+              const balanceOf = await instance.balanceOf(dev1Address);
 
-              assert.equal(allowance, "833332999999999999999998");
+              assert.equal(balanceOf, "833332999999999999999998");
             });
           });
         });
       });
 
-      context("when cant approve", () => {
+      context("when cant withdraw", () => {
         it("should return error message", async () => {
           await expectRevert(
-            instance.approve(dev1Address, 1, 1),
-            "You can't approve yet"
+            instance.withdraw(dev1Address, 1, 1),
+            "You can't withdraw yet"
           );
         });
       });
@@ -424,7 +424,7 @@ contract("DeveloperPool", (accounts) => {
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
         await expectRevert(
-          instance.approve(dev1Address, 1, 1, { from: dev1Address }),
+          instance.withdraw(dev1Address, 1, 1, { from: dev1Address }),
           "Not allowed caller"
         );
       });
