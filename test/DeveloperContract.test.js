@@ -214,7 +214,7 @@ contract("DeveloperContract", (accounts) => {
     });
   });
 
-  context("when developer approve tokens", () => {
+  context("when developer withdraw tokens", () => {
     beforeEach(async () => {
       await addDeveloper("Developer A", dev1Address);
     });
@@ -223,7 +223,7 @@ contract("DeveloperContract", (accounts) => {
       context("when Developer is in era 1 and contract is in era 2", () => {
         beforeEach(async () => {
           await advanceBlock(developerPoolParams.blocksPerEra + 2);
-          await instance.approve({ from: dev1Address });
+          await instance.withdraw({ from: dev1Address });
         });
 
         it("should add developer to era 2", async () => {
@@ -232,12 +232,12 @@ contract("DeveloperContract", (accounts) => {
           assert.equal(developer.level.currentEra, 2);
         });
 
-        it("should can allowance all tokens from era", async () => {
-          let allowance = await developerPool.allowance({ from: dev1Address });
+        it("should withdraw all tokens from era", async () => {
+          let balanceOf = await developerPool.balanceOf(dev1Address);
 
-          let tokensPerEra = 833333000000000000000000;
+          let tokensPerEra = 833333000000000000000000n;
 
-          assert.equal(allowance, tokensPerEra);
+          assert.equal(balanceOf, tokensPerEra);
         });
       });
     });
@@ -251,8 +251,8 @@ contract("DeveloperContract", (accounts) => {
         context("when Developers is in era 1 and contract is in era 2", () => {
           beforeEach(async () => {
             await advanceBlock(developerPoolParams.blocksPerEra + 2);
-            await instance.approve({ from: dev1Address });
-            await instance.approve({ from: dev2Address });
+            await instance.withdraw({ from: dev1Address });
+            await instance.withdraw({ from: dev2Address });
           });
 
           it("should add developer1 to era 2", async () => {
@@ -268,19 +268,19 @@ contract("DeveloperContract", (accounts) => {
           });
 
           it("should can allowance 1/2 of tokens from era", async () => {
-            let allowance = await developerPool.allowance({ from: dev1Address });
+            let balanceOf = await developerPool.balanceOf(dev1Address);
 
-            let tokensPerEra = 416666500000000000000000;
+            let tokensPerEra = 416666500000000000000000n;
 
-            assert.equal(allowance, tokensPerEra);
+            assert.equal(balanceOf, tokensPerEra);
           });
 
           it("should can allowance 1/2 of tokens from era", async () => {
-            let allowance = await developerPool.allowance({ from: dev2Address });
+            let balanceOf = await developerPool.balanceOf(dev2Address);
 
-            let tokensPerEra = 416666500000000000000000;
+            let tokensPerEra = 416666500000000000000000n;
 
-            assert.equal(allowance, tokensPerEra);
+            assert.equal(balanceOf, tokensPerEra);
           });
         });
       });
@@ -293,8 +293,8 @@ contract("DeveloperContract", (accounts) => {
         context("when Developers is in era 1 and contract is in era 2", () => {
           beforeEach(async () => {
             await advanceBlock(developerPoolParams.blocksPerEra + 2);
-            await instance.approve({ from: dev1Address });
-            await instance.approve({ from: dev2Address });
+            await instance.withdraw({ from: dev1Address });
+            await instance.withdraw({ from: dev2Address });
           });
 
           it("should add developer1 to era 2", async () => {
@@ -309,79 +309,79 @@ contract("DeveloperContract", (accounts) => {
             assert.equal(developer.level.currentEra, 2);
           });
 
-          it("should developer1 can allowance more tokens from era", async () => {
-            let allowance = await developerPool.allowance({ from: dev1Address });
+          it("should developer1 can balanceOf more tokens from era", async () => {
+            let balanceOf = await developerPool.balanceOf(dev1Address);
 
             let tokensPerEra = 555555333333333333333332;
 
-            assert.equal(allowance, tokensPerEra);
+            assert.equal(balanceOf, tokensPerEra);
           });
 
-          it("should developer2 can allowance less tokens from era", async () => {
-            let allowance = await developerPool.allowance({ from: dev2Address });
+          it("should developer2 can balanceOf less tokens from era", async () => {
+            let balanceOf = await developerPool.balanceOf(dev2Address);
 
             let tokensPerEra = 277777666666666666666666;
 
-            assert.equal(allowance, tokensPerEra);
+            assert.equal(balanceOf, tokensPerEra);
           });
         });
       });
     });
   });
 
-  context("when developer can't approve tokens", () => {
+  context("when developer can't withdraw tokens", () => {
     beforeEach(async () => {
       await addDeveloper("Developer A", dev1Address);
     });
 
     it("should return error message", async () => {
       await expectRevert(
-        instance.approve({ from: dev1Address }),
-        "You can't approve yet"
+        instance.withdraw({ from: dev1Address }),
+        "You can't withdraw yet"
       );
     });
   });
 
-  context("when non developer try approve tokens", () => {
+  context("when non developer try withdraw tokens", () => {
     it("should return error message", async () => {
       await expectRevert(
-        instance.approve({ from: dev1Address }),
+        instance.withdraw({ from: dev1Address }),
         "Pool only to developer"
       );
     });
   });
 
-  context("when developer can approve tokens", () => {
+  context("when developer can withdraw tokens", () => {
     beforeEach(async () => {
       await addDeveloper("Developer A", dev1Address);
     });
 
-    context("when can approve only to one era and try approve again", () => {
+    context("when can withdraw only to one era and try withdraw again", () => {
       beforeEach(async () => {
         await advanceBlock(developerPoolParams.blocksPerEra + 2);
-        await instance.approve({ from: dev1Address });
+        await instance.withdraw({ from: dev1Address });
       });
 
       it("should return error message", async () => {
         await expectRevert(
-          instance.approve({ from: dev1Address }),
-          "You can't approve yet"
+          instance.withdraw({ from: dev1Address }),
+          "You can't withdraw yet"
         );
       });
     });
 
-    context("when can approve to two eras and try approve again", () => {
+    context("when can withdraw to two eras and try withdraw again", () => {
       beforeEach(async () => {
         await advanceBlock(developerPoolParams.blocksPerEra * 2 + 2);
-        await instance.approve({ from: dev1Address });
+        await instance.withdraw({ from: dev1Address });
+        await instance.withdraw({ from: dev1Address });
       });
 
-      it("should can approve in two eras", async () => {
-        await instance.approve({ from: dev1Address });
-        let allowance = await developerPool.allowance({ from: dev1Address });
+      it("should can withdraw in two eras", async () => {
+        let balanceOf = await developerPool.balanceOf(dev1Address);
         let tokensPerEra = 1666666000000000000000000;
 
-        assert.equal(allowance, tokensPerEra);
+        assert.equal(balanceOf, tokensPerEra);
       });
     });
   });
