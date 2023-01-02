@@ -38,7 +38,9 @@ contract("SacToken", (accounts) => {
 
       it("it should not transfer when user has no tokens", async () => {
         await expectRevert(
-          instance.transfer(user1Address, "100000000000000000000", { from: user2Address }),
+          instance.transfer(user1Address, "100000000000000000000", {
+            from: user2Address,
+          }),
           "Insufficient balance."
         );
       });
