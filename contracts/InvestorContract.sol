@@ -3,19 +3,16 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import "./UserContract.sol";
 import "./types/InvestorTypes.sol";
-import "./SacToken.sol";
 
 contract InvestorContract {
   mapping(address => Investor) internal investors;
 
   UserContract internal userContract;
-  SacToken internal sacToken;
   address[] internal investorsAddress;
   uint256 public investorsCount;
 
-  constructor(address userContractAddress, address sacTokenAddress) {
+  constructor(address userContractAddress) {
     userContract = UserContract(userContractAddress);
-    sacToken = SacToken(sacTokenAddress);
   }
 
   /**
@@ -70,10 +67,6 @@ contract InvestorContract {
    */
   function investorExists(address addr) public view returns (bool) {
     return bytes(investors[addr].name).length > 0;
-  }
-
-  function getCertificate(address addr) public view returns (uint256) {
-    return sacToken.burned(addr);
   }
 
   //MODIFIERS

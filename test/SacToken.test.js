@@ -29,14 +29,18 @@ contract("SacToken", (accounts) => {
   });
 
   describe("#transfer", () => {
-    context("when a user transfer 100000000000000000000 sac token", () => {
-      it("it should transfer when user has tokens", async () => {
-        await instance.transfer(user1Address, "100000000000000000000");
-        const balanceOf = await instance.balanceOf(user1Address);
-        assert.equal(balanceOf, 100000000000000000000);
+    context("when user have tokens", () => {
+      context("when a user transfer 100000000000000000000 sac token", () => {
+        it("it should transfer when user has tokens", async () => {
+          await instance.transfer(user1Address, "100000000000000000000");
+          const balanceOf = await instance.balanceOf(user1Address);
+          assert.equal(balanceOf, "100000000000000000000");
+        });
       });
+    });
 
-      it("it should not transfer when user has no tokens", async () => {
+    context("when user doesn't have tokens", () => {
+      it("must return erro message", async () => {
         await expectRevert(
           instance.transfer(user1Address, "100000000000000000000", {
             from: user2Address,
@@ -48,18 +52,49 @@ contract("SacToken", (accounts) => {
   });
 
   describe("#burnTokens", () => {
-    context("when a user try to burn 100000000000000000000 tokens", () => {
-      it("should burn when has tokens", async () => {
+    context("when user have tokens", () => {
+      beforeEach(async () => {
         await instance.transfer(user1Address, "200000000000000000000");
         await instance.burnTokens("100000000000000000000", { from: user1Address });
-        const burnedTokens = await instance.balanceOf(user1Address);
-
-        assert.equal(burnedTokens, "100000000000000000000");
       });
 
-      it("should not burn when don't have tokens", async () => {
+      context("when burn 100000000000000000000 tokens", () => {
+        it("should burn when has tokens", async () => {
+          const burnedTokens = await instance.balanceOf(user1Address);
+
+          assert.equal(burnedTokens, "100000000000000000000");
+        });
+
+        it("should add 100000000000000000000 to user certificate mapping", async () => {
+          const userCertificate = await instance.certificate(user1Address);
+
+          assert.equal(userCertificate, "100000000000000000000");
+        });
+      });
+
+      context("when burn another 100000000000000000000 tokens", () => {
+        beforeEach(async () => {
+          await instance.burnTokens("100000000000000000000", { from: user1Address });
+        });
+
+        it("should burn when has tokens", async () => {
+          const burnedTokens = await instance.balanceOf(user1Address);
+
+          assert.equal(burnedTokens, "0");
+        });
+
+        it("should increase 100000000000000000000 tokens to certificate mapping", async () => {
+          const userCertificate = await instance.certificate(user1Address);
+
+          assert.equal(userCertificate, "200000000000000000000");
+        });
+      });
+    });
+
+    context("when user does not have tokens", () => {
+      it("must return error message", async () => {
         await expectRevert(
-          instance.burnTokens("100000000000000000000", { from: user1Address }),
+          instance.burnTokens("100000000000000000000", { from: user2Address }),
           "Burn amount exceeds balance"
         );
       });
