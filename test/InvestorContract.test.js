@@ -23,7 +23,7 @@ contract("InvestorContract", (accounts) => {
 
     userContract = await UserContract.new();
 
-    instance = await InvestorContract.new(userContract.address, sacToken.address);
+    instance = await InvestorContract.new(userContract.address);
 
     await userContract.newAllowedCaller(instance.address);
   });
@@ -115,33 +115,6 @@ contract("InvestorContract", (accounts) => {
       const investorExists = await instance.investorExists(inv1Address);
 
       assert.equal(investorExists, false);
-    });
-  });
-
-  describe("#burnTokens", () => {
-    context("when a user burn 100000000000000000000 tokens", () => {
-      beforeEach(async () => {
-        await sacToken.transfer(inv1Address, 200);
-        await sacToken.burnTokens(100, { from: inv1Address });
-      });
-
-      it("should add 100000000000000000000 to burned mapping", async () => {
-        const burnedTokens = await instance.getCertificate(inv1Address);
-
-        assert.equal(burnedTokens, "100");
-      });
-
-      context("when a user burn another 100000000000000000000 tokens", () => {
-        beforeEach(async () => {
-          await sacToken.burnTokens(100, { from: inv1Address });
-        });
-
-        it("should add 200000000000000000000 to burned mapping", async () => {
-          const burnedTokens = await instance.getCertificate(inv1Address);
-
-          assert.equal(burnedTokens, "200");
-        });
-      });
     });
   });
 });
