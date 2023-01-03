@@ -6,7 +6,7 @@ const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 contract("ActivistContract", (accounts) => {
   let instance;
   let userContract;
-  let [ownerAddress, activ1Address, activ2Address] = accounts;
+  let [ownerAddress, activ1Address, activ2Address, activ3Address] = accounts;
 
   const addActivist = async (name, address) => {
     await instance.addActivist(
@@ -27,7 +27,10 @@ contract("ActivistContract", (accounts) => {
 
     await userContract.newAllowedCaller(instance.address);
     await instance.newAllowedCaller(ownerAddress);
+    await instance.newAllowedUser(activ1Address);
+    await instance.newAllowedUser(activ2Address)
   });
+
   context("when access activist fields", () => {
     it("should have fields", async () => {
       await addActivist("Activist A", activ1Address);
@@ -49,8 +52,26 @@ contract("ActivistContract", (accounts) => {
     });
   });
 
+  // context("when will create new activist (.addActivist)", () => {
+  //   context("when is allowed", () => {
+  //     context("when activist exists", () => {
+  //       it("should return error", async () => {
+  //         await addActivist("Activist A", activ1Address);
+  //         await expectRevert(
+  //           addActivist("Activist A", activ1Address),
+  //           "This activist already exist"
+  //         );
+  //       });
+  //     });
+
   context("when will create new activist (.addActivist)", () => {
-    context("when is allowed", () => {
+    context("when is not an allowed user", () => {
+      it("should return error message", async () => {
+        await expectRevert(addActivist("Activist C", activ3Address), "Not allowed user");
+      });
+    });
+
+    context("when is an allowed user", () => {
       context("when activist exists", () => {
         it("should return error", async () => {
           await addActivist("Activist A", activ1Address);

@@ -4,8 +4,9 @@ pragma solidity >=0.7.0 <=0.9.0;
 import "./UserContract.sol";
 import "./types/ActivistTypes.sol";
 import "./Callable.sol";
+import "./Registrable.sol";
 
-contract ActivistContract is Callable {
+contract ActivistContract is Callable, Registrable {
   mapping(address => Activist) internal activists;
 
   UserContract internal userContract;
@@ -33,7 +34,7 @@ contract ActivistContract is Callable {
     string memory state,
     string memory city,
     string memory cep
-  ) public uniqueActivist returns (Activist memory) {
+  ) public mustBeAllowedUser uniqueActivist returns (Activist memory) {
     uint256 id = activistsCount + 1;
     UserType userType = UserType.ACTIVIST;
 
