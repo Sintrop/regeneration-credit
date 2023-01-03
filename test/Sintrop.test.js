@@ -48,6 +48,8 @@ contract("Sintrop", (accounts) => {
   };
 
   const addActivist = async (name, address) => {
+    await activistContract.newAllowedUser(activistAddress);
+    await activistContract.newAllowedUser(activist2Address);
     await activistContract.addActivist(
       name,
       "photoURL",
