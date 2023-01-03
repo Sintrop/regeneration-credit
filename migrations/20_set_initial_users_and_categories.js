@@ -14,6 +14,8 @@ module.exports = function (deployer) {
     const researcherContract = await ResearcherContract.deployed();
 
     await researcherContract.newAllowedUser(researcher1);
+    await activistContract.newAllowedUser(activist1);
+    await activistContract.newAllowedUser(activist2);
 
     await producerContract.addProducer(
       "Beans Farm",
