@@ -13,7 +13,6 @@ module.exports = function (deployer) {
     const activistContract = await ActivistContract.deployed();
     const producerContract = await ProducerContract.deployed();
     const researcherContract = await ResearcherContract.deployed();
-    const sintrop = await Sintrop.deployed();
 
     await researcherContract.newAllowedUser(researcher1);
 
@@ -212,24 +211,5 @@ module.exports = function (deployer) {
       `Ep > 1000`,
       { from: researcher1 }
     );
-
-    await sintrop.requestInspection({ from: producer1 });
-    await sintrop.requestInspection({ from: producer2 });
-    await sintrop.acceptInspection(1, { from: activist1 });    
-
-//    await sintrop.realizeInspection(1, [
-//      {categoryId: 1, isaIndex: 0, report: "Solo A totalmente sustentável", proofPhoto: "Hash_1"}, 
-//      {categoryId: 2, isaIndex: 1, report: "Utiliza defensivo químico", proofPhoto: "Hash_2"}, 
-//      {categoryId: 3, isaIndex: 2, report: "Utiliza defensivo químico", proofPhoto: "Hash_2"}, 
-//      {categoryId: 4, isaIndex: 3, report: "Utiliza defensivo químico", proofPhoto: "Hash_2"}, 
-//      {categoryId: 5, isaIndex: 4, report: "Utiliza defensivo químico", proofPhoto: "Hash_2"}, 
-//      {categoryId: 6, isaIndex: 3, report: "Utiliza defensivo químico", proofPhoto: "Hash_2"}, 
-//      {categoryId: 7, isaIndex: 3, report: "Utiliza defensivo químico", proofPhoto: "Hash_2"}, 
-//      {categoryId: 8, isaIndex: 3, report: "Utiliza defensivo químico", proofPhoto: "Hash_2"}, 
-//      {categoryId: 9, isaIndex: 3, report: "Utiliza defensivo químico", proofPhoto: "Hash_2"}, 
-//      {categoryId: 10, isaIndex: 3, report: "Utiliza defensivo químico", proofPhoto: "Hash_2"}, 
-//      {categoryId: 11, isaIndex: 3, report: "Utiliza defensivo químico", proofPhoto: "Hash_2"}, 
-//      {categoryId: 12, isaIndex: 3, report: "Utiliza defensivo químico", proofPhoto: "Hash_2"}], 
-//      { from: activist1 })
   });
 };
