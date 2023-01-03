@@ -22,6 +22,11 @@ contract("SacToken", (accounts) => {
       assert.equal(totalSupply, args.totalSacTokens);
     });
 
+    it("totalBurned should be equal zero", async () => {
+      const totalBurned = await instance.totalBurned();
+      assert.equal(totalBurned, 0);
+    });
+
     it("balance of contract owner should be equal to 1500000000000000000000000000", async () => {
       const ownerBalance = await instance.balanceOf(ownerAddress);
       assert.equal(ownerBalance, args.totalSacTokens);
@@ -70,6 +75,12 @@ contract("SacToken", (accounts) => {
 
           assert.equal(userCertificate, "100000000000000000000");
         });
+
+        it("should add 100000000000000000000 to totalBurned", async () => {
+          const totalBurned = await instance.totalBurned();
+
+          assert.equal(totalBurned, "100000000000000000000");
+        });
       });
 
       context("when burn another 100000000000000000000 tokens", () => {
@@ -87,6 +98,12 @@ contract("SacToken", (accounts) => {
           const userCertificate = await instance.certificate(user1Address);
 
           assert.equal(userCertificate, "200000000000000000000");
+        });
+
+        it("should increase totalBurned in 100000000000000000000", async () => {
+          const totalBurned = await instance.totalBurned();
+
+          assert.equal(totalBurned, "200000000000000000000");
         });
       });
     });
