@@ -7,10 +7,12 @@ import "./Registrable.sol";
 
 contract ResearcherContract is Registrable {
   mapping(address => Researcher) internal researchers;
+  mapping(uint256 => Work) internal works;
 
   UserContract internal userContract;
   address[] internal researchersAddress;
   uint256 public researchersCount;
+  uint256 public worksCount;
 
   constructor(address userContractAddress) {
     userContract = UserContract(userContractAddress);
@@ -30,7 +32,14 @@ contract ResearcherContract is Registrable {
     uint256 id = researchersCount + 1;
     UserType userType = UserType.RESEARCHER;
 
-    Researcher memory researcher = Researcher(id, msg.sender, userType, name, proofPhoto);
+    Researcher memory researcher = Researcher(
+      id,
+      msg.sender,
+      userType,
+      name,
+      proofPhoto,
+      0
+    );
 
     researchers[msg.sender] = researcher;
     researchersAddress.push(msg.sender);
@@ -69,6 +78,33 @@ contract ResearcherContract is Registrable {
    */
   function researcherExists(address addr) public view returns (bool) {
     return bytes(researchers[addr].name).length > 0;
+  }
+
+  function addWork(
+    string memory title,
+    string memory thesis,
+    string memory file
+  ) public {
+    require(researcherExists(msg.sender), "Only allowed to researchers");
+
+    uint256 id = worksCount + 1;
+
+    Work memory work = Work(id, msg.sender, title, thesis, file, block.timestamp); // solhint-disable-line
+
+    works[id] = work;
+    worksCount++;
+    researchers[msg.sender].publishedWorks++;
+  }
+
+  function getWorks() public view returns (Work[] memory) {
+    Work[] memory worksList = new Work[](worksCount);
+    uint256 count = worksCount;
+
+    for (uint256 i = 0; i < count; i++) {
+      worksList[i] = works[i + 1];
+    }
+
+    return worksList;
   }
 
   // MODIFIERS

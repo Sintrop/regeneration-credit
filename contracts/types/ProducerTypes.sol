@@ -11,21 +11,21 @@ struct Producer {
   string proofPhoto;
   UserDocument userDocument;
   bool recentInspection;
-  uint256 totalRequests;
+  uint256 totalInspections;
   uint256 lastRequestAt;
   Isa isa;
-  TokenApprove tokenApprove;
   PropertyAddress propertyAddress;
+  Pool pool;
+}
+
+struct Pool {
+  uint256 currentEra;
 }
 
 struct Isa {
   int256 isaScore;
   int256 isaAverage;
-}
-
-struct TokenApprove {
-  uint256 allowed;
-  bool withdrewToken;
+  bool sustainable;
 }
 
 struct PropertyAddress {
