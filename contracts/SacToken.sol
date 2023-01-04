@@ -15,7 +15,7 @@ contract SacToken is ERC20, Ownable {
   mapping(address => uint256) public certificate;
 
   uint256 internal totalSupply_;
-  uint256 internal totalBurned_;
+  uint256 internal totalCertified_;
 
   using SafeMath for uint256;
 
@@ -120,7 +120,7 @@ contract SacToken is ERC20, Ownable {
   function burnTokens(uint256 amount) public {
     _burn(_msgSender(), amount);
     certificate[msg.sender] += amount;
-    totalBurned_ += amount;
+    totalCertified_ += amount;
   }
 
   function _burn(address account, uint256 amount) internal override {
@@ -136,8 +136,8 @@ contract SacToken is ERC20, Ownable {
     emit Transfer(account, address(0), amount);
   }
 
-  function totalBurned() public view returns (uint256) {
-    return totalBurned_;
+  function totalCertified() public view returns (uint256) {
+    return totalCertified_;
   }
 
   modifier mustBeContractPool() {

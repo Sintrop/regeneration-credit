@@ -22,9 +22,9 @@ contract("SacToken", (accounts) => {
       assert.equal(totalSupply, args.totalSacTokens);
     });
 
-    it("totalBurned should be equal zero", async () => {
-      const totalBurned = await instance.totalBurned();
-      assert.equal(totalBurned, 0);
+    it("totalCertified should be equal zero", async () => {
+      const totalCertified = await instance.totalCertified();
+      assert.equal(totalCertified, 0);
     });
 
     it("balance of contract owner should be equal to 1500000000000000000000000000", async () => {
@@ -76,8 +76,8 @@ contract("SacToken", (accounts) => {
           assert.equal(userCertificate, "100000000000000000000");
         });
 
-        it("should add 100000000000000000000 to totalBurned", async () => {
-          const totalBurned = await instance.totalBurned();
+        it("should add 100000000000000000000 to totalCertified", async () => {
+          const totalBurned = await instance.totalCertified();
 
           assert.equal(totalBurned, "100000000000000000000");
         });
@@ -100,10 +100,10 @@ contract("SacToken", (accounts) => {
           assert.equal(userCertificate, "200000000000000000000");
         });
 
-        it("should increase totalBurned in 100000000000000000000", async () => {
-          const totalBurned = await instance.totalBurned();
+        it("should increase totalCertified in 100000000000000000000", async () => {
+          const totalCertified = await instance.totalCertified();
 
-          assert.equal(totalBurned, "200000000000000000000");
+          assert.equal(totalCertified, "200000000000000000000");
         });
       });
     });
