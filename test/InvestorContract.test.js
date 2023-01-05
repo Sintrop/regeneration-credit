@@ -1,6 +1,5 @@
 const InvestorContract = artifacts.require("InvestorContract");
 const UserContract = artifacts.require("UserContract");
-const SacToken = artifacts.require("SacToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
@@ -8,10 +7,6 @@ contract("InvestorContract", (accounts) => {
   let instance;
   let userContract;
   let [ownerAddress, inv1Address, inv2Address] = accounts;
-
-  let args = {
-    totalSacTokens: "1500000000000000000000000000",
-  };
 
   const addInvestor = async (name, address) => {
     await instance.addInvestor(name, { from: address });
