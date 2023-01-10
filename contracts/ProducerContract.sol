@@ -40,6 +40,7 @@ contract ProducerContract is Callable {
    * @param cep the cep of the producer
    */
   function addProducer(
+    uint256 certifiedArea,
     string memory name,
     string memory proofPhoto,
     string memory document,
@@ -60,6 +61,7 @@ contract ProducerContract is Callable {
       producersCount + 1,
       msg.sender,
       userType,
+      certifiedArea,
       name,
       proofPhoto,
       UserDocument(document, documentType),
