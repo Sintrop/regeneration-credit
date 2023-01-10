@@ -87,12 +87,12 @@ contract DeveloperContract is Ownable, Registrable {
   }
 
   /**
-   * @dev Call approve function from developerPool to try to claim tokens
+   * @dev Call withdraw function from developerPool to try to claim tokens
    */
-  function approve() public requireDeveloper returns (bool) {
+  function withdraw() public requireDeveloper returns (bool) {
     Developer memory developer = developers[msg.sender];
 
-    developerPool.approve(msg.sender, developer.level.level, developer.level.currentEra);
+    developerPool.withdraw(msg.sender, developer.level.level, developer.level.currentEra);
 
     developers[msg.sender].level.currentEra++;
 
