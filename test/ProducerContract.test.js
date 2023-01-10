@@ -14,6 +14,7 @@ contract("ProducerContract", (accounts) => {
 
   const addProducer = async (name, address) => {
     await instance.addProducer(
+      10,
       name,
       "photoURL",
       "111.111.111-00",
