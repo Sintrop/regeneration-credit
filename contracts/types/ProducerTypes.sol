@@ -7,6 +7,7 @@ struct Producer {
   uint256 id;
   address producerWallet;
   UserType userType;
+  uint256 certifiedArea; //in hectares = he = 10.000 m2
   string name;
   string proofPhoto;
   UserDocument userDocument;
