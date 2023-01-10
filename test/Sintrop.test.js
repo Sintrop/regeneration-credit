@@ -49,6 +49,7 @@ contract("Sintrop", (accounts) => {
 
   const addActivist = async (name, address) => {
     await activistContract.addActivist(
+      10,
       name,
       "photoURL",
       "Brazil",
