@@ -68,7 +68,8 @@ contract ProducerContract is Callable {
       0,
       Isa(0, 0, false),
       PropertyAddress(country, state, city, street, complement, cep),
-      Pool(producerPool.currentContractEra())
+      Pool(0),  //Pool(producerPool.currentContractEra()),
+      false
     );
 
     producers[msg.sender] = producer;
@@ -153,7 +154,7 @@ contract ProducerContract is Callable {
     if (producer.isa.sustainable) return true;
     if (newProducerScore < 0) isaScore = isaScore - (newProducerScore);
 
-    producersTotalScore += isaScore;
+    if(producer.certified = true) producersTotalScore += isaScore;
 
     if (limitIsaScore(producer.isa.isaScore)) changeProducerToSustainable(producer);
 
@@ -176,5 +177,13 @@ contract ProducerContract is Callable {
 
   function lastRequestAt(address addr, uint256 blocksNumber) public mustBeAllowedCaller {
     producers[addr].lastRequestAt = blocksNumber;
+  }
+
+  function setCertificate(address addr) public mustBeAllowedCaller {
+    Producer memory producer = producers[addr];
+    
+    if (minimumInspections(producer.totalInspections)) producers[addr].certified = true;
+    if (minimumInspections(producer.totalInspections)) producers[addr].pool.currentEra = producerPool.currentContractEra();
+
   }
 }

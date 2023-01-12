@@ -16,6 +16,7 @@ struct Producer {
   Isa isa;
   PropertyAddress propertyAddress;
   Pool pool;
+  bool certified;
 }
 
 struct Pool {

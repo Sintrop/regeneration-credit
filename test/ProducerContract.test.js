@@ -94,7 +94,7 @@ contract("ProducerContract", (accounts) => {
       assert.equal(producer.isa.isaAverage, "0");
       assert.equal(producer.isa.isaScore, "0");
 
-      assert.equal(producer.pool.currentEra, 1);
+      assert.equal(producer.pool.currentEra, 0);
 
       assert.equal(producer.propertyAddress.country, "Brazil");
       assert.equal(producer.propertyAddress.state, "SP");
@@ -607,13 +607,13 @@ contract("ProducerContract", (accounts) => {
               it("producer A current era must be incremented", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                assert.equal(producer.pool.currentEra, 2);
+                assert.equal(producer.pool.currentEra, 1);
               });
 
               it("producer B current era must be incremented", async () => {
                 const producer = await instance.getProducer(prod2Address);
 
-                assert.equal(producer.pool.currentEra, 2);
+                assert.equal(producer.pool.currentEra, 1);
               });
             });
 
@@ -632,7 +632,7 @@ contract("ProducerContract", (accounts) => {
               it("producer current era must be increment", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                assert.equal(producer.pool.currentEra, 2);
+                assert.equal(producer.pool.currentEra, 1);
               });
             });
 
