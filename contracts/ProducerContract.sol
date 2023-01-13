@@ -183,7 +183,6 @@ contract ProducerContract is Callable {
     Producer memory producer = producers[addr];
 
     if (minimumInspections(producer.totalInspections)) producers[addr].certified = true;
-    if (minimumInspections(producer.totalInspections))
-      producers[addr].pool.currentEra = producerPool.currentContractEra();
+    if (minimumInspections(producer.totalInspections)) producers[addr].pool.currentEra = producerPool.currentContractEra();
   }
 }
