@@ -137,7 +137,7 @@ contract Sintrop {
 
     afterRealizeInspection(inspection);
 
-    producerContract.setCertificate(inspection.createdBy);
+    //producerContract.setCertificate(inspection.createdBy);
 
     producerContract.setIsaScore(inspection.createdBy, inspection.isaScore);
 
