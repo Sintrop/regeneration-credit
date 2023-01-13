@@ -167,7 +167,7 @@ contract("ProducerContract", (accounts) => {
 
       const producer = await instance.getProducer(prod1Address);
 
-      assert.equal(producer.certified, false);
+      assert.equal(producer.syntropicProducer, false);
     });
   });
 
@@ -284,6 +284,9 @@ contract("ProducerContract", (accounts) => {
       context("when dont have producers sustainable", () => {
         context("when have 1 producer", () => {
           beforeEach(async () => {
+            await instance.incrementInspections(prod1Address);
+            await instance.incrementInspections(prod1Address);
+            await instance.incrementInspections(prod1Address);
             await instance.setIsaScore(prod1Address, 600);
           });
 
@@ -395,13 +398,26 @@ contract("ProducerContract", (accounts) => {
 
         context("when have more tha one producer", () => {
           beforeEach(async () => {
+            await instance.incrementInspections(prod1Address);
+            await instance.incrementInspections(prod1Address);
+            await instance.incrementInspections(prod1Address);
+
             await instance.setIsaScore(prod1Address, 600);
+
             await addProducer("Producer B", prod2Address);
+            await instance.incrementInspections(prod2Address);
+            await instance.incrementInspections(prod2Address);
+            await instance.incrementInspections(prod2Address);
+
             await instance.setIsaScore(prod2Address, 800);
           });
 
           context("when new score + producer A score is smaller than limit score", () => {
             beforeEach(async () => {
+              await instance.incrementInspections(prod1Address);
+              await instance.incrementInspections(prod1Address);
+              await instance.incrementInspections(prod1Address);
+
               await instance.setIsaScore(prod1Address, 70);
             });
 
@@ -426,6 +442,10 @@ contract("ProducerContract", (accounts) => {
 
           context("when new score + producer A score is equal than limit score", () => {
             beforeEach(async () => {
+              await instance.incrementInspections(prod1Address);
+              await instance.incrementInspections(prod1Address);
+              await instance.incrementInspections(prod1Address);
+
               await instance.setIsaScore(prod1Address, 400);
             });
 
@@ -456,6 +476,10 @@ contract("ProducerContract", (accounts) => {
 
           context("when new score + producer score result in a negative value", () => {
             beforeEach(async () => {
+              await instance.incrementInspections(prod1Address);
+              await instance.incrementInspections(prod1Address);
+              await instance.incrementInspections(prod1Address);
+
               await instance.setIsaScore(prod1Address, -610);
             });
 
@@ -483,6 +507,10 @@ contract("ProducerContract", (accounts) => {
       context("when have producers sustainable", () => {
         context("when have 1 producer", () => {
           beforeEach(async () => {
+            await instance.incrementInspections(prod1Address);
+            await instance.incrementInspections(prod1Address);
+            await instance.incrementInspections(prod1Address);
+
             await instance.setIsaScore(prod1Address, 1000);
           });
 
@@ -513,13 +541,24 @@ contract("ProducerContract", (accounts) => {
 
         context("when have more than one producer", () => {
           beforeEach(async () => {
+            await instance.incrementInspections(prod1Address);
+            await instance.incrementInspections(prod1Address);
+            await instance.incrementInspections(prod1Address);            
             await instance.setIsaScore(prod1Address, 1000);
+
             await addProducer("Producer B", prod2Address);
+            await instance.incrementInspections(prod2Address);
+            await instance.incrementInspections(prod2Address);
+            await instance.incrementInspections(prod2Address);
             await instance.setIsaScore(prod2Address, 800);
           });
 
           context("when producer A receive more 100 isa score", () => {
             beforeEach(async () => {
+              await instance.incrementInspections(prod1Address);
+              await instance.incrementInspections(prod1Address);
+              await instance.incrementInspections(prod1Address);
+
               await instance.setIsaScore(prod1Address, 100);
             });
 
@@ -538,6 +577,10 @@ contract("ProducerContract", (accounts) => {
 
           context("when producer B receive more 100 isa score", () => {
             beforeEach(async () => {
+              await instance.incrementInspections(prod2Address);
+              await instance.incrementInspections(prod2Address);
+              await instance.incrementInspections(prod2Address);
+
               await instance.setIsaScore(prod2Address, 100);
             });
 
@@ -688,6 +731,20 @@ contract("ProducerContract", (accounts) => {
     context("with not producer", () => {
       it("should return error message", async () => {
         await expectRevert(instance.withdraw(), "Only producers pool");
+      });
+    });
+  });
+
+  describe("#setCertificate", () => {
+    context("", () => {
+      beforeEach(async () => {
+
+      });
+
+      context("", () => {
+        it("", async () => {
+
+        });
       });
     });
   });

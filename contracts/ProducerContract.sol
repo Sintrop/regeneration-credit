@@ -154,7 +154,7 @@ contract ProducerContract is Callable {
     if (producer.isa.sustainable) return true;
     if (newProducerScore < 0) isaScore = isaScore - (newProducerScore);
 
-    if (producer.certified) producersTotalScore += isaScore;
+    if (producer.syntropicProducer) producersTotalScore += isaScore;
 
     if (limitIsaScore(producer.isa.isaScore)) changeProducerToSustainable(producer);
 
@@ -185,7 +185,7 @@ contract ProducerContract is Callable {
 
     if (producer.isa.isaScore < 0) return true;
 
-    if (minimumInspections(producer.totalInspections)) producers[addr].certified = true;
+    if (minimumInspections(producer.totalInspections)) producers[addr].syntropicProducer = true;
     if (minimumInspections(producer.totalInspections)) producers[addr].pool.currentEra = producerPool.currentContractEra();
 
     return true;
