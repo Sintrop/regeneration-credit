@@ -28,7 +28,7 @@ contract("ActivistContract", (accounts) => {
     await userContract.newAllowedCaller(instance.address);
     await instance.newAllowedCaller(ownerAddress);
     await instance.newAllowedUser(activ1Address);
-    await instance.newAllowedUser(activ2Address)
+    await instance.newAllowedUser(activ2Address);
   });
 
   context("when access activist fields", () => {
