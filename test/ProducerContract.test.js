@@ -161,6 +161,14 @@ contract("ProducerContract", (accounts) => {
 
       assert.equal(userType, PRODUCER);
     });
+
+    it("should create with certified equal false", async () => {
+      await addProducer("Producer A", prod1Address);
+
+      const producer = await instance.getProducer(prod1Address);
+
+      assert.equal(producer.certified, false);
+    });
   });
 
   context("when producer alredy exists", () => {
