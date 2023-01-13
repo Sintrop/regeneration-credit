@@ -94,7 +94,7 @@ contract("ProducerContract", (accounts) => {
       assert.equal(producer.isa.isaAverage, "0");
       assert.equal(producer.isa.isaScore, "0");
 
-      assert.equal(producer.pool.currentEra, 0);
+      assert.equal(producer.pool.currentEra, 1);
 
       assert.equal(producer.propertyAddress.country, "Brazil");
       assert.equal(producer.propertyAddress.state, "SP");
