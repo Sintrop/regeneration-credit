@@ -543,7 +543,7 @@ contract("ProducerContract", (accounts) => {
           beforeEach(async () => {
             await instance.incrementInspections(prod1Address);
             await instance.incrementInspections(prod1Address);
-            await instance.incrementInspections(prod1Address);            
+            await instance.incrementInspections(prod1Address);
             await instance.setIsaScore(prod1Address, 1000);
 
             await addProducer("Producer B", prod2Address);
@@ -749,7 +749,7 @@ contract("ProducerContract", (accounts) => {
       context("when received 1 inspection", () => {
         it("syntropicProducer must be false", async () => {
           const producer = await instance.getProducer(prod1Address);
-    
+
           assert.equal(producer.syntropicProducer, false);
         });
 
@@ -785,7 +785,7 @@ contract("ProducerContract", (accounts) => {
           await instance.incrementInspections(prod1Address);
           await instance.setIsaScore(prod1Address, 100);
           await instance.incrementInspections(prod1Address);
-          await instance.setIsaScore(prod1Address, 100);          
+          await instance.setIsaScore(prod1Address, 100);
         });
 
         it("syntropicProducer must be false", async () => {

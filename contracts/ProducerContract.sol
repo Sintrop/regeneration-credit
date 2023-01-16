@@ -185,8 +185,10 @@ contract ProducerContract is Callable {
 
     if (producer.isa.isaScore < 0) return true;
 
-    if (minimumInspections(producer.totalInspections)) producers[addr].syntropicProducer = true;
-    if (minimumInspections(producer.totalInspections)) producers[addr].pool.currentEra = producerPool.currentContractEra();
+    if (minimumInspections(producer.totalInspections))
+      producers[addr].syntropicProducer = true;
+    if (minimumInspections(producer.totalInspections))
+      producers[addr].pool.currentEra = producerPool.currentContractEra();
 
     return true;
   }
