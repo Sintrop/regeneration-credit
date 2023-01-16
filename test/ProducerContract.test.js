@@ -639,6 +639,8 @@ contract("ProducerContract", (accounts) => {
                 await instance.setIsaScore(prod1Address, 50);
                 await instance.setIsaScore(prod2Address, 50);
 
+                await advanceBlock(producerPoolArgs.blocksPerEra);
+                await advanceBlock(producerPoolArgs.blocksPerEra);
                 await instance.withdraw({ from: prod1Address });
                 await instance.withdraw({ from: prod2Address });
               });
@@ -658,19 +660,20 @@ contract("ProducerContract", (accounts) => {
               it("producer A current era must be incremented", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                assert.equal(producer.pool.currentEra, 1);
+                assert.equal(producer.pool.currentEra, 3);
               });
 
               it("producer B current era must be incremented", async () => {
                 const producer = await instance.getProducer(prod2Address);
 
-                assert.equal(producer.pool.currentEra, 1);
+                assert.equal(producer.pool.currentEra, 3);
               });
             });
 
             context("when producer have isaScore 100", () => {
               beforeEach(async () => {
                 await instance.setIsaScore(prod1Address, 100);
+                await advanceBlock(producerPoolArgs.blocksPerEra);
                 await instance.withdraw({ from: prod1Address });
               });
 
@@ -683,7 +686,7 @@ contract("ProducerContract", (accounts) => {
               it("producer current era must be increment", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                assert.equal(producer.pool.currentEra, 1);
+                assert.equal(producer.pool.currentEra, 3);
               });
             });
 
@@ -736,14 +739,65 @@ contract("ProducerContract", (accounts) => {
   });
 
   describe("#setCertificate", () => {
-    context("", () => {
+    context("when isaScore > 0", () => {
       beforeEach(async () => {
-
+        await addProducer("Producer A", prod1Address);
+        await instance.incrementInspections(prod1Address);
+        await instance.setIsaScore(prod1Address, 100);
       });
 
-      context("", () => {
-        it("", async () => {
+      context("when received 1 inspection", () => {
+        it("syntropicProducer must be false", async () => {
+          const producer = await instance.getProducer(prod1Address);
+    
+          assert.equal(producer.syntropicProducer, false);
+        });
 
+        it("producer currentEra must be 1", async () => {
+          const producer = await instance.getProducer(prod1Address);
+
+          assert.equal(producer.pool.currentEra, 1);
+        });
+      });
+
+      context("when received 2 inspections", () => {
+        beforeEach(async () => {
+          await instance.incrementInspections(prod1Address);
+          await instance.setIsaScore(prod1Address, 100);
+        });
+
+        it("syntropicProducer must be false", async () => {
+          const producer = await instance.getProducer(prod1Address);
+
+          assert.equal(producer.syntropicProducer, false);
+        });
+
+        it("producer currentEra must be 1", async () => {
+          const producer = await instance.getProducer(prod1Address);
+
+          assert.equal(producer.pool.currentEra, 1);
+        });
+      });
+
+      context("when received 3 inspections", () => {
+        beforeEach(async () => {
+          await advanceBlock(producerPoolArgs.blocksPerEra);
+          await instance.incrementInspections(prod1Address);
+          await instance.setIsaScore(prod1Address, 100);
+          await instance.incrementInspections(prod1Address);
+          await instance.setIsaScore(prod1Address, 100);          
+        });
+
+        it("syntropicProducer must be false", async () => {
+          const producer = await instance.getProducer(prod1Address);
+
+          assert.equal(producer.syntropicProducer, true);
+        });
+
+        it("producer currentEra must be 2", async () => {
+          const producer = await instance.getProducer(prod1Address);
+
+          assert.equal(producer.pool.currentEra, 2);
         });
       });
     });
