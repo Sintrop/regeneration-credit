@@ -183,6 +183,10 @@ contract ProducerContract is Callable {
   function setCertificate(address addr) public mustBeAllowedCaller returns (bool) {
     Producer memory producer = producers[addr];
 
+    if (producers[addr].syntropicProducer) {
+      return true;
+    }  
+
     if (producer.isa.isaScore < 0) return true;
 
     if (minimumInspections(producer.totalInspections)) {
