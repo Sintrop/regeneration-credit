@@ -24,6 +24,8 @@ contract DeveloperPool is Ownable, Blockable, Callable {
   SacTokenInterface internal sacToken;
 
   mapping(uint256 => Era) public eras;
+  mapping(uint256 => mapping(address => uint256)) public developersLevel;
+  mapping(uint256 => mapping(address => uint256)) public developersTokens;
 
   constructor(
     address sacTokenAddress,
@@ -33,103 +35,59 @@ contract DeveloperPool is Ownable, Blockable, Callable {
     sacToken = SacTokenInterface(sacTokenAddress);
   }
 
-  /**
-   * @dev Returns a era
-   * @param era The number of the era
-   */
   function getEra(uint256 era) public view returns (Era memory) {
     return eras[era];
   }
 
-  /**
-   * @dev Allow developers to claim their tokens
-   * @param delegate The address of the delegate developer
-   * @param level The level the developer is at
-   * @param currentEra The currentEra of the developer
-   */
-  function withdraw(
-    address delegate,
-    uint256 level,
-    uint256 currentEra
-  ) public mustBeAllowedCaller {
-    require(canApprove(currentEra), "You can't withdraw yet");
+  function withdraw(address delegate, uint256 era) public mustBeAllowedCaller {
+    require(canApprove(era), "You can't withdraw yet");
 
-    uint256 devTokens = tokens(level, currentEra);
+    uint256 devTokens = tokens(era, delegate);
+
+    if (devTokens == 0) return;
+
+    eras[era].developers++;
+    eras[era].tokens += devTokens;
+    developersTokens[era][delegate] = devTokens;
 
     sacToken.transferWith(address(this), delegate, devTokens);
   }
 
-  // TODO: Remove this function. Its not necessary when use transferWith
-  /**
-   * @dev Returns the amount of tokens a developer can claim
-   */
-  function allowance() public view returns (uint256) {
-    return sacToken.allowance(address(this), msg.sender);
-  }
-
-  /**
-   * @dev Returns how much tokens the developer has
-   * @param tokenOwner The address of the developer
-   */
   function balanceOf(address tokenOwner) public view returns (uint256) {
     return sacToken.balanceOf(tokenOwner);
   }
 
-  /**
-   * @dev Returns how much tokens the contract has
-   */
   function balance() public view returns (uint256) {
     return balanceOf(address(this));
   }
 
-  /**
-   * @dev Allow add new level to eras
-   * @param fromEra The era to start adding levels
-   */
-  function addLevel(uint256 fromEra) public mustBeAllowedCaller {
-    upLevels(fromEra);
+  function addLevel(address developer, uint256 developerLevel)
+    public
+    mustBeAllowedCaller
+  {
+    uint256 era = currentContractEra();
+
+    uint256 levels = developersLevel[era][developer] == 0 ? developerLevel : 1;
+
+    eras[era].levels = eras[era].levels.add(levels);
+    developersLevel[era][developer] += levels;
   }
 
-  /**
-   * @dev Allow remove levels from eras
-   * @param fromEra The era to start removing levels
-   * @param levels The amount of levels to remove
-   */
-  function removeLevel(uint256 fromEra, uint256 levels) public mustBeAllowedCaller {
-    downLevels(fromEra, levels);
+  function removeLevel(address developer) public mustBeAllowedCaller {
+    uint256 era = currentContractEra();
+
+    require(developersLevel[era][developer] != 0, "Not enough levels to remove");
+
+    eras[era].levels = eras[era].levels.sub(1);
+    developersLevel[era][developer]--;
   }
 
-  /**
-   * @dev Calc the amount of tokens a developer can claim
-   * @param level The level of the developer
-   * @param currentEra The current era of the developer
-   */
-  function tokens(uint256 level, uint256 currentEra) internal view returns (uint256) {
+  function tokens(uint256 currentEra, address developer) internal view returns (uint256) {
     uint256 levels = eras[currentEra].levels;
-    if (levels == 0) return 0;
+    uint256 developerLevel = developersLevel[currentEra][developer];
 
-    return level.mul((TOKENS_PER_ERA.div(levels)));
-  }
+    if (developerLevel == 0) return 0;
 
-  /**
-   * @dev Increase the amount of levels in eras
-   * @param fromEra The era to start adding levels
-   */
-  function upLevels(uint256 fromEra) internal {
-    for (uint256 i = fromEra; i <= ERAS; i++) {
-      eras[i].levels++;
-    }
-  }
-
-  /**
-   * @dev Decrease the amount of levels in eras
-   * @param fromEra The era to start removing levels
-   */
-  function downLevels(uint256 fromEra, uint256 levels) internal {
-    require(eras[fromEra].levels >= levels, "Not enough levels to remove");
-
-    for (uint256 i = fromEra; i <= ERAS; i++) {
-      eras[i].levels -= levels;
-    }
+    return developerLevel.mul((TOKENS_PER_ERA.div(levels)));
   }
 }

@@ -9,11 +9,11 @@ struct Developer {
   UserType userType;
   string name;
   string proofPhoto;
-  Level level;
+  Pool pool;
   uint256 createdAt;
 }
 
-struct Level {
+struct Pool {
   uint256 level;
   uint256 currentEra;
 }

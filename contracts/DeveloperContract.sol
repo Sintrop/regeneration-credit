@@ -36,7 +36,7 @@ contract DeveloperContract is Ownable, Registrable {
   {
     UserType userType = UserType.DEVELOPER;
     uint256 poolEra = developerPoolEra();
-    uint256 level = 1;
+    uint256 level = 0;
 
     Developer memory developer = Developer(
       developersCount + 1,
@@ -44,7 +44,7 @@ contract DeveloperContract is Ownable, Registrable {
       userType,
       name,
       proofPhoto,
-      Level(level, poolEra),
+      Pool(level, poolEra),
       block.number
     );
 
@@ -52,8 +52,6 @@ contract DeveloperContract is Ownable, Registrable {
     developers[msg.sender] = developer;
     developersAddress.push(msg.sender);
     developersCount++;
-
-    incrementEraLevel(poolEra);
   }
 
   /**
@@ -92,9 +90,9 @@ contract DeveloperContract is Ownable, Registrable {
   function withdraw() public requireDeveloper returns (bool) {
     Developer memory developer = developers[msg.sender];
 
-    developerPool.withdraw(msg.sender, developer.level.level, developer.level.currentEra);
+    developerPool.withdraw(msg.sender, developer.pool.currentEra);
 
-    developers[msg.sender].level.currentEra++;
+    developers[msg.sender].pool.currentEra++;
 
     return true;
   }
@@ -105,43 +103,25 @@ contract DeveloperContract is Ownable, Registrable {
    */
   function addLevel(address addr) public onlyOwner {
     Developer memory developer = developers[addr];
-    developer.level.level++;
+    developer.pool.level++;
     developers[addr] = developer;
 
-    incrementEraLevel(developerPoolEra());
+    developerPool.addLevel(addr, developer.pool.level);
   }
 
   /**
    * @dev Allow the owner to remove levels from the developer
    * @param addr The address of the developer
-   * @param levels The number of levels to remove
    */
-  function removeLevel(address addr, uint256 levels) public onlyOwner {
+  function removeLevel(address addr) public onlyOwner {
     Developer memory developer = developers[addr];
 
-    require(developer.level.level >= levels, "Invalid level to remove");
+    require(developer.pool.level != 0, "Not enough levels to remove");
 
-    developer.level.level -= levels;
+    developer.pool.level--;
     developers[addr] = developer;
 
-    decrementEraLevel(developerPoolEra(), levels);
-  }
-
-  /**
-   * @dev Increment the eras level
-   * @param fromEra The era to start incrementing
-   */
-  function incrementEraLevel(uint256 fromEra) internal {
-    developerPool.addLevel(fromEra);
-  }
-
-  /**
-   * @dev Decrement the eras level
-   * @param fromEra The era to start decrementing
-   * @param levels The number of levels to decrement
-   */
-  function decrementEraLevel(uint256 fromEra, uint256 levels) internal {
-    developerPool.removeLevel(fromEra, levels);
+    developerPool.removeLevel(addr);
   }
 
   /**
