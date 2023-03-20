@@ -210,7 +210,6 @@ contract("DeveloperContract", (accounts) => {
               await instance.withdraw({ from: dev1Address });
             });
 
-
             it("should add developer to era 2", async () => {
               const developer = await instance.getDeveloper(dev1Address);
 
