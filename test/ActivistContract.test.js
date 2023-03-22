@@ -9,9 +9,13 @@ contract("ActivistContract", (accounts) => {
   let [ownerAddress, activ1Address, activ2Address] = accounts;
 
   const addActivist = async (name, address) => {
-    await instance.addActivist(name, "photoURL", "Brazil", "135465-005", {
-      from: address,
-    });
+    await instance.addActivist(
+      name,
+      "photoURL",
+      "Brazil",
+      "135465-005",
+      { from: address }
+    );
   };
 
   beforeEach(async () => {
