@@ -48,13 +48,9 @@ contract("Sintrop", (accounts) => {
   };
 
   const addActivist = async (name, address) => {
-    await activistContract.addActivist(
-      name,
-      "photoURL",
-      "Brazil",
-      "135465-005",
-      { from: address }
-    );
+    await activistContract.addActivist(name, "photoURL", "Brazil", "135465-005", {
+      from: address,
+    });
   };
 
   const addResearcher = async (name, address) => {
@@ -504,7 +500,7 @@ contract("Sintrop", (accounts) => {
       const isas_ = [
         ["1", "0", "Hash_1", 10],
         ["2", "0", "Hash_2", 10],
-        ["3", "1", "Hash_3", 10],
+        ["3", "1", "Hash_3", 5],
       ];
 
       assert.equal(JSON.stringify(isasResponse), JSON.stringify(isas_));
