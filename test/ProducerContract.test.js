@@ -101,7 +101,7 @@ contract("ProducerContract", (accounts) => {
       assert.equal(producer.propertyAddress.city, "Jundiai");
       assert.equal(producer.propertyAddress.street, "Rua XV");
       assert.equal(producer.propertyAddress.complement, "Complemento");
-      assert.equal(producer.propertyAddress.cep, "135465-005");
+      assert.equal(producer.propertyAddress.coordinate, "135465-005");
     });
   });
 

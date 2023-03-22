@@ -34,7 +34,7 @@ struct PropertyAddress {
   string city;
   string street;
   string complement;
-  string cep;
+  string coordinate;
 }
 
 struct UserDocument {

@@ -13,8 +13,6 @@ contract("ActivistContract", (accounts) => {
       name,
       "photoURL",
       "Brazil",
-      "SP",
-      "Jundiai",
       "135465-005",
       { from: address }
     );
@@ -43,9 +41,7 @@ contract("ActivistContract", (accounts) => {
       assert.equal(activist.lastAcceptedAt, "0");
 
       assert.equal(activist.activistAddress.country, "Brazil");
-      assert.equal(activist.activistAddress.state, "SP");
-      assert.equal(activist.activistAddress.city, "Jundiai");
-      assert.equal(activist.activistAddress.cep, "135465-005");
+      assert.equal(activist.activistAddress.coordinate, "135465-005");
     });
   });
 

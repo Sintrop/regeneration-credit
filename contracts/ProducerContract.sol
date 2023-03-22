@@ -37,7 +37,7 @@ contract ProducerContract is Callable {
    * @param country the country where the producer is
    * @param state the state of the producer
    * @param city the of the producer
-   * @param cep the cep of the producer
+   * @param coordinate the cep of the producer
    */
   function addProducer(
     string memory name,
@@ -49,7 +49,7 @@ contract ProducerContract is Callable {
     string memory city,
     string memory street,
     string memory complement,
-    string memory cep
+    string memory coordinate
   ) public {
     require(!producerExists(msg.sender), "This producer already exist");
 
@@ -67,7 +67,7 @@ contract ProducerContract is Callable {
       0,
       0,
       Isa(0, 0, false),
-      PropertyAddress(country, state, city, street, complement, cep),
+      PropertyAddress(country, state, city, street, complement, coordinate),
       Pool(producerPool.currentContractEra())
     );
 

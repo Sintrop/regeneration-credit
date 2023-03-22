@@ -47,8 +47,6 @@ module.exports = function (deployer) {
       "John Johnson",
       "photoURL",
       "Brazil",
-      "SP",
-      "Ribeirão Preto",
       "2222222222222222",
       { from: activist1 }
     );
@@ -57,8 +55,6 @@ module.exports = function (deployer) {
       "Peter Parker",
       "photoURL",
       "Brazil",
-      "SP",
-      "Marília",
       "333333333333333",
       { from: activist2 }
     );
@@ -68,14 +64,50 @@ module.exports = function (deployer) {
     });
 
     await categoryContract.addCategory(
-      "Pesticides use",
-      `the description of category1`,
-      `how activists should evaluate category1`,
-      `category1 totallySustainable`,
-      `category1 partiallySustainable`,
-      `category1 neutro`,
-      `category1 partiallyNotSustainable`,
-      `category1 totallyNotSustainable`,
+      "Carbon footprint",
+      `Indicator to evaluate the carbon balance`,
+      `We must evaluate everything that the producer emit carbon, and all the carbon sequestration`,
+      `More then -1tCO2e / ha / month`,
+      `Until -1 tCO2e / ha / month`,
+      `0`,
+      `Until 1 tCO2e / ha / month`,
+      `More then 1 tCO2e / ha / month`,
+      { from: researcher1 }
+    );
+
+    await categoryContract.addCategory(
+      "Biodiversity indicator",
+      `Indicator to evaluate the biodiversity level`,
+      `Must evaluate everything related to the biodiversity level and count how many life units were found at the property`,
+      `More then 100 lifeUnits / ha`,
+      `Until 100 lifeUnits / ha`,
+      `0`,
+      `Until -100 lifeUnits / ha`,
+      `Less then -100 lifeUnits / ha`,
+      { from: researcher1 }
+    );
+
+    await categoryContract.addCategory(
+      "Water indicator",
+      `Indicator to evaluate the water resources level`,
+      `Must evaluate the property water level. Positive means water from vegetation and negative water brought from outside the property. `,
+      `More then 10 m3 / ha`,
+      `Until 10 m3 / ha`,
+      `0`,
+      `Until -10 m3 / ha`,
+      `Less then -10 m3 / ha`,
+      { from: researcher1 }
+    );
+
+    await categoryContract.addCategory(
+      "Soil indicator",
+      `Indicator to evaluate the soil regeneration level`,
+      `Must evaluate the property soil regeneration level. `,
+      `More then 50% of soil biomass cover`,
+      `More then 30% of soil biomass cover`,
+      `0`,
+      `Less then 30% of soil biomass cover`,
+      `Less then 20% of soil biomass cover`,
       { from: researcher1 }
     );
   });
