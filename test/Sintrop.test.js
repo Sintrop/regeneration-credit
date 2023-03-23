@@ -498,9 +498,9 @@ contract("Sintrop", (accounts) => {
 
       const isasResponse = await instance.getIsa(1);
       const isas_ = [
-        ["1", "0", "Hash_1", 10],
-        ["2", "0", "Hash_2", 10],
-        ["3", "1", "Hash_3", 5],
+        ["1", "0", "Hash_1", "10"],
+        ["2", "0", "Hash_2", "10"],
+        ["3", "1", "Hash_3", "5"],
       ];
 
       assert.equal(JSON.stringify(isasResponse), JSON.stringify(isas_));
