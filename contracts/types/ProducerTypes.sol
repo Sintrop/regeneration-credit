@@ -7,6 +7,7 @@ struct Producer {
   uint256 id;
   address producerWallet;
   UserType userType;
+  uint256 certifiedArea;
   string name;
   string proofPhoto;
   UserDocument userDocument;

@@ -16,6 +16,7 @@ module.exports = function (deployer) {
     await researcherContract.newAllowedUser(researcher1);
 
     await producerContract.addProducer(
+      10,
       "Beans Farm",
       "photoURL",
       "123456789123456",
@@ -30,6 +31,7 @@ module.exports = function (deployer) {
     );
 
     await producerContract.addProducer(
+      50,
       "Soy Plantation",
       "photoURL",
       "11111111111111",

@@ -38,8 +38,10 @@ contract ProducerContract is Callable {
    * @param state the state of the producer
    * @param city the of the producer
    * @param cep the cep of the producer
+   * @param certifiedArea in hectares = he = 10.000 m2
    */
   function addProducer(
+    uint256 certifiedArea,
     string memory name,
     string memory proofPhoto,
     string memory document,
@@ -60,6 +62,7 @@ contract ProducerContract is Callable {
       producersCount + 1,
       msg.sender,
       userType,
+      certifiedArea,
       name,
       proofPhoto,
       UserDocument(document, documentType),
