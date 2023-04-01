@@ -10,7 +10,6 @@ struct Producer {
   uint256 certifiedArea;
   string name;
   string proofPhoto;
-  UserDocument userDocument;
   bool recentInspection;
   uint256 totalInspections;
   uint256 lastRequestAt;
@@ -30,15 +29,5 @@ struct Isa {
 }
 
 struct PropertyAddress {
-  string country;
-  string state;
-  string city;
-  string street;
-  string complement;
-  string cep;
-}
-
-struct UserDocument {
-  string document;
-  string documentType;
+  string coordinate;
 }

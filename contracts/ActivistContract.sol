@@ -19,25 +19,19 @@ contract ActivistContract is Callable {
   /**
    * @dev Allow a new register of activist
    * @param name the name of the activist
-   * @param country the country where the activist is
-   * @param state the state of the activist
-   * @param city the of the activist
-   * @param cep the cep of the activist
+   * @param coordinate the coordinate of the activist
    * @return a Activist
    */
   // TODO Add mustBeAllowedCaller
   function addActivist(
     string memory name,
     string memory proofPhoto,
-    string memory country,
-    string memory state,
-    string memory city,
-    string memory cep
+    string memory coordinate
   ) public uniqueActivist returns (Activist memory) {
     uint256 id = activistsCount + 1;
     UserType userType = UserType.ACTIVIST;
 
-    ActivistAddress memory activistAddress = ActivistAddress(country, state, city, cep);
+    ActivistAddress memory activistAddress = ActivistAddress(coordinate);
 
     Activist memory activist = Activist(
       id,

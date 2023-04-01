@@ -16,8 +16,5 @@ struct Activist {
 }
 
 struct ActivistAddress {
-  string country;
-  string state;
-  string city;
-  string cep;
+  string coordinate;
 }

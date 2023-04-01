@@ -32,26 +32,14 @@ contract ProducerContract is Callable {
   /**
    * @dev Allow a new register of producer
    * @param name the name of the producer
-   * @param document the document of producer
-   * @param documentType the document type of producer. CPF/CNPJ
-   * @param country the country where the producer is
-   * @param state the state of the producer
-   * @param city the of the producer
-   * @param cep the cep of the producer
+   * @param coordinate the coordinate of the producer
    * @param certifiedArea in hectares = he = 10.000 m2
    */
   function addProducer(
     uint256 certifiedArea,
     string memory name,
     string memory proofPhoto,
-    string memory document,
-    string memory documentType,
-    string memory country,
-    string memory state,
-    string memory city,
-    string memory street,
-    string memory complement,
-    string memory cep
+    string memory coordinate
   ) public {
     require(!producerExists(msg.sender), "This producer already exist");
 
@@ -65,12 +53,11 @@ contract ProducerContract is Callable {
       certifiedArea,
       name,
       proofPhoto,
-      UserDocument(document, documentType),
       false,
       0,
       0,
       Isa(0, 0, false),
-      PropertyAddress(country, state, city, street, complement, cep),
+      PropertyAddress(coordinate),
       Pool(producerPool.currentContractEra())
     );
 
