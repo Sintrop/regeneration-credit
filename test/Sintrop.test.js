@@ -32,13 +32,9 @@ contract("Sintrop", (accounts) => {
   };
 
   const addProducer = async (name, address) => {
-    await producerContract.addProducer(
-      10,
-      name,
-      "photoURL",
-      "135465-005",
-      { from: address }
-    );
+    await producerContract.addProducer(10, name, "photoURL", "135465-005", {
+      from: address,
+    });
   };
 
   const addActivist = async (name, address) => {
