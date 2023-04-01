@@ -13,13 +13,7 @@ contract("ProducerContract", (accounts) => {
   let [ownerAddress, prod1Address, prod2Address] = accounts;
 
   const addProducer = async (name, address) => {
-    await instance.addProducer(
-      10,
-      name,
-      "photoURL",
-      "135465-005",
-      { from: address }
-    );
+    await instance.addProducer(10, name, "photoURL", "135465-005", { from: address });
   };
 
   advanceBlock = async (blocksNumber) => {

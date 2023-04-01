@@ -44,12 +44,7 @@ contract("Sintrop", (accounts) => {
   };
 
   const addActivist = async (name, address) => {
-    await activistContract.addActivist(
-      name,
-      "photoURL",
-      "135465-005",
-      { from: address }
-    );
+    await activistContract.addActivist(name, "photoURL", "135465-005", { from: address });
   };
 
   const addResearcher = async (name, address) => {
