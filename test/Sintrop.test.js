@@ -36,8 +36,6 @@ contract("Sintrop", (accounts) => {
       10,
       name,
       "photoURL",
-      "111.111.111-00",
-      "CPF",
       "135465-005",
       { from: address }
     );
