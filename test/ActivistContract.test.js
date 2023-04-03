@@ -9,15 +9,7 @@ contract("ActivistContract", (accounts) => {
   let [ownerAddress, activ1Address, activ2Address] = accounts;
 
   const addActivist = async (name, address) => {
-    await instance.addActivist(
-      name,
-      "photoURL",
-      "Brazil",
-      "SP",
-      "Jundiai",
-      "135465-005",
-      { from: address }
-    );
+    await instance.addActivist(name, "photoURL", "135465-005", { from: address });
   };
 
   beforeEach(async () => {
@@ -41,11 +33,7 @@ contract("ActivistContract", (accounts) => {
       assert.equal(activist.totalInspections, "0");
       assert.equal(activist.giveUps, "0");
       assert.equal(activist.lastAcceptedAt, "0");
-
-      assert.equal(activist.activistAddress.country, "Brazil");
-      assert.equal(activist.activistAddress.state, "SP");
-      assert.equal(activist.activistAddress.city, "Jundiai");
-      assert.equal(activist.activistAddress.cep, "135465-005");
+      assert.equal(activist.activistAddress.coordinate, "135465-005");
     });
   });
 

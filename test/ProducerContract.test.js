@@ -13,20 +13,7 @@ contract("ProducerContract", (accounts) => {
   let [ownerAddress, prod1Address, prod2Address] = accounts;
 
   const addProducer = async (name, address) => {
-    await instance.addProducer(
-      10,
-      name,
-      "photoURL",
-      "111.111.111-00",
-      "CPF",
-      "Brazil",
-      "SP",
-      "Jundiai",
-      "Rua XV",
-      "Complemento",
-      "135465-005",
-      { from: address }
-    );
+    await instance.addProducer(10, name, "photoURL", "135465-005", { from: address });
   };
 
   advanceBlock = async (blocksNumber) => {
@@ -88,8 +75,6 @@ contract("ProducerContract", (accounts) => {
       assert.equal(producer.userType, 1);
       assert.equal(producer.name, "Producer A");
       assert.equal(producer.proofPhoto, "photoURL");
-      assert.equal(producer.userDocument.document, "111.111.111-00");
-      assert.equal(producer.userDocument.documentType, "CPF");
       assert.equal(producer.totalInspections, 0);
       assert.equal(producer.recentInspection, false);
       assert.equal(producer.isa.isaAverage, "0");
@@ -97,12 +82,7 @@ contract("ProducerContract", (accounts) => {
 
       assert.equal(producer.pool.currentEra, 1);
 
-      assert.equal(producer.propertyAddress.country, "Brazil");
-      assert.equal(producer.propertyAddress.state, "SP");
-      assert.equal(producer.propertyAddress.city, "Jundiai");
-      assert.equal(producer.propertyAddress.street, "Rua XV");
-      assert.equal(producer.propertyAddress.complement, "Complemento");
-      assert.equal(producer.propertyAddress.cep, "135465-005");
+      assert.equal(producer.propertyAddress.coordinate, "135465-005");
     });
   });
 
