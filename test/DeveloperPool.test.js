@@ -135,16 +135,16 @@ contract("DeveloperPool", (accounts) => {
               assert.equal(era2.levels, 0);
             });
 
-            it("developersLevel must have 1 level to developer1", async () => {
-              const developersLevel = await instance.developersLevel(1, dev1Address);
+            it("eraLevels must have 1 level to developer1", async () => {
+              const eraLevels = await instance.eraLevels(1, dev1Address);
 
-              assert.equal(developersLevel, 1);
+              assert.equal(eraLevels, 1);
             });
 
-            it("developersLevel must have 1 level to developer2", async () => {
-              const developersLevel = await instance.developersLevel(1, dev1Address);
+            it("eraLevels must have 1 level to developer2", async () => {
+              const eraLevels = await instance.eraLevels(1, dev1Address);
 
-              assert.equal(developersLevel, 1);
+              assert.equal(eraLevels, 1);
             });
           });
         });
@@ -177,16 +177,16 @@ contract("DeveloperPool", (accounts) => {
               assert.equal(era2.levels, 0);
             });
 
-            it("developersLevel must have 3 level to developer", async () => {
-              const developersLevel = await instance.developersLevel(1, dev1Address);
+            it("eraLevels must have 3 level to developer", async () => {
+              const eraLevels = await instance.eraLevels(1, dev1Address);
 
-              assert.equal(developersLevel, 3);
+              assert.equal(eraLevels, 3);
             });
 
-            it("developersLevel must have 4 level to developer", async () => {
-              const developersLevel = await instance.developersLevel(1, dev2Address);
+            it("eraLevels must have 4 level to developer", async () => {
+              const eraLevels = await instance.eraLevels(1, dev2Address);
 
-              assert.equal(developersLevel, 4);
+              assert.equal(eraLevels, 4);
             });
           });
         });
@@ -224,7 +224,7 @@ contract("DeveloperPool", (accounts) => {
             });
 
             it("developer1 levels in era 1 must be 1", async () => {
-              const level = await instance.developersLevel(1, dev1Address);
+              const level = await instance.eraLevels(1, dev1Address);
 
               assert.equal(level, 1);
             });
@@ -251,7 +251,7 @@ contract("DeveloperPool", (accounts) => {
               });
 
               it("developer1 levels in era 1 must be 2", async () => {
-                const level = await instance.developersLevel(1, dev1Address);
+                const level = await instance.eraLevels(1, dev1Address);
 
                 assert.equal(level, 2);
               });
@@ -263,7 +263,7 @@ contract("DeveloperPool", (accounts) => {
               });
 
               it("developer1 levels in era 2 must be 1", async () => {
-                const level = await instance.developersLevel(2, dev1Address);
+                const level = await instance.eraLevels(2, dev1Address);
 
                 assert.equal(level, 1);
               });
@@ -433,13 +433,13 @@ contract("DeveloperPool", (accounts) => {
               });
 
               it("developer1 balance in era 1 must be 416666499999999999999999", async () => {
-                const balanceOf = await instance.developersTokens(1, dev1Address);
+                const balanceOf = await instance.eraTokens(1, dev1Address);
 
                 assert.equal(balanceOf, "416666499999999999999999");
               });
 
               it("developer1 balance in era 2 must be 416666499999999999999999", async () => {
-                const balanceOf = await instance.developersTokens(2, dev1Address);
+                const balanceOf = await instance.eraTokens(2, dev1Address);
 
                 assert.equal(balanceOf, "416666499999999999999999");
               });
@@ -461,13 +461,13 @@ contract("DeveloperPool", (accounts) => {
               });
 
               it("developer2 balance in era 1 must be 416666499999999999999999", async () => {
-                const balanceOf = await instance.developersTokens(1, dev2Address);
+                const balanceOf = await instance.eraTokens(1, dev2Address);
 
                 assert.equal(balanceOf, "416666499999999999999999");
               });
 
               it("developer2 balance in era 2 must be 416666499999999999999999", async () => {
-                const balanceOf = await instance.developersTokens(2, dev2Address);
+                const balanceOf = await instance.eraTokens(2, dev2Address);
 
                 assert.equal(balanceOf, "416666499999999999999999");
               });
