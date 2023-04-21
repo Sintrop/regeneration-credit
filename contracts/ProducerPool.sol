@@ -7,13 +7,14 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Blockable.sol";
 import "./Callable.sol";
+import "./Poolable.sol";
 
 /**
  * @author Sintrop
  * @title ProducerPool
  * @dev ProducerPool is a contract to reward producers
  */
-contract ProducerPool is Ownable, Blockable, Callable {
+contract ProducerPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;
 
   uint256 internal immutable halving;
@@ -58,17 +59,29 @@ contract ProducerPool is Ownable, Blockable, Callable {
     return sacToken.balanceOf(addr);
   }
 
-  function withdraw(
-    address receiver,
-    int256 totalScores,
-    int256 producerScore,
-    uint256 currentEra
-  ) public mustBeAllowedCaller {
-    require(canApprove(currentEra), "You can't approve yet");
-    uint256 numTokens = tokens(totalScores, producerScore);
-    require(numTokens > 0, "Don't have tokens to withdraw");
+  function withdraw(address delegate, uint256 era) public mustBeAllowedCaller {
+    require(canApprove(era), "You can't approve yet");
+    uint256 numTokens = tokens(era, delegate, tokensPerEra());
 
-    sacToken.transferWith(address(this), receiver, numTokens);
+    if (numTokens == 0) return;
+
+    sacToken.transferWith(address(this), delegate, numTokens);
+  }
+
+  function addLevel(
+    address producer,
+    uint256 currentLevel,
+    uint256 addLevels
+  ) public mustBeAllowedCaller {
+    uint256 era = currentContractEra();
+
+    addPoolLevel(producer, currentLevel, addLevels, era);
+  }
+
+  function removeLevel(address producer) public mustBeAllowedCaller {
+    uint256 era = currentContractEra();
+
+    removePoolLevel(producer, era);
   }
 
   function tokensPerEra() public view returns (uint256) {
@@ -81,22 +94,5 @@ contract ProducerPool is Ownable, Blockable, Callable {
 
   function currentEpoch() public view returns (uint256) {
     return currentContractEra().div(halving) + 1;
-  }
-
-  function tokens(int256 totalScores, int256 producerScore)
-    internal
-    view
-    returns (uint256)
-  {
-    if (!scoresToApprove(totalScores, producerScore)) return 0;
-    return uint256(producerScore).mul((tokensPerEra().div(uint256(totalScores))));
-  }
-
-  function scoresToApprove(int256 totalScores, int256 producerScore)
-    internal
-    pure
-    returns (bool)
-  {
-    return totalScores > 0 && producerScore > 0;
   }
 }

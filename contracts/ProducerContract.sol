@@ -22,7 +22,6 @@ contract ProducerContract is Callable {
   address[] internal producersAddress;
   uint256 public producersCount;
   uint256 public producersSustainable;
-  int256 public producersTotalScore;
 
   constructor(address userContractAddress, address producerPoolAddress) {
     userContract = UserContract(userContractAddress);
@@ -96,15 +95,10 @@ contract ProducerContract is Callable {
 
     require(producerExists(msg.sender), "Only producers pool");
     require(minimumInspections(producer.totalInspections), "Minimum inspections");
-    require(!limitIsaScore(producer.isa.isaScore), "Limit ISA Score");
+    require(!limitIsaScore(producer), "Limit ISA Score");
     // TODO: Create issue to add validation by last 12 eras
 
-    producerPool.withdraw(
-      msg.sender,
-      producersTotalScore,
-      producer.isa.isaScore,
-      producer.pool.currentEra
-    );
+    producerPool.withdraw(msg.sender, producer.pool.currentEra);
 
     incrementCurrentEra(msg.sender);
   }
@@ -113,8 +107,8 @@ contract ProducerContract is Callable {
     return totalInspections >= MINIMUM_INSPECTION_TO_POOL;
   }
 
-  function limitIsaScore(int256 isaScore) internal pure returns (bool) {
-    return isaScore >= LIMIT_ISA_SCORE_TO_POOL;
+  function limitIsaScore(Producer memory producer) internal pure returns (bool) {
+    return producer.isa.isaScore >= LIMIT_ISA_SCORE_TO_POOL;
   }
 
   /**
@@ -129,31 +123,25 @@ contract ProducerContract is Callable {
     producers[addr].recentInspection = state;
   }
 
-  function setIsaScore(address addr, int256 isaScore)
-    public
-    mustBeAllowedCaller
-    returns (bool)
-  {
+  function setIsaScore(address addr, int256 isaScore) public mustBeAllowedCaller {
     Producer memory producer = producers[addr];
 
     producer.isa.isaScore += isaScore;
     producers[addr] = producer;
-    int256 newProducerScore = producer.isa.isaScore;
 
-    if (producer.isa.sustainable) return true;
-    if (newProducerScore < 0) isaScore = isaScore - (newProducerScore);
+    uint256 currentlevel = producer.isa.isaScore < 0 ? 0 : uint256(producer.isa.isaScore);
+    uint256 addLevels = isaScore < 0 ? 0 : uint256(isaScore);
 
-    producersTotalScore += isaScore;
+    if (producer.isa.sustainable) return;
 
-    if (limitIsaScore(producer.isa.isaScore)) changeProducerToSustainable(producer);
+    producerPool.addLevel(addr, currentlevel, addLevels);
 
-    return true;
+    if (limitIsaScore(producer)) changeProducerToSustainable(producer);
   }
 
   function changeProducerToSustainable(Producer memory producer) internal {
     producersSustainable++;
     producers[producer.producerWallet].isa.sustainable = true;
-    producersTotalScore -= producer.isa.isaScore;
   }
 
   function incrementCurrentEra(address addr) internal {

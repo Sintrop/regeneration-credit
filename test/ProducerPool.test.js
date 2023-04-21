@@ -12,7 +12,7 @@ contract("ProducerPool", (accounts) => {
     totalTokens: "750000000000000000000000000",
     halving: 8,
     totalEras: 8,
-    blocksPerEra: 6,
+    blocksPerEra: 12,
   };
 
   advanceBlock = async (blocksNumber) => {
@@ -50,6 +50,8 @@ contract("ProducerPool", (accounts) => {
       args.totalEras,
       args.blocksPerEra
     );
+
+    await instance.newAllowedCaller(owner);
 
     await sacToken.addContractPool(instance.address, args.totalTokens);
   });
@@ -265,62 +267,55 @@ contract("ProducerPool", (accounts) => {
       });
 
       context("when can approve", () => {
-        beforeEach(async () => {
-          await advanceBlock(args.blocksPerEra);
-        });
-
         context("when totalScores is 0", () => {
-          it("must return error message", async () => {
-            await expectRevert(
-              instance.withdraw(producer1Address, 0, 0, 1),
-              "Don't have tokens to withdraw"
-            );
+          beforeEach(async () => {
+            await advanceBlock(args.blocksPerEra);
+          });
+
+          it("balanceOf must be 0", async () => {
+            await instance.withdraw(producer1Address, 1);
+            const balanceOf = await instance.balanceOf(producer1Address);
+
+            assert.equal(balanceOf, 0);
           });
         });
 
         context("when totalScores is 80", () => {
-          context("when producer have 80 isaScore", () => {
+          context("when producer1 have 80 isaScore", () => {
+            beforeEach(async () => {
+              await instance.addLevel(producer1Address, 80, 80);
+              await advanceBlock(args.blocksPerEra);
+            });
+
             it("must withdraw 45000000000000000000000000 of tokens", async () => {
-              await instance.withdraw(producer1Address, 80, 80, 1);
+              await instance.withdraw(producer1Address, 1);
               const balanceOf = await instance.balanceOf(producer1Address);
 
               assert.equal(balanceOf, 45000000000000000000000000n);
             });
           });
-
-          context("when producer have 0 isaScore", () => {
-            it("must return error message", async () => {
-              await expectRevert(
-                instance.withdraw(producer1Address, 80, 0, 1),
-                "Don't have tokens to withdraw"
-              );
-            });
-          });
-
-          context("when producer have negative isaScore", () => {
-            it("must return error message", async () => {
-              await expectRevert(
-                instance.withdraw(producer1Address, 80, -10, 1),
-                "Don't have tokens to withdraw"
-              );
-            });
-          });
         });
 
         context("when totalScores is 125", () => {
-          context("when producer have 80 isaScore", () => {
+          beforeEach(async () => {
+            await instance.addLevel(producer1Address, 80, 80);
+            await instance.addLevel(producer2Address, 45, 45);
+            await advanceBlock(args.blocksPerEra);
+          });
+
+          context("when producer1 have 80 isaScore", () => {
             it("must withdraw 28800000000000000000000000 of tokens", async () => {
-              await instance.withdraw(producer1Address, 125, 80, 1);
+              await instance.withdraw(producer1Address, 1);
               const balanceOf = await instance.balanceOf(producer1Address);
 
               assert.equal(balanceOf, 28800000000000000000000000n);
             });
           });
 
-          context("when producer have 45 isaScore", () => {
+          context("when producer2 have 45 isaScore", () => {
             it("must withdraw 16200000000000000000000000 tokens", async () => {
-              await instance.withdraw(producer1Address, 125, 45, 1);
-              const balanceOf = await instance.balanceOf(producer1Address);
+              await instance.withdraw(producer2Address, 1);
+              const balanceOf = await instance.balanceOf(producer2Address);
 
               assert.equal(balanceOf, 16200000000000000000000000n);
             });
@@ -331,7 +326,7 @@ contract("ProducerPool", (accounts) => {
       context("when can't approve", () => {
         it("must return error message", async () => {
           await expectRevert(
-            instance.withdraw(producer1Address, 0, 0, 1),
+            instance.withdraw(producer1Address, 1),
             "You can't approve yet"
           );
         });
@@ -341,7 +336,97 @@ contract("ProducerPool", (accounts) => {
     context("with not allowed caller", () => {
       it("must return error message", async () => {
         await expectRevert(
-          instance.withdraw(producer1Address, 0, 0, 1),
+          instance.withdraw(producer1Address, 1, { from: producer1Address }),
+          "Not allowed caller"
+        );
+      });
+    });
+  });
+
+  describe("#addLevel", () => {
+    context("with allowed caller", () => {
+      context("when add level in era 1", () => {
+        context("when producer have 0 levels in era 1", () => {
+          context("when add level", () => {
+            beforeEach(async () => {
+              await instance.addLevel(producer1Address, 1, 1);
+              await instance.addLevel(producer2Address, 1, 1);
+            });
+
+            it("era 1 must have 2 level", async () => {
+              const era1 = await instance.getEra(1);
+
+              assert.equal(era1.levels, 2);
+            });
+
+            it("era 2 must have 0 level", async () => {
+              const era2 = await instance.getEra(2);
+
+              assert.equal(era2.levels, 0);
+            });
+
+            it("eraLevels must have 1 level to producer1", async () => {
+              const eraLevels = await instance.eraLevels(1, producer1Address);
+
+              assert.equal(eraLevels, 1);
+            });
+
+            it("eraLevels must have 1 level to producer2", async () => {
+              const eraLevels = await instance.eraLevels(1, producer2Address);
+
+              assert.equal(eraLevels, 1);
+            });
+          });
+        });
+
+        context("when producers have levels in era 1", () => {
+          beforeEach(async () => {
+            await instance.addLevel(producer1Address, 1, 1);
+            await instance.addLevel(producer1Address, 1, 80);
+
+            await instance.addLevel(producer2Address, 1, 1);
+            await instance.addLevel(producer2Address, 1, 1);
+            await instance.addLevel(producer2Address, 1, 1);
+          });
+
+          context("when add level", () => {
+            beforeEach(async () => {
+              await instance.addLevel(producer1Address, 1, 1);
+              await instance.addLevel(producer2Address, 1, 1);
+            });
+
+            it("era 1 must have 7 level", async () => {
+              const era1 = await instance.getEra(1);
+
+              assert.equal(era1.levels, 86);
+            });
+
+            it("era 2 must have 0 level", async () => {
+              const era2 = await instance.getEra(2);
+
+              assert.equal(era2.levels, 0);
+            });
+
+            it("eraLevels must have 82 level to producer1", async () => {
+              const eraLevels = await instance.eraLevels(1, producer1Address);
+
+              assert.equal(eraLevels, 82);
+            });
+
+            it("eraLevels must have 4 level to producer2", async () => {
+              const eraLevels = await instance.eraLevels(1, producer2Address);
+
+              assert.equal(eraLevels, 4);
+            });
+          });
+        });
+      });
+    });
+
+    context("with don't allowed caller", () => {
+      it("should return error message", async () => {
+        await expectRevert(
+          instance.addLevel(producer1Address, 1, 1, { from: producer1Address }),
           "Not allowed caller"
         );
       });
