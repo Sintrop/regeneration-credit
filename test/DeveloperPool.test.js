@@ -70,7 +70,7 @@ contract("DeveloperPool", (accounts) => {
 
         assert.equal(era.levels, 0);
         assert.equal(era.tokens, 0);
-        assert.equal(era.developers, 0);
+        assert.equal(era.users, 0);
       });
     });
   });

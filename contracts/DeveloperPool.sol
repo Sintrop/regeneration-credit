@@ -38,7 +38,7 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
 
     if (devTokens == 0) return;
 
-    eras[era].developers++;
+    eras[era].users++;
     eras[era].tokens += devTokens;
     eraTokens[era][delegate] = devTokens;
 
