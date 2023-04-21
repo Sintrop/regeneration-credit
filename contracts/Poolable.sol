@@ -23,10 +23,10 @@ contract Poolable {
   function addPoolLevel(
     address to,
     uint256 currentLevel,
-    uint256 level,
+    uint256 addLevel,
     uint256 era
   ) internal {
-    uint256 levels = eraLevels[era][to] == 0 ? currentLevel : level;
+    uint256 levels = eraLevels[era][to] > 0 ? addLevel: currentLevel;
 
     eras[era].levels = eras[era].levels.add(levels);
     eraLevels[era][to] += levels;
