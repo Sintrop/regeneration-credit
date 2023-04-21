@@ -43,11 +43,10 @@ contract DeveloperContract is Ownable, Registrable {
    * @dev Allow a new register of developer
    * @param name the name of the developer
    */
-  function addDeveloper(string memory name, string memory proofPhoto)
-    public
-    mustBeAllowedUser
-    uniqueDeveloper
-  {
+  function addDeveloper(
+    string memory name,
+    string memory proofPhoto
+  ) public mustBeAllowedUser uniqueDeveloper {
     UserType userType = UserType.DEVELOPER;
     uint256 poolEra = developerPoolEra();
     uint256 level = 0;
@@ -120,7 +119,7 @@ contract DeveloperContract is Ownable, Registrable {
     developer.pool.level++;
     developers[addr] = developer;
 
-    developerPool.addLevel(addr, developer.pool.level);
+    developerPool.addLevel(addr, developer.pool.level, 1);
   }
 
   /**

@@ -3,7 +3,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract Poolable  {
+contract Poolable {
   using SafeMath for uint256;
 
   struct Era {
@@ -20,21 +20,30 @@ contract Poolable  {
     return eras[era];
   }
 
-  function addPoolLevel(address to, uint256 level, uint256 era) internal {
-    uint256 levels = eraLevels[era][to] == 0 ? level : 1;
+  function addPoolLevel(
+    address to,
+    uint256 currentLevel,
+    uint256 level,
+    uint256 era
+  ) internal {
+    uint256 levels = eraLevels[era][to] == 0 ? currentLevel : level;
 
     eras[era].levels = eras[era].levels.add(levels);
     eraLevels[era][to] += levels;
   }
-  
+
   function removePoolLevel(address to, uint256 era) internal {
     require(eraLevels[era][to] != 0, "Not enough levels to remove");
 
     eras[era].levels = eras[era].levels.sub(1);
     eraLevels[era][to]--;
   }
- 
-  function tokens(uint256 era, address to, uint256 tokensPerEra) internal view returns (uint256) {
+
+  function tokens(
+    uint256 era,
+    address to,
+    uint256 tokensPerEra
+  ) internal view returns (uint256) {
     uint256 levels = eras[era].levels;
     uint256 levelTo = eraLevels[era][to];
 

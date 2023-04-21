@@ -17,7 +17,7 @@ import "./Poolable.sol";
 contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;
 
-  uint256 public constant FIXED_POINT = 10**18;
+  uint256 public constant FIXED_POINT = 10 ** 18;
   uint256 public constant TOKENS_PER_ERA = 833333000000000000000000;
   uint256 public constant ERAS = 18;
 
@@ -53,10 +53,14 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
     return balanceOf(address(this));
   }
 
-  function addLevel(address developer, uint256 developerLevel) public mustBeAllowedCaller {
+  function addLevel(
+    address developer,
+    uint256 developerLevel,
+    uint256 level
+  ) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 
-    addPoolLevel(developer, developerLevel, era);
+    addPoolLevel(developer, developerLevel, level, era);
   }
 
   function removeLevel(address developer) public mustBeAllowedCaller {
