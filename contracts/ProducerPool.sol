@@ -83,20 +83,12 @@ contract ProducerPool is Ownable, Blockable, Callable {
     return currentContractEra().div(halving) + 1;
   }
 
-  function tokens(int256 totalScores, int256 producerScore)
-    internal
-    view
-    returns (uint256)
-  {
+  function tokens(int256 totalScores, int256 producerScore) internal view returns (uint256) {
     if (!scoresToApprove(totalScores, producerScore)) return 0;
     return uint256(producerScore).mul((tokensPerEra().div(uint256(totalScores))));
   }
 
-  function scoresToApprove(int256 totalScores, int256 producerScore)
-    internal
-    pure
-    returns (bool)
-  {
+  function scoresToApprove(int256 totalScores, int256 producerScore) internal pure returns (bool) {
     return totalScores > 0 && producerScore > 0;
   }
 }

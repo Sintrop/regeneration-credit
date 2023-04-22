@@ -23,11 +23,7 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
 
   SacTokenInterface internal sacToken;
 
-  constructor(
-    address sacTokenAddress,
-    uint256 blocksPerEra,
-    uint256 eraMax
-  ) Blockable(blocksPerEra, eraMax) {
+  constructor(address sacTokenAddress, uint256 blocksPerEra, uint256 eraMax) Blockable(blocksPerEra, eraMax) {
     sacToken = SacTokenInterface(sacTokenAddress);
   }
 
@@ -53,11 +49,7 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
     return balanceOf(address(this));
   }
 
-  function addLevel(
-    address developer,
-    uint256 developerLevel,
-    uint256 level
-  ) public mustBeAllowedCaller {
+  function addLevel(address developer, uint256 developerLevel, uint256 level) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 
     addPoolLevel(developer, developerLevel, level, era);

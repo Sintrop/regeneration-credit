@@ -48,12 +48,7 @@ contract IsaPool is PoolPassiveInterface, Ownable, Callable {
    * @param _numTokens How much tokens the user want transfer
    * @return bool
    */
-  function approveWith(address delegate, uint256 _numTokens)
-    public
-    override
-    mustBeAllowedCaller
-    returns (bool)
-  {
+  function approveWith(address delegate, uint256 _numTokens) public override mustBeAllowedCaller returns (bool) {
     sacToken.approveWith(delegate, _numTokens);
     return true;
   }

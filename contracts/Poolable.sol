@@ -20,13 +20,8 @@ contract Poolable {
     return eras[era];
   }
 
-  function addPoolLevel(
-    address to,
-    uint256 currentLevel,
-    uint256 addLevel,
-    uint256 era
-  ) internal {
-    uint256 levels = eraLevels[era][to] > 0 ? addLevel: currentLevel;
+  function addPoolLevel(address to, uint256 currentLevel, uint256 addLevel, uint256 era) internal {
+    uint256 levels = eraLevels[era][to] > 0 ? addLevel : currentLevel;
 
     eras[era].levels = eras[era].levels.add(levels);
     eraLevels[era][to] += levels;
@@ -39,11 +34,7 @@ contract Poolable {
     eraLevels[era][to]--;
   }
 
-  function tokens(
-    uint256 era,
-    address to,
-    uint256 tokensPerEra
-  ) internal view returns (uint256) {
+  function tokens(uint256 era, address to, uint256 tokensPerEra) internal view returns (uint256) {
     uint256 levels = eras[era].levels;
     uint256 levelTo = eraLevels[era][to];
 

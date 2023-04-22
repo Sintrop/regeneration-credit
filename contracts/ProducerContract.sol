@@ -99,12 +99,7 @@ contract ProducerContract is Callable {
     require(!limitIsaScore(producer.isa.isaScore), "Limit ISA Score");
     // TODO: Create issue to add validation by last 12 eras
 
-    producerPool.withdraw(
-      msg.sender,
-      producersTotalScore,
-      producer.isa.isaScore,
-      producer.pool.currentEra
-    );
+    producerPool.withdraw(msg.sender, producersTotalScore, producer.isa.isaScore, producer.pool.currentEra);
 
     incrementCurrentEra(msg.sender);
   }
@@ -129,11 +124,7 @@ contract ProducerContract is Callable {
     producers[addr].recentInspection = state;
   }
 
-  function setIsaScore(address addr, int256 isaScore)
-    public
-    mustBeAllowedCaller
-    returns (bool)
-  {
+  function setIsaScore(address addr, int256 isaScore) public mustBeAllowedCaller returns (bool) {
     Producer memory producer = producers[addr];
 
     producer.isa.isaScore += isaScore;

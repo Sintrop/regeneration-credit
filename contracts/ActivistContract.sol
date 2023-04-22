@@ -33,17 +33,7 @@ contract ActivistContract is Callable {
 
     ActivistAddress memory activistAddress = ActivistAddress(coordinate);
 
-    Activist memory activist = Activist(
-      id,
-      msg.sender,
-      userType,
-      name,
-      proofPhoto,
-      0,
-      0,
-      activistAddress,
-      0
-    );
+    Activist memory activist = Activist(id, msg.sender, userType, name, proofPhoto, 0, 0, activistAddress, 0);
 
     activists[msg.sender] = activist;
     activistsAddress.push(msg.sender);

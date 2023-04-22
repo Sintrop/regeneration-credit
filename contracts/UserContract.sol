@@ -22,12 +22,10 @@ contract UserContract is Ownable, Callable {
    * @param addr The address of the user
    * @param userType The type of the user - enum UserType
    */
-  function addUser(address addr, UserType userType)
-    public
-    mustBeAllowedCaller
-    mustNotExists(addr)
-    mustBeValidType(userType)
-  {
+  function addUser(
+    address addr,
+    UserType userType
+  ) public mustBeAllowedCaller mustNotExists(addr) mustBeValidType(userType) {
     users[addr] = userType;
     usersCount++;
   }
@@ -58,16 +56,7 @@ contract UserContract is Ownable, Callable {
       string memory
     )
   {
-    return (
-      "UNDEFINED",
-      "PRODUCER",
-      "ACTIVIST",
-      "RESEARCHER",
-      "DEVELOPER",
-      "ADVISOR",
-      "CONTRIBUTOR",
-      "INVESTOR"
-    );
+    return ("UNDEFINED", "PRODUCER", "ACTIVIST", "RESEARCHER", "DEVELOPER", "ADVISOR", "CONTRIBUTOR", "INVESTOR");
   }
 
   // TODO: Add modifiers requires inside the function and remove modifiers
@@ -86,14 +75,7 @@ contract UserContract is Ownable, Callable {
   ) public callerMustExists reportedMustExists(addr) {
     uint256 id = delationsCount + 1;
 
-    Delation memory delation = Delation(
-      id,
-      msg.sender,
-      addr,
-      title,
-      testimony,
-      proofPhoto
-    );
+    Delation memory delation = Delation(id, msg.sender, addr, title, testimony, proofPhoto);
 
     delations[addr].push(delation);
     delationsCount++;
