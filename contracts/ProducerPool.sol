@@ -68,11 +68,7 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
     sacToken.transferWith(address(this), delegate, numTokens);
   }
 
-  function addLevel(
-    address producer,
-    uint256 currentLevel,
-    uint256 addLevels
-  ) public mustBeAllowedCaller {
+  function addLevel(address producer, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 
     addPoolLevel(producer, currentLevel, addLevels, era);
