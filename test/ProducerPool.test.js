@@ -327,10 +327,7 @@ contract("ProducerPool", (accounts) => {
 
     context("with not allowed caller", () => {
       it("must return error message", async () => {
-        await expectRevert(
-          instance.withdraw(producer1Address, 1, { from: producer1Address }),
-          "Not allowed caller"
-        );
+        await expectRevert(instance.withdraw(producer1Address, 1, { from: producer1Address }), "Not allowed caller");
       });
     });
   });
@@ -417,10 +414,7 @@ contract("ProducerPool", (accounts) => {
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          instance.addLevel(producer1Address, 1, 1, { from: producer1Address }),
-          "Not allowed caller"
-        );
+        await expectRevert(instance.addLevel(producer1Address, 1, 1, { from: producer1Address }), "Not allowed caller");
       });
     });
   });

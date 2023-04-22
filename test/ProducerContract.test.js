@@ -325,9 +325,9 @@ contract("ProducerContract", (accounts) => {
             it("producers sustainable must increment", async () => {
               const producersSustainable = await instance.producersSustainable();
 
-                assert.equal(producersSustainable, 1);
-              });
+              assert.equal(producersSustainable, 1);
             });
+          });
         });
 
         context("when have more tha one producer", () => {
