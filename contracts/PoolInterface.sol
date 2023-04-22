@@ -5,11 +5,7 @@ interface PoolInterface {
   /*
    * @dev Allow a user approve tokens from pool to your account
    */
-  function approve(
-    address delegate,
-    uint256 level,
-    uint256 currentEra
-  ) external;
+  function approve(address delegate, uint256 level, uint256 currentEra) external;
 
   /*
    * @dev Allow a user withdraw (transfer) your tokens approved to your account

@@ -67,29 +67,20 @@ contract("UserContract", (accounts) => {
         it("should return error message", async () => {
           await addUser(user1Address, userTypes.Producer, owner);
 
-          await expectRevert(
-            addUser(user1Address, userTypes.Producer, owner),
-            "User already exists"
-          );
+          await expectRevert(addUser(user1Address, userTypes.Producer, owner), "User already exists");
         });
       });
 
       context("with UNDEFINED user type", () => {
         it("should return error message", async () => {
-          await expectRevert(
-            addUser(user1Address, userTypes.Undefined, owner),
-            "Invalid user type"
-          );
+          await expectRevert(addUser(user1Address, userTypes.Undefined, owner), "Invalid user type");
         });
       });
     });
 
     context("without allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          addUser(user1Address, userTypes.Producer, user1Address),
-          "Not allowed caller"
-        );
+        await expectRevert(addUser(user1Address, userTypes.Producer, user1Address), "Not allowed caller");
       });
     });
   });
@@ -243,10 +234,7 @@ contract("UserContract", (accounts) => {
       it("should return error message", async () => {
         await addUser(user2Address, userTypes.Producer, owner);
 
-        await expectRevert(
-          addDelation(user1Address, user2Address),
-          "User must be registered"
-        );
+        await expectRevert(addDelation(user1Address, user2Address), "User must be registered");
       });
     });
 
@@ -254,10 +242,7 @@ contract("UserContract", (accounts) => {
       it("should return error message", async () => {
         await addUser(user1Address, userTypes.Producer, owner);
 
-        await expectRevert(
-          addDelation(user1Address, user2Address),
-          "Caller must be registered"
-        );
+        await expectRevert(addDelation(user1Address, user2Address), "Caller must be registered");
       });
     });
   });

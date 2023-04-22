@@ -24,10 +24,7 @@ contract("InvestorContract", (accounts) => {
     context("when investor exists", () => {
       it("should return error", async () => {
         await addInvestor("Investor A", inv1Address);
-        await expectRevert(
-          addInvestor("Investor A", inv1Address),
-          "This investor already exist"
-        );
+        await expectRevert(addInvestor("Investor A", inv1Address), "This investor already exist");
       });
 
       context("when investor don't exist", () => {

@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "./UserContract.sol";
-import "./types/ResearcherTypes.sol";
-import "./Registrable.sol";
+import { UserContract } from "./UserContract.sol";
+import { Researcher, Work } from "./types/ResearcherTypes.sol";
+import { Registrable } from "./Registrable.sol";
+import { UserType } from "./types/UserTypes.sol";
 
 contract ResearcherContract is Registrable {
   mapping(address => Researcher) internal researchers;
@@ -23,23 +24,14 @@ contract ResearcherContract is Registrable {
    * @param name the name of the researcher
    * @return a Researcher
    */
-  function addResearcher(string memory name, string memory proofPhoto)
-    public
-    uniqueResearcher
-    mustBeAllowedUser
-    returns (Researcher memory)
-  {
+  function addResearcher(
+    string memory name,
+    string memory proofPhoto
+  ) public uniqueResearcher mustBeAllowedUser returns (Researcher memory) {
     uint256 id = researchersCount + 1;
     UserType userType = UserType.RESEARCHER;
 
-    Researcher memory researcher = Researcher(
-      id,
-      msg.sender,
-      userType,
-      name,
-      proofPhoto,
-      0
-    );
+    Researcher memory researcher = Researcher(id, msg.sender, userType, name, proofPhoto, 0);
 
     researchers[msg.sender] = researcher;
     researchersAddress.push(msg.sender);
@@ -80,11 +72,7 @@ contract ResearcherContract is Registrable {
     return bytes(researchers[addr].name).length > 0;
   }
 
-  function addWork(
-    string memory title,
-    string memory thesis,
-    string memory file
-  ) public {
+  function addWork(string memory title, string memory thesis, string memory file) public {
     require(researcherExists(msg.sender), "Only allowed to researchers");
 
     uint256 id = worksCount + 1;

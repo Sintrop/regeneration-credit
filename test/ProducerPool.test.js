@@ -44,12 +44,7 @@ contract("ProducerPool", (accounts) => {
   beforeEach(async () => {
     sacToken = await SacToken.new("150000000000000000000000000000");
 
-    instance = await ProducerPool.new(
-      sacToken.address,
-      args.halving,
-      args.totalEras,
-      args.blocksPerEra
-    );
+    instance = await ProducerPool.new(sacToken.address, args.halving, args.totalEras, args.blocksPerEra);
 
     await sacToken.addContractPool(instance.address, args.totalTokens);
   });
@@ -271,10 +266,7 @@ contract("ProducerPool", (accounts) => {
 
         context("when totalScores is 0", () => {
           it("must return error message", async () => {
-            await expectRevert(
-              instance.withdraw(producer1Address, 0, 0, 1),
-              "Don't have tokens to withdraw"
-            );
+            await expectRevert(instance.withdraw(producer1Address, 0, 0, 1), "Don't have tokens to withdraw");
           });
         });
 
@@ -290,19 +282,13 @@ contract("ProducerPool", (accounts) => {
 
           context("when producer have 0 isaScore", () => {
             it("must return error message", async () => {
-              await expectRevert(
-                instance.withdraw(producer1Address, 80, 0, 1),
-                "Don't have tokens to withdraw"
-              );
+              await expectRevert(instance.withdraw(producer1Address, 80, 0, 1), "Don't have tokens to withdraw");
             });
           });
 
           context("when producer have negative isaScore", () => {
             it("must return error message", async () => {
-              await expectRevert(
-                instance.withdraw(producer1Address, 80, -10, 1),
-                "Don't have tokens to withdraw"
-              );
+              await expectRevert(instance.withdraw(producer1Address, 80, -10, 1), "Don't have tokens to withdraw");
             });
           });
         });
@@ -330,20 +316,14 @@ contract("ProducerPool", (accounts) => {
 
       context("when can't approve", () => {
         it("must return error message", async () => {
-          await expectRevert(
-            instance.withdraw(producer1Address, 0, 0, 1),
-            "You can't approve yet"
-          );
+          await expectRevert(instance.withdraw(producer1Address, 0, 0, 1), "You can't approve yet");
         });
       });
     });
 
     context("with not allowed caller", () => {
       it("must return error message", async () => {
-        await expectRevert(
-          instance.withdraw(producer1Address, 0, 0, 1),
-          "Not allowed caller"
-        );
+        await expectRevert(instance.withdraw(producer1Address, 0, 0, 1), "Not allowed caller");
       });
     });
   });

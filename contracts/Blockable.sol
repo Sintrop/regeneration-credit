@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
  * @author Sintrop
@@ -32,10 +32,7 @@ contract Blockable {
   }
 
   function nextApproveIn(uint256 currentUserEra) public view returns (int256) {
-    return
-      int256(deployedAt) +
-      (int256(blocksPerEra) * int256(currentUserEra)) -
-      int256(currentBlockNumber());
+    return int256(deployedAt) + (int256(blocksPerEra) * int256(currentUserEra)) - int256(currentBlockNumber());
   }
 
   function canApproveTimes(uint256 currentUserEra) public view returns (uint256) {
@@ -43,7 +40,7 @@ contract Blockable {
 
     if (approvesTimes > 0) return 0;
 
-    return uint256(-approvesTimes).mul(10**BLOCKS_PRECISION).div(blocksPerEra);
+    return uint256(-approvesTimes).mul(10 ** BLOCKS_PRECISION).div(blocksPerEra);
   }
 
   // PRIVATE FUNCTIONS
@@ -52,11 +49,7 @@ contract Blockable {
     return currentEra <= eraMax;
   }
 
-  function currentUserBlockNumber(uint256 currentUserEra)
-    internal
-    view
-    returns (uint256)
-  {
+  function currentUserBlockNumber(uint256 currentUserEra) internal view returns (uint256) {
     return deployedAt.add(blocksPerEra.mul(currentUserEra));
   }
 

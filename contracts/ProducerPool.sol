@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "./PoolInterface.sol";
-import "./SacTokenInterface.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "./Blockable.sol";
-import "./Callable.sol";
+import { PoolInterface } from "./PoolInterface.sol";
+import { SacTokenInterface } from "./SacTokenInterface.sol";
+import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { Blockable } from "./Blockable.sol";
+import { Callable } from "./Callable.sol";
 
 /**
  * @author Sintrop
@@ -83,20 +83,12 @@ contract ProducerPool is Ownable, Blockable, Callable {
     return currentContractEra().div(halving) + 1;
   }
 
-  function tokens(int256 totalScores, int256 producerScore)
-    internal
-    view
-    returns (uint256)
-  {
+  function tokens(int256 totalScores, int256 producerScore) internal view returns (uint256) {
     if (!scoresToApprove(totalScores, producerScore)) return 0;
     return uint256(producerScore).mul((tokensPerEra().div(uint256(totalScores))));
   }
 
-  function scoresToApprove(int256 totalScores, int256 producerScore)
-    internal
-    pure
-    returns (bool)
-  {
+  function scoresToApprove(int256 totalScores, int256 producerScore) internal pure returns (bool) {
     return totalScores > 0 && producerScore > 0;
   }
 }

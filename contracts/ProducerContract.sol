@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "./UserContract.sol";
-import "./types/ProducerTypes.sol";
-import "./Callable.sol";
-import "./ProducerPool.sol";
+import { UserContract } from "./UserContract.sol";
+import { Producer, Pool, Isa, PropertyAddress } from "./types/ProducerTypes.sol";
+import { Callable } from "./Callable.sol";
+import { ProducerPool } from "./ProducerPool.sol";
+import { UserType } from "./types/UserTypes.sol";
 
 /**
  * @title ProducerContract
@@ -99,12 +100,7 @@ contract ProducerContract is Callable {
     require(!limitIsaScore(producer.isa.isaScore), "Limit ISA Score");
     // TODO: Create issue to add validation by last 12 eras
 
-    producerPool.withdraw(
-      msg.sender,
-      producersTotalScore,
-      producer.isa.isaScore,
-      producer.pool.currentEra
-    );
+    producerPool.withdraw(msg.sender, producersTotalScore, producer.isa.isaScore, producer.pool.currentEra);
 
     incrementCurrentEra(msg.sender);
   }
@@ -129,11 +125,7 @@ contract ProducerContract is Callable {
     producers[addr].recentInspection = state;
   }
 
-  function setIsaScore(address addr, int256 isaScore)
-    public
-    mustBeAllowedCaller
-    returns (bool)
-  {
+  function setIsaScore(address addr, int256 isaScore) public mustBeAllowedCaller returns (bool) {
     Producer memory producer = producers[addr];
 
     producer.isa.isaScore += isaScore;

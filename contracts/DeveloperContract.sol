@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "./UserContract.sol";
-import "./types/DeveloperTypes.sol";
-import "./Registrable.sol";
-import "./DeveloperPool.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { UserContract } from "./UserContract.sol";
+import { UserType } from "./types/UserTypes.sol";
+import { Registrable } from "./Registrable.sol";
+import { DeveloperPool } from "./DeveloperPool.sol";
+import { Developer, Pool } from "./types/DeveloperTypes.sol";
 
 /**
  * @title DeveloperContract
@@ -29,11 +30,7 @@ contract DeveloperContract is Ownable, Registrable {
    * @dev Allow a new register of developer
    * @param name the name of the developer
    */
-  function addDeveloper(string memory name, string memory proofPhoto)
-    public
-    mustBeAllowedUser
-    uniqueDeveloper
-  {
+  function addDeveloper(string memory name, string memory proofPhoto) public mustBeAllowedUser uniqueDeveloper {
     UserType userType = UserType.DEVELOPER;
     uint256 poolEra = developerPoolEra();
     uint256 level = 0;
@@ -106,7 +103,7 @@ contract DeveloperContract is Ownable, Registrable {
     developer.pool.level++;
     developers[addr] = developer;
 
-    developerPool.addLevel(addr, developer.pool.level);
+    developerPool.addLevel(addr, developer.pool.level, 1);
   }
 
   /**

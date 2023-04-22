@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "./UserContract.sol";
-import "./types/ContributorTypes.sol";
-import "./Registrable.sol";
+import { UserContract } from "./UserContract.sol";
+import { Contributor } from "./types/ContributorTypes.sol";
+import { Registrable } from "./Registrable.sol";
+import { UserType } from "./types/UserTypes.sol";
 
 contract ContributorContract is Registrable {
   mapping(address => Contributor) internal contributors;
@@ -21,22 +22,14 @@ contract ContributorContract is Registrable {
    * @param name the name of the contributor
    * @return a Contributor
    */
-  function addContributor(string memory name, string memory proofPhoto)
-    public
-    mustBeAllowedUser
-    uniqueContributor
-    returns (Contributor memory)
-  {
+  function addContributor(
+    string memory name,
+    string memory proofPhoto
+  ) public mustBeAllowedUser uniqueContributor returns (Contributor memory) {
     uint256 id = contributorsCount + 1;
     UserType userType = UserType.CONTRIBUTOR;
 
-    Contributor memory contributor = Contributor(
-      id,
-      msg.sender,
-      userType,
-      name,
-      proofPhoto
-    );
+    Contributor memory contributor = Contributor(id, msg.sender, userType, name, proofPhoto);
 
     contributors[msg.sender] = contributor;
     contributorsAddress.push(msg.sender);

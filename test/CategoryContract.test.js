@@ -54,11 +54,7 @@ contract("CategoryContract", (accounts) => {
     await researcherContract.newAllowedUser(user1Address);
     await researcherContract.newAllowedUser(user2Address);
 
-    instance = await CategoryContract.new(
-      isaPool.address,
-      researcherContract.address,
-      userContract.address
-    );
+    instance = await CategoryContract.new(isaPool.address, researcherContract.address, userContract.address);
     await isaPool.newAllowedCaller(instance.address);
 
     await addResearcher("Researcher A", resea1Address);
@@ -68,10 +64,7 @@ contract("CategoryContract", (accounts) => {
     context("When is not a researcher", () => {
       it("should return error message", async () => {
         const name = "Soil";
-        await expectRevert(
-          addCategory(name, user1Address),
-          "Only allowed to researchers"
-        );
+        await expectRevert(addCategory(name, user1Address), "Only allowed to researchers");
       });
     });
 
@@ -184,19 +177,13 @@ contract("CategoryContract", (accounts) => {
 
       context("when user dont has Sac Tokens", () => {
         it("should return error message", async () => {
-          await expectRevert(
-            instance.vote(1, 0, { from: user1Address }),
-            "You don't have tokens to vote"
-          );
+          await expectRevert(instance.vote(1, 0, { from: user1Address }), "You don't have tokens to vote");
         });
       });
 
       context("when is not a registered user", () => {
         it("should return error message", async () => {
-          await expectRevert(
-            instance.vote(1, "100000000000000000000"),
-            "Only registered users"
-          );
+          await expectRevert(instance.vote(1, "100000000000000000000"), "Only registered users");
         });
       });
 
@@ -378,10 +365,7 @@ contract("CategoryContract", (accounts) => {
         context("when dont send tokens to vote", () => {
           it("should return error message", async () => {
             await transferTokensTo(user1Address, "500000000000000000000000");
-            await expectRevert(
-              instance.vote(1, 0, { from: user1Address }),
-              "Send at least 1 SAC Token"
-            );
+            await expectRevert(instance.vote(1, 0, { from: user1Address }), "Send at least 1 SAC Token");
           });
         });
       });
