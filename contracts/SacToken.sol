@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract SacToken is ERC20, Ownable {
   string public constant NAME = "SUSTAINABLE AGRICULTURE CREDIT";
@@ -26,11 +26,7 @@ contract SacToken is ERC20, Ownable {
     balances[msg.sender] = totalSupply_;
   }
 
-  function addContractPool(address _fundAddress, uint256 _numTokens)
-    public
-    onlyOwner
-    returns (bool)
-  {
+  function addContractPool(address _fundAddress, uint256 _numTokens) public onlyOwner returns (bool) {
     contractsPools[_fundAddress] = true;
     transfer(_fundAddress, _numTokens);
     return true;
@@ -41,11 +37,7 @@ contract SacToken is ERC20, Ownable {
     return true;
   }
 
-  function approveWith(address delegate, uint256 numTokens)
-    public
-    mustBeContractPool
-    returns (uint256)
-  {
+  function approveWith(address delegate, uint256 numTokens) public mustBeContractPool returns (uint256) {
     allowed[msg.sender][delegate] = numTokens + allowance(msg.sender, delegate);
     emit Approval(msg.sender, delegate, numTokens);
     return numTokens;
@@ -93,20 +85,11 @@ contract SacToken is ERC20, Ownable {
     return true;
   }
 
-  function allowance(address owner, address delegate)
-    public
-    view
-    override
-    returns (uint256)
-  {
+  function allowance(address owner, address delegate) public view override returns (uint256) {
     return allowed[owner][delegate];
   }
 
-  function transferFrom(
-    address owner,
-    address buyer,
-    uint256 numTokens
-  ) public override returns (bool) {
+  function transferFrom(address owner, address buyer, uint256 numTokens) public override returns (bool) {
     require(numTokens <= balances[owner], "Insufficient balance.");
     require(numTokens <= allowed[owner][msg.sender], "Insufficient allowance.");
 

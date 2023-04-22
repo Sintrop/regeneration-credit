@@ -90,10 +90,7 @@ contract("DeveloperContract", (accounts) => {
         it("should return error message", async () => {
           await addDeveloper("Developer A", dev1Address);
 
-          await expectRevert(
-            addDeveloper("Developer A", dev1Address),
-            "This developer already exist"
-          );
+          await expectRevert(addDeveloper("Developer A", dev1Address), "This developer already exist");
         });
       });
 
@@ -323,10 +320,7 @@ contract("DeveloperContract", (accounts) => {
           });
 
           it("should return error message", async () => {
-            await expectRevert(
-              instance.withdraw({ from: dev1Address }),
-              "You can't withdraw yet"
-            );
+            await expectRevert(instance.withdraw({ from: dev1Address }), "You can't withdraw yet");
           });
         });
 
@@ -353,20 +347,14 @@ contract("DeveloperContract", (accounts) => {
 
       context("when can't withdraw tokens", () => {
         it("should return error message", async () => {
-          await expectRevert(
-            instance.withdraw({ from: dev1Address }),
-            "You can't withdraw yet"
-          );
+          await expectRevert(instance.withdraw({ from: dev1Address }), "You can't withdraw yet");
         });
       });
     });
 
     context("when is not developer", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          instance.withdraw({ from: dev1Address }),
-          "Pool only to developer"
-        );
+        await expectRevert(instance.withdraw({ from: dev1Address }), "Pool only to developer");
       });
     });
   });
@@ -431,10 +419,7 @@ contract("DeveloperContract", (accounts) => {
       });
 
       it("should return error message", async () => {
-        await expectRevert(
-          instance.addLevel(dev1Address, { from: dev1Address }),
-          "Ownable: caller is not the owner"
-        );
+        await expectRevert(instance.addLevel(dev1Address, { from: dev1Address }), "Ownable: caller is not the owner");
       });
     });
   });
@@ -486,10 +471,7 @@ contract("DeveloperContract", (accounts) => {
       });
 
       it("should return error message", async () => {
-        await expectRevert(
-          instance.removeLevel(dev1Address, { from: owner }),
-          "Not enough levels to remove"
-        );
+        await expectRevert(instance.removeLevel(dev1Address, { from: owner }), "Not enough levels to remove");
       });
     });
   });

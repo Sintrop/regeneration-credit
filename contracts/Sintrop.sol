@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "./ProducerContract.sol";
-import "./ActivistContract.sol";
-import "./CategoryContract.sol";
-import "./types/InspectionTypes.sol";
+import { ProducerContract } from "./ProducerContract.sol";
+import { ActivistContract } from "./ActivistContract.sol";
+import { CategoryContract } from "./CategoryContract.sol";
+import { InspectionStatus, IsaInspection, Inspection } from "./types/InspectionTypes.sol";
+import { Producer } from "./types/ProducerTypes.sol";
+import { Activist } from "./types/ActivistTypes.sol";
 
 /**
  * @title SintropContract
@@ -89,7 +91,9 @@ contract Sintrop {
    * @dev Allows the current user (activist) accept a inspection.
    * @param inspectionId The id of the inspection that the activist want accept.
    */
-  function acceptInspection(uint256 inspectionId)
+  function acceptInspection(
+    uint256 inspectionId
+  )
     public
     requireActivist
     requireInspectionExists(inspectionId)
@@ -122,7 +126,10 @@ contract Sintrop {
    * @param inspectionId The id of the inspection to be realized
    * @param _isas The IsaIsaInspection[] of the inspection to be realized
    */
-  function realizeInspection(uint256 inspectionId, IsaInspection[] memory _isas)
+  function realizeInspection(
+    uint256 inspectionId,
+    IsaInspection[] memory _isas
+  )
     public
     requireActivist
     requireInspectionExists(inspectionId)
@@ -142,19 +149,14 @@ contract Sintrop {
     activistInspected[msg.sender][inspection.createdBy] = true;
   }
 
-  function markAsRealized(Inspection memory inspection, IsaInspection[] memory _isas)
-    internal
-  {
+  function markAsRealized(Inspection memory inspection, IsaInspection[] memory _isas) internal {
     inspection.status = InspectionStatus.INSPECTED;
     inspection.inspectedAtTimestamp = block.timestamp; // solhint-disable-line
     inspection.isaScore = calculateIsa(inspection, _isas);
     inspections[inspection.id] = inspection;
   }
 
-  function calculateIsa(Inspection memory inspection, IsaInspection[] memory _isas)
-    internal
-    returns (int256)
-  {
+  function calculateIsa(Inspection memory inspection, IsaInspection[] memory _isas) internal returns (int256) {
     // TODO: Add isaScore points in state
     int256[5] memory points = [int256(10), 5, 0, -5, -10];
     int256 isaScore;
@@ -213,16 +215,7 @@ contract Sintrop {
   /**
    * @dev Returns all inpections status string.
    */
-  function getInspectionsStatus()
-    public
-    pure
-    returns (
-      string memory,
-      string memory,
-      string memory,
-      string memory
-    )
-  {
+  function getInspectionsStatus() public pure returns (string memory, string memory, string memory, string memory) {
     return ("OPEN", "ACCEPTED", "INSPECTED", "EXPIRED");
   }
 
@@ -278,10 +271,7 @@ contract Sintrop {
   modifier requireNotInspectedProducer(uint256 inspectionId) {
     Inspection memory inspection = inspections[inspectionId];
 
-    require(
-      !activistInspected[msg.sender][inspection.createdBy],
-      "Already inspected this producer"
-    );
+    require(!activistInspected[msg.sender][inspection.createdBy], "Already inspected this producer");
     _;
   }
 
@@ -301,10 +291,7 @@ contract Sintrop {
   }
 
   modifier requireNoInspectionsOpen() {
-    require(
-      !producerContract.getProducer(msg.sender).recentInspection,
-      "Request OPEN or ACCEPTED"
-    );
+    require(!producerContract.getProducer(msg.sender).recentInspection, "Request OPEN or ACCEPTED");
     _;
   }
 

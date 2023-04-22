@@ -222,37 +222,31 @@ contract("Blockable", (accounts) => {
   });
 
   context("when call canApprove", () => {
-    context(
-      "when currentUserEra is less than currentContractEra and currentUserEra don't have passed eraMax",
-      () => {
-        beforeEach(async () => {
-          await advanceBlock(5 * params.blocksPerEra);
-        });
+    context("when currentUserEra is less than currentContractEra and currentUserEra don't have passed eraMax", () => {
+      beforeEach(async () => {
+        await advanceBlock(5 * params.blocksPerEra);
+      });
 
-        const currentUserEra = 1;
+      const currentUserEra = 1;
 
-        it("should return true", async () => {
-          const canApprove = await instance.canApprove(currentUserEra);
-          assert.equal(canApprove, true);
-        });
-      }
-    );
+      it("should return true", async () => {
+        const canApprove = await instance.canApprove(currentUserEra);
+        assert.equal(canApprove, true);
+      });
+    });
 
-    context(
-      "when currentUserEra is less than currentContractEra and currentUserEra have passed eraMax",
-      () => {
-        beforeEach(async () => {
-          await advanceBlock(20 * params.blocksPerEra);
-        });
+    context("when currentUserEra is less than currentContractEra and currentUserEra have passed eraMax", () => {
+      beforeEach(async () => {
+        await advanceBlock(20 * params.blocksPerEra);
+      });
 
-        const currentUserEra = params.eraMax + 1;
+      const currentUserEra = params.eraMax + 1;
 
-        it("should return false", async () => {
-          const canApprove = await instance.canApprove(currentUserEra);
-          assert.equal(canApprove, false);
-        });
-      }
-    );
+      it("should return false", async () => {
+        const canApprove = await instance.canApprove(currentUserEra);
+        assert.equal(canApprove, false);
+      });
+    });
 
     context("when currentUserEra is equal currentContractEra", () => {
       const currentUserEra = 1;

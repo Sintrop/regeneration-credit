@@ -70,7 +70,7 @@ contract("DeveloperPool", (accounts) => {
 
         assert.equal(era.levels, 0);
         assert.equal(era.tokens, 0);
-        assert.equal(era.developers, 0);
+        assert.equal(era.users, 0);
       });
     });
   });
@@ -119,8 +119,8 @@ contract("DeveloperPool", (accounts) => {
         context("when developer have 0 levels in era 1", () => {
           context("when add level", () => {
             beforeEach(async () => {
-              await instance.addLevel(dev1Address, 1);
-              await instance.addLevel(dev2Address, 1);
+              await instance.addLevel(dev1Address, 1, 1);
+              await instance.addLevel(dev2Address, 1, 1);
             });
 
             it("era 1 must have 2 level", async () => {
@@ -135,40 +135,40 @@ contract("DeveloperPool", (accounts) => {
               assert.equal(era2.levels, 0);
             });
 
-            it("developersLevel must have 1 level to developer1", async () => {
-              const developersLevel = await instance.developersLevel(1, dev1Address);
+            it("eraLevels must have 1 level to developer1", async () => {
+              const eraLevels = await instance.eraLevels(1, dev1Address);
 
-              assert.equal(developersLevel, 1);
+              assert.equal(eraLevels, 1);
             });
 
-            it("developersLevel must have 1 level to developer2", async () => {
-              const developersLevel = await instance.developersLevel(1, dev1Address);
+            it("eraLevels must have 1 level to developer2", async () => {
+              const eraLevels = await instance.eraLevels(1, dev1Address);
 
-              assert.equal(developersLevel, 1);
+              assert.equal(eraLevels, 1);
             });
           });
         });
 
         context("when developers have levels in era 1", () => {
           beforeEach(async () => {
-            await instance.addLevel(dev1Address, 1);
-            await instance.addLevel(dev1Address, 1);
+            await instance.addLevel(dev1Address, 1, 1);
+            await instance.addLevel(dev1Address, 1, 5);
 
-            await instance.addLevel(dev2Address, 1);
-            await instance.addLevel(dev2Address, 1);
-            await instance.addLevel(dev2Address, 1);
+            await instance.addLevel(dev2Address, 1, 1);
+            await instance.addLevel(dev2Address, 1, 1);
+            await instance.addLevel(dev2Address, 1, 1);
           });
 
           context("when add level", () => {
             beforeEach(async () => {
-              await instance.addLevel(dev1Address, 1);
-              await instance.addLevel(dev2Address, 1);
+              await instance.addLevel(dev1Address, 1, 1);
+              await instance.addLevel(dev2Address, 1, 1);
             });
 
-            it("era 1 must have 7 level", async () => {
+            it("era 1 must have 11 level", async () => {
               const era1 = await instance.getEra(1);
 
-              assert.equal(era1.levels, 7);
+              assert.equal(era1.levels, 11);
             });
 
             it("era 2 must have 0 level", async () => {
@@ -177,16 +177,16 @@ contract("DeveloperPool", (accounts) => {
               assert.equal(era2.levels, 0);
             });
 
-            it("developersLevel must have 3 level to developer", async () => {
-              const developersLevel = await instance.developersLevel(1, dev1Address);
+            it("eraLevels must have 7 level to developer1", async () => {
+              const eraLevels = await instance.eraLevels(1, dev1Address);
 
-              assert.equal(developersLevel, 3);
+              assert.equal(eraLevels, 7);
             });
 
-            it("developersLevel must have 4 level to developer", async () => {
-              const developersLevel = await instance.developersLevel(1, dev2Address);
+            it("eraLevels must have 4 level to developer2", async () => {
+              const eraLevels = await instance.eraLevels(1, dev2Address);
 
-              assert.equal(developersLevel, 4);
+              assert.equal(eraLevels, 4);
             });
           });
         });
@@ -195,10 +195,7 @@ contract("DeveloperPool", (accounts) => {
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          instance.addLevel(dev1Address, 1, { from: dev1Address }),
-          "Not allowed caller"
-        );
+        await expectRevert(instance.addLevel(dev1Address, 1, 1, { from: dev1Address }), "Not allowed caller");
       });
     });
   });
@@ -207,8 +204,8 @@ contract("DeveloperPool", (accounts) => {
     context("with allowed caller", () => {
       context("when developer1 have 2 levels in era 1", () => {
         beforeEach(async () => {
-          await instance.addLevel(dev1Address, 1);
-          await instance.addLevel(dev1Address, 1);
+          await instance.addLevel(dev1Address, 1, 1);
+          await instance.addLevel(dev1Address, 1, 1);
         });
 
         context("when is era 1", () => {
@@ -224,7 +221,7 @@ contract("DeveloperPool", (accounts) => {
             });
 
             it("developer1 levels in era 1 must be 1", async () => {
-              const level = await instance.developersLevel(1, dev1Address);
+              const level = await instance.eraLevels(1, dev1Address);
 
               assert.equal(level, 1);
             });
@@ -235,8 +232,8 @@ contract("DeveloperPool", (accounts) => {
           context("when have 2 levels in era 2", () => {
             beforeEach(async () => {
               await advanceBlock(args.blocksPerEra);
-              await instance.addLevel(dev1Address, 1);
-              await instance.addLevel(dev1Address, 1);
+              await instance.addLevel(dev1Address, 1, 1);
+              await instance.addLevel(dev1Address, 1, 1);
             });
 
             context("when remove level", () => {
@@ -251,7 +248,7 @@ contract("DeveloperPool", (accounts) => {
               });
 
               it("developer1 levels in era 1 must be 2", async () => {
-                const level = await instance.developersLevel(1, dev1Address);
+                const level = await instance.eraLevels(1, dev1Address);
 
                 assert.equal(level, 2);
               });
@@ -263,7 +260,7 @@ contract("DeveloperPool", (accounts) => {
               });
 
               it("developer1 levels in era 2 must be 1", async () => {
-                const level = await instance.developersLevel(2, dev1Address);
+                const level = await instance.eraLevels(2, dev1Address);
 
                 assert.equal(level, 1);
               });
@@ -274,20 +271,14 @@ contract("DeveloperPool", (accounts) => {
 
       context("when developer dont have levels in era", () => {
         it("should return error message", async () => {
-          await expectRevert(
-            instance.removeLevel(dev1Address),
-            "Not enough levels to remove"
-          );
+          await expectRevert(instance.removeLevel(dev1Address), "Not enough levels to remove");
         });
       });
     });
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          instance.removeLevel(dev1Address, { from: dev1Address }),
-          "Not allowed caller"
-        );
+        await expectRevert(instance.removeLevel(dev1Address, { from: dev1Address }), "Not allowed caller");
       });
     });
   });
@@ -324,13 +315,13 @@ contract("DeveloperPool", (accounts) => {
           context("when total of levels in era is 6", () => {
             context("when developer1 have 3 levels in era 1", () => {
               beforeEach(async () => {
-                await instance.addLevel(dev1Address, 1);
-                await instance.addLevel(dev1Address, 1);
-                await instance.addLevel(dev1Address, 1);
+                await instance.addLevel(dev1Address, 1, 1);
+                await instance.addLevel(dev1Address, 1, 1);
+                await instance.addLevel(dev1Address, 1, 1);
 
-                await instance.addLevel(dev2Address, 1);
-                await instance.addLevel(dev2Address, 1);
-                await instance.addLevel(dev2Address, 1);
+                await instance.addLevel(dev2Address, 1, 1);
+                await instance.addLevel(dev2Address, 1, 1);
+                await instance.addLevel(dev2Address, 1, 1);
 
                 await advanceBlock(args.blocksPerEra);
               });
@@ -345,12 +336,12 @@ contract("DeveloperPool", (accounts) => {
 
             context("when developer1 have 6 levels in era 1", () => {
               beforeEach(async () => {
-                await instance.addLevel(dev1Address, 1);
-                await instance.addLevel(dev1Address, 1);
-                await instance.addLevel(dev1Address, 1);
-                await instance.addLevel(dev1Address, 1);
-                await instance.addLevel(dev1Address, 1);
-                await instance.addLevel(dev1Address, 1);
+                await instance.addLevel(dev1Address, 1, 1);
+                await instance.addLevel(dev1Address, 1, 1);
+                await instance.addLevel(dev1Address, 1, 1);
+                await instance.addLevel(dev1Address, 1, 1);
+                await instance.addLevel(dev1Address, 1, 1);
+                await instance.addLevel(dev1Address, 1, 1);
 
                 await advanceBlock(args.blocksPerEra);
               });
@@ -372,13 +363,13 @@ contract("DeveloperPool", (accounts) => {
 
             context("when developer2 have 3 levels in era 1", () => {
               beforeEach(async () => {
-                await instance.addLevel(dev1Address, 1);
-                await instance.addLevel(dev1Address, 1);
-                await instance.addLevel(dev1Address, 1);
+                await instance.addLevel(dev1Address, 1, 1);
+                await instance.addLevel(dev1Address, 1, 1);
+                await instance.addLevel(dev1Address, 1, 1);
 
-                await instance.addLevel(dev2Address, 1);
-                await instance.addLevel(dev2Address, 1);
-                await instance.addLevel(dev2Address, 1);
+                await instance.addLevel(dev2Address, 1, 1);
+                await instance.addLevel(dev2Address, 1, 1);
+                await instance.addLevel(dev2Address, 1, 1);
 
                 await advanceBlock(args.blocksPerEra);
               });
@@ -396,23 +387,23 @@ contract("DeveloperPool", (accounts) => {
         context("when is era 2", () => {
           context("when dont have withdraw from era 1", () => {
             beforeEach(async () => {
-              await instance.addLevel(dev1Address, 1);
-              await instance.addLevel(dev1Address, 1);
-              await instance.addLevel(dev1Address, 1);
+              await instance.addLevel(dev1Address, 1, 1);
+              await instance.addLevel(dev1Address, 1, 1);
+              await instance.addLevel(dev1Address, 1, 1);
 
-              await instance.addLevel(dev2Address, 1);
-              await instance.addLevel(dev2Address, 1);
-              await instance.addLevel(dev2Address, 1);
+              await instance.addLevel(dev2Address, 1, 1);
+              await instance.addLevel(dev2Address, 1, 1);
+              await instance.addLevel(dev2Address, 1, 1);
 
               await advanceBlock(args.blocksPerEra);
 
-              await instance.addLevel(dev1Address, 1);
-              await instance.addLevel(dev1Address, 1);
-              await instance.addLevel(dev1Address, 1);
+              await instance.addLevel(dev1Address, 1, 1);
+              await instance.addLevel(dev1Address, 1, 1);
+              await instance.addLevel(dev1Address, 1, 1);
 
-              await instance.addLevel(dev2Address, 1);
-              await instance.addLevel(dev2Address, 1);
-              await instance.addLevel(dev2Address, 1);
+              await instance.addLevel(dev2Address, 1, 1);
+              await instance.addLevel(dev2Address, 1, 1);
+              await instance.addLevel(dev2Address, 1, 1);
 
               await advanceBlock(args.blocksPerEra);
             });
@@ -433,13 +424,13 @@ contract("DeveloperPool", (accounts) => {
               });
 
               it("developer1 balance in era 1 must be 416666499999999999999999", async () => {
-                const balanceOf = await instance.developersTokens(1, dev1Address);
+                const balanceOf = await instance.eraTokens(1, dev1Address);
 
                 assert.equal(balanceOf, "416666499999999999999999");
               });
 
               it("developer1 balance in era 2 must be 416666499999999999999999", async () => {
-                const balanceOf = await instance.developersTokens(2, dev1Address);
+                const balanceOf = await instance.eraTokens(2, dev1Address);
 
                 assert.equal(balanceOf, "416666499999999999999999");
               });
@@ -461,13 +452,13 @@ contract("DeveloperPool", (accounts) => {
               });
 
               it("developer2 balance in era 1 must be 416666499999999999999999", async () => {
-                const balanceOf = await instance.developersTokens(1, dev2Address);
+                const balanceOf = await instance.eraTokens(1, dev2Address);
 
                 assert.equal(balanceOf, "416666499999999999999999");
               });
 
               it("developer2 balance in era 2 must be 416666499999999999999999", async () => {
-                const balanceOf = await instance.developersTokens(2, dev2Address);
+                const balanceOf = await instance.eraTokens(2, dev2Address);
 
                 assert.equal(balanceOf, "416666499999999999999999");
               });
@@ -485,10 +476,7 @@ contract("DeveloperPool", (accounts) => {
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          instance.withdraw(dev1Address, 1, { from: dev1Address }),
-          "Not allowed caller"
-        );
+        await expectRevert(instance.withdraw(dev1Address, 1, { from: dev1Address }), "Not allowed caller");
       });
     });
   });

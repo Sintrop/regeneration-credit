@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "./PoolInterface.sol";
-import "./SacTokenInterface.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "./Blockable.sol";
-import "./Callable.sol";
-import "./Poolable.sol";
+import { PoolInterface } from "./PoolInterface.sol";
+import { SacTokenInterface } from "./SacTokenInterface.sol";
+import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { Blockable } from "./Blockable.sol";
+import { Callable } from "./Callable.sol";
+import { Poolable } from "./Poolable.sol";
 
 /**
  * @author Sintrop

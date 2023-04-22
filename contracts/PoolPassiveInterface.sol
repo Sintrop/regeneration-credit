@@ -10,11 +10,7 @@ interface PoolPassiveInterface {
   /*
    * @dev Allow a user transfer tokens to pool
    */
-  function transferWith(
-    address tokenOwner,
-    address receiver,
-    uint256 tokens
-  ) external returns (bool);
+  function transferWith(address tokenOwner, address receiver, uint256 tokens) external returns (bool);
 
   /*
    * @dev Allow a user withdraw (transfer) your tokens approved to your account

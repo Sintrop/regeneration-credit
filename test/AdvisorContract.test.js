@@ -33,10 +33,7 @@ contract("AdvisorContract", (accounts) => {
       context("when advisor exists", () => {
         it("should return error", async () => {
           await addAdvisor("Advisor A", adv1Address);
-          await expectRevert(
-            addAdvisor("Advisor A", adv1Address),
-            "This advisor already exist"
-          );
+          await expectRevert(addAdvisor("Advisor A", adv1Address), "This advisor already exist");
         });
       });
 

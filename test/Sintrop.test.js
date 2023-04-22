@@ -16,14 +16,7 @@ contract("Sintrop", (accounts) => {
   let activistContract;
   let producerContract;
   let researcherContract;
-  let [
-    ownerAddress,
-    producerAddress,
-    producer2Address,
-    activistAddress,
-    activist2Address,
-    resea1Address,
-  ] = accounts;
+  let [ownerAddress, producerAddress, producer2Address, activistAddress, activist2Address, resea1Address] = accounts;
   const STATUS = {
     open: 0,
     accepted: 1,
@@ -131,22 +124,10 @@ contract("Sintrop", (accounts) => {
       producerPoolArgs.blocksPerEra
     );
 
-    producerContract = await ProducerContract.new(
-      userContract.address,
-      producerPool.address
-    );
+    producerContract = await ProducerContract.new(userContract.address, producerPool.address);
 
-    categoryContract = await CategoryContract.new(
-      isaPool.address,
-      researcherContract.address,
-      userContract.address
-    );
-    instance = await Sintrop.new(
-      activistContract.address,
-      producerContract.address,
-      20,
-      15
-    );
+    categoryContract = await CategoryContract.new(isaPool.address, researcherContract.address, userContract.address);
+    instance = await Sintrop.new(activistContract.address, producerContract.address, 20, 15);
 
     await userContract.newAllowedCaller(activistContract.address);
     await userContract.newAllowedCaller(producerContract.address);
@@ -175,10 +156,7 @@ contract("Sintrop", (accounts) => {
       context("when has request OPEN or ACCEPTED", () => {
         it("should return error message", async () => {
           await instance.requestInspection({ from: producerAddress });
-          await expectRevert(
-            instance.requestInspection({ from: producerAddress }),
-            "Request OPEN or ACCEPTED"
-          );
+          await expectRevert(instance.requestInspection({ from: producerAddress }), "Request OPEN or ACCEPTED");
         });
       });
 
@@ -201,10 +179,7 @@ contract("Sintrop", (accounts) => {
 
         context("when last request is recent", () => {
           it("should return error message", async () => {
-            await expectRevert(
-              instance.requestInspection({ from: producerAddress }),
-              "Recent inspection"
-            );
+            await expectRevert(instance.requestInspection({ from: producerAddress }), "Recent inspection");
           });
         });
 
@@ -318,10 +293,7 @@ contract("Sintrop", (accounts) => {
       await addProducer("Producer B", producer2Address);
       await instance.requestInspection({ from: producer2Address });
 
-      await expectRevert(
-        instance.acceptInspection(2, { from: activistAddress }),
-        "Can't accept yet"
-      );
+      await expectRevert(instance.acceptInspection(2, { from: activistAddress }), "Can't accept yet");
     });
 
     it("should accept inspection with success after blocksToExpireAcceptedInspection", async () => {
@@ -370,19 +342,13 @@ contract("Sintrop", (accounts) => {
   context("when is not activist try accept inspection", () => {
     it("should return error message", async () => {
       await instance.requestInspection({ from: producerAddress });
-      await expectRevert(
-        instance.acceptInspection(1, { from: producerAddress }),
-        "Please register as activist"
-      );
+      await expectRevert(instance.acceptInspection(1, { from: producerAddress }), "Please register as activist");
     });
   });
 
   context("when activist try accept inspection that don't exist", () => {
     it("should return error message", async () => {
-      await expectRevert(
-        instance.acceptInspection(1, { from: activistAddress }),
-        "This inspection don't exist"
-      );
+      await expectRevert(instance.acceptInspection(1, { from: activistAddress }), "This inspection don't exist");
     });
   });
 
@@ -395,10 +361,7 @@ contract("Sintrop", (accounts) => {
       await advanceBlock(20);
       await instance.requestInspection({ from: producerAddress });
 
-      await expectRevert(
-        instance.acceptInspection(2, { from: activistAddress }),
-        "Already inspected this producer"
-      );
+      await expectRevert(instance.acceptInspection(2, { from: activistAddress }), "Already inspected this producer");
     });
   });
 
@@ -408,10 +371,7 @@ contract("Sintrop", (accounts) => {
       await instance.acceptInspection(1, { from: activistAddress });
 
       await advanceBlock(20);
-      await expectRevert(
-        instance.realizeInspection(1, [], { from: activistAddress }),
-        "Inspection Expired"
-      );
+      await expectRevert(instance.realizeInspection(1, [], { from: activistAddress }), "Inspection Expired");
     });
   });
 
@@ -422,10 +382,7 @@ contract("Sintrop", (accounts) => {
 
       await addActivist("Activist B", activist2Address);
 
-      await expectRevert(
-        instance.acceptInspection(1, { from: activist2Address }),
-        "This inspection is not OPEN"
-      );
+      await expectRevert(instance.acceptInspection(1, { from: activist2Address }), "This inspection is not OPEN");
     });
   });
 
@@ -736,10 +693,7 @@ contract("Sintrop", (accounts) => {
     it("should return error message", async () => {
       await instance.requestInspection({ from: producerAddress });
 
-      await expectRevert(
-        instance.realizeInspection(1, [], { from: activistAddress }),
-        "Accept this inspection before"
-      );
+      await expectRevert(instance.realizeInspection(1, [], { from: activistAddress }), "Accept this inspection before");
     });
   });
 
@@ -762,19 +716,13 @@ contract("Sintrop", (accounts) => {
       await instance.requestInspection({ from: producerAddress });
       await instance.acceptInspection(1, { from: activistAddress });
 
-      await expectRevert(
-        instance.realizeInspection(1, [], { from: producerAddress }),
-        "Please register as activist"
-      );
+      await expectRevert(instance.realizeInspection(1, [], { from: producerAddress }), "Please register as activist");
     });
   });
 
   context("when inspection don't exist and try realize inspection", () => {
     it("should return error message", async () => {
-      await expectRevert(
-        instance.realizeInspection(1, [], { from: activistAddress }),
-        "This inspection don't exist"
-      );
+      await expectRevert(instance.realizeInspection(1, [], { from: activistAddress }), "This inspection don't exist");
     });
   });
 });

@@ -44,12 +44,7 @@ contract("ProducerPool", (accounts) => {
   beforeEach(async () => {
     sacToken = await SacToken.new("150000000000000000000000000000");
 
-    instance = await ProducerPool.new(
-      sacToken.address,
-      args.halving,
-      args.totalEras,
-      args.blocksPerEra
-    );
+    instance = await ProducerPool.new(sacToken.address, args.halving, args.totalEras, args.blocksPerEra);
 
     await instance.newAllowedCaller(owner);
 
@@ -325,10 +320,7 @@ contract("ProducerPool", (accounts) => {
 
       context("when can't approve", () => {
         it("must return error message", async () => {
-          await expectRevert(
-            instance.withdraw(producer1Address, 1),
-            "You can't approve yet"
-          );
+          await expectRevert(instance.withdraw(producer1Address, 1), "You can't approve yet");
         });
       });
     });

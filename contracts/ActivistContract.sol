@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "./UserContract.sol";
-import "./types/ActivistTypes.sol";
-import "./Callable.sol";
+import { UserContract } from "./UserContract.sol";
+import { Activist, ActivistAddress } from "./types/ActivistTypes.sol";
+import { Callable } from "./Callable.sol";
+import { UserType } from "./types/UserTypes.sol";
 
 contract ActivistContract is Callable {
   mapping(address => Activist) internal activists;
@@ -33,17 +34,7 @@ contract ActivistContract is Callable {
 
     ActivistAddress memory activistAddress = ActivistAddress(coordinate);
 
-    Activist memory activist = Activist(
-      id,
-      msg.sender,
-      userType,
-      name,
-      proofPhoto,
-      0,
-      0,
-      activistAddress,
-      0
-    );
+    Activist memory activist = Activist(id, msg.sender, userType, name, proofPhoto, 0, 0, activistAddress, 0);
 
     activists[msg.sender] = activist;
     activistsAddress.push(msg.sender);
