@@ -85,10 +85,10 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
   }
 
   function tokensPerEpoch() public view returns (uint256) {
-    return tokensPerEpochs[currentEpoch() - 1];
+    return tokensPerEpochs[currentEpoch().sub(1)];
   }
 
   function currentEpoch() public view returns (uint256) {
-    return currentContractEra().div(halving) + 1;
+    return currentContractEra().div(halving).add(1);
   }
 }
