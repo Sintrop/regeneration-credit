@@ -2,11 +2,11 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 enum Isas {
-  TOTALLY_SUSTAINABLE,
-  PARTIAL_SUSTAINABLE,
+  REGENERATIVE2,
+  REGENERATIVE1,
   NEUTRO,
-  PARTIAL_NOT_SUSTAINABLE,
-  TOTALLY_NOT_SUSTAINABLE
+  NOT_REGENERATIVE1,
+  NOT_REGENERATIVE2
 }
 
 struct Category {
@@ -15,10 +15,10 @@ struct Category {
   string name;
   string description;
   string tutorial;
-  string totallySustainable;
-  string partiallySustainable;
-  string neutro;
-  string partiallyNotSustainable;
-  string totallyNotSustainable;
+  string regenerative2;
+  string regenerative1;
+  string zero;
+  string notRegenerative1;
+  string notRegenerative2;
   uint256 votesCount;
 }
