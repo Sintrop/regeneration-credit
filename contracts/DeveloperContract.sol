@@ -6,6 +6,7 @@ import { UserContract } from "./UserContract.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { Registrable } from "./Registrable.sol";
 import { DeveloperPool } from "./DeveloperPool.sol";
+import { Developer, Pool } from "./types/DeveloperTypes.sol";
 
 /**
  * @title DeveloperContract
@@ -19,21 +20,6 @@ contract DeveloperContract is Ownable, Registrable {
 
   address[] internal developersAddress;
   uint256 public developersCount;
-
-  struct Developer {
-    uint256 id;
-    address developerWallet;
-    UserType userType;
-    string name;
-    string proofPhoto;
-    Pool pool;
-    uint256 createdAt;
-  }
-
-  struct Pool {
-    uint256 level;
-    uint256 currentEra;
-  }
 
   constructor(address userContractAddress, address developerPoolAddress) {
     userContract = UserContract(userContractAddress);
