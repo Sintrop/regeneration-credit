@@ -195,10 +195,7 @@ contract("DeveloperPool", (accounts) => {
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          instance.addLevel(dev1Address, 1, 1, { from: dev1Address }),
-          "Not allowed caller"
-        );
+        await expectRevert(instance.addLevel(dev1Address, 1, 1, { from: dev1Address }), "Not allowed caller");
       });
     });
   });
@@ -274,20 +271,14 @@ contract("DeveloperPool", (accounts) => {
 
       context("when developer dont have levels in era", () => {
         it("should return error message", async () => {
-          await expectRevert(
-            instance.removeLevel(dev1Address),
-            "Not enough levels to remove"
-          );
+          await expectRevert(instance.removeLevel(dev1Address), "Not enough levels to remove");
         });
       });
     });
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          instance.removeLevel(dev1Address, { from: dev1Address }),
-          "Not allowed caller"
-        );
+        await expectRevert(instance.removeLevel(dev1Address, { from: dev1Address }), "Not allowed caller");
       });
     });
   });
@@ -485,10 +476,7 @@ contract("DeveloperPool", (accounts) => {
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          instance.withdraw(dev1Address, 1, { from: dev1Address }),
-          "Not allowed caller"
-        );
+        await expectRevert(instance.withdraw(dev1Address, 1, { from: dev1Address }), "Not allowed caller");
       });
     });
   });

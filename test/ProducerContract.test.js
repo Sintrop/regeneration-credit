@@ -148,10 +148,7 @@ contract("ProducerContract", (accounts) => {
     it("should return error when try create same producer", async () => {
       await addProducer("Producer A", prod1Address);
 
-      await expectRevert(
-        addProducer("Producer A", prod1Address),
-        "This producer already exist"
-      );
+      await expectRevert(addProducer("Producer A", prod1Address), "This producer already exist");
     });
   });
 
@@ -233,18 +230,12 @@ contract("ProducerContract", (accounts) => {
   context("when is not allowed caller", () => {
     it("should return error .recentInspection when is not allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
-      await expectRevert(
-        instance.recentInspection(prod1Address, true, { from: prod1Address }),
-        "Not allowed caller"
-      );
+      await expectRevert(instance.recentInspection(prod1Address, true, { from: prod1Address }), "Not allowed caller");
     });
 
     it("should return error .incrementInspections when is not allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
-      await expectRevert(
-        instance.incrementInspections(prod1Address, { from: prod1Address }),
-        "Not allowed caller"
-      );
+      await expectRevert(instance.incrementInspections(prod1Address, { from: prod1Address }), "Not allowed caller");
     });
   });
 
@@ -332,38 +323,35 @@ contract("ProducerContract", (accounts) => {
             });
           });
 
-          context(
-            "when new score + producer score is equal or bigger limit score",
-            () => {
-              beforeEach(async () => {
-                await instance.setIsaScore(prod1Address, 400);
-              });
+          context("when new score + producer score is equal or bigger limit score", () => {
+            beforeEach(async () => {
+              await instance.setIsaScore(prod1Address, 400);
+            });
 
-              it("producer isa score must be 1000", async () => {
-                const producer = await instance.getProducer(prod1Address);
+            it("producer isa score must be 1000", async () => {
+              const producer = await instance.getProducer(prod1Address);
 
-                assert.equal(producer.isa.isaScore, 1000);
-              });
+              assert.equal(producer.isa.isaScore, 1000);
+            });
 
-              it("producer must be sustainable", async () => {
-                const producer = await instance.getProducer(prod1Address);
+            it("producer must be sustainable", async () => {
+              const producer = await instance.getProducer(prod1Address);
 
-                assert.equal(producer.isa.sustainable, true);
-              });
+              assert.equal(producer.isa.sustainable, true);
+            });
 
-              it("producers sustainable must increment", async () => {
-                const producersSustainable = await instance.producersSustainable();
+            it("producers sustainable must increment", async () => {
+              const producersSustainable = await instance.producersSustainable();
 
-                assert.equal(producersSustainable, 1);
-              });
+              assert.equal(producersSustainable, 1);
+            });
 
-              it("must remove producer score from total score", async () => {
-                const producersTotalScore = await instance.producersTotalScore();
+            it("must remove producer score from total score", async () => {
+              const producersTotalScore = await instance.producersTotalScore();
 
-                assert.equal(producersTotalScore, 0);
-              });
-            }
-          );
+              assert.equal(producersTotalScore, 0);
+            });
+          });
         });
 
         context("when have more tha one producer", () => {
@@ -532,10 +520,7 @@ contract("ProducerContract", (accounts) => {
 
     context("with not allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          instance.setIsaScore(prod1Address, 50, { from: prod1Address }),
-          "Not allowed caller"
-        );
+        await expectRevert(instance.setIsaScore(prod1Address, 50, { from: prod1Address }), "Not allowed caller");
       });
     });
   });
@@ -623,10 +608,7 @@ contract("ProducerContract", (accounts) => {
               });
 
               it("should return error message", async () => {
-                await expectRevert(
-                  instance.withdraw({ from: prod1Address }),
-                  "Limit ISA Score"
-                );
+                await expectRevert(instance.withdraw({ from: prod1Address }), "Limit ISA Score");
               });
             });
           });
@@ -634,10 +616,7 @@ contract("ProducerContract", (accounts) => {
 
         context("when producer dont have minimum inspections", () => {
           it("should return error message", async () => {
-            await expectRevert(
-              instance.withdraw({ from: prod1Address }),
-              "Minimum inspections"
-            );
+            await expectRevert(instance.withdraw({ from: prod1Address }), "Minimum inspections");
           });
         });
       });
@@ -650,10 +629,7 @@ contract("ProducerContract", (accounts) => {
         });
 
         it("should return error message", async () => {
-          await expectRevert(
-            instance.withdraw({ from: prod1Address }),
-            "You can't approve yet"
-          );
+          await expectRevert(instance.withdraw({ from: prod1Address }), "You can't approve yet");
         });
       });
     });

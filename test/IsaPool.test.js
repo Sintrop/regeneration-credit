@@ -73,11 +73,7 @@ contract("IsaPool", (accounts) => {
 
         it("should return error message", async () => {
           await expectRevert(
-            instance.transferWith(
-              user2Address,
-              instance.address,
-              "1000000000000000000000"
-            ),
+            instance.transferWith(user2Address, instance.address, "1000000000000000000000"),
             "Not a contract pool"
           );
         });
@@ -88,11 +84,7 @@ contract("IsaPool", (accounts) => {
           context("when user dont has tokens", () => {
             it("should return error message", async () => {
               await expectRevert(
-                instance.transferWith(
-                  user2Address,
-                  instance.address,
-                  "1000000000000000000000"
-                ),
+                instance.transferWith(user2Address, instance.address, "1000000000000000000000"),
                 "You don't have SAC Tokens"
               );
             });
@@ -100,11 +92,7 @@ contract("IsaPool", (accounts) => {
 
           context("when user has tokens", () => {
             it("should transfer tokens to contract pool address", async () => {
-              await instance.transferWith(
-                user1Address,
-                instance.address,
-                "1000000000000000000000"
-              );
+              await instance.transferWith(user1Address, instance.address, "1000000000000000000000");
 
               const balance = await instance.balance();
               const balanceOf = await instance.balanceOf(user1Address);
@@ -117,11 +105,7 @@ contract("IsaPool", (accounts) => {
 
         context("when contract pool try send tokens to user", () => {
           it("should transfer tokens to user", async () => {
-            await instance.transferWith(
-              instance.address,
-              user1Address,
-              "1000000000000000000000"
-            );
+            await instance.transferWith(instance.address, user1Address, "1000000000000000000000");
 
             const balance = await instance.balance();
             const balanceOf = await instance.balanceOf(user1Address);

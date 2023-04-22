@@ -4,7 +4,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./UserContract.sol";
 import "./Registrable.sol";
-import "./DeveloperPool.sol";
+import "./DeveloperPool.sol"
 
 /**
  * @title DeveloperContract

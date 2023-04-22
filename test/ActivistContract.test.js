@@ -42,10 +42,7 @@ contract("ActivistContract", (accounts) => {
       context("when activist exists", () => {
         it("should return error", async () => {
           await addActivist("Activist A", activ1Address);
-          await expectRevert(
-            addActivist("Activist A", activ1Address),
-            "This activist already exist"
-          );
+          await expectRevert(addActivist("Activist A", activ1Address), "This activist already exist");
         });
       });
 
@@ -157,10 +154,7 @@ contract("ActivistContract", (accounts) => {
   context("without allowed caller", async () => {
     it("should return error when is not allowed caller", async () => {
       await addActivist("Activist A", activ1Address);
-      await expectRevert(
-        instance.incrementRequests(activ1Address, { from: activ1Address }),
-        "Not allowed caller"
-      );
+      await expectRevert(instance.incrementRequests(activ1Address, { from: activ1Address }), "Not allowed caller");
     });
   });
 });
