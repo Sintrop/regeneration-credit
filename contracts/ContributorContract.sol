@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "./UserContract.sol";
-import "./types/ContributorTypes.sol";
-import "./Registrable.sol";
+import { UserContract } from "./UserContract.sol";
+import { Contributor } from "./types/ContributorTypes.sol";
+import { Registrable } from "./Registrable.sol";
+import { UserType } from "./types/UserTypes.sol";
 
 contract ContributorContract is Registrable {
   mapping(address => Contributor) internal contributors;

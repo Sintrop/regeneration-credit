@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "./UserContract.sol";
-import "./types/InvestorTypes.sol";
+import { UserContract } from "./UserContract.sol";
+import { Investor } from "./types/InvestorTypes.sol";
+import { UserType } from "./types/UserTypes.sol";
 
 contract InvestorContract {
   mapping(address => Investor) internal investors;

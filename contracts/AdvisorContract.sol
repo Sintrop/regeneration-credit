@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "./UserContract.sol";
-import "./types/AdvisorTypes.sol";
-import "./Registrable.sol";
+import { UserContract } from "./UserContract.sol";
+import { Advisor } from "./types/AdvisorTypes.sol";
+import { Registrable } from "./Registrable.sol";
+import { UserType } from "./types/UserTypes.sol";
 
 contract AdvisorContract is Registrable {
   mapping(address => Advisor) internal advisors;

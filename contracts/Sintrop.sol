@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "./ProducerContract.sol";
-import "./ActivistContract.sol";
-import "./CategoryContract.sol";
-import "./types/InspectionTypes.sol";
+import { ProducerContract } from "./ProducerContract.sol";
+import { ActivistContract } from "./ActivistContract.sol";
+import { CategoryContract } from "./CategoryContract.sol";
+import { InspectionStatus, IsaInspection, Inspection } from "./types/InspectionTypes.sol";
+import { Producer } from "./types/ProducerTypes.sol";
+import { Activist } from "./types/ActivistTypes.sol";
 
 /**
  * @title SintropContract

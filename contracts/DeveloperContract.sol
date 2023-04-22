@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "./UserContract.sol";
-import "./Registrable.sol";
-import "./DeveloperPool.sol"
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { UserContract } from "./UserContract.sol";
+import { UserType } from "./types/UserTypes.sol";
+import { Registrable } from "./Registrable.sol";
+import { DeveloperPool } from "./DeveloperPool.sol";
 
 /**
  * @title DeveloperContract

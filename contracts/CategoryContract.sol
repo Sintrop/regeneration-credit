@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "./PoolPassiveInterface.sol";
-import "./types/CategoryTypes.sol";
-import "./ResearcherContract.sol";
-import "./UserContract.sol";
+import { PoolPassiveInterface } from "./PoolPassiveInterface.sol";
+import { Isas, Category } from "./types/CategoryTypes.sol";
+import { ResearcherContract } from "./ResearcherContract.sol";
+import { UserContract } from "./UserContract.sol";
 
 /**
  * @author Sintrop

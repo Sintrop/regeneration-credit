@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "./UserContract.sol";
-import "./types/ProducerTypes.sol";
-import "./Callable.sol";
-import "./ProducerPool.sol";
+import { UserContract } from "./UserContract.sol";
+import { Producer, Pool, Isa, PropertyAddress } from "./types/ProducerTypes.sol";
+import { Callable } from "./Callable.sol";
+import { ProducerPool } from "./ProducerPool.sol";
+import { UserType } from "./types/UserTypes.sol";
 
 /**
  * @title ProducerContract

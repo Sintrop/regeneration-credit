@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "./UserContract.sol";
-import "./types/ActivistTypes.sol";
-import "./Callable.sol";
+import { UserContract } from "./UserContract.sol";
+import { Activist, ActivistAddress } from "./types/ActivistTypes.sol";
+import { Callable } from "./Callable.sol";
+import { UserType } from "./types/UserTypes.sol";
 
 contract ActivistContract is Callable {
   mapping(address => Activist) internal activists;
