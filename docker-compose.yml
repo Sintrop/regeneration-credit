@@ -13,6 +13,11 @@ services:
       - 8080:8080
     networks: 
       - app-tunnel
+  eth-security-toolbox:
+    container_name: ETH-SECURITY-TOOLBOX
+    image: trailofbits/eth-security-toolbox
+    networks: 
+      - app-tunnel
     volumes: 
       - ./:/app
 networks: 
