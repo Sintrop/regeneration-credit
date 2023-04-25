@@ -17,7 +17,7 @@ module.exports = function (deployer) {
 
     await producerContract.addProducer(
       10,
-      "Beans Farm",
+      "Fazenda da Mata",
       "photoURL",
       "123456789123456",
       { from: producer1 }
@@ -25,27 +25,27 @@ module.exports = function (deployer) {
 
     await producerContract.addProducer(
       50,
-      "Soy Plantation",
+      "Sítio Floresta",
       "photoURL",
       "1111111111111",
       { from: producer2 }
     );
 
     await activistContract.addActivist(
-      "John Johnson",
+      "João Gilberto",
       "photoURL",
       "2222222222222222",
       { from: activist1 }
     );
 
     await activistContract.addActivist(
-      "Peter Parker",
+      "Patrícia Rosa",
       "photoURL",
       "333333333333333",
       { from: activist2 }
     );
 
-    await researcherContract.addResearcher("Researcher Tom", "photoURL", {
+    await researcherContract.addResearcher("Instituto de Pesquisas Ambientais", "photoURL", {
       from: researcher1,
     });
 
@@ -53,11 +53,11 @@ module.exports = function (deployer) {
       "Carbon footprint",
       `Indicator to evaluate the carbon balance`,
       `We must evaluate everything that the producer emit carbon, and all the carbon sequestration`,
-      `More then -1tCO2e / ha / month`,
-      `Until -1 tCO2e / ha / month`,
+      `More then -1tCO2e / ha / year`,
+      `Until -1 tCO2e / ha / year`,
       `0`,
-      `Until 1 tCO2e / ha / month`,
-      `More then 1 tCO2e / ha / month`,
+      `Until 1 tCO2e / ha / year`,
+      `More then 1 tCO2e / ha / year`,
       { from: researcher1 }
     );
 
