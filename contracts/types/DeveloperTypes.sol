@@ -3,17 +3,17 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserType } from "./UserTypes.sol";
 
-  struct Developer {
-    uint256 id;
-    address developerWallet;
-    UserType userType;
-    string name;
-    string proofPhoto;
-    Pool pool;
-    uint256 createdAt;
-  }
+struct Developer {
+  uint256 id;
+  address developerWallet;
+  UserType userType;
+  string name;
+  string proofPhoto;
+  Pool pool;
+  uint256 createdAt;
+}
 
-  struct Pool {
-    uint256 level;
-    uint256 currentEra;
-  }
+struct Pool {
+  uint256 level;
+  uint256 currentEra;
+}

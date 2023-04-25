@@ -24,10 +24,12 @@ contract ResearcherContract is Registrable {
    * @param name the name of the researcher
    * @return a Researcher
    */
-  function addResearcher(
-    string memory name,
-    string memory proofPhoto
-  ) public uniqueResearcher mustBeAllowedUser returns (Researcher memory) {
+  function addResearcher(string memory name, string memory proofPhoto)
+    public
+    uniqueResearcher
+    mustBeAllowedUser
+    returns (Researcher memory)
+  {
     uint256 id = researchersCount + 1;
     UserType userType = UserType.RESEARCHER;
 
@@ -72,7 +74,11 @@ contract ResearcherContract is Registrable {
     return bytes(researchers[addr].name).length > 0;
   }
 
-  function addWork(string memory title, string memory thesis, string memory file) public {
+  function addWork(
+    string memory title,
+    string memory thesis,
+    string memory file
+  ) public {
     require(researcherExists(msg.sender), "Only allowed to researchers");
 
     uint256 id = worksCount + 1;
