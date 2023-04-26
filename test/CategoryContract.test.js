@@ -19,11 +19,13 @@ contract("CategoryContract", (accounts) => {
       name,
       `The description of ${name}`,
       `How activists should evaluate ${name}`,
-      `${name} totally sustainable`,
-      `${name} partially sustainable`,
+      `${name} regenerative 3`,
+      `${name} regenerative 2`,
+      `${name} regenerative 1`,
       `${name} neutro`,
-      `${name} partially not sustainable`,
-      `${name} totally not sustainable`,
+      `${name} notRegenerative 1`,
+      `${name} notRegenerative 2`,
+      `${name} notRegenerative 3`,
       { from: from }
     );
   };
@@ -122,11 +124,13 @@ contract("CategoryContract", (accounts) => {
       assert.equal(category.name, "Soil");
       assert.equal(category.description, `The description of ${name}`);
       assert.equal(category.tutorial, `How activists should evaluate ${name}`);
-      assert.equal(category.totallySustainable, `${name} totally sustainable`);
-      assert.equal(category.partiallySustainable, `${name} partially sustainable`);
+      assert.equal(category.regenerative3, `${name} regenerative 3`);
+      assert.equal(category.regenerative2, `${name} regenerative 2`);
+      assert.equal(category.regenerative1, `${name} regenerative 1`);
       assert.equal(category.neutro, `${name} neutro`);
-      assert.equal(category.partiallyNotSustainable, `${name} partially not sustainable`);
-      assert.equal(category.totallyNotSustainable, `${name} totally not sustainable`);
+      assert.equal(category.notRegenerative1, `${name} notRegenerative 1`);
+      assert.equal(category.notRegenerative2, `${name} notRegenerative 2`);
+      assert.equal(category.notRegenerative3, `${name} notRegenerative 3`);
       assert.equal(category.votesCount, 0);
     });
   });

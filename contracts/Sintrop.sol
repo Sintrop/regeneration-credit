@@ -91,9 +91,7 @@ contract Sintrop {
    * @dev Allows the current user (activist) accept a inspection.
    * @param inspectionId The id of the inspection that the activist want accept.
    */
-  function acceptInspection(
-    uint256 inspectionId
-  )
+  function acceptInspection(uint256 inspectionId)
     public
     requireActivist
     requireInspectionExists(inspectionId)
@@ -126,10 +124,7 @@ contract Sintrop {
    * @param inspectionId The id of the inspection to be realized
    * @param _isas The IsaIsaInspection[] of the inspection to be realized
    */
-  function realizeInspection(
-    uint256 inspectionId,
-    IsaInspection[] memory _isas
-  )
+  function realizeInspection(uint256 inspectionId, IsaInspection[] memory _isas)
     public
     requireActivist
     requireInspectionExists(inspectionId)
@@ -158,7 +153,7 @@ contract Sintrop {
 
   function calculateIsa(Inspection memory inspection, IsaInspection[] memory _isas) internal returns (int256) {
     // TODO: Add isaScore points in state
-    int256[5] memory points = [int256(10), 5, 0, -5, -10];
+    int256[7] memory points = [int256(20), 10, 5, 0, -5, -10, -20];
     int256 isaScore;
 
     for (uint8 i = 0; i < _isas.length; i++) {
@@ -215,7 +210,16 @@ contract Sintrop {
   /**
    * @dev Returns all inpections status string.
    */
-  function getInspectionsStatus() public pure returns (string memory, string memory, string memory, string memory) {
+  function getInspectionsStatus()
+    public
+    pure
+    returns (
+      string memory,
+      string memory,
+      string memory,
+      string memory
+    )
+  {
     return ("OPEN", "ACCEPTED", "INSPECTED", "EXPIRED");
   }
 

@@ -43,11 +43,13 @@ contract("Sintrop", (accounts) => {
       name,
       `The description of ${name}`,
       `How activists should evaluate ${name}`,
-      `${name} totally sustainable`,
-      `${name} partially sustainable`,
+      `${name} regenerative 3`,
+      `${name} regenerative 2`,
+      `${name} regenerative 1`,
       `${name} neutro`,
-      `${name} partially not sustainable`,
-      `${name} totally not sustainable`,
+      `${name} notRegenerative 1`,
+      `${name} notRegenerative 2`,
+      `${name} notRegenerative 3`,
       { from: from }
     );
   };
@@ -451,7 +453,7 @@ contract("Sintrop", (accounts) => {
       assert.equal(JSON.stringify(isasResponse), JSON.stringify(isas_));
     });
 
-    it("should add 10 isaScore to inspection when select totallySustainable", async () => {
+    it("should add 20 isaScore to inspection when select REGENERATIVE 3", async () => {
       await instance.requestInspection({ from: producerAddress });
       await instance.acceptInspection(1, { from: activistAddress });
 
@@ -461,7 +463,28 @@ contract("Sintrop", (accounts) => {
         {
           categoryId: 1,
           isaIndex: 0,
-          report: "TOTALLY_SUSTAINABLE",
+          report: "REGENERATIVE_3",
+          indicator: 100,
+        },
+      ];
+      await realizeInspection(1, isas, activistAddress);
+
+      const inspection = await instance.getInspection(1);
+
+      assert.equal(inspection.isaScore, 20);
+    });
+
+    it("should add 20 isaScore to inspection when select REGENERATIVE 3", async () => {
+      await instance.requestInspection({ from: producerAddress });
+      await instance.acceptInspection(1, { from: activistAddress });
+
+      await addCategory("Soil A", resea1Address);
+
+      const isas = [
+        {
+          categoryId: 1,
+          isaIndex: 1,
+          report: "REGENERATIVE_2",
           indicator: 10,
         },
       ];
@@ -472,7 +495,7 @@ contract("Sintrop", (accounts) => {
       assert.equal(inspection.isaScore, 10);
     });
 
-    it("should add 5 isaScore to inspection when select partiallySustainable", async () => {
+    it("should add 5 isaScore to inspection when select REGENERATIVE 1", async () => {
       await instance.requestInspection({ from: producerAddress });
       await instance.acceptInspection(1, { from: activistAddress });
 
@@ -481,8 +504,8 @@ contract("Sintrop", (accounts) => {
       const isas = [
         {
           categoryId: 1,
-          isaIndex: 1,
-          report: "PARTIALLY_SUSTAINABLE",
+          isaIndex: 2,
+          report: "REGENERATIVE_1",
           indicator: 5,
         },
       ];
@@ -502,7 +525,7 @@ contract("Sintrop", (accounts) => {
       const isas = [
         {
           categoryId: 1,
-          isaIndex: 2,
+          isaIndex: 3,
           report: "NEUTRO",
           indicator: 0,
         },
@@ -514,7 +537,7 @@ contract("Sintrop", (accounts) => {
       assert.equal(inspection.isaScore, 0);
     });
 
-    it("should remove 5 isaScore from inspection when select partiallyNotSustainable", async () => {
+    it("should remove 5 isaScore from inspection when select NOT_REGENERATIVE 1", async () => {
       await instance.requestInspection({ from: producerAddress });
       await instance.acceptInspection(1, { from: activistAddress });
 
@@ -523,8 +546,8 @@ contract("Sintrop", (accounts) => {
       const isas = [
         {
           categoryId: 1,
-          isaIndex: 3,
-          report: "PARTIALLY_NOT_SUSTAINABLE",
+          isaIndex: 4,
+          report: "NOT_REGENERATIVE1",
           indicator: -5,
         },
       ];
@@ -535,7 +558,7 @@ contract("Sintrop", (accounts) => {
       assert.equal(inspection.isaScore, -5);
     });
 
-    it("should remove 10 isaScore from inspection when select totallyNotSustainable", async () => {
+    it("should remove 10 isaScore from inspection when select NOT_REGENERATIVE 2", async () => {
       await instance.requestInspection({ from: producerAddress });
       await instance.acceptInspection(1, { from: activistAddress });
 
@@ -544,8 +567,8 @@ contract("Sintrop", (accounts) => {
       const isas = [
         {
           categoryId: 1,
-          isaIndex: 4,
-          report: "TOTALLY_NOT_SUSTAINABLE",
+          isaIndex: 5,
+          report: "NOT_REGENERATIVE_2",
           indicator: -10,
         },
       ];
@@ -554,6 +577,27 @@ contract("Sintrop", (accounts) => {
       const inspection = await instance.getInspection(1);
 
       assert.equal(inspection.isaScore, -10);
+    });
+
+    it("should remove 20 isaScore from inspection when select NOT_REGENERATIVE 3", async () => {
+      await instance.requestInspection({ from: producerAddress });
+      await instance.acceptInspection(1, { from: activistAddress });
+
+      await addCategory("Soil A", resea1Address);
+
+      const isas = [
+        {
+          categoryId: 1,
+          isaIndex: 6,
+          report: "NOT_REGENERATIVE_3",
+          indicator: -20,
+        },
+      ];
+      await realizeInspection(1, isas, activistAddress);
+
+      const inspection = await instance.getInspection(1);
+
+      assert.equal(inspection.isaScore, -20);
     });
 
     it("should add isaScore in producer", async () => {
