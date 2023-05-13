@@ -97,7 +97,6 @@ contract ProducerContract is Callable {
     require(producerExists(msg.sender), "Only producers pool");
     require(minimumInspections(producer.totalInspections), "Minimum inspections");
     require(!limitIsaScore(producer), "Limit ISA Score");
-    // TODO: Create issue to add validation by last 12 eras
 
     producerPool.withdraw(msg.sender, producer.pool.currentEra);
 
