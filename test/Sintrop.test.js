@@ -108,6 +108,12 @@ contract("Sintrop", (accounts) => {
     blocksPerEra: 50,
   };
 
+  const sintropArgs = {
+    timeBetweenInspections: 20,
+    blocksToExpireAcceptedInspection: 15,
+    allowedInitialRequests: 1
+  }
+
   beforeEach(async () => {
     userContract = await UserContract.new();
 
@@ -127,7 +133,10 @@ contract("Sintrop", (accounts) => {
     producerContract = await ProducerContract.new(userContract.address, producerPool.address);
 
     categoryContract = await CategoryContract.new(isaPool.address, researcherContract.address, userContract.address);
-    instance = await Sintrop.new(activistContract.address, producerContract.address, 20, 15);
+
+    instance = await Sintrop.new(activistContract.address, producerContract.address,
+      sintropArgs.timeBetweenInspections, sintropArgs.blocksToExpireAcceptedInspection,
+      sintropArgs.allowedInitialRequests);
 
     await userContract.newAllowedCaller(activistContract.address);
     await userContract.newAllowedCaller(producerContract.address);
@@ -142,64 +151,70 @@ contract("Sintrop", (accounts) => {
     await addResearcher("Researcher 1", resea1Address);
   });
 
-  context("when producer try request inspection", () => {
-    context("when is the first request", () => {
-      it("should request inspection", async () => {
-        await instance.requestInspection({ from: producerAddress });
-        const inspection = await instance.getInspection(1);
-
-        assert.equal(inspection.createdBy, producerAddress);
-      });
-    });
-
-    context("when is not the first request", () => {
-      context("when has request OPEN or ACCEPTED", () => {
-        it("should return error message", async () => {
+  context("#newRequest", () => {
+    context("with producer", () => {
+      context("when have less than ALLOWED_INITIAL_REQUESTS", () => {
+        it("should request inspection", async () => {
           await instance.requestInspection({ from: producerAddress });
-          await expectRevert(instance.requestInspection({ from: producerAddress }), "Request OPEN or ACCEPTED");
+          const inspection = await instance.getInspection(1);
+  
+          assert.equal(inspection.createdBy, producerAddress);
         });
       });
-
-      context("when don't has request OPEN or ACCEPTED", () => {
+  
+      context("when have more than ALLOWED_INITIAL_REQUESTS", () => {
         beforeEach(async () => {
           await instance.requestInspection({ from: producerAddress });
-          await instance.acceptInspection(1, { from: activistAddress });
-          await addCategory("Soil A", resea1Address);
-
-          const isas = [
-            {
-              categoryId: 1,
-              isaIndex: 0,
-              report: "Hash_1",
-              indicator: 10,
-            },
-          ];
-          await realizeInspection(1, isas, activistAddress);
         });
-
-        context("when last request is recent", () => {
+  
+        context("when has request OPEN or ACCEPTED", () => {
           it("should return error message", async () => {
-            await expectRevert(instance.requestInspection({ from: producerAddress }), "Recent inspection");
+            await expectRevert(instance.requestInspection({ from: producerAddress }), "Request OPEN or ACCEPTED");
           });
         });
-
-        context("when last request is not recent", () => {
-          it("should request inspection", async () => {
-            await advanceBlock(20);
-
-            await instance.requestInspection({ from: producerAddress });
-            const inspection = await instance.getInspection(2);
-
-            assert.equal(inspection.createdBy, producerAddress);
+  
+        context("when don't has request OPEN or ACCEPTED", () => {
+          beforeEach(async () => {
+            await instance.acceptInspection(1, { from: activistAddress });
+            await addCategory("Soil A", resea1Address);
+  
+            const isas = [
+              {
+                categoryId: 1,
+                isaIndex: 0,
+                report: "Hash_1",
+                indicator: 10,
+              },
+            ];
+            await realizeInspection(1, isas, activistAddress);
+          });
+  
+          context("when last request is recent", () => {
+            it("should return error message", async () => {
+              await expectRevert(instance.requestInspection({ from: producerAddress }), "Recent inspection");
+            });
+          });
+  
+          context("when last request is not recent", () => {
+            it("should request inspection", async () => {
+              await advanceBlock(20);
+  
+              await instance.requestInspection({ from: producerAddress });
+              const inspection = await instance.getInspection(2);
+  
+              assert.equal(inspection.createdBy, producerAddress);
+            });
           });
         });
       });
     });
-  });
 
-  context("when is not producer and try request inspection", () => {
-    it("should return message error", async () => {
-      await expectRevert(instance.requestInspection(), "Please register as producer");
+    context("with is not a producer", () => {
+      context("when is not producer and try request inspection", () => {
+        it("should return message error", async () => {
+          await expectRevert(instance.requestInspection(), "Please register as producer");
+        });
+      });
     });
   });
 

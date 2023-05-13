@@ -8,6 +8,8 @@ const sintropTimeBetweenProducerInsertions =
 const sintropBlocksToExpireAceeptedInspection =
   process.env["SINTROP_BLOCKS_TO_EXPIRE_ACCEPTED_INSPECTION"];
 
+const allowedInitialRequests = process.env["SINTROP_ALLOWED_INITIAL_REQUESTS"];
+
 module.exports = function (deployer) {
   deployer.then(async () => {
     const activistContract = await ActivistContract.deployed();
@@ -18,7 +20,8 @@ module.exports = function (deployer) {
       activistContract.address,
       producerContract.address,
       sintropTimeBetweenProducerInsertions,
-      sintropBlocksToExpireAceeptedInspection
+      sintropBlocksToExpireAceeptedInspection,
+      allowedInitialRequests
     );
   });
 };

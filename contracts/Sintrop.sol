@@ -24,17 +24,20 @@ contract Sintrop {
   uint256 public inspectionsCount;
   uint256 internal timeBetweenInspections;
   uint256 internal blocksToExpireAcceptedInspection;
+  uint256 internal immutable allowedInitialRequests;
 
   constructor(
     address activistContractAddress,
     address producerContractAddress,
     uint256 timeBetweenInspections_,
-    uint256 blocksToExpireAcceptedInspection_
+    uint256 blocksToExpireAcceptedInspection_,
+    uint256 allowedInitialRequests_
   ) {
     activistContract = ActivistContract(activistContractAddress);
     producerContract = ProducerContract(producerContractAddress);
     timeBetweenInspections = timeBetweenInspections_;
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
+    allowedInitialRequests = allowedInitialRequests_;
   }
 
   // TODO: Refact this mapping to not duplicate inspections
@@ -98,7 +101,6 @@ contract Sintrop {
     requireActivist
     requireInspectionExists(inspectionId)
     requireNotInspectedProducer(inspectionId)
-    returns (bool)
   {
     Inspection memory inspection = inspections[inspectionId];
 
@@ -115,9 +117,6 @@ contract Sintrop {
     activistContract.incrementGiveUps(msg.sender);
 
     activistContract.lastAcceptedAt(msg.sender, block.number);
-
-    // TODO: Remove return?
-    return true;
   }
 
   // TODO: Remove not reutilized modifiers and use require direct in the function
@@ -235,14 +234,12 @@ contract Sintrop {
     return inspections[inspectionId].status == InspectionStatus.ACCEPTED;
   }
 
-  // TODO: Refact this action
   function canRequestInspection() public view returns (bool) {
     Producer memory producer = producerContract.getProducer(msg.sender);
 
-    uint256 lastRequestAt = producer.lastRequestAt;
-    bool canRequest = block.number > lastRequestAt + timeBetweenInspections;
+    if (producer.totalInspections < allowedInitialRequests) return true;
 
-    return canRequest || lastRequestAt == 0;
+    return block.number > producer.lastRequestAt + timeBetweenInspections;
   }
 
   function expiredInspection(uint256 inspectionId) internal view returns (bool) {
