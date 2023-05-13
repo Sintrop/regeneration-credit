@@ -96,12 +96,7 @@ contract Sintrop {
    */
   function acceptInspection(
     uint256 inspectionId
-  )
-    public
-    requireActivist
-    requireInspectionExists(inspectionId)
-    requireNotInspectedProducer(inspectionId)
-  {
+  ) public requireActivist requireInspectionExists(inspectionId) requireNotInspectedProducer(inspectionId) {
     Inspection memory inspection = inspections[inspectionId];
 
     require(canAcceptInspection(), "Can't accept yet");
