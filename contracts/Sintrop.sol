@@ -22,7 +22,7 @@ contract Sintrop {
   ProducerContract public producerContract;
 
   uint256 public inspectionsCount;
-  uint256 internal timeBetweenInspections;
+  uint256 internal immutable timeBetweenInspections;
   uint256 internal blocksToExpireAcceptedInspection;
   uint256 internal immutable allowedInitialRequests;
 
@@ -63,30 +63,28 @@ contract Sintrop {
   function requestInspection() public requireProducer requireNoInspectionsOpen {
     require(canRequestInspection(), "Recent inspection");
 
-    newRequest();
+    addRequest();
 
-    // TODO: create a function to realize actions above in a single transaction?
-    producerContract.recentInspection(msg.sender, true);
-    producerContract.lastRequestAt(msg.sender, block.number);
+    afterRequestInspection();
   }
 
-  // TODO: use default address as the acceptedBy address
-  function newRequest() internal {
-    // TODO: create instance before, so add just the required fields
-    Inspection memory inspection = Inspection(
-      inspectionsCount + 1,
-      InspectionStatus.OPEN,
-      msg.sender,
-      msg.sender,
-      0,
-      block.number,
-      block.timestamp,
-      0,
-      0,
-      0
-    );
+  function addRequest() internal {
+    Inspection memory inspection;
+
+    inspection.id = inspectionsCount + 1;
+    inspection.status = InspectionStatus.OPEN;
+    inspection.createdBy = msg.sender;
+    inspection.acceptedBy = address(0);
+    inspection.createdAt = block.number;
+    inspection.createdAtTimestamp = block.timestamp; // solhint-disable-line
+
     inspections[inspection.id] = inspection;
     inspectionsCount++;
+  }
+
+  function afterRequestInspection() internal {
+    producerContract.recentInspection(msg.sender, true);
+    producerContract.lastRequestAt(msg.sender, block.number);
   }
 
   // TODO: Remove not reutilized modifiers and use require direct in the function
@@ -147,6 +145,7 @@ contract Sintrop {
     inspection.status = InspectionStatus.INSPECTED;
     inspection.inspectedAtTimestamp = block.timestamp; // solhint-disable-line
     inspection.isaScore = calculateIsa(inspection, _isas);
+
     inspections[inspection.id] = inspection;
   }
 
@@ -206,6 +205,7 @@ contract Sintrop {
   }
 
   // TODO: Have a better way to return this?
+  // TODO: Is this function necessary?
   /**
    * @dev Returns all inpections status string.
    */
@@ -213,6 +213,7 @@ contract Sintrop {
     return ("OPEN", "ACCEPTED", "INSPECTED", "EXPIRED");
   }
 
+  // TODO: Add specs to this function
   /**
    * @dev Check if an inspection exists in mapping.
    * @param id The id of the inspection that the activist want accept.
@@ -229,6 +230,7 @@ contract Sintrop {
     return inspections[inspectionId].status == InspectionStatus.ACCEPTED;
   }
 
+  // TODO: Add specs to this function
   function canRequestInspection() public view returns (bool) {
     Producer memory producer = producerContract.getProducer(msg.sender);
 
@@ -237,6 +239,8 @@ contract Sintrop {
     return block.number > producer.lastRequestAt + timeBetweenInspections;
   }
 
+  // TODO: Add specs to this function if necessary
+  // TODO: Must be a public function to call in the client?
   function expiredInspection(uint256 inspectionId) internal view returns (bool) {
     Inspection memory inspection = inspections[inspectionId];
     uint256 expireInspectionAt = inspection.acceptedAt + blocksToExpireAcceptedInspection;
@@ -244,12 +248,16 @@ contract Sintrop {
     return block.number > expireInspectionAt;
   }
 
+  // TODO: Add specs to this function
+  // TODO: Rename to BlocksToExpireAcceptedInspection ?
   function calculateBlocksToExpire(uint256 inspectionId) public view returns (uint256) {
     Inspection memory inspection = inspections[inspectionId];
 
     return inspection.acceptedAt + blocksToExpireAcceptedInspection - block.number;
   }
 
+  // TODO: Add specs to this function if necessary
+  // TODO: Must be a public function to call in the client?
   function canAcceptInspection() internal view returns (bool) {
     Activist memory activist = activistContract.getActivist(msg.sender);
     uint256 lastAcceptedAt = activist.lastAcceptedAt;
