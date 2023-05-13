@@ -210,9 +210,12 @@ contract("Sintrop", (accounts) => {
 
   context("#requestInspection", () => {
     context("with producer", () => {
+      beforeEach(async () => {
+        await instance.requestInspection({ from: producerAddress });
+      });
+
       context("when have less than ALLOWED_INITIAL_REQUESTS", () => {
         it("should request inspection", async () => {
-          await instance.requestInspection({ from: producerAddress });
           const inspection = await instance.getInspection(1);
 
           assert.equal(inspection.createdBy, producerAddress);
@@ -220,10 +223,6 @@ contract("Sintrop", (accounts) => {
       });
 
       context("when have more than ALLOWED_INITIAL_REQUESTS", () => {
-        beforeEach(async () => {
-          await instance.requestInspection({ from: producerAddress });
-        });
-
         context("when has request OPEN or ACCEPTED", () => {
           it("should return error message", async () => {
             await expectRevert(instance.requestInspection({ from: producerAddress }), "Request OPEN or ACCEPTED");
@@ -264,62 +263,58 @@ contract("Sintrop", (accounts) => {
           });
         });
       });
+
+      context("#afterRequestInspection", () => {    
+        it("initial status should be equal OPEN", async () => {
+          const inspection = await instance.getInspection(1);
+    
+          assert.equal(inspection.status, STATUS.open);
+        });
+    
+        it("must set createdBy as producer address", async () => {
+          const inspection = await instance.getInspection(1);
+    
+          assert.equal(inspection.createdBy, producerAddress);
+        });
+    
+        it("must set acceptedBy as zero address", async () => {
+          const inspection = await instance.getInspection(1);
+    
+          assert.equal(inspection.acceptedBy, ZERO_ADDRESS);
+        });
+    
+        it("initial isaScore should be equal zero", async () => {
+          const inspection = await instance.getInspection(1);
+    
+          assert.equal(inspection.isaScore, 0);
+        });
+    
+        it("initial isas should be equal empty array", async () => {
+          const isas = await instance.getIsa(1);
+    
+          assert.equal(isas.length, 0);
+        });
+    
+        it("should increment total of inspections", async () => {
+          const inspectionsCount = await instance.inspectionsCount();
+    
+          assert.equal(inspectionsCount, 1);
+        });
+    
+        it("should set to true producer recentInspection", async () => {
+          const producer = await producerContract.getProducer(producerAddress);
+    
+          assert.equal(producer.recentInspection, true);
+        });
+      });
     });
 
-    context("with is not a producer", () => {
+    context("with non producer", () => {
       context("when is not producer and try request inspection", () => {
         it("should return message error", async () => {
           await expectRevert(instance.requestInspection(), "Please register as producer");
         });
       });
-    });
-  });
-
-  context("#requestInspection .afterRequestInspection", () => {
-    beforeEach(async () => {
-      await instance.requestInspection({ from: producerAddress });
-    });
-
-    it("initial status should be equal OPEN", async () => {
-      const inspection = await instance.getInspection(1);
-
-      assert.equal(inspection.status, STATUS.open);
-    });
-
-    it("must set createdBy as producer address", async () => {
-      const inspection = await instance.getInspection(1);
-
-      assert.equal(inspection.createdBy, producerAddress);
-    });
-
-    it("must set acceptedBy as zero address", async () => {
-      const inspection = await instance.getInspection(1);
-
-      assert.equal(inspection.acceptedBy, ZERO_ADDRESS);
-    });
-
-    it("initial isaScore should be equal zero", async () => {
-      const inspection = await instance.getInspection(1);
-
-      assert.equal(inspection.isaScore, 0);
-    });
-
-    it("initial isas should be equal empty array", async () => {
-      const isas = await instance.getIsa(1);
-
-      assert.equal(isas.length, 0);
-    });
-
-    it("should increment total of inspections", async () => {
-      const inspectionsCount = await instance.inspectionsCount();
-
-      assert.equal(inspectionsCount, 1);
-    });
-
-    it("should set to true producer recentInspection", async () => {
-      const producer = await producerContract.getProducer(producerAddress);
-
-      assert.equal(producer.recentInspection, true);
     });
   });
 
