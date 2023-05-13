@@ -17,7 +17,7 @@ module.exports = function (deployer) {
 
     await producerContract.addProducer(
       10,
-      "Beans Farm",
+      "Beans Farma",
       "photoURL",
       "123456789123456",
       { from: producer1 }
