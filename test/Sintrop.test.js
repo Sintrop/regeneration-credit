@@ -157,7 +157,7 @@ contract("Sintrop", (accounts) => {
     await addResearcher("Researcher 1", resea1Address);
   });
 
-  context("#getInspection", () => {
+  describe("#getInspection", () => {
     context("when inspection exists", () => {
       beforeEach(async () => {
         await instance.requestInspection({ from: producerAddress });
@@ -179,7 +179,7 @@ contract("Sintrop", (accounts) => {
     });
   });
 
-  context("#getInspections", () => {
+  describe("#getInspections", () => {
     context("when have inspections", () => {
       beforeEach(async () => {
         addProducer("Producer B", producer2Address);
@@ -208,7 +208,7 @@ contract("Sintrop", (accounts) => {
     });
   });
 
-  context("#requestInspection", () => {
+  describe("#requestInspection", () => {
     context("with producer", () => {
       beforeEach(async () => {
         await instance.requestInspection({ from: producerAddress });
@@ -264,7 +264,7 @@ contract("Sintrop", (accounts) => {
         });
       });
 
-      context("#afterRequestInspection", () => {
+      describe("#afterRequestInspection", () => {
         it("initial status should be equal OPEN", async () => {
           const inspection = await instance.getInspection(1);
 
@@ -318,7 +318,7 @@ contract("Sintrop", (accounts) => {
     });
   });
 
-  context("#acceptInspection", () => {
+  describe("#acceptInspection", () => {
     context("with activist", () => {
       context("when inspection exists", () => {
         beforeEach(async () => {
@@ -427,7 +427,7 @@ contract("Sintrop", (accounts) => {
     });
   });
 
-  context("#realizeInspection", () => {
+  describe("#realizeInspection", () => {
     context("with activist", () => {
       context("when inspection exists", () => {
         beforeEach(async () => {
