@@ -291,7 +291,7 @@ contract("ProducerPool", (accounts) => {
           });
         });
 
-        context.only("when totalScores is 125", () => {
+        context("when totalScores is 125", () => {
           beforeEach(async () => {
             await instance.addLevel(producer1Address, 80, 80);
             await instance.addLevel(producer2Address, 45, 45);
