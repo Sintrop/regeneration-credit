@@ -85,7 +85,7 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
   }
 
   function tokensPerEra() public view returns (uint256) {
-    return tokensPerEpoch().div(totalEras);
+    return tokensPerEpoch().div(halving);
   }
 
   function tokensPerEpoch() public view returns (uint256) {
