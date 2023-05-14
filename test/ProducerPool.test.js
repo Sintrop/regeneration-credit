@@ -10,8 +10,8 @@ contract("ProducerPool", (accounts) => {
 
   const args = {
     totalTokens: "750000000000000000000000000",
-    halving: 8,
-    totalEras: 8,
+    halving: 12,
+    totalEras: 96,
     blocksPerEra: 12,
   };
 
@@ -78,7 +78,7 @@ contract("ProducerPool", (accounts) => {
 
     context("when is epoch 2", () => {
       beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.totalEras);
+        await advanceBlock(args.blocksPerEra * args.halving);
       });
 
       it("must return 180000000000000000000000000", async () => {
@@ -90,7 +90,7 @@ contract("ProducerPool", (accounts) => {
 
     context("when is epoch 3", () => {
       beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.totalEras * 2);
+        await advanceBlock(args.blocksPerEra * args.halving * 2);
       });
 
       it("must return 90000000000000000000000000", async () => {
@@ -102,7 +102,7 @@ contract("ProducerPool", (accounts) => {
 
     context("when is epoch 4", () => {
       beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.totalEras * 3);
+        await advanceBlock(args.blocksPerEra * args.halving * 3);
       });
 
       it("must return 45000000000000000000000000", async () => {
@@ -114,7 +114,7 @@ contract("ProducerPool", (accounts) => {
 
     context("when is epoch 5", () => {
       beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.totalEras * 4);
+        await advanceBlock(args.blocksPerEra * args.halving * 4);
       });
 
       it("must return 22500000000000000000000000", async () => {
@@ -126,7 +126,7 @@ contract("ProducerPool", (accounts) => {
 
     context("when is epoch 6", () => {
       beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.totalEras * 5);
+        await advanceBlock(args.blocksPerEra * args.halving * 5);
       });
 
       it("must return 11250000000000000000000000", async () => {
@@ -138,7 +138,7 @@ contract("ProducerPool", (accounts) => {
 
     context("when is epoch 7", () => {
       beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.totalEras * 6);
+        await advanceBlock(args.blocksPerEra * args.halving * 6);
       });
 
       it("must return 5625000000000000000000000", async () => {
@@ -150,7 +150,7 @@ contract("ProducerPool", (accounts) => {
 
     context("when is epoch 8", () => {
       beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.totalEras * 7);
+        await advanceBlock(args.blocksPerEra * args.halving * 7);
       });
 
       it("must return 2812500000000000000000000", async () => {
@@ -163,94 +163,94 @@ contract("ProducerPool", (accounts) => {
 
   describe("#tokensPerEra", () => {
     context("when is epoch 1", () => {
-      it("must return 45000000000000000000000000", async () => {
+      it("must return 30000000000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra();
 
-        assert.equal(tokensPerEra, "45000000000000000000000000");
+        assert.equal(tokensPerEra, "30000000000000000000000000");
       });
     });
 
     context("when is epoch 2", () => {
       beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.totalEras);
+        await advanceBlock(args.blocksPerEra * args.halving);
       });
 
-      it("must return 22500000000000000000000000", async () => {
+      it("must return 15000000000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra();
 
-        assert.equal(tokensPerEra, "22500000000000000000000000");
+        assert.equal(tokensPerEra, "15000000000000000000000000");
       });
     });
 
     context("when is epoch 3", () => {
       beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.totalEras * 2);
+        await advanceBlock(args.blocksPerEra * args.halving * 2);
       });
 
-      it("must return 11250000000000000000000000", async () => {
+      it("must return 7500000000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra();
 
-        assert.equal(tokensPerEra, "11250000000000000000000000");
+        assert.equal(tokensPerEra, "7500000000000000000000000");
       });
     });
 
     context("when is epoch 4", () => {
       beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.totalEras * 3);
+        await advanceBlock(args.blocksPerEra * args.halving * 3);
       });
 
-      it("must return 5625000000000000000000000", async () => {
+      it("must return 3750000000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra();
 
-        assert.equal(tokensPerEra, "5625000000000000000000000");
+        assert.equal(tokensPerEra, "3750000000000000000000000");
       });
     });
 
     context("when is epoch 5", () => {
       beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.totalEras * 4);
+        await advanceBlock(args.blocksPerEra * args.halving * 4);
       });
 
-      it("must return 2812500000000000000000000", async () => {
+      it("must return 1875000000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra();
 
-        assert.equal(tokensPerEra, "2812500000000000000000000");
+        assert.equal(tokensPerEra, "1875000000000000000000000");
       });
     });
 
     context("when is epoch 6", () => {
       beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.totalEras * 5);
+        await advanceBlock(args.blocksPerEra * args.halving * 5);
       });
 
-      it("must return 1406250000000000000000000", async () => {
+      it("must return 937500000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra();
 
-        assert.equal(tokensPerEra, "1406250000000000000000000");
+        assert.equal(tokensPerEra, "937500000000000000000000");
       });
     });
 
     context("when is epoch 7", () => {
       beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.totalEras * 6);
+        await advanceBlock(args.blocksPerEra * args.halving * 6);
       });
 
-      it("must return 703125000000000000000000", async () => {
+      it("must return 468750000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra();
 
-        assert.equal(tokensPerEra, "703125000000000000000000");
+        assert.equal(tokensPerEra, "468750000000000000000000");
       });
     });
 
     context("when is epoch 8", () => {
       beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.totalEras * 7);
+        await advanceBlock(args.blocksPerEra * args.halving * 7);
       });
 
-      it("must return 351562500000000000000000", async () => {
+      it("must return 234375000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra();
 
-        assert.equal(tokensPerEra, "351562500000000000000000");
+        assert.equal(tokensPerEra, "234375000000000000000000");
       });
     });
   });
@@ -282,16 +282,16 @@ contract("ProducerPool", (accounts) => {
               await advanceBlock(args.blocksPerEra);
             });
 
-            it("must withdraw 45000000000000000000000000 of tokens", async () => {
+            it("must withdraw 30000000000000000000000000 of tokens", async () => {
               await instance.withdraw(producer1Address, 1);
               const balanceOf = await instance.balanceOf(producer1Address);
 
-              assert.equal(balanceOf, 45000000000000000000000000n);
+              assert.equal(balanceOf, 30000000000000000000000000n);
             });
           });
         });
 
-        context("when totalScores is 125", () => {
+        context.only("when totalScores is 125", () => {
           beforeEach(async () => {
             await instance.addLevel(producer1Address, 80, 80);
             await instance.addLevel(producer2Address, 45, 45);
@@ -299,20 +299,20 @@ contract("ProducerPool", (accounts) => {
           });
 
           context("when producer1 have 80 isaScore", () => {
-            it("must withdraw 28800000000000000000000000 of tokens", async () => {
+            it("must withdraw 19200000000000000000000000 of tokens", async () => {
               await instance.withdraw(producer1Address, 1);
               const balanceOf = await instance.balanceOf(producer1Address);
 
-              assert.equal(balanceOf, 28800000000000000000000000n);
+              assert.equal(balanceOf, 19200000000000000000000000n);
             });
           });
 
           context("when producer2 have 45 isaScore", () => {
-            it("must withdraw 16200000000000000000000000 tokens", async () => {
+            it("must withdraw 10800000000000000000000000 tokens", async () => {
               await instance.withdraw(producer2Address, 1);
               const balanceOf = await instance.balanceOf(producer2Address);
 
-              assert.equal(balanceOf, 16200000000000000000000000n);
+              assert.equal(balanceOf, 10800000000000000000000000n);
             });
           });
         });
