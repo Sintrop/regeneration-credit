@@ -40,6 +40,6 @@ contract Poolable {
 
     if (levelTo == 0) return 0;
 
-    return levelTo.mul((tokensPerEra.div(levels)));
+    return levelTo.mul(tokensPerEra).div(levels);
   }
 }
