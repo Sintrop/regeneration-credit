@@ -81,22 +81,20 @@ contract CategoryContract {
    * @return category struc array
    */
   function getCategories() public view returns (Category[] memory) {
-    Category[] memory categoriesList = new Category[](categoryCounts);
+    uint256 count = categoryCounts;
+    Category[] memory categoriesList = new Category[](count);
 
-    // TODO: Add categoryCounts in a memory variable before the loop
-    for (uint256 i = 0; i < categoryCounts; i++) {
+    for (uint256 i = 0; i < count; i++) {
       categoriesList[i] = categories[i + 1];
     }
 
     return categoriesList;
   }
 
-  // TODO: Remove not reutilized modifiers and use require direct in the function
   /**
    * @dev Allow a user vote in a category sending tokens amount to this
    * @param id the id of a category that receives a vote.
    * @param tokens the tokens amount that the use want use to vote.
-   * @return boolean
    */
   function vote(
     uint256 id,
@@ -105,62 +103,38 @@ contract CategoryContract {
     public
     requireUserExists
     categoryMustExists(id)
-    mustHaveSacToken(tokens)
-    mustSendSomeSacToken(tokens)
-    mustNotExceedLimitVoting(id, tokens)
-    returns (bool)
   {
-    isaPool.transferWith(msg.sender, address(isaPool), tokens);
+    require(isaPool.balanceOf(msg.sender) > tokens, "You don't have tokens to vote");
+    require(tokens > 0, "Send at least 1 SAC Token");
+    require(voted[msg.sender][id] + tokens <= LIMIT_VOTING, "can't vote more than 100k tokens");
 
     votes[id] += tokens;
     voted[msg.sender][id] += tokens;
-
     categories[id].votesCount++;
-    return true;
+
+    isaPool.transferWith(msg.sender, address(isaPool), tokens);
   }
 
-  // TODO: Remove not reutilized modifiers and use require direct in the function
   /**
    * @dev Allow a user unvote in a category and get your tokens again
    * @param id the id of a category that receives a vote.
-   * @return uint256
    */
-  function unvote(uint256 id) public categoryMustExists(id) mustHaveVoted(id) returns (uint256) {
-    uint256 tokens = voted[msg.sender][id];
+  function unvote(uint256 id) public categoryMustExists(id) {
+    require(voted[msg.sender][id] > 0, "You don't voted to this category");
 
-    isaPool.transferWith(address(isaPool), msg.sender, tokens);
+    uint256 tokens = voted[msg.sender][id];
 
     votes[id] -= tokens;
     voted[msg.sender][id] = 0;
     categories[id].votesCount--;
 
-    return tokens;
+    isaPool.transferWith(address(isaPool), msg.sender, tokens);
   }
 
   // MODIFIERS
 
-  modifier mustNotExceedLimitVoting(uint256 id, uint256 tokens) {
-    require(voted[msg.sender][id] + tokens <= LIMIT_VOTING, "can't vote more than 100k tokens");
-    _;
-  }
-
   modifier categoryMustExists(uint256 id) {
     require(categories[id].id > 0, "This category don't exists");
-    _;
-  }
-
-  modifier mustHaveSacToken(uint256 tokens) {
-    require(isaPool.balanceOf(msg.sender) > tokens, "You don't have tokens to vote");
-    _;
-  }
-
-  modifier mustSendSomeSacToken(uint256 tokens) {
-    require(tokens > 0, "Send at least 1 SAC Token");
-    _;
-  }
-
-  modifier mustHaveVoted(uint256 id) {
-    require(voted[msg.sender][id] > 0, "You don't voted to this category");
     _;
   }
 
