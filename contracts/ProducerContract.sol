@@ -45,21 +45,16 @@ contract ProducerContract is Callable {
 
     UserType userType = UserType.PRODUCER;
 
-    // TODO: Create issue to create producer instance before, so add just the required fields
-    Producer memory producer = Producer(
-      producersCount + 1,
-      msg.sender,
-      userType,
-      certifiedArea,
-      name,
-      proofPhoto,
-      false,
-      0,
-      0,
-      Isa(0, 0, false),
-      PropertyAddress(coordinate),
-      Pool(producerPool.currentContractEra())
-    );
+    Producer memory producer;
+
+    producer.id = producersCount + 1;
+    producer.producerWallet = msg.sender;
+    producer.userType = userType;
+    producer.certifiedArea = certifiedArea;
+    producer.name = name;
+    producer.proofPhoto = proofPhoto;
+    producer.propertyAddress = PropertyAddress(coordinate);
+    producer.pool = Pool(producerPool.currentContractEra());
 
     producers[msg.sender] = producer;
     producersAddress.push(msg.sender);
@@ -72,10 +67,10 @@ contract ProducerContract is Callable {
    * @return Producer struct array
    */
   function getProducers() public view returns (Producer[] memory) {
-    Producer[] memory producerList = new Producer[](producersCount);
+    uint256 count = producersCount;
+    Producer[] memory producerList = new Producer[](count);
 
-    // TODO: Add producersCount in a memory variable before call in the for loop
-    for (uint256 i = 0; i < producersCount; i++) {
+    for (uint256 i = 0; i < count; i++) {
       address acAddress = producersAddress[i];
       producerList[i] = producers[acAddress];
     }
