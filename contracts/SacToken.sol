@@ -89,7 +89,11 @@ contract SacToken is ERC20, Ownable {
     return allowed[owner][delegate];
   }
 
-  function transferFrom(address owner, address buyer, uint256 numTokens) public override returns (bool) {
+  function transferFrom(
+    address owner,
+    address buyer,
+    uint256 numTokens
+  ) public override returns (bool) {
     require(numTokens <= balances[owner], "Insufficient balance.");
     require(numTokens <= allowed[owner][msg.sender], "Insufficient allowance.");
 

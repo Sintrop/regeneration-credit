@@ -22,10 +22,12 @@ contract UserContract is Ownable, Callable {
    * @param addr The address of the user
    * @param userType The type of the user - enum UserType
    */
-  function addUser(
-    address addr,
-    UserType userType
-  ) public mustBeAllowedCaller mustNotExists(addr) mustBeValidType(userType) {
+  function addUser(address addr, UserType userType)
+    public
+    mustBeAllowedCaller
+    mustNotExists(addr)
+    mustBeValidType(userType)
+  {
     users[addr] = userType;
     usersCount++;
   }
