@@ -267,12 +267,6 @@ contract("ProducerContract", (accounts) => {
 
               assert.equal(producer.isa.sustainable, false);
             });
-
-            it("producersTotalScore must be 670", async () => {
-              const producersTotalScore = await instance.producersTotalScore();
-
-              assert.equal(producersTotalScore, 670);
-            });
           });
 
           context("when new score is negative", () => {
@@ -291,12 +285,6 @@ contract("ProducerContract", (accounts) => {
 
               assert.equal(producer.isa.sustainable, false);
             });
-
-            it("producersTotalScore must be 530", async () => {
-              const producersTotalScore = await instance.producersTotalScore();
-
-              assert.equal(producersTotalScore, 530);
-            });
           });
 
           context("when new score + producer score result in a negative value", () => {
@@ -314,12 +302,6 @@ contract("ProducerContract", (accounts) => {
               const producer = await instance.getProducer(prod1Address);
 
               assert.equal(producer.isa.sustainable, false);
-            });
-
-            it("producersTotalScore must be 0", async () => {
-              const producersTotalScore = await instance.producersTotalScore();
-
-              assert.equal(producersTotalScore, 0);
             });
           });
 
@@ -344,12 +326,6 @@ contract("ProducerContract", (accounts) => {
               const producersSustainable = await instance.producersSustainable();
 
               assert.equal(producersSustainable, 1);
-            });
-
-            it("must remove producer score from total score", async () => {
-              const producersTotalScore = await instance.producersTotalScore();
-
-              assert.equal(producersTotalScore, 0);
             });
           });
         });
@@ -377,12 +353,6 @@ contract("ProducerContract", (accounts) => {
 
               assert.equal(producer.isa.sustainable, false);
             });
-
-            it("producersTotalScore must be 1470", async () => {
-              const producersTotalScore = await instance.producersTotalScore();
-
-              assert.equal(producersTotalScore, 1470);
-            });
           });
 
           context("when new score + producer A score is equal than limit score", () => {
@@ -407,12 +377,6 @@ contract("ProducerContract", (accounts) => {
 
               assert.equal(producersSustainable, 1);
             });
-
-            it("must remove producer A score from total score", async () => {
-              const producersTotalScore = await instance.producersTotalScore();
-
-              assert.equal(producersTotalScore, 800);
-            });
           });
 
           context("when new score + producer score result in a negative value", () => {
@@ -430,12 +394,6 @@ contract("ProducerContract", (accounts) => {
               const producer = await instance.getProducer(prod1Address);
 
               assert.equal(producer.isa.sustainable, false);
-            });
-
-            it("must remove producer score from total score", async () => {
-              const producersTotalScore = await instance.producersTotalScore();
-
-              assert.equal(producersTotalScore, 800);
             });
           });
         });
@@ -463,12 +421,6 @@ contract("ProducerContract", (accounts) => {
 
               assert.equal(producer.isa.sustainable, true);
             });
-
-            it("must dont add new isa score to total score", async () => {
-              const producersTotalScore = await instance.producersTotalScore();
-
-              assert.equal(producersTotalScore, 0);
-            });
           });
         });
 
@@ -489,12 +441,6 @@ contract("ProducerContract", (accounts) => {
 
               assert.equal(producer.isa.isaScore, 1100);
             });
-
-            it("must dont add new isa score to total score", async () => {
-              const producersTotalScore = await instance.producersTotalScore();
-
-              assert.equal(producersTotalScore, 800);
-            });
           });
 
           context("when producer B receive more 100 isa score", () => {
@@ -506,12 +452,6 @@ contract("ProducerContract", (accounts) => {
               const producer = await instance.getProducer(prod2Address);
 
               assert.equal(producer.isa.isaScore, 900);
-            });
-
-            it("must add new isa score to total score", async () => {
-              const producersTotalScore = await instance.producersTotalScore();
-
-              assert.equal(producersTotalScore, 900);
             });
           });
         });
@@ -533,12 +473,8 @@ contract("ProducerContract", (accounts) => {
       });
 
       context("when can approve #blockable", () => {
-        beforeEach(async () => {
-          await advanceBlock(producerPoolArgs.blocksPerEra);
-        });
-
         context("when producer have minimum inspections", () => {
-          context("when producersTotalScore is 100", () => {
+          context("when levels in era is 100", () => {
             beforeEach(async () => {
               await instance.incrementInspections(prod1Address);
               await instance.incrementInspections(prod1Address);
@@ -553,6 +489,8 @@ contract("ProducerContract", (accounts) => {
 
                 await instance.setIsaScore(prod1Address, 50);
                 await instance.setIsaScore(prod2Address, 50);
+
+                await advanceBlock(producerPoolArgs.blocksPerEra);
 
                 await instance.withdraw({ from: prod1Address });
                 await instance.withdraw({ from: prod2Address });
@@ -586,6 +524,7 @@ contract("ProducerContract", (accounts) => {
             context("when producer have isaScore 100", () => {
               beforeEach(async () => {
                 await instance.setIsaScore(prod1Address, 100);
+                await advanceBlock(producerPoolArgs.blocksPerEra);
                 await instance.withdraw({ from: prod1Address });
               });
 
