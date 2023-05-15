@@ -1,307 +1,183 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { ProducerContract } from "./ProducerContract.sol";
-import { ActivistContract } from "./ActivistContract.sol";
-import { CategoryContract } from "./CategoryContract.sol";
-import { InspectionStatus, IsaInspection, Inspection } from "./types/InspectionTypes.sol";
-import { Producer } from "./types/ProducerTypes.sol";
-import { Activist } from "./types/ActivistTypes.sol";
+import { PoolPassiveInterface } from "./PoolPassiveInterface.sol";
+import { Isas, Category } from "./types/CategoryTypes.sol";
+import { ResearcherContract } from "./ResearcherContract.sol";
+import { UserContract } from "./UserContract.sol";
 
 /**
- * @title SintropContract
- * @dev Sintrop application to certificate a rural producer
+ * @author Sintrop
+ * @title CategoryContract
+ * @dev Category resource that is a part of Sintrop business
  */
-contract Sintrop {
-  mapping(address => mapping(address => bool)) internal activistInspected;
-  mapping(address => Inspection[]) internal userInspections;
-  mapping(uint256 => Inspection) internal inspections;
-  mapping(uint256 => IsaInspection[]) public isas;
+contract CategoryContract {
+  uint256 public constant LIMIT_VOTING = 100000000000000000000000;
 
-  ActivistContract public activistContract;
-  ProducerContract public producerContract;
+  mapping(uint256 => Category) public categories;
+  mapping(uint256 => uint256) public votes;
+  mapping(address => mapping(uint256 => uint256)) public voted;
 
-  uint256 public inspectionsCount;
-  uint256 internal timeBetweenInspections;
-  uint256 internal blocksToExpireAcceptedInspection;
+  ResearcherContract public researcherContract;
+  UserContract public userContract;
 
+  // TODO: Remove state category (unused)
+  Category public category;
+  uint256 public categoryCounts;
+  PoolPassiveInterface internal isaPool;
+
+  // TODO: Remove researcherContract and use only userContract to check if exists or if is a researcher
   constructor(
-    address activistContractAddress,
-    address producerContractAddress,
-    uint256 timeBetweenInspections_,
-    uint256 blocksToExpireAcceptedInspection_
+    address _isaPoolAddress,
+    address researcherContractAddress,
+    address userContractAddress
   ) {
-    activistContract = ActivistContract(activistContractAddress);
-    producerContract = ProducerContract(producerContractAddress);
-    timeBetweenInspections = timeBetweenInspections_;
-    blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
+    isaPool = PoolPassiveInterface(_isaPoolAddress);
+    researcherContract = ResearcherContract(researcherContractAddress);
+    userContract = UserContract(userContractAddress);
   }
 
-  // TODO: Refact this mapping to not duplicate inspections
+  // TODO: remove modifier and use require direct in the function (modifier is not reutilized)
   /**
-   * @dev Allows the current user producer/activist get all yours inspections with status INSPECTED
+   * @dev add a new category
+   * @param name the name of category
+   * @param description the description of category
+   * @param tutorial how activists should evaluate it.
+   * @param regenerative3 the description text to this metric
+   * @param regenerative2 the description text to this metric
+   * @param regenerative1 the description text to this metric
+   * @param neutro the description text to this metric
+   * @param notRegenerative1 the description text to this metric
+   * @param notRegenerative2 the description text to this metric
+   * @param notRegenerative3 the description text to this metric
+   * @return bool
    */
-  function getInspectionsHistory() public view returns (Inspection[] memory) {
-    return userInspections[msg.sender];
-  }
-
-  /**
-   * @dev List IsaInspection from inspection
-   * @param inspectionId The id of the inspection to get IsaInspection
-   */
-  function getIsa(uint256 inspectionId) public view returns (IsaInspection[] memory) {
-    return isas[inspectionId];
-  }
-
-  // TODO: Remove not reutilized modifiers and use require direct in the function
-  /**
-   * @dev Allows the current user (producer) request a inspection.
-   */
-  function requestInspection() public requireProducer requireNoInspectionsOpen {
-    require(canRequestInspection(), "Recent inspection");
-
-    newRequest();
-
-    // TODO: create a function to realize actions above in a single transaction?
-    producerContract.recentInspection(msg.sender, true);
-    producerContract.lastRequestAt(msg.sender, block.number);
-  }
-
-  // TODO: use default address as the acceptedBy address
-  function newRequest() internal {
-    // TODO: create instance before, so add just the required fields
-    Inspection memory inspection = Inspection(
-      inspectionsCount + 1,
-      InspectionStatus.OPEN,
+  function addCategory(
+    string memory name,
+    string memory description,
+    string memory tutorial,
+    string memory regenerative3,
+    string memory regenerative2,
+    string memory regenerative1,
+    string memory neutro,
+    string memory notRegenerative1,
+    string memory notRegenerative2,
+    string memory notRegenerative3
+  ) public requireResearcher returns (bool) {
+    category = Category(
+      categoryCounts + 1,
       msg.sender,
-      msg.sender,
-      0,
-      block.number,
-      block.timestamp,
-      0,
-      0,
+      name,
+      description,
+      tutorial,
+      regenerative3,
+      regenerative2,
+      regenerative1,
+      neutro,
+      notRegenerative1,
+      notRegenerative2,
+      notRegenerative3,
       0
     );
-    inspections[inspection.id] = inspection;
-    inspectionsCount++;
+
+    categories[category.id] = category;
+    categoryCounts++;
+
+    return true;
+  }
+
+  /**
+   * @dev Returns all added categories
+   * @return category struc array
+   */
+  function getCategories() public view returns (Category[] memory) {
+    Category[] memory categoriesList = new Category[](categoryCounts);
+
+    // TODO: Add categoryCounts in a memory variable before the loop
+    for (uint256 i = 0; i < categoryCounts; i++) {
+      categoriesList[i] = categories[i + 1];
+    }
+
+    return categoriesList;
   }
 
   // TODO: Remove not reutilized modifiers and use require direct in the function
   /**
-   * @dev Allows the current user (activist) accept a inspection.
-   * @param inspectionId The id of the inspection that the activist want accept.
+   * @dev Allow a user vote in a category sending tokens amount to this
+   * @param id the id of a category that receives a vote.
+   * @param tokens the tokens amount that the use want use to vote.
+   * @return boolean
    */
-  function acceptInspection(
-    uint256 inspectionId
-  )
+  function vote(uint256 id, uint256 tokens)
     public
-    requireActivist
-    requireInspectionExists(inspectionId)
-    requireNotInspectedProducer(inspectionId)
+    requireUserExists
+    categoryMustExists(id)
+    mustHaveSacToken(tokens)
+    mustSendSomeSacToken(tokens)
+    mustNotExceedLimitVoting(id, tokens)
     returns (bool)
   {
-    Inspection memory inspection = inspections[inspectionId];
+    isaPool.transferWith(msg.sender, address(isaPool), tokens);
 
-    require(canAcceptInspection(), "Can't accept yet");
-    require(inspection.status == InspectionStatus.OPEN, "This inspection is not OPEN");
+    votes[id] += tokens;
+    voted[msg.sender][id] += tokens;
 
-    inspection.status = InspectionStatus.ACCEPTED;
-    inspection.acceptedAt = block.number;
-    inspection.acceptedAtTimestamp = block.timestamp; // solhint-disable-line
-    inspection.acceptedBy = msg.sender;
-    inspections[inspectionId] = inspection;
-
-    producerContract.recentInspection(inspection.createdBy, false); // Talvez não precise, pois estamos usando a expiração da inspeção pra checar se o produtor pode solicitar uma nova inspeção
-    activistContract.incrementGiveUps(msg.sender);
-
-    activistContract.lastAcceptedAt(msg.sender, block.number);
-
-    // TODO: Remove return?
+    categories[id].votesCount++;
     return true;
   }
 
   // TODO: Remove not reutilized modifiers and use require direct in the function
   /**
-   * @dev Allow a activist realize a inspection and mark as INSPECTED
-   * @param inspectionId The id of the inspection to be realized
-   * @param _isas The IsaIsaInspection[] of the inspection to be realized
+   * @dev Allow a user unvote in a category and get your tokens again
+   * @param id the id of a category that receives a vote.
+   * @return uint256
    */
-  function realizeInspection(
-    uint256 inspectionId,
-    IsaInspection[] memory _isas
-  )
-    public
-    requireActivist
-    requireInspectionExists(inspectionId)
-    requireInspectionAccepted(inspectionId)
-    requireInspectionOwner(inspectionId)
-  {
-    Inspection memory inspection = inspections[inspectionId];
+  function unvote(uint256 id) public categoryMustExists(id) mustHaveVoted(id) returns (uint256) {
+    uint256 tokens = voted[msg.sender][id];
 
-    require(!expiredInspection(inspectionId), "Inspection Expired");
+    isaPool.transferWith(address(isaPool), msg.sender, tokens);
 
-    markAsRealized(inspection, _isas);
+    votes[id] -= tokens;
+    voted[msg.sender][id] = 0;
+    categories[id].votesCount--;
 
-    afterRealizeInspection(inspection);
-
-    producerContract.setIsaScore(inspection.createdBy, inspection.isaScore);
-
-    activistInspected[msg.sender][inspection.createdBy] = true;
-  }
-
-  function markAsRealized(Inspection memory inspection, IsaInspection[] memory _isas) internal {
-    inspection.status = InspectionStatus.INSPECTED;
-    inspection.inspectedAtTimestamp = block.timestamp; // solhint-disable-line
-    inspection.isaScore = calculateIsa(inspection, _isas);
-    inspections[inspection.id] = inspection;
-  }
-
-  function calculateIsa(Inspection memory inspection, IsaInspection[] memory _isas) internal returns (int256) {
-    // TODO: Add isaScore points in state
-    int256[5] memory points = [int256(10), 5, 0, -5, -10];
-    int256 isaScore;
-
-    for (uint8 i = 0; i < _isas.length; i++) {
-      isas[inspection.id].push(_isas[i]);
-      uint256 isaIndex = _isas[i].isaIndex;
-      isaScore += points[isaIndex];
-    }
-
-    return isaScore;
-  }
-
-  // TODO: Refact this function
-  /**
-   * @dev Inscrement producer and activist request actions
-   * @param inspection the inspected inspection
-   */
-  function afterRealizeInspection(Inspection memory inspection) internal {
-    address createdBy = inspection.createdBy;
-    address acceptedBy = inspection.acceptedBy;
-
-    // Increment actvist inspections and release to carry out new inspections
-    activistContract.incrementRequests(acceptedBy);
-    activistContract.decreaseGiveUps(acceptedBy);
-
-    // Increment producer requests
-    producerContract.incrementInspections(createdBy);
-
-    userInspections[createdBy].push(inspection);
-    userInspections[acceptedBy].push(inspection);
-  }
-
-  /**
-   * @dev Returns a inspection by id if that exists.
-   * @param id The id of the inspection to return.
-   */
-  function getInspection(uint256 id) public view returns (Inspection memory) {
-    return inspections[id];
-  }
-
-  /**
-   * @dev Returns all requested inspections.
-   */
-  function getInspections() public view returns (Inspection[] memory) {
-    Inspection[] memory inspectionsList = new Inspection[](inspectionsCount);
-
-    for (uint256 i = 0; i < inspectionsCount; i++) {
-      inspectionsList[i] = inspections[i + 1];
-    }
-
-    return inspectionsList;
-  }
-
-  // TODO: Have a better way to return this?
-  /**
-   * @dev Returns all inpections status string.
-   */
-  function getInspectionsStatus() public pure returns (string memory, string memory, string memory, string memory) {
-    return ("OPEN", "ACCEPTED", "INSPECTED", "EXPIRED");
-  }
-
-  /**
-   * @dev Check if an inspection exists in mapping.
-   * @param id The id of the inspection that the activist want accept.
-   */
-  function inspectionExists(uint256 id) public view returns (bool) {
-    return inspections[id].id >= 1;
-  }
-
-  function isActivistOwner(uint256 inspectionId) internal view returns (bool) {
-    return inspections[inspectionId].acceptedBy == msg.sender;
-  }
-
-  function isAccepted(uint256 inspectionId) internal view returns (bool) {
-    return inspections[inspectionId].status == InspectionStatus.ACCEPTED;
-  }
-
-  // TODO: Refact this action
-  function canRequestInspection() public view returns (bool) {
-    Producer memory producer = producerContract.getProducer(msg.sender);
-
-    uint256 lastRequestAt = producer.lastRequestAt;
-    bool canRequest = block.number > lastRequestAt + timeBetweenInspections;
-
-    return canRequest || lastRequestAt == 0;
-  }
-
-  function expiredInspection(uint256 inspectionId) internal view returns (bool) {
-    Inspection memory inspection = inspections[inspectionId];
-    uint256 expireInspectionAt = inspection.acceptedAt + blocksToExpireAcceptedInspection;
-
-    return block.number > expireInspectionAt;
-  }
-
-  function calculateBlocksToExpire(uint256 inspectionId) public view returns (uint256) {
-    Inspection memory inspection = inspections[inspectionId];
-
-    return inspection.acceptedAt + blocksToExpireAcceptedInspection - block.number;
-  }
-
-  function canAcceptInspection() internal view returns (bool) {
-    Activist memory activist = activistContract.getActivist(msg.sender);
-    uint256 lastAcceptedAt = activist.lastAcceptedAt;
-
-    bool canAccept = block.number > lastAcceptedAt + blocksToExpireAcceptedInspection;
-
-    return canAccept || lastAcceptedAt == 0;
+    return tokens;
   }
 
   // MODIFIERS
-  modifier requireNotInspectedProducer(uint256 inspectionId) {
-    Inspection memory inspection = inspections[inspectionId];
 
-    require(!activistInspected[msg.sender][inspection.createdBy], "Already inspected this producer");
+  modifier mustNotExceedLimitVoting(uint256 id, uint256 tokens) {
+    require(voted[msg.sender][id] + tokens <= LIMIT_VOTING, "can't vote more than 100k tokens");
     _;
   }
 
-  modifier requireActivist() {
-    require(activistContract.activistExists(msg.sender), "Please register as activist");
+  modifier categoryMustExists(uint256 id) {
+    require(categories[id].id > 0, "This category don't exists");
     _;
   }
 
-  modifier requireInspectionExists(uint256 inspectionId) {
-    require(inspectionExists(inspectionId), "This inspection don't exists");
+  modifier mustHaveSacToken(uint256 tokens) {
+    require(isaPool.balanceOf(msg.sender) > tokens, "You don't have tokens to vote");
     _;
   }
 
-  modifier requireProducer() {
-    require(producerContract.producerExists(msg.sender), "Please register as producer");
+  modifier mustSendSomeSacToken(uint256 tokens) {
+    require(tokens > 0, "Send at least 1 SAC Token");
     _;
   }
 
-  modifier requireNoInspectionsOpen() {
-    require(!producerContract.getProducer(msg.sender).recentInspection, "Request OPEN or ACCEPTED");
+  modifier mustHaveVoted(uint256 id) {
+    require(voted[msg.sender][id] > 0, "You don't voted to this category");
     _;
   }
 
-  modifier requireInspectionAccepted(uint256 inspectionId) {
-    require(isAccepted(inspectionId), "Accept this inspection before");
+  modifier requireResearcher() {
+    require(researcherContract.researcherExists(msg.sender), "Only allowed to researchers");
     _;
   }
 
-  modifier requireInspectionOwner(uint256 inspectionId) {
-    require(isActivistOwner(inspectionId), "You not accepted this inspection");
+  modifier requireUserExists() {
+    require(userContract.exists(msg.sender), "Only registered users");
     _;
   }
 }
