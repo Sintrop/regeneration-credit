@@ -17,7 +17,7 @@ module.exports = function (deployer) {
 
     await producerContract.addProducer(
       10,
-      "Beans Farm",
+      "Sítio Refloresta",
       "photoURL",
       "123456789123456",
       { from: producer1 }
@@ -25,41 +25,41 @@ module.exports = function (deployer) {
 
     await producerContract.addProducer(
       50,
-      "Soy Plantation",
+      "Fazenda Restaura",
       "photoURL",
       "1111111111111",
       { from: producer2 }
     );
 
     await activistContract.addActivist(
-      "John Johnson",
+      "Julia Flores",
       "photoURL",
       "2222222222222222",
       { from: activist1 }
     );
 
     await activistContract.addActivist(
-      "Peter Parker",
+      "Pedro Nascimento",
       "photoURL",
       "333333333333333",
       { from: activist2 }
     );
 
     await activistContract.addActivist(
-      "Peter Parker 2",
+      "Roberta Floresta",
       "photoURL",
       "333333333333333",
       { from: activist3 }
     );
 
     await activistContract.addActivist(
-      "Peter Parker 3",
+      "João Alberto",
       "photoURL",
       "333333333333333",
       { from: activist4 }
     );
 
-    await researcherContract.addResearcher("Researcher Tom", "photoURL", {
+    await researcherContract.addResearcher("CEPEAS", "photoURL", {
       from: researcher1,
     });
 
