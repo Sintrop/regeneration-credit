@@ -39,34 +39,40 @@ contract CategoryContract {
    * @param name the name of category
    * @param description the description of category
    * @param tutorial how activists should evaluate it.
-   * @param totallySustainable the description text to this metric
-   * @param partiallySustainable the description text to this metric
+   * @param regenerative3 the description text to this metric
+   * @param regenerative2 the description text to this metric
+   * @param regenerative1 the description text to this metric
    * @param neutro the description text to this metric
-   * @param partiallyNotSustainable the description text to this metric
-   * @param totallyNotSustainable the description text to this metric
+   * @param notRegenerative1 the description text to this metric
+   * @param notRegenerative2 the description text to this metric
+   * @param notRegenerative3 the description text to this metric
    * @return bool
    */
   function addCategory(
     string memory name,
     string memory description,
     string memory tutorial,
-    string memory totallySustainable,
-    string memory partiallySustainable,
+    string memory regenerative3,
+    string memory regenerative2,
+    string memory regenerative1,
     string memory neutro,
-    string memory partiallyNotSustainable,
-    string memory totallyNotSustainable
+    string memory notRegenerative1,
+    string memory notRegenerative2,
+    string memory notRegenerative3
   ) public requireResearcher returns (bool) {
     category = Category(
-      categoryCounts + 1,
+     categoryCounts + 1,
       msg.sender,
       name,
       description,
       tutorial,
-      totallySustainable,
-      partiallySustainable,
+      regenerative3,
+      regenerative2,
+      regenerative1,
       neutro,
-      partiallyNotSustainable,
-      totallyNotSustainable,
+      notRegenerative1,
+      notRegenerative2,
+      notRegenerative3,
       0
     );
 
