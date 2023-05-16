@@ -595,7 +595,7 @@ contract("Sintrop", (accounts) => {
                   it("should add 5 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    assert.equal(inspection.isaScore, 5);
+                    assert.equal(inspection.isaScore, 10);
                   });
                 });
 
