@@ -27,7 +27,11 @@ contract CategoryContract {
   PoolPassiveInterface internal isaPool;
 
   // TODO: Remove researcherContract and use only userContract to check if exists or if is a researcher
-  constructor(address _isaPoolAddress, address researcherContractAddress, address userContractAddress) {
+  constructor(
+    address _isaPoolAddress,
+    address researcherContractAddress,
+    address userContractAddress
+  ) {
     isaPool = PoolPassiveInterface(_isaPoolAddress);
     researcherContract = ResearcherContract(researcherContractAddress);
     userContract = UserContract(userContractAddress);
@@ -61,7 +65,7 @@ contract CategoryContract {
     string memory notRegenerative3
   ) public requireResearcher returns (bool) {
     category = Category(
-     categoryCounts + 1,
+      categoryCounts + 1,
       msg.sender,
       name,
       description,
@@ -104,10 +108,7 @@ contract CategoryContract {
    * @param tokens the tokens amount that the use want use to vote.
    * @return boolean
    */
-  function vote(
-    uint256 id,
-    uint256 tokens
-  )
+  function vote(uint256 id, uint256 tokens)
     public
     requireUserExists
     categoryMustExists(id)

@@ -22,10 +22,12 @@ contract ContributorContract is Registrable {
    * @param name the name of the contributor
    * @return a Contributor
    */
-  function addContributor(
-    string memory name,
-    string memory proofPhoto
-  ) public mustBeAllowedUser uniqueContributor returns (Contributor memory) {
+  function addContributor(string memory name, string memory proofPhoto)
+    public
+    mustBeAllowedUser
+    uniqueContributor
+    returns (Contributor memory)
+  {
     uint256 id = contributorsCount + 1;
     UserType userType = UserType.CONTRIBUTOR;
 

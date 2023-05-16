@@ -40,7 +40,7 @@ contract Blockable {
 
     if (approvesTimes > 0) return 0;
 
-    return uint256(-approvesTimes).mul(10 ** BLOCKS_PRECISION).div(blocksPerEra);
+    return uint256(-approvesTimes).mul(10**BLOCKS_PRECISION).div(blocksPerEra);
   }
 
   // PRIVATE FUNCTIONS
