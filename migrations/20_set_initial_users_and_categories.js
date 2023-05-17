@@ -6,7 +6,7 @@ const ActivistContract = artifacts.require("ActivistContract");
 module.exports = function (deployer) {
   deployer.then(async () => {
     let accounts = await web3.eth.getAccounts();
-    let [_, producer1, producer2, activist1, activist2, researcher1] = accounts;
+    let [_, producer1, producer2, activist1, activist2, activist3, activist4, researcher1] = accounts;
 
     const categoryContract = await CategoryContract.deployed();
     const activistContract = await ActivistContract.deployed();
@@ -43,6 +43,20 @@ module.exports = function (deployer) {
       "photoURL",
       "333333333333333",
       { from: activist2 }
+    );
+
+    await activistContract.addActivist(
+      "Peter Parker 2",
+      "photoURL",
+      "333333333333333",
+      { from: activist3 }
+    );
+
+    await activistContract.addActivist(
+      "Peter Parker 3",
+      "photoURL",
+      "333333333333333",
+      { from: activist4 }
     );
 
     await researcherContract.addResearcher("Researcher Tom", "photoURL", {
