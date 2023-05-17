@@ -35,11 +35,12 @@ contract DeveloperContract is Ownable, Registrable {
     uint256 poolEra = developerPoolEra();
     uint256 level = 0;
 
-    developersCount++;
+    userContract.addUser(msg.sender, userType);
     developersAddress.push(msg.sender);
+    developersCount++;
 
     developers[msg.sender] = Developer(
-      developersCount + 1,
+      developersCount,
       msg.sender,
       userType,
       name,
@@ -47,8 +48,6 @@ contract DeveloperContract is Ownable, Registrable {
       Pool(level, poolEra),
       block.number
     );
-
-    userContract.addUser(msg.sender, userType);
   }
 
   /**
@@ -86,12 +85,13 @@ contract DeveloperContract is Ownable, Registrable {
    */
   function withdraw() public requireDeveloper {
     Developer memory developer = developers[msg.sender];
+    uint256 currentEra = developer.pool.currentEra;
 
-    require(developerPool.canApprove(developer.pool.currentEra), "Can't approve withdraw");
+    require(developerPool.canApprove(currentEra), "Can't approve withdraw");
 
     developers[msg.sender].pool.currentEra++;
 
-    developerPool.withdraw(msg.sender, developer.pool.currentEra);
+    developerPool.withdraw(msg.sender, currentEra);
   }
 
   /**
