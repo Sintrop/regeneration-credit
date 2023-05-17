@@ -326,11 +326,11 @@ contract("DeveloperPool", (accounts) => {
                 await advanceBlock(args.blocksPerEra);
               });
 
-              it("shoud withdraw 416666499999999999999999 tokens", async () => {
+              it("shoud withdraw 416666500000000000000000 tokens", async () => {
                 await instance.withdraw(dev1Address, 1);
                 const balanceOf = await instance.balanceOf(dev1Address);
 
-                assert.equal(balanceOf, "416666499999999999999999");
+                assert.equal(balanceOf, "416666500000000000000000");
               });
             });
 
@@ -346,11 +346,11 @@ contract("DeveloperPool", (accounts) => {
                 await advanceBlock(args.blocksPerEra);
               });
 
-              it("shoud withdraw 833332999999999999999998 tokens", async () => {
+              it("shoud withdraw 833333000000000000000000 tokens", async () => {
                 await instance.withdraw(dev1Address, 1);
                 const balanceOf = await instance.balanceOf(dev1Address);
 
-                assert.equal(balanceOf, "833332999999999999999998");
+                assert.equal(balanceOf, "833333000000000000000000");
               });
 
               it("shoud withdraw 0 tokens to developer2", async () => {
@@ -374,11 +374,11 @@ contract("DeveloperPool", (accounts) => {
                 await advanceBlock(args.blocksPerEra);
               });
 
-              it("shoud withdraw 416666499999999999999999 tokens", async () => {
+              it("shoud withdraw 416666500000000000000000 tokens", async () => {
                 await instance.withdraw(dev2Address, 1);
                 const balanceOf = await instance.balanceOf(dev2Address);
 
-                assert.equal(balanceOf, "416666499999999999999999");
+                assert.equal(balanceOf, "416666500000000000000000");
               });
             });
           });
@@ -417,22 +417,22 @@ contract("DeveloperPool", (accounts) => {
                 await instance.withdraw(dev2Address, 2);
               });
 
-              it("developer1 balance must be 833332999999999999999998", async () => {
+              it("developer1 balance must be 833333000000000000000000", async () => {
                 const balanceOf = await instance.balanceOf(dev1Address);
 
-                assert.equal(balanceOf, "833332999999999999999998");
+                assert.equal(balanceOf, "833333000000000000000000");
               });
 
-              it("developer1 balance in era 1 must be 416666499999999999999999", async () => {
+              it("developer1 balance in era 1 must be 416666500000000000000000", async () => {
                 const balanceOf = await instance.eraTokens(1, dev1Address);
 
-                assert.equal(balanceOf, "416666499999999999999999");
+                assert.equal(balanceOf, "416666500000000000000000");
               });
 
-              it("developer1 balance in era 2 must be 416666499999999999999999", async () => {
+              it("developer1 balance in era 2 must be 416666500000000000000000", async () => {
                 const balanceOf = await instance.eraTokens(2, dev1Address);
 
-                assert.equal(balanceOf, "416666499999999999999999");
+                assert.equal(balanceOf, "416666500000000000000000");
               });
             });
 
@@ -445,22 +445,22 @@ contract("DeveloperPool", (accounts) => {
                 await instance.withdraw(dev2Address, 2);
               });
 
-              it("developer2 balance must be 833332999999999999999998", async () => {
+              it("developer2 balance must be 833333000000000000000000", async () => {
                 const balanceOf = await instance.balanceOf(dev2Address);
 
-                assert.equal(balanceOf, "833332999999999999999998");
+                assert.equal(balanceOf, "833333000000000000000000");
               });
 
-              it("developer2 balance in era 1 must be 416666499999999999999999", async () => {
+              it("developer2 balance in era 1 must be 416666500000000000000000", async () => {
                 const balanceOf = await instance.eraTokens(1, dev2Address);
 
-                assert.equal(balanceOf, "416666499999999999999999");
+                assert.equal(balanceOf, "416666500000000000000000");
               });
 
-              it("developer2 balance in era 2 must be 416666499999999999999999", async () => {
+              it("developer2 balance in era 2 must be 416666500000000000000000", async () => {
                 const balanceOf = await instance.eraTokens(2, dev2Address);
 
-                assert.equal(balanceOf, "416666499999999999999999");
+                assert.equal(balanceOf, "416666500000000000000000");
               });
             });
           });

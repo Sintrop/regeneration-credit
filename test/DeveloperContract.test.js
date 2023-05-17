@@ -62,7 +62,7 @@ contract("DeveloperContract", (accounts) => {
     await sacToken.addContractPool(developerPool.address, "15000000000000000000000000");
   });
 
-  describe(".fiels", () => {
+  describe(".fields", () => {
     it("should have fields", async () => {
       await addDeveloper("Developer A", dev1Address);
       const developer = await instance.getDeveloper(dev1Address);
@@ -296,7 +296,7 @@ contract("DeveloperContract", (accounts) => {
               it("developer1 balance must be 555555333333333333333332", async () => {
                 let balanceOf = await developerPool.balanceOf(dev1Address);
 
-                let tokensPerEra = 555555333333333333333332n;
+                let tokensPerEra = 555555333333333333333333n;
 
                 assert.equal(balanceOf, tokensPerEra);
               });
@@ -320,7 +320,7 @@ contract("DeveloperContract", (accounts) => {
           });
 
           it("should return error message", async () => {
-            await expectRevert(instance.withdraw({ from: dev1Address }), "You can't withdraw yet");
+            await expectRevert(instance.withdraw({ from: dev1Address }), "Can't approve withdraw");
           });
         });
 
@@ -347,7 +347,7 @@ contract("DeveloperContract", (accounts) => {
 
       context("when can't withdraw tokens", () => {
         it("should return error message", async () => {
-          await expectRevert(instance.withdraw({ from: dev1Address }), "You can't withdraw yet");
+          await expectRevert(instance.withdraw({ from: dev1Address }), "Can't approve withdraw");
         });
       });
     });
