@@ -69,9 +69,10 @@ contract Sintrop {
   }
 
   function addRequest() internal {
-    Inspection memory inspection;
+    uint256 id = inspectionsCount + 1;
+    Inspection memory inspection = inspections[id];
 
-    inspection.id = inspectionsCount + 1;
+    inspection.id = id;
     inspection.status = InspectionStatus.OPEN;
     inspection.createdBy = msg.sender;
     inspection.acceptedBy = address(0);
