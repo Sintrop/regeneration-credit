@@ -45,7 +45,7 @@ contract ProducerContract is Callable {
 
     UserType userType = UserType.PRODUCER;
 
-    Producer memory producer;
+    Producer memory producer = producers[msg.sender];
 
     producer.id = producersCount + 1;
     producer.producerWallet = msg.sender;
@@ -93,9 +93,9 @@ contract ProducerContract is Callable {
     require(minimumInspections(producer.totalInspections), "Minimum inspections");
     require(!limitIsaScore(producer), "Limit ISA Score");
 
-    producerPool.withdraw(msg.sender, producer.pool.currentEra);
-
     incrementCurrentEra(msg.sender);
+
+    producerPool.withdraw(msg.sender, producer.pool.currentEra);
   }
 
   function minimumInspections(uint256 totalInspections) internal pure returns (bool) {
@@ -129,9 +129,9 @@ contract ProducerContract is Callable {
 
     if (producer.isa.sustainable) return;
 
-    producerPool.addLevel(addr, currentlevel, addLevels);
-
     if (limitIsaScore(producer)) changeProducerToSustainable(producer);
+
+    producerPool.addLevel(addr, currentlevel, addLevels);
   }
 
   function changeProducerToSustainable(Producer memory producer) internal {
