@@ -61,7 +61,7 @@ contract CategoryContract {
     string memory notRegenerative3
   ) public requireResearcher returns (bool) {
     category = Category(
-     categoryCounts + 1,
+      categoryCounts + 1,
       msg.sender,
       name,
       description,
