@@ -45,11 +45,13 @@ contract("Sintrop", (accounts) => {
       name,
       `The description of ${name}`,
       `How activists should evaluate ${name}`,
-      `${name} totally sustainable`,
-      `${name} partially sustainable`,
+      `${name} regenerative 3`,
+      `${name} regenerative 2`,
+      `${name} regenerative 1`,
       `${name} neutro`,
-      `${name} partially not sustainable`,
-      `${name} totally not sustainable`,
+      `${name} notRegenerative 1`,
+      `${name} notRegenerative 2`,
+      `${name} notRegenerative 3`,
       { from: from }
     );
   };
@@ -540,7 +542,28 @@ contract("Sintrop", (accounts) => {
                       {
                         categoryId: 1,
                         isaIndex: 0,
-                        report: "TOTALLY_SUSTAINABLE",
+                        report: "REGENERATIVE_3",
+                        indicator: 100,
+                      },
+                    ];
+
+                    await realizeInspection(1, isas, activistAddress);
+                  });
+
+                  it("should add 20 isaScore to inspection", async () => {
+                    const inspection = await instance.getInspection(1);
+
+                    assert.equal(inspection.isaScore, 20);
+                  });
+                });
+
+                context("when select REGENERATIVE_2", () => {
+                  beforeEach(async () => {
+                    const isas = [
+                      {
+                        categoryId: 1,
+                        isaIndex: 1,
+                        report: "REGENERATIVE_2",
                         indicator: 10,
                       },
                     ];
@@ -555,13 +578,13 @@ contract("Sintrop", (accounts) => {
                   });
                 });
 
-                context("when select PARTIALLY_SUSTAINABLE", () => {
+                context("when select REGENERATIVE_1", () => {
                   beforeEach(async () => {
                     const isas = [
                       {
                         categoryId: 1,
                         isaIndex: 1,
-                        report: "PARTIALLY_SUSTAINABLE",
+                        report: "REGENERATIVE_1",
                         indicator: 10,
                       },
                     ];
@@ -572,7 +595,7 @@ contract("Sintrop", (accounts) => {
                   it("should add 5 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    assert.equal(inspection.isaScore, 5);
+                    assert.equal(inspection.isaScore, 10);
                   });
                 });
 
@@ -581,9 +604,9 @@ contract("Sintrop", (accounts) => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaIndex: 2,
+                        isaIndex: 3,
                         report: "NEUTRO",
-                        indicator: 10,
+                        indicator: 0,
                       },
                     ];
 
@@ -597,14 +620,14 @@ contract("Sintrop", (accounts) => {
                   });
                 });
 
-                context("when select PARTIALLY_NOT_SUSTAINABLE", () => {
+                context("when select NOT_REGENERATIVE1", () => {
                   beforeEach(async () => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaIndex: 3,
-                        report: "PARTIALLY_NOT_SUSTAINABLE",
-                        indicator: 10,
+                        isaIndex: 4,
+                        report: "NOT_REGENERATIVE1",
+                        indicator: -5,
                       },
                     ];
 
@@ -618,14 +641,14 @@ contract("Sintrop", (accounts) => {
                   });
                 });
 
-                context("when select TOTALLY_NOT_SUSTAINABLE", () => {
+                context("when select NOT_REGENERATIVE2", () => {
                   beforeEach(async () => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaIndex: 4,
-                        report: "TOTALLY_NOT_SUSTAINABLE",
-                        indicator: 10,
+                        isaIndex: 5,
+                        report: "NOT_REGENERATIVE2",
+                        indicator: -10,
                       },
                     ];
 
@@ -636,6 +659,27 @@ contract("Sintrop", (accounts) => {
                     const inspection = await instance.getInspection(1);
 
                     assert.equal(inspection.isaScore, -10);
+                  });
+                });
+
+                context("when select NOT_REGENERATIVE3", () => {
+                  beforeEach(async () => {
+                    const isas = [
+                      {
+                        categoryId: 1,
+                        isaIndex: 6,
+                        report: "NOT_REGENERATIVE3",
+                        indicator: -20,
+                      },
+                    ];
+
+                    await realizeInspection(1, isas, activistAddress);
+                  });
+
+                  it("should add -20 isaScore to inspection", async () => {
+                    const inspection = await instance.getInspection(1);
+
+                    assert.equal(inspection.isaScore, -20);
                   });
                 });
               });
