@@ -536,7 +536,7 @@ contract("Sintrop", (accounts) => {
               });
 
               context("when check inspection isas", () => {
-                context("when select TOTALLY_SUSTAINABLE", () => {
+                context("when select REGENERATIVE_3", () => {
                   beforeEach(async () => {
                     const isas = [
                       {
@@ -583,7 +583,7 @@ contract("Sintrop", (accounts) => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaIndex: 1,
+                        isaIndex: 2,
                         report: "REGENERATIVE_1",
                         indicator: 10,
                       },
@@ -595,7 +595,7 @@ contract("Sintrop", (accounts) => {
                   it("should add 5 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    assert.equal(inspection.isaScore, 10);
+                    assert.equal(inspection.isaScore, 5);
                   });
                 });
 
