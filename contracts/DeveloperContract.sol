@@ -35,8 +35,12 @@ contract DeveloperContract is Ownable, Registrable {
     uint256 poolEra = developerPoolEra();
     uint256 level = 0;
 
-    Developer memory developer = Developer(
-      developersCount + 1,
+    userContract.addUser(msg.sender, userType);
+    developersAddress.push(msg.sender);
+    developersCount++;
+
+    developers[msg.sender] = Developer(
+      developersCount,
       msg.sender,
       userType,
       name,
@@ -44,11 +48,6 @@ contract DeveloperContract is Ownable, Registrable {
       Pool(level, poolEra),
       block.number
     );
-
-    userContract.addUser(msg.sender, userType);
-    developers[msg.sender] = developer;
-    developersAddress.push(msg.sender);
-    developersCount++;
   }
 
   /**
@@ -84,14 +83,15 @@ contract DeveloperContract is Ownable, Registrable {
   /**
    * @dev Call withdraw function from developerPool to try to claim tokens
    */
-  function withdraw() public requireDeveloper returns (bool) {
+  function withdraw() public requireDeveloper {
     Developer memory developer = developers[msg.sender];
+    uint256 currentEra = developer.pool.currentEra;
 
-    developerPool.withdraw(msg.sender, developer.pool.currentEra);
+    require(developerPool.canApprove(currentEra), "Can't approve withdraw");
 
     developers[msg.sender].pool.currentEra++;
 
-    return true;
+    developerPool.withdraw(msg.sender, currentEra);
   }
 
   /**

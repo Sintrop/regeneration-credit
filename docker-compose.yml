@@ -15,6 +15,11 @@ services:
       - app-tunnel
     volumes: 
       - ./:/app
+  eth-security-toolbox:
+    container_name: ETH-SECURITY-TOOLBOX
+    image: trailofbits/eth-security-toolbox
+    networks: 
+      - app-tunnel
 networks: 
   app-tunnel:
     driver: bridge
