@@ -26,13 +26,3 @@ struct Category {
   string notRegenerative3;
   uint256 votesCount;
 }
-
-// struct Isa {
-//   string regenerative3;
-//   string regenerative2;
-//   string regenerative1;
-//   string neutro;
-//   string notRegenerative1;
-//   string notRegenerative2;
-//   string notRegenerative3;
-// }
