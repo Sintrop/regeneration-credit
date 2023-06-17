@@ -25,19 +25,22 @@ contract Sintrop {
   uint256 internal immutable timeBetweenInspections;
   uint256 internal blocksToExpireAcceptedInspection;
   uint256 internal immutable allowedInitialRequests;
+  uint256 internal inspectionDelay;
 
   constructor(
     address activistContractAddress,
     address producerContractAddress,
     uint256 timeBetweenInspections_,
     uint256 blocksToExpireAcceptedInspection_,
-    uint256 allowedInitialRequests_
+    uint256 allowedInitialRequests_,
+    uint256 inspectionDelay_
   ) {
     activistContract = ActivistContract(activistContractAddress);
     producerContract = ProducerContract(producerContractAddress);
     timeBetweenInspections = timeBetweenInspections_;
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
     allowedInitialRequests = allowedInitialRequests_;
+    inspectionDelay = inspectionDelay_;
   }
 
   // TODO: Refact this mapping to not duplicate inspections
@@ -95,7 +98,7 @@ contract Sintrop {
    */
   function acceptInspection(
     uint256 inspectionId
-  ) public requireActivist requireInspectionExists(inspectionId) requireNotInspectedProducer(inspectionId) {
+  ) public requireActivist requireInspectionExists(inspectionId) requireNotInspectedProducer(inspectionId) requireWaitedDelay(inspectionId) {
     Inspection memory inspection = inspections[inspectionId];
 
     require(canAcceptInspection(), "Can't accept yet");
@@ -268,6 +271,15 @@ contract Sintrop {
     return canAccept || lastAcceptedAt == 0;
   }
 
+  function blocksToDelay(uint256 inspectionId) internal view returns (bool) {
+    Inspection memory inspection = inspections[inspectionId];
+    uint256 delayBlocks = inspection.createdAt + inspectionDelay;
+
+    bool waitedDelay = block.number > delayBlocks;
+
+    return waitedDelay;
+  }
+
   // MODIFIERS
   modifier requireNotInspectedProducer(uint256 inspectionId) {
     Inspection memory inspection = inspections[inspectionId];
@@ -303,6 +315,11 @@ contract Sintrop {
 
   modifier requireInspectionOwner(uint256 inspectionId) {
     require(isActivistOwner(inspectionId), "You not accepted this inspection");
+    _;
+  }
+
+  modifier requireWaitedDelay(uint256 inspectionId){
+    require(blocksToDelay(inspectionId), "Wait inspection delay time");
     _;
   }
 }
