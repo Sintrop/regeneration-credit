@@ -116,6 +116,7 @@ contract("Sintrop", (accounts) => {
     timeBetweenInspections: 20,
     blocksToExpireAcceptedInspection: 15,
     allowedInitialRequests: 1,
+    inspectionDelay: 5,
   };
 
   beforeEach(async () => {
@@ -143,7 +144,8 @@ contract("Sintrop", (accounts) => {
       producerContract.address,
       sintropArgs.timeBetweenInspections,
       sintropArgs.blocksToExpireAcceptedInspection,
-      sintropArgs.allowedInitialRequests
+      sintropArgs.allowedInitialRequests,
+      sintropArgs.inspectionDelay
     );
 
     await userContract.newAllowedCaller(activistContract.address);
@@ -233,6 +235,7 @@ contract("Sintrop", (accounts) => {
 
         context("when don't has request OPEN or ACCEPTED", () => {
           beforeEach(async () => {
+            await advanceBlock(sintropArgs.inspectionDelay);
             await instance.acceptInspection(1, { from: activistAddress });
             await addCategory("Soil A", resea1Address);
 
@@ -327,9 +330,25 @@ contract("Sintrop", (accounts) => {
           await instance.requestInspection({ from: producerAddress });
         });
 
+        context("when have not waited inspection delay time", () => {
+          it("should return error message", async () => {
+            await expectRevert(instance.acceptInspection(1, { from: activistAddress }), "Wait inspection delay time")
+          });
+        });
+
+        context("when have waited inspection delay time", () => {
+          it("", async () => {
+            await advanceBlock(sintropArgs.inspectionDelay);
+            await instance.acceptInspection(1, { from: activistAddress });
+            const inspection = await instance.getInspection(1);
+            assert.equal(inspection.status, STATUS.accepted);
+          });
+        });
+
         context("when never realized inspection from producer", () => {
           context("when inspection is OPEN", () => {
             beforeEach(async () => {
+              await advanceBlock(sintropArgs.inspectionDelay);
               await instance.acceptInspection(1, { from: activistAddress });
             });
 
@@ -354,6 +373,7 @@ contract("Sintrop", (accounts) => {
 
           context("when inspection is not OPEN", () => {
             beforeEach(async () => {
+              await advanceBlock(sintropArgs.inspectionDelay);
               await instance.acceptInspection(1, { from: activistAddress });
               await addActivist("Activist B", activist2Address);
             });
@@ -370,8 +390,10 @@ contract("Sintrop", (accounts) => {
             beforeEach(async () => {
               await addProducer("Producer B", producer2Address);
 
+              await advanceBlock(sintropArgs.inspectionDelay);
               await instance.acceptInspection(1, { from: activistAddress });
               await instance.requestInspection({ from: producer2Address });
+              await advanceBlock(sintropArgs.inspectionDelay);
             });
 
             context("when last inspection is not expired", () => {
@@ -397,12 +419,14 @@ contract("Sintrop", (accounts) => {
 
         context("when alerady realized inspection from producer", () => {
           beforeEach(async () => {
+            await advanceBlock(sintropArgs.inspectionDelay);
             await instance.acceptInspection(1, { from: activistAddress });
             await instance.realizeInspection(1, [], { from: activistAddress });
 
             await advanceBlock(20);
 
             await instance.requestInspection({ from: producerAddress });
+            await advanceBlock(sintropArgs.inspectionDelay);
           });
 
           it("should return error message", async () => {
@@ -438,6 +462,7 @@ contract("Sintrop", (accounts) => {
 
         context("when inspection is accepted", () => {
           beforeEach(async () => {
+            await advanceBlock(sintropArgs.inspectionDelay);
             await instance.acceptInspection(1, { from: activistAddress });
           });
 
@@ -723,6 +748,7 @@ contract("Sintrop", (accounts) => {
     context("with non activist", () => {
       it("should return error message", async () => {
         await instance.requestInspection({ from: producerAddress });
+        await advanceBlock(sintropArgs.inspectionDelay);
         await instance.acceptInspection(1, { from: activistAddress });
 
         await expectRevert(instance.realizeInspection(1, [], { from: producerAddress }), "Please register as activist");
