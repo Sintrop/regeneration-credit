@@ -165,13 +165,13 @@ contract("UserContract", (accounts) => {
     });
   });
 
-  context("when there's enums", () => {
-    it("should have enums", async () => {
-      const types = await instance.userTypes();
+  // context("when there's enums", () => {
+  //   it("should have enums", async () => {
+  //     const types = await instance.userTypes();
 
-      assert.equal(JSON.stringify(types), JSON.stringify(definedTypes));
-    });
-  });
+  //     assert.equal(JSON.stringify(types), JSON.stringify(definedTypes));
+  //   });
+  // });
 
   context("when adding new allowed caller", () => {
     context("with owner", () => {

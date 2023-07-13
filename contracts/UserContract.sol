@@ -81,6 +81,14 @@ contract UserContract is Ownable, Callable {
     delationsCount++;
   }
 
+  function setDeniedType(address userAddress) public mustBeAllowedCaller {
+    users[userAddress] = UserType.DENIED;
+  }
+
+  function userTypeIs(UserType userType, address userAddress) public view returns (bool) {
+    return users[userAddress] == userType;
+  }
+
   /**
    * @dev Returns the user address delated
    */

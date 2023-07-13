@@ -34,6 +34,13 @@ contract Poolable {
     eraLevels[era][to]--;
   }
 
+  function removePoolLevels(address to, uint256 era) internal {
+    uint256 currentLevels = eraLevels[era][to];
+
+    eraLevels[era][to] = 0;
+    eras[era].levels = eras[era].levels.sub(currentLevels);
+  }
+
   function tokens(uint256 era, address to, uint256 tokensPerEra) internal view returns (uint256) {
     uint256 levels = eras[era].levels;
     uint256 levelTo = eraLevels[era][to];
