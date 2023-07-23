@@ -6,7 +6,6 @@ const DeveloperContract = artifacts.require("DeveloperContract");
 const ContributorContract = artifacts.require("ContributorContract");
 const AdvisorContract = artifacts.require("AdvisorContract");
 const InvestorContract = artifacts.require("InvestorContract");
-const ValidatorContract = artifacts.require("ValidatorContract");
 
 module.exports = function (deployer) {
   deployer.then(async () => {
@@ -17,7 +16,6 @@ module.exports = function (deployer) {
     const contributorContract = await ContributorContract.deployed();
     const advisorContract = await AdvisorContract.deployed();
     const investorContract = await InvestorContract.deployed();
-    const validatorContract = await ValidatorContract.deployed();
     const userContract = await UserContract.deployed();
 
     await userContract.newAllowedCaller(activistContract.address);
@@ -27,6 +25,5 @@ module.exports = function (deployer) {
     await userContract.newAllowedCaller(contributorContract.address);
     await userContract.newAllowedCaller(advisorContract.address);
     await userContract.newAllowedCaller(investorContract.address);
-    await userContract.newAllowedCaller(validatorContract.address);
   });
 };

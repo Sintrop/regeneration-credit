@@ -16,6 +16,7 @@ module.exports = function (deployer) {
       developerContract.address
     );
 
+    await userContract.newAllowedCaller(validatorContract.address);
     await producerContract.newAllowedCaller(validatorContract.address);
   });
 };
