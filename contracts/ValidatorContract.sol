@@ -38,7 +38,6 @@ contract ValidatorContract is Registrable {
 
   function addValidation(address userAddress, string memory justification) public {
     require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
-    require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
     require(!userContract.userTypeIs(UserType.DENIED, userAddress), "User already denied");
 
     uint256 majorityValidatorsCount_ = majorityValidatorsCount();
@@ -47,16 +46,16 @@ contract ValidatorContract is Registrable {
     validations[userAddress].push(Validation(msg.sender, userAddress, justification, majorityValidatorsCount_));
 
     if (userValidationsCount >= majorityValidatorsCount_) {
-      removePoolLevels(userAddress);
+      resetLevels(userAddress);
 
       userContract.setDeniedType(userAddress);
     }
   }
 
-  function removePoolLevels(address userAddress) internal {
+  function resetLevels(address userAddress) internal {
     UserType oldUserType = userContract.getUser(userAddress);
-  
-    if (oldUserType == UserType.PRODUCER) return producerContract.removePoolLevels(userAddress);
+
+    if (oldUserType == UserType.PRODUCER) return producerContract.resetLevels(userAddress);
   }
 
   function getValidations(address userAddress) public view returns (Validation[] memory) {

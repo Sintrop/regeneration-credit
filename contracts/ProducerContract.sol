@@ -136,10 +136,10 @@ contract ProducerContract is Callable {
     producerPool.addLevel(addr, currentlevel, addLevels);
   }
 
-  function removePoolLevels(address addr) public mustBeAllowedCaller {
+  function resetLevels(address addr) public mustBeAllowedCaller {
     Producer memory producer = producers[addr];
 
-    producerPool.removeLevels(addr, producer.pool.currentEra);
+    producerPool.resetLevels(addr, producer.pool.currentEra);
     producers[addr].isa.isaScore = 0;
   }
 

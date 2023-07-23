@@ -1,13 +1,24 @@
 const ValidatorContract = artifacts.require("ValidatorContract");
 const UserContract = artifacts.require("UserContract");
+const ProducerContract = artifacts.require("ProducerContract");
+const DeveloperContract = artifacts.require("DeveloperContract");
+const ProducerPool = artifacts.require("ProducerPool");
+const DeveloperPool = artifacts.require("DeveloperPool");
+const SacToken = artifacts.require("SacToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
 contract("ValidatorContract", (accounts) => {
   let instance;
   let userContract;
+  let producerContract;
+  let developerContract;
+  let producerPool;
+  let developerPool;
+  let sacToken;
   let [
     ownerAddress,
+    producer1Address,
     validator1Address,
     validator2Address,
     validator3Address,
@@ -17,8 +28,25 @@ contract("ValidatorContract", (accounts) => {
     otherAddress,
   ] = accounts;
 
+  const producerPoolArgs = {
+    totalTokens: "750000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 12,
+  };
+
+  let developerPoolArgs = {
+    totalDeveloperPoolTokens: "15000000000000000000000000",
+    blocksPerEra: 30,
+    eraMax: 5,
+  };
+
   const addValidator = async (name, address) => {
     await instance.addValidator(name, "photoURL", { from: address });
+  };
+
+  const addProducer = async (name, address) => {
+    await producerContract.addProducer(10, name, "photoURL", "135465-005", { from: address });
   };
 
   const denyUser = async (userAddress) => {
@@ -26,13 +54,32 @@ contract("ValidatorContract", (accounts) => {
   };
 
   beforeEach(async () => {
+    sacToken = await SacToken.new("150000000000000000000000000000");
     userContract = await UserContract.new();
 
-    instance = await ValidatorContract.new(userContract.address);
+    producerPool = await ProducerPool.new(
+      sacToken.address,
+      producerPoolArgs.halving,
+      producerPoolArgs.totalEras,
+      producerPoolArgs.blocksPerEra
+    );
+
+    developerPool = await DeveloperPool.new(sacToken.address, developerPoolArgs.blocksPerEra, developerPoolArgs.eraMax);
+
+    producerContract = await ProducerContract.new(userContract.address, producerPool.address);
+    developerContract = await DeveloperContract.new(userContract.address, developerPool.address);
+
+    instance = await ValidatorContract.new(userContract.address, producerContract.address, developerContract.address);
 
     await userContract.newAllowedCaller(instance.address);
+    await userContract.newAllowedCaller(producerContract.address);
+    await userContract.newAllowedCaller(developerContract.address);
     await userContract.newAllowedCaller(ownerAddress);
     await instance.newAllowedUser(validator1Address);
+    await producerContract.newAllowedCaller(instance.address);
+    await producerPool.newAllowedCaller(producerContract.address);
+    await sacToken.addContractPool(instance.address, producerPoolArgs.totalTokens);
+    await sacToken.addContractPool(producerContract.address, producerPoolArgs.totalTokens);
   });
 
   describe("#addValidator", () => {
@@ -107,8 +154,13 @@ contract("ValidatorContract", (accounts) => {
         context("when user validations count is not equal majorityValidatorsCount", () => {
           beforeEach(async () => {
             await instance.newAllowedUser(validator2Address);
+            await instance.newAllowedUser(validator3Address);
+            await instance.newAllowedUser(validator4Address);
+
             await addValidator("Validator A", validator1Address);
             await addValidator("Validator B", validator2Address);
+            await addValidator("Validator C", validator3Address);
+            await addValidator("Validator D", validator4Address);
 
             await instance.addValidation(validator2Address, "my justification", { from: validator1Address });
           });
@@ -120,7 +172,7 @@ contract("ValidatorContract", (accounts) => {
             assert.equal(validations.length, 1);
           });
 
-          it("user type must be validator", async () => {
+          it("user type must be the same", async () => {
             const user = await userContract.getUser(validator2Address);
             const VALIDATOR = 8;
 
@@ -133,27 +185,46 @@ contract("ValidatorContract", (accounts) => {
             await instance.newAllowedUser(validator2Address);
             await instance.newAllowedUser(validator3Address);
             await instance.newAllowedUser(validator4Address);
+
             await addValidator("Validator A", validator1Address);
             await addValidator("Validator B", validator2Address);
             await addValidator("Validator C", validator3Address);
             await addValidator("Validator D", validator4Address);
-
-            await instance.addValidation(validator2Address, "my justification", { from: validator1Address });
-            await instance.addValidation(validator2Address, "my justification", { from: validator3Address });
           });
 
-          it("should add validation", async () => {
-            const validations = await instance.getValidations(validator2Address);
+          context("with producer", () => {
+            beforeEach(async () => {
+              await addProducer("Producer A", producer1Address);
 
-            assert.equal(validations[0].justification, "my justification");
-            assert.equal(validations.length, 2);
-          });
+              await instance.addValidation(producer1Address, "my justification", { from: validator1Address });
+              await instance.addValidation(producer1Address, "my justification", { from: validator3Address });
+            });
 
-          it("user type must be denied", async () => {
-            const user = await userContract.getUser(validator2Address);
-            const DENIED = 9;
+            it("should add validation", async () => {
+              const validations = await instance.getValidations(producer1Address);
 
-            assert.equal(user, DENIED);
+              assert.equal(validations[0].justification, "my justification");
+              assert.equal(validations.length, 2);
+            });
+
+            it("user type must be denied", async () => {
+              const user = await userContract.getUser(producer1Address);
+              const DENIED = 9;
+
+              assert.equal(user, DENIED);
+            });
+
+            it("remove user levels from pool", async () => {
+              const levels = await producerPool.eraLevels(1, producer1Address);
+
+              assert.equal(levels, 0);
+            });
+
+            it("remove user isaScore from producer", async () => {
+              const producer = await producerContract.getProducer(producer1Address);
+
+              assert.equal(producer.isa.isaScore, 0);
+            });
           });
         });
       });
@@ -219,7 +290,7 @@ contract("ValidatorContract", (accounts) => {
         await addValidator("Validator A", validator1Address);
       });
 
-      it("should return true when exists", async () => {
+      it("returns true", async () => {
         const validatorExists = await instance.validatorExists(validator1Address);
 
         assert.equal(validatorExists, true);
@@ -227,7 +298,7 @@ contract("ValidatorContract", (accounts) => {
     });
 
     context("when validator don't exists", () => {
-      it("should return false when don't exist", async () => {
+      it("returns false", async () => {
         const validatorExists = await instance.validatorExists(validator2Address);
 
         assert.equal(validatorExists, false);
@@ -236,22 +307,22 @@ contract("ValidatorContract", (accounts) => {
   });
 
   describe("#majorityValidatorsCount", () => {
-    context("when have less than minimum validators", () => {
+    context("when have 2 validators", () => {
       beforeEach(async () => {
         await instance.newAllowedUser(validator2Address);
         await addValidator("Validator A", validator1Address);
         await addValidator("Validator B", validator2Address);
       });
 
-      it("must returns minimum majorityValidatorsCount", async () => {
+      it("returns 1", async () => {
         const majorityValidatorsCount = await instance.majorityValidatorsCount();
-        const majorityValidatorsCountMinimum = 2;
+        const majorityValidatorsCountMinimum = 1;
 
         assert.equal(majorityValidatorsCount, majorityValidatorsCountMinimum);
       });
     });
 
-    context("when have more than minimum validators", () => {
+    context("when have 6 validators", () => {
       beforeEach(async () => {
         await instance.newAllowedUser(validator2Address);
         await instance.newAllowedUser(validator3Address);
@@ -266,7 +337,7 @@ contract("ValidatorContract", (accounts) => {
         await addValidator("Validator F", validator6Address);
       });
 
-      it("must returns 3", async () => {
+      it("returns 3", async () => {
         const majorityValidatorsCount = await instance.majorityValidatorsCount();
 
         assert.equal(majorityValidatorsCount, 3);
