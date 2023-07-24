@@ -70,27 +70,27 @@ module.exports = function (deployer) {
       "Carbon footprint",
       `Indicator to evaluate the carbon balance`,
       `We must evaluate everything that the producer emit carbon, and all the carbon sequestration`,
-      `More then -100 tCO2e / year`,
-      `Until -100 tCO2e / year`,
-      `Until -1 tCO2e / year`,
+      `More then -100 tCO2 / era`,
+      `Until -100 tCO2 / era`,
+      `Until -1 tCO2 / era`,
       `0`,
-      `Until 1 tCO2e / year`,
-      `Until 2 tCO2e / year`,
-      `More then 2 tCO2e / year`,
+      `Until 1 tCO2 / era`,
+      `Until 2 tCO2 / era`,
+      `More then 2 tCO2 / era`,
       { from: researcher1 }
     );
 
     await categoryContract.addCategory(
       "Biodiversity indicator",
       `Indicator to evaluate the biodiversity level`,
-      `Must evaluate everything related to the biodiversity level and count how many life units were found at the property`,
-      `More then 1000 lifeUnits / ha`,
-      `Until 1000 lifeUnits / ha`,
-      `Until 100 lifeUnits / ha`,
+      `Must evaluate everything related to the biodiversity level and count how many life units were found and estimated at the property`,
+      `More then 1000 lifeUnits`,
+      `Until 1000 lifeUnits`,
+      `Until 100 lifeUnits`,
       `0`,
-      `Until -100 lifeUnits / ha`,
-      `Until -1000 lifeUnits / ha`,
-      `Less then -1000 lifeUnits / ha`,
+      `Until -100 lifeUnits`,
+      `Until -1000 lifeUnits`,
+      `Less then -1000 lifeUnits`,
       { from: researcher1 }
     );
 
@@ -98,13 +98,13 @@ module.exports = function (deployer) {
       "Water indicator",
       `Indicator to evaluate the water resources level`,
       `Must evaluate the property water level. Positive means water from vegetation and negative water brought from outside the property. `,
-      `More then 100 m3 / ha`,
-      `Until 100 m3 / ha`,
-      `Until 10 m3 / ha`,
+      `More then 100 m3`,
+      `Until 100 m3`,
+      `Until 10 m3`,
       `0`,
-      `Until -10 m3 / ha`,
-      `Until -100 m3 / ha`,
-      `Less then -100 m3 / ha`,
+      `Until -10 m3`,
+      `Until -100 m3`,
+      `Less then -100 m3`,
       { from: researcher1 }
     );
 
