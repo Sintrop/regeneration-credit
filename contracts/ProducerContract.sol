@@ -131,7 +131,7 @@ contract ProducerContract is Callable {
 
     if (limitIsaScore(producer)) changeProducerToSustainable(producer);
 
-    // if (!minimumInspections(producer.totalInspections)) return;
+    if (!minimumInspections(producer.totalInspections)) return;
 
     producerPool.addLevel(addr, currentlevel, addLevels);
   }
