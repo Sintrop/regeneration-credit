@@ -14,4 +14,6 @@ struct Validation {
   address user;
   string justification;
   uint256 majorityValidatorsCount;
+  uint256 createdAtTimeStamp;
+  uint256 createdAtBlockNumber;
 }

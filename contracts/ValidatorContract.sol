@@ -43,7 +43,16 @@ contract ValidatorContract is Registrable {
     uint256 majorityValidatorsCount_ = majorityValidatorsCount();
     uint256 userValidationsCount = validations[userAddress].length + 1;
 
-    validations[userAddress].push(Validation(msg.sender, userAddress, justification, majorityValidatorsCount_));
+    validations[userAddress].push(
+      Validation(
+        msg.sender,
+        userAddress,
+        justification,
+        majorityValidatorsCount_,
+        block.timestamp, // solhint-disable-line
+        block.number
+      )
+    );
 
     if (userValidationsCount >= majorityValidatorsCount_) {
       resetLevels(userAddress);
