@@ -53,10 +53,23 @@ contract UserContract is Ownable, Callable {
       string memory,
       string memory,
       string memory,
+      string memory,
+      string memory,
       string memory
     )
   {
-    return ("UNDEFINED", "PRODUCER", "ACTIVIST", "RESEARCHER", "DEVELOPER", "ADVISOR", "CONTRIBUTOR", "INVESTOR");
+    return (
+      "UNDEFINED",
+      "PRODUCER",
+      "ACTIVIST",
+      "RESEARCHER",
+      "DEVELOPER",
+      "ADVISOR",
+      "CONTRIBUTOR",
+      "INVESTOR",
+      "VALIDATOR",
+      "DENIED"
+    );
   }
 
   // TODO: Add modifiers requires inside the function and remove modifiers

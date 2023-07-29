@@ -26,6 +26,8 @@ contract("UserContract", (accounts) => {
     5: "ADVISOR",
     6: "CONTRIBUTOR",
     7: "INVESTOR",
+    8: "VALIDATOR",
+    9: "DENIED"
   };
 
   const addUser = async (address, userType, caller) => {
@@ -165,13 +167,13 @@ contract("UserContract", (accounts) => {
     });
   });
 
-  // context("when there's enums", () => {
-  //   it("should have enums", async () => {
-  //     const types = await instance.userTypes();
+  context("when there's enums", () => {
+    it("should have enums", async () => {
+      const types = await instance.userTypes();
 
-  //     assert.equal(JSON.stringify(types), JSON.stringify(definedTypes));
-  //   });
-  // });
+      assert.equal(JSON.stringify(types), JSON.stringify(definedTypes));
+    });
+  });
 
   context("when adding new allowed caller", () => {
     context("with owner", () => {
