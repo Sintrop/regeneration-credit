@@ -27,7 +27,7 @@ contract("UserContract", (accounts) => {
     6: "CONTRIBUTOR",
     7: "INVESTOR",
     8: "VALIDATOR",
-    9: "DENIED"
+    9: "DENIED",
   };
 
   const addUser = async (address, userType, caller) => {
