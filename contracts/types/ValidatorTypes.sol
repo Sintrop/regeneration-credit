@@ -7,8 +7,6 @@ struct Validator {
   uint256 id;
   address validatorWallet;
   UserType userType;
-  string name;
-  string proofPhoto;
 }
 
 struct Validation {

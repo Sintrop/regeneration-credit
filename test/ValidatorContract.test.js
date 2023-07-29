@@ -41,8 +41,8 @@ contract("ValidatorContract", (accounts) => {
     eraMax: 5,
   };
 
-  const addValidator = async (name, address) => {
-    await instance.addValidator(name, "photoURL", { from: address });
+  const addValidator = async (address) => {
+    await instance.addValidator({ from: address });
   };
 
   const addProducer = async (name, address) => {
@@ -85,35 +85,35 @@ contract("ValidatorContract", (accounts) => {
   describe("#addValidator", () => {
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(addValidator("Validator B", validator2Address), "Not allowed user");
+        await expectRevert(addValidator(validator2Address), "Not allowed user");
       });
     });
 
     context("when is an allowed user", () => {
       context("when validator exists", () => {
         it("should return error", async () => {
-          await addValidator("Validator A", validator1Address);
-          await expectRevert(addValidator("Validator A", validator1Address), "This validator already exist");
+          await addValidator(validator1Address);
+          await expectRevert(addValidator(validator1Address), "This validator already exist");
         });
       });
 
       context("when validator don't exist", () => {
         it("should create validator", async () => {
-          await addValidator("Validator A", validator1Address);
+          await addValidator(validator1Address);
           const validator = await instance.getValidator(validator1Address);
 
           assert.equal(validator.validatorWallet, validator1Address);
         });
 
         it("should increment validatorCount after create validator", async () => {
-          await addValidator("Validator A", validator1Address);
+          await addValidator(validator1Address);
           const validatorsCount = await instance.validatorsCount();
 
           assert.equal(validatorsCount, 1);
         });
 
         it("should add created validator in validatorList (array)", async () => {
-          await addValidator("Validator A", validator1Address);
+          await addValidator(validator1Address);
 
           const validators = await instance.getValidators();
 
@@ -121,7 +121,7 @@ contract("ValidatorContract", (accounts) => {
         });
 
         it("should add created validator in userType contract as a VALIDATOR", async () => {
-          await addValidator("Validator A", validator1Address);
+          await addValidator(validator1Address);
 
           const userType = await userContract.getUser(validator1Address);
           const VALIDATOR = 8;
@@ -137,8 +137,8 @@ contract("ValidatorContract", (accounts) => {
       context("when user already is denied", () => {
         beforeEach(async () => {
           await instance.newAllowedUser(validator2Address);
-          await addValidator("Validator A", validator1Address);
-          await addValidator("Validator B", validator2Address);
+          await addValidator(validator1Address);
+          await addValidator(validator2Address);
           await denyUser(validator2Address);
         });
 
@@ -157,10 +157,10 @@ contract("ValidatorContract", (accounts) => {
             await instance.newAllowedUser(validator3Address);
             await instance.newAllowedUser(validator4Address);
 
-            await addValidator("Validator A", validator1Address);
-            await addValidator("Validator B", validator2Address);
-            await addValidator("Validator C", validator3Address);
-            await addValidator("Validator D", validator4Address);
+            await addValidator(validator1Address);
+            await addValidator(validator2Address);
+            await addValidator(validator3Address);
+            await addValidator(validator4Address);
 
             await instance.addValidation(validator2Address, "my justification", { from: validator1Address });
           });
@@ -186,10 +186,10 @@ contract("ValidatorContract", (accounts) => {
             await instance.newAllowedUser(validator3Address);
             await instance.newAllowedUser(validator4Address);
 
-            await addValidator("Validator A", validator1Address);
-            await addValidator("Validator B", validator2Address);
-            await addValidator("Validator C", validator3Address);
-            await addValidator("Validator D", validator4Address);
+            await addValidator(validator1Address);
+            await addValidator(validator2Address);
+            await addValidator(validator3Address);
+            await addValidator(validator4Address);
           });
 
           context("with producer", () => {
@@ -243,7 +243,7 @@ contract("ValidatorContract", (accounts) => {
   describe("#getValidator", () => {
     context("when validator exists", () => {
       beforeEach(async () => {
-        await addValidator("Validator A", validator1Address);
+        await addValidator(validator1Address);
       });
 
       it("should return a validator", async () => {
@@ -265,7 +265,7 @@ contract("ValidatorContract", (accounts) => {
   describe("#getValidators", () => {
     context("when has validators", () => {
       beforeEach(async () => {
-        await addValidator("Validator A", validator1Address);
+        await addValidator(validator1Address);
       });
 
       it("should return validators", async () => {
@@ -287,7 +287,7 @@ contract("ValidatorContract", (accounts) => {
   describe("#validatorExists", () => {
     context("when validator exists", () => {
       beforeEach(async () => {
-        await addValidator("Validator A", validator1Address);
+        await addValidator(validator1Address);
       });
 
       it("returns true", async () => {
@@ -310,8 +310,8 @@ contract("ValidatorContract", (accounts) => {
     context("when have 2 validators", () => {
       beforeEach(async () => {
         await instance.newAllowedUser(validator2Address);
-        await addValidator("Validator A", validator1Address);
-        await addValidator("Validator B", validator2Address);
+        await addValidator(validator1Address);
+        await addValidator(validator2Address);
       });
 
       it("returns 1", async () => {
@@ -329,12 +329,12 @@ contract("ValidatorContract", (accounts) => {
         await instance.newAllowedUser(validator4Address);
         await instance.newAllowedUser(validator5Address);
         await instance.newAllowedUser(validator6Address);
-        await addValidator("Validator A", validator1Address);
-        await addValidator("Validator B", validator2Address);
-        await addValidator("Validator C", validator3Address);
-        await addValidator("Validator D", validator4Address);
-        await addValidator("Validator E", validator5Address);
-        await addValidator("Validator F", validator6Address);
+        await addValidator(validator1Address);
+        await addValidator(validator2Address);
+        await addValidator(validator3Address);
+        await addValidator(validator4Address);
+        await addValidator(validator5Address);
+        await addValidator(validator6Address);
       });
 
       it("returns 3", async () => {

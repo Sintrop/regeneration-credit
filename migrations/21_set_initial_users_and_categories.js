@@ -50,19 +50,19 @@ module.exports = function (deployer) {
       from: researcher1,
     });
 
-    await validatorContract.addValidator("Validator 1", "photoURL", {
+    await validatorContract.addValidator({
       from: validator1,
     });
 
-    await validatorContract.addValidator("Validator 2", "photoURL", {
+    await validatorContract.addValidator({
       from: validator2,
     });
 
-    await validatorContract.addValidator("Validator 3", "photoURL", {
+    await validatorContract.addValidator({
       from: validator3,
     });
 
-    await validatorContract.addValidator("Validator 4", "photoURL", {
+    await validatorContract.addValidator({
       from: validator4,
     });
 

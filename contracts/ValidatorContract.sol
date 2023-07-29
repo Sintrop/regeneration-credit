@@ -24,13 +24,13 @@ contract ValidatorContract is Registrable {
     developerContract = DeveloperContract(developerPoolAddress);
   }
 
-  function addValidator(string memory name, string memory proofPhoto) public mustBeAllowedUser {
+  function addValidator() public mustBeAllowedUser {
     require(!validatorExists(msg.sender), "This validator already exist");
 
     uint256 id = validatorsCount + 1;
     UserType userType = UserType.VALIDATOR;
 
-    validators[msg.sender] = Validator(id, msg.sender, userType, name, proofPhoto);
+    validators[msg.sender] = Validator(id, msg.sender, userType);
     validatorsAddress.push(msg.sender);
     validatorsCount++;
     userContract.addUser(msg.sender, userType);
@@ -78,7 +78,7 @@ contract ValidatorContract is Registrable {
   }
 
   function validatorExists(address addr) public view returns (bool) {
-    return bytes(validators[addr].name).length > 0;
+    return validators[addr].id > 0;
   }
 
   function majorityValidatorsCount() public view returns (uint256) {
