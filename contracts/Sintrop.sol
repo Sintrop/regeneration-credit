@@ -7,6 +7,8 @@ import { CategoryContract } from "./CategoryContract.sol";
 import { InspectionStatus, IsaInspection, Inspection } from "./types/InspectionTypes.sol";
 import { Producer } from "./types/ProducerTypes.sol";
 import { Activist } from "./types/ActivistTypes.sol";
+import { UserContract } from "./UserContract.sol";
+import { UserType } from "./types/UserTypes.sol";
 
 /**
  * @title SintropContract
@@ -20,6 +22,7 @@ contract Sintrop {
 
   ActivistContract public activistContract;
   ProducerContract public producerContract;
+  UserContract public userContract;
 
   uint256 public inspectionsCount;
   uint256 internal immutable timeBetweenInspections;
@@ -29,12 +32,14 @@ contract Sintrop {
   constructor(
     address activistContractAddress,
     address producerContractAddress,
+    address userContractAddress,
     uint256 timeBetweenInspections_,
     uint256 blocksToExpireAcceptedInspection_,
     uint256 allowedInitialRequests_
   ) {
     activistContract = ActivistContract(activistContractAddress);
     producerContract = ProducerContract(producerContractAddress);
+    userContract = UserContract(userContractAddress);
     timeBetweenInspections = timeBetweenInspections_;
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
     allowedInitialRequests = allowedInitialRequests_;
@@ -60,7 +65,9 @@ contract Sintrop {
   /**
    * @dev Allows the current user (producer) request a inspection.
    */
-  function requestInspection() public requireProducer requireNoInspectionsOpen {
+  function requestInspection() public {
+    require(userContract.userTypeIs(UserType.PRODUCER, msg.sender), "Please register as producer");
+    require(!producerContract.getProducer(msg.sender).recentInspection, "Request OPEN or ACCEPTED");
     require(canRequestInspection(), "Recent inspection");
 
     addRequest();
@@ -93,10 +100,12 @@ contract Sintrop {
    * @dev Allows the current user (activist) accept a inspection.
    * @param inspectionId The id of the inspection that the activist want accept.
    */
-  function acceptInspection(
-    uint256 inspectionId
-  ) public requireActivist requireInspectionExists(inspectionId) requireNotInspectedProducer(inspectionId) {
+  function acceptInspection(uint256 inspectionId) public {
     Inspection memory inspection = inspections[inspectionId];
+
+    require(userContract.userTypeIs(UserType.ACTIVIST, msg.sender), "Please register as activist");
+    require(inspectionExists(inspectionId), "This inspection don't exists");
+    require(!activistInspected[msg.sender][inspection.createdBy], "Already inspected this producer");
 
     require(canAcceptInspection(), "Can't accept yet");
     require(inspection.status == InspectionStatus.OPEN, "This inspection is not OPEN");
@@ -119,17 +128,13 @@ contract Sintrop {
    * @param inspectionId The id of the inspection to be realized
    * @param _isas The IsaIsaInspection[] of the inspection to be realized
    */
-  function realizeInspection(
-    uint256 inspectionId,
-    IsaInspection[] memory _isas
-  )
-    public
-    requireActivist
-    requireInspectionExists(inspectionId)
-    requireInspectionAccepted(inspectionId)
-    requireInspectionOwner(inspectionId)
-  {
+  function realizeInspection(uint256 inspectionId, IsaInspection[] memory _isas) public {
     Inspection memory inspection = inspections[inspectionId];
+
+    require(userContract.userTypeIs(UserType.ACTIVIST, msg.sender), "Please register as activist");
+    require(inspectionExists(inspectionId), "This inspection don't exists");
+    require(isAccepted(inspectionId), "Accept this inspection before");
+    require(isActivistOwner(inspectionId), "You not accepted this inspection");
 
     require(!expiredInspection(inspectionId), "Inspection Expired");
 
@@ -266,43 +271,5 @@ contract Sintrop {
     bool canAccept = block.number > lastAcceptedAt + blocksToExpireAcceptedInspection;
 
     return canAccept || lastAcceptedAt == 0;
-  }
-
-  // MODIFIERS
-  modifier requireNotInspectedProducer(uint256 inspectionId) {
-    Inspection memory inspection = inspections[inspectionId];
-
-    require(!activistInspected[msg.sender][inspection.createdBy], "Already inspected this producer");
-    _;
-  }
-
-  modifier requireActivist() {
-    require(activistContract.activistExists(msg.sender), "Please register as activist");
-    _;
-  }
-
-  modifier requireInspectionExists(uint256 inspectionId) {
-    require(inspectionExists(inspectionId), "This inspection don't exists");
-    _;
-  }
-
-  modifier requireProducer() {
-    require(producerContract.producerExists(msg.sender), "Please register as producer");
-    _;
-  }
-
-  modifier requireNoInspectionsOpen() {
-    require(!producerContract.getProducer(msg.sender).recentInspection, "Request OPEN or ACCEPTED");
-    _;
-  }
-
-  modifier requireInspectionAccepted(uint256 inspectionId) {
-    require(isAccepted(inspectionId), "Accept this inspection before");
-    _;
-  }
-
-  modifier requireInspectionOwner(uint256 inspectionId) {
-    require(isActivistOwner(inspectionId), "You not accepted this inspection");
-    _;
   }
 }

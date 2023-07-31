@@ -87,9 +87,9 @@ contract ProducerContract is Callable {
   }
 
   function withdraw() public {
-    Producer memory producer = producers[msg.sender];
+    require(userContract.userTypeIs(UserType.PRODUCER, msg.sender), "Only producers pool");
 
-    require(producerExists(msg.sender), "Only producers pool");
+    Producer memory producer = producers[msg.sender];
     require(minimumInspections(producer.totalInspections), "Minimum inspections");
     require(!limitIsaScore(producer), "Limit ISA Score");
 
@@ -131,7 +131,16 @@ contract ProducerContract is Callable {
 
     if (limitIsaScore(producer)) changeProducerToSustainable(producer);
 
+    if (!minimumInspections(producer.totalInspections)) return;
+
     producerPool.addLevel(addr, currentlevel, addLevels);
+  }
+
+  function resetLevels(address addr) public mustBeAllowedCaller {
+    Producer memory producer = producers[addr];
+
+    producerPool.resetLevels(addr, producer.pool.currentEra);
+    producers[addr].isa.isaScore = 0;
   }
 
   function changeProducerToSustainable(Producer memory producer) internal {

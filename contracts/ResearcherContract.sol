@@ -73,7 +73,7 @@ contract ResearcherContract is Registrable {
   }
 
   function addWork(string memory title, string memory thesis, string memory file) public {
-    require(researcherExists(msg.sender), "Only allowed to researchers");
+    require(userContract.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
 
     uint256 id = worksCount + 1;
 

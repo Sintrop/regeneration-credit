@@ -83,7 +83,9 @@ contract DeveloperContract is Ownable, Registrable {
   /**
    * @dev Call withdraw function from developerPool to try to claim tokens
    */
-  function withdraw() public requireDeveloper {
+  function withdraw() public {
+    require(userContract.userTypeIs(UserType.DEVELOPER, msg.sender), "Pool only to developer");
+
     Developer memory developer = developers[msg.sender];
     uint256 currentEra = developer.pool.currentEra;
 
@@ -136,11 +138,6 @@ contract DeveloperContract is Ownable, Registrable {
   }
 
   // MODIFIERS
-
-  modifier requireDeveloper() {
-    require(developerExists(msg.sender), "Pool only to developer");
-    _;
-  }
 
   modifier uniqueDeveloper() {
     require(!developerExists(msg.sender), "This developer already exist");

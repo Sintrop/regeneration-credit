@@ -9,7 +9,9 @@ enum UserType {
   DEVELOPER,
   ADVISOR,
   CONTRIBUTOR,
-  INVESTOR
+  INVESTOR,
+  VALIDATOR,
+  DENIED
 }
 
 struct Delation {

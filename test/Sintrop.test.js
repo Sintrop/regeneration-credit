@@ -141,6 +141,7 @@ contract("Sintrop", (accounts) => {
     instance = await Sintrop.new(
       activistContract.address,
       producerContract.address,
+      userContract.address,
       sintropArgs.timeBetweenInspections,
       sintropArgs.blocksToExpireAcceptedInspection,
       sintropArgs.allowedInitialRequests

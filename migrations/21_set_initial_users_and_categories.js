@@ -2,65 +2,68 @@ const CategoryContract = artifacts.require("CategoryContract");
 const ProducerContract = artifacts.require("ProducerContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
 const ActivistContract = artifacts.require("ActivistContract");
+const ValidatorContract = artifacts.require("ValidatorContract");
 
 module.exports = function (deployer) {
   deployer.then(async () => {
     let accounts = await web3.eth.getAccounts();
-    let [_, producer1, producer2, activist1, activist2, activist3, activist4, researcher1] = accounts;
+    let [
+      _,
+      producer1,
+      producer2,
+      activist1,
+      activist2,
+      activist3,
+      activist4,
+      researcher1,
+      validator1,
+      validator2,
+      validator3,
+      validator4,
+    ] = accounts;
 
     const categoryContract = await CategoryContract.deployed();
     const activistContract = await ActivistContract.deployed();
     const producerContract = await ProducerContract.deployed();
     const researcherContract = await ResearcherContract.deployed();
+    const validatorContract = await ValidatorContract.deployed();
 
     await researcherContract.newAllowedUser(researcher1);
+    await validatorContract.newAllowedUser(validator1);
+    await validatorContract.newAllowedUser(validator2);
+    await validatorContract.newAllowedUser(validator3);
+    await validatorContract.newAllowedUser(validator4);
 
-    await producerContract.addProducer(
-      10,
-      "Sítio Refloresta",
-      "photoURL",
-      "123456789123456",
-      { from: producer1 }
-    );
+    await producerContract.addProducer(10, "Sítio Refloresta", "photoURL", "123456789123456", { from: producer1 });
 
-    await producerContract.addProducer(
-      50,
-      "Fazenda Restaura",
-      "photoURL",
-      "1111111111111",
-      { from: producer2 }
-    );
+    await producerContract.addProducer(50, "Fazenda Restaura", "photoURL", "1111111111111", { from: producer2 });
 
-    await activistContract.addActivist(
-      "Julia Flores",
-      "photoURL",
-      "2222222222222222",
-      { from: activist1 }
-    );
+    await activistContract.addActivist("Julia Flores", "photoURL", "2222222222222222", { from: activist1 });
 
-    await activistContract.addActivist(
-      "Pedro Nascimento",
-      "photoURL",
-      "333333333333333",
-      { from: activist2 }
-    );
+    await activistContract.addActivist("Pedro Nascimento", "photoURL", "333333333333333", { from: activist2 });
 
-    await activistContract.addActivist(
-      "Roberta Floresta",
-      "photoURL",
-      "333333333333333",
-      { from: activist3 }
-    );
+    await activistContract.addActivist("Roberta Floresta", "photoURL", "333333333333333", { from: activist3 });
 
-    await activistContract.addActivist(
-      "João Alberto",
-      "photoURL",
-      "333333333333333",
-      { from: activist4 }
-    );
+    await activistContract.addActivist("João Alberto", "photoURL", "333333333333333", { from: activist4 });
 
     await researcherContract.addResearcher("CEPEAS", "photoURL", {
       from: researcher1,
+    });
+
+    await validatorContract.addValidator({
+      from: validator1,
+    });
+
+    await validatorContract.addValidator({
+      from: validator2,
+    });
+
+    await validatorContract.addValidator({
+      from: validator3,
+    });
+
+    await validatorContract.addValidator({
+      from: validator4,
     });
 
     await categoryContract.addCategory(
