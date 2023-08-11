@@ -6,7 +6,7 @@ import { UserContract } from "./UserContract.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { Registrable } from "./Registrable.sol";
 import { DeveloperPool } from "./DeveloperPool.sol";
-import { Developer, Pool } from "./types/DeveloperTypes.sol";
+import { Developer, Pool, PoolJoin } from "./types/DeveloperTypes.sol";
 
 /**
  * @title DeveloperContract
@@ -14,6 +14,7 @@ import { Developer, Pool } from "./types/DeveloperTypes.sol";
  */
 contract DeveloperContract is Ownable, Registrable {
   mapping(address => Developer) public developers;
+  mapping(uint256 => mapping(address => PoolJoin)) public poolJoins;
 
   UserContract internal userContract;
   DeveloperPool internal developerPool;
@@ -101,11 +102,7 @@ contract DeveloperContract is Ownable, Registrable {
    * @param addr The address of the developer
    */
   function addLevel(address addr) public onlyOwner {
-    Developer memory developer = developers[addr];
-    developer.pool.level++;
-    developers[addr] = developer;
-
-    developerPool.addLevel(addr, developer.pool.level, 1);
+    updateLevel(addr);
   }
 
   /**
@@ -121,6 +118,33 @@ contract DeveloperContract is Ownable, Registrable {
     developers[addr] = developer;
 
     developerPool.removeLevel(addr);
+  }
+
+  function joinPoolEra(string memory report) public {
+    uint256 currentEra = developerPoolEra();
+    PoolJoin memory poolEra = poolJoins[currentEra][msg.sender];
+
+    require(userContract.userTypeIs(UserType.DEVELOPER, msg.sender), "Pool only to developer");
+    require(!poolEra.joined, "Already joined pool era");
+
+    poolJoins[developerPoolEra()][msg.sender] = PoolJoin(
+      currentEra,
+      developers[msg.sender].pool.level,
+      report,
+      true,
+      block.timestamp, // solhint-disable-line not-rely-on-time
+      block.number
+    );
+
+    updateLevel(msg.sender);
+  }
+
+  function updateLevel(address addr) internal {
+    Developer memory developer = developers[addr];
+    developer.pool.level++;
+    developers[addr] = developer;
+
+    developerPool.addLevel(addr, developer.pool.level, 1);
   }
 
   /**
