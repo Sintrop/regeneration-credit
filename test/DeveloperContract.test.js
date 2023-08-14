@@ -185,6 +185,12 @@ contract("DeveloperContract", (accounts) => {
         });
       });
     });
+
+    context.only("without developer", () => {
+      it("should return error message", async () => {
+        await expectRevert(instance.addContribution("report", { from: owner }), "Only Developer");
+      });
+    });
   });
 
   describe("#getDevelopers", () => {
