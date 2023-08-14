@@ -58,6 +58,8 @@ contract DeveloperContract is Ownable, Registrable {
     require(userContract.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
     require(!contribution.contributed, "Already has contribution");
 
+    updateLevel(msg.sender);
+
     contributions[developerPoolEra()][msg.sender] = Contribution(
       currentEra,
       developers[msg.sender].pool.level,
@@ -66,8 +68,6 @@ contract DeveloperContract is Ownable, Registrable {
       block.timestamp, // solhint-disable-line not-rely-on-time
       block.number
     );
-
-    updateLevel(msg.sender);
   }
 
   /**
