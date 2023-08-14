@@ -145,6 +145,48 @@ contract("DeveloperContract", (accounts) => {
     });
   });
 
+  describe("addContribution", () => {
+    beforeEach(async () => {
+      await addDeveloper("Developer A", dev1Address);
+    });
+
+    context("with developer", () => {
+      context("when already has contribution", () => {
+        beforeEach(async () => {
+          await instance.addContribution("report", { from: dev1Address });
+        });
+
+        it("should return error message", async () => {
+          await expectRevert(instance.addContribution("report", { from: dev1Address }), "Already has contribution");
+        });
+      });
+
+      context("when don't have contribution", () => {
+        beforeEach(async () => {
+          await instance.addContribution("report", { from: dev1Address });
+        });
+
+        it("add contribution", async () => {
+          const construbution = await instance.contributions(1, dev1Address);
+
+          assert.equal(construbution.report, "report");
+        });
+
+        it("add level to developer", async () => {
+          const developer = await instance.getDeveloper(dev1Address);
+
+          assert.equal(developer.pool.level, 1);
+        });
+
+        it("add level to era", async () => {
+          const eraLevels = await developerPool.eraLevels(1, dev1Address);
+
+          assert.equal(eraLevels, 1);
+        });
+      });
+    });
+  });
+
   describe("#getDevelopers", () => {
     beforeEach(async () => {
       await instance.newAllowedUser(dev2Address);
