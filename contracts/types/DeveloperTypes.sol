@@ -18,11 +18,11 @@ struct Pool {
   uint256 currentEra;
 }
 
-struct PoolJoin {
+struct Contribution {
   uint256 era;
   uint256 level;
   string report;
-  bool joined;
+  bool contributed;
   uint256 createdAtTimestamp;
   uint256 createdAtBlockNumber;
 }
