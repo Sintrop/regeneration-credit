@@ -7,6 +7,8 @@ module.exports = function (deployer) {
     const userContract = await UserContract.deployed();
     const researcherPool = await ResearcherPool.deployed();
 
-    await deployer.deploy(ResearcherContract, userContract.address, researcherPool.address);
+    const researcherContract = await deployer.deploy(ResearcherContract, userContract.address, researcherPool.address);
+
+    await researcherPool.newAllowedCaller(researcherContract.address);
   });
 };

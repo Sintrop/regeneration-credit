@@ -81,6 +81,12 @@ contract ResearcherContract is Registrable {
   function addWork(string memory title, string memory thesis, string memory file) public {
     require(userContract.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
 
+    Researcher storage researcher = researchers[msg.sender];
+    researcher.pool.level++;
+    researchers[msg.sender] = researcher;
+
+    researcherPool.addLevel(msg.sender, researcher.pool.level, 1);
+
     uint256 id = worksCount + 1;
 
     Work memory work = Work(id, msg.sender, title, thesis, file, block.timestamp); // solhint-disable-line
