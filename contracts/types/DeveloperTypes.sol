@@ -17,3 +17,12 @@ struct Pool {
   uint256 level;
   uint256 currentEra;
 }
+
+struct Contribution {
+  uint256 era;
+  uint256 level;
+  string report;
+  bool contributed;
+  uint256 createdAtTimestamp;
+  uint256 createdAtBlockNumber;
+}
