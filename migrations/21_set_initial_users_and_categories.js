@@ -3,6 +3,7 @@ const ProducerContract = artifacts.require("ProducerContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
 const ActivistContract = artifacts.require("ActivistContract");
 const ValidatorContract = artifacts.require("ValidatorContract");
+const DeveloperContract = artifacts.require("DeveloperContract");
 
 module.exports = function (deployer) {
   deployer.then(async () => {
@@ -20,6 +21,8 @@ module.exports = function (deployer) {
       validator2,
       validator3,
       validator4,
+      developer1,
+      developer2,
     ] = accounts;
 
     const categoryContract = await CategoryContract.deployed();
@@ -27,12 +30,15 @@ module.exports = function (deployer) {
     const producerContract = await ProducerContract.deployed();
     const researcherContract = await ResearcherContract.deployed();
     const validatorContract = await ValidatorContract.deployed();
+    const developerContract = await DeveloperContract.deployed();
 
     await researcherContract.newAllowedUser(researcher1);
     await validatorContract.newAllowedUser(validator1);
     await validatorContract.newAllowedUser(validator2);
     await validatorContract.newAllowedUser(validator3);
     await validatorContract.newAllowedUser(validator4);
+    await developerContract.newAllowedUser(developer1);
+    await developerContract.newAllowedUser(developer2);
 
     await producerContract.addProducer(10, "Sítio Refloresta", "photoURL", "123456789123456", { from: producer1 });
 
@@ -65,6 +71,9 @@ module.exports = function (deployer) {
     await validatorContract.addValidator({
       from: validator4,
     });
+
+    await developerContract.addDeveloper("Developer 1", "photoURL", { from: developer1 });
+    await developerContract.addDeveloper("Developer 2", "photoURL", { from: developer2 });
 
     await categoryContract.addCategory(
       "Carbon footprint",
