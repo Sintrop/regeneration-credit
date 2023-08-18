@@ -186,7 +186,7 @@ contract("DeveloperContract", (accounts) => {
       });
     });
 
-    context.only("without developer", () => {
+    context("without developer", () => {
       it("should return error message", async () => {
         await expectRevert(instance.addContribution("report", { from: owner }), "Only Developer");
       });
