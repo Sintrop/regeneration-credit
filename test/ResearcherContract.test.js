@@ -175,6 +175,65 @@ contract("ResearcherContract", (accounts) => {
     });
   });
 
+  describe("#withdraw", () => {
+    context("when is a researcher", () => {
+      beforeEach(async () => {
+        await addResearcher("Researcher A", resea1Address);
+      });
+
+      context("when researcher is in era 1 and current era is 1", () => {
+        it("should return error", async () => {
+          await expectRevert(instance.withdraw({ from: resea1Address }), "Can't approve withdraw");
+        });
+      });
+
+      context("when researcher is in era 1 and current era is 2", () => {
+        context("with one researches", () => {
+          beforeEach(async () => {
+            await addWork(resea1Address);
+
+            await advanceBlock(args.blocksPerEra);
+
+            await instance.withdraw({ from: resea1Address });
+          });
+
+          it("withdraw 1200000000000000000000000 tokens", async () => {
+            const balanceOf = await researcherPool.balanceOf(resea1Address);
+            const expectedBalance = 1200000000000000000000000n;
+
+            assert.equal(balanceOf, expectedBalance);
+          });
+        });
+
+        context("with one researches", () => {
+          beforeEach(async () => {
+            await instance.newAllowedUser(resea2Address);
+            await addResearcher("Researcher B", resea2Address);
+            await addWork(resea1Address);
+            await addWork(resea2Address);
+
+            await advanceBlock(args.blocksPerEra);
+
+            await instance.withdraw({ from: resea1Address });
+          });
+
+          it("withdraw 600000000000000000000000n tokens", async () => {
+            const balanceOf = await researcherPool.balanceOf(resea1Address);
+            const expectedBalance = 600000000000000000000000n;
+
+            assert.equal(balanceOf, expectedBalance);
+          });
+        });
+      });
+    });
+
+    context("when is not a researcher", () => {
+      it("should return error", async () => {
+        await expectRevert(instance.withdraw({ from: resea1Address }), "Pool only to researchers");
+      });
+    });
+  });
+
   describe("#addWork", () => {
     context("when is not a researcher", () => {
       it("should return error", async () => {
