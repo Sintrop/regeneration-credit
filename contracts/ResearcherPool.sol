@@ -62,6 +62,10 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
 
     if (numTokens == 0) return;
 
+    eras[era].users++;
+    eras[era].tokens += numTokens;
+    eraTokens[era][delegate] = numTokens;
+
     sacToken.transferWith(address(this), delegate, numTokens);
   }
 
