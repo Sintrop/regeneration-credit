@@ -12,6 +12,13 @@ contract("ResearcherContract", (accounts) => {
   let userContract;
   let [ownerAddress, resea1Address, resea2Address] = accounts;
 
+  const args = {
+    totalTokens: "30000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 12,
+  };
+
   advanceBlock = async (blocksNumber) => {
     for (let i = 0; i < blocksNumber; i++) {
       let promise = new Promise((resolve, reject) => {
@@ -42,13 +49,6 @@ contract("ResearcherContract", (accounts) => {
     await instance.addWork("title", "thesis", "fileURL", {
       from: from,
     });
-  };
-
-  let args = {
-    totalTokens: "30000000000000000000000000",
-    halving: 12,
-    totalEras: 96,
-    blocksPerEra: 12,
   };
 
   beforeEach(async () => {
