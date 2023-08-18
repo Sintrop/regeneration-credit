@@ -107,6 +107,19 @@ contract ResearcherContract is Registrable {
     return worksList;
   }
 
+  function withdraw() public {
+    require(userContract.userTypeIs(UserType.RESEARCHER, msg.sender), "Pool only to researchers");
+
+    Researcher memory reseracher = researchers[msg.sender];
+    uint256 currentEra = reseracher.pool.currentEra;
+
+    require(researcherPool.canApprove(currentEra), "Can't approve withdraw");
+
+    researchers[msg.sender].pool.currentEra++;
+
+    researcherPool.withdraw(msg.sender, currentEra);
+  }
+
   function researcherPoolEra() internal view returns (uint256) {
     return researcherPool.currentContractEra();
   }
