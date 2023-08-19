@@ -2,7 +2,7 @@ const IsaPool = artifacts.require("IsaPool");
 const SacToken = artifacts.require("SacToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
-require('./shared/setup.js');
+require("./shared/setup.js");
 
 contract("IsaPool", (accounts) => {
   let instance;

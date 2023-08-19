@@ -1,6 +1,6 @@
 const ProducerPool = artifacts.require("ProducerPool");
 const SacToken = artifacts.require("SacToken");
-require('./shared/setup.js');
+require("./shared/setup.js");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 

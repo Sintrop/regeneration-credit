@@ -1,6 +1,6 @@
 const ActivistContract = artifacts.require("ActivistContract");
 const UserContract = artifacts.require("UserContract");
-require('./shared/setup.js');
+require("./shared/setup.js");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 

@@ -8,7 +8,7 @@ const ProducerContract = artifacts.require("ProducerContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
 const ProducerPool = artifacts.require("ProducerPool");
 const ResearcherPool = artifacts.require("ResearcherPool");
-require('./shared/setup.js');
+require("./shared/setup.js");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 

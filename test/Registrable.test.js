@@ -1,7 +1,7 @@
 const Registrable = artifacts.require("Registrable");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
-require('./shared/setup.js');
+require("./shared/setup.js");
 
 contract("Registrable", (accounts) => {
   let instance;

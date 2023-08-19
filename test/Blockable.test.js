@@ -1,5 +1,5 @@
 const Blockable = artifacts.require("Blockable");
-require('./shared/setup.js');
+require("./shared/setup.js");
 
 contract("Blockable", (accounts) => {
   let instance;

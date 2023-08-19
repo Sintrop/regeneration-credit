@@ -6,7 +6,7 @@ const IsaPool = artifacts.require("IsaPool");
 const ResearcherPool = artifacts.require("ResearcherPool");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
-require('./shared/setup.js');
+require("./shared/setup.js");
 
 contract("CategoryContract", (accounts) => {
   let instance;

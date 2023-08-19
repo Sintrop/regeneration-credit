@@ -2,7 +2,7 @@ const SacToken = artifacts.require("SacToken");
 const UserContract = artifacts.require("UserContract");
 
 const expectRevert = require("@openzeppelin/test-helpers/src/expectRevert");
-require('./shared/setup.js');
+require("./shared/setup.js");
 
 contract("SacToken", (accounts) => {
   let instance;
