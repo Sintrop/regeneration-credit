@@ -48,8 +48,7 @@ module.exports = {
   mocha: {
     useColors: true,
     diff: true,
-    reporter: "dot",
-    require: [],
+    reporter: "spec",
     ui: "bdd",
   },
 };
