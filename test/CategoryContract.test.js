@@ -48,10 +48,6 @@ contract("CategoryContract", (accounts) => {
     await sacToken.transfer(userAddress, tokens);
   };
 
-  const balanceOf = async (userAddress) => {
-    return await sacToken.balanceOf(userAddress);
-  };
-
   before(async () => {
     sacToken = await SacToken.new("1500000000000000000000000000");
     isaPool = await IsaPool.new(sacToken.address);
