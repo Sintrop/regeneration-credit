@@ -475,7 +475,7 @@ contract("ResearcherPool", (accounts) => {
 
       context("when cant withdraw", () => {
         it("should return error message", async () => {
-          await expectRevert(instance.withdraw(researcher1Address, 1), "You can't withdraw yet");
+          await expectRevert(instance.withdraw(researcher1Address, 1), "You can't approve yet");
         });
       });
     });
