@@ -4,6 +4,7 @@ const ProducerPool = artifacts.require("ProducerPool");
 const SacToken = artifacts.require("SacToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
+require('./shared/setup.js');
 
 contract("ProducerContract", (accounts) => {
   let instance;
@@ -16,28 +17,6 @@ contract("ProducerContract", (accounts) => {
     await instance.addProducer(10, name, "photoURL", "135465-005", { from: address });
   };
 
-  advanceBlock = async (blocksNumber) => {
-    for (let i = 0; i < blocksNumber; i++) {
-      let promise = new Promise((resolve, reject) => {
-        web3.currentProvider.send(
-          {
-            jsonrpc: "2.0",
-            method: "evm_mine",
-            id: new Date().getTime(),
-          },
-          (err, result) => {
-            if (err) {
-              return reject(err);
-            }
-            const newBlockHash = web3.eth.getBlock("latest").hash;
-
-            return resolve(newBlockHash);
-          }
-        );
-      });
-    }
-  };
-
   const producerPoolArgs = {
     totalTokens: "750000000000000000000000000",
     halving: 50,
@@ -45,7 +24,7 @@ contract("ProducerContract", (accounts) => {
     blocksPerEra: 50,
   };
 
-  beforeEach(async () => {
+  before(async () => {
     sacToken = await SacToken.new("1500000000000000000000000000");
 
     userContract = await UserContract.new();

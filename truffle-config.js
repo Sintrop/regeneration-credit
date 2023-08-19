@@ -1,4 +1,4 @@
-require("dotenv").config({path: __dirname + "/.env"});
+require("dotenv").config({ path: __dirname + "/.env" });
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 
 const privateKey = process.env["PRIVATE_KEY_ACCOUNT_TO_DEPLOY_GOERLI"];
@@ -24,7 +24,7 @@ module.exports = {
   contracts_build_directory: "./abis/",
   compilers: {
     solc: {
-      version: "0.8.2",
+      version: "0.8.13",
       settings: {
         optimizer: {
           enabled: true,
@@ -39,5 +39,17 @@ module.exports = {
         address: "http://127.0.0.1:5001",
       },
     },
+  },
+  dashboard: {
+    port: 24012,
+    host: "localhost",
+    verbose: false,
+  },
+  mocha: {
+    useColors: true,
+    diff: true,
+    reporter: "dot",
+    require: [],
+    ui: "bdd",
   },
 };

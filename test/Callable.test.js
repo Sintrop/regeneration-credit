@@ -1,12 +1,13 @@
 const Callable = artifacts.require("Callable");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
+require('./shared/setup.js');
 
 contract("Callable", (accounts) => {
   let instance;
   let [owner, user1Address, user2Address] = accounts;
 
-  beforeEach(async () => {
+  before(async () => {
     instance = await Callable.new();
   });
 

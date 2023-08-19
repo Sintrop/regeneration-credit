@@ -2,6 +2,7 @@ const IsaPool = artifacts.require("IsaPool");
 const SacToken = artifacts.require("SacToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
+require('./shared/setup.js');
 
 contract("IsaPool", (accounts) => {
   let instance;
@@ -12,7 +13,7 @@ contract("IsaPool", (accounts) => {
     await sacToken.transfer(userAddress, tokens);
   };
 
-  beforeEach(async () => {
+  before(async () => {
     sacToken = await SacToken.new("1500000000000000000000000000");
 
     instance = await IsaPool.new(sacToken.address);

@@ -8,6 +8,7 @@ const ProducerContract = artifacts.require("ProducerContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
 const ProducerPool = artifacts.require("ProducerPool");
 const ResearcherPool = artifacts.require("ResearcherPool");
+require('./shared/setup.js');
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
@@ -105,29 +106,7 @@ contract("Sintrop", (accounts) => {
     await instance.realizeInspection(id, isas_, { from: from });
   };
 
-  advanceBlock = async (blocksNumber) => {
-    for (let i = 0; i < blocksNumber; i++) {
-      let promise = new Promise((resolve, reject) => {
-        web3.currentProvider.send(
-          {
-            jsonrpc: "2.0",
-            method: "evm_mine",
-            id: new Date().getTime(),
-          },
-          (err, result) => {
-            if (err) {
-              return reject(err);
-            }
-            const newBlockHash = web3.eth.getBlock("latest").hash;
-
-            return resolve(newBlockHash);
-          }
-        );
-      });
-    }
-  };
-
-  beforeEach(async () => {
+  before(async () => {
     sacToken = await SacToken.new("1500000000000000000000000000");
     userContract = await UserContract.new();
 

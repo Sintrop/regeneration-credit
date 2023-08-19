@@ -1,5 +1,6 @@
 const ActivistContract = artifacts.require("ActivistContract");
 const UserContract = artifacts.require("UserContract");
+require('./shared/setup.js');
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
@@ -12,7 +13,7 @@ contract("ActivistContract", (accounts) => {
     await instance.addActivist(name, "photoURL", "135465-005", { from: address });
   };
 
-  beforeEach(async () => {
+  before(async () => {
     userContract = await UserContract.new();
 
     instance = await ActivistContract.new(userContract.address);

@@ -2,6 +2,7 @@ const SacToken = artifacts.require("SacToken");
 const UserContract = artifacts.require("UserContract");
 
 const expectRevert = require("@openzeppelin/test-helpers/src/expectRevert");
+require('./shared/setup.js');
 
 contract("SacToken", (accounts) => {
   let instance;
@@ -11,7 +12,7 @@ contract("SacToken", (accounts) => {
     totalSacTokens: "1500000000000000000000000000",
   };
 
-  beforeEach(async () => {
+  before(async () => {
     instance = await SacToken.new(args.totalSacTokens);
     userContract = await UserContract.new();
   });

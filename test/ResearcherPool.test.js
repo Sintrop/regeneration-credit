@@ -1,5 +1,6 @@
 const SacToken = artifacts.require("SacToken");
 const ResearcherPool = artifacts.require("ResearcherPool");
+const timeMachine = require("ganache-time-traveler");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
@@ -17,27 +18,20 @@ contract("ResearcherPool", (accounts) => {
 
   advanceBlock = async (blocksNumber) => {
     for (let i = 0; i < blocksNumber; i++) {
-      let promise = new Promise((resolve, reject) => {
-        web3.currentProvider.send(
-          {
-            jsonrpc: "2.0",
-            method: "evm_mine",
-            id: new Date().getTime(),
-          },
-          (err, result) => {
-            if (err) {
-              return reject(err);
-            }
-            const newBlockHash = web3.eth.getBlock("latest").hash;
-
-            return resolve(newBlockHash);
-          }
-        );
-      });
+      await timeMachine.advanceBlock();
     }
   };
 
   beforeEach(async () => {
+    let snapshot = await timeMachine.takeSnapshot();
+    snapshotId = snapshot["result"];
+  });
+
+  afterEach(async () => {
+    await timeMachine.revertToSnapshot(snapshotId);
+  });
+
+  before(async () => {
     const sacToken = await SacToken.new(args.totalSacTokens);
     instance = await ResearcherPool.new(sacToken.address, args.halving, args.totalEras, args.blocksPerEra);
 

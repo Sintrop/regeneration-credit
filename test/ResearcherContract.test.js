@@ -4,6 +4,7 @@ const UserContract = artifacts.require("UserContract");
 const SacToken = artifacts.require("SacToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
+require('./shared/setup.js');
 
 contract("ResearcherContract", (accounts) => {
   let instance;
@@ -19,28 +20,6 @@ contract("ResearcherContract", (accounts) => {
     blocksPerEra: 12,
   };
 
-  advanceBlock = async (blocksNumber) => {
-    for (let i = 0; i < blocksNumber; i++) {
-      let promise = new Promise((resolve, reject) => {
-        web3.currentProvider.send(
-          {
-            jsonrpc: "2.0",
-            method: "evm_mine",
-            id: new Date().getTime(),
-          },
-          (err, result) => {
-            if (err) {
-              return reject(err);
-            }
-            const newBlockHash = web3.eth.getBlock("latest").hash;
-
-            return resolve(newBlockHash);
-          }
-        );
-      });
-    }
-  };
-
   const addResearcher = async (name, address) => {
     await instance.addResearcher(name, "photoURL", { from: address });
   };
@@ -51,7 +30,7 @@ contract("ResearcherContract", (accounts) => {
     });
   };
 
-  beforeEach(async () => {
+  before(async () => {
     sacToken = await SacToken.new("1500000000000000000000000000");
     userContract = await UserContract.new();
 

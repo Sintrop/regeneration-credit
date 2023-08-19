@@ -1,6 +1,7 @@
 const UserContract = artifacts.require("UserContract");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
+require('./shared/setup.js');
 
 contract("UserContract", (accounts) => {
   let instance;
@@ -40,7 +41,7 @@ contract("UserContract", (accounts) => {
     });
   };
 
-  beforeEach(async () => {
+  before(async () => {
     instance = await UserContract.new();
 
     await instance.newAllowedCaller(owner);

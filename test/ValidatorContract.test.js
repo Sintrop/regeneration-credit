@@ -7,6 +7,7 @@ const DeveloperPool = artifacts.require("DeveloperPool");
 const SacToken = artifacts.require("SacToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
+require('./shared/setup.js');
 
 contract("ValidatorContract", (accounts) => {
   let instance;
@@ -53,7 +54,7 @@ contract("ValidatorContract", (accounts) => {
     await userContract.setDeniedType(userAddress);
   };
 
-  beforeEach(async () => {
+  before(async () => {
     sacToken = await SacToken.new("150000000000000000000000000000");
     userContract = await UserContract.new();
 

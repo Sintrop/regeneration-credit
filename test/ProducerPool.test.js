@@ -1,5 +1,6 @@
 const ProducerPool = artifacts.require("ProducerPool");
 const SacToken = artifacts.require("SacToken");
+require('./shared/setup.js');
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
@@ -15,33 +16,11 @@ contract("ProducerPool", (accounts) => {
     blocksPerEra: 12,
   };
 
-  advanceBlock = async (blocksNumber) => {
-    for (let i = 0; i < blocksNumber; i++) {
-      let promise = new Promise((resolve, reject) => {
-        web3.currentProvider.send(
-          {
-            jsonrpc: "2.0",
-            method: "evm_mine",
-            id: new Date().getTime(),
-          },
-          (err, result) => {
-            if (err) {
-              return reject(err);
-            }
-            const newBlockHash = web3.eth.getBlock("latest").hash;
-
-            return resolve(newBlockHash);
-          }
-        );
-      });
-    }
-  };
-
   const transferTokensTo = async (userAddress, tokens) => {
     await sacToken.transfer(userAddress, tokens);
   };
 
-  beforeEach(async () => {
+  before(async () => {
     sacToken = await SacToken.new("150000000000000000000000000000");
 
     instance = await ProducerPool.new(sacToken.address, args.halving, args.totalEras, args.blocksPerEra);

@@ -1,4 +1,5 @@
 const Blockable = artifacts.require("Blockable");
+require('./shared/setup.js');
 
 contract("Blockable", (accounts) => {
   let instance;
@@ -10,29 +11,7 @@ contract("Blockable", (accounts) => {
     eraMax: 12,
   };
 
-  advanceBlock = async (blocksNumber) => {
-    for (let i = 0; i < blocksNumber; i++) {
-      let promise = new Promise((resolve, reject) => {
-        web3.currentProvider.send(
-          {
-            jsonrpc: "2.0",
-            method: "evm_mine",
-            id: new Date().getTime(),
-          },
-          (err, result) => {
-            if (err) {
-              return reject(err);
-            }
-            const newBlockHash = web3.eth.getBlock("latest").hash;
-
-            return resolve(newBlockHash);
-          }
-        );
-      });
-    }
-  };
-
-  beforeEach(async () => {
+  before(async () => {
     instance = await Blockable.new(params.blocksPerEra, params.eraMax);
   });
 
