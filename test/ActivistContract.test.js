@@ -1,95 +1,95 @@
-const ActivistContract = artifacts.require("ActivistContract");
+const InspectorContract = artifacts.require("InspectorContract");
 const UserContract = artifacts.require("UserContract");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
-contract("ActivistContract", (accounts) => {
+contract("InspectorContract", (accounts) => {
   let instance;
   let userContract;
   let [ownerAddress, activ1Address, activ2Address] = accounts;
 
-  const addActivist = async (name, address) => {
-    await instance.addActivist(name, "photoURL", "135465-005", { from: address });
+  const addInspector = async (name, address) => {
+    await instance.addInspector(name, "photoURL", "135465-005", { from: address });
   };
 
   beforeEach(async () => {
     userContract = await UserContract.new();
 
-    instance = await ActivistContract.new(userContract.address);
+    instance = await InspectorContract.new(userContract.address);
 
     await userContract.newAllowedCaller(instance.address);
     await instance.newAllowedCaller(ownerAddress);
   });
-  context("when access activist fields", () => {
+  context("when access inspector fields", () => {
     it("should have fields", async () => {
-      await addActivist("Activist A", activ1Address);
-      const activist = await instance.getActivist(activ1Address);
+      await addInspector("Inspector A", activ1Address);
+      const inspector = await instance.getInspector(activ1Address);
 
-      assert.equal(activist.id, "1");
-      assert.equal(activist.activistWallet, activ1Address);
-      assert.equal(activist.userType, "2");
-      assert.equal(activist.name, "Activist A");
-      assert.equal(activist.proofPhoto, "photoURL");
-      assert.equal(activist.totalInspections, "0");
-      assert.equal(activist.giveUps, "0");
-      assert.equal(activist.lastAcceptedAt, "0");
-      assert.equal(activist.activistAddress.coordinate, "135465-005");
+      assert.equal(inspector.id, "1");
+      assert.equal(inspector.inspectorWallet, activ1Address);
+      assert.equal(inspector.userType, "2");
+      assert.equal(inspector.name, "Inspector A");
+      assert.equal(inspector.proofPhoto, "photoURL");
+      assert.equal(inspector.totalInspections, "0");
+      assert.equal(inspector.giveUps, "0");
+      assert.equal(inspector.lastAcceptedAt, "0");
+      assert.equal(inspector.inspectorAddress.coordinate, "135465-005");
     });
   });
 
-  context("when will create new activist (.addActivist)", () => {
+  context("when will create new inspector (.addInspector)", () => {
     context("when is allowed", () => {
-      context("when activist exists", () => {
+      context("when inspector exists", () => {
         it("should return error", async () => {
-          await addActivist("Activist A", activ1Address);
-          await expectRevert(addActivist("Activist A", activ1Address), "This activist already exist");
+          await addInspector("Inspector A", activ1Address);
+          await expectRevert(addInspector("Inspector A", activ1Address), "This inspector already exist");
         });
       });
 
-      context("when activist don't exist", () => {
-        it("should create activist", async () => {
-          await addActivist("Activist A", activ1Address);
-          await addActivist("Activist B", activ2Address);
-          const activist = await instance.getActivist(activ1Address);
+      context("when inspector don't exist", () => {
+        it("should create inspector", async () => {
+          await addInspector("Inspector A", activ1Address);
+          await addInspector("Inspector B", activ2Address);
+          const inspector = await instance.getInspector(activ1Address);
 
-          assert.equal(activist.activistWallet, activ1Address);
+          assert.equal(inspector.inspectorWallet, activ1Address);
         });
 
         it("should be created with totalInspections equal zero", async () => {
-          await addActivist("Activist A", activ1Address);
+          await addInspector("Inspector A", activ1Address);
 
-          const activist = await instance.getActivist(activ1Address);
+          const inspector = await instance.getInspector(activ1Address);
 
-          assert.equal(activist.totalInspections, 0);
+          assert.equal(inspector.totalInspections, 0);
         });
 
         it("should be created with giveUps equal zero", async () => {
-          await addActivist("Activist A", activ1Address);
+          await addInspector("Inspector A", activ1Address);
 
-          const activist = await instance.getActivist(activ1Address);
+          const inspector = await instance.getInspector(activ1Address);
 
-          assert.equal(activist.giveUps, 0);
+          assert.equal(inspector.giveUps, 0);
         });
 
-        it("should increment activistsCount after create activist", async () => {
-          await addActivist("Activist A", activ1Address);
-          await addActivist("Activist B", activ2Address);
-          const activistsCount = await instance.activistsCount();
+        it("should increment inspectorsCount after create inspector", async () => {
+          await addInspector("Inspector A", activ1Address);
+          await addInspector("Inspector B", activ2Address);
+          const inspectorsCount = await instance.inspectorsCount();
 
-          assert.equal(activistsCount, 2);
+          assert.equal(inspectorsCount, 2);
         });
 
-        it("should add created activist in activistList (array)", async () => {
-          await addActivist("Activist A", activ1Address);
-          await addActivist("Activist B", activ2Address);
+        it("should add created inspector in inspectorList (array)", async () => {
+          await addInspector("Inspector A", activ1Address);
+          await addInspector("Inspector B", activ2Address);
 
-          const activists = await instance.getActivists();
+          const inspectors = await instance.getInspectors();
 
-          assert.equal(activists[0].activistWallet, activ1Address);
+          assert.equal(inspectors[0].inspectorWallet, activ1Address);
         });
 
-        it("should add created activist in userType contract as a ACTIVIST", async () => {
-          await addActivist("Activist A", activ1Address);
+        it("should add created inspector in userType contract as a ACTIVIST", async () => {
+          await addInspector("Inspector A", activ1Address);
 
           const userType = await userContract.getUser(activ1Address);
           const ACTIVIST = 2;
@@ -100,39 +100,39 @@ contract("ActivistContract", (accounts) => {
     });
   });
 
-  context("when will get activists (.getActivists)", () => {
-    it("should return activists when has activists", async () => {
-      await addActivist("Activist A", activ1Address);
-      await addActivist("Activist B", activ2Address);
+  context("when will get inspectors (.getInspectors)", () => {
+    it("should return inspectors when has inspectors", async () => {
+      await addInspector("Inspector A", activ1Address);
+      await addInspector("Inspector B", activ2Address);
 
-      const activists = await instance.getActivists();
+      const inspectors = await instance.getInspectors();
 
-      assert.equal(activists.length, 2);
+      assert.equal(inspectors.length, 2);
     });
 
-    it("should return activists equal zero when dont has it", async () => {
-      const activists = await instance.getActivists();
+    it("should return inspectors equal zero when dont has it", async () => {
+      const inspectors = await instance.getInspectors();
 
-      assert.equal(activists.length, 0);
-    });
-  });
-
-  context("when will get activist (.getActivist)", () => {
-    it("should return a activist", async () => {
-      await addActivist("Activist A", activ1Address);
-
-      const activist = await instance.getActivist(activ1Address);
-
-      assert.equal(activist.activistWallet, activ1Address);
+      assert.equal(inspectors.length, 0);
     });
   });
 
-  context("when will check if activist exists", () => {
+  context("when will get inspector (.getInspector)", () => {
+    it("should return a inspector", async () => {
+      await addInspector("Inspector A", activ1Address);
+
+      const inspector = await instance.getInspector(activ1Address);
+
+      assert.equal(inspector.inspectorWallet, activ1Address);
+    });
+  });
+
+  context("when will check if inspector exists", () => {
     it("should return true when exists", async () => {
-      await addActivist("Activist A", activ1Address);
-      const activistExists = await instance.activistExists(activ1Address);
+      await addInspector("Inspector A", activ1Address);
+      const inspectorExists = await instance.inspectorExists(activ1Address);
 
-      assert.equal(activistExists, true);
+      assert.equal(inspectorExists, true);
     });
 
     // Todo Add when not exists
@@ -141,19 +141,19 @@ contract("ActivistContract", (accounts) => {
   context("when will update incrementRequests (.incrementRequests)", () => {
     context("with allowed caller", () => {
       it("should success when is allowed caller", async () => {
-        await addActivist("Activist A", activ1Address);
+        await addInspector("Inspector A", activ1Address);
         await instance.incrementRequests(activ1Address);
 
-        const activist = await instance.getActivist(activ1Address);
+        const inspector = await instance.getInspector(activ1Address);
 
-        assert.equal(activist.totalInspections, 1);
+        assert.equal(inspector.totalInspections, 1);
       });
     });
   });
 
   context("without allowed caller", async () => {
     it("should return error when is not allowed caller", async () => {
-      await addActivist("Activist A", activ1Address);
+      await addInspector("Inspector A", activ1Address);
       await expectRevert(instance.incrementRequests(activ1Address, { from: activ1Address }), "Not allowed caller");
     });
   });
