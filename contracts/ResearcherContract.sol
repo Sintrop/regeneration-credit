@@ -2,21 +2,24 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
-import { Researcher, Work } from "./types/ResearcherTypes.sol";
+import { Researcher, Work, Pool } from "./types/ResearcherTypes.sol";
 import { Registrable } from "./Registrable.sol";
 import { UserType } from "./types/UserTypes.sol";
+import { ResearcherPool } from "./ResearcherPool.sol";
 
 contract ResearcherContract is Registrable {
   mapping(address => Researcher) internal researchers;
   mapping(uint256 => Work) internal works;
 
   UserContract internal userContract;
+  ResearcherPool internal researcherPool;
   address[] internal researchersAddress;
   uint256 public researchersCount;
   uint256 public worksCount;
 
-  constructor(address userContractAddress) {
+  constructor(address userContractAddress, address researcherPoolAddress) {
     userContract = UserContract(userContractAddress);
+    researcherPool = ResearcherPool(researcherPoolAddress);
   }
 
   /**
@@ -30,8 +33,11 @@ contract ResearcherContract is Registrable {
   ) public uniqueResearcher mustBeAllowedUser returns (Researcher memory) {
     uint256 id = researchersCount + 1;
     UserType userType = UserType.RESEARCHER;
+    uint256 currentEra = researcherPoolEra();
 
-    Researcher memory researcher = Researcher(id, msg.sender, userType, name, proofPhoto, 0);
+    Pool memory pool = Pool(0, currentEra);
+
+    Researcher memory researcher = Researcher(id, msg.sender, userType, name, pool, proofPhoto, 0);
 
     researchers[msg.sender] = researcher;
     researchersAddress.push(msg.sender);
@@ -75,6 +81,12 @@ contract ResearcherContract is Registrable {
   function addWork(string memory title, string memory thesis, string memory file) public {
     require(userContract.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
 
+    Researcher storage researcher = researchers[msg.sender];
+    researcher.pool.level++;
+    researchers[msg.sender] = researcher;
+
+    researcherPool.addLevel(msg.sender, researcher.pool.level, 1);
+
     uint256 id = worksCount + 1;
 
     Work memory work = Work(id, msg.sender, title, thesis, file, block.timestamp); // solhint-disable-line
@@ -93,6 +105,23 @@ contract ResearcherContract is Registrable {
     }
 
     return worksList;
+  }
+
+  function withdraw() public {
+    require(userContract.userTypeIs(UserType.RESEARCHER, msg.sender), "Pool only to researchers");
+
+    Researcher memory reseracher = researchers[msg.sender];
+    uint256 currentEra = reseracher.pool.currentEra;
+
+    require(researcherPool.canApprove(currentEra), "Can't approve withdraw");
+
+    researchers[msg.sender].pool.currentEra++;
+
+    researcherPool.withdraw(msg.sender, currentEra);
+  }
+
+  function researcherPoolEra() internal view returns (uint256) {
+    return researcherPool.currentContractEra();
   }
 
   // MODIFIERS

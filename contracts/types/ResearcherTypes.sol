@@ -8,8 +8,14 @@ struct Researcher {
   address researcherWallet;
   UserType userType;
   string name;
+  Pool pool;
   string proofPhoto;
   uint256 publishedWorks;
+}
+
+struct Pool {
+  uint256 level;
+  uint256 currentEra;
 }
 
 struct Work {

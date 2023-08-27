@@ -7,6 +7,7 @@ const ActivistContract = artifacts.require("ActivistContract");
 const ProducerContract = artifacts.require("ProducerContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
 const ProducerPool = artifacts.require("ProducerPool");
+const ResearcherPool = artifacts.require("ResearcherPool");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
@@ -16,6 +17,7 @@ contract("Sintrop", (accounts) => {
   let activistContract;
   let producerContract;
   let researcherContract;
+  let researcherPool;
   let [ownerAddress, producerAddress, producer2Address, activistAddress, activist2Address, resea1Address] = accounts;
   const STATUS = {
     open: 0,
@@ -25,6 +27,26 @@ contract("Sintrop", (accounts) => {
   };
 
   const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+  const producerPoolArgs = {
+    totalTokens: "750000000000000000000000000",
+    halving: 50,
+    totalEras: 50,
+    blocksPerEra: 50,
+  };
+
+  const sintropArgs = {
+    timeBetweenInspections: 20,
+    blocksToExpireAcceptedInspection: 15,
+    allowedInitialRequests: 1,
+  };
+
+  const developerPoolargs = {
+    totalTokens: "30000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 12,
+  };
 
   const addProducer = async (name, address) => {
     await producerContract.addProducer(10, name, "photoURL", "135465-005", {
@@ -105,26 +127,20 @@ contract("Sintrop", (accounts) => {
     }
   };
 
-  const producerPoolArgs = {
-    totalTokens: "750000000000000000000000000",
-    halving: 50,
-    totalEras: 50,
-    blocksPerEra: 50,
-  };
-
-  const sintropArgs = {
-    timeBetweenInspections: 20,
-    blocksToExpireAcceptedInspection: 15,
-    allowedInitialRequests: 1,
-  };
-
   beforeEach(async () => {
+    sacToken = await SacToken.new("1500000000000000000000000000");
     userContract = await UserContract.new();
 
-    activistContract = await ActivistContract.new(userContract.address);
-    researcherContract = await ResearcherContract.new(userContract.address);
+    researcherPool = await ResearcherPool.new(
+      sacToken.address,
+      developerPoolargs.halving,
+      developerPoolargs.totalEras,
+      developerPoolargs.blocksPerEra
+    );
 
-    sacToken = await SacToken.new("1500000000000000000000000000");
+    activistContract = await ActivistContract.new(userContract.address);
+    researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address);
+
     isaPool = await IsaPool.new(sacToken.address);
 
     producerPool = await ProducerPool.new(
