@@ -1,10 +1,10 @@
-const SacToken = artifacts.require("SacToken");
+const RcToken = artifacts.require("RcToken");
 const IsaPool = artifacts.require("IsaPool");
 
 module.exports = function (deployer) {
   deployer.then(async () => {
-    const sacToken = await SacToken.deployed();
+    const rcToken = await RcToken.deployed();
 
-    await deployer.deploy(IsaPool, sacToken.address);
+    await deployer.deploy(IsaPool, rcToken.address);
   });
 };

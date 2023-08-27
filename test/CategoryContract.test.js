@@ -1,7 +1,7 @@
 const CategoryContract = artifacts.require("CategoryContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
 const UserContract = artifacts.require("UserContract");
-const SacToken = artifacts.require("SacToken");
+const RcToken = artifacts.require("RcToken");
 const IsaPool = artifacts.require("IsaPool");
 const ResearcherPool = artifacts.require("ResearcherPool");
 
@@ -9,7 +9,7 @@ const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
 contract("CategoryContract", (accounts) => {
   let instance;
-  let sacToken;
+  let rcToken;
   let isaPool;
   let researcherPool;
   let userContract;
@@ -44,25 +44,25 @@ contract("CategoryContract", (accounts) => {
   };
 
   const transferTokensTo = async (userAddress, tokens) => {
-    await sacToken.transfer(userAddress, tokens);
+    await rcToken.transfer(userAddress, tokens);
   };
 
   const balanceOf = async (userAddress) => {
-    return await sacToken.balanceOf(userAddress);
+    return await rcToken.balanceOf(userAddress);
   };
 
   beforeEach(async () => {
-    sacToken = await SacToken.new("1500000000000000000000000000");
-    isaPool = await IsaPool.new(sacToken.address);
+    rcToken = await RcToken.new("1500000000000000000000000000");
+    isaPool = await IsaPool.new(rcToken.address);
 
     researcherPool = await ResearcherPool.new(
-      sacToken.address,
+      rcToken.address,
       developerPoolargs.halving,
       developerPoolargs.totalEras,
       developerPoolargs.blocksPerEra
     );
 
-    await sacToken.addContractPool(isaPool.address, "0");
+    await rcToken.addContractPool(isaPool.address, "0");
 
     userContract = await UserContract.new();
     researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address);
@@ -195,7 +195,7 @@ contract("CategoryContract", (accounts) => {
         await addResearcher("Researcher C", user2Address);
       });
 
-      context("when user dont has Sac Tokens", () => {
+      context("when user dont has Rc Tokens", () => {
         it("should return error message", async () => {
           await expectRevert(instance.vote(1, 0, { from: user1Address }), "You don't have tokens to vote");
         });
@@ -207,7 +207,7 @@ contract("CategoryContract", (accounts) => {
         });
       });
 
-      context("when user has Sac Tokens", () => {
+      context("when user has Rc Tokens", () => {
         context("when send tokens to vote", () => {
           beforeEach(async () => {
             await transferTokensTo(user1Address, "500000000000000000000");
@@ -385,7 +385,7 @@ contract("CategoryContract", (accounts) => {
         context("when dont send tokens to vote", () => {
           it("should return error message", async () => {
             await transferTokensTo(user1Address, "500000000000000000000000");
-            await expectRevert(instance.vote(1, 0, { from: user1Address }), "Send at least 1 SAC Token");
+            await expectRevert(instance.vote(1, 0, { from: user1Address }), "Send at least 1 RCT Token");
           });
         });
       });

@@ -1,4 +1,4 @@
-const SacToken = artifacts.require("SacToken");
+const RcToken = artifacts.require("RcToken");
 const IsaPool = artifacts.require("IsaPool");
 const DeveloperPool = artifacts.require("DeveloperPool");
 const ProducerPool = artifacts.require("ProducerPool");
@@ -11,15 +11,15 @@ const researcherPoolFunds = process.env["RESEARCHER_POOL_FUNDS"];
 
 module.exports = function (deployer) {
   deployer.then(async () => {
-    const sacToken = await SacToken.deployed();
+    const rcToken = await RcToken.deployed();
     const isaPool = await IsaPool.deployed();
     const developerPool = await DeveloperPool.deployed();
     const producerPool = await ProducerPool.deployed();
     const researcherPool = await ResearcherPool.deployed();
 
-    await sacToken.addContractPool(isaPool.address, isaPoolFunds);
-    await sacToken.addContractPool(developerPool.address, developerPoolFunds);
-    await sacToken.addContractPool(producerPool.address, producerPoolFunds);
-    await sacToken.addContractPool(researcherPool.address, researcherPoolFunds);
+    await rcToken.addContractPool(isaPool.address, isaPoolFunds);
+    await rcToken.addContractPool(developerPool.address, developerPoolFunds);
+    await rcToken.addContractPool(producerPool.address, producerPoolFunds);
+    await rcToken.addContractPool(researcherPool.address, researcherPoolFunds);
   });
 };

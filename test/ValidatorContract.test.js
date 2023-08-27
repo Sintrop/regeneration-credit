@@ -4,7 +4,7 @@ const ProducerContract = artifacts.require("ProducerContract");
 const DeveloperContract = artifacts.require("DeveloperContract");
 const ProducerPool = artifacts.require("ProducerPool");
 const DeveloperPool = artifacts.require("DeveloperPool");
-const SacToken = artifacts.require("SacToken");
+const RcToken = artifacts.require("RcToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
@@ -15,7 +15,7 @@ contract("ValidatorContract", (accounts) => {
   let developerContract;
   let producerPool;
   let developerPool;
-  let sacToken;
+  let rcToken;
   let [
     ownerAddress,
     producer1Address,
@@ -54,17 +54,17 @@ contract("ValidatorContract", (accounts) => {
   };
 
   beforeEach(async () => {
-    sacToken = await SacToken.new("150000000000000000000000000000");
+    rcToken = await RcToken.new("150000000000000000000000000000");
     userContract = await UserContract.new();
 
     producerPool = await ProducerPool.new(
-      sacToken.address,
+      rcToken.address,
       producerPoolArgs.halving,
       producerPoolArgs.totalEras,
       producerPoolArgs.blocksPerEra
     );
 
-    developerPool = await DeveloperPool.new(sacToken.address, developerPoolArgs.blocksPerEra, developerPoolArgs.eraMax);
+    developerPool = await DeveloperPool.new(rcToken.address, developerPoolArgs.blocksPerEra, developerPoolArgs.eraMax);
 
     producerContract = await ProducerContract.new(userContract.address, producerPool.address);
     developerContract = await DeveloperContract.new(userContract.address, developerPool.address);
@@ -78,8 +78,8 @@ contract("ValidatorContract", (accounts) => {
     await instance.newAllowedUser(validator1Address);
     await producerContract.newAllowedCaller(instance.address);
     await producerPool.newAllowedCaller(producerContract.address);
-    await sacToken.addContractPool(instance.address, producerPoolArgs.totalTokens);
-    await sacToken.addContractPool(producerContract.address, producerPoolArgs.totalTokens);
+    await rcToken.addContractPool(instance.address, producerPoolArgs.totalTokens);
+    await rcToken.addContractPool(producerContract.address, producerPoolArgs.totalTokens);
   });
 
   describe("#addValidator", () => {

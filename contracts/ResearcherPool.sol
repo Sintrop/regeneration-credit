@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { PoolInterface } from "./PoolInterface.sol";
-import { SacTokenInterface } from "./SacTokenInterface.sol";
+import { RcTokenInterface } from "./RcTokenInterface.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Blockable } from "./Blockable.sol";
@@ -20,7 +20,7 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
   uint256 internal immutable halving;
   uint256 internal immutable totalEras;
 
-  SacTokenInterface internal sacToken;
+  RcTokenInterface internal rcToken;
 
   uint256[8] internal tokensPerEpochs = [
     14400000000000000000000000,
@@ -36,12 +36,12 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
   uint256 internal constant LIMIT_EPOCHS_SIZE = 8;
 
   constructor(
-    address sacTokenAddress,
+    address rcTokenAddress,
     uint256 _halving,
     uint256 _totalEras,
     uint256 _blocksPerEra
   ) Blockable(_blocksPerEra, _totalEras) {
-    sacToken = SacTokenInterface(sacTokenAddress);
+    rcToken = RcTokenInterface(rcTokenAddress);
     halving = _halving;
     totalEras = _totalEras;
   }
@@ -51,7 +51,7 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
   }
 
   function balanceOf(address addr) public view returns (uint256) {
-    return sacToken.balanceOf(addr);
+    return rcToken.balanceOf(addr);
   }
 
   function withdraw(address delegate, uint256 era) public mustBeAllowedCaller {
@@ -66,7 +66,7 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
     eras[era].tokens += numTokens;
     eraTokens[era][delegate] = numTokens;
 
-    sacToken.transferWith(address(this), delegate, numTokens);
+    rcToken.transferWith(address(this), delegate, numTokens);
   }
 
   function addLevel(address addr, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {

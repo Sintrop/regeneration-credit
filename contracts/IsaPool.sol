@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { PoolPassiveInterface } from "./PoolPassiveInterface.sol";
-import { SacTokenInterface } from "./SacTokenInterface.sol";
+import { RcTokenInterface } from "./RcTokenInterface.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Callable } from "./Callable.sol";
 
@@ -12,10 +12,10 @@ import { Callable } from "./Callable.sol";
  * @dev IsaPool is a contract to manage user votes
  */
 contract IsaPool is PoolPassiveInterface, Ownable, Callable {
-  SacTokenInterface internal sacToken;
+  RcTokenInterface internal rcToken;
 
-  constructor(address sacTokenAddress) {
-    sacToken = SacTokenInterface(sacTokenAddress);
+  constructor(address rcTokenAddress) {
+    rcToken = RcTokenInterface(rcTokenAddress);
   }
 
   /**
@@ -24,20 +24,20 @@ contract IsaPool is PoolPassiveInterface, Ownable, Callable {
    * TODO Check external code call - EXTCALL
    */
   function allowance() public view override returns (uint256) {
-    return sacToken.allowance(address(this), msg.sender);
+    return rcToken.allowance(address(this), msg.sender);
   }
 
   /**
-   * @dev Allow a user know how much SAC Tokens has
+   * @dev Allow a user know how much RCT Tokens has
    * @param tokenOwner The address of the token owner
    * @return uint256
    */
   function balanceOf(address tokenOwner) public view override returns (uint256) {
-    return sacToken.balanceOf(tokenOwner);
+    return rcToken.balanceOf(tokenOwner);
   }
 
   /**
-   * @dev Allow a user know how much SAC Tokens this pool has
+   * @dev Allow a user know how much RCT Tokens this pool has
    */
   function balance() public view override returns (uint256) {
     return balanceOf(address(this));
@@ -49,7 +49,7 @@ contract IsaPool is PoolPassiveInterface, Ownable, Callable {
    * @return bool
    */
   function approveWith(address delegate, uint256 _numTokens) public override mustBeAllowedCaller returns (bool) {
-    sacToken.approveWith(delegate, _numTokens);
+    rcToken.approveWith(delegate, _numTokens);
     return true;
   }
 
@@ -68,7 +68,7 @@ contract IsaPool is PoolPassiveInterface, Ownable, Callable {
     address receiver,
     uint256 numTokens
   ) public override mustBeAllowedCaller returns (bool) {
-    sacToken.transferWith(tokenOwner, receiver, numTokens);
+    rcToken.transferWith(tokenOwner, receiver, numTokens);
     return true;
   }
 }
