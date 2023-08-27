@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { PoolInterface } from "./PoolInterface.sol";
-import { SacTokenInterface } from "./SacTokenInterface.sol";
+import { SacTokenInterface } from "./RegenerationCreditInterface.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Blockable } from "./Blockable.sol";

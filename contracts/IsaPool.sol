@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { PoolPassiveInterface } from "./PoolPassiveInterface.sol";
-import { SacTokenInterface } from "./SacTokenInterface.sol";
+import { SacTokenInterface } from "./RegenerationCreditInterface.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Callable } from "./Callable.sol";
 
