@@ -1,9 +1,9 @@
-const SacToken = artifacts.require("SacToken");
+const RctToken = artifacts.require("RctToken");
 const ProducerPool = artifacts.require("ProducerPool");
 
 module.exports = function (deployer) {
   deployer.then(async () => {
-    const sacToken = await SacToken.deployed();
+    const rctToken = await RctToken.deployed();
 
     const producer_pool_halving = process.env["PRODUCER_POOL_HALVING"];
     const producer_pool_total_eras = process.env["PRODUCER_POOL_TOTAL_ERAS"];
@@ -11,7 +11,7 @@ module.exports = function (deployer) {
 
     await deployer.deploy(
       ProducerPool,
-      sacToken.address,
+      rctToken.address,
       producer_pool_halving,
       producer_pool_total_eras,
       producer_pool_blocks_per_era

@@ -5,7 +5,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract SacToken is ERC20, Ownable {
+contract RctToken is ERC20, Ownable {
   string public constant NAME = "REGENERATION CREDIT TOKEN";
   string public constant SYMBOL = "RCT";
   uint8 public constant DECIMALS = 18;

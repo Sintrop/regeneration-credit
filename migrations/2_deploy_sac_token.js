@@ -1,9 +1,9 @@
-const SacToken = artifacts.require("SacToken");
+const RctToken = artifacts.require("RctToken");
 
-const sacTokensTotalTokens = process.env["SAC_TOKENS_TOTAL_TOKENS"];
+const rctTokensTotalTokens = process.env["RCT_TOKENS_TOTAL_TOKENS"];
 
 module.exports = function (deployer) {
   deployer.then(async () => {
-    await deployer.deploy(SacToken, sacTokensTotalTokens);
+    await deployer.deploy(RctToken, rctTokensTotalTokens);
   });
 };
