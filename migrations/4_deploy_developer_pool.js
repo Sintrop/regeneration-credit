@@ -1,4 +1,4 @@
-const RctToken = artifacts.require("RctToken");
+const RcToken = artifacts.require("RcToken");
 const DeveloperPool = artifacts.require("DeveloperPool");
 
 const developerPoolEraMax = process.env["DEVELOPER_POOL_ERA_MAX"];
@@ -6,11 +6,11 @@ const developerPoolBlocksPerEra = process.env["DEVELOPER_POOL_BLOCKS_PER_ERA"];
 
 module.exports = function (deployer) {
   deployer.then(async () => {
-    const rctToken = await RctToken.deployed();
+    const rcToken = await RcToken.deployed();
 
     await deployer.deploy(
       DeveloperPool,
-      rctToken.address,
+      rcToken.address,
       developerPoolBlocksPerEra,
       developerPoolEraMax
     );
