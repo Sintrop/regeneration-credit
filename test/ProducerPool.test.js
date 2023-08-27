@@ -1,11 +1,11 @@
 const ProducerPool = artifacts.require("ProducerPool");
-const SacToken = artifacts.require("SacToken");
+const RcToken = artifacts.require("RcToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
 contract("ProducerPool", (accounts) => {
   let instance;
-  let sacToken;
+  let rcToken;
   let [owner, producer1Address, producer2Address] = accounts;
 
   const args = {
@@ -38,17 +38,17 @@ contract("ProducerPool", (accounts) => {
   };
 
   const transferTokensTo = async (userAddress, tokens) => {
-    await sacToken.transfer(userAddress, tokens);
+    await rcToken.transfer(userAddress, tokens);
   };
 
   beforeEach(async () => {
-    sacToken = await SacToken.new("150000000000000000000000000000");
+    rcToken = await RcToken.new("150000000000000000000000000000");
 
-    instance = await ProducerPool.new(sacToken.address, args.halving, args.totalEras, args.blocksPerEra);
+    instance = await ProducerPool.new(rcToken.address, args.halving, args.totalEras, args.blocksPerEra);
 
     await instance.newAllowedCaller(owner);
 
-    await sacToken.addContractPool(instance.address, args.totalTokens);
+    await rcToken.addContractPool(instance.address, args.totalTokens);
   });
 
   describe("#balanceOf", () => {

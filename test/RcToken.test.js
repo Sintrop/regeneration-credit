@@ -1,25 +1,25 @@
-const SacToken = artifacts.require("SacToken");
+const RcToken = artifacts.require("RcToken");
 const UserContract = artifacts.require("UserContract");
 
 const expectRevert = require("@openzeppelin/test-helpers/src/expectRevert");
 
-contract("SacToken", (accounts) => {
+contract("RcToken", (accounts) => {
   let instance;
   let [ownerAddress, user1Address, user2Address] = accounts;
 
   let args = {
-    totalSacTokens: "1500000000000000000000000000",
+    totalRcTokens: "1500000000000000000000000000",
   };
 
   beforeEach(async () => {
-    instance = await SacToken.new(args.totalSacTokens);
+    instance = await RcToken.new(args.totalRcTokens);
     userContract = await UserContract.new();
   });
 
   context("when deploy the token contract", () => {
     it("total suply should be equal to 1500000000000000000000000000", async () => {
       const totalSupply = await instance.totalSupply();
-      assert.equal(totalSupply, args.totalSacTokens);
+      assert.equal(totalSupply, args.totalRcTokens);
     });
 
     it("totalCertified should be equal zero", async () => {
@@ -29,13 +29,13 @@ contract("SacToken", (accounts) => {
 
     it("balance of contract owner should be equal to 1500000000000000000000000000", async () => {
       const ownerBalance = await instance.balanceOf(ownerAddress);
-      assert.equal(ownerBalance, args.totalSacTokens);
+      assert.equal(ownerBalance, args.totalRcTokens);
     });
   });
 
   describe("#transfer", () => {
     context("when user have tokens", () => {
-      context("when a user transfer 100000000000000000000 sac token", () => {
+      context("when a user transfer 100000000000000000000 rc token", () => {
         it("it should transfer when user has tokens", async () => {
           await instance.transfer(user1Address, "100000000000000000000");
           const balanceOf = await instance.balanceOf(user1Address);

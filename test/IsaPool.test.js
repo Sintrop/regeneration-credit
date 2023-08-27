@@ -1,23 +1,23 @@
 const IsaPool = artifacts.require("IsaPool");
-const SacToken = artifacts.require("SacToken");
+const RcToken = artifacts.require("RcToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
 contract("IsaPool", (accounts) => {
   let instance;
-  let sacToken;
+  let rcToken;
   let [owner, user1Address, user2Address] = accounts;
 
   const transferTokensTo = async (userAddress, tokens) => {
-    await sacToken.transfer(userAddress, tokens);
+    await rcToken.transfer(userAddress, tokens);
   };
 
   beforeEach(async () => {
-    sacToken = await SacToken.new("1500000000000000000000000000");
+    rcToken = await RcToken.new("1500000000000000000000000000");
 
-    instance = await IsaPool.new(sacToken.address);
+    instance = await IsaPool.new(rcToken.address);
 
-    await sacToken.addContractPool(instance.address, "15000000000000000000000000");
+    await rcToken.addContractPool(instance.address, "15000000000000000000000000");
     await transferTokensTo(user1Address, "500000000000000000000000");
   });
 
@@ -68,7 +68,7 @@ contract("IsaPool", (accounts) => {
 
       context("when is not a contract pool", () => {
         beforeEach(async () => {
-          await sacToken.removeContractPool(instance.address);
+          await rcToken.removeContractPool(instance.address);
         });
 
         it("should return error message", async () => {
@@ -144,12 +144,12 @@ contract("IsaPool", (accounts) => {
 
       context("when is not a contract pool", () => {
         beforeEach(async () => {
-          await sacToken.removeContractPool(instance.address);
+          await rcToken.removeContractPool(instance.address);
         });
 
         it("should return error message", async () => {
           await instance.newAllowedCaller(owner);
-          await sacToken.removeContractPool(instance.address);
+          await rcToken.removeContractPool(instance.address);
           await expectRevert(instance.approveWith(owner, 0), "Not a contract pool");
         });
       });

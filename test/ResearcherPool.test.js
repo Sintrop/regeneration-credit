@@ -1,4 +1,4 @@
-const SacToken = artifacts.require("SacToken");
+const RcToken = artifacts.require("RcToken");
 const ResearcherPool = artifacts.require("ResearcherPool");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
@@ -8,7 +8,7 @@ contract("ResearcherPool", (accounts) => {
   let [owner, researcher1Address, researcher2Address] = accounts;
 
   const args = {
-    totalSacTokens: "1500000000000000000000000000",
+    totalRcTokens: "1500000000000000000000000000",
     totalResearcherPoolTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
@@ -38,12 +38,12 @@ contract("ResearcherPool", (accounts) => {
   };
 
   beforeEach(async () => {
-    const sacToken = await SacToken.new(args.totalSacTokens);
-    instance = await ResearcherPool.new(sacToken.address, args.halving, args.totalEras, args.blocksPerEra);
+    const rcToken = await RcToken.new(args.totalRcTokens);
+    instance = await ResearcherPool.new(rcToken.address, args.halving, args.totalEras, args.blocksPerEra);
 
     await instance.newAllowedCaller(owner);
 
-    await sacToken.addContractPool(instance.address, args.totalResearcherPoolTokens);
+    await rcToken.addContractPool(instance.address, args.totalResearcherPoolTokens);
   });
 
   describe("after deploy", () => {
