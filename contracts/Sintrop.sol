@@ -178,7 +178,7 @@ contract Sintrop {
     address createdBy = inspection.createdBy;
     address acceptedBy = inspection.acceptedBy;
 
-    // Increment actvist inspections and release to carry out new inspections
+    // Increment inspector inspections and release to carry out new inspections
     inspectorContract.incrementRequests(acceptedBy);
     inspectorContract.decreaseGiveUps(acceptedBy);
 
