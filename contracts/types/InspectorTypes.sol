@@ -3,18 +3,18 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import "./UserTypes.sol";
 
-struct Activist {
+struct Inspector {
   uint256 id;
-  address activistWallet;
+  address inspectorWallet;
   UserType userType;
   string name;
   string proofPhoto;
   uint256 totalInspections;
   uint256 giveUps;
-  ActivistAddress activistAddress;
+  InspectorAddress inspectorAddress;
   uint256 lastAcceptedAt;
 }
 
-struct ActivistAddress {
+struct InspectorAddress {
   string coordinate;
 }

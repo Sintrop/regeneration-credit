@@ -38,7 +38,7 @@ contract CategoryContract {
    * @dev add a new category
    * @param name the name of category
    * @param description the description of category
-   * @param tutorial how activists should evaluate it.
+   * @param tutorial how inspectors should evaluate it.
    * @param regenerative3 the description text to this metric
    * @param regenerative2 the description text to this metric
    * @param regenerative1 the description text to this metric
