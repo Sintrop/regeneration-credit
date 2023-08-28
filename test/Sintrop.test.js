@@ -742,7 +742,10 @@ contract("Sintrop", (accounts) => {
         await instance.requestInspection({ from: producerAddress });
         await instance.acceptInspection(1, { from: inspectorAddress });
 
-        await expectRevert(instance.realizeInspection(1, [], { from: producerAddress }), "Please register as inspector");
+        await expectRevert(
+          instance.realizeInspection(1, [], { from: producerAddress }),
+          "Please register as inspector"
+        );
       });
     });
   });
