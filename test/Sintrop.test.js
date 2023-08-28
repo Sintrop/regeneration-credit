@@ -1,7 +1,7 @@
 const Sintrop = artifacts.require("Sintrop");
 const CategoryContract = artifacts.require("CategoryContract");
 const IsaPool = artifacts.require("IsaPool");
-const SacToken = artifacts.require("SacToken");
+const RcToken = artifacts.require("RcToken");
 const UserContract = artifacts.require("UserContract");
 const ActivistContract = artifacts.require("ActivistContract");
 const ProducerContract = artifacts.require("ProducerContract");
@@ -128,11 +128,11 @@ contract("Sintrop", (accounts) => {
   };
 
   beforeEach(async () => {
-    sacToken = await SacToken.new("1500000000000000000000000000");
+    rcToken = await RcToken.new("1500000000000000000000000000");
     userContract = await UserContract.new();
 
     researcherPool = await ResearcherPool.new(
-      sacToken.address,
+      rcToken.address,
       developerPoolargs.halving,
       developerPoolargs.totalEras,
       developerPoolargs.blocksPerEra
@@ -141,10 +141,10 @@ contract("Sintrop", (accounts) => {
     activistContract = await ActivistContract.new(userContract.address);
     researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address);
 
-    isaPool = await IsaPool.new(sacToken.address);
+    isaPool = await IsaPool.new(rcToken.address);
 
     producerPool = await ProducerPool.new(
-      sacToken.address,
+      rcToken.address,
       producerPoolArgs.halving,
       producerPoolArgs.totalEras,
       producerPoolArgs.blocksPerEra

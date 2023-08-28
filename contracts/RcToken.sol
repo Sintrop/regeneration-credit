@@ -5,9 +5,9 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract SacToken is ERC20, Ownable {
-  string public constant NAME = "SUSTAINABLE AGRICULTURE CREDIT";
-  string public constant SYMBOL = "SAC";
+contract RcToken is ERC20, Ownable {
+  string public constant NAME = "REGENERATION CREDIT TOKEN";
+  string public constant SYMBOL = "RCT";
   uint8 public constant DECIMALS = 18;
 
   mapping(address => uint256) internal balances;
@@ -47,7 +47,7 @@ contract SacToken is ERC20, Ownable {
     address tokenOwner,
     address receiver,
     uint256 numTokens
-  ) public mustBeContractPool mustHaveSacTokens(tokenOwner, numTokens) returns (bool) {
+  ) public mustBeContractPool mustHaveRcTokens(tokenOwner, numTokens) returns (bool) {
     balances[tokenOwner] = balances[tokenOwner].sub(numTokens);
     balances[receiver] = balances[receiver].add(numTokens);
     emit Transfer(tokenOwner, receiver, numTokens);
@@ -128,8 +128,8 @@ contract SacToken is ERC20, Ownable {
     _;
   }
 
-  modifier mustHaveSacTokens(address tokenOwner, uint256 numTokens) {
-    require(numTokens <= balances[tokenOwner], "You don't have SAC Tokens");
+  modifier mustHaveRcTokens(address tokenOwner, uint256 numTokens) {
+    require(numTokens <= balances[tokenOwner], "You don't have RCT Tokens");
     _;
   }
 }

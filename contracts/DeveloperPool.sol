@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { PoolInterface } from "./PoolInterface.sol";
-import { SacTokenInterface } from "./SacTokenInterface.sol";
+import { RcTokenInterface } from "./RcTokenInterface.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Blockable } from "./Blockable.sol";
@@ -21,10 +21,10 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
   uint256 public constant TOKENS_PER_ERA = 833333000000000000000000;
   uint256 public constant ERAS = 18;
 
-  SacTokenInterface internal sacToken;
+  RcTokenInterface internal rcToken;
 
-  constructor(address sacTokenAddress, uint256 blocksPerEra, uint256 eraMax) Blockable(blocksPerEra, eraMax) {
-    sacToken = SacTokenInterface(sacTokenAddress);
+  constructor(address rcTokenAddress, uint256 blocksPerEra, uint256 eraMax) Blockable(blocksPerEra, eraMax) {
+    rcToken = RcTokenInterface(rcTokenAddress);
   }
 
   function withdraw(address delegate, uint256 era) public mustBeAllowedCaller {
@@ -38,11 +38,11 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
     eras[era].tokens += devTokens;
     eraTokens[era][delegate] = devTokens;
 
-    sacToken.transferWith(address(this), delegate, devTokens);
+    rcToken.transferWith(address(this), delegate, devTokens);
   }
 
   function balanceOf(address tokenOwner) public view returns (uint256) {
-    return sacToken.balanceOf(tokenOwner);
+    return rcToken.balanceOf(tokenOwner);
   }
 
   function balance() public view returns (uint256) {

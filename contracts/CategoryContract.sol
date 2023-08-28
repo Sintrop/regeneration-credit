@@ -104,7 +104,7 @@ contract CategoryContract {
    */
   function vote(uint256 id, uint256 tokens) public requireUserExists categoryMustExists(id) {
     require(isaPool.balanceOf(msg.sender) > tokens, "You don't have tokens to vote");
-    require(tokens > 0, "Send at least 1 SAC Token");
+    require(tokens > 0, "Send at least 1 RCT Token");
     require(voted[msg.sender][id] + tokens <= LIMIT_VOTING, "can't vote more than 100k tokens");
 
     votes[id] += tokens;

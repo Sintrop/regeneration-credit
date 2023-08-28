@@ -3,7 +3,7 @@
   <bpmn:collaboration id="Collaboration_15vbwj1">
     <bpmn:participant id="Participant_1yveyh1" name="DEVELOPER CONTRACT" processRef="Process_1rse8gp" />
     <bpmn:participant id="Participant_1t7tujz" name="DEVELOPER POOL" processRef="Process_0f1zudf" />
-    <bpmn:participant id="Participant_16ib6hy" name="SAC TOKEN" processRef="Process_12xe9ay" />
+    <bpmn:participant id="Participant_16ib6hy" name="RCT TOKEN" processRef="Process_12xe9ay" />
     <bpmn:messageFlow id="Flow_07t4wjs" sourceRef="Activity_0qds3iv" targetRef="Activity_05xi860" />
     <bpmn:messageFlow id="Flow_0jyevfc" sourceRef="Activity_0mh0ogw" targetRef="Activity_16oz1gw" />
     <bpmn:messageFlow id="Flow_1mf453b" sourceRef="Activity_1pb3cfz" targetRef="Activity_1au48de" />

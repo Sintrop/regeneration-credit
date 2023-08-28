@@ -1,7 +1,7 @@
 const DeveloperContract = artifacts.require("DeveloperContract");
 const DeveloperPool = artifacts.require("DeveloperPool");
 const UserContract = artifacts.require("UserContract");
-const SacToken = artifacts.require("SacToken");
+const RcToken = artifacts.require("RcToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
@@ -43,9 +43,9 @@ contract("DeveloperContract", (accounts) => {
   };
 
   beforeEach(async () => {
-    const sacToken = await SacToken.new("1500000000000000000000000000");
+    const rcToken = await RcToken.new("1500000000000000000000000000");
     developerPool = await DeveloperPool.new(
-      sacToken.address,
+      rcToken.address,
       developerPoolParams.blocksPerEra,
       developerPoolParams.eraMax
     );
@@ -59,7 +59,7 @@ contract("DeveloperContract", (accounts) => {
     await instance.newAllowedUser(dev1Address);
     await instance.newAllowedUser(dev2Address);
     await instance.newAllowedUser(owner);
-    await sacToken.addContractPool(developerPool.address, "15000000000000000000000000");
+    await rcToken.addContractPool(developerPool.address, "15000000000000000000000000");
   });
 
   describe(".fields", () => {
