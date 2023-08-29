@@ -152,7 +152,7 @@ contract("Sintrop", (accounts) => {
 
     producerContract = await ProducerContract.new(userContract.address, producerPool.address);
 
-    categoryContract = await CategoryContract.new(isaPool.address, researcherContract.address, userContract.address);
+    categoryContract = await CategoryContract.new(isaPool.address, userContract.address);
 
     instance = await Sintrop.new(
       inspectorContract.address,
