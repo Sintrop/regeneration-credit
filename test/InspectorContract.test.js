@@ -88,13 +88,13 @@ contract("InspectorContract", (accounts) => {
           assert.equal(inspectors[0].inspectorWallet, activ1Address);
         });
 
-        it("should add created inspector in userType contract as a ACTIVIST", async () => {
+        it("should add created inspector in userType contract as a INSPECTOR", async () => {
           await addInspector("Inspector A", activ1Address);
 
           const userType = await userContract.getUser(activ1Address);
           const ACTIVIST = 2;
 
-          assert.equal(userType, ACTIVIST);
+          assert.equal(userType, INSPECTOR);
         });
       });
     });
