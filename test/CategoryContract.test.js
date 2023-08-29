@@ -14,7 +14,7 @@ contract("CategoryContract", (accounts) => {
   let researcherPool;
   let userContract;
   let researcherContract;
-  let [owner, msgSender, user1Address, user2Address, user3Address] = accounts;
+  let [owner, user1Address, user2Address, user3Address] = accounts;
 
   const developerPoolargs = {
     totalTokens: "30000000000000000000000000",
@@ -95,7 +95,7 @@ contract("CategoryContract", (accounts) => {
         assert.equal(categories[0].name, "Soil");
       });
 
-      it("should add msg.sender in createdBy", async () => {
+      it("should add owner in createdBy", async () => {
         await addCategory("Soil", owner);
 
         const category = await instance.categories(1);
