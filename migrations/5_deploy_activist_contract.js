@@ -1,10 +1,10 @@
 const UserContract = artifacts.require("UserContract");
-const ActivistContract = artifacts.require("ActivistContract");
+const InspectorContract = artifacts.require("InspectorContract");
 
 module.exports = function (deployer) {
   deployer.then(async () => {
     const userContract = await UserContract.deployed();
 
-    await deployer.deploy(ActivistContract, userContract.address);
+    await deployer.deploy(InspectorContract, userContract.address);
   });
 };

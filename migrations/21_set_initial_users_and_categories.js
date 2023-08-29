@@ -1,7 +1,7 @@
 const CategoryContract = artifacts.require("CategoryContract");
 const ProducerContract = artifacts.require("ProducerContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
-const ActivistContract = artifacts.require("ActivistContract");
+const InspectorContract = artifacts.require("InspectorContract");
 const ValidatorContract = artifacts.require("ValidatorContract");
 const DeveloperContract = artifacts.require("DeveloperContract");
 
@@ -12,10 +12,10 @@ module.exports = function (deployer) {
       _,
       producer1,
       producer2,
-      activist1,
-      activist2,
-      activist3,
-      activist4,
+      inspector1,
+      inspector2,
+      inspector3,
+      inspector4,
       researcher1,
       validator1,
       validator2,
@@ -26,7 +26,7 @@ module.exports = function (deployer) {
     ] = accounts;
 
     const categoryContract = await CategoryContract.deployed();
-    const activistContract = await ActivistContract.deployed();
+    const inspectorContract = await InspectorContract.deployed();
     const producerContract = await ProducerContract.deployed();
     const researcherContract = await ResearcherContract.deployed();
     const validatorContract = await ValidatorContract.deployed();
@@ -44,13 +44,13 @@ module.exports = function (deployer) {
 
     await producerContract.addProducer(50, "Fazenda Restaura", "photoURL", "1111111111111", { from: producer2 });
 
-    await activistContract.addActivist("Julia Flores", "photoURL", "2222222222222222", { from: activist1 });
+    await inspectorContract.addInspector("Julia Flores", "photoURL", "2222222222222222", { from: inspector1 });
 
-    await activistContract.addActivist("Pedro Nascimento", "photoURL", "333333333333333", { from: activist2 });
+    await inspectorContract.addInspector("Pedro Nascimento", "photoURL", "333333333333333", { from: inspector2 });
 
-    await activistContract.addActivist("Roberta Floresta", "photoURL", "333333333333333", { from: activist3 });
+    await inspectorContract.addInspector("Roberta Floresta", "photoURL", "333333333333333", { from: inspector3 });
 
-    await activistContract.addActivist("João Alberto", "photoURL", "333333333333333", { from: activist4 });
+    await inspectorContract.addInspector("João Alberto", "photoURL", "333333333333333", { from: inspector4 });
 
     await researcherContract.addResearcher("CEPEAS", "photoURL", {
       from: researcher1,

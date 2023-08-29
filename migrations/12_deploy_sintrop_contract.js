@@ -1,5 +1,5 @@
 const Sintrop = artifacts.require("Sintrop");
-const ActivistContract = artifacts.require("ActivistContract");
+const InspectorContract = artifacts.require("InspectorContract");
 const ProducerContract = artifacts.require("ProducerContract");
 const UserContract = artifacts.require("UserContract");
 
@@ -13,13 +13,13 @@ const allowedInitialRequests = process.env["SINTROP_ALLOWED_INITIAL_REQUESTS"];
 
 module.exports = function (deployer) {
   deployer.then(async () => {
-    const activistContract = await ActivistContract.deployed();
+    const inspectorContract = await InspectorContract.deployed();
     const producerContract = await ProducerContract.deployed();
     const userContract = await UserContract.deployed();
 
     await deployer.deploy(
       Sintrop,
-      activistContract.address,
+      inspectorContract.address,
       producerContract.address,
       userContract.address,
       sintropTimeBetweenProducerInsertions,
