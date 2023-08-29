@@ -18,11 +18,11 @@ interface ProducerInterface {
 
   enum UserType {
     PRODUCER,
-    ACTIVIST,
+    INSPECTOR,
     RESEARCHER,
     DEVELOPER,
     ADVISOR,
-    CONTRIBUTOR,
+    ACTIVIST,
     INVESTOR
   }
 
