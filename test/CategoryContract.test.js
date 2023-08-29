@@ -168,8 +168,8 @@ contract("CategoryContract", (accounts) => {
     });
 
     it("should start with voted zero categories", async () => {
-      const voted1 = await instance.voted(msgSender, 1);
-      const voted2 = await instance.voted(msgSender, 0);
+      const voted1 = await instance.voted(owner, 1);
+      const voted2 = await instance.voted(owner, 0);
 
       assert.equal(voted1, 0);
       assert.equal(voted2, 0);
