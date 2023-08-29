@@ -203,7 +203,10 @@ contract("CategoryContract", (accounts) => {
 
       context("when is not a registered user", () => {
         it("should return error message", async () => {
-          await expectRevert(instance.vote(1, "100000000000000000000", { from: user3Address }), "Only registered users");
+          await expectRevert(
+            instance.vote(1, "100000000000000000000", { from: user3Address }),
+            "Only registered users"
+          );
         });
       });
 
