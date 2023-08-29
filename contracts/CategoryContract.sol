@@ -3,7 +3,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { PoolPassiveInterface } from "./PoolPassiveInterface.sol";
 import { Isas, Category } from "./types/CategoryTypes.sol";
-import { ResearcherContract } from "./ResearcherContract.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { UserContract } from "./UserContract.sol";
 
 /**
@@ -11,14 +11,13 @@ import { UserContract } from "./UserContract.sol";
  * @title CategoryContract
  * @dev Category resource that is a part of Sintrop business
  */
-contract CategoryContract {
+contract CategoryContract is Ownable {
   uint256 public constant LIMIT_VOTING = 100000000000000000000000;
 
   mapping(uint256 => Category) public categories;
   mapping(uint256 => uint256) public votes;
   mapping(address => mapping(uint256 => uint256)) public voted;
 
-  ResearcherContract public researcherContract;
   UserContract public userContract;
 
   // TODO: Remove state category (unused)
@@ -27,9 +26,8 @@ contract CategoryContract {
   PoolPassiveInterface internal isaPool;
 
   // TODO: Remove researcherContract and use only userContract to check if exists or if is a researcher
-  constructor(address _isaPoolAddress, address researcherContractAddress, address userContractAddress) {
+  constructor(address _isaPoolAddress, address userContractAddress) {
     isaPool = PoolPassiveInterface(_isaPoolAddress);
-    researcherContract = ResearcherContract(researcherContractAddress);
     userContract = UserContract(userContractAddress);
   }
 
@@ -59,7 +57,7 @@ contract CategoryContract {
     string memory notRegenerative1,
     string memory notRegenerative2,
     string memory notRegenerative3
-  ) public requireResearcher returns (bool) {
+  ) public onlyOwner returns (bool) {
     category = Category(
       categoryCounts + 1,
       msg.sender,
@@ -134,11 +132,6 @@ contract CategoryContract {
 
   modifier categoryMustExists(uint256 id) {
     require(categories[id].id > 0, "This category don't exists");
-    _;
-  }
-
-  modifier requireResearcher() {
-    require(researcherContract.researcherExists(msg.sender), "Only allowed to researchers");
     _;
   }
 
