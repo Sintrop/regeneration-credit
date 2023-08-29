@@ -14,7 +14,7 @@ contract("CategoryContract", (accounts) => {
   let researcherPool;
   let userContract;
   let researcherContract;
-  let [msgSender, user1Address, user2Address, resea1Address] = accounts;
+  let [owner, msgSender, user1Address, user2Address, user3Address] = accounts;
 
   const developerPoolargs = {
     totalTokens: "30000000000000000000000000",
@@ -68,44 +68,44 @@ contract("CategoryContract", (accounts) => {
     researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address);
 
     await userContract.newAllowedCaller(researcherContract.address);
-    await researcherContract.newAllowedUser(resea1Address);
+    await researcherContract.newAllowedUser(owner);
     await researcherContract.newAllowedUser(user1Address);
     await researcherContract.newAllowedUser(user2Address);
 
-    instance = await CategoryContract.new(isaPool.address, researcherContract.address, userContract.address);
+    instance = await CategoryContract.new(isaPool.address, userContract.address);
     await isaPool.newAllowedCaller(instance.address);
 
-    await addResearcher("Researcher A", resea1Address);
+    await addResearcher("Researcher A", owner);
   });
 
   describe("#addCategory", () => {
     context("When is not a researcher", () => {
       it("should return error message", async () => {
         const name = "Soil";
-        await expectRevert(addCategory(name, user1Address), "Only allowed to researchers");
+        await expectRevert(addCategory(name, user1Address), "Ownable: caller is not the owner");
       });
     });
 
-    context("When is a researcher", () => {
+    context("When is the owner", () => {
       it("should create category", async () => {
         const name = "Soil";
-        await addCategory(name, resea1Address);
+        await addCategory(name, owner);
         const categories = await instance.getCategories();
 
         assert.equal(categories[0].name, "Soil");
       });
 
       it("should add msg.sender in createdBy", async () => {
-        await addCategory("Soil", resea1Address);
+        await addCategory("Soil", owner);
 
         const category = await instance.categories(1);
 
-        assert.equal(category.createdBy, resea1Address);
+        assert.equal(category.createdBy, owner);
       });
 
       it("should increment id of category when created", async () => {
-        await addCategory("Soil", resea1Address);
-        await addCategory("Soil 2", resea1Address);
+        await addCategory("Soil", owner);
+        await addCategory("Soil 2", owner);
 
         const categories = await instance.getCategories();
 
@@ -113,15 +113,15 @@ contract("CategoryContract", (accounts) => {
       });
 
       it("should increment total of categories", async () => {
-        await addCategory("Soil", resea1Address);
-        await addCategory("Soil 2", resea1Address);
+        await addCategory("Soil", owner);
+        await addCategory("Soil 2", owner);
         const categoryCounts = await instance.categoryCounts();
 
         assert.equal(categoryCounts, 2);
       });
 
       it("should create category with votes equal 0", async () => {
-        await addCategory("Soil", resea1Address);
+        await addCategory("Soil", owner);
         const categories = await instance.getCategories();
 
         assert.equal(parseInt(categories[0].votesCount), 0);
@@ -132,11 +132,11 @@ contract("CategoryContract", (accounts) => {
   context("When access category fields", () => {
     it("should have fields", async () => {
       const name = "Soil";
-      await addCategory(name, resea1Address);
+      await addCategory(name, owner);
       const category = await instance.categories(1);
 
       assert.equal(category.id, 1);
-      assert.equal(category.createdBy, resea1Address);
+      assert.equal(category.createdBy, owner);
       assert.equal(category.name, "Soil");
       assert.equal(category.description, `The description of ${name}`);
       assert.equal(category.tutorial, `How inspectors should evaluate ${name}`);
@@ -153,8 +153,8 @@ contract("CategoryContract", (accounts) => {
 
   describe("#getCategories", () => {
     it("should return category list", async () => {
-      await addCategory("Soil", resea1Address);
-      await addCategory("Soil2", resea1Address);
+      await addCategory("Soil", owner);
+      await addCategory("Soil2", owner);
       const categories = await instance.getCategories();
 
       assert.equal(categories.length, 2);
@@ -163,8 +163,8 @@ contract("CategoryContract", (accounts) => {
 
   describe("#voted", () => {
     beforeEach(async () => {
-      await addCategory("Soil 1", resea1Address);
-      await addCategory("Soil 2", resea1Address);
+      await addCategory("Soil 1", owner);
+      await addCategory("Soil 2", owner);
     });
 
     it("should start with voted zero categories", async () => {
@@ -181,7 +181,7 @@ contract("CategoryContract", (accounts) => {
       it("should return error message", async () => {
         await expectRevert(
           instance.vote(1, 0, {
-            from: resea1Address,
+            from: owner,
           }),
           "This category don't exist"
         );
@@ -190,7 +190,7 @@ contract("CategoryContract", (accounts) => {
 
     context("when category exists", () => {
       beforeEach(async () => {
-        await addCategory("Soil", resea1Address);
+        await addCategory("Soil", owner);
         await addResearcher("Researcher B", user1Address);
         await addResearcher("Researcher C", user2Address);
       });
@@ -203,7 +203,7 @@ contract("CategoryContract", (accounts) => {
 
       context("when is not a registered user", () => {
         it("should return error message", async () => {
-          await expectRevert(instance.vote(1, "100000000000000000000"), "Only registered users");
+          await expectRevert(instance.vote(1, "100000000000000000000", { from: user3Address }), "Only registered users");
         });
       });
 
@@ -277,7 +277,7 @@ contract("CategoryContract", (accounts) => {
           context("when try to vote with more than 100k", () => {
             it("should return error", async () => {
               const limit = "100000000000000000000000";
-              await addCategory("Solo", resea1Address);
+              await addCategory("Solo", owner);
               await transferTokensTo(user1Address, "500000000000000000000000");
               await instance.vote(1, "1", {
                 from: user1Address,
@@ -293,7 +293,7 @@ contract("CategoryContract", (accounts) => {
 
           context("when voted to category 1 and 2", () => {
             beforeEach(async () => {
-              await addCategory("Soil 2", resea1Address);
+              await addCategory("Soil 2", owner);
 
               await instance.vote(1, "100000000000000000000", {
                 from: user1Address,
@@ -395,7 +395,7 @@ contract("CategoryContract", (accounts) => {
   describe("#unvote", () => {
     context("when category exists", () => {
       beforeEach(async () => {
-        await addCategory("Soil 1", resea1Address);
+        await addCategory("Soil 1", owner);
         await addResearcher("Researcher B", user1Address);
       });
 
@@ -440,7 +440,7 @@ contract("CategoryContract", (accounts) => {
 
       context("when voted to category1 and category2", () => {
         beforeEach(async () => {
-          await addCategory("Soil 2", resea1Address);
+          await addCategory("Soil 2", owner);
           await transferTokensTo(user1Address, "500000000000000000000");
 
           await instance.vote(1, "100000000000000000000", { from: user1Address });
