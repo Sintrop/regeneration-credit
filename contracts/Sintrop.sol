@@ -103,7 +103,7 @@ contract Sintrop {
   function acceptInspection(uint256 inspectionId) public {
     Inspection memory inspection = inspections[inspectionId];
 
-    require(userContract.userTypeIs(UserType.ACTIVIST, msg.sender), "Please register as inspector");
+    require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspectionExists(inspectionId), "This inspection don't exists");
     require(!inspectorInspected[msg.sender][inspection.createdBy], "Already inspected this producer");
 
@@ -131,7 +131,7 @@ contract Sintrop {
   function realizeInspection(uint256 inspectionId, IsaInspection[] memory _isas) public {
     Inspection memory inspection = inspections[inspectionId];
 
-    require(userContract.userTypeIs(UserType.ACTIVIST, msg.sender), "Please register as inspector");
+    require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspectionExists(inspectionId), "This inspection don't exists");
     require(isAccepted(inspectionId), "Accept this inspection before");
     require(isInspectorOwner(inspectionId), "You not accepted this inspection");

@@ -61,7 +61,7 @@ contract UserContract is Ownable, Callable {
     return (
       "UNDEFINED",
       "PRODUCER",
-      "ACTIVIST",
+      "INSPECTOR",
       "RESEARCHER",
       "DEVELOPER",
       "ADVISOR",
