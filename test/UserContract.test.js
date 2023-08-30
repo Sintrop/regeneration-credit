@@ -20,7 +20,7 @@ contract("UserContract", (accounts) => {
   const definedTypes = {
     0: "UNDEFINED",
     1: "PRODUCER",
-    2: "ACTIVIST",
+    2: "INSPECTOR",
     3: "RESEARCHER",
     4: "DEVELOPER",
     5: "ADVISOR",
