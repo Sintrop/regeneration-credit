@@ -120,14 +120,14 @@ module.exports = function (deployer) {
     await categoryContract.addCategory(
       "Soil indicator",
       `Indicator to evaluate the soil regeneration level`,
-      `Must evaluate the property soil regeneration level. `,
-      `More then 70% of soil biomass cover`,
-      `More then 50% of soil biomass cover`,
-      `More then 30% of soil biomass cover`,
+      `Must evaluate the property soil regeneration balance. SoilBalance = Regeneration - Degeneration `,
+      `More then 100 hectares of soil under regeneration`,
+      `More then 5 hectare of soil under regeneration`,
+      `More then 1 hectare of soil under regeneration`,
       `0`,
-      `Less then 30% of soil biomass cover`,
-      `Less then 20% of soil biomass cover`,
-      `Less then 10% of soil biomass cover`,
+      `Until 1 hectare of soil degradation`,
+      `Until 2 hectares of soil degradation`,
+      `More than 2 hectares of soil degradation`,
       { from: researcher1 }
     );
   });
