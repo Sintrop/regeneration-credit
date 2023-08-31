@@ -11,6 +11,8 @@ const sintropBlocksToExpireAceeptedInspection =
 
 const allowedInitialRequests = process.env["SINTROP_ALLOWED_INITIAL_REQUESTS"];
 
+const inspectionDelay = process.env["SINTROP_INSPECTION_DELAY"];
+
 module.exports = function (deployer) {
   deployer.then(async () => {
     const inspectorContract = await InspectorContract.deployed();
@@ -24,7 +26,8 @@ module.exports = function (deployer) {
       userContract.address,
       sintropTimeBetweenProducerInsertions,
       sintropBlocksToExpireAceeptedInspection,
-      allowedInitialRequests
+      allowedInitialRequests,
+      inspectionDelay
     );
   });
 };

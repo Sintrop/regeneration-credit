@@ -28,6 +28,7 @@ contract Sintrop {
   uint256 internal immutable timeBetweenInspections;
   uint256 internal blocksToExpireAcceptedInspection;
   uint256 internal immutable allowedInitialRequests;
+  uint256 internal inspectionDelay;
 
   constructor(
     address inspectorContractAddress,
@@ -35,7 +36,8 @@ contract Sintrop {
     address userContractAddress,
     uint256 timeBetweenInspections_,
     uint256 blocksToExpireAcceptedInspection_,
-    uint256 allowedInitialRequests_
+    uint256 allowedInitialRequests_,
+    uint256 inspectionDelay_
   ) {
     inspectorContract = InspectorContract(inspectorContractAddress);
     producerContract = ProducerContract(producerContractAddress);
@@ -43,6 +45,7 @@ contract Sintrop {
     timeBetweenInspections = timeBetweenInspections_;
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
     allowedInitialRequests = allowedInitialRequests_;
+    inspectionDelay = inspectionDelay_;
   }
 
   // TODO: Refact this mapping to not duplicate inspections
@@ -109,6 +112,7 @@ contract Sintrop {
 
     require(canAcceptInspection(), "Can't accept yet");
     require(inspection.status == InspectionStatus.OPEN, "This inspection is not OPEN");
+    require(blocksToDelay(inspectionId), "Wait inspection delay time");
 
     inspection.status = InspectionStatus.ACCEPTED;
     inspection.acceptedAt = block.number;
@@ -271,5 +275,13 @@ contract Sintrop {
     bool canAccept = block.number > lastAcceptedAt + blocksToExpireAcceptedInspection;
 
     return canAccept || lastAcceptedAt == 0;
+  }
+
+  function blocksToDelay(uint256 inspectionId) internal view returns (bool) {
+    Inspection memory inspection = inspections[inspectionId];
+    uint256 delayBlocks = inspection.createdAt + inspectionDelay;
+    bool waitedDelay = block.number > delayBlocks;
+
+    return waitedDelay;
   }
 }
