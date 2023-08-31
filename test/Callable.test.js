@@ -1,7 +1,7 @@
+require("./shared/setup.js");
 const Callable = artifacts.require("Callable");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
-require("./shared/setup.js");
 
 contract("Callable", (accounts) => {
   let instance;

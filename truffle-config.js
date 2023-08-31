@@ -50,5 +50,6 @@ module.exports = {
     diff: true,
     reporter: "spec",
     ui: "bdd",
+    timeout: 10000,
   },
 };

@@ -1,8 +1,8 @@
+require("./shared/setup.js");
 const InvestorContract = artifacts.require("InvestorContract");
 const UserContract = artifacts.require("UserContract");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
-require("./shared/setup.js");
 
 contract("InvestorContract", (accounts) => {
   let instance;

@@ -1,10 +1,10 @@
+require("./shared/setup.js");
 const ProducerContract = artifacts.require("ProducerContract");
 const UserContract = artifacts.require("UserContract");
 const ProducerPool = artifacts.require("ProducerPool");
 const SacToken = artifacts.require("SacToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
-require("./shared/setup.js");
 
 contract("ProducerContract", (accounts) => {
   let instance;
