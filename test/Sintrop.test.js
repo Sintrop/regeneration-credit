@@ -39,6 +39,7 @@ contract("Sintrop", (accounts) => {
     timeBetweenInspections: 20,
     blocksToExpireAcceptedInspection: 15,
     allowedInitialRequests: 1,
+    inspectionDelay: 5,
   };
 
   const developerPoolargs = {
@@ -160,7 +161,8 @@ contract("Sintrop", (accounts) => {
       userContract.address,
       sintropArgs.timeBetweenInspections,
       sintropArgs.blocksToExpireAcceptedInspection,
-      sintropArgs.allowedInitialRequests
+      sintropArgs.allowedInitialRequests,
+      sintropArgs.inspectionDelay
     );
 
     await userContract.newAllowedCaller(inspectorContract.address);
