@@ -85,7 +85,7 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
   }
 
   function resetLevels(address addr, uint256 era) public mustBeAllowedCaller {
-    resetUserPoolCurrentEra(addr, era);
+    resetLevelsFromEra(addr, era);
   }
 
   function tokensPerEra() public view returns (uint256) {

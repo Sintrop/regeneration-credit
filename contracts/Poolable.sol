@@ -34,7 +34,7 @@ contract Poolable {
     eraLevels[era][to]--;
   }
 
-  function resetUserPoolCurrentEra(address to, uint256 era) internal {
+  function resetLevelsFromEra(address to, uint256 era) internal {
     uint256 currentLevels = eraLevels[era][to];
 
     if (currentLevels == 0) return;

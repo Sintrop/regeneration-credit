@@ -47,6 +47,7 @@ contract ValidatorContract is Registrable {
       Validation(
         msg.sender,
         userAddress,
+        0,
         justification,
         majorityValidatorsCount_,
         block.timestamp, // solhint-disable-line
@@ -54,11 +55,17 @@ contract ValidatorContract is Registrable {
       )
     );
 
-    if (userValidationsCount >= majorityValidatorsCount_) {
-      resetLevels(userAddress);
+    if (userValidationsCount >= majorityValidatorsCount_) denieUser(userAddress);
+  }
 
-      userContract.setDeniedType(userAddress);
-    }
+  function externalDenieUser(address userAddress) external mustBeAllowedUser {
+    denieUser(userAddress);
+  }
+
+  function denieUser(address userAddress) internal {
+    resetLevels(userAddress);
+
+    userContract.setDeniedType(userAddress);
   }
 
   function resetLevels(address userAddress) internal {
