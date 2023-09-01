@@ -5,7 +5,8 @@ enum InspectionStatus {
   OPEN,
   ACCEPTED,
   INSPECTED,
-  EXPIRED
+  EXPIRED,
+  INVALIDATED
 }
 
 struct IsaInspection {

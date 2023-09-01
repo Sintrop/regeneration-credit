@@ -76,13 +76,15 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
   }
 
   function removeLevel(address addr) public mustBeAllowedCaller {
+    // TODO: Must remove from current contract era of from current era from user? ProducerPool does the last one
     uint256 era = currentContractEra();
+    uint256 levels = 1;
 
-    removePoolLevel(addr, era);
+    removePoolLevel(addr, era, levels);
   }
 
-  function resetLevels(address addr, uint256 era) public mustBeAllowedCaller {
-    resetUserPoolCurrentEra(addr, era);
+  function resetLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
+    resetLevelsFromEra(addr, era, removeSomeLevels);
   }
 
   function tokensPerEra() public view returns (uint256) {

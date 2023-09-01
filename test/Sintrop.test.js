@@ -8,6 +8,7 @@ const ProducerContract = artifacts.require("ProducerContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
 const ProducerPool = artifacts.require("ProducerPool");
 const ResearcherPool = artifacts.require("ResearcherPool");
+const ValidatorContract = artifacts.require("ValidatorContract");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
@@ -18,7 +19,17 @@ contract("Sintrop", (accounts) => {
   let producerContract;
   let researcherContract;
   let researcherPool;
-  let [ownerAddress, producerAddress, producer2Address, inspectorAddress, inspector2Address, resea1Address] = accounts;
+
+  let [
+    ownerAddress,
+    producerAddress,
+    producer2Address,
+    inspectorAddress,
+    inspector2Address,
+    resea1Address,
+    validator1Address,
+  ] = accounts;
+
   const STATUS = {
     open: 0,
     accepted: 1,
@@ -60,6 +71,10 @@ contract("Sintrop", (accounts) => {
 
   const addResearcher = async (name, address) => {
     await researcherContract.addResearcher(name, "photoURL", { from: address });
+  };
+
+  const addValidator = async (address) => {
+    await validatorContract.addValidator({ from: address });
   };
 
   const addCategory = async (name, from) => {
@@ -154,10 +169,13 @@ contract("Sintrop", (accounts) => {
 
     categoryContract = await CategoryContract.new(isaPool.address, researcherContract.address, userContract.address);
 
+    validatorContract = await ValidatorContract.new(userContract.address, producerContract.address);
+
     instance = await Sintrop.new(
       inspectorContract.address,
       producerContract.address,
       userContract.address,
+      validatorContract.address,
       sintropArgs.timeBetweenInspections,
       sintropArgs.blocksToExpireAcceptedInspection,
       sintropArgs.allowedInitialRequests
@@ -167,6 +185,7 @@ contract("Sintrop", (accounts) => {
     await userContract.newAllowedCaller(producerContract.address);
     await userContract.newAllowedCaller(researcherContract.address);
     await inspectorContract.newAllowedCaller(instance.address);
+    await validatorContract.newAllowedCaller(instance.address);
     await producerContract.newAllowedCaller(instance.address);
     await researcherContract.newAllowedUser(resea1Address);
     await producerPool.newAllowedCaller(producerContract.address);
@@ -745,6 +764,43 @@ contract("Sintrop", (accounts) => {
         await expectRevert(
           instance.realizeInspection(1, [], { from: producerAddress }),
           "Please register as inspector"
+        );
+      });
+    });
+  });
+
+  describe.only("#addValidation", () => {
+    context("with validator", () => {
+      beforeEach(async () => {
+        await validatorContract.newAllowedUser(validator1Address);
+        await addValidator(validator1Address);
+
+        await instance.requestInspection({ from: producerAddress });
+        await instance.acceptInspection(1, { from: inspectorAddress });
+        await realizeInspection(1, isas(), inspectorAddress);
+      });
+
+      context("with valid inspection", () => {});
+
+      context.only("with invalid inspection", () => {
+        it("should return error message", async () => {
+        //   await expectRevert(
+        //     instance.addValidation(2, "justification", { from: producerAddress }),
+        //     "This inspection is not INSPECTED"
+        //   );
+        });
+      });
+    });
+
+    context("with non validator", () => {
+      it("should return error message", async () => {
+        await instance.requestInspection({ from: producerAddress });
+        await instance.acceptInspection(1, { from: inspectorAddress });
+        await realizeInspection(1, isas(), inspectorAddress);
+
+        await expectRevert(
+          instance.addValidation(1, "justification", { from: producerAddress }),
+          "Please register as validator"
         );
       });
     });

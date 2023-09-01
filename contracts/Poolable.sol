@@ -27,20 +27,20 @@ contract Poolable {
     eraLevels[era][to] += levels;
   }
 
-  function removePoolLevel(address to, uint256 era) internal {
+  function removePoolLevel(address to, uint256 era, uint256 levels) internal {
     require(eraLevels[era][to] != 0, "Not enough levels to remove");
 
-    eras[era].levels = eras[era].levels.sub(1);
+    eras[era].levels = eras[era].levels.sub(levels);
     eraLevels[era][to]--;
   }
 
-  function resetUserPoolCurrentEra(address to, uint256 era) internal {
+  function resetLevelsFromEra(address to, uint256 era, uint256 removeSomeLevels) internal {
     uint256 currentLevels = eraLevels[era][to];
 
     if (currentLevels == 0) return;
+    if (removeSomeLevels > 0) removePoolLevel(to, era, removeSomeLevels);
 
-    eraLevels[era][to] = 0;
-    eras[era].levels = eras[era].levels.sub(currentLevels);
+    removePoolLevel(to, era, currentLevels);
   }
 
   function tokens(uint256 era, address to, uint256 tokensPerEra) internal view returns (uint256) {
