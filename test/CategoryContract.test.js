@@ -74,7 +74,6 @@ contract("CategoryContract", (accounts) => {
 
     instance = await CategoryContract.new(isaPool.address, userContract.address);
     await isaPool.newAllowedCaller(instance.address);
-
   });
 
   describe("#addCategory", () => {
