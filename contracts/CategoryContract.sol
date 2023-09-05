@@ -10,7 +10,6 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
  * @dev Category resource that is a part of Sintrop logic
  */
 contract CategoryContract is Ownable {
-
   mapping(uint256 => Category) public categories;
   mapping(address => mapping(uint256 => uint256)) public voted;
 
@@ -79,4 +78,4 @@ contract CategoryContract is Ownable {
 
     return categoriesList;
   }
-}  
+}
