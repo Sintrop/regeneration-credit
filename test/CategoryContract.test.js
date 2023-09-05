@@ -1,27 +1,10 @@
 const CategoryContract = artifacts.require("CategoryContract");
-const ResearcherContract = artifacts.require("ResearcherContract");
-const UserContract = artifacts.require("UserContract");
-const RcToken = artifacts.require("RcToken");
-const IsaPool = artifacts.require("IsaPool");
-const ResearcherPool = artifacts.require("ResearcherPool");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
 contract("CategoryContract", (accounts) => {
   let instance;
-  let rcToken;
-  let isaPool;
-  let researcherPool;
-  let userContract;
-  let researcherContract;
   let [owner, user1Address, user2Address, user3Address] = accounts;
-
-  const developerPoolargs = {
-    totalTokens: "30000000000000000000000000",
-    halving: 12,
-    totalEras: 96,
-    blocksPerEra: 12,
-  };
 
   const addCategory = async (name, from) => {
     await instance.addCategory(
@@ -39,41 +22,8 @@ contract("CategoryContract", (accounts) => {
     );
   };
 
-  const addResearcher = async (name, address) => {
-    await researcherContract.addResearcher(name, "photoURL", { from: address });
-  };
-
-  const transferTokensTo = async (userAddress, tokens) => {
-    await rcToken.transfer(userAddress, tokens);
-  };
-
-  const balanceOf = async (userAddress) => {
-    return await rcToken.balanceOf(userAddress);
-  };
-
   beforeEach(async () => {
-    rcToken = await RcToken.new("1500000000000000000000000000");
-    isaPool = await IsaPool.new(rcToken.address);
-
-    researcherPool = await ResearcherPool.new(
-      rcToken.address,
-      developerPoolargs.halving,
-      developerPoolargs.totalEras,
-      developerPoolargs.blocksPerEra
-    );
-
-    await rcToken.addContractPool(isaPool.address, "0");
-
-    userContract = await UserContract.new();
-    researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address);
-
-    await userContract.newAllowedCaller(researcherContract.address);
-    await researcherContract.newAllowedUser(owner);
-    await researcherContract.newAllowedUser(user1Address);
-    await researcherContract.newAllowedUser(user2Address);
-
-    instance = await CategoryContract.new(isaPool.address, userContract.address);
-    await isaPool.newAllowedCaller(instance.address);
+    instance = await CategoryContract.new();
   });
 
   describe("#addCategory", () => {
