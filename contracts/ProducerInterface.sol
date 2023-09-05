@@ -22,7 +22,7 @@ interface ProducerInterface {
     RESEARCHER,
     DEVELOPER,
     ADVISOR,
-    CONTRIBUTOR,
+    ACTIVIST,
     INVESTOR
   }
 
