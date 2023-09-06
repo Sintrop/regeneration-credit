@@ -125,7 +125,6 @@ module.exports = function (deployer) {
       `Until 1 hectare of soil degradation`,
       `Until 2 hectares of soil degradation`,
       `More than 2 hectares of soil degradation`,
-      { from: researcher1 }
     );
   });
 };
