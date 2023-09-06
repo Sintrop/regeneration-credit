@@ -1,6 +1,5 @@
 const Sintrop = artifacts.require("Sintrop");
 const CategoryContract = artifacts.require("CategoryContract");
-const IsaPool = artifacts.require("IsaPool");
 const RcToken = artifacts.require("RcToken");
 const UserContract = artifacts.require("UserContract");
 const InspectorContract = artifacts.require("InspectorContract");
