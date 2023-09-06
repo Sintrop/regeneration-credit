@@ -2,9 +2,10 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
-import { Inspector, InspectorAddress } from "./types/InspectorTypes.sol";
+import { Inspector, InspectorAddress, Pool} from "./types/InspectorTypes.sol";
 import { Callable } from "./Callable.sol";
 import { UserType } from "./types/UserTypes.sol";
+import { InspectorPool } from "./InspectorPool.sol";
 
 contract InspectorContract is Callable {
   mapping(address => Inspector) internal inspectors;
@@ -12,9 +13,11 @@ contract InspectorContract is Callable {
   UserContract internal userContract;
   address[] internal inspectorsAddress;
   uint256 public inspectorsCount;
+  InspectorPool internal inspectorPool;
 
-  constructor(address userContractAddress) {
+  constructor(address userContractAddress, address inspectorPoolAddress) {
     userContract = UserContract(userContractAddress);
+    inspectorPool = InspectorPool(inspectorPoolAddress);
   }
 
   /**
@@ -34,7 +37,10 @@ contract InspectorContract is Callable {
 
     InspectorAddress memory inspectorAddress = InspectorAddress(coordinate);
 
-    Inspector memory inspector = Inspector(id, msg.sender, userType, name, proofPhoto, 0, 0, inspectorAddress, 0);
+    uint256 currentEra = inspectorPoolEra();
+    Pool memory pool = Pool(0, currentEra);
+
+    Inspector memory inspector = Inspector(id, msg.sender, userType, name, proofPhoto, 0, 0, inspectorAddress, 0, pool);
 
     inspectors[msg.sender] = inspector;
     inspectorsAddress.push(msg.sender);
@@ -90,6 +96,10 @@ contract InspectorContract is Callable {
   function lastAcceptedAt(address addr, uint256 blocksNumber) public mustBeAllowedCaller {
     inspectors[addr].lastAcceptedAt = blocksNumber;
   }
+
+  function inspectorPoolEra() internal view returns (uint256) {
+    return inspectorPool.currentContractEra();
+  }  
 
   // MODIFIERS
 

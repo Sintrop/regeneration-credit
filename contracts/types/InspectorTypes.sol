@@ -13,8 +13,14 @@ struct Inspector {
   uint256 giveUps;
   InspectorAddress inspectorAddress;
   uint256 lastAcceptedAt;
+  Pool pool;
 }
 
 struct InspectorAddress {
   string coordinate;
+}
+
+struct Pool {
+  uint256 level;
+  uint256 currentEra;
 }
