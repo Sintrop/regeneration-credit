@@ -152,7 +152,7 @@ contract("Sintrop", (accounts) => {
 
     producerContract = await ProducerContract.new(userContract.address, producerPool.address);
 
-    categoryContract = await CategoryContract.new(isaPool.address, researcherContract.address, userContract.address);
+    categoryContract = await CategoryContract.new(isaPool.address, userContract.address);
 
     instance = await Sintrop.new(
       inspectorContract.address,
@@ -251,7 +251,7 @@ contract("Sintrop", (accounts) => {
         context("when don't has request OPEN or ACCEPTED", () => {
           beforeEach(async () => {
             await instance.acceptInspection(1, { from: inspectorAddress });
-            await addCategory("Soil A", resea1Address);
+            await addCategory("Soil A", ownerAddress);
 
             const isas = [
               {
@@ -471,9 +471,9 @@ contract("Sintrop", (accounts) => {
 
             context("when inspection is not expired", () => {
               beforeEach(async () => {
-                await addCategory("Soil A", resea1Address);
-                await addCategory("Soil B", resea1Address);
-                await addCategory("Soil C", resea1Address);
+                await addCategory("Soil A", ownerAddress);
+                await addCategory("Soil B", ownerAddress);
+                await addCategory("Soil C", ownerAddress);
               });
 
               context("when check inspection", () => {

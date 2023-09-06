@@ -86,7 +86,6 @@ module.exports = function (deployer) {
       `Until 1 tCO2 / era`,
       `Until 2 tCO2 / era`,
       `More then 2 tCO2 / era`,
-      { from: researcher1 }
     );
 
     await categoryContract.addCategory(
@@ -100,7 +99,6 @@ module.exports = function (deployer) {
       `Until -100 lifeUnits`,
       `Until -1000 lifeUnits`,
       `Less then -1000 lifeUnits`,
-      { from: researcher1 }
     );
 
     await categoryContract.addCategory(
@@ -114,7 +112,6 @@ module.exports = function (deployer) {
       `Until -10 m3`,
       `Until -100 m3`,
       `Less then -100 m3`,
-      { from: researcher1 }
     );
 
     await categoryContract.addCategory(
@@ -128,7 +125,6 @@ module.exports = function (deployer) {
       `Until 1 hectare of soil degradation`,
       `Until 2 hectares of soil degradation`,
       `More than 2 hectares of soil degradation`,
-      { from: researcher1 }
     );
   });
 };
