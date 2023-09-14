@@ -7,6 +7,7 @@ const ProducerContract = artifacts.require("ProducerContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
 const ProducerPool = artifacts.require("ProducerPool");
 const ResearcherPool = artifacts.require("ResearcherPool");
+const InspectorPool = artifacts.require("ResearcherPool");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
@@ -17,6 +18,7 @@ contract("Sintrop", (accounts) => {
   let producerContract;
   let researcherContract;
   let researcherPool;
+  let inspectorPool;
   let [ownerAddress, producerAddress, producer2Address, inspectorAddress, inspector2Address, resea1Address] = accounts;
   const STATUS = {
     open: 0,
@@ -40,8 +42,15 @@ contract("Sintrop", (accounts) => {
     allowedInitialRequests: 1,
   };
 
-  const developerPoolargs = {
+  const researcherPoolargs = {
     totalTokens: "30000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 12,
+  };
+
+  const inspectorPoolargs = {
+    totalTokens: "180000000000000000000000000",
     halving: 12,
     totalEras: 96,
     blocksPerEra: 12,
@@ -132,12 +141,19 @@ contract("Sintrop", (accounts) => {
 
     researcherPool = await ResearcherPool.new(
       rcToken.address,
-      developerPoolargs.halving,
-      developerPoolargs.totalEras,
-      developerPoolargs.blocksPerEra
+      researcherPoolargs.halving,
+      researcherPoolargs.totalEras,
+      researcherPoolargs.blocksPerEra
     );
 
-    inspectorContract = await InspectorContract.new(userContract.address);
+    inspectorPool = await InspectorPool.new(
+      rcToken.address,
+      researcherPoolargs.halving,
+      researcherPoolargs.totalEras,
+      researcherPoolargs.blocksPerEra
+    );
+
+    inspectorContract = await InspectorContract.new(userContract.address, inspectorPool.address);
     researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address);
 
     producerPool = await ProducerPool.new(

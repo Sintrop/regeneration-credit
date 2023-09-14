@@ -101,6 +101,19 @@ contract InspectorContract is Callable {
     return inspectorPool.currentContractEra();
   }  
 
+  function withdraw() public {
+    require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Pool only to inspectors");
+
+    Inspector memory inspector = inspectors[msg.sender];
+    uint256 currentEra = inspector.pool.currentEra;
+
+    require(inspectorPool.canApprove(currentEra), "Can't approve withdraw");
+
+    inspectors[msg.sender].pool.currentEra++;
+
+    inspectorPool.withdraw(msg.sender, currentEra);
+  }
+
   // MODIFIERS
 
   modifier uniqueInspector() {
