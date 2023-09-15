@@ -1,6 +1,6 @@
 FROM ubuntu
 
-ENV NODE_VERSION 16
+ENV NODE_VERSION 20
 ENV INSTALL_PATH /app
 
 RUN apt-get update -qq && apt-get install -y curl wget
