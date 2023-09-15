@@ -11,7 +11,6 @@ import { UserContract } from "./UserContract.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { ValidatorContract } from "./ValidatorContract.sol";
 import { Validation } from "./types/ValidatorTypes.sol";
-import { CreatedAt } from "./types/sharedTypes.sol";
 
 /**
  * @title SintropContract
@@ -193,20 +192,6 @@ contract Sintrop {
     userInspections[createdBy].push(inspection);
     userInspections[acceptedBy].push(inspection);
   }
-
-
-  // TESTES NECESSÁRIOS
-  // - Só quem deve conseguir chamar essa função é um usuário do tipo validador
-  // - A inspeção deve estar no status INSPECTED
-  // - A validação deve ser criada com sucesso se for chamada por um validador e a inspeção estiver INSPECTED
-  // - Um validador só pode validar uma inspeção uma única vez
-  // - Se o total de validações da inspeção for igual ao total da metade dos validadores 
-  //     - Validator deve receber uma penalização.
-  //     - Produtor deve receber uma penalização. (Ainda a implementar))
-  //     - A inspeção deve ser invalidada.
-  //     - Os pontos da inspeção devem ser removidos do produtor, inspetor e das pools
-  // Se o total de penalizações do inspetor for igual ao limite de penalizações que ele pode ter, então o mesmo deve ser banido do sistema
-  //- 
 
   function addValidation(uint256 id, string memory justification) public {
     require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
