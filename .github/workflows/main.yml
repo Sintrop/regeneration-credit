@@ -41,10 +41,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Setup NodeJS 14
+      - name: Setup NodeJS 20
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '20'
       - name: Show NodeJS version  
         run: npm --version
       - name: Instal Ganache
@@ -65,10 +65,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Setup NodeJS 14
+      - name: Setup NodeJS 20
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '20'
       - name: Install Dependencies
         run: npm install
       - name: Run Solhint
