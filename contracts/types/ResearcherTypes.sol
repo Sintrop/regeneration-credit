@@ -11,6 +11,7 @@ struct Researcher {
   Pool pool;
   string proofPhoto;
   uint256 publishedWorks;
+  uint256 lastPublishedAt;
 }
 
 struct Pool {

@@ -12,6 +12,8 @@ contract("ResearcherContract", (accounts) => {
   let userContract;
   let [ownerAddress, resea1Address, resea2Address] = accounts;
 
+  const timeBetweenWorks = process.env["RESEARCHER_TIME_BETWEEN_WORKS"];
+
   const args = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
@@ -57,7 +59,7 @@ contract("ResearcherContract", (accounts) => {
 
     researcherPool = await ResearcherPool.new(rcToken.address, args.halving, args.totalEras, args.blocksPerEra);
 
-    instance = await ResearcherContract.new(userContract.address, researcherPool.address);
+    instance = await ResearcherContract.new(userContract.address, researcherPool.address, timeBetweenWorks);
 
     await researcherPool.newAllowedCaller(instance.address);
     await rcToken.addContractPool(researcherPool.address, args.totalTokens);
@@ -300,6 +302,19 @@ contract("ResearcherContract", (accounts) => {
           const eraLevel = await researcherPool.eraLevels(3, resea1Address);
 
           assert.equal(eraLevel, 0);
+        });
+      });
+
+      context("when have not waited time between works", () => {
+        it("should return error message", async () => {
+          await expectRevert(addWork(resea1Address), "Can't publish yet");
+        });
+      });
+
+      context("when have waited time between works", () => {
+        it("should add work", async () => {
+          await advanceBlock(timeBetweenWorks);
+          await addWork(resea1Address);
         });
       });
     });
