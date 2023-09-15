@@ -82,7 +82,12 @@ contract InspectorContract is Callable {
   }
 
   function incrementRequests(address addr) public mustBeAllowedCaller {
-    inspectors[addr].totalInspections++;
+    Inspector storage inspector = inspectors[msg.sender];
+    inspector.pool.level++;
+    inspectors[msg.sender] = inspector;
+    inspectorPool.addLevel(msg.sender, inspector.pool.level, 1);    
+  
+    inspectors[addr].totalInspections++;  
   }
 
   function incrementGiveUps(address addr) public mustBeAllowedCaller {
