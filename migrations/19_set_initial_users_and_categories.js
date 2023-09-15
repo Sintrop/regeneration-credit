@@ -52,7 +52,7 @@ module.exports = function (deployer) {
 
     await inspectorContract.addInspector("João Alberto", "photoURL", "333333333333333", { from: inspector4 });
 
-    await researcherContract.addResearcher("CEPEAS", "photoURL", {
+    await researcherContract.addResearcher("Instituto de Pesquisa", "photoURL", {
       from: researcher1,
     });
 
@@ -78,7 +78,7 @@ module.exports = function (deployer) {
     await categoryContract.addCategory(
       "Carbon footprint",
       `Indicator to evaluate the carbon balance`,
-      `We must evaluate everything that the producer emit carbon, and all the carbon sequestration`,
+      `We must evaluate everything that the producer emit carbon, and all the carbon sequestration. Carbon balance = sequestration - emissions`,
       `More then -100 tCO2 / era`,
       `Until -100 tCO2 / era`,
       `Until -1 tCO2 / era`,
@@ -86,13 +86,12 @@ module.exports = function (deployer) {
       `Until 1 tCO2 / era`,
       `Until 2 tCO2 / era`,
       `More then 2 tCO2 / era`,
-      { from: researcher1 }
     );
 
     await categoryContract.addCategory(
       "Biodiversity indicator",
       `Indicator to evaluate the biodiversity level`,
-      `Must evaluate everything related to the biodiversity level and count how many life units were found and estimated at the property`,
+      `Must evaluate everything related to the biodiversity level and count how many life units were found and estimated at the property. Biodiversity level = regeneration - degradation`,
       `More then 1000 lifeUnits`,
       `Until 1000 lifeUnits`,
       `Until 100 lifeUnits`,
@@ -100,13 +99,12 @@ module.exports = function (deployer) {
       `Until -100 lifeUnits`,
       `Until -1000 lifeUnits`,
       `Less then -1000 lifeUnits`,
-      { from: researcher1 }
     );
 
     await categoryContract.addCategory(
       "Water indicator",
       `Indicator to evaluate the water resources level`,
-      `Must evaluate the property water level. Positive means water from vegetation and negative water brought from outside the property. `,
+      `Must evaluate the property water level. Positive means water from vegetation and negative water brought from outside the property. Water balance = localWater - outsideWater`,
       `More then 100 m3`,
       `Until 100 m3`,
       `Until 10 m3`,
@@ -114,21 +112,19 @@ module.exports = function (deployer) {
       `Until -10 m3`,
       `Until -100 m3`,
       `Less then -100 m3`,
-      { from: researcher1 }
     );
 
     await categoryContract.addCategory(
       "Soil indicator",
       `Indicator to evaluate the soil regeneration level`,
-      `Must evaluate the property soil regeneration level. `,
-      `More then 70% of soil biomass cover`,
-      `More then 50% of soil biomass cover`,
-      `More then 30% of soil biomass cover`,
+      `Must evaluate the property soil regeneration balance. SoilBalance = Regeneration - Degeneration `,
+      `More then 100 hectares of soil under regeneration`,
+      `More then 5 hectare of soil under regeneration`,
+      `More then 1 hectare of soil under regeneration`,
       `0`,
-      `Less then 30% of soil biomass cover`,
-      `Less then 20% of soil biomass cover`,
-      `Less then 10% of soil biomass cover`,
-      { from: researcher1 }
+      `Until 1 hectare of soil degradation`,
+      `Until 2 hectares of soil degradation`,
+      `More than 2 hectares of soil degradation`,
     );
   });
 };

@@ -32,7 +32,7 @@ contract InspectorContract is Callable {
     string memory coordinate
   ) public uniqueInspector returns (Inspector memory) {
     uint256 id = inspectorsCount + 1;
-    UserType userType = UserType.ACTIVIST;
+    UserType userType = UserType.INSPECTOR;
 
     InspectorAddress memory inspectorAddress = InspectorAddress(coordinate);
 

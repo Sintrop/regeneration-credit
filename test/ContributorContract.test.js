@@ -1,119 +1,119 @@
-const ContributorContract = artifacts.require("ContributorContract");
+const ActivistContract = artifacts.require("ActivistContract");
 const UserContract = artifacts.require("UserContract");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
-contract("ContributorContract", (accounts) => {
+contract("ActivistContract", (accounts) => {
   let instance;
   let userContract;
   let [ownerAddress, contr1Address, contr2Address, contr3Address] = accounts;
 
-  const addContributor = async (name, address) => {
-    await instance.addContributor(name, "photoURL", { from: address });
+  const addActivist = async (name, address) => {
+    await instance.addActivist(name, "photoURL", { from: address });
   };
 
   beforeEach(async () => {
     userContract = await UserContract.new();
 
-    instance = await ContributorContract.new(userContract.address);
+    instance = await ActivistContract.new(userContract.address);
 
     await userContract.newAllowedCaller(instance.address);
     await instance.newAllowedUser(contr1Address);
     await instance.newAllowedUser(contr3Address);
   });
 
-  context("when will create new contributor (.addContributor)", () => {
+  context("when will create new activist (.addActivist)", () => {
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(addContributor("Contributor B", contr2Address), "Not allowed user");
+        await expectRevert(addActivist("Activist B", contr2Address), "Not allowed user");
       });
     });
 
     context("when is an allowed user", () => {
-      context("when contributor exists", () => {
+      context("when activist exists", () => {
         it("should return error", async () => {
-          await addContributor("Contributor A", contr1Address);
-          await expectRevert(addContributor("Contributor A", contr1Address), "This contributor already exist");
+          await addActivist("Activist A", contr1Address);
+          await expectRevert(addActivist("Activist A", contr1Address), "This activist already exist");
         });
       });
 
-      context("when contributor don't exist", () => {
-        it("should create contributor", async () => {
-          await addContributor("Contributor A", contr1Address);
-          await addContributor("Contributor C", contr3Address);
-          const contributor = await instance.getContributor(contr1Address);
+      context("when activist don't exist", () => {
+        it("should create activist", async () => {
+          await addActivist("Activist A", contr1Address);
+          await addActivist("Activist C", contr3Address);
+          const activist = await instance.getActivist(contr1Address);
 
-          assert.equal(contributor.contributorWallet, contr1Address);
+          assert.equal(activist.activistWallet, contr1Address);
         });
 
-        it("should increment contributorCount after create contributor", async () => {
-          await addContributor("Contributor A", contr1Address);
-          await addContributor("Contributor C", contr3Address);
-          const contributorsCount = await instance.contributorsCount();
+        it("should increment activistCount after create activist", async () => {
+          await addActivist("Activist A", contr1Address);
+          await addActivist("Activist C", contr3Address);
+          const activistsCount = await instance.activistsCount();
 
-          assert.equal(contributorsCount, 2);
+          assert.equal(activistsCount, 2);
         });
 
-        it("should add created contributor in contributorList (array)", async () => {
-          await addContributor("Contributor A", contr1Address);
-          await addContributor("Contributor C", contr3Address);
+        it("should add created activist in activistList (array)", async () => {
+          await addActivist("Activist A", contr1Address);
+          await addActivist("Activist C", contr3Address);
 
-          const contributors = await instance.getContributors();
+          const activists = await instance.getActivists();
 
-          assert.equal(contributors[0].contributorWallet, contr1Address);
+          assert.equal(activists[0].activistWallet, contr1Address);
         });
 
-        it("should add created contributor in userType contract as a CONTRIBUTOR", async () => {
-          await addContributor("Contributor A", contr1Address);
+        it("should add created activist in userType contract as a ACTIVIST", async () => {
+          await addActivist("Activist A", contr1Address);
 
           const userType = await userContract.getUser(contr1Address);
-          const CONTRIBUTOR = 6;
+          const ACTIVIST = 6;
 
-          assert.equal(userType, CONTRIBUTOR);
+          assert.equal(userType, ACTIVIST);
         });
       });
     });
   });
 
-  context("when will get contributors (.getContributors)", () => {
-    it("should return contributors when has contributors", async () => {
-      await addContributor("Contributor A", contr1Address);
-      await addContributor("Contributor C", contr3Address);
+  context("when will get activists (.getActivists)", () => {
+    it("should return activists when has activists", async () => {
+      await addActivist("Activist A", contr1Address);
+      await addActivist("Activist C", contr3Address);
 
-      const contributors = await instance.getContributors();
+      const activists = await instance.getActivists();
 
-      assert.equal(contributors.length, 2);
+      assert.equal(activists.length, 2);
     });
 
-    it("should return contributors equal zero when dont has it", async () => {
-      const contributors = await instance.getContributors();
+    it("should return activists equal zero when dont has it", async () => {
+      const activists = await instance.getActivists();
 
-      assert.equal(contributors.length, 0);
-    });
-  });
-
-  context("when will get contributor (.getContributor)", () => {
-    it("should return a contributor", async () => {
-      await addContributor("Contributor A", contr1Address);
-
-      const contributor = await instance.getContributor(contr1Address);
-
-      assert.equal(contributor.contributorWallet, contr1Address);
+      assert.equal(activists.length, 0);
     });
   });
 
-  context("when will check if contributor exists", () => {
+  context("when will get activist (.getActivist)", () => {
+    it("should return a activist", async () => {
+      await addActivist("Activist A", contr1Address);
+
+      const activist = await instance.getActivist(contr1Address);
+
+      assert.equal(activist.activistWallet, contr1Address);
+    });
+  });
+
+  context("when will check if activist exists", () => {
     it("should return true when exists", async () => {
-      await addContributor("Contributor A", contr1Address);
-      const contributorExists = await instance.contributorExists(contr1Address);
+      await addActivist("Activist A", contr1Address);
+      const activistExists = await instance.activistExists(contr1Address);
 
-      assert.equal(contributorExists, true);
+      assert.equal(activistExists, true);
     });
 
     it("it should return false when don't exist", async () => {
-      const contributorExists = await instance.contributorExists(contr1Address);
+      const activistExists = await instance.activistExists(contr1Address);
 
-      assert.equal(contributorExists, false);
+      assert.equal(activistExists, false);
     });
   });
 });

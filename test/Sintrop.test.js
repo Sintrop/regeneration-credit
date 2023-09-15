@@ -1,6 +1,5 @@
 const Sintrop = artifacts.require("Sintrop");
 const CategoryContract = artifacts.require("CategoryContract");
-const IsaPool = artifacts.require("IsaPool");
 const RcToken = artifacts.require("RcToken");
 const UserContract = artifacts.require("UserContract");
 const InspectorContract = artifacts.require("InspectorContract");
@@ -156,8 +155,6 @@ contract("Sintrop", (accounts) => {
     inspectorContract = await InspectorContract.new(userContract.address);
     researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address);
 
-    isaPool = await IsaPool.new(rcToken.address);
-
     producerPool = await ProducerPool.new(
       rcToken.address,
       producerPoolArgs.halving,
@@ -167,7 +164,7 @@ contract("Sintrop", (accounts) => {
 
     producerContract = await ProducerContract.new(userContract.address, producerPool.address);
 
-    categoryContract = await CategoryContract.new(isaPool.address, researcherContract.address, userContract.address);
+    categoryContract = await CategoryContract.new(userContract.address);
 
     validatorContract = await ValidatorContract.new(userContract.address, producerContract.address);
 
@@ -270,7 +267,7 @@ contract("Sintrop", (accounts) => {
         context("when don't has request OPEN or ACCEPTED", () => {
           beforeEach(async () => {
             await instance.acceptInspection(1, { from: inspectorAddress });
-            await addCategory("Soil A", resea1Address);
+            await addCategory("Soil A", ownerAddress);
 
             const isas = [
               {
@@ -490,9 +487,9 @@ contract("Sintrop", (accounts) => {
 
             context("when inspection is not expired", () => {
               beforeEach(async () => {
-                await addCategory("Soil A", resea1Address);
-                await addCategory("Soil B", resea1Address);
-                await addCategory("Soil C", resea1Address);
+                await addCategory("Soil A", ownerAddress);
+                await addCategory("Soil B", ownerAddress);
+                await addCategory("Soil C", ownerAddress);
               });
 
               context("when check inspection", () => {
