@@ -1,19 +1,44 @@
 const RcToken = artifacts.require("RcToken");
 const UserContract = artifacts.require("UserContract");
+const ProducerPool = artifacts.require("ProducerPool");
+const ProducerContract = artifacts.require("ProducerContract");
 
 const expectRevert = require("@openzeppelin/test-helpers/src/expectRevert");
 
 contract("RcToken", (accounts) => {
   let instance;
   let [ownerAddress, user1Address, user2Address] = accounts;
+  let producerPool;
+  let producerContract;
 
   let args = {
     totalRcTokens: "1500000000000000000000000000",
   };
 
+  const argsProducerPool = {
+    totalTokens: "750000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 12,
+  };
+
+  const addProducer = async (name, address) => {
+    await producerContract.addProducer(10, name, "photoURL", "135465-005", {
+      from: address,
+    });
+  };
+
   beforeEach(async () => {
     instance = await RcToken.new(args.totalRcTokens);
     userContract = await UserContract.new();
+
+    producerPool = await ProducerPool.new(
+      instance.address,
+      argsProducerPool.halving,
+      argsProducerPool.totalEras,
+      argsProducerPool.blocksPerEra
+    );
+    producerContract = await ProducerContract.new(userContract.address, producerPool.address);
   });
 
   context("when deploy the token contract", () => {
@@ -25,6 +50,11 @@ contract("RcToken", (accounts) => {
     it("totalCertified should be equal zero", async () => {
       const totalCertified = await instance.totalCertified();
       assert.equal(totalCertified, 0);
+    });
+
+    it("totalLocked should be equal zero", async () => {
+      const totalLocked = await instance.totalLocked();
+      assert.equal(totalLocked, 0);
     });
 
     it("balance of contract owner should be equal to 1500000000000000000000000000", async () => {
@@ -114,6 +144,21 @@ contract("RcToken", (accounts) => {
           instance.burnTokens("100000000000000000000", { from: user2Address }),
           "Burn amount exceeds balance"
         );
+      });
+    });
+  });
+
+  describe("#totalLocked", () => {
+    context("when add contract pool", () => {
+      beforeEach(async () => {
+        await instance.addContractPool(instance.address, argsProducerPool.totalTokens);
+      });
+
+      context("when a owner add a contractPool", () => {
+        it("it should set totalLocked to 750000000000000000000000000", async () => {
+          const totalLocked = await instance.totalLocked();
+          assert.equal(totalLocked, 750000000000000000000000000);
+        });
       });
     });
   });
