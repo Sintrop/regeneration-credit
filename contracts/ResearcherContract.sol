@@ -16,10 +16,12 @@ contract ResearcherContract is Registrable {
   address[] internal researchersAddress;
   uint256 public researchersCount;
   uint256 public worksCount;
+  uint256 internal immutable timeBetweenWorks;
 
-  constructor(address userContractAddress, address researcherPoolAddress) {
+  constructor(address userContractAddress, address researcherPoolAddress, uint256 timeBetweenWorks_) {
     userContract = UserContract(userContractAddress);
     researcherPool = ResearcherPool(researcherPoolAddress);
+    timeBetweenWorks = timeBetweenWorks_;
   }
 
   /**
@@ -37,7 +39,7 @@ contract ResearcherContract is Registrable {
 
     Pool memory pool = Pool(0, currentEra);
 
-    Researcher memory researcher = Researcher(id, msg.sender, userType, name, pool, proofPhoto, 0);
+    Researcher memory researcher = Researcher(id, msg.sender, userType, name, pool, proofPhoto, 0, 0);
 
     researchers[msg.sender] = researcher;
     researchersAddress.push(msg.sender);
@@ -80,6 +82,7 @@ contract ResearcherContract is Registrable {
 
   function addWork(string memory title, string memory thesis, string memory file) public {
     require(userContract.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
+    require(canPublishWork(msg.sender), "Can't publish yet");
 
     Researcher storage researcher = researchers[msg.sender];
     researcher.pool.level++;
@@ -94,6 +97,7 @@ contract ResearcherContract is Registrable {
     works[id] = work;
     worksCount++;
     researchers[msg.sender].publishedWorks++;
+    researchers[msg.sender].lastPublishedAt = block.number;
   }
 
   function getWorks() public view returns (Work[] memory) {
@@ -122,6 +126,14 @@ contract ResearcherContract is Registrable {
 
   function researcherPoolEra() internal view returns (uint256) {
     return researcherPool.currentContractEra();
+  }
+
+  function canPublishWork(address addr) internal view returns (bool) {
+    Researcher memory researcher = researchers[addr];
+    uint256 lastPublishedAt = researcher.lastPublishedAt;
+
+    bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
+    return canPublish || lastPublishedAt == 0;
   }
 
   // MODIFIERS
