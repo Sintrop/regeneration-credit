@@ -1,7 +1,6 @@
 const RcToken = artifacts.require("RcToken");
 const UserContract = artifacts.require("UserContract");
 const ProducerPool = artifacts.require("ProducerPool");
-const ProducerContract = artifacts.require("ProducerContract");
 
 const expectRevert = require("@openzeppelin/test-helpers/src/expectRevert");
 
@@ -9,7 +8,6 @@ contract("RcToken", (accounts) => {
   let instance;
   let [ownerAddress, user1Address, user2Address] = accounts;
   let producerPool;
-  let producerContract;
 
   let args = {
     totalRcTokens: "1500000000000000000000000000",
@@ -22,12 +20,6 @@ contract("RcToken", (accounts) => {
     blocksPerEra: 12,
   };
 
-  const addProducer = async (name, address) => {
-    await producerContract.addProducer(10, name, "photoURL", "135465-005", {
-      from: address,
-    });
-  };
-
   beforeEach(async () => {
     instance = await RcToken.new(args.totalRcTokens);
     userContract = await UserContract.new();
@@ -38,7 +30,6 @@ contract("RcToken", (accounts) => {
       argsProducerPool.totalEras,
       argsProducerPool.blocksPerEra
     );
-    producerContract = await ProducerContract.new(userContract.address, producerPool.address);
   });
 
   context("when deploy the token contract", () => {
@@ -151,7 +142,7 @@ contract("RcToken", (accounts) => {
   describe("#totalLocked", () => {
     context("when add contract pool", () => {
       beforeEach(async () => {
-        await instance.addContractPool(instance.address, argsProducerPool.totalTokens);
+        await instance.addContractPool(producerPool.address, argsProducerPool.totalTokens);
       });
 
       context("when a owner add a contractPool", () => {
