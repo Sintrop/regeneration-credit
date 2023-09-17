@@ -778,7 +778,7 @@ contract("Sintrop", (accounts) => {
     });
   });
 
-  describe.only("#addValidation", () => {
+  describe("#addValidation", () => {
     context("with validator", () => {
       beforeEach(async () => {
         await validatorContract.newAllowedUser(validator1Address);
@@ -854,7 +854,7 @@ contract("Sintrop", (accounts) => {
           });
         });
 
-        context.only("when inspector receive max penalties alloweds", () => {
+        context("when inspector receive max penalties alloweds", () => {
           beforeEach(async () => {
             await inspectorContract.addPenalty(inspectorAddress, 1);
 
