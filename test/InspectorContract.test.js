@@ -14,8 +14,9 @@ contract("InspectorContract", (accounts) => {
 
   beforeEach(async () => {
     userContract = await UserContract.new();
+    const maxPenalties = 2;
 
-    instance = await InspectorContract.new(userContract.address);
+    instance = await InspectorContract.new(userContract.address, maxPenalties);
 
     await userContract.newAllowedCaller(instance.address);
     await instance.newAllowedCaller(ownerAddress);
@@ -155,6 +156,41 @@ contract("InspectorContract", (accounts) => {
     it("should return error when is not allowed caller", async () => {
       await addInspector("Inspector A", inspe1Address);
       await expectRevert(instance.incrementRequests(inspe1Address, { from: inspe1Address }), "Not allowed caller");
+    });
+  });
+
+  describe("#addPenalty", () => {
+    beforeEach(async () => {
+      await addInspector("Inspector A", inspe1Address);
+    });
+
+    context("with allowed caller", () => {
+      it("add penalty with success", async () => {
+        await instance.addPenalty(inspe1Address, 1);
+
+        const totalPenalties = await instance.totalPenalties(inspe1Address);
+
+        assert.equal(totalPenalties, 1);
+      });
+    });
+
+    context("without allowed caller", () => {
+      it("return erro message", async () => {
+        await expectRevert(instance.addPenalty(inspe1Address, 1, { from: inspe2Address }), "Not allowed caller");
+      });
+    });
+  });
+
+  describe("#totalPenalties", () => {
+    beforeEach(async () => {
+      await addInspector("Inspector A", inspe1Address);
+      await instance.addPenalty(inspe1Address, 1);
+    });
+
+    it("return penalties", async () => {
+      const totalPenalties = await instance.totalPenalties(inspe1Address);
+
+      assert.equal(totalPenalties, 1);
     });
   });
 });
