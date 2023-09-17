@@ -1,5 +1,7 @@
 const InspectorContract = artifacts.require("InspectorContract");
 const UserContract = artifacts.require("UserContract");
+const InspectorPool = artifacts.require("InspectorPool");
+const RcToken = artifacts.require("RcToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
@@ -12,11 +14,22 @@ contract("InspectorContract", (accounts) => {
     await instance.addInspector(name, "photoURL", "135465-005", { from: address });
   };
 
+  const args = {
+    totalTokens: "180000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 12,
+  };
+
   beforeEach(async () => {
+    rcToken = await RcToken.new("1500000000000000000000000000");
     userContract = await UserContract.new();
 
-    instance = await InspectorContract.new(userContract.address);
+    inspectorPool = await InspectorPool.new(rcToken.address, args.halving, args.totalEras, args.blocksPerEra);
+    instance = await InspectorContract.new(userContract.address, inspectorPool.address);
 
+    await inspectorPool.newAllowedCaller(instance.address);
+    await rcToken.addContractPool(inspectorPool.address, args.totalTokens);
     await userContract.newAllowedCaller(instance.address);
     await instance.newAllowedCaller(ownerAddress);
   });

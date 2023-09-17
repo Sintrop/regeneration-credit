@@ -139,6 +139,13 @@ contract("Sintrop", (accounts) => {
     rcToken = await RcToken.new("1500000000000000000000000000");
     userContract = await UserContract.new();
 
+    producerPool = await ProducerPool.new(
+      rcToken.address,
+      producerPoolArgs.halving,
+      producerPoolArgs.totalEras,
+      producerPoolArgs.blocksPerEra
+    );
+
     researcherPool = await ResearcherPool.new(
       rcToken.address,
       researcherPoolargs.halving,
@@ -148,22 +155,14 @@ contract("Sintrop", (accounts) => {
 
     inspectorPool = await InspectorPool.new(
       rcToken.address,
-      researcherPoolargs.halving,
-      researcherPoolargs.totalEras,
-      researcherPoolargs.blocksPerEra
-    );
-
-    inspectorContract = await InspectorContract.new(userContract.address, inspectorPool.address);
-    researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address);
-
-    producerPool = await ProducerPool.new(
-      rcToken.address,
-      producerPoolArgs.halving,
-      producerPoolArgs.totalEras,
-      producerPoolArgs.blocksPerEra
+      inspectorPoolargs.halving,
+      inspectorPoolargs.totalEras,
+      inspectorPoolargs.blocksPerEra
     );
 
     producerContract = await ProducerContract.new(userContract.address, producerPool.address);
+    inspectorContract = await InspectorContract.new(userContract.address, inspectorPool.address);
+    researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address);
 
     categoryContract = await CategoryContract.new(userContract.address);
 
@@ -183,6 +182,7 @@ contract("Sintrop", (accounts) => {
     await producerContract.newAllowedCaller(instance.address);
     await researcherContract.newAllowedUser(resea1Address);
     await producerPool.newAllowedCaller(producerContract.address);
+    await inspectorPool.newAllowedCaller(inspectorContract.address);
 
     await addProducer("Producer A", producerAddress);
     await addInspector("Inspector A", inspectorAddress);
