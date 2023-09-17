@@ -145,11 +145,9 @@ contract("RcToken", (accounts) => {
         await instance.addContractPool(producerPool.address, argsProducerPool.totalTokens);
       });
 
-      context("when a owner add a contractPool", () => {
-        it("it should set totalLocked to 750000000000000000000000000", async () => {
-          const totalLocked = await instance.totalLocked();
-          assert.equal(totalLocked, 750000000000000000000000000);
-        });
+      it("it should set totalLocked to 750000000000000000000000000", async () => {
+        const totalLocked = await instance.totalLocked();
+        assert.equal(totalLocked, 750000000000000000000000000);
       });
     });
   });
