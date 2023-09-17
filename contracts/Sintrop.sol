@@ -220,7 +220,8 @@ contract Sintrop {
     uint256 inspectorTotalPenalties = inspectorContract.addPenalty(inspection.acceptedBy, inspection.id);
     invalidateInspection(inspection);
 
-    if (inspectorTotalPenalties >= inspectorContract.maxPenalties()) validatorContract.externalDenieUser(inspection.acceptedBy);
+    if (inspectorTotalPenalties >= inspectorContract.maxPenalties())
+      validatorContract.externalDenieUser(inspection.acceptedBy);
   }
 
   function invalidateInspection(Inspection memory inspection) internal {
@@ -229,7 +230,7 @@ contract Sintrop {
     inspection.invalidatedAtTimestamp = block.timestamp; // solhint-disable-line
     inspections[inspection.id] = inspection;
 
-    if(inspection.isaScore <= 0) return;
+    if (inspection.isaScore <= 0) return;
 
     uint256 levels = uint256(inspection.isaScore);
 
