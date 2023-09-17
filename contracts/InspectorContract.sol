@@ -13,10 +13,11 @@ contract InspectorContract is Callable {
   UserContract internal userContract;
   address[] internal inspectorsAddress;
   uint256 public inspectorsCount;
-  uint256 public immutable maxPenalties = 3;
+  uint256 public immutable maxPenalties;
 
-  constructor(address userContractAddress) {
+  constructor(address userContractAddress, uint256 maxPenalties_) {
     userContract = UserContract(userContractAddress);
+    maxPenalties = maxPenalties_;
   }
 
   /**
@@ -44,9 +45,9 @@ contract InspectorContract is Callable {
     userContract.addUser(msg.sender, userType);
 
     return inspector;
-  } 
+  }
 
-  function addPenalty(address addr, uint256 inspectionId) public mustBeAllowedCaller  returns(uint256) {
+  function addPenalty(address addr, uint256 inspectionId) public mustBeAllowedCaller returns (uint256) {
     penalties[addr].push(Penalty(inspectionId));
 
     return totalPenalties(addr);
