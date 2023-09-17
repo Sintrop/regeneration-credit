@@ -21,7 +21,7 @@ contract Sintrop {
   mapping(address => Inspection[]) internal userInspections;
   mapping(uint256 => Inspection) internal inspections;
   mapping(uint256 => IsaInspection[]) public isas;
-  mapping(uint256 => Validation[]) private validations;
+  mapping(uint256 => Validation[]) public validations;
 
   InspectorContract public inspectorContract;
   ProducerContract public producerContract;
@@ -224,7 +224,9 @@ contract Sintrop {
   }
 
   function invalidateInspection(Inspection memory inspection) internal {
-    inspection.status = InspectionStatus.EXPIRED;
+    inspection.status = InspectionStatus.INVALIDATED;
+    inspection.invalidatedAt = block.number;
+    inspection.invalidatedAtTimestamp = block.timestamp; // solhint-disable-line
     inspections[inspection.id] = inspection;
 
     if(inspection.isaScore <= 0) return;
