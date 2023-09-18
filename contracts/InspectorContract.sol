@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
-import { Inspector, InspectorAddress, Pool} from "./types/InspectorTypes.sol";
+import { Inspector, InspectorAddress, Pool } from "./types/InspectorTypes.sol";
 import { Callable } from "./Callable.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { InspectorPool } from "./InspectorPool.sol";
@@ -82,12 +82,12 @@ contract InspectorContract is Callable {
   }
 
   function incrementRequests(address addr) public mustBeAllowedCaller {
-    inspectors[addr].totalInspections++;  
+    inspectors[addr].totalInspections++;
 
     Inspector storage inspector = inspectors[addr];
     inspector.pool.level++;
     inspectors[addr] = inspector;
-    inspectorPool.addLevel(addr, inspector.pool.level, 1);      
+    inspectorPool.addLevel(addr, inspector.pool.level, 1);
   }
 
   function incrementGiveUps(address addr) public mustBeAllowedCaller {
@@ -104,7 +104,7 @@ contract InspectorContract is Callable {
 
   function inspectorPoolEra() internal view returns (uint256) {
     return inspectorPool.currentContractEra();
-  }  
+  }
 
   function withdraw() public {
     require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Pool only to inspectors");

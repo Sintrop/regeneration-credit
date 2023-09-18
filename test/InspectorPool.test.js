@@ -277,10 +277,7 @@ contract("InspectorPool", (accounts) => {
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          instance.removeLevel(inspector1Address, { from: inspector1Address }),
-          "Not allowed caller"
-        );
+        await expectRevert(instance.removeLevel(inspector1Address, { from: inspector1Address }), "Not allowed caller");
       });
     });
   });
@@ -482,10 +479,7 @@ contract("InspectorPool", (accounts) => {
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          instance.withdraw(inspector1Address, 1, { from: inspector1Address }),
-          "Not allowed caller"
-        );
+        await expectRevert(instance.withdraw(inspector1Address, 1, { from: inspector1Address }), "Not allowed caller");
       });
     });
   });
