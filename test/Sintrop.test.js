@@ -869,7 +869,7 @@ contract("Sintrop", (accounts) => {
           });
         });
 
-        context.only("when already voted in this inspection", () => {
+        context("when already voted in this inspection", () => {
           beforeEach(async () => {
             await instance.addValidation(1, "justification", { from: validator1Address });
           });
