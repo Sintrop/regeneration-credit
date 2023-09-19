@@ -8,6 +8,8 @@ import { UserType } from "./types/UserTypes.sol";
 import { InspectorPool } from "./InspectorPool.sol";
 
 contract InspectorContract is Callable {
+  uint256 internal constant MINIMUM_INSPECTIONS_TO_POOL = 3;
+
   mapping(address => Inspector) internal inspectors;
 
   UserContract internal userContract;
@@ -83,12 +85,16 @@ contract InspectorContract is Callable {
 
   function incrementRequests(address addr) public mustBeAllowedCaller {
     inspectors[addr].totalInspections++;
+  }
 
+  function addPoolLevel(address addr) public mustBeAllowedCaller {
     Inspector storage inspector = inspectors[addr];
     inspector.pool.level++;
-    inspectors[addr] = inspector;
+
+    if (!minimumInspections(inspector.totalInspections)) return;
+
     inspectorPool.addLevel(addr, inspector.pool.level, 1);
-  }
+}
 
   function incrementGiveUps(address addr) public mustBeAllowedCaller {
     inspectors[addr].giveUps++;
@@ -110,6 +116,8 @@ contract InspectorContract is Callable {
     require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Pool only to inspectors");
 
     Inspector memory inspector = inspectors[msg.sender];
+    require(minimumInspections(inspector.totalInspections), "Minimum inspections");
+
     uint256 currentEra = inspector.pool.currentEra;
 
     require(inspectorPool.canApprove(currentEra), "Can't approve withdraw");
@@ -118,6 +126,10 @@ contract InspectorContract is Callable {
 
     inspectorPool.withdraw(msg.sender, currentEra);
   }
+
+  function minimumInspections(uint256 totalInspections) internal pure returns (bool) {
+    return totalInspections >= MINIMUM_INSPECTIONS_TO_POOL;
+  }  
 
   // MODIFIERS
 
