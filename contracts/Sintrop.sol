@@ -22,6 +22,7 @@ contract Sintrop {
   mapping(uint256 => Inspection) internal inspections;
   mapping(uint256 => IsaInspection[]) public isas;
   mapping(uint256 => Validation[]) public validations;
+  mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
   InspectorContract public inspectorContract;
   ProducerContract public producerContract;
@@ -198,9 +199,15 @@ contract Sintrop {
 
     Inspection memory inspection = inspections[id];
     require(inspection.status == InspectionStatus.INSPECTED, "This inspection is not INSPECTED");
+    require(!validatorValidations[msg.sender][id], "Already voted to this inspection");
+
+    validatorValidations[msg.sender][id] = true;
+
+    inspection.validationsCount += 1;
+    inspections[id] = inspection;
 
     uint256 majorityValidatorsCount_ = validatorContract.majorityValidatorsCount();
-    uint256 validationsCount = validations[id].length + 1;
+    uint256 validationsCount = inspections[id].validationsCount;
     bool addPenalty = validationsCount >= majorityValidatorsCount_;
 
     validations[id].push(
