@@ -143,7 +143,6 @@ contract Sintrop {
     afterRealizeInspection(inspection);
 
     producerContract.setIsaScore(inspection.createdBy, inspection.isaScore);
-    inspectorContract.addPoolLevel(inspection.acceptedBy);
 
     inspectorInspected[msg.sender][inspection.createdBy] = true;
   }

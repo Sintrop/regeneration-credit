@@ -85,16 +85,19 @@ contract InspectorContract is Callable {
 
   function incrementRequests(address addr) public mustBeAllowedCaller {
     inspectors[addr].totalInspections++;
+
+    addLevel(addr);
   }
 
-  function addPoolLevel(address addr) public mustBeAllowedCaller {
-    Inspector storage inspector = inspectors[addr];
+  function addLevel(address addr) internal {
+    Inspector memory inspector = inspectors[addr];
     inspector.pool.level++;
+    inspectors[addr] = inspector;
 
     if (!minimumInspections(inspector.totalInspections)) return;
 
     inspectorPool.addLevel(addr, inspector.pool.level, 1);
-}
+  }
 
   function incrementGiveUps(address addr) public mustBeAllowedCaller {
     inspectors[addr].giveUps++;
@@ -129,7 +132,7 @@ contract InspectorContract is Callable {
 
   function minimumInspections(uint256 totalInspections) internal pure returns (bool) {
     return totalInspections >= MINIMUM_INSPECTIONS_TO_POOL;
-  }  
+  }
 
   // MODIFIERS
 
