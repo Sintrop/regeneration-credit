@@ -31,16 +31,17 @@ contract Poolable {
     require(eraLevels[era][to] >= levels, "Not enough levels to remove");
 
     eras[era].levels = eras[era].levels.sub(levels);
-    eraLevels[era][to]--;
+    eraLevels[era][to] = eraLevels[era][to].sub(levels);
   }
 
   function resetLevelsFromEra(address to, uint256 era, uint256 removeSomeLevels) internal {
     uint256 currentLevels = eraLevels[era][to];
 
     if (currentLevels == 0) return;
-    if (removeSomeLevels > 0) removePoolLevel(to, era, removeSomeLevels);
 
-    removePoolLevel(to, era, currentLevels);
+    uint256 levels = removeSomeLevels > 0 ? removeSomeLevels : currentLevels;
+
+    removePoolLevel(to, era, levels);
   }
 
   function tokens(uint256 era, address to, uint256 tokensPerEra) internal view returns (uint256) {
