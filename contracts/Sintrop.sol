@@ -199,7 +199,7 @@ contract Sintrop {
 
     Inspection memory inspection = inspections[id];
     require(inspection.status == InspectionStatus.INSPECTED, "This inspection is not INSPECTED");
-    require(!validatorValidations[msg.sender][id], "Already voted to this inspection");
+    require(!validatorValidations[msg.sender][id], "Already voted");
 
     validatorValidations[msg.sender][id] = true;
 

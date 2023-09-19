@@ -868,6 +868,19 @@ contract("Sintrop", (accounts) => {
             assert.equal(userType, USER_TYPES.denied);
           });
         });
+
+        context.only("when already voted in this inspection", () => {
+          beforeEach(async () => {
+            await instance.addValidation(1, "justification", { from: validator1Address });
+          });
+
+          it("should return error message", async () => {
+            await expectRevert(
+              instance.addValidation(1, "justification", { from: validator1Address }),
+              "Already voted"
+            );
+          });
+        });
       });
 
       context("with invalid inspection", () => {
