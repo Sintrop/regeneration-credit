@@ -778,7 +778,7 @@ contract("Sintrop", (accounts) => {
     });
   });
 
-  describe("#addValidation", () => {
+  describe("#addInspectionValidation", () => {
     context("with validator", () => {
       beforeEach(async () => {
         await validatorContract.newAllowedUser(validator1Address);
@@ -801,7 +801,7 @@ contract("Sintrop", (accounts) => {
 
         context("when receive 1 validation", () => {
           beforeEach(async () => {
-            await instance.addValidation(1, "justification", { from: validator1Address });
+            await instance.addInspectionValidation(1, "justification", { from: validator1Address });
           });
 
           it("add validation", async () => {
@@ -817,8 +817,8 @@ contract("Sintrop", (accounts) => {
 
         context("when have 2 validations (half of the validators)", () => {
           beforeEach(async () => {
-            await instance.addValidation(1, "justification", { from: validator1Address });
-            await instance.addValidation(1, "justification", { from: validator2Address });
+            await instance.addInspectionValidation(1, "justification", { from: validator1Address });
+            await instance.addInspectionValidation(1, "justification", { from: validator2Address });
           });
 
           it("add validations", async () => {
@@ -858,8 +858,8 @@ contract("Sintrop", (accounts) => {
           beforeEach(async () => {
             await inspectorContract.addPenalty(inspectorAddress, 1);
 
-            await instance.addValidation(1, "justification", { from: validator1Address });
-            await instance.addValidation(1, "justification", { from: validator2Address });
+            await instance.addInspectionValidation(1, "justification", { from: validator1Address });
+            await instance.addInspectionValidation(1, "justification", { from: validator2Address });
           });
 
           it("inspector type to DENIED", async () => {
@@ -871,12 +871,12 @@ contract("Sintrop", (accounts) => {
 
         context("when already voted in this inspection", () => {
           beforeEach(async () => {
-            await instance.addValidation(1, "justification", { from: validator1Address });
+            await instance.addInspectionValidation(1, "justification", { from: validator1Address });
           });
 
           it("should return error message", async () => {
             await expectRevert(
-              instance.addValidation(1, "justification", { from: validator1Address }),
+              instance.addInspectionValidation(1, "justification", { from: validator1Address }),
               "Already voted"
             );
           });
@@ -886,7 +886,7 @@ contract("Sintrop", (accounts) => {
       context("with invalid inspection", () => {
         it("should return error message", async () => {
           await expectRevert(
-            instance.addValidation(1, "justification", { from: validator1Address }),
+            instance.addInspectionValidation(1, "justification", { from: validator1Address }),
             "This inspection is not INSPECTED"
           );
         });
@@ -900,7 +900,7 @@ contract("Sintrop", (accounts) => {
         await realizeInspection(1, isas(), inspectorAddress);
 
         await expectRevert(
-          instance.addValidation(1, "justification", { from: producerAddress }),
+          instance.addInspectionValidation(1, "justification", { from: producerAddress }),
           "Please register as validator"
         );
       });

@@ -193,7 +193,7 @@ contract Sintrop {
     userInspections[acceptedBy].push(inspection);
   }
 
-  function addValidation(uint256 id, string memory justification) public {
+  function addInspectionValidation(uint256 id, string memory justification) public {
     require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
     Inspection memory inspection = inspections[id];
