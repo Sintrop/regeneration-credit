@@ -33,7 +33,6 @@ contract Sintrop {
   uint256 internal immutable timeBetweenInspections;
   uint256 internal blocksToExpireAcceptedInspection;
   uint256 internal immutable allowedInitialRequests;
-  uint256 internal immutable inspectorMaxPenalties = 1;
 
   constructor(
     address inspectorContractAddress,
