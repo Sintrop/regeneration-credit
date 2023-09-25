@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
-import { Inspector, InspectorAddress, Penalty } from "./types/InspectorTypes.sol";
+import { Inspector, InspectorAddress, Penalty, Pool } from "./types/InspectorTypes.sol";
 import { Callable } from "./Callable.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { InspectorPool } from "./InspectorPool.sol";
