@@ -9,6 +9,8 @@ import { Producer } from "./types/ProducerTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
 import { UserContract } from "./UserContract.sol";
 import { UserType } from "./types/UserTypes.sol";
+import { ValidatorContract } from "./ValidatorContract.sol";
+import { Validation } from "./types/ValidatorTypes.sol";
 
 /**
  * @title SintropContract
@@ -19,10 +21,13 @@ contract Sintrop {
   mapping(address => Inspection[]) internal userInspections;
   mapping(uint256 => Inspection) internal inspections;
   mapping(uint256 => IsaInspection[]) public isas;
+  mapping(uint256 => Validation[]) public validations;
+  mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
   InspectorContract public inspectorContract;
   ProducerContract public producerContract;
   UserContract public userContract;
+  ValidatorContract public validatorContract;
 
   uint256 public inspectionsCount;
   uint256 internal immutable timeBetweenInspections;
@@ -33,6 +38,7 @@ contract Sintrop {
     address inspectorContractAddress,
     address producerContractAddress,
     address userContractAddress,
+    address validatorContractAddress,
     uint256 timeBetweenInspections_,
     uint256 blocksToExpireAcceptedInspection_,
     uint256 allowedInitialRequests_
@@ -40,6 +46,7 @@ contract Sintrop {
     inspectorContract = InspectorContract(inspectorContractAddress);
     producerContract = ProducerContract(producerContractAddress);
     userContract = UserContract(userContractAddress);
+    validatorContract = ValidatorContract(validatorContractAddress);
     timeBetweenInspections = timeBetweenInspections_;
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
     allowedInitialRequests = allowedInitialRequests_;
@@ -95,7 +102,6 @@ contract Sintrop {
     producerContract.lastRequestAt(msg.sender, block.number);
   }
 
-  // TODO: Remove not reutilized modifiers and use require direct in the function
   /**
    * @dev Allows the current user (inspector) accept a inspection.
    * @param inspectionId The id of the inspection that the inspector want accept.
@@ -122,7 +128,6 @@ contract Sintrop {
     inspectorContract.lastAcceptedAt(msg.sender, block.number);
   }
 
-  // TODO: Remove not reutilized modifiers and use require direct in the function
   /**
    * @dev Allow a inspector realize a inspection and mark as INSPECTED
    * @param inspectionId The id of the inspection to be realized
@@ -156,7 +161,6 @@ contract Sintrop {
   }
 
   function calculateIsa(Inspection memory inspection, IsaInspection[] memory _isas) internal returns (int256) {
-    // TODO: Add isaScore points in state
     int256[7] memory points = [int256(20), 10, 5, 0, -5, -10, -20];
     int256 isaScore;
 
@@ -187,6 +191,57 @@ contract Sintrop {
 
     userInspections[createdBy].push(inspection);
     userInspections[acceptedBy].push(inspection);
+  }
+
+  function addInspectionValidation(uint256 id, string memory justification) public {
+    require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+
+    Inspection memory inspection = inspections[id];
+    require(inspection.status == InspectionStatus.INSPECTED, "This inspection is not INSPECTED");
+    require(!validatorValidations[msg.sender][id], "Already voted");
+
+    validatorValidations[msg.sender][id] = true;
+
+    inspection.validationsCount += 1;
+    inspections[id] = inspection;
+
+    uint256 majorityValidatorsCount_ = validatorContract.majorityValidatorsCount();
+    uint256 validationsCount = inspections[id].validationsCount;
+    bool addPenalty = validationsCount >= majorityValidatorsCount_;
+
+    validations[id].push(
+      Validation(
+        msg.sender,
+        inspection.acceptedBy,
+        inspection.id,
+        justification,
+        majorityValidatorsCount_,
+        block.timestamp, // solhint-disable-line
+        block.number
+      )
+    );
+
+    if (!addPenalty) return;
+
+    uint256 inspectorTotalPenalties = inspectorContract.addPenalty(inspection.acceptedBy, inspection.id);
+    invalidateInspection(inspection);
+
+    if (inspectorTotalPenalties >= inspectorContract.maxPenalties())
+      validatorContract.externalDenieUser(inspection.acceptedBy);
+  }
+
+  function invalidateInspection(Inspection memory inspection) internal {
+    inspection.status = InspectionStatus.INVALIDATED;
+    inspection.invalidatedAt = block.number;
+    inspection.invalidatedAtTimestamp = block.timestamp; // solhint-disable-line
+    inspections[inspection.id] = inspection;
+
+    if (inspection.isaScore <= 0) return;
+
+    uint256 levels = uint256(inspection.isaScore);
+
+    validatorContract.externalRemoveLevels(inspection.createdBy, levels);
+    validatorContract.externalRemoveLevels(inspection.acceptedBy, levels);
   }
 
   /**

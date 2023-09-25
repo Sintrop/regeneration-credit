@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
-import { Inspector, InspectorAddress, Pool } from "./types/InspectorTypes.sol";
+import { Inspector, InspectorAddress, Penalty } from "./types/InspectorTypes.sol";
 import { Callable } from "./Callable.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { InspectorPool } from "./InspectorPool.sol";
@@ -11,15 +11,19 @@ contract InspectorContract is Callable {
   uint256 internal constant MINIMUM_INSPECTIONS_TO_POOL = 3;
 
   mapping(address => Inspector) internal inspectors;
+  mapping(address => Penalty[]) public penalties;
 
   UserContract internal userContract;
+  InspectorPool internal inspectorPool;
   address[] internal inspectorsAddress;
   uint256 public inspectorsCount;
-  InspectorPool internal inspectorPool;
 
-  constructor(address userContractAddress, address inspectorPoolAddress) {
+  uint256 public immutable maxPenalties;
+
+  constructor(address userContractAddress, address inspectorPoolAddress, uint256 maxPenalties_) {
     userContract = UserContract(userContractAddress);
     inspectorPool = InspectorPool(inspectorPoolAddress);
+    maxPenalties = maxPenalties_;
   }
 
   /**
@@ -50,6 +54,16 @@ contract InspectorContract is Callable {
     userContract.addUser(msg.sender, userType);
 
     return inspector;
+  }
+
+  function addPenalty(address addr, uint256 inspectionId) public mustBeAllowedCaller returns (uint256) {
+    penalties[addr].push(Penalty(inspectionId));
+
+    return totalPenalties(addr);
+  }
+
+  function totalPenalties(address addr) public view returns (uint256) {
+    return penalties[addr].length;
   }
 
   /**

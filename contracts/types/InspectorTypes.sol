@@ -16,6 +16,10 @@ struct Inspector {
   Pool pool;
 }
 
+struct Penalty {
+  uint256 inspectionId;
+}
+
 struct InspectorAddress {
   string coordinate;
 }

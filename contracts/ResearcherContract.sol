@@ -110,8 +110,8 @@ contract ResearcherContract is Registrable {
   function withdraw() public {
     require(userContract.userTypeIs(UserType.RESEARCHER, msg.sender), "Pool only to researchers");
 
-    Researcher memory reseracher = researchers[msg.sender];
-    uint256 currentEra = reseracher.pool.currentEra;
+    Researcher memory researcher = researchers[msg.sender];
+    uint256 currentEra = researcher.pool.currentEra;
 
     require(researcherPool.canApprove(currentEra), "Can't approve withdraw");
 

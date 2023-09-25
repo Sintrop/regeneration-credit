@@ -288,6 +288,13 @@ contract("ProducerPool", (accounts) => {
 
               assert.equal(balanceOf, 30000000000000000000000000n);
             });
+
+            it("total locked must be 750000000000000000000000000 - 30000000000000000000000000 = ", async () => {
+              await instance.withdraw(producer1Address, 1);
+              const totalLocked = await rcToken.totalLocked();
+
+              assert.equal(totalLocked, 720000000000000000000000000n);
+            });
           });
         });
 
