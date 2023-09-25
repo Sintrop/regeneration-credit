@@ -18,7 +18,7 @@ contract("InspectorContract", (accounts) => {
     totalTokens: "180000000000000000000000000",
     halving: 12,
     totalEras: 96,
-    blocksPerEra: 12,
+    blocksPerEra: 20,
   };
 
   advanceBlock = async (blocksNumber) => {
@@ -55,6 +55,7 @@ contract("InspectorContract", (accounts) => {
     await userContract.newAllowedCaller(instance.address);
     await instance.newAllowedCaller(ownerAddress);
   });
+
   context("when access inspector fields", () => {
     it("should have fields", async () => {
       await addInspector("Inspector A", inspe1Address);
@@ -197,6 +198,7 @@ contract("InspectorContract", (accounts) => {
     context("when is a inspector", () => {
       beforeEach(async () => {
         await addInspector("Inspector A", inspe1Address);
+
         await instance.incrementRequests(inspe1Address);
         await instance.incrementRequests(inspe1Address);
       });
@@ -205,7 +207,7 @@ contract("InspectorContract", (accounts) => {
         it("should return error", async () => {
           await expectRevert(instance.withdraw({ from: inspe1Address }), "Minimum inspections");
         });
-      })
+      });
 
       context("when inspector is in era 1 and current era is 1", () => {
         it("should return error", async () => {
@@ -218,7 +220,6 @@ contract("InspectorContract", (accounts) => {
         context("with one inspection", () => {
           beforeEach(async () => {
             await instance.incrementRequests(inspe1Address);
-            await instance.addPoolLevel(inspe1Address);
 
             await advanceBlock(args.blocksPerEra);
 
@@ -233,16 +234,14 @@ contract("InspectorContract", (accounts) => {
           });
         });
 
-        context("with one inspection", () => {
+        context("with two inspection", () => {
           beforeEach(async () => {
-            await instance.incrementRequests(inspe1Address);
-            await instance.addPoolLevel(inspe1Address);
-
             await addInspector("Inspector B", inspe2Address);
+            await instance.incrementRequests(inspe1Address);
+
             await instance.incrementRequests(inspe2Address);
             await instance.incrementRequests(inspe2Address);
             await instance.incrementRequests(inspe2Address);
-            await instance.addPoolLevel(inspe2Address);
 
             await advanceBlock(args.blocksPerEra);
 
