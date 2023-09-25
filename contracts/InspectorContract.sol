@@ -2,19 +2,22 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
-import { Inspector, InspectorAddress } from "./types/InspectorTypes.sol";
+import { Inspector, InspectorAddress, Penalty } from "./types/InspectorTypes.sol";
 import { Callable } from "./Callable.sol";
 import { UserType } from "./types/UserTypes.sol";
 
 contract InspectorContract is Callable {
   mapping(address => Inspector) internal inspectors;
+  mapping(address => Penalty[]) public penalties;
 
   UserContract internal userContract;
   address[] internal inspectorsAddress;
   uint256 public inspectorsCount;
+  uint256 public immutable maxPenalties;
 
-  constructor(address userContractAddress) {
+  constructor(address userContractAddress, uint256 maxPenalties_) {
     userContract = UserContract(userContractAddress);
+    maxPenalties = maxPenalties_;
   }
 
   /**
@@ -42,6 +45,16 @@ contract InspectorContract is Callable {
     userContract.addUser(msg.sender, userType);
 
     return inspector;
+  }
+
+  function addPenalty(address addr, uint256 inspectionId) public mustBeAllowedCaller returns (uint256) {
+    penalties[addr].push(Penalty(inspectionId));
+
+    return totalPenalties(addr);
+  }
+
+  function totalPenalties(address addr) public view returns (uint256) {
+    return penalties[addr].length;
   }
 
   /**

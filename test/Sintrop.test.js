@@ -7,6 +7,7 @@ const ProducerContract = artifacts.require("ProducerContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
 const ProducerPool = artifacts.require("ProducerPool");
 const ResearcherPool = artifacts.require("ResearcherPool");
+const ValidatorContract = artifacts.require("ValidatorContract");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
@@ -17,16 +18,34 @@ contract("Sintrop", (accounts) => {
   let producerContract;
   let researcherContract;
   let researcherPool;
-  let [ownerAddress, producerAddress, producer2Address, inspectorAddress, inspector2Address, resea1Address] = accounts;
+
+  let [
+    ownerAddress,
+    producerAddress,
+    producer2Address,
+    inspectorAddress,
+    inspector2Address,
+    resea1Address,
+    validator1Address,
+    validator2Address,
+    validator3Address,
+    validator4Address,
+  ] = accounts;
+
   const STATUS = {
     open: 0,
     accepted: 1,
     inspected: 2,
     expired: 3,
+    invalidated: 4,
+  };
+
+  const USER_TYPES = {
+    denied: 9,
   };
 
   const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-  const timeBetweenWorks = process.env["RESEARCHER_TIME_BETWEEN_WORKS"];
+  const timeBetweenWorks = 6;
 
   const producerPoolArgs = {
     totalTokens: "750000000000000000000000000",
@@ -60,6 +79,10 @@ contract("Sintrop", (accounts) => {
 
   const addResearcher = async (name, address) => {
     await researcherContract.addResearcher(name, "photoURL", { from: address });
+  };
+
+  const addValidator = async (address) => {
+    await validatorContract.addValidator({ from: address });
   };
 
   const addCategory = async (name, from) => {
@@ -138,7 +161,8 @@ contract("Sintrop", (accounts) => {
       developerPoolargs.blocksPerEra
     );
 
-    inspectorContract = await InspectorContract.new(userContract.address);
+    inspectorMaxPenalties = 2;
+    inspectorContract = await InspectorContract.new(userContract.address, inspectorMaxPenalties);
     researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address, timeBetweenWorks);
 
     producerPool = await ProducerPool.new(
@@ -152,10 +176,13 @@ contract("Sintrop", (accounts) => {
 
     categoryContract = await CategoryContract.new(userContract.address);
 
+    validatorContract = await ValidatorContract.new(userContract.address, producerContract.address);
+
     instance = await Sintrop.new(
       inspectorContract.address,
       producerContract.address,
       userContract.address,
+      validatorContract.address,
       sintropArgs.timeBetweenInspections,
       sintropArgs.blocksToExpireAcceptedInspection,
       sintropArgs.allowedInitialRequests
@@ -164,8 +191,12 @@ contract("Sintrop", (accounts) => {
     await userContract.newAllowedCaller(inspectorContract.address);
     await userContract.newAllowedCaller(producerContract.address);
     await userContract.newAllowedCaller(researcherContract.address);
+    await userContract.newAllowedCaller(validatorContract.address);
     await inspectorContract.newAllowedCaller(instance.address);
+    await inspectorContract.newAllowedCaller(ownerAddress);
+    await validatorContract.newAllowedCaller(instance.address);
     await producerContract.newAllowedCaller(instance.address);
+    await producerContract.newAllowedCaller(validatorContract.address);
     await researcherContract.newAllowedUser(resea1Address);
     await producerPool.newAllowedCaller(producerContract.address);
 
@@ -743,6 +774,135 @@ contract("Sintrop", (accounts) => {
         await expectRevert(
           instance.realizeInspection(1, [], { from: producerAddress }),
           "Please register as inspector"
+        );
+      });
+    });
+  });
+
+  describe("#addInspectionValidation", () => {
+    context("with validator", () => {
+      beforeEach(async () => {
+        await validatorContract.newAllowedUser(validator1Address);
+        await validatorContract.newAllowedUser(validator2Address);
+        await validatorContract.newAllowedUser(validator3Address);
+        await validatorContract.newAllowedUser(validator4Address);
+
+        await addValidator(validator1Address);
+        await addValidator(validator2Address);
+        await addValidator(validator3Address);
+        await addValidator(validator4Address);
+      });
+
+      context("with valid inspection", () => {
+        beforeEach(async () => {
+          await instance.requestInspection({ from: producerAddress });
+          await instance.acceptInspection(1, { from: inspectorAddress });
+          await realizeInspection(1, isas(), inspectorAddress);
+        });
+
+        context("when receive 1 validation", () => {
+          beforeEach(async () => {
+            await instance.addInspectionValidation(1, "justification", { from: validator1Address });
+          });
+
+          it("add validation", async () => {
+            const validation = await instance.validations(1, 0);
+
+            assert.equal(validation.validator, validator1Address);
+            assert.equal(validation.user, inspectorAddress);
+            assert.equal(validation.resourceId, 1);
+            assert.equal(validation.justification, "justification");
+            assert.equal(validation.majorityValidatorsCount, 2);
+          });
+        });
+
+        context("when have 2 validations (half of the validators)", () => {
+          beforeEach(async () => {
+            await instance.addInspectionValidation(1, "justification", { from: validator1Address });
+            await instance.addInspectionValidation(1, "justification", { from: validator2Address });
+          });
+
+          it("add validations", async () => {
+            const validation1 = await instance.validations(1, 0);
+            const validation2 = await instance.validations(1, 1);
+
+            assert.equal(validation1.validator, validator1Address);
+            assert.equal(validation2.validator, validator2Address);
+          });
+
+          it("inspection status INVALIDATED", async () => {
+            const inspection = await instance.getInspection(1);
+
+            assert.equal(inspection.status, STATUS.invalidated);
+          });
+
+          it("inspector receive 1 penalty", async () => {
+            const totalPenalties = await inspectorContract.totalPenalties(inspectorAddress);
+
+            assert.equal(totalPenalties, 1);
+          });
+
+          it("remove producer isaScore", async () => {
+            const producer = await producerContract.getProducer(producerAddress);
+
+            assert.equal(producer.isa.isaScore, 0);
+          });
+
+          it("zero producerPool era level score", async () => {
+            const levels = await producerPool.eraLevels(1, producerAddress);
+
+            assert.equal(levels, 0);
+          });
+        });
+
+        context("when inspector receive max penalties alloweds", () => {
+          beforeEach(async () => {
+            await inspectorContract.addPenalty(inspectorAddress, 1);
+
+            await instance.addInspectionValidation(1, "justification", { from: validator1Address });
+            await instance.addInspectionValidation(1, "justification", { from: validator2Address });
+          });
+
+          it("inspector type to DENIED", async () => {
+            const userType = await userContract.getUser(inspectorAddress);
+
+            assert.equal(userType, USER_TYPES.denied);
+          });
+        });
+
+        context("when already voted in this inspection", () => {
+          beforeEach(async () => {
+            await instance.addInspectionValidation(1, "justification", { from: validator1Address });
+          });
+
+          it("should return error message", async () => {
+            await expectRevert(
+              instance.addInspectionValidation(1, "justification", { from: validator1Address }),
+              "Already voted"
+            );
+          });
+        });
+      });
+
+      context("with invalid inspection", () => {
+        it("should return error message", async () => {
+          await expectRevert(
+            instance.addInspectionValidation(1, "justification", { from: validator1Address }),
+            "This inspection is not INSPECTED"
+          );
+        });
+      });
+    });
+
+    context("with non validator", () => {
+      it("should return error message", async () => {
+        await instance.requestInspection({ from: producerAddress });
+        await instance.acceptInspection(1, { from: inspectorAddress });
+        await realizeInspection(1, isas(), inspectorAddress);
+
+        await expectRevert(
+          instance.addInspectionValidation(1, "justification", { from: producerAddress }),
+          "Please register as validator"
         );
       });
     });

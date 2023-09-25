@@ -15,6 +15,10 @@ struct Inspector {
   uint256 lastAcceptedAt;
 }
 
+struct Penalty {
+  uint256 inspectionId;
+}
+
 struct InspectorAddress {
   string coordinate;
 }

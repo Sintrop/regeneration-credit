@@ -64,16 +64,12 @@ contract("ValidatorContract", (accounts) => {
       producerPoolArgs.blocksPerEra
     );
 
-    developerPool = await DeveloperPool.new(rcToken.address, developerPoolArgs.blocksPerEra, developerPoolArgs.eraMax);
-
     producerContract = await ProducerContract.new(userContract.address, producerPool.address);
-    developerContract = await DeveloperContract.new(userContract.address, developerPool.address);
 
-    instance = await ValidatorContract.new(userContract.address, producerContract.address, developerContract.address);
+    instance = await ValidatorContract.new(userContract.address, producerContract.address);
 
     await userContract.newAllowedCaller(instance.address);
     await userContract.newAllowedCaller(producerContract.address);
-    await userContract.newAllowedCaller(developerContract.address);
     await userContract.newAllowedCaller(ownerAddress);
     await instance.newAllowedUser(validator1Address);
     await producerContract.newAllowedCaller(instance.address);

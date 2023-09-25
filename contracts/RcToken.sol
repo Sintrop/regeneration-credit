@@ -16,6 +16,7 @@ contract RcToken is ERC20, Ownable {
 
   uint256 internal totalSupply_;
   uint256 internal totalCertified_;
+  uint256 internal totalLocked_;
 
   using SafeMath for uint256;
 
@@ -29,6 +30,8 @@ contract RcToken is ERC20, Ownable {
   function addContractPool(address _fundAddress, uint256 _numTokens) public onlyOwner returns (bool) {
     contractsPools[_fundAddress] = true;
     transfer(_fundAddress, _numTokens);
+    totalLocked_ += _numTokens;
+
     return true;
   }
 
@@ -51,6 +54,8 @@ contract RcToken is ERC20, Ownable {
     balances[tokenOwner] = balances[tokenOwner].sub(numTokens);
     balances[receiver] = balances[receiver].add(numTokens);
     emit Transfer(tokenOwner, receiver, numTokens);
+
+    totalLocked_ -= numTokens;
 
     return true;
   }
@@ -121,6 +126,10 @@ contract RcToken is ERC20, Ownable {
 
   function totalCertified() public view returns (uint256) {
     return totalCertified_;
+  }
+
+  function totalLocked() public view returns (uint256) {
+    return totalLocked_;
   }
 
   modifier mustBeContractPool() {
