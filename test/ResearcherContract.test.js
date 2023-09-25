@@ -249,72 +249,67 @@ contract("ResearcherContract", (accounts) => {
         await addWork(resea1Address);
       });
 
-      it("add a work", async () => {
-        const firstWork = await instance.worksCount();
+      context("when have waited time between works", () => {
+        it("add a work", async () => {
+          const firstWork = await instance.worksCount();
 
-        assert.equal(firstWork, 1);
-      });
-
-      it("add 1 to researcher publishedWorks", async () => {
-        const researcher = await instance.getResearcher(resea1Address);
-
-        assert.equal(researcher.publishedWorks, 1);
-      });
-
-      it("add 1 to researcher pool level", async () => {
-        const researcher = await instance.getResearcher(resea1Address);
-
-        assert.equal(researcher.pool.level, 1);
-      });
-
-      it("add 1 to researcher pool eraLeves", async () => {
-        const eraLevel = await researcherPool.eraLevels(1, resea1Address);
-
-        assert.equal(eraLevel, 1);
-      });
-
-      it("dont add to researcher pool eraLeves of other era", async () => {
-        const eraLevel = await researcherPool.eraLevels(2, resea1Address);
-
-        assert.equal(eraLevel, 0);
-      });
-
-      context("when is next era", () => {
-        beforeEach(async () => {
-          await advanceBlock(args.blocksPerEra);
-
-          await addWork(resea1Address);
+          assert.equal(firstWork, 1);
         });
 
-        it("add +1 to researcher pool eraLeves of era 2", async () => {
-          const eraLevel = await researcherPool.eraLevels(2, resea1Address);
-
-          assert.equal(eraLevel, 2);
-        });
-
-        it("add +1 to researcher pool level", async () => {
+        it("add 1 to researcher publishedWorks", async () => {
           const researcher = await instance.getResearcher(resea1Address);
 
-          assert.equal(researcher.pool.level, 2);
+          assert.equal(researcher.publishedWorks, 1);
+        });
+
+        it("add 1 to researcher pool level", async () => {
+          const researcher = await instance.getResearcher(resea1Address);
+
+          assert.equal(researcher.pool.level, 1);
+        });
+
+        it("add 1 to researcher pool eraLeves", async () => {
+          const eraLevel = await researcherPool.eraLevels(1, resea1Address);
+
+          assert.equal(eraLevel, 1);
         });
 
         it("dont add to researcher pool eraLeves of other era", async () => {
-          const eraLevel = await researcherPool.eraLevels(3, resea1Address);
+          const eraLevel = await researcherPool.eraLevels(2, resea1Address);
 
           assert.equal(eraLevel, 0);
+        });
+
+        context("when is next era", () => {
+          beforeEach(async () => {
+            await advanceBlock(args.blocksPerEra);
+
+            await addWork(resea1Address);
+          });
+
+          it("add +1 to researcher pool eraLeves of era 2", async () => {
+            const eraLevel = await researcherPool.eraLevels(2, resea1Address);
+
+            assert.equal(eraLevel, 2);
+          });
+
+          it("add +1 to researcher pool level", async () => {
+            const researcher = await instance.getResearcher(resea1Address);
+
+            assert.equal(researcher.pool.level, 2);
+          });
+
+          it("dont add to researcher pool eraLeves of other era", async () => {
+            const eraLevel = await researcherPool.eraLevels(3, resea1Address);
+
+            assert.equal(eraLevel, 0);
+          });
         });
       });
 
       context("when have not waited time between works", () => {
         it("should return error message", async () => {
           await expectRevert(addWork(resea1Address), "Can't publish yet");
-        });
-      });
-
-      context("when have waited time between works", () => {
-        it("should add work", async () => {
-          await advanceBlock(timeBetweenWorks);
-          await addWork(resea1Address);
         });
       });
     });
