@@ -5,7 +5,8 @@ enum InspectionStatus {
   OPEN,
   ACCEPTED,
   INSPECTED,
-  EXPIRED
+  EXPIRED,
+  INVALIDATED
 }
 
 struct IsaInspection {
@@ -21,9 +22,13 @@ struct Inspection {
   address createdBy;
   address acceptedBy;
   int256 isaScore;
+  uint256 validationsCount;
   uint256 createdAt;
   uint256 createdAtTimestamp;
   uint256 acceptedAt;
   uint256 acceptedAtTimestamp;
   uint256 inspectedAtTimestamp;
+  uint256 inspectedAtEra;
+  uint256 invalidatedAt;
+  uint256 invalidatedAtTimestamp;
 }

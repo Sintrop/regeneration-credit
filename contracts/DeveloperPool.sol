@@ -57,7 +57,8 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
 
   function removeLevel(address developer) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
+    uint256 levels = 1;
 
-    removePoolLevel(developer, era);
+    removePoolLevel(developer, era, levels);
   }
 }
