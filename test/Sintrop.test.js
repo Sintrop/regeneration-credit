@@ -164,9 +164,9 @@ contract("Sintrop", (accounts) => {
 
     researcherPool = await ResearcherPool.new(
       rcToken.address,
-      developerPoolargs.halving,
-      developerPoolargs.totalEras,
-      developerPoolargs.blocksPerEra
+      researcherPoolargs.halving,
+      researcherPoolargs.totalEras,
+      researcherPoolargs.blocksPerEra
     );
 
     inspectorMaxPenalties = 2;
