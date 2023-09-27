@@ -7,7 +7,7 @@ const ProducerContract = artifacts.require("ProducerContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
 const ProducerPool = artifacts.require("ProducerPool");
 const ResearcherPool = artifacts.require("ResearcherPool");
-const InspectorPool = artifacts.require("ResearcherPool");
+const InspectorPool = artifacts.require("InspectorPool");
 const ValidatorContract = artifacts.require("ValidatorContract");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
