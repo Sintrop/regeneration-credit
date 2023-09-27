@@ -47,6 +47,7 @@ contract("Sintrop", (accounts) => {
   };
 
   const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+  const timeBetweenWorks = 6;
 
   const producerPoolArgs = {
     totalTokens: "750000000000000000000000000",
@@ -171,7 +172,7 @@ contract("Sintrop", (accounts) => {
 
     inspectorMaxPenalties = 2;
     inspectorContract = await InspectorContract.new(userContract.address, inspectorMaxPenalties);
-    researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address);
+    researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address, timeBetweenWorks);
 
     producerPool = await ProducerPool.new(
       rcToken.address,
@@ -466,7 +467,7 @@ contract("Sintrop", (accounts) => {
           });
         });
 
-        context("when alerady realized inspection from producer", () => {
+        context("when already realized inspection from producer", () => {
           beforeEach(async () => {
             await instance.acceptInspection(1, { from: inspectorAddress });
             await instance.realizeInspection(1, [], { from: inspectorAddress });
