@@ -1,5 +1,7 @@
 const InspectorContract = artifacts.require("InspectorContract");
 const UserContract = artifacts.require("UserContract");
+const InspectorPool = artifacts.require("InspectorPool");
+const RcToken = artifacts.require("RcToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
@@ -12,15 +14,49 @@ contract("InspectorContract", (accounts) => {
     await instance.addInspector(name, "photoURL", "135465-005", { from: address });
   };
 
+  const args = {
+    totalTokens: "180000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 20,
+  };
+
+  advanceBlock = async (blocksNumber) => {
+    for (let i = 0; i < blocksNumber; i++) {
+      let promise = new Promise((resolve, reject) => {
+        web3.currentProvider.send(
+          {
+            jsonrpc: "2.0",
+            method: "evm_mine",
+            id: new Date().getTime(),
+          },
+          (err, result) => {
+            if (err) {
+              return reject(err);
+            }
+            const newBlockHash = web3.eth.getBlock("latest").hash;
+
+            return resolve(newBlockHash);
+          }
+        );
+      });
+    }
+  };
+
   beforeEach(async () => {
+    rcToken = await RcToken.new("1500000000000000000000000000");
     userContract = await UserContract.new();
     const maxPenalties = 2;
 
-    instance = await InspectorContract.new(userContract.address, maxPenalties);
+    inspectorPool = await InspectorPool.new(rcToken.address, args.halving, args.totalEras, args.blocksPerEra);
+    instance = await InspectorContract.new(userContract.address, inspectorPool.address, maxPenalties);
 
+    await inspectorPool.newAllowedCaller(instance.address);
+    await rcToken.addContractPool(inspectorPool.address, args.totalTokens);
     await userContract.newAllowedCaller(instance.address);
     await instance.newAllowedCaller(ownerAddress);
   });
+
   context("when access inspector fields", () => {
     it("should have fields", async () => {
       await addInspector("Inspector A", inspe1Address);
@@ -156,6 +192,77 @@ contract("InspectorContract", (accounts) => {
     it("should return error when is not allowed caller", async () => {
       await addInspector("Inspector A", inspe1Address);
       await expectRevert(instance.incrementRequests(inspe1Address, { from: inspe1Address }), "Not allowed caller");
+    });
+  });
+
+  describe("#withdraw", () => {
+    context("when is a inspector", () => {
+      beforeEach(async () => {
+        await addInspector("Inspector A", inspe1Address);
+
+        await instance.incrementRequests(inspe1Address);
+        await instance.incrementRequests(inspe1Address);
+      });
+
+      context("when have less then 3 inspections", () => {
+        it("should return error", async () => {
+          await expectRevert(instance.withdraw({ from: inspe1Address }), "Minimum inspections");
+        });
+      });
+
+      context("when inspector is in era 1 and current era is 1", () => {
+        it("should return error", async () => {
+          await instance.incrementRequests(inspe1Address);
+          await expectRevert(instance.withdraw({ from: inspe1Address }), "Can't approve withdraw");
+        });
+      });
+
+      context("when inspector is in era 1 and current era is 2", () => {
+        context("with one inspection", () => {
+          beforeEach(async () => {
+            await instance.incrementRequests(inspe1Address);
+
+            await advanceBlock(args.blocksPerEra);
+
+            await instance.withdraw({ from: inspe1Address });
+          });
+
+          it("withdraw 7200000000000000000000000 tokens", async () => {
+            const balanceOf = await inspectorPool.balanceOf(inspe1Address);
+            const expectedBalance = 7200000000000000000000000n;
+
+            assert.equal(balanceOf, expectedBalance);
+          });
+        });
+
+        context("with two inspection", () => {
+          beforeEach(async () => {
+            await addInspector("Inspector B", inspe2Address);
+            await instance.incrementRequests(inspe1Address);
+
+            await instance.incrementRequests(inspe2Address);
+            await instance.incrementRequests(inspe2Address);
+            await instance.incrementRequests(inspe2Address);
+
+            await advanceBlock(args.blocksPerEra);
+
+            await instance.withdraw({ from: inspe1Address });
+          });
+
+          it("withdraw 3600000000000000000000000n tokens", async () => {
+            const balanceOf = await inspectorPool.balanceOf(inspe1Address);
+            const expectedBalance = 3600000000000000000000000n;
+
+            assert.equal(balanceOf, expectedBalance);
+          });
+        });
+      });
+    });
+
+    context("when is not a inspector", () => {
+      it("should return error", async () => {
+        await expectRevert(instance.withdraw({ from: inspe1Address }), "Pool only to inspectors");
+      });
     });
   });
 

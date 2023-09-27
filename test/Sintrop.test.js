@@ -7,6 +7,7 @@ const ProducerContract = artifacts.require("ProducerContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
 const ProducerPool = artifacts.require("ProducerPool");
 const ResearcherPool = artifacts.require("ResearcherPool");
+const InspectorPool = artifacts.require("InspectorPool");
 const ValidatorContract = artifacts.require("ValidatorContract");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
@@ -18,6 +19,9 @@ contract("Sintrop", (accounts) => {
   let producerContract;
   let researcherContract;
   let researcherPool;
+  let inspectorPool;
+
+  const inspectorMaxPenalties = 2;
 
   let [
     ownerAddress,
@@ -60,8 +64,15 @@ contract("Sintrop", (accounts) => {
     allowedInitialRequests: 1,
   };
 
-  const developerPoolargs = {
+  const researcherPoolargs = {
     totalTokens: "30000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 12,
+  };
+
+  const inspectorPoolargs = {
+    totalTokens: "180000000000000000000000000",
     halving: 12,
     totalEras: 96,
     blocksPerEra: 12,
@@ -156,14 +167,17 @@ contract("Sintrop", (accounts) => {
 
     researcherPool = await ResearcherPool.new(
       rcToken.address,
-      developerPoolargs.halving,
-      developerPoolargs.totalEras,
-      developerPoolargs.blocksPerEra
+      researcherPoolargs.halving,
+      researcherPoolargs.totalEras,
+      researcherPoolargs.blocksPerEra
     );
 
-    inspectorMaxPenalties = 2;
-    inspectorContract = await InspectorContract.new(userContract.address, inspectorMaxPenalties);
-    researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address, timeBetweenWorks);
+    inspectorPool = await InspectorPool.new(
+      rcToken.address,
+      inspectorPoolargs.halving,
+      inspectorPoolargs.totalEras,
+      inspectorPoolargs.blocksPerEra
+    );
 
     producerPool = await ProducerPool.new(
       rcToken.address,
@@ -172,6 +186,8 @@ contract("Sintrop", (accounts) => {
       producerPoolArgs.blocksPerEra
     );
 
+    inspectorContract = await InspectorContract.new(userContract.address, inspectorPool.address, inspectorMaxPenalties);
+    researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address, timeBetweenWorks);
     producerContract = await ProducerContract.new(userContract.address, producerPool.address);
 
     categoryContract = await CategoryContract.new(userContract.address);
@@ -199,6 +215,7 @@ contract("Sintrop", (accounts) => {
     await producerContract.newAllowedCaller(validatorContract.address);
     await researcherContract.newAllowedUser(resea1Address);
     await producerPool.newAllowedCaller(producerContract.address);
+    await inspectorPool.newAllowedCaller(inspectorContract.address);
 
     await addProducer("Producer A", producerAddress);
     await addInspector("Inspector A", inspectorAddress);
