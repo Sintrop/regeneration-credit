@@ -139,11 +139,11 @@ contract("InspectorContract", (accounts) => {
     // Todo Add when not exists
   });
 
-  context("when will update incrementRequests (.incrementRequests)", () => {
+  context("when will update incrementInspections (.incrementInspections)", () => {
     context("with allowed caller", () => {
       it("should success when is allowed caller", async () => {
         await addInspector("Inspector A", inspe1Address);
-        await instance.incrementRequests(inspe1Address);
+        await instance.incrementInspections(inspe1Address);
 
         const inspector = await instance.getInspector(inspe1Address);
 
@@ -155,7 +155,7 @@ contract("InspectorContract", (accounts) => {
   context("without allowed caller", async () => {
     it("should return error when is not allowed caller", async () => {
       await addInspector("Inspector A", inspe1Address);
-      await expectRevert(instance.incrementRequests(inspe1Address, { from: inspe1Address }), "Not allowed caller");
+      await expectRevert(instance.incrementInspections(inspe1Address, { from: inspe1Address }), "Not allowed caller");
     });
   });
 

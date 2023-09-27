@@ -183,7 +183,7 @@ contract Sintrop {
     address acceptedBy = inspection.acceptedBy;
 
     // Increment inspector inspections and release to carry out new inspections
-    inspectorContract.incrementRequests(acceptedBy);
+    inspectorContract.incrementInspections(acceptedBy);
     inspectorContract.decreaseGiveUps(acceptedBy);
 
     // Increment producer requests
@@ -235,6 +235,9 @@ contract Sintrop {
     inspection.invalidatedAt = block.number;
     inspection.invalidatedAtTimestamp = block.timestamp; // solhint-disable-line
     inspections[inspection.id] = inspection;
+
+    inspectorContract.decrementInspections(inspection.acceptedBy);
+    producerContract.decrementInspections(inspection.createdBy);
 
     if (inspection.isaScore <= 0) return;
 
