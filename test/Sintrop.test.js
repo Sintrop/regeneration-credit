@@ -21,6 +21,8 @@ contract("Sintrop", (accounts) => {
   let researcherPool;
   let inspectorPool;
 
+  const inspectorMaxPenalties = 2;
+
   let [
     ownerAddress,
     producerAddress,
@@ -170,9 +172,12 @@ contract("Sintrop", (accounts) => {
       researcherPoolargs.blocksPerEra
     );
 
-    inspectorMaxPenalties = 2;
-    inspectorContract = await InspectorContract.new(userContract.address, inspectorMaxPenalties, inspectorPool.address);
-    researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address, timeBetweenWorks);
+    inspectorPool = await InspectorPool.new(
+      rcToken.address,
+      inspectorPoolargs.halving,
+      inspectorPoolargs.totalEras,
+      inspectorPoolargs.blocksPerEra
+    );
 
     producerPool = await ProducerPool.new(
       rcToken.address,
@@ -181,22 +186,9 @@ contract("Sintrop", (accounts) => {
       producerPoolArgs.blocksPerEra
     );
 
-    researcherPool = await ResearcherPool.new(
-      rcToken.address,
-      researcherPoolargs.halving,
-      researcherPoolargs.totalEras,
-      researcherPoolargs.blocksPerEra
-    );
-
-    inspectorPool = await InspectorPool.new(
-      rcToken.address,
-      inspectorPoolargs.halving,
-      inspectorPoolargs.totalEras,
-      inspectorPoolargs.blocksPerEra
-    );
-
+    inspectorContract = await InspectorContract.new(userContract.address, inspectorPool.address, inspectorMaxPenalties);
+    researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address, timeBetweenWorks);
     producerContract = await ProducerContract.new(userContract.address, producerPool.address);
-    inspectorContract = await InspectorContract.new(userContract.address, inspectorPool.address);
     researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address);
 
     categoryContract = await CategoryContract.new(userContract.address);
