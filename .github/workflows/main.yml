@@ -42,7 +42,7 @@ jobs:
 
   Tests:
 
-    runs-on: instance-20220612-1723
+    runs-on: sintrop-rn
 
     steps:
       - name: Checkout code
