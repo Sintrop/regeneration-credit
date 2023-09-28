@@ -156,6 +156,12 @@ contract ProducerContract is Callable {
     producers[addr].totalInspections++;
   }
 
+  function decrementInspections(address addr) public mustBeAllowedCaller {
+    require(producers[addr].totalInspections > 0, "totalInspections invalid");
+
+    producers[addr].totalInspections--;
+  }
+
   function lastRequestAt(address addr, uint256 blocksNumber) public mustBeAllowedCaller {
     producers[addr].lastRequestAt = blocksNumber;
   }

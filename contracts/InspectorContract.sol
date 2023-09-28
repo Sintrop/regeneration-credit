@@ -97,7 +97,7 @@ contract InspectorContract is Callable {
     return bytes(inspectors[addr].name).length > 0;
   }
 
-  function incrementRequests(address addr) public mustBeAllowedCaller {
+  function incrementInspections(address addr) public mustBeAllowedCaller {
     inspectors[addr].totalInspections++;
 
     addLevel(addr);
@@ -111,6 +111,12 @@ contract InspectorContract is Callable {
     if (!minimumInspections(inspector.totalInspections)) return;
 
     inspectorPool.addLevel(addr, inspector.pool.level, 1);
+  }
+
+  function decrementInspections(address addr) public mustBeAllowedCaller {
+    require(inspectors[addr].totalInspections > 0, "totalInspections invalid");
+
+    inspectors[addr].totalInspections--;
   }
 
   function incrementGiveUps(address addr) public mustBeAllowedCaller {
