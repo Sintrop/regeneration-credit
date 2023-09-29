@@ -865,6 +865,18 @@ contract("Sintrop", (accounts) => {
             assert.equal(producer.isa.isaScore, 0);
           });
 
+          it("decrement producer totalInspections", async () => {
+            const producer = await producerContract.getProducer(producerAddress);
+
+            assert.equal(producer.totalInspections, 0);
+          });
+
+          it("decrement inspector totalInspections", async () => {
+            const inspector = await inspectorContract.getInspector(inspectorAddress);
+
+            assert.equal(inspector.totalInspections, 0);
+          });
+
           it("zero producerPool era level score", async () => {
             const levels = await producerPool.eraLevels(1, producerAddress);
 

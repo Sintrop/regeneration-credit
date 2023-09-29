@@ -175,11 +175,11 @@ contract("InspectorContract", (accounts) => {
     // Todo Add when not exists
   });
 
-  context("when will update incrementRequests (.incrementRequests)", () => {
+  context("when will update incrementInspections (.incrementInspections)", () => {
     context("with allowed caller", () => {
       it("should success when is allowed caller", async () => {
         await addInspector("Inspector A", inspe1Address);
-        await instance.incrementRequests(inspe1Address);
+        await instance.incrementInspections(inspe1Address);
 
         const inspector = await instance.getInspector(inspe1Address);
 
@@ -191,7 +191,7 @@ contract("InspectorContract", (accounts) => {
   context("without allowed caller", async () => {
     it("should return error when is not allowed caller", async () => {
       await addInspector("Inspector A", inspe1Address);
-      await expectRevert(instance.incrementRequests(inspe1Address, { from: inspe1Address }), "Not allowed caller");
+      await expectRevert(instance.incrementInspections(inspe1Address, { from: inspe1Address }), "Not allowed caller");
     });
   });
 
@@ -200,8 +200,8 @@ contract("InspectorContract", (accounts) => {
       beforeEach(async () => {
         await addInspector("Inspector A", inspe1Address);
 
-        await instance.incrementRequests(inspe1Address);
-        await instance.incrementRequests(inspe1Address);
+        await instance.incrementInspections(inspe1Address);
+        await instance.incrementInspections(inspe1Address);
       });
 
       context("when have less then 3 inspections", () => {
@@ -212,7 +212,7 @@ contract("InspectorContract", (accounts) => {
 
       context("when inspector is in era 1 and current era is 1", () => {
         it("should return error", async () => {
-          await instance.incrementRequests(inspe1Address);
+          await instance.incrementInspections(inspe1Address);
           await expectRevert(instance.withdraw({ from: inspe1Address }), "Can't approve withdraw");
         });
       });
@@ -220,7 +220,7 @@ contract("InspectorContract", (accounts) => {
       context("when inspector is in era 1 and current era is 2", () => {
         context("with one inspection", () => {
           beforeEach(async () => {
-            await instance.incrementRequests(inspe1Address);
+            await instance.incrementInspections(inspe1Address);
 
             await advanceBlock(args.blocksPerEra);
 
@@ -238,11 +238,11 @@ contract("InspectorContract", (accounts) => {
         context("with two inspection", () => {
           beforeEach(async () => {
             await addInspector("Inspector B", inspe2Address);
-            await instance.incrementRequests(inspe1Address);
+            await instance.incrementInspections(inspe1Address);
 
-            await instance.incrementRequests(inspe2Address);
-            await instance.incrementRequests(inspe2Address);
-            await instance.incrementRequests(inspe2Address);
+            await instance.incrementInspections(inspe2Address);
+            await instance.incrementInspections(inspe2Address);
+            await instance.incrementInspections(inspe2Address);
 
             await advanceBlock(args.blocksPerEra);
 
