@@ -49,7 +49,7 @@ contract("RcTokenIco", (accounts) => {
           await instance.sendTransaction({ from: user1Address, value: web3.utils.toWei("3".toString(), "ether") });
         });
 
-        it("contract ether balance increment 1 ether", async () => {
+        it("contract ether balance increment 3 ether", async () => {
           const balance = await web3.eth.getBalance(instance.address);
 
           assert.equal(balance, web3.utils.toWei("3".toString(), "ether"));
