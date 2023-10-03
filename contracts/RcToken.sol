@@ -9,7 +9,7 @@ contract RcToken is ERC20, Ownable {
   string public constant NAME = "REGENERATION CREDIT TOKEN";
   string public constant SYMBOL = "RCT";
   uint8 public constant DECIMALS = 18;
-  uint256 public constant FUND_ICO = 10000000 * (10 ** DECIMALS);
+  uint256 public constant FUND_ICO = 135000000 * (10 ** DECIMALS);
 
   mapping(address => uint256) internal balances;
   mapping(address => mapping(address => uint256)) internal allowed;

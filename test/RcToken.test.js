@@ -56,12 +56,12 @@ contract("RcToken", (accounts) => {
 
     it("balance of contract owner should be equal to 1490000000000000000000000000", async () => {
       const ownerBalance = await instance.balanceOf(ownerAddress);
-      assert.equal(ownerBalance, 1490000000000000000000000000n);
+      assert.equal(ownerBalance, 1365000000000000000000000000n);
     });
 
     it("balance of rcTokenIco should be 10000000000000000000000000", async () => {
       const balance = await instance.balanceOf(rcTokenIco.address);
-      assert.equal(balance, 10000000000000000000000000n);
+      assert.equal(balance, 135000000000000000000000000n);
     });
   });
 
