@@ -1,20 +1,16 @@
 const ValidatorContract = artifacts.require("ValidatorContract");
 const UserContract = artifacts.require("UserContract");
 const ProducerContract = artifacts.require("ProducerContract");
-const DeveloperContract = artifacts.require("DeveloperContract");
 const ProducerPool = artifacts.require("ProducerPool");
-const DeveloperPool = artifacts.require("DeveloperPool");
-const RcToken = artifacts.require("RcToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
+const { rcTokenDeployed } = require("./shared/rc_token_deployed");
 
 contract("ValidatorContract", (accounts) => {
   let instance;
   let userContract;
   let producerContract;
-  let developerContract;
   let producerPool;
-  let developerPool;
   let rcToken;
   let [
     ownerAddress,
@@ -35,12 +31,6 @@ contract("ValidatorContract", (accounts) => {
     blocksPerEra: 12,
   };
 
-  let developerPoolArgs = {
-    totalDeveloperPoolTokens: "15000000000000000000000000",
-    blocksPerEra: 30,
-    eraMax: 5,
-  };
-
   const addValidator = async (address) => {
     await instance.addValidator({ from: address });
   };
@@ -54,7 +44,7 @@ contract("ValidatorContract", (accounts) => {
   };
 
   beforeEach(async () => {
-    rcToken = await RcToken.new("150000000000000000000000000000");
+    rcToken = await rcTokenDeployed();
     userContract = await UserContract.new();
 
     producerPool = await ProducerPool.new(

@@ -2,41 +2,20 @@ const RcToken = artifacts.require("RcToken");
 const DeveloperPool = artifacts.require("DeveloperPool");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
-
-advanceBlock = async (blocksNumber) => {
-  for (let i = 0; i < blocksNumber; i++) {
-    let promise = new Promise((resolve, reject) => {
-      web3.currentProvider.send(
-        {
-          jsonrpc: "2.0",
-          method: "evm_mine",
-          id: new Date().getTime(),
-        },
-        (err, result) => {
-          if (err) {
-            return reject(err);
-          }
-          const newBlockHash = web3.eth.getBlock("latest").hash;
-
-          return resolve(newBlockHash);
-        }
-      );
-    });
-  }
-};
+const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { advanceBlock } = require("./shared/advance_block");
 
 contract("DeveloperPool", (accounts) => {
   let instance;
   let [owner, dev1Address, dev2Address] = accounts;
   let args = {
-    totalRcTokens: "1500000000000000000000000000",
     totalDeveloperPoolTokens: "15000000000000000000000000",
     blocksPerEra: 30,
     eraMax: 5,
   };
 
   beforeEach(async () => {
-    const rcToken = await RcToken.new(args.totalRcTokens);
+    const rcToken = await rcTokenDeployed();
     instance = await DeveloperPool.new(rcToken.address, args.blocksPerEra, args.eraMax);
 
     await instance.newAllowedCaller(owner);

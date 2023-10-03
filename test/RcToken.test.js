@@ -1,4 +1,5 @@
 const RcToken = artifacts.require("RcToken");
+const RcTokenIco = artifacts.require("RcTokenIco");
 const UserContract = artifacts.require("UserContract");
 const ProducerPool = artifacts.require("ProducerPool");
 
@@ -6,6 +7,7 @@ const expectRevert = require("@openzeppelin/test-helpers/src/expectRevert");
 
 contract("RcToken", (accounts) => {
   let instance;
+  let rcTokenIco;
   let [ownerAddress, user1Address, user2Address] = accounts;
   let producerPool;
 
@@ -21,7 +23,9 @@ contract("RcToken", (accounts) => {
   };
 
   beforeEach(async () => {
-    instance = await RcToken.new(args.totalRcTokens);
+    rcTokenIco = await RcTokenIco.new();
+
+    instance = await RcToken.new(args.totalRcTokens, rcTokenIco.address);
     userContract = await UserContract.new();
 
     producerPool = await ProducerPool.new(
@@ -30,9 +34,11 @@ contract("RcToken", (accounts) => {
       argsProducerPool.totalEras,
       argsProducerPool.blocksPerEra
     );
+
+    await rcTokenIco.setRcToken(instance.address);
   });
 
-  context("when deploy the token contract", () => {
+  describe(".afterDeploy", () => {
     it("total suply should be equal to 1500000000000000000000000000", async () => {
       const totalSupply = await instance.totalSupply();
       assert.equal(totalSupply, args.totalRcTokens);
@@ -48,9 +54,14 @@ contract("RcToken", (accounts) => {
       assert.equal(totalLocked, 0);
     });
 
-    it("balance of contract owner should be equal to 1500000000000000000000000000", async () => {
+    it("balance of contract owner should be equal to 1490000000000000000000000000", async () => {
       const ownerBalance = await instance.balanceOf(ownerAddress);
-      assert.equal(ownerBalance, args.totalRcTokens);
+      assert.equal(ownerBalance, 1490000000000000000000000000n);
+    });
+
+    it("balance of rcTokenIco should be 10000000000000000000000000", async () => {
+      const balance = await instance.balanceOf(rcTokenIco.address);
+      assert.equal(balance, 10000000000000000000000000n);
     });
   });
 

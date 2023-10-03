@@ -1,14 +1,16 @@
 const DeveloperContract = artifacts.require("DeveloperContract");
 const DeveloperPool = artifacts.require("DeveloperPool");
 const UserContract = artifacts.require("UserContract");
-const RcToken = artifacts.require("RcToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
+const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { advanceBlock } = require("./shared/advance_block");
 
 contract("DeveloperContract", (accounts) => {
   let instance;
   let userContract;
   let developerPool;
+  let rcToken;
   let [owner, dev1Address, dev2Address, dev3Address] = accounts;
 
   let developerPoolParams = {
@@ -20,30 +22,9 @@ contract("DeveloperContract", (accounts) => {
     await instance.addDeveloper(name, "photoURL", { from: from });
   };
 
-  advanceBlock = async (blocksNumber) => {
-    for (let i = 0; i < blocksNumber; i++) {
-      let promise = new Promise((resolve, reject) => {
-        web3.currentProvider.send(
-          {
-            jsonrpc: "2.0",
-            method: "evm_mine",
-            id: new Date().getTime(),
-          },
-          (err, result) => {
-            if (err) {
-              return reject(err);
-            }
-            const newBlockHash = web3.eth.getBlock("latest").hash;
-
-            return resolve(newBlockHash);
-          }
-        );
-      });
-    }
-  };
-
   beforeEach(async () => {
-    const rcToken = await RcToken.new("1500000000000000000000000000");
+    rcToken = await rcTokenDeployed();
+
     developerPool = await DeveloperPool.new(
       rcToken.address,
       developerPoolParams.blocksPerEra,
