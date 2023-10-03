@@ -11,6 +11,8 @@ const InspectorPool = artifacts.require("InspectorPool");
 const ValidatorContract = artifacts.require("ValidatorContract");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
+const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { advanceBlock } = require("./shared/advance_block");
 
 contract("Sintrop", (accounts) => {
   let instance;
@@ -139,30 +141,8 @@ contract("Sintrop", (accounts) => {
     await instance.realizeInspection(id, isas_, { from: from });
   };
 
-  advanceBlock = async (blocksNumber) => {
-    for (let i = 0; i < blocksNumber; i++) {
-      let promise = new Promise((resolve, reject) => {
-        web3.currentProvider.send(
-          {
-            jsonrpc: "2.0",
-            method: "evm_mine",
-            id: new Date().getTime(),
-          },
-          (err, result) => {
-            if (err) {
-              return reject(err);
-            }
-            const newBlockHash = web3.eth.getBlock("latest").hash;
-
-            return resolve(newBlockHash);
-          }
-        );
-      });
-    }
-  };
-
   beforeEach(async () => {
-    rcToken = await RcToken.new("1500000000000000000000000000");
+    rcToken = await rcTokenDeployed();
     userContract = await UserContract.new();
 
     researcherPool = await ResearcherPool.new(
