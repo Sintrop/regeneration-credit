@@ -23,7 +23,7 @@ interface ProducerInterface {
     DEVELOPER,
     ADVISOR,
     ACTIVIST,
-    INVESTOR
+    SUPPORTER
   }
 
   struct TokenApprove {
