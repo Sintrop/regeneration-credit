@@ -9,7 +9,7 @@ enum UserType {
   DEVELOPER,
   ADVISOR,
   ACTIVIST,
-  INVESTOR,
+  SUPPORTER,
   VALIDATOR,
   DENIED
 }

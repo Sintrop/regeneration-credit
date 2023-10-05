@@ -14,7 +14,7 @@ contract("UserContract", (accounts) => {
     Developer: 4,
     Advisor: 5,
     Activist: 6,
-    Investor: 7,
+    Supporter: 7,
   };
 
   const definedTypes = {
@@ -25,7 +25,7 @@ contract("UserContract", (accounts) => {
     4: "DEVELOPER",
     5: "ADVISOR",
     6: "ACTIVIST",
-    7: "INVESTOR",
+    7: "SUPPORTER",
     8: "VALIDATOR",
     9: "DENIED",
   };
@@ -156,13 +156,13 @@ contract("UserContract", (accounts) => {
       });
     });
 
-    context("to investor", () => {
-      it("should add correct enum to investor", async () => {
-        await addUser(user1Address, userTypes.Investor, owner);
+    context("to supporter", () => {
+      it("should add correct enum to supporter", async () => {
+        await addUser(user1Address, userTypes.Supporter, owner);
 
         const user = await instance.getUser(user1Address);
 
-        assert.equal(user, userTypes.Investor);
+        assert.equal(user, userTypes.Supporter);
       });
     });
   });
