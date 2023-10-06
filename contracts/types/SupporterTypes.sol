@@ -3,9 +3,9 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import "./UserTypes.sol";
 
-struct Investor {
+struct Supporter {
   uint256 id;
-  address investorWallet;
+  address supporterWallet;
   UserType userType;
   string name;
 }
