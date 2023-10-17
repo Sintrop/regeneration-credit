@@ -26,6 +26,42 @@ contract("RcTokenIco", (accounts) => {
         await instance.changeSalesOpen({ from: ownerAddress });
       });
 
+      context("when user send 0.5 ether", () => {
+        beforeEach(async () => {
+          await instance.sendTransaction({ from: user1Address, value: web3.utils.toWei("0.5".toString(), "ether") });
+        });
+
+        it("contract ether balance increment 0.5 ether", async () => {
+          const balance = await web3.eth.getBalance(instance.address);
+
+          assert.equal(balance, web3.utils.toWei("0.5".toString(), "ether"));
+        });
+
+        it("user rc token balance increment 40000000000000000000000", async () => {
+          const balance = await rcToken.balanceOf(user1Address);
+
+          assert.equal(balance, 40000000000000000000000n);
+        });
+      });
+
+      context("when user send 0.0005 ether", () => {
+        beforeEach(async () => {
+          await instance.sendTransaction({ from: user1Address, value: web3.utils.toWei("0.0005".toString(), "ether") });
+        });
+
+        it("contract ether balance increment 0.0005 ether", async () => {
+          const balance = await web3.eth.getBalance(instance.address);
+
+          assert.equal(balance, web3.utils.toWei("0.0005".toString(), "ether"));
+        });
+
+        it("user rc token balance increment 40000000000000000000", async () => {
+          const balance = await rcToken.balanceOf(user1Address);
+
+          assert.equal(balance, 40000000000000000000n);
+        });
+      });
+
       context("when user send 1 ether", () => {
         beforeEach(async () => {
           await instance.sendTransaction({ from: user1Address, value: web3.utils.toWei("1".toString(), "ether") });
@@ -37,10 +73,10 @@ contract("RcTokenIco", (accounts) => {
           assert.equal(balance, web3.utils.toWei("1".toString(), "ether"));
         });
 
-        it("user rc token balance increment 80000", async () => {
+        it("user rc token balance increment 80000000000000000000000", async () => {
           const balance = await rcToken.balanceOf(user1Address);
 
-          assert.equal(balance, 80000);
+          assert.equal(balance, 80000000000000000000000n);
         });
       });
 
@@ -55,10 +91,10 @@ contract("RcTokenIco", (accounts) => {
           assert.equal(balance, web3.utils.toWei("3".toString(), "ether"));
         });
 
-        it("user rc token balance increment 240000", async () => {
+        it("user rc token balance increment 240000000000000000000000", async () => {
           const balance = await rcToken.balanceOf(user1Address);
 
-          assert.equal(balance, 240000);
+          assert.equal(balance, 240000000000000000000000n);
         });
       });
 

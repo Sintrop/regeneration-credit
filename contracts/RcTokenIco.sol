@@ -39,7 +39,7 @@ contract RcTokenIco is Ownable {
   }
 
   function rcTokenAmount(uint256 weiAmount) internal pure returns (uint256) {
-    return weiAmount.div(10 ** DECIMALS).mul(RATE);
+    return weiAmount.mul(RATE).div(10 ** DECIMALS) * 10 ** DECIMALS;
   }
 
   function setRcToken(address _tokenAddr) public onlyOwner {
