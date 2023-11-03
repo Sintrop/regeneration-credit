@@ -426,7 +426,7 @@ contract("Sintrop", (accounts) => {
             context("when have finshed first inspection", () => {
               beforeEach(async () => {
                 await instance.realizeInspection(1, [], { from: inspectorAddress });
-                await instance.acceptInspection(2, { from: inspectorAddress });         
+                await instance.acceptInspection(2, { from: inspectorAddress });
               });
 
               it("should accept inspection with success after finishing previous one", async () => {
@@ -434,7 +434,7 @@ contract("Sintrop", (accounts) => {
 
                 assert.equal(inspection.status, STATUS.accepted);
               });
-            });            
+            });
 
             context("when last inspection is expired", () => {
               beforeEach(async () => {

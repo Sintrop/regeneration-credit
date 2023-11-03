@@ -46,7 +46,19 @@ contract InspectorContract is Callable {
     uint256 currentEra = inspectorPoolEra();
     Pool memory pool = Pool(0, currentEra);
 
-    Inspector memory inspector = Inspector(id, msg.sender, userType, name, proofPhoto, 0, 0, inspectorAddress, 0, 0, pool);
+    Inspector memory inspector = Inspector(
+      id,
+      msg.sender,
+      userType,
+      name,
+      proofPhoto,
+      0,
+      0,
+      inspectorAddress,
+      0,
+      0,
+      pool
+    );
 
     inspectors[msg.sender] = inspector;
     inspectorsAddress.push(msg.sender);
@@ -133,7 +145,7 @@ contract InspectorContract is Callable {
 
   function lastInspectedAt(address addr, uint256 blocksNumber) public mustBeAllowedCaller {
     inspectors[addr].lastInspectedAt = blocksNumber;
-  }  
+  }
 
   function inspectorPoolEra() internal view returns (uint256) {
     return inspectorPool.currentContractEra();
