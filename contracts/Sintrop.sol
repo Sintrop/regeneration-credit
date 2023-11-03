@@ -321,8 +321,6 @@ contract Sintrop {
     return inspection.acceptedAt + blocksToExpireAcceptedInspection - block.number;
   }
 
-  // TODO: Add specs to this function if necessary
-  // TODO: Must be a public function to call in the client?
   function canAcceptInspection() internal view returns (bool) {
     Inspector memory inspector = inspectorContract.getInspector(msg.sender);
     uint256 lastAcceptedAt = inspector.lastAcceptedAt;
