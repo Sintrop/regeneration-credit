@@ -13,6 +13,7 @@ struct Inspector {
   uint256 giveUps;
   InspectorAddress inspectorAddress;
   uint256 lastAcceptedAt;
+  uint256 lastInspectedAt;
   Pool pool;
 }
 

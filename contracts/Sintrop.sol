@@ -148,6 +148,7 @@ contract Sintrop {
     afterRealizeInspection(inspection);
 
     producerContract.setIsaScore(inspection.createdBy, inspection.isaScore);
+    inspectorContract.lastInspectedAt(msg.sender, block.number);
 
     inspectorInspected[msg.sender][inspection.createdBy] = true;
   }
@@ -325,9 +326,11 @@ contract Sintrop {
   function canAcceptInspection() internal view returns (bool) {
     Inspector memory inspector = inspectorContract.getInspector(msg.sender);
     uint256 lastAcceptedAt = inspector.lastAcceptedAt;
+    uint256 lastInspectedAt = inspector.lastInspectedAt;
 
     bool canAccept = block.number > lastAcceptedAt + blocksToExpireAcceptedInspection;
+    bool finishedInspection = lastInspectedAt > lastAcceptedAt;
 
-    return canAccept || lastAcceptedAt == 0;
+    return canAccept || lastAcceptedAt == 0 || finishedInspection;
   }
 }
