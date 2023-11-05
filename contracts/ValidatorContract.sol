@@ -3,10 +3,11 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
 import { ProducerContract } from "./ProducerContract.sol";
-import { Validator, Validation } from "./types/ValidatorTypes.sol";
+import { Validator, Validation, Pool } from "./types/ValidatorTypes.sol";
 import { Registrable } from "./Registrable.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { Callable } from "./Callable.sol";
+import { ValidatorPool } from "./ValidatorPool.sol";
 
 contract ValidatorContract is Registrable, Callable {
   mapping(address => Validator) internal validators;
@@ -14,24 +15,29 @@ contract ValidatorContract is Registrable, Callable {
 
   UserContract internal userContract;
   ProducerContract internal producerContract;
+  ValidatorPool internal validatorPool;
   address[] internal validatorsAddress;
   uint256 public validatorsCount;
 
-  constructor(address userContractAddress, address producerContractAddress) {
+  constructor(address userContractAddress, address producerContractAddress, address validatorPoolAddress) {
     userContract = UserContract(userContractAddress);
     producerContract = ProducerContract(producerContractAddress);
+    validatorPool = ValidatorPool(validatorPoolAddress);
   }
 
   function addValidator() public mustBeAllowedUser {
     require(!validatorExists(msg.sender), "This validator already exist");
-
     uint256 id = validatorsCount + 1;
     UserType userType = UserType.VALIDATOR;
+    uint256 currentEra = validatorPoolEra();
 
-    validators[msg.sender] = Validator(id, msg.sender, userType);
+    Pool memory pool = Pool(1, currentEra);
+
+    validators[msg.sender] = Validator(id, msg.sender, userType, pool);
     validatorsAddress.push(msg.sender);
     validatorsCount++;
     userContract.addUser(msg.sender, userType);
+    addLevel(msg.sender);
   }
 
   function addValidation(address userAddress, string memory justification) public {
@@ -91,6 +97,26 @@ contract ValidatorContract is Registrable, Callable {
     return validatorList;
   }
 
+  function addLevel(address addr) internal {
+    Validator memory validator = validators[addr];
+    validator.pool.level++;
+
+    validatorPool.addLevel(addr, validator.pool.level, 1);
+  }
+
+  function withdraw() public {
+    require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Pool only to validators");
+
+    Validator memory validator = validators[msg.sender];
+    uint256 currentEra = validator.pool.currentEra;
+
+    require(validatorPool.canApprove(currentEra), "Can't approve withdraw");
+
+    validators[msg.sender].pool.currentEra++;
+
+    validatorPool.withdraw(msg.sender, currentEra);
+  }
+
   function getValidator(address addr) public view returns (Validator memory) {
     return validators[addr];
   }
@@ -101,5 +127,9 @@ contract ValidatorContract is Registrable, Callable {
 
   function majorityValidatorsCount() public view returns (uint256) {
     return validatorsCount / 2;
+  }
+
+  function validatorPoolEra() internal view returns (uint256) {
+    return validatorPool.currentContractEra();
   }
 }
