@@ -119,26 +119,25 @@ contract("Sintrop", (accounts) => {
       {
         categoryId: 1,
         isaIndex: 0,
-        report: "Hash_1",
         indicator: 10,
       },
       {
         categoryId: 2,
         isaIndex: 0,
-        report: "Hash_2",
         indicator: 10,
       },
       {
         categoryId: 3,
         isaIndex: 1,
-        report: "Hash_3",
         indicator: 10,
       },
     ];
   };
 
-  const realizeInspection = async (id, isas_, from) => {
-    await instance.realizeInspection(id, isas_, { from: from });
+  const report = "Hash";
+
+  const realizeInspection = async (id, report, isas_, from) => {
+    await instance.realizeInspection(id, report, isas_, { from: from });
   };
 
   beforeEach(async () => {
@@ -283,11 +282,10 @@ contract("Sintrop", (accounts) => {
               {
                 categoryId: 1,
                 isaIndex: 0,
-                report: "Hash_1",
                 indicator: 10,
               },
             ];
-            await realizeInspection(1, isas, inspectorAddress);
+            await realizeInspection(1, report, isas, inspectorAddress);
           });
 
           context("when last request is recent", () => {
@@ -441,7 +439,7 @@ contract("Sintrop", (accounts) => {
         context("when already realized inspection from producer", () => {
           beforeEach(async () => {
             await instance.acceptInspection(1, { from: inspectorAddress });
-            await instance.realizeInspection(1, [], { from: inspectorAddress });
+            await instance.realizeInspection(1, report, [], { from: inspectorAddress });
 
             await advanceBlock(20);
 
@@ -491,7 +489,10 @@ contract("Sintrop", (accounts) => {
               });
 
               it("should return error message", async () => {
-                await expectRevert(instance.realizeInspection(1, [], { from: inspectorAddress }), "Inspection Expired");
+                await expectRevert(
+                  instance.realizeInspection(1, report, [], { from: inspectorAddress }),
+                  "Inspection Expired"
+                );
               });
             });
 
@@ -504,7 +505,7 @@ contract("Sintrop", (accounts) => {
 
               context("when check inspection", () => {
                 beforeEach(async () => {
-                  await realizeInspection(1, isas(), inspectorAddress);
+                  await realizeInspection(1, report, isas(), inspectorAddress);
                 });
 
                 it("should change inspection status to INSPECTED", async () => {
@@ -528,9 +529,9 @@ contract("Sintrop", (accounts) => {
                 it("should update inspection isas", async () => {
                   const isasResponse = await instance.getIsa(1);
                   const isas_ = [
-                    ["1", "0", "Hash_1", "10"],
-                    ["2", "0", "Hash_2", "10"],
-                    ["3", "1", "Hash_3", "10"],
+                    ["1", "0", "10"],
+                    ["2", "0", "10"],
+                    ["3", "1", "10"],
                   ];
 
                   assert.equal(JSON.stringify(isasResponse), JSON.stringify(isas_));
@@ -590,7 +591,7 @@ contract("Sintrop", (accounts) => {
                       },
                     ];
 
-                    await realizeInspection(1, isas, inspectorAddress);
+                    await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
                   it("should add 20 isaScore to inspection", async () => {
@@ -611,7 +612,7 @@ contract("Sintrop", (accounts) => {
                       },
                     ];
 
-                    await realizeInspection(1, isas, inspectorAddress);
+                    await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
                   it("should add 10 isaScore to inspection", async () => {
@@ -632,7 +633,7 @@ contract("Sintrop", (accounts) => {
                       },
                     ];
 
-                    await realizeInspection(1, isas, inspectorAddress);
+                    await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
                   it("should add 5 isaScore to inspection", async () => {
@@ -653,7 +654,7 @@ contract("Sintrop", (accounts) => {
                       },
                     ];
 
-                    await realizeInspection(1, isas, inspectorAddress);
+                    await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
                   it("should add 0 isaScore to inspection", async () => {
@@ -674,7 +675,7 @@ contract("Sintrop", (accounts) => {
                       },
                     ];
 
-                    await realizeInspection(1, isas, inspectorAddress);
+                    await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
                   it("should add -5 isaScore to inspection", async () => {
@@ -695,7 +696,7 @@ contract("Sintrop", (accounts) => {
                       },
                     ];
 
-                    await realizeInspection(1, isas, inspectorAddress);
+                    await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
                   it("should add -10 isaScore to inspection", async () => {
@@ -716,7 +717,7 @@ contract("Sintrop", (accounts) => {
                       },
                     ];
 
-                    await realizeInspection(1, isas, inspectorAddress);
+                    await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
                   it("should add -20 isaScore to inspection", async () => {
@@ -736,7 +737,7 @@ contract("Sintrop", (accounts) => {
 
             it("should return error message", async () => {
               await expectRevert(
-                instance.realizeInspection(1, [], { from: inspector2Address }),
+                instance.realizeInspection(1, report, [], { from: inspector2Address }),
                 "You not accepted this inspection"
               );
             });
@@ -746,7 +747,7 @@ contract("Sintrop", (accounts) => {
         context("when inspection is not accepted", () => {
           it("should return error message", async () => {
             await expectRevert(
-              instance.realizeInspection(1, [], { from: inspectorAddress }),
+              instance.realizeInspection(1, report, [], { from: inspectorAddress }),
               "Accept this inspection before"
             );
           });
@@ -756,7 +757,7 @@ contract("Sintrop", (accounts) => {
       context("when inspection dont exists", () => {
         it("should return error message", async () => {
           await expectRevert(
-            instance.realizeInspection(1, [], { from: inspectorAddress }),
+            instance.realizeInspection(1, report, [], { from: inspectorAddress }),
             "This inspection don't exist"
           );
         });
@@ -769,7 +770,7 @@ contract("Sintrop", (accounts) => {
         await instance.acceptInspection(1, { from: inspectorAddress });
 
         await expectRevert(
-          instance.realizeInspection(1, [], { from: producerAddress }),
+          instance.realizeInspection(1, report, [], { from: producerAddress }),
           "Please register as inspector"
         );
       });
@@ -794,7 +795,7 @@ contract("Sintrop", (accounts) => {
         beforeEach(async () => {
           await instance.requestInspection({ from: producerAddress });
           await instance.acceptInspection(1, { from: inspectorAddress });
-          await realizeInspection(1, isas(), inspectorAddress);
+          await realizeInspection(1, report, isas(), inspectorAddress);
         });
 
         context("when receive 1 validation", () => {
@@ -907,7 +908,7 @@ contract("Sintrop", (accounts) => {
       it("should return error message", async () => {
         await instance.requestInspection({ from: producerAddress });
         await instance.acceptInspection(1, { from: inspectorAddress });
-        await realizeInspection(1, isas(), inspectorAddress);
+        await realizeInspection(1, report, isas(), inspectorAddress);
 
         await expectRevert(
           instance.addInspectionValidation(1, "justification", { from: producerAddress }),
