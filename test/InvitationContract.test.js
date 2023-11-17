@@ -68,7 +68,7 @@ contract("InvitationContract", (accounts) => {
       });
     });
 
-    context.only("when have recent invitation", () => {
+    context("when have recent invitation", () => {
       beforeEach(async () => {
         await addUser(user2Address, userTypes.Activist, owner);
         await instance.invite(user3Address, userTypes.Activist, { from: user2Address });
