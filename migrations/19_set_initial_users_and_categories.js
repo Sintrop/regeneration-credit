@@ -12,6 +12,8 @@ module.exports = function (deployer) {
       _,
       producer1,
       producer2,
+      producer3,
+      producer4,
       inspector1,
       inspector2,
       inspector3,
@@ -43,6 +45,10 @@ module.exports = function (deployer) {
     await producerContract.addProducer(10, "Sítio Refloresta", "photoURL", "123456789123456", { from: producer1 });
 
     await producerContract.addProducer(50, "Fazenda Restaura", "photoURL", "1111111111111", { from: producer2 });
+
+    await producerContract.addProducer(50, "Fazenda Agro", "photoURL", "7736612731222", { from: producer3 });
+
+    await producerContract.addProducer(50, "Fazenda Natal", "photoURL", "09463621322", { from: producer4 });
 
     await inspectorContract.addInspector("Julia Flores", "photoURL", "2222222222222222", { from: inspector1 });
 
