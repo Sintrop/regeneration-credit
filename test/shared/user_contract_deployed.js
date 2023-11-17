@@ -1,11 +1,11 @@
 const UserContract = artifacts.require("UserContract");
 
 const userContractDeployed = async ({
-  inspectorProportionality = 2,
-  activistProportionality = 1,
-  researcherProportionality = 1,
-  developerProportionality = 1,
-  validatorProportionality = 1,
+  inspectorProportionality = 0,
+  activistProportionality = 0,
+  researcherProportionality = 0,
+  developerProportionality = 0,
+  validatorProportionality = 0,
 } = {}) => {
   const INSPECTOR_PROPORTIONALITY = inspectorProportionality;
   const ACTIVIST_PROPORTIONALITY = activistProportionality;

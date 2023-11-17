@@ -9,14 +9,6 @@ contract("InvitationContract", (accounts) => {
 
   const inviteDelayBlocks = 25;
 
-  const userContractParams = {
-    inspectorProportionality: 2,
-    activistProportionality: 1,
-    researcherProportionality: 1,
-    developerProportionality: 1,
-    validatorProportionality: 1,
-  };
-
   let userTypes = {
     Undefined: 0,
     Producer: 1,
@@ -35,7 +27,7 @@ contract("InvitationContract", (accounts) => {
   };
 
   beforeEach(async () => {
-    userContract = await userContractDeployed(userContractParams);
+    userContract = await userContractDeployed();
     instance = await InvitationContract.new(userContract.address, inviteDelayBlocks);
 
     await userContract.newAllowedCaller(instance.address);

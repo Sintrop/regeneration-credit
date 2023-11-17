@@ -1,7 +1,6 @@
 const Sintrop = artifacts.require("Sintrop");
 const CategoryContract = artifacts.require("CategoryContract");
-const RcToken = artifacts.require("RcToken");
-const UserContract = artifacts.require("UserContract");
+const { userContractDeployed } = require("./shared/user_contract_deployed");
 const InspectorContract = artifacts.require("InspectorContract");
 const ProducerContract = artifacts.require("ProducerContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
@@ -143,7 +142,7 @@ contract("Sintrop", (accounts) => {
 
   beforeEach(async () => {
     rcToken = await rcTokenDeployed();
-    userContract = await UserContract.new();
+    userContract = await userContractDeployed();
 
     researcherPool = await ResearcherPool.new(
       rcToken.address,

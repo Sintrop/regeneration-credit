@@ -1,4 +1,3 @@
-const RcToken = artifacts.require("RcToken");
 const DeveloperPool = artifacts.require("DeveloperPool");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;

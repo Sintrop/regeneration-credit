@@ -1,5 +1,4 @@
 const ProducerPool = artifacts.require("ProducerPool");
-const RcToken = artifacts.require("RcToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");

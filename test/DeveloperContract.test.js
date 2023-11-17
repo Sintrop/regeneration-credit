@@ -1,6 +1,6 @@
 const DeveloperContract = artifacts.require("DeveloperContract");
 const DeveloperPool = artifacts.require("DeveloperPool");
-const UserContract = artifacts.require("UserContract");
+const { userContractDeployed } = require("./shared/user_contract_deployed");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
@@ -31,7 +31,7 @@ contract("DeveloperContract", (accounts) => {
       developerPoolParams.eraMax
     );
 
-    userContract = await UserContract.new();
+    userContract = await userContractDeployed();
 
     instance = await DeveloperContract.new(userContract.address, developerPool.address);
 

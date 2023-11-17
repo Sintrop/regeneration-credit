@@ -1,5 +1,5 @@
 const ValidatorContract = artifacts.require("ValidatorContract");
-const UserContract = artifacts.require("UserContract");
+const { userContractDeployed } = require("./shared/user_contract_deployed");
 const ProducerContract = artifacts.require("ProducerContract");
 const ProducerPool = artifacts.require("ProducerPool");
 
@@ -45,7 +45,7 @@ contract("ValidatorContract", (accounts) => {
 
   beforeEach(async () => {
     rcToken = await rcTokenDeployed();
-    userContract = await UserContract.new();
+    userContract = await userContractDeployed();
 
     producerPool = await ProducerPool.new(
       rcToken.address,

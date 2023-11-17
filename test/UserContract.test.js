@@ -1,4 +1,3 @@
-const UserContract = artifacts.require("UserContract");
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;

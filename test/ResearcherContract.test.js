@@ -1,7 +1,6 @@
 const ResearcherContract = artifacts.require("ResearcherContract");
 const ResearcherPool = artifacts.require("ResearcherPool");
-const UserContract = artifacts.require("UserContract");
-const RcToken = artifacts.require("RcToken");
+const { userContractDeployed } = require("./shared/user_contract_deployed");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
@@ -35,7 +34,7 @@ contract("ResearcherContract", (accounts) => {
 
   beforeEach(async () => {
     rcToken = await rcTokenDeployed();
-    userContract = await UserContract.new();
+    userContract = await userContractDeployed();
 
     researcherPool = await ResearcherPool.new(rcToken.address, args.halving, args.totalEras, args.blocksPerEra);
 
