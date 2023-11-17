@@ -37,6 +37,8 @@ contract InvitationContract is Ownable {
     require(canBeInviteds[userType] == userContract.getUser(msg.sender), "can't invite this type");
 
     userContract.addInvitation(msg.sender, invited, userType);
+
+    lastInviteBlocks[msg.sender] = block.number;
   }
 
   function onlyOwnerInvite(address invited, UserType userType) public onlyOwner {

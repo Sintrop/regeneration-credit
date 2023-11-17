@@ -68,6 +68,20 @@ contract("InvitationContract", (accounts) => {
       });
     });
 
+    context.only("when have recent invitation", () => {
+      beforeEach(async () => {
+        await addUser(user2Address, userTypes.Activist, owner);
+        await instance.invite(user3Address, userTypes.Activist, { from: user2Address });
+      });
+
+      it("revert", async () => {
+        await expectRevert(
+          instance.invite(user4Address, userTypes.Activist, { from: user2Address }),
+          "Invite delay not reached"
+        );
+      });
+    });
+
     context("when user not registered and not invited", () => {
       context("when activist invite", () => {
         beforeEach(async () => {
