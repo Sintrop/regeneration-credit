@@ -57,12 +57,13 @@ contract("InvitationContract", (accounts) => {
     context("when user already invited", () => {
       beforeEach(async () => {
         await addUser(user2Address, userTypes.Activist, owner);
+        await addUser(user4Address, userTypes.Activist, owner);
         await instance.invite(user3Address, userTypes.Activist, { from: user2Address });
       });
 
       it("revert", async () => {
         await expectRevert(
-          instance.invite(user3Address, userTypes.Activist, { from: user2Address }),
+          instance.invite(user3Address, userTypes.Activist, { from: user4Address }),
           "Already invited"
         );
       });
