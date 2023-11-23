@@ -31,13 +31,12 @@ contract ValidatorContract is Registrable, Callable {
     UserType userType = UserType.VALIDATOR;
     uint256 currentEra = validatorPoolEra();
 
-    Pool memory pool = Pool(1, currentEra);
+    Pool memory pool = Pool(0, currentEra);
 
     validators[msg.sender] = Validator(id, msg.sender, userType, pool);
     validatorsAddress.push(msg.sender);
     validatorsCount++;
     userContract.addUser(msg.sender, userType);
-    addLevel(msg.sender);
   }
 
   function addValidation(address userAddress, string memory justification) public {
@@ -95,6 +94,17 @@ contract ValidatorContract is Registrable, Callable {
     }
 
     return validatorList;
+  }
+
+  function updateLevel() public {
+    require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
+
+    Validator memory validator = validators[msg.sender];
+    uint256 currentEra = validator.pool.currentEra;
+
+    require(validatorPool.canAddLevel(currentEra), "Only once per era");
+
+    addLevel(msg.sender);
   }
 
   function addLevel(address addr) internal {

@@ -82,6 +82,19 @@ contract("ValidatorContract", (accounts) => {
   });
 
   describe("#addValidator", () => {
+    context("when access validator fields", () => {
+      it("should have fields", async () => {
+        await addValidator(validator1Address);
+        const validator = await instance.getValidator(validator1Address);
+
+        assert.equal(validator.id, "1");
+        assert.equal(validator.validatorWallet, validator1Address);
+        assert.equal(validator.userType, 8);
+        assert.equal(validator.pool.currentEra, 2);
+        assert.equal(validator.pool.level, 0);
+      });
+    });
+
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
         await expectRevert(addValidator(validator2Address), "Not allowed user");
@@ -349,6 +362,7 @@ contract("ValidatorContract", (accounts) => {
       beforeEach(async () => {
         await instance.newAllowedUser(validator1Address);
         await addValidator(validator1Address);
+        await instance.updateLevel({ from: validator1Address });
       });
 
       context("when validator is in era 1 and current era is 1", () => {
@@ -376,6 +390,7 @@ contract("ValidatorContract", (accounts) => {
           beforeEach(async () => {
             await instance.newAllowedUser(validator2Address);
             await addValidator(validator2Address);
+            await instance.updateLevel({ from: validator2Address });
 
             await advanceBlock(args.blocksPerEra);
 

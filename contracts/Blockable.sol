@@ -27,6 +27,10 @@ contract Blockable {
     return currentUserEra < currentContractEra() && validEra(currentUserEra);
   }
 
+  function canAddLevel(uint256 currentUserEra) public view returns (bool) {
+    return currentUserEra <= currentContractEra();
+  }
+
   function currentContractEra() public view returns (uint256) {
     return currentBlockNumber().sub(deployedAt).div(blocksPerEra).add(1);
   }
