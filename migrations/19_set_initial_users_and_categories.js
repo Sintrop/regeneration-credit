@@ -56,6 +56,10 @@ module.exports = function (deployer) {
     await invitationContract.onlyOwnerInvite(validator2, userTypes.Validator);
     await invitationContract.onlyOwnerInvite(validator3, userTypes.Validator);
     await invitationContract.onlyOwnerInvite(validator4, userTypes.Validator);
+    await invitationContract.onlyOwnerInvite(inspector1, userTypes.Inspector);
+    await invitationContract.onlyOwnerInvite(inspector2, userTypes.Inspector);
+    await invitationContract.onlyOwnerInvite(inspector3, userTypes.Inspector);
+    await invitationContract.onlyOwnerInvite(inspector4, userTypes.Inspector);
 
     await producerContract.addProducer(10, "Sítio Refloresta", "photoURL", "123456789123456", { from: producer1 });
 
