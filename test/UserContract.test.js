@@ -1,23 +1,11 @@
 const { userContractDeployed } = require("./shared/user_contract_deployed");
+const { userTypes } = require("./shared/user_types");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
 contract("UserContract", (accounts) => {
   let instance;
   let [owner, user1Address, user2Address, user3Address, user4Address] = accounts;
-
-  let userTypes = {
-    Undefined: 0,
-    Producer: 1,
-    Inspector: 2,
-    Researcher: 3,
-    Developer: 4,
-    Advisor: 5,
-    Activist: 6,
-    Supporter: 7,
-    Validator: 8,
-    Denied: 9,
-  };
 
   const definedTypes = {
     0: "UNDEFINED",
@@ -119,6 +107,7 @@ contract("UserContract", (accounts) => {
 
         context("to Inspector", () => {
           it("should add correct enum to inspector", async () => {
+            await addInvitation(owner, user1Address, userTypes.Inspector, owner);
             await addUser(user1Address, userTypes.Inspector, owner);
 
             const user = await instance.getUser(user1Address);
@@ -129,6 +118,7 @@ contract("UserContract", (accounts) => {
 
         context("to researcher", () => {
           it("should add correct enum to researcher", async () => {
+            await addInvitation(owner, user1Address, userTypes.Researcher, owner);
             await addUser(user1Address, userTypes.Researcher, owner);
 
             const user = await instance.getUser(user1Address);
@@ -139,6 +129,7 @@ contract("UserContract", (accounts) => {
 
         context("to developer", () => {
           it("should add correct enum to developer", async () => {
+            await addInvitation(owner, user1Address, userTypes.Developer, owner);
             await addUser(user1Address, userTypes.Developer, owner);
 
             const user = await instance.getUser(user1Address);
@@ -149,6 +140,7 @@ contract("UserContract", (accounts) => {
 
         context("to advisor", () => {
           it("should add correct enum to advisor", async () => {
+            await addInvitation(owner, user1Address, userTypes.Advisor, owner);
             await addUser(user1Address, userTypes.Advisor, owner);
 
             const user = await instance.getUser(user1Address);
@@ -159,6 +151,7 @@ contract("UserContract", (accounts) => {
 
         context("to activist", () => {
           it("should add correct enum to activist", async () => {
+            await addInvitation(owner, user1Address, userTypes.Activist, owner);
             await addUser(user1Address, userTypes.Activist, owner);
 
             const user = await instance.getUser(user1Address);
@@ -179,6 +172,7 @@ contract("UserContract", (accounts) => {
 
         context("to validator", () => {
           it("should add correct enum to validator", async () => {
+            await addInvitation(owner, user1Address, userTypes.Validator, owner);
             await addUser(user1Address, userTypes.Validator, owner);
 
             const user = await instance.getUser(user1Address);
@@ -205,6 +199,10 @@ contract("UserContract", (accounts) => {
 
         context("to inspector with proportionality 2", () => {
           beforeEach(async () => {
+            await addInvitation(owner, user2Address, userTypes.Inspector, owner);
+            await addInvitation(owner, user3Address, userTypes.Inspector, owner);
+            await addInvitation(owner, user4Address, userTypes.Inspector, owner);
+
             await addUser(user2Address, userTypes.Inspector, owner);
             await addUser(user3Address, userTypes.Inspector, owner);
           });
@@ -216,6 +214,9 @@ contract("UserContract", (accounts) => {
 
         context("to activist with proportionality 1", () => {
           beforeEach(async () => {
+            await addInvitation(owner, user2Address, userTypes.Activist, owner);
+            await addInvitation(owner, user3Address, userTypes.Activist, owner);
+
             await addUser(user2Address, userTypes.Activist, owner);
           });
 
@@ -226,6 +227,9 @@ contract("UserContract", (accounts) => {
 
         context("to researcher with proportionality 1", () => {
           beforeEach(async () => {
+            await addInvitation(owner, user2Address, userTypes.Researcher, owner);
+            await addInvitation(owner, user3Address, userTypes.Researcher, owner);
+
             await addUser(user2Address, userTypes.Researcher, owner);
           });
 
@@ -236,6 +240,9 @@ contract("UserContract", (accounts) => {
 
         context("to developer with proportionality 1", () => {
           beforeEach(async () => {
+            await addInvitation(owner, user2Address, userTypes.Developer, owner);
+            await addInvitation(owner, user3Address, userTypes.Developer, owner);
+
             await addUser(user2Address, userTypes.Developer, owner);
           });
 
@@ -246,6 +253,9 @@ contract("UserContract", (accounts) => {
 
         context("to validator with proportionality 1", () => {
           beforeEach(async () => {
+            await addInvitation(owner, user2Address, userTypes.Validator, owner);
+            await addInvitation(owner, user3Address, userTypes.Validator, owner);
+
             await addUser(user2Address, userTypes.Validator, owner);
           });
 
@@ -273,8 +283,18 @@ contract("UserContract", (accounts) => {
 
         context("when try register as another user type of invitation", () => {
           it("should return error message", async () => {
-            await expectRevert(addUser(user1Address, userTypes.Developer, owner), "Invalid userType for invitation");
+            await expectRevert(addUser(user1Address, userTypes.Developer, owner), "Invalid invitation");
           });
+        });
+      });
+
+      context("when user was not invited", () => {
+        beforeEach(async () => {
+          await addUser(user1Address, userTypes.Producer, owner);
+        });
+
+        it("should return error message", async () => {
+          await expectRevert(addUser(user2Address, userTypes.Inspector, owner), "Invalid invitation");
         });
       });
     });

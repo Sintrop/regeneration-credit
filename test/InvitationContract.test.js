@@ -1,5 +1,6 @@
 const InvitationContract = artifacts.require("InvitationContract");
 const { userContractDeployed } = require("./shared/user_contract_deployed");
+const { userTypes } = require("./shared/user_types");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
@@ -9,21 +10,14 @@ contract("InvitationContract", (accounts) => {
 
   const inviteDelayBlocks = 25;
 
-  let userTypes = {
-    Undefined: 0,
-    Producer: 1,
-    Inspector: 2,
-    Researcher: 3,
-    Developer: 4,
-    Advisor: 5,
-    Activist: 6,
-    Supporter: 7,
-    Validator: 8,
-    Denied: 9,
-  };
-
   const addUser = async (address, userType, caller) => {
     await userContract.addUser(address, userType, { from: caller });
+  };
+
+  const addInvitation = async (inviter, invited, userType, from) => {
+    await userContract.addInvitation(inviter, invited, userType, {
+      from: from,
+    });
   };
 
   beforeEach(async () => {
@@ -39,23 +33,11 @@ contract("InvitationContract", (accounts) => {
       await addUser(user1Address, userTypes.Producer, owner);
     });
 
-    context("when user already registed", () => {
-      beforeEach(async () => {
-        await addUser(user2Address, userTypes.Producer, owner);
-        await addUser(user3Address, userTypes.Activist, owner);
-        await addUser(user4Address, userTypes.Inspector, owner);
-      });
-
-      it("revert", async () => {
-        await expectRevert(
-          instance.invite(user4Address, userTypes.Inspector, { from: user3Address }),
-          "Already registered"
-        );
-      });
-    });
-
     context("when user already invited", () => {
       beforeEach(async () => {
+        await addInvitation(owner, user2Address, userTypes.Activist, owner);
+        await addInvitation(owner, user4Address, userTypes.Activist, owner);
+
         await addUser(user2Address, userTypes.Activist, owner);
         await addUser(user4Address, userTypes.Activist, owner);
         await instance.invite(user3Address, userTypes.Activist, { from: user2Address });
@@ -71,6 +53,7 @@ contract("InvitationContract", (accounts) => {
 
     context("when have recent invitation", () => {
       beforeEach(async () => {
+        await addInvitation(owner, user2Address, userTypes.Activist, owner);
         await addUser(user2Address, userTypes.Activist, owner);
         await instance.invite(user3Address, userTypes.Activist, { from: user2Address });
       });
@@ -86,6 +69,7 @@ contract("InvitationContract", (accounts) => {
     context("when user not registered and not invited", () => {
       context("when activist invite", () => {
         beforeEach(async () => {
+          await addInvitation(owner, user2Address, userTypes.Activist, owner);
           await addUser(user2Address, userTypes.Activist, owner);
         });
 
@@ -122,6 +106,7 @@ contract("InvitationContract", (accounts) => {
 
       context("when developer invite", () => {
         beforeEach(async () => {
+          await addInvitation(owner, user2Address, userTypes.Developer, owner);
           await addUser(user2Address, userTypes.Developer, owner);
         });
 
@@ -138,6 +123,7 @@ contract("InvitationContract", (accounts) => {
 
       context("when researcher invite", () => {
         beforeEach(async () => {
+          await addInvitation(owner, user2Address, userTypes.Researcher, owner);
           await addUser(user2Address, userTypes.Researcher, owner);
         });
 
@@ -154,6 +140,7 @@ contract("InvitationContract", (accounts) => {
 
       context("when supporter invite", () => {
         beforeEach(async () => {
+          await addInvitation(owner, user2Address, userTypes.Supporter, owner);
           await addUser(user2Address, userTypes.Supporter, owner);
         });
 

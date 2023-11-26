@@ -3,10 +3,9 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
 import { Activist } from "./types/ActivistTypes.sol";
-import { Registrable } from "./Registrable.sol";
 import { UserType } from "./types/UserTypes.sol";
 
-contract ActivistContract is Registrable {
+contract ActivistContract {
   mapping(address => Activist) internal activists;
 
   UserContract internal userContract;
@@ -22,10 +21,7 @@ contract ActivistContract is Registrable {
    * @param name the name of the activist
    * @return a Activist
    */
-  function addActivist(
-    string memory name,
-    string memory proofPhoto
-  ) public mustBeAllowedUser uniqueActivist returns (Activist memory) {
+  function addActivist(string memory name, string memory proofPhoto) public uniqueActivist returns (Activist memory) {
     uint256 id = activistsCount + 1;
     UserType userType = UserType.ACTIVIST;
 

@@ -1,6 +1,7 @@
 const InspectorContract = artifacts.require("InspectorContract");
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const InspectorPool = artifacts.require("InspectorPool");
+const { userTypes } = require("./shared/user_types");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
@@ -9,10 +10,16 @@ const { advanceBlock } = require("./shared/advance_block");
 contract("InspectorContract", (accounts) => {
   let instance;
   let userContract;
-  let [ownerAddress, inspe1Address, inspe2Address] = accounts;
+  let [owner, inspe1Address, inspe2Address] = accounts;
 
   const addInspector = async (name, address) => {
     await instance.addInspector(name, "photoURL", "135465-005", { from: address });
+  };
+
+  const addInvitation = async (inviter, invited, userType, from) => {
+    await userContract.addInvitation(inviter, invited, userType, {
+      from: from,
+    });
   };
 
   const args = {
@@ -33,7 +40,11 @@ contract("InspectorContract", (accounts) => {
     await inspectorPool.newAllowedCaller(instance.address);
     await rcToken.addContractPool(inspectorPool.address, args.totalTokens);
     await userContract.newAllowedCaller(instance.address);
-    await instance.newAllowedCaller(ownerAddress);
+    await userContract.newAllowedCaller(owner);
+    await instance.newAllowedCaller(owner);
+
+    await addInvitation(owner, inspe1Address, userTypes.Inspector, owner);
+    await addInvitation(owner, inspe2Address, userTypes.Inspector, owner);
   });
 
   context("when access inspector fields", () => {

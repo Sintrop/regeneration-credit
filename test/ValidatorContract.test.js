@@ -2,6 +2,7 @@ const ValidatorContract = artifacts.require("ValidatorContract");
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const ProducerContract = artifacts.require("ProducerContract");
 const ProducerPool = artifacts.require("ProducerPool");
+const { userTypes } = require("./shared/user_types");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
@@ -13,7 +14,7 @@ contract("ValidatorContract", (accounts) => {
   let producerPool;
   let rcToken;
   let [
-    ownerAddress,
+    owner,
     producer1Address,
     validator1Address,
     validator2Address,
@@ -33,6 +34,12 @@ contract("ValidatorContract", (accounts) => {
 
   const addValidator = async (address) => {
     await instance.addValidator({ from: address });
+  };
+
+  const addInvitation = async (inviter, invited, userType, from) => {
+    await userContract.addInvitation(inviter, invited, userType, {
+      from: from,
+    });
   };
 
   const addProducer = async (name, address) => {
@@ -60,18 +67,19 @@ contract("ValidatorContract", (accounts) => {
 
     await userContract.newAllowedCaller(instance.address);
     await userContract.newAllowedCaller(producerContract.address);
-    await userContract.newAllowedCaller(ownerAddress);
-    await instance.newAllowedUser(validator1Address);
+    await userContract.newAllowedCaller(owner);
     await producerContract.newAllowedCaller(instance.address);
     await producerPool.newAllowedCaller(producerContract.address);
     await rcToken.addContractPool(instance.address, producerPoolArgs.totalTokens);
     await rcToken.addContractPool(producerContract.address, producerPoolArgs.totalTokens);
+
+    await addInvitation(owner, validator1Address, userTypes.Validator, owner);
   });
 
   describe("#addValidator", () => {
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(addValidator(validator2Address), "Not allowed user");
+        await expectRevert(addValidator(validator2Address), "Invalid invitation");
       });
     });
 
@@ -122,7 +130,7 @@ contract("ValidatorContract", (accounts) => {
     context("when caller is validator", () => {
       context("when user already is denied", () => {
         beforeEach(async () => {
-          await instance.newAllowedUser(validator2Address);
+          await addInvitation(owner, validator2Address, userTypes.Validator, owner);
           await addValidator(validator1Address);
           await addValidator(validator2Address);
           await denyUser(validator2Address);
@@ -139,9 +147,9 @@ contract("ValidatorContract", (accounts) => {
       context("when user is not denied", () => {
         context("when user validations count is not equal majorityValidatorsCount", () => {
           beforeEach(async () => {
-            await instance.newAllowedUser(validator2Address);
-            await instance.newAllowedUser(validator3Address);
-            await instance.newAllowedUser(validator4Address);
+            await addInvitation(owner, validator2Address, userTypes.Validator, owner);
+            await addInvitation(owner, validator3Address, userTypes.Validator, owner);
+            await addInvitation(owner, validator4Address, userTypes.Validator, owner);
 
             await addValidator(validator1Address);
             await addValidator(validator2Address);
@@ -168,9 +176,9 @@ contract("ValidatorContract", (accounts) => {
 
         context("when user validations count is equal or bigger than majorityValidatorsCount", () => {
           beforeEach(async () => {
-            await instance.newAllowedUser(validator2Address);
-            await instance.newAllowedUser(validator3Address);
-            await instance.newAllowedUser(validator4Address);
+            await addInvitation(owner, validator2Address, userTypes.Validator, owner);
+            await addInvitation(owner, validator3Address, userTypes.Validator, owner);
+            await addInvitation(owner, validator4Address, userTypes.Validator, owner);
 
             await addValidator(validator1Address);
             await addValidator(validator2Address);
@@ -295,7 +303,7 @@ contract("ValidatorContract", (accounts) => {
   describe("#majorityValidatorsCount", () => {
     context("when have 2 validators", () => {
       beforeEach(async () => {
-        await instance.newAllowedUser(validator2Address);
+        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
         await addValidator(validator1Address);
         await addValidator(validator2Address);
       });
@@ -310,11 +318,12 @@ contract("ValidatorContract", (accounts) => {
 
     context("when have 6 validators", () => {
       beforeEach(async () => {
-        await instance.newAllowedUser(validator2Address);
-        await instance.newAllowedUser(validator3Address);
-        await instance.newAllowedUser(validator4Address);
-        await instance.newAllowedUser(validator5Address);
-        await instance.newAllowedUser(validator6Address);
+        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator3Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator4Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator5Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator6Address, userTypes.Validator, owner);
+
         await addValidator(validator1Address);
         await addValidator(validator2Address);
         await addValidator(validator3Address);

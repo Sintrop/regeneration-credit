@@ -26,6 +26,7 @@ contract UserContract is Ownable, Callable {
     uint256 developerProportionality,
     uint256 validatorProportionality
   ) {
+    userTypeSettings[UserType.ADVISOR] = UserTypeSetting(0, false, true);
     userTypeSettings[UserType.INSPECTOR] = UserTypeSetting(inspectorProportionality, true, true);
     userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(activistProportionality, false, true);
     userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(researcherProportionality, false, true);
@@ -42,7 +43,7 @@ contract UserContract is Ownable, Callable {
     require(users[addr] == UserType.UNDEFINED, "User already exists");
     require(userType != UserType.UNDEFINED, "Invalid user type");
     require(registrationProportionalityAllowed(userType), "Proportionality invalid");
-    require(invitedTypeOnRegister(addr, userType), "Invalid userType for invitation");
+    require(invitedTypeOnRegister(addr, userType), "Invalid invitation");
 
     users[addr] = userType;
     usersCount++;
@@ -50,14 +51,11 @@ contract UserContract is Ownable, Callable {
   }
 
   function invitedTypeOnRegister(address addr, UserType userType) internal view returns (bool) {
-    UserTypeSetting memory setting = userTypeSettings[userType];
-
-    if (!setting.needInvitationOnRegister) return true;
+    if (!userTypeSettings[userType].needInvitationOnRegister) return true;
 
     Invitation memory invitation = invitations[addr];
-    if (invitation.invited == address(0)) return true;
 
-    return invitation.userType == userType;
+    return invitation.createdAtBlock != 0 && invitation.userType == userType;
   }
 
   function registrationProportionalityAllowed(UserType userType) internal view returns (bool) {

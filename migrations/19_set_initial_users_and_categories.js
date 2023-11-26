@@ -4,6 +4,7 @@ const ResearcherContract = artifacts.require("ResearcherContract");
 const InspectorContract = artifacts.require("InspectorContract");
 const ValidatorContract = artifacts.require("ValidatorContract");
 const DeveloperContract = artifacts.require("DeveloperContract");
+const InvitationContract = artifacts.require("InvitationContract");
 
 module.exports = function (deployer) {
   deployer.then(async () => {
@@ -27,20 +28,34 @@ module.exports = function (deployer) {
       developer2,
     ] = accounts;
 
+    const userTypes = {
+      Undefined: 0,
+      Producer: 1,
+      Inspector: 2,
+      Researcher: 3,
+      Developer: 4,
+      Advisor: 5,
+      Activist: 6,
+      Supporter: 7,
+      Validator: 8,
+      Denied: 9,
+    };
+
     const categoryContract = await CategoryContract.deployed();
     const inspectorContract = await InspectorContract.deployed();
     const producerContract = await ProducerContract.deployed();
     const researcherContract = await ResearcherContract.deployed();
     const validatorContract = await ValidatorContract.deployed();
     const developerContract = await DeveloperContract.deployed();
+    const invitationContract = await InvitationContract.deployed();
 
-    await researcherContract.newAllowedUser(researcher1);
-    await validatorContract.newAllowedUser(validator1);
-    await validatorContract.newAllowedUser(validator2);
-    await validatorContract.newAllowedUser(validator3);
-    await validatorContract.newAllowedUser(validator4);
-    await developerContract.newAllowedUser(developer1);
-    await developerContract.newAllowedUser(developer2);
+    await invitationContract.onlyOwnerInvite(researcher1, userTypes.Researcher);
+    await invitationContract.onlyOwnerInvite(developer1, userTypes.Developer);
+    await invitationContract.onlyOwnerInvite(developer2, userTypes.Developer);
+    await invitationContract.onlyOwnerInvite(validator1, userTypes.Validator);
+    await invitationContract.onlyOwnerInvite(validator2, userTypes.Validator);
+    await invitationContract.onlyOwnerInvite(validator3, userTypes.Validator);
+    await invitationContract.onlyOwnerInvite(validator4, userTypes.Validator);
 
     await producerContract.addProducer(10, "Sítio Refloresta", "photoURL", "123456789123456", { from: producer1 });
 
@@ -91,7 +106,7 @@ module.exports = function (deployer) {
       `0`,
       `Until 1 tCO2 / era`,
       `Until 2 tCO2 / era`,
-      `More then 2 tCO2 / era`,
+      `More then 2 tCO2 / era`
     );
 
     await categoryContract.addCategory(
@@ -104,7 +119,7 @@ module.exports = function (deployer) {
       `0`,
       `Until -100 lifeUnits`,
       `Until -1000 lifeUnits`,
-      `Less then -1000 lifeUnits`,
+      `Less then -1000 lifeUnits`
     );
 
     await categoryContract.addCategory(
@@ -117,7 +132,7 @@ module.exports = function (deployer) {
       `0`,
       `Until -10 m3`,
       `Until -100 m3`,
-      `Less then -100 m3`,
+      `Less then -100 m3`
     );
 
     await categoryContract.addCategory(
@@ -130,7 +145,7 @@ module.exports = function (deployer) {
       `0`,
       `Until 1 hectare of soil degradation`,
       `Until 2 hectares of soil degradation`,
-      `More than 2 hectares of soil degradation`,
+      `More than 2 hectares of soil degradation`
     );
   });
 };
