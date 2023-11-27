@@ -3,11 +3,10 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
 import { Researcher, Work, Pool } from "./types/ResearcherTypes.sol";
-import { Registrable } from "./Registrable.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { ResearcherPool } from "./ResearcherPool.sol";
 
-contract ResearcherContract is Registrable {
+contract ResearcherContract {
   mapping(address => Researcher) internal researchers;
   mapping(uint256 => Work) internal works;
 
@@ -32,7 +31,7 @@ contract ResearcherContract is Registrable {
   function addResearcher(
     string memory name,
     string memory proofPhoto
-  ) public uniqueResearcher mustBeAllowedUser returns (Researcher memory) {
+  ) public uniqueResearcher returns (Researcher memory) {
     uint256 id = researchersCount + 1;
     UserType userType = UserType.RESEARCHER;
     uint256 currentEra = researcherPoolEra();

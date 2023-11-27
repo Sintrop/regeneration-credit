@@ -1,7 +1,7 @@
 const ResearcherContract = artifacts.require("ResearcherContract");
 const ResearcherPool = artifacts.require("ResearcherPool");
-const UserContract = artifacts.require("UserContract");
-const RcToken = artifacts.require("RcToken");
+const { userContractDeployed } = require("./shared/user_contract_deployed");
+const { userTypes } = require("./shared/user_types");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
@@ -12,7 +12,7 @@ contract("ResearcherContract", (accounts) => {
   let rcToken;
   let researcherPool;
   let userContract;
-  let [ownerAddress, resea1Address, resea2Address] = accounts;
+  let [owner, resea1Address, resea2Address] = accounts;
 
   const timeBetweenWorks = process.env["RESEARCHER_TIME_BETWEEN_WORKS"];
 
@@ -27,6 +27,12 @@ contract("ResearcherContract", (accounts) => {
     await instance.addResearcher(name, "photoURL", { from: address });
   };
 
+  const addInvitation = async (inviter, invited, userType, from) => {
+    await userContract.addInvitation(inviter, invited, userType, {
+      from: from,
+    });
+  };
+
   const addWork = async (from) => {
     await instance.addWork("title", "thesis", "fileURL", {
       from: from,
@@ -35,7 +41,7 @@ contract("ResearcherContract", (accounts) => {
 
   beforeEach(async () => {
     rcToken = await rcTokenDeployed();
-    userContract = await UserContract.new();
+    userContract = await userContractDeployed();
 
     researcherPool = await ResearcherPool.new(rcToken.address, args.halving, args.totalEras, args.blocksPerEra);
 
@@ -44,13 +50,15 @@ contract("ResearcherContract", (accounts) => {
     await researcherPool.newAllowedCaller(instance.address);
     await rcToken.addContractPool(researcherPool.address, args.totalTokens);
     await userContract.newAllowedCaller(instance.address);
-    await instance.newAllowedUser(resea1Address);
+    await userContract.newAllowedCaller(owner);
+
+    await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
   });
 
   describe("#addResearcher", () => {
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(addResearcher("Reseacher B", resea2Address), "Not allowed user");
+        await expectRevert(addResearcher("Reseacher B", resea2Address), "Invalid invitation");
       });
     });
 
@@ -189,7 +197,7 @@ contract("ResearcherContract", (accounts) => {
 
         context("with one researches", () => {
           beforeEach(async () => {
-            await instance.newAllowedUser(resea2Address);
+            await addInvitation(owner, resea2Address, userTypes.Researcher, owner);
             await addResearcher("Researcher B", resea2Address);
             await addWork(resea1Address);
             await addWork(resea2Address);

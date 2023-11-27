@@ -1,7 +1,6 @@
 const ProducerContract = artifacts.require("ProducerContract");
-const UserContract = artifacts.require("UserContract");
+const { userContractDeployed } = require("./shared/user_contract_deployed");
 const ProducerPool = artifacts.require("ProducerPool");
-const RcToken = artifacts.require("RcToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
@@ -28,7 +27,7 @@ contract("ProducerContract", (accounts) => {
   beforeEach(async () => {
     rcToken = await rcTokenDeployed();
 
-    userContract = await UserContract.new();
+    userContract = await userContractDeployed();
 
     producerPool = await ProducerPool.new(
       rcToken.address,

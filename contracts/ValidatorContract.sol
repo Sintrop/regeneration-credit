@@ -4,11 +4,10 @@ pragma solidity >=0.7.0 <=0.9.0;
 import { UserContract } from "./UserContract.sol";
 import { ProducerContract } from "./ProducerContract.sol";
 import { Validator, Validation } from "./types/ValidatorTypes.sol";
-import { Registrable } from "./Registrable.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { Callable } from "./Callable.sol";
 
-contract ValidatorContract is Registrable, Callable {
+contract ValidatorContract is Callable {
   mapping(address => Validator) internal validators;
   mapping(address => Validation[]) private validations;
 
@@ -22,7 +21,7 @@ contract ValidatorContract is Registrable, Callable {
     producerContract = ProducerContract(producerContractAddress);
   }
 
-  function addValidator() public mustBeAllowedUser {
+  function addValidator() public {
     require(!validatorExists(msg.sender), "This validator already exist");
 
     uint256 id = validatorsCount + 1;

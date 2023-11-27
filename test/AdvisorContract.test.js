@@ -1,31 +1,40 @@
 const AdvisorContract = artifacts.require("AdvisorContract");
-const UserContract = artifacts.require("UserContract");
+const { userContractDeployed } = require("./shared/user_contract_deployed");
+const { userTypes } = require("./shared/user_types");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
 contract("AdvisorContract", (accounts) => {
   let instance;
   let userContract;
-  let [ownerAddress, adv1Address, adv2Address, adv3Address] = accounts;
+  let [owner, adv1Address, adv2Address, adv3Address] = accounts;
 
   const addAdvisor = async (name, address) => {
     await instance.addAdvisor(name, "photoURL", { from: address });
   };
 
+  const addInvitation = async (inviter, invited, userType, from) => {
+    await userContract.addInvitation(inviter, invited, userType, {
+      from: from,
+    });
+  };
+
   beforeEach(async () => {
-    userContract = await UserContract.new();
+    userContract = await userContractDeployed();
 
     instance = await AdvisorContract.new(userContract.address);
 
     await userContract.newAllowedCaller(instance.address);
-    await instance.newAllowedUser(adv1Address);
-    await instance.newAllowedUser(adv3Address);
+    await userContract.newAllowedCaller(owner);
+
+    await addInvitation(owner, adv1Address, userTypes.Advisor, owner);
+    await addInvitation(owner, adv3Address, userTypes.Advisor, owner);
   });
 
   context("when will create new advisor (.addAdvisor)", () => {
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(addAdvisor("Advisor B", adv2Address), "Not allowed user");
+        await expectRevert(addAdvisor("Advisor B", adv2Address), "Invalid invitation");
       });
     });
 

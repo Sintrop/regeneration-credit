@@ -1,7 +1,6 @@
 const Sintrop = artifacts.require("Sintrop");
 const CategoryContract = artifacts.require("CategoryContract");
-const RcToken = artifacts.require("RcToken");
-const UserContract = artifacts.require("UserContract");
+const { userContractDeployed } = require("./shared/user_contract_deployed");
 const InspectorContract = artifacts.require("InspectorContract");
 const ProducerContract = artifacts.require("ProducerContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
@@ -9,6 +8,7 @@ const ProducerPool = artifacts.require("ProducerPool");
 const ResearcherPool = artifacts.require("ResearcherPool");
 const InspectorPool = artifacts.require("InspectorPool");
 const ValidatorContract = artifacts.require("ValidatorContract");
+const { userTypes } = require("./shared/user_types");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
@@ -26,7 +26,7 @@ contract("Sintrop", (accounts) => {
   const inspectorMaxPenalties = 2;
 
   let [
-    ownerAddress,
+    owner,
     producerAddress,
     producer2Address,
     inspectorAddress,
@@ -86,6 +86,12 @@ contract("Sintrop", (accounts) => {
     });
   };
 
+  const addInvitation = async (inviter, invited, userType, from) => {
+    await userContract.addInvitation(inviter, invited, userType, {
+      from: from,
+    });
+  };
+
   const addInspector = async (name, address) => {
     await inspectorContract.addInspector(name, "photoURL", "135465-005", { from: address });
   };
@@ -142,7 +148,7 @@ contract("Sintrop", (accounts) => {
 
   beforeEach(async () => {
     rcToken = await rcTokenDeployed();
-    userContract = await UserContract.new();
+    userContract = await userContractDeployed();
 
     researcherPool = await ResearcherPool.new(
       rcToken.address,
@@ -187,14 +193,17 @@ contract("Sintrop", (accounts) => {
     await userContract.newAllowedCaller(producerContract.address);
     await userContract.newAllowedCaller(researcherContract.address);
     await userContract.newAllowedCaller(validatorContract.address);
+    await userContract.newAllowedCaller(owner);
     await inspectorContract.newAllowedCaller(instance.address);
-    await inspectorContract.newAllowedCaller(ownerAddress);
+    await inspectorContract.newAllowedCaller(owner);
     await validatorContract.newAllowedCaller(instance.address);
     await producerContract.newAllowedCaller(instance.address);
     await producerContract.newAllowedCaller(validatorContract.address);
-    await researcherContract.newAllowedUser(resea1Address);
     await producerPool.newAllowedCaller(producerContract.address);
     await inspectorPool.newAllowedCaller(inspectorContract.address);
+
+    await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
+    await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
     await addProducer("Producer A", producerAddress);
     await addInspector("Inspector A", inspectorAddress);
@@ -276,7 +285,7 @@ contract("Sintrop", (accounts) => {
         context("when don't has request OPEN or ACCEPTED", () => {
           beforeEach(async () => {
             await instance.acceptInspection(1, { from: inspectorAddress });
-            await addCategory("Soil A", ownerAddress);
+            await addCategory("Soil A", owner);
 
             const isas = [
               {
@@ -395,6 +404,7 @@ contract("Sintrop", (accounts) => {
 
           context("when inspection is not OPEN", () => {
             beforeEach(async () => {
+              await addInvitation(owner, inspector2Address, userTypes.Inspector, owner);
               await instance.acceptInspection(1, { from: inspectorAddress });
               await addInspector("Inspector B", inspector2Address);
             });
@@ -498,9 +508,9 @@ contract("Sintrop", (accounts) => {
 
             context("when inspection is not expired", () => {
               beforeEach(async () => {
-                await addCategory("Soil A", ownerAddress);
-                await addCategory("Soil B", ownerAddress);
-                await addCategory("Soil C", ownerAddress);
+                await addCategory("Soil A", owner);
+                await addCategory("Soil B", owner);
+                await addCategory("Soil C", owner);
               });
 
               context("when check inspection", () => {
@@ -732,6 +742,7 @@ contract("Sintrop", (accounts) => {
 
           context("when is accepted by other inspector", () => {
             beforeEach(async () => {
+              await addInvitation(owner, inspector2Address, userTypes.Inspector, owner);
               await addInspector("Inspector B", inspector2Address);
             });
 
@@ -780,10 +791,10 @@ contract("Sintrop", (accounts) => {
   describe("#addInspectionValidation", () => {
     context("with validator", () => {
       beforeEach(async () => {
-        await validatorContract.newAllowedUser(validator1Address);
-        await validatorContract.newAllowedUser(validator2Address);
-        await validatorContract.newAllowedUser(validator3Address);
-        await validatorContract.newAllowedUser(validator4Address);
+        await addInvitation(owner, validator1Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator3Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator4Address, userTypes.Validator, owner);
 
         await addValidator(validator1Address);
         await addValidator(validator2Address);
