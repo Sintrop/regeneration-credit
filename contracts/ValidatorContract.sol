@@ -3,28 +3,25 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
 import { ProducerContract } from "./ProducerContract.sol";
-import { DeveloperContract } from "./DeveloperContract.sol";
 import { Validator, Validation } from "./types/ValidatorTypes.sol";
-import { Registrable } from "./Registrable.sol";
 import { UserType } from "./types/UserTypes.sol";
+import { Callable } from "./Callable.sol";
 
-contract ValidatorContract is Registrable {
+contract ValidatorContract is Callable {
   mapping(address => Validator) internal validators;
   mapping(address => Validation[]) private validations;
 
   UserContract internal userContract;
   ProducerContract internal producerContract;
-  DeveloperContract internal developerContract;
   address[] internal validatorsAddress;
   uint256 public validatorsCount;
 
-  constructor(address userContractAddress, address producerContractAddress, address developerPoolAddress) {
+  constructor(address userContractAddress, address producerContractAddress) {
     userContract = UserContract(userContractAddress);
     producerContract = ProducerContract(producerContractAddress);
-    developerContract = DeveloperContract(developerPoolAddress);
   }
 
-  function addValidator() public mustBeAllowedUser {
+  function addValidator() public {
     require(!validatorExists(msg.sender), "This validator already exist");
 
     uint256 id = validatorsCount + 1;
@@ -41,12 +38,13 @@ contract ValidatorContract is Registrable {
     require(!userContract.userTypeIs(UserType.DENIED, userAddress), "User already denied");
 
     uint256 majorityValidatorsCount_ = majorityValidatorsCount();
-    uint256 userValidationsCount = validations[userAddress].length + 1;
+    uint256 validationsCount = validations[userAddress].length + 1;
 
     validations[userAddress].push(
       Validation(
         msg.sender,
         userAddress,
+        0,
         justification,
         majorityValidatorsCount_,
         block.timestamp, // solhint-disable-line
@@ -54,17 +52,27 @@ contract ValidatorContract is Registrable {
       )
     );
 
-    if (userValidationsCount >= majorityValidatorsCount_) {
-      resetLevels(userAddress);
-
-      userContract.setDeniedType(userAddress);
-    }
+    if (validationsCount >= majorityValidatorsCount_) denieUser(userAddress);
   }
 
-  function resetLevels(address userAddress) internal {
+  function externalDenieUser(address userAddress) external mustBeAllowedCaller {
+    denieUser(userAddress);
+  }
+
+  function externalRemoveLevels(address userAddress, uint256 levels) external mustBeAllowedCaller {
+    resetLevels(userAddress, levels);
+  }
+
+  function denieUser(address userAddress) internal {
+    resetLevels(userAddress, 0);
+
+    userContract.setDeniedType(userAddress);
+  }
+
+  function resetLevels(address userAddress, uint256 levels) internal {
     UserType oldUserType = userContract.getUser(userAddress);
 
-    if (oldUserType == UserType.PRODUCER) return producerContract.resetLevels(userAddress);
+    if (oldUserType == UserType.PRODUCER) return producerContract.resetLevels(userAddress, levels);
   }
 
   function getValidations(address userAddress) public view returns (Validation[] memory) {

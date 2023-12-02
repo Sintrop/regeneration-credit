@@ -2,19 +2,28 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
-import { Inspector, InspectorAddress } from "./types/InspectorTypes.sol";
+import { Inspector, InspectorAddress, Penalty, Pool } from "./types/InspectorTypes.sol";
 import { Callable } from "./Callable.sol";
 import { UserType } from "./types/UserTypes.sol";
+import { InspectorPool } from "./InspectorPool.sol";
 
 contract InspectorContract is Callable {
+  uint256 internal constant MINIMUM_INSPECTIONS_TO_POOL = 3;
+
   mapping(address => Inspector) internal inspectors;
+  mapping(address => Penalty[]) public penalties;
 
   UserContract internal userContract;
+  InspectorPool internal inspectorPool;
   address[] internal inspectorsAddress;
   uint256 public inspectorsCount;
 
-  constructor(address userContractAddress) {
+  uint256 public immutable maxPenalties;
+
+  constructor(address userContractAddress, address inspectorPoolAddress, uint256 maxPenalties_) {
     userContract = UserContract(userContractAddress);
+    inspectorPool = InspectorPool(inspectorPoolAddress);
+    maxPenalties = maxPenalties_;
   }
 
   /**
@@ -34,7 +43,10 @@ contract InspectorContract is Callable {
 
     InspectorAddress memory inspectorAddress = InspectorAddress(coordinate);
 
-    Inspector memory inspector = Inspector(id, msg.sender, userType, name, proofPhoto, 0, 0, inspectorAddress, 0);
+    uint256 currentEra = inspectorPoolEra();
+    Pool memory pool = Pool(0, currentEra);
+
+    Inspector memory inspector = Inspector(id, msg.sender, userType, name, proofPhoto, 0, 0, inspectorAddress, 0, pool);
 
     inspectors[msg.sender] = inspector;
     inspectorsAddress.push(msg.sender);
@@ -42,6 +54,16 @@ contract InspectorContract is Callable {
     userContract.addUser(msg.sender, userType);
 
     return inspector;
+  }
+
+  function addPenalty(address addr, uint256 inspectionId) public mustBeAllowedCaller returns (uint256) {
+    penalties[addr].push(Penalty(inspectionId));
+
+    return totalPenalties(addr);
+  }
+
+  function totalPenalties(address addr) public view returns (uint256) {
+    return penalties[addr].length;
   }
 
   /**
@@ -75,8 +97,26 @@ contract InspectorContract is Callable {
     return bytes(inspectors[addr].name).length > 0;
   }
 
-  function incrementRequests(address addr) public mustBeAllowedCaller {
+  function incrementInspections(address addr) public mustBeAllowedCaller {
     inspectors[addr].totalInspections++;
+
+    addLevel(addr);
+  }
+
+  function addLevel(address addr) internal {
+    Inspector memory inspector = inspectors[addr];
+    inspector.pool.level++;
+    inspectors[addr] = inspector;
+
+    if (!minimumInspections(inspector.totalInspections)) return;
+
+    inspectorPool.addLevel(addr, inspector.pool.level, 1);
+  }
+
+  function decrementInspections(address addr) public mustBeAllowedCaller {
+    require(inspectors[addr].totalInspections > 0, "totalInspections invalid");
+
+    inspectors[addr].totalInspections--;
   }
 
   function incrementGiveUps(address addr) public mustBeAllowedCaller {
@@ -89,6 +129,29 @@ contract InspectorContract is Callable {
 
   function lastAcceptedAt(address addr, uint256 blocksNumber) public mustBeAllowedCaller {
     inspectors[addr].lastAcceptedAt = blocksNumber;
+  }
+
+  function inspectorPoolEra() internal view returns (uint256) {
+    return inspectorPool.currentContractEra();
+  }
+
+  function withdraw() public {
+    require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Pool only to inspectors");
+
+    Inspector memory inspector = inspectors[msg.sender];
+    require(minimumInspections(inspector.totalInspections), "Minimum inspections");
+
+    uint256 currentEra = inspector.pool.currentEra;
+
+    require(inspectorPool.canApprove(currentEra), "Can't approve withdraw");
+
+    inspectors[msg.sender].pool.currentEra++;
+
+    inspectorPool.withdraw(msg.sender, currentEra);
+  }
+
+  function minimumInspections(uint256 totalInspections) internal pure returns (bool) {
+    return totalInspections >= MINIMUM_INSPECTIONS_TO_POOL;
   }
 
   // MODIFIERS

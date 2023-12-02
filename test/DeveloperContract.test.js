@@ -1,14 +1,17 @@
 const DeveloperContract = artifacts.require("DeveloperContract");
 const DeveloperPool = artifacts.require("DeveloperPool");
-const UserContract = artifacts.require("UserContract");
-const RcToken = artifacts.require("RcToken");
+const { userContractDeployed } = require("./shared/user_contract_deployed");
+const { userTypes } = require("./shared/user_types");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
+const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { advanceBlock } = require("./shared/advance_block");
 
 contract("DeveloperContract", (accounts) => {
   let instance;
   let userContract;
   let developerPool;
+  let rcToken;
   let [owner, dev1Address, dev2Address, dev3Address] = accounts;
 
   let developerPoolParams = {
@@ -20,46 +23,31 @@ contract("DeveloperContract", (accounts) => {
     await instance.addDeveloper(name, "photoURL", { from: from });
   };
 
-  advanceBlock = async (blocksNumber) => {
-    for (let i = 0; i < blocksNumber; i++) {
-      let promise = new Promise((resolve, reject) => {
-        web3.currentProvider.send(
-          {
-            jsonrpc: "2.0",
-            method: "evm_mine",
-            id: new Date().getTime(),
-          },
-          (err, result) => {
-            if (err) {
-              return reject(err);
-            }
-            const newBlockHash = web3.eth.getBlock("latest").hash;
-
-            return resolve(newBlockHash);
-          }
-        );
-      });
-    }
+  const addInvitation = async (inviter, invited, userType, from) => {
+    await userContract.addInvitation(inviter, invited, userType, {
+      from: from,
+    });
   };
 
   beforeEach(async () => {
-    const rcToken = await RcToken.new("1500000000000000000000000000");
+    rcToken = await rcTokenDeployed();
+
     developerPool = await DeveloperPool.new(
       rcToken.address,
       developerPoolParams.blocksPerEra,
       developerPoolParams.eraMax
     );
 
-    userContract = await UserContract.new();
+    userContract = await userContractDeployed();
 
     instance = await DeveloperContract.new(userContract.address, developerPool.address);
 
     await userContract.newAllowedCaller(instance.address);
+    await userContract.newAllowedCaller(owner);
     await developerPool.newAllowedCaller(instance.address);
-    await instance.newAllowedUser(dev1Address);
-    await instance.newAllowedUser(dev2Address);
-    await instance.newAllowedUser(owner);
     await rcToken.addContractPool(developerPool.address, "15000000000000000000000000");
+
+    await addInvitation(owner, dev1Address, userTypes.Developer, owner);
   });
 
   describe(".fields", () => {
@@ -79,13 +67,13 @@ contract("DeveloperContract", (accounts) => {
   });
 
   describe("#addDeveloper", () => {
-    context("when is not an allowed user", () => {
+    context("when is not invited", () => {
       it("should return error message", async () => {
-        await expectRevert(addDeveloper("Developer C", dev3Address), "Not allowed user");
+        await expectRevert(addDeveloper("Developer C", dev3Address), "Invalid invitation");
       });
     });
 
-    context("when is an allowed user", () => {
+    context("when is invited", () => {
       context("when developer exists", () => {
         it("should return error message", async () => {
           await addDeveloper("Developer A", dev1Address);
@@ -195,9 +183,8 @@ contract("DeveloperContract", (accounts) => {
 
   describe("#getDevelopers", () => {
     beforeEach(async () => {
-      await instance.newAllowedUser(dev2Address);
+      await addInvitation(owner, dev2Address, userTypes.Developer, owner);
     });
-
     it("should return developers when has developers", async () => {
       await addDeveloper("Developer A", dev1Address);
       await addDeveloper("Developer B", dev2Address);
@@ -273,6 +260,7 @@ contract("DeveloperContract", (accounts) => {
 
         context("when has two devs in the era", () => {
           beforeEach(async () => {
+            await addInvitation(owner, dev2Address, userTypes.Developer, owner);
             await addDeveloper("Developer B", dev2Address);
           });
 

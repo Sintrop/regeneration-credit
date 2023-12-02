@@ -1,22 +1,44 @@
 const RcToken = artifacts.require("RcToken");
-const UserContract = artifacts.require("UserContract");
+const RcTokenIco = artifacts.require("RcTokenIco");
+const { userContractDeployed } = require("./shared/user_contract_deployed");
+const ProducerPool = artifacts.require("ProducerPool");
 
 const expectRevert = require("@openzeppelin/test-helpers/src/expectRevert");
 
 contract("RcToken", (accounts) => {
   let instance;
+  let rcTokenIco;
   let [ownerAddress, user1Address, user2Address] = accounts;
+  let producerPool;
 
   let args = {
     totalRcTokens: "1500000000000000000000000000",
   };
 
+  const argsProducerPool = {
+    totalTokens: "750000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 12,
+  };
+
   beforeEach(async () => {
-    instance = await RcToken.new(args.totalRcTokens);
-    userContract = await UserContract.new();
+    rcTokenIco = await RcTokenIco.new();
+
+    instance = await RcToken.new(args.totalRcTokens, rcTokenIco.address);
+    userContract = await userContractDeployed();
+
+    producerPool = await ProducerPool.new(
+      instance.address,
+      argsProducerPool.halving,
+      argsProducerPool.totalEras,
+      argsProducerPool.blocksPerEra
+    );
+
+    await rcTokenIco.setRcToken(instance.address);
   });
 
-  context("when deploy the token contract", () => {
+  describe(".afterDeploy", () => {
     it("total suply should be equal to 1500000000000000000000000000", async () => {
       const totalSupply = await instance.totalSupply();
       assert.equal(totalSupply, args.totalRcTokens);
@@ -27,9 +49,19 @@ contract("RcToken", (accounts) => {
       assert.equal(totalCertified, 0);
     });
 
-    it("balance of contract owner should be equal to 1500000000000000000000000000", async () => {
+    it("totalLocked should be equal zero", async () => {
+      const totalLocked = await instance.totalLocked();
+      assert.equal(totalLocked, 0);
+    });
+
+    it("balance of contract owner should be equal to 1365000000000000000000000000", async () => {
       const ownerBalance = await instance.balanceOf(ownerAddress);
-      assert.equal(ownerBalance, args.totalRcTokens);
+      assert.equal(ownerBalance, 1365000000000000000000000000n);
+    });
+
+    it("balance of rcTokenIco should be 135000000000000000000000000", async () => {
+      const balance = await instance.balanceOf(rcTokenIco.address);
+      assert.equal(balance, 135000000000000000000000000n);
     });
   });
 
@@ -114,6 +146,19 @@ contract("RcToken", (accounts) => {
           instance.burnTokens("100000000000000000000", { from: user2Address }),
           "Burn amount exceeds balance"
         );
+      });
+    });
+  });
+
+  describe("#totalLocked", () => {
+    context("when add contract pool", () => {
+      beforeEach(async () => {
+        await instance.addContractPool(producerPool.address, argsProducerPool.totalTokens);
+      });
+
+      it("it should set totalLocked to 750000000000000000000000000", async () => {
+        const totalLocked = await instance.totalLocked();
+        assert.equal(totalLocked, 750000000000000000000000000);
       });
     });
   });

@@ -14,7 +14,7 @@ import { Poolable } from "./Poolable.sol";
  * @title ResearcherPool
  * @dev ResearcherPool is a contract to reward researchers
  */
-contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
+contract InspectorPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;
 
   uint256 internal immutable halving;
@@ -23,14 +23,14 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
   RcTokenInterface internal rcToken;
 
   uint256[8] internal tokensPerEpochs = [
-    14400000000000000000000000,
-    7200000000000000000000000,
-    3600000000000000000000000,
-    1800000000000000000000000,
-    900000000000000000000000,
-    450000000000000000000000,
-    225000000000000000000000,
-    112500000000000000000000
+    86400000000000000000000000,
+    43200000000000000000000000,
+    21600000000000000000000000,
+    10800000000000000000000000,
+    5400000000000000000000000,
+    2700000000000000000000000,
+    1350000000000000000000000,
+    675000000000000000000000
   ];
 
   uint256 internal constant LIMIT_EPOCHS_SIZE = 8;
@@ -76,7 +76,6 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
   }
 
   function removeLevel(address addr) public mustBeAllowedCaller {
-    // TODO: Must remove from current contract era of from current era from user? ProducerPool does the last one
     uint256 era = currentContractEra();
     uint256 levels = 1;
 

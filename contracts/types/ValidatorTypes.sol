@@ -12,6 +12,7 @@ struct Validator {
 struct Validation {
   address validator;
   address user;
+  uint256 resourceId;
   string justification;
   uint256 majorityValidatorsCount;
   uint256 createdAtTimeStamp;

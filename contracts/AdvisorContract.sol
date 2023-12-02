@@ -3,10 +3,9 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
 import { Advisor } from "./types/AdvisorTypes.sol";
-import { Registrable } from "./Registrable.sol";
 import { UserType } from "./types/UserTypes.sol";
 
-contract AdvisorContract is Registrable {
+contract AdvisorContract {
   mapping(address => Advisor) internal advisors;
 
   UserContract internal userContract;
@@ -22,10 +21,7 @@ contract AdvisorContract is Registrable {
    * @param name the name of the advisor
    * @return a Advisor
    */
-  function addAdvisor(
-    string memory name,
-    string memory proofPhoto
-  ) public mustBeAllowedUser uniqueAdvisor returns (Advisor memory) {
+  function addAdvisor(string memory name, string memory proofPhoto) public uniqueAdvisor returns (Advisor memory) {
     uint256 id = advisorsCount + 1;
     UserType userType = UserType.ADVISOR;
 

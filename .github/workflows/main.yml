@@ -31,8 +31,19 @@ env:
   RESEARCHER_POOL_BLOCKS_PER_ERA: 100
   RESEARCHER_POOL_TOTAL_ERAS: 96
   RESEARCHER_POOL_HALVING: 12
+  INSPECTOR_POOL_FUNDS: "180000000000000000000000000"
+  INSPECTOR_POOL_BLOCKS_PER_ERA: 100
+  INSPECTOR_POOL_TOTAL_ERAS: 96
+  INSPECTOR_POOL_HALVING: 12
+  RESEARCHER_TIME_BETWEEN_WORKS: 6
+  INSPECTOR_MAX_PENALTIES: 2
+  INSPECTOR_PROPORTIONALITY: 2
+  ACTIVIST_PROPORTIONALITY: 1
+  RESEARCHER_PROPORTIONALITY: 1
+  DEVELOPER_PROPORTIONALITY: 1
+  VALIDATOR_PROPORTIONALITY: 1
+  INVITATION_DELAY_BLOCKS: 100
   SINTROP_INSPECTION_DELAY: 5
-
 
 jobs:
 
@@ -43,10 +54,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Setup NodeJS 14
+      - name: Setup NodeJS 20
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '20'
       - name: Show NodeJS version  
         run: npm --version
       - name: Instal Ganache
@@ -67,10 +78,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Setup NodeJS 14
+      - name: Setup NodeJS 20
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '20'
       - name: Install Dependencies
         run: npm install
       - name: Run Solhint

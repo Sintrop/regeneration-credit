@@ -2,6 +2,7 @@ const Sintrop = artifacts.require("Sintrop");
 const InspectorContract = artifacts.require("InspectorContract");
 const ProducerContract = artifacts.require("ProducerContract");
 const UserContract = artifacts.require("UserContract");
+const ValidatorContract = artifacts.require("ValidatorContract");
 
 const sintropTimeBetweenProducerInsertions =
   process.env["SINTROP_TIME_BETWEEN_PRODUCER_INSPECTIONS"];
@@ -18,12 +19,14 @@ module.exports = function (deployer) {
     const inspectorContract = await InspectorContract.deployed();
     const producerContract = await ProducerContract.deployed();
     const userContract = await UserContract.deployed();
+    const validatorContract = await ValidatorContract.deployed();
 
     await deployer.deploy(
       Sintrop,
       inspectorContract.address,
       producerContract.address,
       userContract.address,
+      validatorContract.address,
       sintropTimeBetweenProducerInsertions,
       sintropBlocksToExpireAceeptedInspection,
       allowedInitialRequests,

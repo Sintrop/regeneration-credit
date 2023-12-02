@@ -136,10 +136,10 @@ contract ProducerContract is Callable {
     producerPool.addLevel(addr, currentlevel, addLevels);
   }
 
-  function resetLevels(address addr) public mustBeAllowedCaller {
+  function resetLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Producer memory producer = producers[addr];
 
-    producerPool.resetLevels(addr, producer.pool.currentEra);
+    producerPool.resetLevels(addr, producer.pool.currentEra, removeSomeLevels);
     producers[addr].isa.isaScore = 0;
   }
 
@@ -154,6 +154,12 @@ contract ProducerContract is Callable {
 
   function incrementInspections(address addr) public mustBeAllowedCaller {
     producers[addr].totalInspections++;
+  }
+
+  function decrementInspections(address addr) public mustBeAllowedCaller {
+    require(producers[addr].totalInspections > 0, "totalInspections invalid");
+
+    producers[addr].totalInspections--;
   }
 
   function lastRequestAt(address addr, uint256 blocksNumber) public mustBeAllowedCaller {

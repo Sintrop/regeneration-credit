@@ -22,8 +22,8 @@ interface ProducerInterface {
     RESEARCHER,
     DEVELOPER,
     ADVISOR,
-    CONTRIBUTOR,
-    INVESTOR
+    ACTIVIST,
+    SUPPORTER
   }
 
   struct TokenApprove {

@@ -1,7 +1,8 @@
 const ProducerPool = artifacts.require("ProducerPool");
-const RcToken = artifacts.require("RcToken");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
+const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { advanceBlock } = require("./shared/advance_block");
 
 contract("ProducerPool", (accounts) => {
   let instance;
@@ -15,34 +16,12 @@ contract("ProducerPool", (accounts) => {
     blocksPerEra: 12,
   };
 
-  advanceBlock = async (blocksNumber) => {
-    for (let i = 0; i < blocksNumber; i++) {
-      let promise = new Promise((resolve, reject) => {
-        web3.currentProvider.send(
-          {
-            jsonrpc: "2.0",
-            method: "evm_mine",
-            id: new Date().getTime(),
-          },
-          (err, result) => {
-            if (err) {
-              return reject(err);
-            }
-            const newBlockHash = web3.eth.getBlock("latest").hash;
-
-            return resolve(newBlockHash);
-          }
-        );
-      });
-    }
-  };
-
   const transferTokensTo = async (userAddress, tokens) => {
     await rcToken.transfer(userAddress, tokens);
   };
 
   beforeEach(async () => {
-    rcToken = await RcToken.new("150000000000000000000000000000");
+    rcToken = await rcTokenDeployed();
 
     instance = await ProducerPool.new(rcToken.address, args.halving, args.totalEras, args.blocksPerEra);
 
@@ -287,6 +266,13 @@ contract("ProducerPool", (accounts) => {
               const balanceOf = await instance.balanceOf(producer1Address);
 
               assert.equal(balanceOf, 30000000000000000000000000n);
+            });
+
+            it("total locked must be 750000000000000000000000000 - 30000000000000000000000000 = ", async () => {
+              await instance.withdraw(producer1Address, 1);
+              const totalLocked = await rcToken.totalLocked();
+
+              assert.equal(totalLocked, 720000000000000000000000000n);
             });
           });
         });
