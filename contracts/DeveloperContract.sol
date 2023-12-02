@@ -4,7 +4,6 @@ pragma solidity >=0.7.0 <=0.9.0;
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { UserContract } from "./UserContract.sol";
 import { UserType } from "./types/UserTypes.sol";
-import { Registrable } from "./Registrable.sol";
 import { DeveloperPool } from "./DeveloperPool.sol";
 import { Developer, Pool, Contribution } from "./types/DeveloperTypes.sol";
 
@@ -12,7 +11,7 @@ import { Developer, Pool, Contribution } from "./types/DeveloperTypes.sol";
  * @title DeveloperContract
  * @dev Developer resource that represent dev
  */
-contract DeveloperContract is Ownable, Registrable {
+contract DeveloperContract is Ownable {
   mapping(address => Developer) public developers;
   mapping(uint256 => mapping(address => Contribution)) public contributions;
 
@@ -31,7 +30,7 @@ contract DeveloperContract is Ownable, Registrable {
    * @dev Allow a new register of developer
    * @param name the name of the developer
    */
-  function addDeveloper(string memory name, string memory proofPhoto) public mustBeAllowedUser uniqueDeveloper {
+  function addDeveloper(string memory name, string memory proofPhoto) public uniqueDeveloper {
     UserType userType = UserType.DEVELOPER;
     uint256 poolEra = developerPoolEra();
     uint256 level = 0;

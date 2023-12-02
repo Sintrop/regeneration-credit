@@ -1,7 +1,6 @@
 const Sintrop = artifacts.require("Sintrop");
 const CategoryContract = artifacts.require("CategoryContract");
-const RcToken = artifacts.require("RcToken");
-const UserContract = artifacts.require("UserContract");
+const { userContractDeployed } = require("./shared/user_contract_deployed");
 const InspectorContract = artifacts.require("InspectorContract");
 const ProducerContract = artifacts.require("ProducerContract");
 const ResearcherContract = artifacts.require("ResearcherContract");
@@ -9,6 +8,7 @@ const ProducerPool = artifacts.require("ProducerPool");
 const ResearcherPool = artifacts.require("ResearcherPool");
 const InspectorPool = artifacts.require("InspectorPool");
 const ValidatorContract = artifacts.require("ValidatorContract");
+const { userTypes } = require("./shared/user_types");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
@@ -26,7 +26,7 @@ contract("Sintrop", (accounts) => {
   const inspectorMaxPenalties = 2;
 
   let [
-    ownerAddress,
+    owner,
     producerAddress,
     producer2Address,
     inspectorAddress,
@@ -86,6 +86,12 @@ contract("Sintrop", (accounts) => {
     });
   };
 
+  const addInvitation = async (inviter, invited, userType, from) => {
+    await userContract.addInvitation(inviter, invited, userType, {
+      from: from,
+    });
+  };
+
   const addInspector = async (name, address) => {
     await inspectorContract.addInspector(name, "photoURL", "135465-005", { from: address });
   };
@@ -119,31 +125,30 @@ contract("Sintrop", (accounts) => {
       {
         categoryId: 1,
         isaIndex: 0,
-        report: "Hash_1",
         indicator: 10,
       },
       {
         categoryId: 2,
         isaIndex: 0,
-        report: "Hash_2",
         indicator: 10,
       },
       {
         categoryId: 3,
         isaIndex: 1,
-        report: "Hash_3",
         indicator: 10,
       },
     ];
   };
 
-  const realizeInspection = async (id, isas_, from) => {
-    await instance.realizeInspection(id, isas_, { from: from });
+  const report = "Hash";
+
+  const realizeInspection = async (id, report, isas_, from) => {
+    await instance.realizeInspection(id, report, isas_, { from: from });
   };
 
   beforeEach(async () => {
     rcToken = await rcTokenDeployed();
-    userContract = await UserContract.new();
+    userContract = await userContractDeployed();
 
     researcherPool = await ResearcherPool.new(
       rcToken.address,
@@ -188,14 +193,17 @@ contract("Sintrop", (accounts) => {
     await userContract.newAllowedCaller(producerContract.address);
     await userContract.newAllowedCaller(researcherContract.address);
     await userContract.newAllowedCaller(validatorContract.address);
+    await userContract.newAllowedCaller(owner);
     await inspectorContract.newAllowedCaller(instance.address);
-    await inspectorContract.newAllowedCaller(ownerAddress);
+    await inspectorContract.newAllowedCaller(owner);
     await validatorContract.newAllowedCaller(instance.address);
     await producerContract.newAllowedCaller(instance.address);
     await producerContract.newAllowedCaller(validatorContract.address);
-    await researcherContract.newAllowedUser(resea1Address);
     await producerPool.newAllowedCaller(producerContract.address);
     await inspectorPool.newAllowedCaller(inspectorContract.address);
+
+    await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
+    await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
     await addProducer("Producer A", producerAddress);
     await addInspector("Inspector A", inspectorAddress);
@@ -277,17 +285,16 @@ contract("Sintrop", (accounts) => {
         context("when don't has request OPEN or ACCEPTED", () => {
           beforeEach(async () => {
             await instance.acceptInspection(1, { from: inspectorAddress });
-            await addCategory("Soil A", ownerAddress);
+            await addCategory("Soil A", owner);
 
             const isas = [
               {
                 categoryId: 1,
                 isaIndex: 0,
-                report: "Hash_1",
                 indicator: 10,
               },
             ];
-            await realizeInspection(1, isas, inspectorAddress);
+            await realizeInspection(1, report, isas, inspectorAddress);
           });
 
           context("when last request is recent", () => {
@@ -397,6 +404,7 @@ contract("Sintrop", (accounts) => {
 
           context("when inspection is not OPEN", () => {
             beforeEach(async () => {
+              await addInvitation(owner, inspector2Address, userTypes.Inspector, owner);
               await instance.acceptInspection(1, { from: inspectorAddress });
               await addInspector("Inspector B", inspector2Address);
             });
@@ -454,7 +462,7 @@ contract("Sintrop", (accounts) => {
         context("when already realized inspection from producer", () => {
           beforeEach(async () => {
             await instance.acceptInspection(1, { from: inspectorAddress });
-            await instance.realizeInspection(1, [], { from: inspectorAddress });
+            await instance.realizeInspection(1, report, [], { from: inspectorAddress });
 
             await advanceBlock(20);
 
@@ -504,20 +512,23 @@ contract("Sintrop", (accounts) => {
               });
 
               it("should return error message", async () => {
-                await expectRevert(instance.realizeInspection(1, [], { from: inspectorAddress }), "Inspection Expired");
+                await expectRevert(
+                  instance.realizeInspection(1, report, [], { from: inspectorAddress }),
+                  "Inspection Expired"
+                );
               });
             });
 
             context("when inspection is not expired", () => {
               beforeEach(async () => {
-                await addCategory("Soil A", ownerAddress);
-                await addCategory("Soil B", ownerAddress);
-                await addCategory("Soil C", ownerAddress);
+                await addCategory("Soil A", owner);
+                await addCategory("Soil B", owner);
+                await addCategory("Soil C", owner);
               });
 
               context("when check inspection", () => {
                 beforeEach(async () => {
-                  await realizeInspection(1, isas(), inspectorAddress);
+                  await realizeInspection(1, report, isas(), inspectorAddress);
                 });
 
                 it("should change inspection status to INSPECTED", async () => {
@@ -541,9 +552,9 @@ contract("Sintrop", (accounts) => {
                 it("should update inspection isas", async () => {
                   const isasResponse = await instance.getIsa(1);
                   const isas_ = [
-                    ["1", "0", "Hash_1", "10"],
-                    ["2", "0", "Hash_2", "10"],
-                    ["3", "1", "Hash_3", "10"],
+                    ["1", "0", "10"],
+                    ["2", "0", "10"],
+                    ["3", "1", "10"],
                   ];
 
                   assert.equal(JSON.stringify(isasResponse), JSON.stringify(isas_));
@@ -603,7 +614,7 @@ contract("Sintrop", (accounts) => {
                       },
                     ];
 
-                    await realizeInspection(1, isas, inspectorAddress);
+                    await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
                   it("should add 20 isaScore to inspection", async () => {
@@ -624,7 +635,7 @@ contract("Sintrop", (accounts) => {
                       },
                     ];
 
-                    await realizeInspection(1, isas, inspectorAddress);
+                    await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
                   it("should add 10 isaScore to inspection", async () => {
@@ -645,7 +656,7 @@ contract("Sintrop", (accounts) => {
                       },
                     ];
 
-                    await realizeInspection(1, isas, inspectorAddress);
+                    await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
                   it("should add 5 isaScore to inspection", async () => {
@@ -666,7 +677,7 @@ contract("Sintrop", (accounts) => {
                       },
                     ];
 
-                    await realizeInspection(1, isas, inspectorAddress);
+                    await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
                   it("should add 0 isaScore to inspection", async () => {
@@ -687,7 +698,7 @@ contract("Sintrop", (accounts) => {
                       },
                     ];
 
-                    await realizeInspection(1, isas, inspectorAddress);
+                    await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
                   it("should add -5 isaScore to inspection", async () => {
@@ -708,7 +719,7 @@ contract("Sintrop", (accounts) => {
                       },
                     ];
 
-                    await realizeInspection(1, isas, inspectorAddress);
+                    await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
                   it("should add -10 isaScore to inspection", async () => {
@@ -729,7 +740,7 @@ contract("Sintrop", (accounts) => {
                       },
                     ];
 
-                    await realizeInspection(1, isas, inspectorAddress);
+                    await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
                   it("should add -20 isaScore to inspection", async () => {
@@ -744,12 +755,13 @@ contract("Sintrop", (accounts) => {
 
           context("when is accepted by other inspector", () => {
             beforeEach(async () => {
+              await addInvitation(owner, inspector2Address, userTypes.Inspector, owner);
               await addInspector("Inspector B", inspector2Address);
             });
 
             it("should return error message", async () => {
               await expectRevert(
-                instance.realizeInspection(1, [], { from: inspector2Address }),
+                instance.realizeInspection(1, report, [], { from: inspector2Address }),
                 "You not accepted this inspection"
               );
             });
@@ -759,7 +771,7 @@ contract("Sintrop", (accounts) => {
         context("when inspection is not accepted", () => {
           it("should return error message", async () => {
             await expectRevert(
-              instance.realizeInspection(1, [], { from: inspectorAddress }),
+              instance.realizeInspection(1, report, [], { from: inspectorAddress }),
               "Accept this inspection before"
             );
           });
@@ -769,7 +781,7 @@ contract("Sintrop", (accounts) => {
       context("when inspection dont exists", () => {
         it("should return error message", async () => {
           await expectRevert(
-            instance.realizeInspection(1, [], { from: inspectorAddress }),
+            instance.realizeInspection(1, report, [], { from: inspectorAddress }),
             "This inspection don't exist"
           );
         });
@@ -782,7 +794,7 @@ contract("Sintrop", (accounts) => {
         await instance.acceptInspection(1, { from: inspectorAddress });
 
         await expectRevert(
-          instance.realizeInspection(1, [], { from: producerAddress }),
+          instance.realizeInspection(1, report, [], { from: producerAddress }),
           "Please register as inspector"
         );
       });
@@ -792,10 +804,10 @@ contract("Sintrop", (accounts) => {
   describe("#addInspectionValidation", () => {
     context("with validator", () => {
       beforeEach(async () => {
-        await validatorContract.newAllowedUser(validator1Address);
-        await validatorContract.newAllowedUser(validator2Address);
-        await validatorContract.newAllowedUser(validator3Address);
-        await validatorContract.newAllowedUser(validator4Address);
+        await addInvitation(owner, validator1Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator3Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator4Address, userTypes.Validator, owner);
 
         await addValidator(validator1Address);
         await addValidator(validator2Address);
@@ -807,7 +819,7 @@ contract("Sintrop", (accounts) => {
         beforeEach(async () => {
           await instance.requestInspection({ from: producerAddress });
           await instance.acceptInspection(1, { from: inspectorAddress });
-          await realizeInspection(1, isas(), inspectorAddress);
+          await realizeInspection(1, report, isas(), inspectorAddress);
         });
 
         context("when receive 1 validation", () => {
@@ -920,7 +932,7 @@ contract("Sintrop", (accounts) => {
       it("should return error message", async () => {
         await instance.requestInspection({ from: producerAddress });
         await instance.acceptInspection(1, { from: inspectorAddress });
-        await realizeInspection(1, isas(), inspectorAddress);
+        await realizeInspection(1, report, isas(), inspectorAddress);
 
         await expectRevert(
           instance.addInspectionValidation(1, "justification", { from: producerAddress }),

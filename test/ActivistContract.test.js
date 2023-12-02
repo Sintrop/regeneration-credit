@@ -1,31 +1,40 @@
 const ActivistContract = artifacts.require("ActivistContract");
-const UserContract = artifacts.require("UserContract");
+const { userContractDeployed } = require("./shared/user_contract_deployed");
+const { userTypes } = require("./shared/user_types");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 
 contract("ActivistContract", (accounts) => {
   let instance;
   let userContract;
-  let [ownerAddress, contr1Address, contr2Address, contr3Address] = accounts;
+  let [owner, contr1Address, contr2Address, contr3Address] = accounts;
 
   const addActivist = async (name, address) => {
     await instance.addActivist(name, "photoURL", { from: address });
   };
 
+  const addInvitation = async (inviter, invited, userType, from) => {
+    await userContract.addInvitation(inviter, invited, userType, {
+      from: from,
+    });
+  };
+
   beforeEach(async () => {
-    userContract = await UserContract.new();
+    userContract = await userContractDeployed();
 
     instance = await ActivistContract.new(userContract.address);
 
     await userContract.newAllowedCaller(instance.address);
-    await instance.newAllowedUser(contr1Address);
-    await instance.newAllowedUser(contr3Address);
+    await userContract.newAllowedCaller(owner);
+
+    await addInvitation(owner, contr1Address, userTypes.Activist, owner);
+    await addInvitation(owner, contr3Address, userTypes.Activist, owner);
   });
 
   context("when will create new activist (.addActivist)", () => {
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(addActivist("Activist B", contr2Address), "Not allowed user");
+        await expectRevert(addActivist("Activist B", contr2Address), "Invalid invitation");
       });
     });
 

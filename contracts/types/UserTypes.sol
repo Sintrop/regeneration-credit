@@ -22,3 +22,17 @@ struct Delation {
   string testimony;
   string proofPhoto;
 }
+
+struct Invitation {
+  address invited;
+  address inviter;
+  UserType userType;
+  uint256 createdAtTimestamp;
+  uint256 createdAtBlock;
+}
+
+struct UserTypeSetting {
+  uint256 proportionalityOnRegister;
+  bool directProportionalityRegistration;
+  bool needInvitationOnRegister;
+}
