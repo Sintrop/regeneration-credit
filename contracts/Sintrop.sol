@@ -33,7 +33,7 @@ contract Sintrop {
   uint256 internal immutable timeBetweenInspections;
   uint256 internal blocksToExpireAcceptedInspection;
   uint256 internal immutable allowedInitialRequests;
-  uint256 internal inspectionDelay;
+  uint256 internal acceptInspectionDelayBlocks;
 
   constructor(
     address inspectorContractAddress,
@@ -43,7 +43,7 @@ contract Sintrop {
     uint256 timeBetweenInspections_,
     uint256 blocksToExpireAcceptedInspection_,
     uint256 allowedInitialRequests_,
-    uint256 inspectionDelay_
+    uint256 acceptInspectionDelayBlocks_
   ) {
     inspectorContract = InspectorContract(inspectorContractAddress);
     producerContract = ProducerContract(producerContractAddress);
@@ -52,7 +52,7 @@ contract Sintrop {
     timeBetweenInspections = timeBetweenInspections_;
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
     allowedInitialRequests = allowedInitialRequests_;
-    inspectionDelay = inspectionDelay_;
+    acceptInspectionDelayBlocks = acceptInspectionDelayBlocks_;
   }
 
   // TODO: Refact this mapping to not duplicate inspections
@@ -110,15 +110,15 @@ contract Sintrop {
    * @param inspectionId The id of the inspection that the inspector want accept.
    */
   function acceptInspection(uint256 inspectionId) public {
+    require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
+
     Inspection memory inspection = inspections[inspectionId];
 
-    require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspectionExists(inspectionId), "This inspection don't exists");
     require(!inspectorInspected[msg.sender][inspection.createdBy], "Already inspected this producer");
 
-    require(canAcceptInspection(), "Can't accept yet");
+    require(canAcceptInspection(inspectionId), "Can't accept yet");
     require(inspection.status == InspectionStatus.OPEN, "This inspection is not OPEN");
-    require(blocksToDelay(inspectionId), "Wait inspection delay time");
 
     inspection.status = InspectionStatus.ACCEPTED;
     inspection.acceptedAt = block.number;
@@ -308,8 +308,6 @@ contract Sintrop {
     return block.number > producer.lastRequestAt + timeBetweenInspections;
   }
 
-  // TODO: Add specs to this function if necessary
-  // TODO: Must be a public function to call in the client?
   function expiredInspection(uint256 inspectionId) internal view returns (bool) {
     Inspection memory inspection = inspections[inspectionId];
     uint256 expireInspectionAt = inspection.acceptedAt + blocksToExpireAcceptedInspection;
@@ -317,30 +315,23 @@ contract Sintrop {
     return block.number > expireInspectionAt;
   }
 
-  // TODO: Add specs to this function
-  // TODO: Rename to BlocksToExpireAcceptedInspection ?
   function calculateBlocksToExpire(uint256 inspectionId) public view returns (uint256) {
     Inspection memory inspection = inspections[inspectionId];
 
     return inspection.acceptedAt + blocksToExpireAcceptedInspection - block.number;
   }
 
-  // TODO: Add specs to this function if necessary
-  // TODO: Must be a public function to call in the client?
-  function canAcceptInspection() internal view returns (bool) {
+  function canAcceptInspection(uint256 inspectionId) internal view returns (bool) {
+    Inspection memory inspection = inspections[inspectionId];
     Inspector memory inspector = inspectorContract.getInspector(msg.sender);
     uint256 lastAcceptedAt = inspector.lastAcceptedAt;
 
-    bool canAccept = block.number > lastAcceptedAt + blocksToExpireAcceptedInspection;
+    bool waitedInspectionDelay = block.number > inspection.createdAt + acceptInspectionDelayBlocks;
 
-    return canAccept || lastAcceptedAt == 0;
-  }
+    bool acceptedInspectionExpired = block.number > lastAcceptedAt + blocksToExpireAcceptedInspection;
 
-  function blocksToDelay(uint256 inspectionId) internal view returns (bool) {
-    Inspection memory inspection = inspections[inspectionId];
-    uint256 delayBlocks = inspection.createdAt + inspectionDelay;
-    bool waitedDelay = block.number > delayBlocks;
+    if (!waitedInspectionDelay) return false;
 
-    return waitedDelay;
+    return acceptedInspectionExpired || lastAcceptedAt == 0;
   }
 }
