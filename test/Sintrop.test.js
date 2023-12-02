@@ -828,6 +828,7 @@ contract("Sintrop", (accounts) => {
       context("with valid inspection", () => {
         beforeEach(async () => {
           await instance.requestInspection({ from: producerAddress });
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await instance.acceptInspection(1, { from: inspectorAddress });
           await realizeInspection(1, report, isas(), inspectorAddress);
         });
@@ -941,6 +942,7 @@ contract("Sintrop", (accounts) => {
     context("with non validator", () => {
       it("should return error message", async () => {
         await instance.requestInspection({ from: producerAddress });
+        await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
         await instance.acceptInspection(1, { from: inspectorAddress });
         await realizeInspection(1, report, isas(), inspectorAddress);
 
