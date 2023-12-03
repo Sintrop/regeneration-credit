@@ -400,6 +400,12 @@ contract("Sintrop", (accounts) => {
 
               assert.equal(inspector.giveUps, "1");
             });
+
+            it.only("Set last inspectionId to accepted inspection 1", async () => {
+              const inspector = await inspectorContract.getInspector(inspectorAddress);
+
+              assert.equal(inspector.lastInspection, "1");
+            });
           });
 
           context("when inspection is not OPEN", () => {
@@ -425,22 +431,9 @@ contract("Sintrop", (accounts) => {
               await instance.requestInspection({ from: producer2Address });
             });
 
-            context("when last inspection is not expired and have not finished first inspection", () => {
+            context("when last inspection is not expired", () => {
               it("should return error message", async () => {
                 await expectRevert(instance.acceptInspection(2, { from: inspectorAddress }), "Can't accept yet");
-              });
-            });
-
-            context("when have finshed first inspection", () => {
-              beforeEach(async () => {
-                await instance.realizeInspection(1, [], { from: inspectorAddress });
-                await instance.acceptInspection(2, { from: inspectorAddress });
-              });
-
-              it("should accept inspection with success after finishing previous one", async () => {
-                const inspection = await instance.getInspection(2);
-
-                assert.equal(inspection.status, STATUS.accepted);
               });
             });
 
@@ -454,6 +447,25 @@ contract("Sintrop", (accounts) => {
                 const inspection = await instance.getInspection(2);
 
                 assert.equal(inspection.status, STATUS.accepted);
+              });
+            });
+
+            context("when have finished last inspection", () => {
+              beforeEach(async () => {
+                await instance.realizeInspection(1, "", [], { from: inspectorAddress });
+                await instance.acceptInspection(2, { from: inspectorAddress });
+              });
+
+              it("should accept inspection with success after finishing previous one", async () => {
+                const inspection = await instance.getInspection(2);
+
+                assert.equal(inspection.status, STATUS.accepted);
+              });
+            });
+
+            context("when dont finished last inspection", () => {
+              it("should return error message", async () => {
+                await expectRevert(instance.acceptInspection(2, { from: inspectorAddress }), "Can't accept yet");
               });
             });
           });
