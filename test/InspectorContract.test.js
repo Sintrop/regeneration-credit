@@ -60,7 +60,7 @@ contract("InspectorContract", (accounts) => {
       assert.equal(inspector.totalInspections, "0");
       assert.equal(inspector.giveUps, "0");
       assert.equal(inspector.lastAcceptedAt, "0");
-      assert.equal(inspector.lastInspectedAt, "0");
+      assert.equal(inspector.lastInspection, "0");
       assert.equal(inspector.inspectorAddress.coordinate, "135465-005");
     });
   });
