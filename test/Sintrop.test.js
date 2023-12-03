@@ -401,7 +401,7 @@ contract("Sintrop", (accounts) => {
               assert.equal(inspector.giveUps, "1");
             });
 
-            it.only("Set last inspectionId to accepted inspection 1", async () => {
+            it("Set last inspectionId to accepted inspection 1", async () => {
               const inspector = await inspectorContract.getInspector(inspectorAddress);
 
               assert.equal(inspector.lastInspection, "1");
