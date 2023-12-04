@@ -472,6 +472,7 @@ contract("Sintrop", (accounts) => {
 
             context("when have finished last inspection", () => {
               beforeEach(async () => {
+                await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
                 await instance.realizeInspection(1, "", [], { from: inspectorAddress });
                 await instance.acceptInspection(2, { from: inspectorAddress });
               });
