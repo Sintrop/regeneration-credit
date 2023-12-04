@@ -64,6 +64,7 @@ contract("Sintrop", (accounts) => {
     timeBetweenInspections: 20,
     blocksToExpireAcceptedInspection: 15,
     allowedInitialRequests: 1,
+    acceptInspectionDelayBlocks: 5,
   };
 
   const researcherPoolargs = {
@@ -186,7 +187,8 @@ contract("Sintrop", (accounts) => {
       validatorContract.address,
       sintropArgs.timeBetweenInspections,
       sintropArgs.blocksToExpireAcceptedInspection,
-      sintropArgs.allowedInitialRequests
+      sintropArgs.allowedInitialRequests,
+      sintropArgs.acceptInspectionDelayBlocks
     );
 
     await userContract.newAllowedCaller(inspectorContract.address);
@@ -265,6 +267,7 @@ contract("Sintrop", (accounts) => {
     context("with producer", () => {
       beforeEach(async () => {
         await instance.requestInspection({ from: producerAddress });
+        await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
       });
 
       context("when have less than ALLOWED_INITIAL_REQUESTS", () => {
@@ -377,9 +380,25 @@ contract("Sintrop", (accounts) => {
           await instance.requestInspection({ from: producerAddress });
         });
 
+        context("when have not waited inspection delay time", () => {
+          it("should return error message", async () => {
+            await expectRevert(instance.acceptInspection(1, { from: inspectorAddress }), "Can't accept yet");
+          });
+        });
+
+        context("when have waited inspection delay time", () => {
+          it("", async () => {
+            await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+            await instance.acceptInspection(1, { from: inspectorAddress });
+            const inspection = await instance.getInspection(1);
+            assert.equal(inspection.status, STATUS.accepted);
+          });
+        });
+
         context("when never realized inspection from producer", () => {
           context("when inspection is OPEN", () => {
             beforeEach(async () => {
+              await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
               await instance.acceptInspection(1, { from: inspectorAddress });
             });
 
@@ -410,6 +429,7 @@ contract("Sintrop", (accounts) => {
 
           context("when inspection is not OPEN", () => {
             beforeEach(async () => {
+              await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
               await addInvitation(owner, inspector2Address, userTypes.Inspector, owner);
               await instance.acceptInspection(1, { from: inspectorAddress });
               await addInspector("Inspector B", inspector2Address);
@@ -426,7 +446,7 @@ contract("Sintrop", (accounts) => {
           context("when have accepted other inspection", () => {
             beforeEach(async () => {
               await addProducer("Producer B", producer2Address);
-
+              await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
               await instance.acceptInspection(1, { from: inspectorAddress });
               await instance.requestInspection({ from: producer2Address });
             });
@@ -473,6 +493,7 @@ contract("Sintrop", (accounts) => {
 
         context("when already realized inspection from producer", () => {
           beforeEach(async () => {
+            await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
             await instance.acceptInspection(1, { from: inspectorAddress });
             await instance.realizeInspection(1, report, [], { from: inspectorAddress });
 
@@ -510,6 +531,7 @@ contract("Sintrop", (accounts) => {
       context("when inspection exists", () => {
         beforeEach(async () => {
           await instance.requestInspection({ from: producerAddress });
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
         });
 
         context("when inspection is accepted", () => {
@@ -803,6 +825,7 @@ contract("Sintrop", (accounts) => {
     context("with non inspector", () => {
       it("should return error message", async () => {
         await instance.requestInspection({ from: producerAddress });
+        await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
         await instance.acceptInspection(1, { from: inspectorAddress });
 
         await expectRevert(
@@ -830,6 +853,7 @@ contract("Sintrop", (accounts) => {
       context("with valid inspection", () => {
         beforeEach(async () => {
           await instance.requestInspection({ from: producerAddress });
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await instance.acceptInspection(1, { from: inspectorAddress });
           await realizeInspection(1, report, isas(), inspectorAddress);
         });
@@ -943,6 +967,7 @@ contract("Sintrop", (accounts) => {
     context("with non validator", () => {
       it("should return error message", async () => {
         await instance.requestInspection({ from: producerAddress });
+        await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
         await instance.acceptInspection(1, { from: inspectorAddress });
         await realizeInspection(1, report, isas(), inspectorAddress);
 
