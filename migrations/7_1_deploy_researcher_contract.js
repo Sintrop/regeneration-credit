@@ -8,7 +8,12 @@ module.exports = function (deployer) {
     const researcherPool = await ResearcherPool.deployed();
     const timeBetweenWorks = process.env["RESEARCHER_TIME_BETWEEN_WORKS"];
 
-    const researcherContract = await deployer.deploy(ResearcherContract, userContract.address, researcherPool.address, timeBetweenWorks);
+    const researcherContract = await deployer.deploy(
+      ResearcherContract,
+      userContract.address,
+      researcherPool.address,
+      timeBetweenWorks
+    );
 
     await researcherPool.newAllowedCaller(researcherContract.address);
   });

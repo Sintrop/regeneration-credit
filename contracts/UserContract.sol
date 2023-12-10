@@ -149,6 +149,10 @@ contract UserContract is Ownable, Callable {
     return delations[addr];
   }
 
+  function getInvitation(address addr) public view returns (Invitation memory) {
+    return invitations[addr];
+  }
+
   function exists(address addr) public view returns (bool) {
     return users[addr] != UserType.UNDEFINED;
   }

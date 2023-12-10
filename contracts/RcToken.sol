@@ -57,7 +57,9 @@ contract RcToken is ERC20, Ownable {
     balances[receiver] = balances[receiver].add(numTokens);
     emit Transfer(tokenOwner, receiver, numTokens);
 
-    totalLocked_ -= numTokens;
+    unchecked {
+      if (contractsPools[tokenOwner]) totalLocked_ -= numTokens;
+    }
 
     return true;
   }
@@ -110,6 +112,12 @@ contract RcToken is ERC20, Ownable {
   function burnTokens(uint256 amount) public {
     _burn(_msgSender(), amount);
     certificate[msg.sender] += amount;
+    totalCertified_ += amount;
+  }
+
+  function burnTokensWith(address tokenOwner, uint256 amount) public mustBeContractPool {
+    _burn(tokenOwner, amount);
+    certificate[tokenOwner] += amount;
     totalCertified_ += amount;
   }
 
