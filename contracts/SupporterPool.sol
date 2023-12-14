@@ -16,12 +16,13 @@ contract SupporterPool is Callable {
     rcToken = RcToken(rcTokenAddress);
   }
 
-  event BurnTokens(address indexed _tokenOwner, uint256 _amount);
-  event InviterTokens(address indexed _tokenOwner, address indexed _inviter, uint256 _inviterTotalTokens);
-
-  function balance() public view returns (uint256) {
-    return balanceOf(address(this));
-  }
+  event PoolBurnTokensEvent(
+    address indexed _tokenOwner,
+    uint256 _amountSend,
+    uint256 _amountBurned,
+    address indexed _inviter,
+    uint256 _inviterTotalTokens
+  );
 
   function balanceOf(address addr) public view returns (uint256) {
     return rcToken.balanceOf(addr);
@@ -29,14 +30,14 @@ contract SupporterPool is Callable {
 
   function burnTokens(address tokenOwner, address inviter, uint256 amount, bool isInvited) public mustBeAllowedCaller {
     uint256 inviterTotalTokens = isInvited ? amount.mul(INVITER_PERCENTAGE).div(100) : 0;
-    amount = amount.sub(inviterTotalTokens);
+    uint256 amountBurn = amount.sub(inviterTotalTokens);
 
-    rcToken.burnTokensWith(tokenOwner, amount);
-    emit BurnTokens(tokenOwner, amount);
+    rcToken.burnTokensWith(tokenOwner, amountBurn);
+
+    emit PoolBurnTokensEvent(tokenOwner, amount, amountBurn, inviter, inviterTotalTokens);
 
     if (!isInvited || inviterTotalTokens == 0) return;
 
     rcToken.transferWith(tokenOwner, inviter, inviterTotalTokens);
-    emit InviterTokens(tokenOwner, inviter, inviterTotalTokens);
   }
 }
