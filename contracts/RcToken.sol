@@ -110,12 +110,14 @@ contract RcToken is ERC20, Ownable {
   }
 
   function burnTokens(uint256 amount) public {
-    _burn(_msgSender(), amount);
-    certificate[msg.sender] += amount;
-    totalCertified_ += amount;
+    burnTokensInternal(msg.sender, amount);
   }
 
   function burnTokensWith(address tokenOwner, uint256 amount) public mustBeContractPool {
+    burnTokensInternal(tokenOwner, amount);
+  }
+
+  function burnTokensInternal(address tokenOwner, uint256 amount) internal {
     _burn(tokenOwner, amount);
     certificate[tokenOwner] += amount;
     totalCertified_ += amount;
