@@ -5,6 +5,8 @@ module.exports = function (deployer) {
   deployer.then(async () => {
     const userContract = await UserContract.deployed();
 
-    await deployer.deploy(AdvisorContract, userContract.address);
+    const advisorContract = await deployer.deploy(AdvisorContract, userContract.address);
+
+    await userContract.newAllowedCaller(advisorContract.address);
   });
 };

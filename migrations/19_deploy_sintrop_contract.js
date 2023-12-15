@@ -21,7 +21,7 @@ module.exports = function (deployer) {
     const userContract = await UserContract.deployed();
     const validatorContract = await ValidatorContract.deployed();
 
-    await deployer.deploy(
+    const sintrop = await deployer.deploy(
       Sintrop,
       inspectorContract.address,
       producerContract.address,
@@ -32,5 +32,9 @@ module.exports = function (deployer) {
       allowedInitialRequests,
       acceptInspectionDelayBlocks
     );
+
+    await inspectorContract.newAllowedCaller(sintrop.address);
+    await producerContract.newAllowedCaller(sintrop.address);
+    await validatorContract.newAllowedCaller(sintrop.address);
   });
 };
