@@ -8,13 +8,16 @@ module.exports = function (deployer) {
     const producer_pool_halving = process.env["PRODUCER_POOL_HALVING"];
     const producer_pool_total_eras = process.env["PRODUCER_POOL_TOTAL_ERAS"];
     const producer_pool_blocks_per_era = process.env["PRODUCER_POOL_BLOCKS_PER_ERA"];
+    const producerPoolFunds = process.env["PRODUCER_POOL_FUNDS"];
 
-    await deployer.deploy(
+    const producerPool = await deployer.deploy(
       ProducerPool,
       rcToken.address,
       producer_pool_halving,
       producer_pool_total_eras,
       producer_pool_blocks_per_era
     );
+
+    await rcToken.addContractPool(producerPool.address, producerPoolFunds);
   });
 };

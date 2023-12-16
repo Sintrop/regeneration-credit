@@ -17,5 +17,6 @@ module.exports = function (deployer) {
     );
 
     await inspectorPool.newAllowedCaller(inspectorContract.address);
+    await userContract.newAllowedCaller(inspectorContract.address);
   });
 };

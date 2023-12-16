@@ -14,5 +14,6 @@ module.exports = function (deployer) {
     );
 
     await producerPool.newAllowedCaller(producerContract.address);
+    await userContract.newAllowedCaller(producerContract.address);
   });
 };

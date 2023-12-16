@@ -10,5 +10,6 @@ module.exports = function (deployer) {
     const supporterContract = await deployer.deploy(SupporterContract, userContract.address, supporterPool.address);
 
     await supporterPool.newAllowedCaller(supporterContract.address);
+    await userContract.newAllowedCaller(supporterContract.address);
   });
 };
