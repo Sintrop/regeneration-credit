@@ -130,6 +130,7 @@ contract Sintrop {
     inspectorContract.incrementGiveUps(msg.sender);
 
     inspectorContract.lastAcceptedAt(msg.sender, block.number);
+    inspectorContract.lastInspection(msg.sender, inspectionId);
   }
 
   /**
@@ -324,14 +325,17 @@ contract Sintrop {
   function canAcceptInspection(uint256 inspectionId) internal view returns (bool) {
     Inspection memory inspection = inspections[inspectionId];
     Inspector memory inspector = inspectorContract.getInspector(msg.sender);
-    uint256 lastAcceptedAt = inspector.lastAcceptedAt;
+    Inspection memory lastInspection = inspections[inspector.lastInspection];
 
     bool waitedInspectionDelay = block.number > inspection.createdAt + acceptInspectionDelayBlocks;
 
-    bool acceptedInspectionExpired = block.number > lastAcceptedAt + blocksToExpireAcceptedInspection;
+    bool acceptedInspectionExpired = block.number > lastInspection.acceptedAt + blocksToExpireAcceptedInspection;
+
+    bool finishedLastInspection = lastInspection.status == InspectionStatus.INSPECTED ||
+      lastInspection.status == InspectionStatus.INVALIDATED;
 
     if (!waitedInspectionDelay) return false;
 
-    return acceptedInspectionExpired || lastAcceptedAt == 0;
+    return finishedLastInspection || acceptedInspectionExpired || inspector.lastInspection == 0;
   }
 }
