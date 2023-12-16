@@ -336,6 +336,20 @@ contract("UserContract", (accounts) => {
     context("without allowed caller", () => {});
   });
 
+  describe("#getInvitation", () => {
+    beforeEach(async () => {
+      await addInvitation(owner, user1Address, userTypes.Producer, owner);
+    });
+
+    it("returns invitation", async () => {
+      const invitation = await instance.getInvitation(user1Address);
+
+      assert.equal(invitation.inviter, owner);
+      assert.equal(invitation.userType, userTypes.Producer);
+      assert.equal(invitation.invited, user1Address);
+    });
+  });
+
   describe("#usersCount", () => {
     context("without users", () => {
       it("should usersCount be zero", async () => {

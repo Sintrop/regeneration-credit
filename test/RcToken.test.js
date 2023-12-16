@@ -150,6 +150,28 @@ contract("RcToken", (accounts) => {
     });
   });
 
+  describe("#burnTokensWith", () => {
+    context("when msg.sender is a contractPool", () => {
+      beforeEach(async () => {
+        await instance.addContractPool(ownerAddress, 0);
+        await instance.transfer(user1Address, "200000000000000000000");
+        await instance.burnTokensWith(user1Address, "100000000000000000000", { from: ownerAddress });
+      });
+
+      it("should burn when has tokens", async () => {
+        const burnedTokens = await instance.balanceOf(user1Address);
+
+        assert.equal(burnedTokens, "100000000000000000000");
+      });
+    });
+
+    context("when msg.sender is not a contractPool", () => {
+      it("should return error", async () => {
+        await expectRevert(instance.burnTokensWith(user1Address, 100, { from: ownerAddress }), "Not a contract pool");
+      });
+    });
+  });
+
   describe("#totalLocked", () => {
     context("when add contract pool", () => {
       beforeEach(async () => {
