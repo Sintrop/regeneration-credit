@@ -60,6 +60,7 @@ jobs:
           node-version: '20'
       - name: Show NodeJS version  
         run: npm --version
+      - name: Instal Packages
         run: npm install
       - name: Run Specs
         run: npm run test
