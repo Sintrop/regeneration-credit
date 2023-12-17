@@ -47,7 +47,7 @@ env:
 
 jobs:
 
-  Tests:
+  Specs:
 
     runs-on: ubuntu-latest
 
@@ -60,16 +60,9 @@ jobs:
           node-version: '20'
       - name: Show NodeJS version  
         run: npm --version
-      - name: Instal Ganache
-        run: npm install -g ganache-cli
-      - name: Run Ganache
-        run: npm run ganache:start -q &
-      - name: Install Truffle
-        run: npm install truffle -g
-      - name: Install Truffle Dependencies
         run: npm install
-      - name: Run Truffle Test with CI=true for Codechecks  
-        run: CI=true truffle test
+      - name: Run Specs
+        run: npm run test
 
   Code_Quality:
 
