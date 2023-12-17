@@ -1,5 +1,3 @@
-const UserContract = artifacts.require("UserContract");
-
 const userContractDeployed = async ({
   inspectorProportionality = 0,
   activistProportionality = 0,
@@ -13,7 +11,8 @@ const userContractDeployed = async ({
   const DEVELOPER_PROPORTIONALITY = developerProportionality;
   const VALIDATOR_PROPORTIONALITY = validatorProportionality;
 
-  const userContract = await UserContract.new(
+  const userContractFactory = await ethers.getContractFactory("UserContract");
+  userContract = await userContractFactory.deploy(
     INSPECTOR_PROPORTIONALITY,
     ACTIVIST_PROPORTIONALITY,
     RESEARCHER_PROPORTIONALITY,

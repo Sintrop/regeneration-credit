@@ -1,23 +1,7 @@
-const advanceBlock = async (blocksNumber) => {
-  for (let i = 0; i < blocksNumber; i++) {
-    let promise = new Promise((resolve, reject) => {
-      web3.currentProvider.send(
-        {
-          jsonrpc: "2.0",
-          method: "evm_mine",
-          id: new Date().getTime(),
-        },
-        (err, result) => {
-          if (err) {
-            return reject(err);
-          }
-          const newBlockHash = web3.eth.getBlock("latest").hash;
+const { mine } = require("@nomicfoundation/hardhat-network-helpers");
 
-          return resolve(newBlockHash);
-        }
-      );
-    });
-  }
+const advanceBlock = async (blocksNumber) => {
+  await mine(blocksNumber);
 };
 
 module.exports = { advanceBlock };

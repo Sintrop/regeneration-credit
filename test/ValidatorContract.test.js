@@ -1,20 +1,16 @@
-const ValidatorContract = artifacts.require("ValidatorContract");
 const { userContractDeployed } = require("./shared/user_contract_deployed");
-const ProducerContract = artifacts.require("ProducerContract");
-const ProducerPool = artifacts.require("ProducerPool");
 const { userTypes } = require("./shared/user_types");
-
-const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
-contract("ValidatorContract", (accounts) => {
+describe("ValidatorContract", () => {
   let instance;
   let userContract;
   let producerContract;
   let producerPool;
   let rcToken;
-  let [
-    owner,
+  let owner,
     producer1Address,
     validator1Address,
     validator2Address,
@@ -22,8 +18,7 @@ contract("ValidatorContract", (accounts) => {
     validator4Address,
     validator5Address,
     validator6Address,
-    otherAddress,
-  ] = accounts;
+    otherAddress;
 
   const producerPoolArgs = {
     totalTokens: "750000000000000000000000000",
@@ -32,18 +27,16 @@ contract("ValidatorContract", (accounts) => {
     blocksPerEra: 12,
   };
 
-  const addValidator = async (address) => {
-    await instance.addValidator({ from: address });
+  const addValidator = async (from) => {
+    await instance.connect(from).addValidator();
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userContract.addInvitation(inviter, invited, userType, {
-      from: from,
-    });
+    await userContract.connect(from).addInvitation(inviter, invited, userType);
   };
 
-  const addProducer = async (name, address) => {
-    await producerContract.addProducer(10, name, "photoURL", "135465-005", { from: address });
+  const addProducer = async (name, from) => {
+    await producerContract.connect(from).addProducer(10, name, "photoURL", "135465-005");
   };
 
   const denyUser = async (userAddress) => {
@@ -51,27 +44,42 @@ contract("ValidatorContract", (accounts) => {
   };
 
   beforeEach(async () => {
+    [
+      owner,
+      producer1Address,
+      validator1Address,
+      validator2Address,
+      validator3Address,
+      validator4Address,
+      validator5Address,
+      validator6Address,
+      otherAddress,
+    ] = await ethers.getSigners();
+
     rcToken = await rcTokenDeployed();
     userContract = await userContractDeployed();
 
-    producerPool = await ProducerPool.new(
-      rcToken.address,
+    const producerPoolFactory = await ethers.getContractFactory("ProducerPool");
+    producerPool = await producerPoolFactory.deploy(
+      rcToken.target,
       producerPoolArgs.halving,
       producerPoolArgs.totalEras,
       producerPoolArgs.blocksPerEra
     );
 
-    producerContract = await ProducerContract.new(userContract.address, producerPool.address);
+    const producerContractFactory = await ethers.getContractFactory("ProducerContract");
+    producerContract = await producerContractFactory.deploy(userContract.target, producerPool.target);
 
-    instance = await ValidatorContract.new(userContract.address, producerContract.address);
+    const instanceFactory = await ethers.getContractFactory("ValidatorContract");
+    instance = await instanceFactory.deploy(userContract.target, producerContract.target);
 
-    await userContract.newAllowedCaller(instance.address);
-    await userContract.newAllowedCaller(producerContract.address);
+    await userContract.newAllowedCaller(instance.target);
+    await userContract.newAllowedCaller(producerContract.target);
     await userContract.newAllowedCaller(owner);
-    await producerContract.newAllowedCaller(instance.address);
-    await producerPool.newAllowedCaller(producerContract.address);
-    await rcToken.addContractPool(instance.address, producerPoolArgs.totalTokens);
-    await rcToken.addContractPool(producerContract.address, producerPoolArgs.totalTokens);
+    await producerContract.newAllowedCaller(instance.target);
+    await producerPool.newAllowedCaller(producerContract.target);
+    await rcToken.addContractPool(instance.target, producerPoolArgs.totalTokens);
+    await rcToken.addContractPool(producerContract.target, producerPoolArgs.totalTokens);
 
     await addInvitation(owner, validator1Address, userTypes.Validator, owner);
   });
@@ -79,7 +87,7 @@ contract("ValidatorContract", (accounts) => {
   describe("#addValidator", () => {
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(addValidator(validator2Address), "Invalid invitation");
+        await expect(addValidator(validator2Address)).to.be.revertedWith("Invalid invitation");
       });
     });
 
@@ -87,7 +95,7 @@ contract("ValidatorContract", (accounts) => {
       context("when validator exists", () => {
         it("should return error", async () => {
           await addValidator(validator1Address);
-          await expectRevert(addValidator(validator1Address), "This validator already exist");
+          await expect(addValidator(validator1Address)).to.be.revertedWith("This validator already exist");
         });
       });
 
@@ -96,14 +104,14 @@ contract("ValidatorContract", (accounts) => {
           await addValidator(validator1Address);
           const validator = await instance.getValidator(validator1Address);
 
-          assert.equal(validator.validatorWallet, validator1Address);
+          expect(validator.validatorWallet).to.equal(validator1Address.address);
         });
 
         it("should increment validatorCount after create validator", async () => {
           await addValidator(validator1Address);
           const validatorsCount = await instance.validatorsCount();
 
-          assert.equal(validatorsCount, 1);
+          expect(validatorsCount).to.equal(1);
         });
 
         it("should add created validator in validatorList (array)", async () => {
@@ -111,7 +119,7 @@ contract("ValidatorContract", (accounts) => {
 
           const validators = await instance.getValidators();
 
-          assert.equal(validators[0].validatorWallet, validator1Address);
+          expect(validators[0].validatorWallet).to.equal(validator1Address.address);
         });
 
         it("should add created validator in userType contract as a VALIDATOR", async () => {
@@ -120,7 +128,7 @@ contract("ValidatorContract", (accounts) => {
           const userType = await userContract.getUser(validator1Address);
           const VALIDATOR = 8;
 
-          assert.equal(userType, VALIDATOR);
+          expect(userType).to.equal(VALIDATOR);
         });
       });
     });
@@ -137,10 +145,9 @@ contract("ValidatorContract", (accounts) => {
         });
 
         it("should return error", async () => {
-          await expectRevert(
-            instance.addValidation(validator2Address, "justification", { from: validator1Address }),
-            "User already denied"
-          );
+          await expect(
+            instance.connect(validator1Address).addValidation(validator2Address, "justification")
+          ).to.be.revertedWith("User already denied");
         });
       });
 
@@ -156,21 +163,21 @@ contract("ValidatorContract", (accounts) => {
             await addValidator(validator3Address);
             await addValidator(validator4Address);
 
-            await instance.addValidation(validator2Address, "my justification", { from: validator1Address });
+            await instance.connect(validator1Address).addValidation(validator2Address, "my justification");
           });
 
           it("should add validation", async () => {
             const validations = await instance.getValidations(validator2Address);
 
-            assert.equal(validations[0].justification, "my justification");
-            assert.equal(validations.length, 1);
+            expect(validations[0].justification).to.equal("my justification");
+            expect(validations.length).to.equal(1);
           });
 
           it("user type must be the same", async () => {
             const user = await userContract.getUser(validator2Address);
             const VALIDATOR = 8;
 
-            assert.equal(user, VALIDATOR);
+            expect(user).to.equal(VALIDATOR);
           });
         });
 
@@ -190,34 +197,34 @@ contract("ValidatorContract", (accounts) => {
             beforeEach(async () => {
               await addProducer("Producer A", producer1Address);
 
-              await instance.addValidation(producer1Address, "my justification", { from: validator1Address });
-              await instance.addValidation(producer1Address, "my justification", { from: validator3Address });
+              await instance.connect(validator1Address).addValidation(producer1Address, "my justification");
+              await instance.connect(validator3Address).addValidation(producer1Address, "my justification");
             });
 
             it("should add validation", async () => {
               const validations = await instance.getValidations(producer1Address);
 
-              assert.equal(validations[0].justification, "my justification");
-              assert.equal(validations.length, 2);
+              expect(validations[0].justification).to.equal("my justification");
+              expect(validations.length).to.equal(2);
             });
 
             it("user type must be denied", async () => {
               const user = await userContract.getUser(producer1Address);
               const DENIED = 9;
 
-              assert.equal(user, DENIED);
+              expect(user).to.equal(DENIED);
             });
 
             it("remove user levels from pool", async () => {
               const levels = await producerPool.eraLevels(1, producer1Address);
 
-              assert.equal(levels, 0);
+              expect(levels).to.equal(0);
             });
 
             it("remove user isaScore from producer", async () => {
               const producer = await producerContract.getProducer(producer1Address);
 
-              assert.equal(producer.isa.isaScore, 0);
+              expect(producer.isa.isaScore).to.equal(0);
             });
           });
         });
@@ -226,10 +233,9 @@ contract("ValidatorContract", (accounts) => {
 
     context("when caller is not validator", () => {
       it("should return error", async () => {
-        await expectRevert(
-          instance.addValidation(validator1Address, "justification", { from: otherAddress }),
-          "User must be a validator"
-        );
+        await expect(
+          instance.connect(otherAddress).addValidation(validator1Address, "justification")
+        ).to.be.revertedWith("User must be a validator");
       });
     });
   });
@@ -243,7 +249,7 @@ contract("ValidatorContract", (accounts) => {
       it("should return a validator", async () => {
         const validator = await instance.getValidator(validator1Address);
 
-        assert.equal(validator.validatorWallet, validator1Address);
+        expect(validator.validatorWallet).to.equal(validator1Address.address);
       });
     });
 
@@ -251,7 +257,7 @@ contract("ValidatorContract", (accounts) => {
       it("should return a validator", async () => {
         const validator = await instance.getValidator(validator2Address);
 
-        assert.equal(validator.validatorWallet, "0x0000000000000000000000000000000000000000");
+        expect(validator.validatorWallet).to.equal("0x0000000000000000000000000000000000000000");
       });
     });
   });
@@ -265,7 +271,7 @@ contract("ValidatorContract", (accounts) => {
       it("should return validators", async () => {
         const validators = await instance.getValidators();
 
-        assert.equal(validators.length, 1);
+        expect(validators.length).to.equal(1);
       });
     });
 
@@ -273,7 +279,7 @@ contract("ValidatorContract", (accounts) => {
       it("should return validators equal zero", async () => {
         const validators = await instance.getValidators();
 
-        assert.equal(validators.length, 0);
+        expect(validators.length).to.equal(0);
       });
     });
   });
@@ -287,7 +293,7 @@ contract("ValidatorContract", (accounts) => {
       it("returns true", async () => {
         const validatorExists = await instance.validatorExists(validator1Address);
 
-        assert.equal(validatorExists, true);
+        expect(validatorExists).to.equal(true);
       });
     });
 
@@ -295,7 +301,7 @@ contract("ValidatorContract", (accounts) => {
       it("returns false", async () => {
         const validatorExists = await instance.validatorExists(validator2Address);
 
-        assert.equal(validatorExists, false);
+        expect(validatorExists).to.equal(false);
       });
     });
   });
@@ -312,7 +318,7 @@ contract("ValidatorContract", (accounts) => {
         const majorityValidatorsCount = await instance.majorityValidatorsCount();
         const majorityValidatorsCountMinimum = 1;
 
-        assert.equal(majorityValidatorsCount, majorityValidatorsCountMinimum);
+        expect(majorityValidatorsCount).to.equal(majorityValidatorsCountMinimum);
       });
     });
 
@@ -335,7 +341,7 @@ contract("ValidatorContract", (accounts) => {
       it("returns 3", async () => {
         const majorityValidatorsCount = await instance.majorityValidatorsCount();
 
-        assert.equal(majorityValidatorsCount, 3);
+        expect(majorityValidatorsCount).to.equal(3);
       });
     });
   });

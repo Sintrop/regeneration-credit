@@ -1,20 +1,17 @@
-const ProducerContract = artifacts.require("ProducerContract");
 const { userContractDeployed } = require("./shared/user_contract_deployed");
-const ProducerPool = artifacts.require("ProducerPool");
-
-const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
 const { advanceBlock } = require("./shared/advance_block");
+const { expect } = require("chai");
 
-contract("ProducerContract", (accounts) => {
+describe("ProducerContract", () => {
   let instance;
   let rcToken;
   let userContract;
   let producerPool;
-  let [ownerAddress, prod1Address, prod2Address] = accounts;
+  let ownerAddress, prod1Address, prod2Address;
 
-  const addProducer = async (name, address) => {
-    await instance.addProducer(10, name, "photoURL", "135465-005", { from: address });
+  const addProducer = async (name, from) => {
+    await instance.connect(from).addProducer(10, name, "photoURL", "135465-005");
   };
 
   const producerPoolArgs = {
@@ -25,23 +22,29 @@ contract("ProducerContract", (accounts) => {
   };
 
   beforeEach(async () => {
+    [ownerAddress, prod1Address, prod2Address] = await ethers.getSigners();
+
     rcToken = await rcTokenDeployed();
 
     userContract = await userContractDeployed();
 
-    producerPool = await ProducerPool.new(
-      rcToken.address,
+    const producerPoolFactory = await ethers.getContractFactory("ProducerPool");
+
+    producerPool = await producerPoolFactory.deploy(
+      rcToken.target,
       producerPoolArgs.halving,
       producerPoolArgs.totalEras,
       producerPoolArgs.blocksPerEra
     );
 
-    instance = await ProducerContract.new(userContract.address, producerPool.address);
+    const instanceFactory = await ethers.getContractFactory("ProducerContract");
 
-    await rcToken.addContractPool(producerPool.address, producerPoolArgs.totalTokens);
-    await userContract.newAllowedCaller(instance.address);
+    instance = await instanceFactory.deploy(userContract.target, producerPool.target);
+
+    await rcToken.addContractPool(producerPool.target, producerPoolArgs.totalTokens);
+    await userContract.newAllowedCaller(instance.target);
     await instance.newAllowedCaller(ownerAddress);
-    await producerPool.newAllowedCaller(instance.address);
+    await producerPool.newAllowedCaller(instance.target);
   });
 
   context("when access producer fields", () => {
@@ -49,19 +52,19 @@ contract("ProducerContract", (accounts) => {
       await addProducer("Producer A", prod1Address);
       const producer = await instance.getProducer(prod1Address);
 
-      assert.equal(producer.id, "1");
-      assert.equal(producer.producerWallet, prod1Address);
-      assert.equal(producer.userType, 1);
-      assert.equal(producer.name, "Producer A");
-      assert.equal(producer.proofPhoto, "photoURL");
-      assert.equal(producer.totalInspections, 0);
-      assert.equal(producer.recentInspection, false);
-      assert.equal(producer.isa.isaAverage, "0");
-      assert.equal(producer.isa.isaScore, "0");
+      expect(producer.id).to.equal("1");
+      expect(producer.producerWallet).to.equal(prod1Address.address);
+      expect(producer.userType).to.equal(1);
+      expect(producer.name).to.equal("Producer A");
+      expect(producer.proofPhoto).to.equal("photoURL");
+      expect(producer.totalInspections).to.equal(0);
+      expect(producer.recentInspection).to.equal(false);
+      expect(producer.isa.isaAverage).to.equal("0");
+      expect(producer.isa.isaScore).to.equal("0");
 
-      assert.equal(producer.pool.currentEra, 1);
+      expect(producer.pool.currentEra).to.equal(1);
 
-      assert.equal(producer.propertyAddress.coordinate, "135465-005");
+      expect(producer.propertyAddress.coordinate).to.equal("135465-005");
     });
   });
 
@@ -71,7 +74,7 @@ contract("ProducerContract", (accounts) => {
       await addProducer("Producer B", prod2Address);
       const producer = await instance.getProducer(prod1Address);
 
-      assert.equal(producer.producerWallet, prod1Address);
+      expect(producer.producerWallet).to.equal(prod1Address.address);
     });
 
     it("should be created with totalRequest equal zero", async () => {
@@ -79,14 +82,14 @@ contract("ProducerContract", (accounts) => {
 
       const producer = await instance.getProducer(prod1Address);
 
-      assert.equal(producer.totalInspections, 0);
+      expect(producer.totalInspections).to.equal(0);
     });
 
     it("should be created with isaAvarage equal zero", async () => {
       await addProducer("Producer A", prod1Address);
       const producer = await instance.getProducer(prod1Address);
 
-      assert.equal(producer.isa.isaAverage, "0");
+      expect(producer.isa.isaAverage).to.equal("0");
     });
 
     it("should be created with isaScore equal zero", async () => {
@@ -94,7 +97,7 @@ contract("ProducerContract", (accounts) => {
 
       const producer = await instance.getProducer(prod1Address);
 
-      assert.equal(producer.isa.isaScore, 0);
+      expect(producer.isa.isaScore).to.equal(0);
     });
 
     it("should be created with lastRequestAt equal zero", async () => {
@@ -102,7 +105,7 @@ contract("ProducerContract", (accounts) => {
 
       const producer = await instance.getProducer(prod1Address);
 
-      assert.equal(producer.lastRequestAt, 0);
+      expect(producer.lastRequestAt).to.equal(0);
     });
 
     it("should increment producersCount after create producer", async () => {
@@ -110,7 +113,7 @@ contract("ProducerContract", (accounts) => {
       await addProducer("Producer B", prod2Address);
       const producersCount = await instance.producersCount();
 
-      assert.equal(producersCount, 2);
+      expect(producersCount).to.equal(2);
     });
 
     it("should add created producer in userType contract as a PRODUCER", async () => {
@@ -119,7 +122,7 @@ contract("ProducerContract", (accounts) => {
       const userType = await userContract.getUser(prod1Address);
       const PRODUCER = 1;
 
-      assert.equal(userType, PRODUCER);
+      expect(userType).to.equal(PRODUCER);
     });
   });
 
@@ -127,7 +130,7 @@ contract("ProducerContract", (accounts) => {
     it("should return error when try create same producer", async () => {
       await addProducer("Producer A", prod1Address);
 
-      await expectRevert(addProducer("Producer A", prod1Address), "This producer already exist");
+      await expect(addProducer("Producer A", prod1Address)).to.be.revertedWith("This producer already exist");
     });
   });
 
@@ -135,7 +138,7 @@ contract("ProducerContract", (accounts) => {
     it("should return false when producer don't exist", async () => {
       const producerExists = await instance.producerExists(prod1Address);
 
-      assert.equal(producerExists, false);
+      expect(producerExists).to.equal(false);
     });
   });
 
@@ -145,7 +148,7 @@ contract("ProducerContract", (accounts) => {
 
       const producerExists = await instance.producerExists(prod1Address);
 
-      assert.equal(producerExists, true);
+      expect(producerExists).to.equal(true);
     });
   });
 
@@ -155,7 +158,7 @@ contract("ProducerContract", (accounts) => {
 
       const producer = await instance.getProducer(prod1Address);
 
-      assert.equal(producer.producerWallet, prod1Address);
+      expect(producer.producerWallet).to.equal(prod1Address.address);
     });
 
     it("should return producers when call getProducers and has it", async () => {
@@ -164,13 +167,13 @@ contract("ProducerContract", (accounts) => {
 
       const producers = await instance.getProducers();
 
-      assert.equal(producers.length, 2);
+      expect(producers.length).to.equal(2);
     });
 
     it("should return producers zero when call getProducers and dont has it", async () => {
       const producers = await instance.getProducers();
 
-      assert.equal(producers.length, 0);
+      expect(producers.length).to.equal(0);
     });
 
     it("should return same producer in mapping and array list", async () => {
@@ -181,8 +184,8 @@ contract("ProducerContract", (accounts) => {
       const producer1 = await instance.getProducer(prod1Address);
       const producer2 = await instance.getProducer(prod2Address);
 
-      assert.equal(producers[0].producer_wallet, producer1.producer_wallet);
-      assert.equal(producers[1].producer_wallet, producer2.producer_wallet);
+      expect(producers[0].producer_wallet).to.equal(producer1.producer_wallet);
+      expect(producers[1].producer_wallet).to.equal(producer2.producer_wallet);
     });
   });
 
@@ -193,7 +196,7 @@ contract("ProducerContract", (accounts) => {
 
       const producer = await instance.getProducer(prod1Address);
 
-      assert.equal(producer.recentInspection, true);
+      expect(producer.recentInspection).to.equal(true);
     });
 
     it("should success .incrementInspections when is allowed caller", async () => {
@@ -202,19 +205,23 @@ contract("ProducerContract", (accounts) => {
 
       const producer = await instance.getProducer(prod1Address);
 
-      assert.equal(producer.totalInspections, 1);
+      expect(producer.totalInspections).to.equal(1);
     });
   });
 
   context("when is not allowed caller", () => {
     it("should return error .recentInspection when is not allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
-      await expectRevert(instance.recentInspection(prod1Address, true, { from: prod1Address }), "Not allowed caller");
+      await expect(instance.connect(prod1Address).recentInspection(prod1Address, true)).to.be.revertedWith(
+        "Not allowed caller"
+      );
     });
 
     it("should return error .incrementInspections when is not allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
-      await expectRevert(instance.incrementInspections(prod1Address, { from: prod1Address }), "Not allowed caller");
+      await expect(instance.connect(prod1Address).incrementInspections(prod1Address)).to.be.revertedWith(
+        "Not allowed caller"
+      );
     });
   });
 
@@ -238,13 +245,13 @@ contract("ProducerContract", (accounts) => {
             it("producer isa score must be 670", async () => {
               const producer = await instance.getProducer(prod1Address);
 
-              assert.equal(producer.isa.isaScore, 670);
+              expect(producer.isa.isaScore).to.equal(670);
             });
 
             it("producer must not be sustainable", async () => {
               const producer = await instance.getProducer(prod1Address);
 
-              assert.equal(producer.isa.sustainable, false);
+              expect(producer.isa.sustainable).to.equal(false);
             });
           });
 
@@ -256,13 +263,13 @@ contract("ProducerContract", (accounts) => {
             it("producer isa score must be 530", async () => {
               const producer = await instance.getProducer(prod1Address);
 
-              assert.equal(producer.isa.isaScore, 530);
+              expect(producer.isa.isaScore).to.equal(530);
             });
 
             it("producer must not be sustainable", async () => {
               const producer = await instance.getProducer(prod1Address);
 
-              assert.equal(producer.isa.sustainable, false);
+              expect(producer.isa.sustainable).to.equal(false);
             });
           });
 
@@ -274,13 +281,13 @@ contract("ProducerContract", (accounts) => {
             it("producer isa score must be -10", async () => {
               const producer = await instance.getProducer(prod1Address);
 
-              assert.equal(producer.isa.isaScore, -10);
+              expect(producer.isa.isaScore).to.equal(-10);
             });
 
             it("producer must not be sustainable", async () => {
               const producer = await instance.getProducer(prod1Address);
 
-              assert.equal(producer.isa.sustainable, false);
+              expect(producer.isa.sustainable).to.equal(false);
             });
           });
 
@@ -292,19 +299,19 @@ contract("ProducerContract", (accounts) => {
             it("producer isa score must be 1000", async () => {
               const producer = await instance.getProducer(prod1Address);
 
-              assert.equal(producer.isa.isaScore, 1000);
+              expect(producer.isa.isaScore).to.equal(1000);
             });
 
             it("producer must be sustainable", async () => {
               const producer = await instance.getProducer(prod1Address);
 
-              assert.equal(producer.isa.sustainable, true);
+              expect(producer.isa.sustainable).to.equal(true);
             });
 
             it("producers sustainable must increment", async () => {
               const producersSustainable = await instance.producersSustainable();
 
-              assert.equal(producersSustainable, 1);
+              expect(producersSustainable).to.equal(1);
             });
           });
         });
@@ -324,13 +331,13 @@ contract("ProducerContract", (accounts) => {
             it("producer isa score must be 670", async () => {
               const producer = await instance.getProducer(prod1Address);
 
-              assert.equal(producer.isa.isaScore, 670);
+              expect(producer.isa.isaScore).to.equal(670);
             });
 
             it("producer must not be sustainable", async () => {
               const producer = await instance.getProducer(prod1Address);
 
-              assert.equal(producer.isa.sustainable, false);
+              expect(producer.isa.sustainable).to.equal(false);
             });
           });
 
@@ -342,19 +349,19 @@ contract("ProducerContract", (accounts) => {
             it("producer A isa score must be 1000", async () => {
               const producer = await instance.getProducer(prod1Address);
 
-              assert.equal(producer.isa.isaScore, 1000);
+              expect(producer.isa.isaScore).to.equal(1000);
             });
 
             it("producer A must be sustainable", async () => {
               const producer = await instance.getProducer(prod1Address);
 
-              assert.equal(producer.isa.sustainable, true);
+              expect(producer.isa.sustainable).to.equal(true);
             });
 
             it("producers sustainable must increment", async () => {
               const producersSustainable = await instance.producersSustainable();
 
-              assert.equal(producersSustainable, 1);
+              expect(producersSustainable).to.equal(1);
             });
           });
 
@@ -366,13 +373,13 @@ contract("ProducerContract", (accounts) => {
             it("producer isa score must be -10", async () => {
               const producer = await instance.getProducer(prod1Address);
 
-              assert.equal(producer.isa.isaScore, -10);
+              expect(producer.isa.isaScore).to.equal(-10);
             });
 
             it("producer must not be sustainable", async () => {
               const producer = await instance.getProducer(prod1Address);
 
-              assert.equal(producer.isa.sustainable, false);
+              expect(producer.isa.sustainable).to.equal(false);
             });
           });
         });
@@ -392,13 +399,13 @@ contract("ProducerContract", (accounts) => {
             it("producer isa score must be 1100", async () => {
               const producer = await instance.getProducer(prod1Address);
 
-              assert.equal(producer.isa.isaScore, 1100);
+              expect(producer.isa.isaScore).to.equal(1100);
             });
 
             it("producer must be sustainable", async () => {
               const producer = await instance.getProducer(prod1Address);
 
-              assert.equal(producer.isa.sustainable, true);
+              expect(producer.isa.sustainable).to.equal(true);
             });
           });
         });
@@ -418,7 +425,7 @@ contract("ProducerContract", (accounts) => {
             it("producer A isa score must be 1100", async () => {
               const producer = await instance.getProducer(prod1Address);
 
-              assert.equal(producer.isa.isaScore, 1100);
+              expect(producer.isa.isaScore).to.equal(1100);
             });
           });
 
@@ -430,7 +437,7 @@ contract("ProducerContract", (accounts) => {
             it("producer B isa score must be 900", async () => {
               const producer = await instance.getProducer(prod2Address);
 
-              assert.equal(producer.isa.isaScore, 900);
+              expect(producer.isa.isaScore).to.equal(900);
             });
           });
         });
@@ -439,7 +446,9 @@ contract("ProducerContract", (accounts) => {
 
     context("with not allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(instance.setIsaScore(prod1Address, 50, { from: prod1Address }), "Not allowed caller");
+        await expect(instance.connect(prod1Address).setIsaScore(prod1Address, 50)).to.be.revertedWith(
+          "Not allowed caller"
+        );
       });
     });
   });
@@ -471,32 +480,32 @@ contract("ProducerContract", (accounts) => {
 
                 await advanceBlock(producerPoolArgs.blocksPerEra);
 
-                await instance.withdraw({ from: prod1Address });
-                await instance.withdraw({ from: prod2Address });
+                await instance.connect(prod1Address).withdraw();
+                await instance.connect(prod2Address).withdraw();
               });
 
               it("producer A must withdraw 3600000000000000000000000n tokens", async () => {
                 const balanceOf = await producerPool.balanceOf(prod1Address);
 
-                assert.equal(balanceOf, 3600000000000000000000000n);
+                expect(balanceOf).to.equal(3600000000000000000000000n);
               });
 
               it("producer B must withdraw 3600000000000000000000000n tokens", async () => {
                 const balanceOf = await producerPool.balanceOf(prod2Address);
 
-                assert.equal(balanceOf, 3600000000000000000000000n);
+                expect(balanceOf).to.equal(3600000000000000000000000n);
               });
 
               it("producer A current era must be incremented", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                assert.equal(producer.pool.currentEra, 2);
+                expect(producer.pool.currentEra).to.equal(2);
               });
 
               it("producer B current era must be incremented", async () => {
                 const producer = await instance.getProducer(prod2Address);
 
-                assert.equal(producer.pool.currentEra, 2);
+                expect(producer.pool.currentEra).to.equal(2);
               });
             });
 
@@ -504,19 +513,19 @@ contract("ProducerContract", (accounts) => {
               beforeEach(async () => {
                 await instance.setIsaScore(prod1Address, 100);
                 await advanceBlock(producerPoolArgs.blocksPerEra);
-                await instance.withdraw({ from: prod1Address });
+                await instance.connect(prod1Address).withdraw();
               });
 
               it("must withdraw 7200000000000000000000000n tokens", async () => {
                 const balanceOf = await producerPool.balanceOf(prod1Address);
 
-                assert.equal(balanceOf, 7200000000000000000000000n);
+                expect(balanceOf).to.equal(7200000000000000000000000n);
               });
 
               it("producer current era must be increment", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                assert.equal(producer.pool.currentEra, 2);
+                expect(producer.pool.currentEra).to.equal(2);
               });
             });
 
@@ -526,7 +535,7 @@ contract("ProducerContract", (accounts) => {
               });
 
               it("should return error message", async () => {
-                await expectRevert(instance.withdraw({ from: prod1Address }), "Limit ISA Score");
+                await expect(instance.connect(prod1Address).withdraw()).to.be.revertedWith("Limit ISA Score");
               });
             });
           });
@@ -534,7 +543,7 @@ contract("ProducerContract", (accounts) => {
 
         context("when producer dont have minimum inspections", () => {
           it("should return error message", async () => {
-            await expectRevert(instance.withdraw({ from: prod1Address }), "Minimum inspections");
+            await expect(instance.connect(prod1Address).withdraw()).to.be.revertedWith("Minimum inspections");
           });
         });
       });
@@ -547,14 +556,14 @@ contract("ProducerContract", (accounts) => {
         });
 
         it("should return error message", async () => {
-          await expectRevert(instance.withdraw({ from: prod1Address }), "You can't approve yet");
+          await expect(instance.connect(prod1Address).withdraw()).to.be.revertedWith("You can't approve yet");
         });
       });
     });
 
     context("with not producer", () => {
       it("should return error message", async () => {
-        await expectRevert(instance.withdraw(), "Only producers pool");
+        await expect(instance.withdraw()).to.be.revertedWith("Only producers pool");
       });
     });
   });

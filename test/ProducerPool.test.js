@@ -1,13 +1,12 @@
-const ProducerPool = artifacts.require("ProducerPool");
-
-const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
 const { advanceBlock } = require("./shared/advance_block");
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
-contract("ProducerPool", (accounts) => {
+describe("ProducerPool", () => {
   let instance;
   let rcToken;
-  let [owner, producer1Address, producer2Address] = accounts;
+  let owner, producer1Address, producer2Address;
 
   const args = {
     totalTokens: "750000000000000000000000000",
@@ -21,13 +20,16 @@ contract("ProducerPool", (accounts) => {
   };
 
   beforeEach(async () => {
+    [owner, producer1Address, producer2Address] = await ethers.getSigners();
+
     rcToken = await rcTokenDeployed();
 
-    instance = await ProducerPool.new(rcToken.address, args.halving, args.totalEras, args.blocksPerEra);
+    const instanceFactory = await ethers.getContractFactory("ProducerPool");
+    instance = await instanceFactory.deploy(rcToken.target, args.halving, args.totalEras, args.blocksPerEra);
 
     await instance.newAllowedCaller(owner);
 
-    await rcToken.addContractPool(instance.address, args.totalTokens);
+    await rcToken.addContractPool(instance.target, args.totalTokens);
   });
 
   describe("#balanceOf", () => {
@@ -37,12 +39,12 @@ contract("ProducerPool", (accounts) => {
 
     it("must return the balance of the producer 1", async () => {
       const balanceOf = await instance.balanceOf(producer1Address);
-      assert.equal(balanceOf, 0);
+      expect(balanceOf).to.equal(0);
     });
 
     it("must return the balance of the producer 2", async () => {
       const balanceOf = await instance.balanceOf(producer2Address);
-      assert.equal(balanceOf, 10000000000000000000n);
+      expect(balanceOf).to.equal(10000000000000000000n);
     });
   });
 
@@ -51,7 +53,7 @@ contract("ProducerPool", (accounts) => {
       it("must return 360000000000000000000000000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch();
 
-        assert.equal(tokensPerEpoch, "360000000000000000000000000");
+        expect(tokensPerEpoch).to.equal("360000000000000000000000000");
       });
     });
 
@@ -63,7 +65,7 @@ contract("ProducerPool", (accounts) => {
       it("must return 180000000000000000000000000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch();
 
-        assert.equal(tokensPerEpoch, "180000000000000000000000000");
+        expect(tokensPerEpoch).to.equal("180000000000000000000000000");
       });
     });
 
@@ -75,7 +77,7 @@ contract("ProducerPool", (accounts) => {
       it("must return 90000000000000000000000000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch();
 
-        assert.equal(tokensPerEpoch, "90000000000000000000000000");
+        expect(tokensPerEpoch).to.equal("90000000000000000000000000");
       });
     });
 
@@ -87,7 +89,7 @@ contract("ProducerPool", (accounts) => {
       it("must return 45000000000000000000000000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch();
 
-        assert.equal(tokensPerEpoch, "45000000000000000000000000");
+        expect(tokensPerEpoch).to.equal("45000000000000000000000000");
       });
     });
 
@@ -99,7 +101,7 @@ contract("ProducerPool", (accounts) => {
       it("must return 22500000000000000000000000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch();
 
-        assert.equal(tokensPerEpoch, "22500000000000000000000000");
+        expect(tokensPerEpoch).to.equal("22500000000000000000000000");
       });
     });
 
@@ -111,7 +113,7 @@ contract("ProducerPool", (accounts) => {
       it("must return 11250000000000000000000000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch();
 
-        assert.equal(tokensPerEpoch, "11250000000000000000000000");
+        expect(tokensPerEpoch).to.equal("11250000000000000000000000");
       });
     });
 
@@ -123,7 +125,7 @@ contract("ProducerPool", (accounts) => {
       it("must return 5625000000000000000000000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch();
 
-        assert.equal(tokensPerEpoch, "5625000000000000000000000");
+        expect(tokensPerEpoch).to.equal("5625000000000000000000000");
       });
     });
 
@@ -135,7 +137,7 @@ contract("ProducerPool", (accounts) => {
       it("must return 2812500000000000000000000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch();
 
-        assert.equal(tokensPerEpoch, "2812500000000000000000000");
+        expect(tokensPerEpoch).to.equal("2812500000000000000000000");
       });
     });
   });
@@ -145,7 +147,7 @@ contract("ProducerPool", (accounts) => {
       it("must return 30000000000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra();
 
-        assert.equal(tokensPerEra, "30000000000000000000000000");
+        expect(tokensPerEra).to.equal("30000000000000000000000000");
       });
     });
 
@@ -157,7 +159,7 @@ contract("ProducerPool", (accounts) => {
       it("must return 15000000000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra();
 
-        assert.equal(tokensPerEra, "15000000000000000000000000");
+        expect(tokensPerEra).to.equal("15000000000000000000000000");
       });
     });
 
@@ -169,7 +171,7 @@ contract("ProducerPool", (accounts) => {
       it("must return 7500000000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra();
 
-        assert.equal(tokensPerEra, "7500000000000000000000000");
+        expect(tokensPerEra).to.equal("7500000000000000000000000");
       });
     });
 
@@ -181,7 +183,7 @@ contract("ProducerPool", (accounts) => {
       it("must return 3750000000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra();
 
-        assert.equal(tokensPerEra, "3750000000000000000000000");
+        expect(tokensPerEra).to.equal("3750000000000000000000000");
       });
     });
 
@@ -193,7 +195,7 @@ contract("ProducerPool", (accounts) => {
       it("must return 1875000000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra();
 
-        assert.equal(tokensPerEra, "1875000000000000000000000");
+        expect(tokensPerEra).to.equal("1875000000000000000000000");
       });
     });
 
@@ -205,7 +207,7 @@ contract("ProducerPool", (accounts) => {
       it("must return 937500000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra();
 
-        assert.equal(tokensPerEra, "937500000000000000000000");
+        expect(tokensPerEra).to.equal("937500000000000000000000");
       });
     });
 
@@ -217,7 +219,7 @@ contract("ProducerPool", (accounts) => {
       it("must return 468750000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra();
 
-        assert.equal(tokensPerEra, "468750000000000000000000");
+        expect(tokensPerEra).to.equal("468750000000000000000000");
       });
     });
 
@@ -229,7 +231,7 @@ contract("ProducerPool", (accounts) => {
       it("must return 234375000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra();
 
-        assert.equal(tokensPerEra, "234375000000000000000000");
+        expect(tokensPerEra).to.equal("234375000000000000000000");
       });
     });
   });
@@ -250,7 +252,7 @@ contract("ProducerPool", (accounts) => {
             await instance.withdraw(producer1Address, 1);
             const balanceOf = await instance.balanceOf(producer1Address);
 
-            assert.equal(balanceOf, 0);
+            expect(balanceOf).to.equal(0);
           });
         });
 
@@ -265,14 +267,14 @@ contract("ProducerPool", (accounts) => {
               await instance.withdraw(producer1Address, 1);
               const balanceOf = await instance.balanceOf(producer1Address);
 
-              assert.equal(balanceOf, 30000000000000000000000000n);
+              expect(balanceOf).to.equal(30000000000000000000000000n);
             });
 
             it("total locked must be 750000000000000000000000000 - 30000000000000000000000000 = ", async () => {
               await instance.withdraw(producer1Address, 1);
               const totalLocked = await rcToken.totalLocked();
 
-              assert.equal(totalLocked, 720000000000000000000000000n);
+              expect(totalLocked).to.equal(720000000000000000000000000n);
             });
           });
         });
@@ -289,7 +291,7 @@ contract("ProducerPool", (accounts) => {
               await instance.withdraw(producer1Address, 1);
               const balanceOf = await instance.balanceOf(producer1Address);
 
-              assert.equal(balanceOf, 19200000000000000000000000n);
+              expect(balanceOf).to.equal(19200000000000000000000000n);
             });
           });
 
@@ -298,7 +300,7 @@ contract("ProducerPool", (accounts) => {
               await instance.withdraw(producer2Address, 1);
               const balanceOf = await instance.balanceOf(producer2Address);
 
-              assert.equal(balanceOf, 10800000000000000000000000n);
+              expect(balanceOf).to.equal(10800000000000000000000000n);
             });
           });
         });
@@ -306,14 +308,16 @@ contract("ProducerPool", (accounts) => {
 
       context("when can't approve", () => {
         it("must return error message", async () => {
-          await expectRevert(instance.withdraw(producer1Address, 1), "You can't approve yet");
+          await expect(instance.withdraw(producer1Address, 1)).to.be.revertedWith("You can't approve yet");
         });
       });
     });
 
     context("with not allowed caller", () => {
       it("must return error message", async () => {
-        await expectRevert(instance.withdraw(producer1Address, 1, { from: producer1Address }), "Not allowed caller");
+        await expect(instance.connect(producer1Address).withdraw(producer1Address, 1)).to.be.revertedWith(
+          "Not allowed caller"
+        );
       });
     });
   });
@@ -331,25 +335,25 @@ contract("ProducerPool", (accounts) => {
             it("era 1 must have 2 level", async () => {
               const era1 = await instance.getEra(1);
 
-              assert.equal(era1.levels, 2);
+              expect(era1.levels).to.equal(2);
             });
 
             it("era 2 must have 0 level", async () => {
               const era2 = await instance.getEra(2);
 
-              assert.equal(era2.levels, 0);
+              expect(era2.levels).to.equal(0);
             });
 
             it("eraLevels must have 1 level to producer1", async () => {
               const eraLevels = await instance.eraLevels(1, producer1Address);
 
-              assert.equal(eraLevels, 1);
+              expect(eraLevels).to.equal(1);
             });
 
             it("eraLevels must have 1 level to producer2", async () => {
               const eraLevels = await instance.eraLevels(1, producer2Address);
 
-              assert.equal(eraLevels, 1);
+              expect(eraLevels).to.equal(1);
             });
           });
         });
@@ -373,25 +377,25 @@ contract("ProducerPool", (accounts) => {
             it("era 1 must have 7 level", async () => {
               const era1 = await instance.getEra(1);
 
-              assert.equal(era1.levels, 86);
+              expect(era1.levels).to.equal(86);
             });
 
             it("era 2 must have 0 level", async () => {
               const era2 = await instance.getEra(2);
 
-              assert.equal(era2.levels, 0);
+              expect(era2.levels).to.equal(0);
             });
 
             it("eraLevels must have 82 level to producer1", async () => {
               const eraLevels = await instance.eraLevels(1, producer1Address);
 
-              assert.equal(eraLevels, 82);
+              expect(eraLevels).to.equal(82);
             });
 
             it("eraLevels must have 4 level to producer2", async () => {
               const eraLevels = await instance.eraLevels(1, producer2Address);
 
-              assert.equal(eraLevels, 4);
+              expect(eraLevels).to.equal(4);
             });
           });
         });
@@ -400,7 +404,9 @@ contract("ProducerPool", (accounts) => {
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(instance.addLevel(producer1Address, 1, 1, { from: producer1Address }), "Not allowed caller");
+        await expect(instance.connect(producer1Address).addLevel(producer1Address, 1, 1)).to.be.revertedWith(
+          "Not allowed caller"
+        );
       });
     });
   });

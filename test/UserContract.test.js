@@ -1,24 +1,10 @@
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
+const { expect } = require("chai");
 
-const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
-
-contract("UserContract", (accounts) => {
+describe("UserContract", function () {
   let instance;
-  let [owner, user1Address, user2Address, user3Address, user4Address] = accounts;
-
-  const definedTypes = {
-    0: "UNDEFINED",
-    1: "PRODUCER",
-    2: "INSPECTOR",
-    3: "RESEARCHER",
-    4: "DEVELOPER",
-    5: "ADVISOR",
-    6: "ACTIVIST",
-    7: "SUPPORTER",
-    8: "VALIDATOR",
-    9: "DENIED",
-  };
+  let owner, user1Address, user2Address, user3Address, user4Address;
 
   const userContractParams = {
     inspectorProportionality: 2,
@@ -28,23 +14,34 @@ contract("UserContract", (accounts) => {
     validatorProportionality: 1,
   };
 
+  const definedTypes = [
+    "UNDEFINED",
+    "PRODUCER",
+    "INSPECTOR",
+    "RESEARCHER",
+    "DEVELOPER",
+    "ADVISOR",
+    "ACTIVIST",
+    "SUPPORTER",
+    "VALIDATOR",
+    "DENIED",
+  ];
+
   const addUser = async (address, userType, caller) => {
     await instance.addUser(address, userType, { from: caller });
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await instance.addInvitation(inviter, invited, userType, {
-      from: from,
-    });
+    await instance.connect(from).addInvitation(inviter, invited, userType);
   };
 
   const addDelation = async (denouncedAddress, from) => {
-    await instance.addDelation(denouncedAddress, "title", "testimony", "proofPhoto", {
-      from: from,
-    });
+    await instance.connect(from).addDelation(denouncedAddress, "title", "testimony", "proofPhoto");
   };
 
-  beforeEach(async () => {
+  beforeEach(async function () {
+    [owner, user1Address, user2Address, user3Address, user4Address] = await ethers.getSigners();
+
     instance = await userContractDeployed(userContractParams);
 
     await instance.newAllowedCaller(owner);
@@ -60,19 +57,19 @@ contract("UserContract", (accounts) => {
         it("should add a user", async () => {
           const user = await instance.getUser(user1Address);
 
-          assert.equal(user, userTypes.Producer);
+          expect(user).to.equal(userTypes.Producer);
         });
 
         it("should increment usersCount", async () => {
           const usersCount = await instance.usersCount();
 
-          assert.equal(usersCount, 1);
+          expect(usersCount).to.equal(1);
         });
 
         it("should increment userTypesCount to producer", async () => {
           const usersCount = await instance.userTypesCount(userTypes.Producer);
 
-          assert.equal(usersCount, 1);
+          expect(usersCount).to.equal(1);
         });
       });
 
@@ -80,13 +77,13 @@ contract("UserContract", (accounts) => {
         it("should return error message", async () => {
           await addUser(user1Address, userTypes.Producer, owner);
 
-          await expectRevert(addUser(user1Address, userTypes.Producer, owner), "User already exists");
+          expect(addUser(user1Address, userTypes.Producer, owner)).to.be.revertedWith("User already exists");
         });
       });
 
       context("with UNDEFINED user type", () => {
         it("should return error message", async () => {
-          await expectRevert(addUser(user1Address, userTypes.Undefined, owner), "Invalid user type");
+          expect(addUser(user1Address, userTypes.Undefined, owner)).to.be.revertedWith("Invalid user type");
         });
       });
 
@@ -101,7 +98,7 @@ contract("UserContract", (accounts) => {
 
             const user = await instance.getUser(user1Address);
 
-            assert.equal(user, userTypes.Producer);
+            expect(user).to.equal(userTypes.Producer);
           });
         });
 
@@ -112,7 +109,7 @@ contract("UserContract", (accounts) => {
 
             const user = await instance.getUser(user1Address);
 
-            assert.equal(user, userTypes.Inspector);
+            expect(user).to.equal(userTypes.Inspector);
           });
         });
 
@@ -123,7 +120,7 @@ contract("UserContract", (accounts) => {
 
             const user = await instance.getUser(user1Address);
 
-            assert.equal(user, userTypes.Researcher);
+            expect(user).to.equal(userTypes.Researcher);
           });
         });
 
@@ -134,7 +131,7 @@ contract("UserContract", (accounts) => {
 
             const user = await instance.getUser(user1Address);
 
-            assert.equal(user, userTypes.Developer);
+            expect(user).to.equal(userTypes.Developer);
           });
         });
 
@@ -145,7 +142,7 @@ contract("UserContract", (accounts) => {
 
             const user = await instance.getUser(user1Address);
 
-            assert.equal(user, userTypes.Advisor);
+            expect(user).to.equal(userTypes.Advisor);
           });
         });
 
@@ -156,7 +153,7 @@ contract("UserContract", (accounts) => {
 
             const user = await instance.getUser(user1Address);
 
-            assert.equal(user, userTypes.Activist);
+            expect(user).to.equal(userTypes.Activist);
           });
         });
 
@@ -166,7 +163,7 @@ contract("UserContract", (accounts) => {
 
             const user = await instance.getUser(user1Address);
 
-            assert.equal(user, userTypes.Supporter);
+            expect(user).to.equal(userTypes.Supporter);
           });
         });
 
@@ -177,7 +174,7 @@ contract("UserContract", (accounts) => {
 
             const user = await instance.getUser(user1Address);
 
-            assert.equal(user, userTypes.Validator);
+            expect(user).to.equal(userTypes.Validator);
           });
         });
 
@@ -187,7 +184,7 @@ contract("UserContract", (accounts) => {
 
             const user = await instance.getUser(user1Address);
 
-            assert.equal(user, userTypes.Denied);
+            expect(user).to.equal(userTypes.Denied);
           });
         });
       });
@@ -208,7 +205,7 @@ contract("UserContract", (accounts) => {
           });
 
           it("should return error message", async () => {
-            await expectRevert(addUser(user4Address, userTypes.Inspector, owner), "Proportionality invalid");
+            expect(addUser(user4Address, userTypes.Inspector, owner)).to.be.revertedWith("Proportionality invalid");
           });
         });
 
@@ -221,7 +218,7 @@ contract("UserContract", (accounts) => {
           });
 
           it("should return error message", async () => {
-            await expectRevert(addUser(user3Address, userTypes.Activist, owner), "Proportionality invalid");
+            expect(addUser(user3Address, userTypes.Activist, owner)).to.be.revertedWith("Proportionality invalid");
           });
         });
 
@@ -234,7 +231,7 @@ contract("UserContract", (accounts) => {
           });
 
           it("should return error message", async () => {
-            await expectRevert(addUser(user3Address, userTypes.Researcher, owner), "Proportionality invalid");
+            expect(addUser(user3Address, userTypes.Researcher, owner)).to.be.revertedWith("Proportionality invalid");
           });
         });
 
@@ -247,7 +244,7 @@ contract("UserContract", (accounts) => {
           });
 
           it("should return error message", async () => {
-            await expectRevert(addUser(user3Address, userTypes.Developer, owner), "Proportionality invalid");
+            expect(addUser(user3Address, userTypes.Developer, owner)).to.be.revertedWith("Proportionality invalid");
           });
         });
 
@@ -260,7 +257,7 @@ contract("UserContract", (accounts) => {
           });
 
           it("should return error message", async () => {
-            await expectRevert(addUser(user3Address, userTypes.Validator, owner), "Proportionality invalid");
+            expect(addUser(user3Address, userTypes.Validator, owner)).to.be.revertedWith("Proportionality invalid");
           });
         });
       });
@@ -277,13 +274,13 @@ contract("UserContract", (accounts) => {
 
             const user = await instance.getUser(user1Address);
 
-            assert.equal(user, userTypes.Inspector);
+            expect(user).to.equal(userTypes.Inspector);
           });
         });
 
         context("when try register as another user type of invitation", () => {
           it("should return error message", async () => {
-            await expectRevert(addUser(user1Address, userTypes.Developer, owner), "Invalid invitation");
+            expect(addUser(user1Address, userTypes.Developer, owner)).to.be.revertedWith("Invalid invitation");
           });
         });
       });
@@ -294,14 +291,14 @@ contract("UserContract", (accounts) => {
         });
 
         it("should return error message", async () => {
-          await expectRevert(addUser(user2Address, userTypes.Inspector, owner), "Invalid invitation");
+          expect(addUser(user2Address, userTypes.Inspector, owner)).to.be.revertedWith("Invalid invitation");
         });
       });
     });
 
     context("without allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(addUser(user1Address, userTypes.Producer, user1Address), "Not allowed caller");
+        expect(addUser(user1Address, userTypes.Producer, user1Address)).to.be.revertedWith("Not allowed caller");
       });
     });
   });
@@ -314,7 +311,9 @@ contract("UserContract", (accounts) => {
         });
 
         it("should return error message", async () => {
-          await expectRevert(addInvitation(owner, user1Address, userTypes.Producer, owner), "Already invited");
+          await expect(addInvitation(owner, user1Address, userTypes.Producer, owner)).to.be.revertedWith(
+            "Already invited"
+          );
         });
       });
 
@@ -326,9 +325,9 @@ contract("UserContract", (accounts) => {
         it("should invite", async () => {
           const invitation = await instance.invitations(user1Address);
 
-          assert.equal(invitation.inviter, owner);
-          assert.equal(invitation.userType, userTypes.Producer);
-          assert.equal(invitation.invited, user1Address);
+          expect(invitation.inviter).to.equal(owner.address);
+          expect(invitation.userType).to.equal(userTypes.Producer);
+          expect(invitation.invited).to.equal(user1Address.address);
         });
       });
     });
@@ -344,9 +343,9 @@ contract("UserContract", (accounts) => {
     it("returns invitation", async () => {
       const invitation = await instance.getInvitation(user1Address);
 
-      assert.equal(invitation.inviter, owner);
-      assert.equal(invitation.userType, userTypes.Producer);
-      assert.equal(invitation.invited, user1Address);
+      expect(invitation.inviter).to.equal(owner.address);
+      expect(invitation.userType).to.equal(userTypes.Producer);
+      expect(invitation.invited).to.equal(user1Address.address);
     });
   });
 
@@ -355,7 +354,7 @@ contract("UserContract", (accounts) => {
       it("should usersCount be zero", async () => {
         const usersCount = await instance.usersCount();
 
-        assert.equal(usersCount, 0);
+        expect(usersCount).to.equal(0);
       });
     });
 
@@ -365,7 +364,7 @@ contract("UserContract", (accounts) => {
 
         const usersCount = await instance.usersCount();
 
-        assert.equal(usersCount, 1);
+        expect(usersCount).to.equal(1);
       });
     });
   });
@@ -374,21 +373,20 @@ contract("UserContract", (accounts) => {
     it("should have enums", async () => {
       const types = await instance.userTypes();
 
-      assert.equal(JSON.stringify(types), JSON.stringify(definedTypes));
+      expect(JSON.stringify(types)).to.equal(JSON.stringify(definedTypes));
     });
   });
 
   describe("#newAllowedCaller", () => {
     context("with owner", () => {
       it("should add new allowed caller with success", async () => {
-        await instance.newAllowedCaller(user1Address, { from: owner });
+        await instance.connect(owner).newAllowedCaller(user1Address);
       });
     });
 
     context("without owner", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          instance.newAllowedCaller(user1Address, { from: user1Address }),
+        await expect(instance.connect(user1Address).newAllowedCaller(user1Address)).to.be.revertedWith(
           "Ownable: caller is not the owner"
         );
       });
@@ -409,15 +407,15 @@ contract("UserContract", (accounts) => {
           const delations = await instance.getUserDelations(user1Address);
           const reported = delations[0].reported;
 
-          assert.equal(delations.length, 1);
-          assert.equal(reported, user1Address);
+          expect(delations.length).to.equal(1);
+          expect(reported).to.equal(user1Address.address);
         });
 
         it("should refer informer as user2", async () => {
           const delations = await instance.getUserDelations(user1Address);
           const informer = delations[0].informer;
 
-          assert.equal(informer, user2Address);
+          expect(informer).to.equal(user2Address.address);
         });
 
         it("should add have fields", async () => {
@@ -427,10 +425,10 @@ contract("UserContract", (accounts) => {
           const testimony = delations[0].testimony;
           const proofPhoto = delations[0].proofPhoto;
 
-          assert.equal(id, 1);
-          assert.equal(title, "title");
-          assert.equal(testimony, "testimony");
-          assert.equal(proofPhoto, "proofPhoto");
+          expect(id).to.equal(1);
+          expect(title).to.equal("title");
+          expect(testimony).to.equal("testimony");
+          expect(proofPhoto).to.equal("proofPhoto");
         });
       });
     });
@@ -439,7 +437,7 @@ contract("UserContract", (accounts) => {
       it("should return error message", async () => {
         await addUser(user2Address, userTypes.Producer, owner);
 
-        await expectRevert(addDelation(user1Address, user2Address), "User must be registered");
+        await expect(addDelation(user1Address, user2Address)).to.be.revertedWith("User must be registered");
       });
     });
 
@@ -447,7 +445,7 @@ contract("UserContract", (accounts) => {
       it("should return error message", async () => {
         await addUser(user1Address, userTypes.Producer, owner);
 
-        await expectRevert(addDelation(user1Address, user2Address), "Caller must be registered");
+        await expect(addDelation(user1Address, user2Address)).to.be.revertedWith("Caller must be registered");
       });
     });
   });
@@ -465,7 +463,7 @@ contract("UserContract", (accounts) => {
       it("should return 2 delations", async () => {
         const delations = await instance.getUserDelations(user1Address);
 
-        assert.equal(delations.length, 2);
+        expect(delations.length).to.equal(2);
       });
     });
 
@@ -473,7 +471,7 @@ contract("UserContract", (accounts) => {
       it("should return 0 delations", async () => {
         const delations = await instance.getUserDelations(user1Address);
 
-        assert.equal(delations.length, 0);
+        expect(delations.length).to.equal(0);
       });
     });
   });
