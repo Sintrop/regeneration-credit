@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npx hardhat test --bail",
+    "coverage": "npx hardhat coverage",
     "solhint": "./node_modules/.bin/solhint -f table contracts/**/**/*.sol",
     "prettier:solidity": "./node_modules/.bin/prettier --write contracts/**/**/*.sol",
     "prettier:js": "./node_modules/.bin/prettier --write test/**/**/*.js",
@@ -16,7 +17,8 @@
   "dependencies": {
     "@nomicfoundation/hardhat-network-helpers": "^1.0.10",
     "@openzeppelin/contracts": "^4.8.3",
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "solidity-coverage": "^0.8.5"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
