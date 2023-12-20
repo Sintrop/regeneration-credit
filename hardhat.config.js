@@ -1,5 +1,9 @@
 require("@nomicfoundation/hardhat-toolbox");
-require('solidity-coverage')
+require('solidity-coverage');
+require("dotenv").config({path: __dirname + "/.env"});
+
+const infuraKey = process.env["INFURA_API_KEY"];
+const privateKey = process.env["PRIVATE_KEY_ACCOUNT_TO_DEPLOY"];
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -9,14 +13,8 @@ module.exports = {
       allowUnlimitedContractSize: true
     },
     sepolia: {
-      url: "...",
-      accounts: {
-        mnemonic: "sintrop smart contract solicity js people community developers nature agriculture world life",
-        path: "m/44'/60'/0'/0",
-        initialIndex: 0,
-        count: 20,
-        passphrase: "",
-      },
+      url: `https://sepolia.infura.io/v3/${infuraKey}`,
+      accounts: [privateKey]
     },
   },
   settings: {
