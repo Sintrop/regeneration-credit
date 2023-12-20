@@ -1,21 +1,25 @@
 require("@nomicfoundation/hardhat-toolbox");
-require('solidity-coverage');
-require("dotenv").config({path: __dirname + "/.env"});
+require("solidity-coverage");
+require("dotenv").config({ path: __dirname + "/.env" });
 
-const infuraKey = process.env["INFURA_API_KEY"];
-const privateKey = process.env["PRIVATE_KEY_ACCOUNT_TO_DEPLOY"];
+const infuraKey = process.env.INFURA_API_KEY;
+const privateKey = process.env.PRIVATE_KEY_ACCOUNT_TO_DEPLOY;
+const etherscanApiKey = process.env.ETHERSCAN_API_KEY;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: "0.8.2",
   networks: {
     hardhat: {
-      allowUnlimitedContractSize: true
+      allowUnlimitedContractSize: true,
     },
     sepolia: {
       url: `https://sepolia.infura.io/v3/${infuraKey}`,
-      accounts: [privateKey]
+      accounts: [privateKey],
     },
+  },
+  etherscan: {
+    apiKey: etherscanApiKey,
   },
   settings: {
     optimizer: {
@@ -24,16 +28,16 @@ module.exports = {
         yul: true,
         yulDetails: {
           stackAllocation: true,
-          optimizerSteps: "dhfoDgvulfnTUtnIf"
-        }
-      }
-    }
+          optimizerSteps: "dhfoDgvulfnTUtnIf",
+        },
+      },
+    },
   },
   paths: {
     sources: "./contracts",
     tests: "./test",
     cache: "./cache",
-    artifacts: "./artifacts"
+    artifacts: "./artifacts",
   },
   mocha: {
     bail: true,
@@ -42,6 +46,6 @@ module.exports = {
     color: true,
     checkLeaks: false,
     reporter: "spec",
-    ui: "bdd"
-  }
+    ui: "bdd",
+  },
 };
