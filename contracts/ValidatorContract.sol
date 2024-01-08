@@ -3,9 +3,10 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
 import { ProducerContract } from "./ProducerContract.sol";
-import { Validator, Validation } from "./types/ValidatorTypes.sol";
+import { Validator, Validation, Pool } from "./types/ValidatorTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { Callable } from "./Callable.sol";
+import { ValidatorPool } from "./ValidatorPool.sol";
 
 contract ValidatorContract is Callable {
   mapping(address => Validator) internal validators;
@@ -13,12 +14,14 @@ contract ValidatorContract is Callable {
 
   UserContract internal userContract;
   ProducerContract internal producerContract;
+  ValidatorPool internal validatorPool;
   address[] internal validatorsAddress;
   uint256 public validatorsCount;
 
-  constructor(address userContractAddress, address producerContractAddress) {
+  constructor(address userContractAddress, address producerContractAddress, address validatorPoolAddress) {
     userContract = UserContract(userContractAddress);
     producerContract = ProducerContract(producerContractAddress);
+    validatorPool = ValidatorPool(validatorPoolAddress);
   }
 
   function addValidator() public {
@@ -26,8 +29,11 @@ contract ValidatorContract is Callable {
 
     uint256 id = validatorsCount + 1;
     UserType userType = UserType.VALIDATOR;
+    uint256 currentEra = validatorPoolEra();
 
-    validators[msg.sender] = Validator(id, msg.sender, userType);
+    Pool memory pool = Pool(0, currentEra);
+
+    validators[msg.sender] = Validator(id, msg.sender, userType, pool);
     validatorsAddress.push(msg.sender);
     validatorsCount++;
     userContract.addUser(msg.sender, userType);
@@ -100,5 +106,40 @@ contract ValidatorContract is Callable {
 
   function majorityValidatorsCount() public view returns (uint256) {
     return validatorsCount / 2;
+  }
+
+//  function updateLevel() public {
+//    require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
+//
+//    Validator memory validator = validators[msg.sender];
+//    uint256 currentEra = validator.pool.currentEra;
+//
+//    require(validatorPool.canAddLevel(currentEra), "Only once per era");
+//
+ //   addLevel(msg.sender);
+ // }
+
+  //function addLevel(address addr) internal {
+    //Validator memory validator = validators[addr];
+    //validator.pool.level++;
+
+    //validatorPool.addLevel(addr, validator.pool.level, 1);
+  //} 
+
+  function addLevel() public {
+    require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
+    address addr = msg.sender;
+    uint256 levels = validatorPool.eraLevels(validatorPoolEra(), addr);
+
+    require(levels == 0, "Only once per era");
+
+    Validator memory validator = validators[addr]; 
+    validator.pool.level++;
+
+    validatorPool.addLevel(addr, validator.pool.level, 1);
+  }
+
+  function validatorPoolEra() internal view returns (uint256) {
+    return validatorPool.currentContractEra();
   }
 }

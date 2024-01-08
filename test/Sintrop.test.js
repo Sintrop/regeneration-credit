@@ -8,6 +8,7 @@ const ProducerPool = artifacts.require("ProducerPool");
 const ResearcherPool = artifacts.require("ResearcherPool");
 const InspectorPool = artifacts.require("InspectorPool");
 const ValidatorContract = artifacts.require("ValidatorContract");
+const ValidatorPool = artifacts.require("InspectorPool");
 const { userTypes } = require("./shared/user_types");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
@@ -22,6 +23,7 @@ contract("Sintrop", (accounts) => {
   let researcherContract;
   let researcherPool;
   let inspectorPool;
+  let validatorPool;
 
   const inspectorMaxPenalties = 2;
 
@@ -80,6 +82,13 @@ contract("Sintrop", (accounts) => {
     totalEras: 96,
     blocksPerEra: 12,
   };
+
+  const validatorPoolargs = {
+    totalTokens: "30000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 12,
+  };  
 
   const addProducer = async (name, address) => {
     await producerContract.addProducer(10, name, "photoURL", "135465-005", {
@@ -172,13 +181,20 @@ contract("Sintrop", (accounts) => {
       producerPoolArgs.blocksPerEra
     );
 
+    validatorPool = await ValidatorPool.new(
+      rcToken.address,
+      validatorPoolargs.halving,
+      validatorPoolargs.totalEras,
+      validatorPoolargs.blocksPerEra
+    );  
+
     inspectorContract = await InspectorContract.new(userContract.address, inspectorPool.address, inspectorMaxPenalties);
     researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address, timeBetweenWorks);
     producerContract = await ProducerContract.new(userContract.address, producerPool.address);
 
     categoryContract = await CategoryContract.new(userContract.address);
 
-    validatorContract = await ValidatorContract.new(userContract.address, producerContract.address);
+    validatorContract = await ValidatorContract.new(userContract.address, producerContract.address, validatorPool.address);
 
     instance = await Sintrop.new(
       inspectorContract.address,
@@ -203,6 +219,7 @@ contract("Sintrop", (accounts) => {
     await producerContract.newAllowedCaller(validatorContract.address);
     await producerPool.newAllowedCaller(producerContract.address);
     await inspectorPool.newAllowedCaller(inspectorContract.address);
+    await validatorPool.newAllowedCaller(validatorContract.address);
 
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
     await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
