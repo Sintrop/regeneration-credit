@@ -645,17 +645,17 @@ contract("Sintrop", (accounts) => {
                         categoryId: 1,
                         isaIndex: 0,
                         report: "REGENERATIVE_3",
-                        indicator: 100,
+                        indicator: 25,
                       },
                     ];
 
                     await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
-                  it("should add 20 isaScore to inspection", async () => {
+                  it("should add 25 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    assert.equal(inspection.isaScore, 20);
+                    assert.equal(inspection.isaScore, 25);
                   });
                 });
 
@@ -687,17 +687,17 @@ contract("Sintrop", (accounts) => {
                         categoryId: 1,
                         isaIndex: 2,
                         report: "REGENERATIVE_1",
-                        indicator: 10,
+                        indicator: 1,
                       },
                     ];
 
                     await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
-                  it("should add 5 isaScore to inspection", async () => {
+                  it("should add 1 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    assert.equal(inspection.isaScore, 5);
+                    assert.equal(inspection.isaScore, 1);
                   });
                 });
 
@@ -729,17 +729,17 @@ contract("Sintrop", (accounts) => {
                         categoryId: 1,
                         isaIndex: 4,
                         report: "NOT_REGENERATIVE1",
-                        indicator: -5,
+                        indicator: -1,
                       },
                     ];
 
                     await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
-                  it("should add -5 isaScore to inspection", async () => {
+                  it("should add -1 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    assert.equal(inspection.isaScore, -5);
+                    assert.equal(inspection.isaScore, -1);
                   });
                 });
 
@@ -771,17 +771,17 @@ contract("Sintrop", (accounts) => {
                         categoryId: 1,
                         isaIndex: 6,
                         report: "NOT_REGENERATIVE3",
-                        indicator: -20,
+                        indicator: -25,
                       },
                     ];
 
                     await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
-                  it("should add -20 isaScore to inspection", async () => {
+                  it("should add -25 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    assert.equal(inspection.isaScore, -20);
+                    assert.equal(inspection.isaScore, -25);
                   });
                 });
               });
