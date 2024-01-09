@@ -73,7 +73,7 @@ contract ValidatorPool is Poolable, Ownable, Blockable, Callable {
     uint256 era = currentContractEra();
 
     addPoolLevel(addr, currentLevel, addLevels, era);
-  }  
+  }
 
   function removeLevel(address addr) public mustBeAllowedCaller {
     // TODO: Must remove from current contract era of from current era from user? ProducerPool does the last one

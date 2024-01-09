@@ -115,8 +115,9 @@ contract ValidatorContract is Callable {
 
     require(levels == 0, "Only once per era");
 
-    Validator memory validator = validators[addr]; 
+    Validator memory validator = validators[addr];
     validator.pool.level++;
+    validators[addr] = validator;
 
     validatorPool.addLevel(addr, validator.pool.level, 1);
   }

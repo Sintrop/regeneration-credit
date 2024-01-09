@@ -88,7 +88,7 @@ contract("Sintrop", (accounts) => {
     halving: 12,
     totalEras: 96,
     blocksPerEra: 12,
-  };  
+  };
 
   const addProducer = async (name, address) => {
     await producerContract.addProducer(10, name, "photoURL", "135465-005", {
@@ -186,7 +186,7 @@ contract("Sintrop", (accounts) => {
       validatorPoolargs.halving,
       validatorPoolargs.totalEras,
       validatorPoolargs.blocksPerEra
-    );  
+    );
 
     inspectorContract = await InspectorContract.new(userContract.address, inspectorPool.address, inspectorMaxPenalties);
     researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address, timeBetweenWorks);
@@ -194,7 +194,11 @@ contract("Sintrop", (accounts) => {
 
     categoryContract = await CategoryContract.new(userContract.address);
 
-    validatorContract = await ValidatorContract.new(userContract.address, producerContract.address, validatorPool.address);
+    validatorContract = await ValidatorContract.new(
+      userContract.address,
+      producerContract.address,
+      validatorPool.address
+    );
 
     instance = await Sintrop.new(
       inspectorContract.address,

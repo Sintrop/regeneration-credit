@@ -39,7 +39,7 @@ contract("ValidatorContract", (accounts) => {
     halving: 12,
     totalEras: 96,
     blocksPerEra: 12,
-  };  
+  };
 
   const addValidator = async (address) => {
     await instance.addValidator({ from: address });
@@ -70,7 +70,12 @@ contract("ValidatorContract", (accounts) => {
       producerPoolArgs.blocksPerEra
     );
 
-    validatorPool = await ValidatorPool.new(rcToken.address, validatorPoolArgs.halving, validatorPoolArgs.totalEras, validatorPoolArgs.blocksPerEra);
+    validatorPool = await ValidatorPool.new(
+      rcToken.address,
+      validatorPoolArgs.halving,
+      validatorPoolArgs.totalEras,
+      validatorPoolArgs.blocksPerEra
+    );
 
     producerContract = await ProducerContract.new(userContract.address, producerPool.address);
 
@@ -81,6 +86,7 @@ contract("ValidatorContract", (accounts) => {
     await userContract.newAllowedCaller(owner);
     await producerContract.newAllowedCaller(instance.address);
     await producerPool.newAllowedCaller(producerContract.address);
+    await validatorPool.newAllowedCaller(instance.address);
     await rcToken.addContractPool(instance.address, producerPoolArgs.totalTokens);
     await rcToken.addContractPool(producerContract.address, producerPoolArgs.totalTokens);
 
@@ -347,6 +353,39 @@ contract("ValidatorContract", (accounts) => {
         const majorityValidatorsCount = await instance.majorityValidatorsCount();
 
         assert.equal(majorityValidatorsCount, 3);
+      });
+    });
+  });
+
+  describe("#addLevel", () => {
+    context("when is not a validator", () => {
+      it("should return error", async () => {
+        await expectRevert(instance.addLevel({ from: producer1Address }), "User must be a validator");
+      });
+    });
+
+    context("when is a validator", () => {
+      beforeEach(async () => {
+        await addValidator(validator1Address);
+      });
+
+      it("should add 1 level", async () => {
+        await instance.addLevel({ from: validator1Address });
+
+        const validator = await instance.getValidator(validator1Address);
+
+        assert.equal(validator.pool.level, 1);
+      });
+    });
+
+    context("when is a validator and has already added a level in that era", () => {
+      beforeEach(async () => {
+        await addValidator(validator1Address);
+        await instance.addLevel({ from: validator1Address });
+      });
+
+      it("should return error", async () => {
+        await expectRevert(instance.addLevel({ from: validator1Address }), "Only once per era");
       });
     });
   });
