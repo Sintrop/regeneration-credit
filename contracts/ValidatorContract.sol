@@ -108,24 +108,6 @@ contract ValidatorContract is Callable {
     return validatorsCount / 2;
   }
 
-//  function updateLevel() public {
-//    require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
-//
-//    Validator memory validator = validators[msg.sender];
-//    uint256 currentEra = validator.pool.currentEra;
-//
-//    require(validatorPool.canAddLevel(currentEra), "Only once per era");
-//
- //   addLevel(msg.sender);
- // }
-
-  //function addLevel(address addr) internal {
-    //Validator memory validator = validators[addr];
-    //validator.pool.level++;
-
-    //validatorPool.addLevel(addr, validator.pool.level, 1);
-  //} 
-
   function addLevel() public {
     require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
     address addr = msg.sender;
