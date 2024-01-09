@@ -122,6 +122,19 @@ contract ValidatorContract is Callable {
     validatorPool.addLevel(addr, validator.pool.level, 1);
   }
 
+  function withdraw() public {
+    require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Pool only to validators");
+
+    Validator memory validator = validators[msg.sender];
+    uint256 currentEra = validator.pool.currentEra;
+
+    require(validatorPool.canApprove(currentEra), "Can't approve withdraw");
+
+    validators[msg.sender].pool.currentEra++;
+
+    validatorPool.withdraw(msg.sender, currentEra);
+  }
+
   function validatorPoolEra() internal view returns (uint256) {
     return validatorPool.currentContractEra();
   }

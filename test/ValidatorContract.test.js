@@ -7,6 +7,7 @@ const { userTypes } = require("./shared/user_types");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { advanceBlock } = require("./shared/advance_block");
 
 contract("ValidatorContract", (accounts) => {
   let instance;
@@ -35,7 +36,7 @@ contract("ValidatorContract", (accounts) => {
   };
 
   const validatorPoolArgs = {
-    totalValidatorPoolTokens: "30000000000000000000000000",
+    totalTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
     blocksPerEra: 12,
@@ -87,7 +88,7 @@ contract("ValidatorContract", (accounts) => {
     await producerContract.newAllowedCaller(instance.address);
     await producerPool.newAllowedCaller(producerContract.address);
     await validatorPool.newAllowedCaller(instance.address);
-    await rcToken.addContractPool(instance.address, producerPoolArgs.totalTokens);
+    await rcToken.addContractPool(validatorPool.address, validatorPoolArgs.totalTokens);
     await rcToken.addContractPool(producerContract.address, producerPoolArgs.totalTokens);
 
     await addInvitation(owner, validator1Address, userTypes.Validator, owner);
@@ -386,6 +387,62 @@ contract("ValidatorContract", (accounts) => {
 
       it("should return error", async () => {
         await expectRevert(instance.addLevel({ from: validator1Address }), "Only once per era");
+      });
+    });
+  });
+
+  describe("#withdraw", () => {
+    context("when is a validator", () => {
+      beforeEach(async () => {
+        await addValidator(validator1Address);
+        await instance.addLevel({ from: validator1Address });
+      });
+
+      context("when validator is in era 1 and current era is 1", () => {
+        it("should return error", async () => {
+          await expectRevert(instance.withdraw({ from: validator1Address }), "Can't approve withdraw");
+        });
+      });
+
+      context("when validator is in era 1 and current era is 2", () => {
+        context("with one validator", () => {
+          beforeEach(async () => {
+            await advanceBlock(validatorPoolArgs.blocksPerEra);
+            await instance.withdraw({ from: validator1Address });
+          });
+
+          it("withdraw 1200000000000000000000000 tokens", async () => {
+            const balanceOf = await validatorPool.balanceOf(validator1Address);
+            const expectedBalance = 1200000000000000000000000n;
+
+            assert.equal(balanceOf, expectedBalance);
+          });
+        });
+
+        context("with two validators", () => {
+          beforeEach(async () => {
+            await addInvitation(owner, validator2Address, userTypes.Validator, owner);
+            await addValidator(validator2Address);
+            await instance.addLevel({ from: validator2Address });
+
+            await advanceBlock(validatorPoolArgs.blocksPerEra);
+
+            await instance.withdraw({ from: validator1Address });
+          });
+
+          it("withdraw 600000000000000000000000n tokens", async () => {
+            const balanceOf = await validatorPool.balanceOf(validator1Address);
+            const expectedBalance = 600000000000000000000000n;
+
+            assert.equal(balanceOf, expectedBalance);
+          });
+        });
+      });
+    });
+
+    context("when is not a validator", () => {
+      it("should return error", async () => {
+        await expectRevert(instance.withdraw({ from: producer1Address }), "Pool only to validators");
       });
     });
   });
