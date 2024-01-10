@@ -459,10 +459,7 @@ contract("DeveloperPool", (accounts) => {
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          instance.withdraw(dev1Address, 1, { from: dev1Address }),
-          "Not allowed caller"
-        );
+        await expectRevert(instance.withdraw(dev1Address, 1, { from: dev1Address }), "Not allowed caller");
       });
     });
   });

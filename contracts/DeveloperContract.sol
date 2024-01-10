@@ -11,7 +11,7 @@ import { Developer, Pool, Contribution } from "./types/DeveloperTypes.sol";
  * @title DeveloperContract
  * @dev Developer resource that represent dev
  */
- contract DeveloperContract is Ownable {
+contract DeveloperContract is Ownable {
   mapping(address => Developer) public developers;
   mapping(uint256 => mapping(address => Contribution)) public contributions;
 
