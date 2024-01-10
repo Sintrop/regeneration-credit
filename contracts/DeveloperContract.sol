@@ -11,7 +11,7 @@ import { Developer, Pool, Contribution } from "./types/DeveloperTypes.sol";
  * @title DeveloperContract
  * @dev Developer resource that represent dev
  */
-contract DeveloperContract is Ownable {
+ contract DeveloperContract is Ownable {
   mapping(address => Developer) public developers;
   mapping(uint256 => mapping(address => Contribution)) public contributions;
 
@@ -113,29 +113,6 @@ contract DeveloperContract is Ownable {
     developers[msg.sender].pool.currentEra++;
 
     developerPool.withdraw(msg.sender, currentEra);
-  }
-
-  /**
-   * @dev Allow the owner to add a new level to the developer
-   * @param addr The address of the developer
-   */
-  function addLevel(address addr) public onlyOwner {
-    updateLevel(addr);
-  }
-
-  /**
-   * @dev Allow the owner to remove levels from the developer
-   * @param addr The address of the developer
-   */
-  function removeLevel(address addr) public onlyOwner {
-    Developer memory developer = developers[addr];
-
-    require(developer.pool.level != 0, "Not enough levels to remove");
-
-    developer.pool.level--;
-    developers[addr] = developer;
-
-    developerPool.removeLevel(addr);
   }
 
   function updateLevel(address addr) internal {
