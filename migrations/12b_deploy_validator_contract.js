@@ -1,7 +1,7 @@
 const UserContract = artifacts.require("UserContract");
 const ProducerContract = artifacts.require("ProducerContract");
 const ValidatorContract = artifacts.require("ValidatorContract");
-    const ValidatorPool = artifacts.require("ValidatorPool");
+const ValidatorPool = artifacts.require("ValidatorPool");
 
 module.exports = function (deployer) {
   deployer.then(async () => {
