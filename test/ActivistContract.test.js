@@ -1,13 +1,25 @@
 const ActivistContract = artifacts.require("ActivistContract");
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
+const ActivistPool = artifacts.require("ActivistPool");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
+const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { advanceBlock } = require("./shared/advance_block");
 
 contract("ActivistContract", (accounts) => {
   let instance;
   let userContract;
   let [owner, contr1Address, contr2Address, contr3Address] = accounts;
+  let activistPool;
+  let rcToken;
+
+  const activistPoolArgs = {
+    totalTokens: "30000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 12,
+  };
 
   const addActivist = async (name, address) => {
     await instance.addActivist(name, "photoURL", { from: address });
@@ -20,12 +32,23 @@ contract("ActivistContract", (accounts) => {
   };
 
   beforeEach(async () => {
+    rcToken = await rcTokenDeployed();
     userContract = await userContractDeployed();
 
-    instance = await ActivistContract.new(userContract.address);
+    activistPool = await ActivistPool.new(
+      rcToken.address,
+      activistPoolArgs.halving,
+      activistPoolArgs.totalEras,
+      activistPoolArgs.blocksPerEra
+    );
+
+    instance = await ActivistContract.new(userContract.address, activistPool.address);
 
     await userContract.newAllowedCaller(instance.address);
     await userContract.newAllowedCaller(owner);
+
+    await activistPool.newAllowedCaller(instance.address);
+    await rcToken.addContractPool(activistPool.address, activistPoolArgs.totalTokens);
 
     await addInvitation(owner, contr1Address, userTypes.Activist, owner);
     await addInvitation(owner, contr3Address, userTypes.Activist, owner);
