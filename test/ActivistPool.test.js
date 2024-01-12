@@ -170,10 +170,7 @@ contract("ActivistPool", (accounts) => {
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          instance.addLevel(activist1Address, 1, 1, { from: activist1Address }),
-          "Not allowed caller"
-        );
+        await expectRevert(instance.addLevel(activist1Address, 1, 1, { from: activist1Address }), "Not allowed caller");
       });
     });
   });

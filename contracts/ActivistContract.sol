@@ -74,7 +74,7 @@ contract ActivistContract {
 
   function activistPoolEra() internal view returns (uint256) {
     return activistPool.currentContractEra();
-  }  
+  }
 
   // MODIFIERS
 
