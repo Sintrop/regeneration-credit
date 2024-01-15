@@ -5,8 +5,9 @@ import { UserContract } from "./UserContract.sol";
 import { Activist, Pool } from "./types/ActivistTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { ActivistPool } from "./ActivistPool.sol";
+import { Callable } from "./Callable.sol";
 
-contract ActivistContract {
+contract ActivistContract is Callable {
   mapping(address => Activist) internal activists;
 
   UserContract internal userContract;
@@ -62,6 +63,16 @@ contract ActivistContract {
    */
   function getActivist(address addr) public view returns (Activist memory) {
     return activists[addr];
+  }
+
+  function addLevel(address activistAddress) public mustBeAllowedCaller() {
+    if(activistExists(activistAddress)) return;
+
+    Activist storage activist = activists[activistAddress];
+    activist.pool.level++;
+    activists[msg.sender] = activist;
+
+    activistPool.addLevel(msg.sender, 1, 1);
   }
 
   /**
