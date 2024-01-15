@@ -130,13 +130,6 @@ contract DeveloperContract is Ownable {
     return developerPool.currentContractEra();
   }
 
-  // /**
-  //  * @dev Returns max era of pool
-  //  */
-  // function eraMax() internal view returns (uint256) {
-  //   return developerPool.eraMax();
-  // }
-
   // MODIFIERS
 
   modifier uniqueDeveloper() {
