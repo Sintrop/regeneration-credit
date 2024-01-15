@@ -8,14 +8,15 @@ contract("DeveloperPool", (accounts) => {
   let instance;
   let [owner, dev1Address, dev2Address] = accounts;
   let args = {
-    totalDeveloperPoolTokens: "15000000000000000000000000",
-    blocksPerEra: 30,
-    eraMax: 5,
+    totalDeveloperPoolTokens: "30000000000000000000000000",
+    blocksPerEra: 12,
+    halving: 12,
+    totalEras: 96,
   };
 
   beforeEach(async () => {
     const rcToken = await rcTokenDeployed();
-    instance = await DeveloperPool.new(rcToken.address, args.blocksPerEra, args.eraMax);
+    instance = await DeveloperPool.new(rcToken.address, args.halving, args.totalEras, args.blocksPerEra);
 
     await instance.newAllowedCaller(owner);
 
@@ -29,10 +30,10 @@ contract("DeveloperPool", (accounts) => {
       assert.equal(blocksPerEra, args.blocksPerEra);
     });
 
-    it("should eraMax be equal the deployed value", async () => {
-      const eraMax = await instance.eraMax();
+    it("should totalEras be equal the deployed value", async () => {
+      const totalEras = await instance.eraMax();
 
-      assert.equal(eraMax, args.eraMax);
+      assert.equal(totalEras, args.totalEras);
     });
 
     it("should initial be era equal one", async () => {
@@ -171,7 +172,7 @@ contract("DeveloperPool", (accounts) => {
       });
     });
 
-    context("with don't allowed caller", () => {
+    context("without allowed caller", () => {
       it("should return error message", async () => {
         await expectRevert(instance.addLevel(dev1Address, 1, 1, { from: dev1Address }), "Not allowed caller");
       });
@@ -254,7 +255,7 @@ contract("DeveloperPool", (accounts) => {
       });
     });
 
-    context("with don't allowed caller", () => {
+    context("without allowed caller", () => {
       it("should return error message", async () => {
         await expectRevert(instance.removeLevel(dev1Address, { from: dev1Address }), "Not allowed caller");
       });
@@ -286,12 +287,12 @@ contract("DeveloperPool", (accounts) => {
     });
   });
 
-  context("#withdraw", () => {
+  describe("#withdraw", () => {
     context("with allowed caller", () => {
       context("when can withdraw", () => {
         context("when is era 1", () => {
           context("when total of levels in era is 6", () => {
-            context("when developer1 have 3 levels in era 1", () => {
+            context("when dev1 have 3 levels in era 1", () => {
               beforeEach(async () => {
                 await instance.addLevel(dev1Address, 1, 1);
                 await instance.addLevel(dev1Address, 1, 1);
@@ -304,15 +305,15 @@ contract("DeveloperPool", (accounts) => {
                 await advanceBlock(args.blocksPerEra);
               });
 
-              it("shoud withdraw 416666500000000000000000 tokens", async () => {
+              it("must withdraw 600000000000000000000000 tokens", async () => {
                 await instance.withdraw(dev1Address, 1);
                 const balanceOf = await instance.balanceOf(dev1Address);
 
-                assert.equal(balanceOf, "416666500000000000000000");
+                assert.equal(balanceOf, 600000000000000000000000n);
               });
             });
 
-            context("when developer1 have 6 levels in era 1", () => {
+            context("when dev1 have 6 levels in era 1", () => {
               beforeEach(async () => {
                 await instance.addLevel(dev1Address, 1, 1);
                 await instance.addLevel(dev1Address, 1, 1);
@@ -324,14 +325,14 @@ contract("DeveloperPool", (accounts) => {
                 await advanceBlock(args.blocksPerEra);
               });
 
-              it("shoud withdraw 833333000000000000000000 tokens", async () => {
+              it("shoud withdraw 1200000000000000000000000 tokens", async () => {
                 await instance.withdraw(dev1Address, 1);
                 const balanceOf = await instance.balanceOf(dev1Address);
 
-                assert.equal(balanceOf, "833333000000000000000000");
+                assert.equal(balanceOf, 1200000000000000000000000n);
               });
 
-              it("shoud withdraw 0 tokens to developer2", async () => {
+              it("shoud withdraw 0 tokens to dev2", async () => {
                 await instance.withdraw(dev2Address, 1);
                 const balanceOf = await instance.balanceOf(dev2Address);
 
@@ -339,7 +340,7 @@ contract("DeveloperPool", (accounts) => {
               });
             });
 
-            context("when developer2 have 3 levels in era 1", () => {
+            context("when dev2 have 3 levels in era 1", () => {
               beforeEach(async () => {
                 await instance.addLevel(dev1Address, 1, 1);
                 await instance.addLevel(dev1Address, 1, 1);
@@ -352,11 +353,11 @@ contract("DeveloperPool", (accounts) => {
                 await advanceBlock(args.blocksPerEra);
               });
 
-              it("shoud withdraw 416666500000000000000000 tokens", async () => {
+              it("shoud withdraw 600000000000000000000000 tokens", async () => {
                 await instance.withdraw(dev2Address, 1);
                 const balanceOf = await instance.balanceOf(dev2Address);
 
-                assert.equal(balanceOf, "416666500000000000000000");
+                assert.equal(balanceOf, 600000000000000000000000n);
               });
             });
           });
@@ -373,7 +374,7 @@ contract("DeveloperPool", (accounts) => {
               await instance.addLevel(dev2Address, 1, 1);
               await instance.addLevel(dev2Address, 1, 1);
 
-              await advanceBlock(args.blocksPerEra);
+              await advanceBlock(8);
 
               await instance.addLevel(dev1Address, 1, 1);
               await instance.addLevel(dev1Address, 1, 1);
@@ -382,11 +383,9 @@ contract("DeveloperPool", (accounts) => {
               await instance.addLevel(dev2Address, 1, 1);
               await instance.addLevel(dev2Address, 1, 1);
               await instance.addLevel(dev2Address, 1, 1);
-
-              await advanceBlock(args.blocksPerEra);
             });
 
-            context("when developer 1 withdraw from era 1 and era 2", () => {
+            context("when dev1 withdraw from era 1 and era 2", () => {
               beforeEach(async () => {
                 await instance.withdraw(dev1Address, 1);
                 await instance.withdraw(dev1Address, 2);
@@ -395,26 +394,32 @@ contract("DeveloperPool", (accounts) => {
                 await instance.withdraw(dev2Address, 2);
               });
 
-              it("developer1 balance must be 833333000000000000000000", async () => {
+              it("dev pool balance must be 27600000000000000000000000", async () => {
+                const balance = await instance.balance();
+
+                assert.equal(balance, 27600000000000000000000000n);
+              });
+
+              it("dev1 balance must be 1200000000000000000000000", async () => {
                 const balanceOf = await instance.balanceOf(dev1Address);
 
-                assert.equal(balanceOf, "833333000000000000000000");
+                assert.equal(balanceOf, 1200000000000000000000000n);
               });
 
-              it("developer1 balance in era 1 must be 416666500000000000000000", async () => {
+              it("dev1 balance in era 1 must be 600000000000000000000000", async () => {
                 const balanceOf = await instance.eraTokens(1, dev1Address);
 
-                assert.equal(balanceOf, "416666500000000000000000");
+                assert.equal(balanceOf, 600000000000000000000000n);
               });
 
-              it("developer1 balance in era 2 must be 416666500000000000000000", async () => {
+              it("dev1 balance in era 2 must be 600000000000000000000000", async () => {
                 const balanceOf = await instance.eraTokens(2, dev1Address);
 
-                assert.equal(balanceOf, "416666500000000000000000");
+                assert.equal(balanceOf, 600000000000000000000000n);
               });
             });
 
-            context("when developer 2 withdraw from era 1 and era 2", () => {
+            context("when dev2 withdraw from era 1 and era 2", () => {
               beforeEach(async () => {
                 await instance.withdraw(dev1Address, 1);
                 await instance.withdraw(dev1Address, 2);
@@ -423,22 +428,22 @@ contract("DeveloperPool", (accounts) => {
                 await instance.withdraw(dev2Address, 2);
               });
 
-              it("developer2 balance must be 833333000000000000000000", async () => {
+              it("dev2 balance must be 1200000000000000000000000", async () => {
                 const balanceOf = await instance.balanceOf(dev2Address);
 
-                assert.equal(balanceOf, "833333000000000000000000");
+                assert.equal(balanceOf, 1200000000000000000000000n);
               });
 
-              it("developer2 balance in era 1 must be 416666500000000000000000", async () => {
+              it("dev2 balance in era 1 must be 600000000000000000000000", async () => {
                 const balanceOf = await instance.eraTokens(1, dev2Address);
 
-                assert.equal(balanceOf, "416666500000000000000000");
+                assert.equal(balanceOf, 600000000000000000000000n);
               });
 
-              it("developer2 balance in era 2 must be 416666500000000000000000", async () => {
+              it("dev2 balance in era 2 must be 600000000000000000000000", async () => {
                 const balanceOf = await instance.eraTokens(2, dev2Address);
 
-                assert.equal(balanceOf, "416666500000000000000000");
+                assert.equal(balanceOf, 600000000000000000000000n);
               });
             });
           });
@@ -447,7 +452,7 @@ contract("DeveloperPool", (accounts) => {
 
       context("when cant withdraw", () => {
         it("should return error message", async () => {
-          await expectRevert(instance.withdraw(dev1Address, 1), "You can't withdraw yet");
+          await expectRevert(instance.withdraw(dev1Address, 1), "You can't approve yet");
         });
       });
     });
