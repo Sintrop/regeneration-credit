@@ -100,7 +100,7 @@ contract("Sintrop", (accounts) => {
     halving: 12,
     totalEras: 96,
     blocksPerEra: 12,
-  };  
+  };
 
   const addProducer = async (name, address) => {
     await producerContract.addProducer(10, name, "photoURL", "135465-005", {
@@ -205,7 +205,7 @@ contract("Sintrop", (accounts) => {
       activistPoolargs.halving,
       activistPoolargs.totalEras,
       activistPoolargs.blocksPerEra
-    );    
+    );
 
     inspectorContract = await InspectorContract.new(userContract.address, inspectorPool.address, inspectorMaxPenalties);
     researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address, timeBetweenWorks);

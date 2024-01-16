@@ -65,8 +65,8 @@ contract ActivistContract is Callable {
     return activists[addr];
   }
 
-  function addLevel(address activistAddress) public mustBeAllowedCaller() {
-    if(activistExists(activistAddress)) return;
+  function addLevel(address activistAddress) public mustBeAllowedCaller {
+    if (activistExists(activistAddress)) return;
 
     Activist storage activist = activists[activistAddress];
     activist.pool.level++;
