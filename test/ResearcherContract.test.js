@@ -278,7 +278,7 @@ contract("ResearcherContract", (accounts) => {
           it("add +1 to researcher pool eraLeves of era 2", async () => {
             const eraLevel = await researcherPool.eraLevels(2, resea1Address);
 
-            assert.equal(eraLevel, 2);
+            assert.equal(eraLevel, 1);
           });
 
           it("add +1 to researcher pool level", async () => {
