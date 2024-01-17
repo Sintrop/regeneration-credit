@@ -206,7 +206,12 @@ contract Sintrop {
     userInspections[acceptedBy].push(inspection);
   }
 
-  function setActivistLevel(address producer, uint256 producerTotalInspections, address inspector, uint256 inspectorTotalInspections) internal {
+  function setActivistLevel(
+    address producer,
+    uint256 producerTotalInspections,
+    address inspector,
+    uint256 inspectorTotalInspections
+  ) internal {
     Invitation memory producerInvitation = userContract.getInvitation(producer);
     Invitation memory inspectorInvitation = userContract.getInvitation(inspector);
 
@@ -216,7 +221,7 @@ contract Sintrop {
 
     if (inspectorTotalInspections == 3 && !activistWonLevel[inspectorInvitation.inviter][inspector]) {
       activistContract.addLevel(inspectorInvitation.inviter);
-    } 
+    }
   }
 
   function addInspectionValidation(uint256 id, string memory justification) public {

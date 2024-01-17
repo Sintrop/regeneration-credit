@@ -10,6 +10,8 @@ const InspectorPool = artifacts.require("InspectorPool");
 const ValidatorContract = artifacts.require("ValidatorContract");
 const ValidatorPool = artifacts.require("InspectorPool");
 const ActivistContract = artifacts.require("ActivistContract");
+const ActivistPool = artifacts.require("ActivistPool");
+
 const { userTypes } = require("./shared/user_types");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
@@ -22,10 +24,11 @@ contract("Sintrop", (accounts) => {
   let inspectorContract;
   let producerContract;
   let researcherContract;
+  let activistContract;
   let researcherPool;
   let inspectorPool;
   let validatorPool;
-  let activistContract;
+  let activistPool;
 
   const inspectorMaxPenalties = 2;
 
@@ -86,6 +89,13 @@ contract("Sintrop", (accounts) => {
   };
 
   const validatorPoolargs = {
+    totalTokens: "30000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 12,
+  };
+
+  const activistPoolargs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
@@ -190,10 +200,17 @@ contract("Sintrop", (accounts) => {
       validatorPoolargs.blocksPerEra
     );
 
+    activistPool = await ActivistPool.new(
+      rcToken.address,
+      activistPoolargs.halving,
+      activistPoolargs.totalEras,
+      activistPoolargs.blocksPerEra
+    );
+
     inspectorContract = await InspectorContract.new(userContract.address, inspectorPool.address, inspectorMaxPenalties);
     researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address, timeBetweenWorks);
     producerContract = await ProducerContract.new(userContract.address, producerPool.address);
-    activistContract = await ActivistContract.new(userContract.address, userContract.address);
+    activistContract = await ActivistContract.new(userContract.address, activistPool.address);
 
     categoryContract = await CategoryContract.new(userContract.address);
 
@@ -223,11 +240,13 @@ contract("Sintrop", (accounts) => {
     await inspectorContract.newAllowedCaller(instance.address);
     await inspectorContract.newAllowedCaller(owner);
     await validatorContract.newAllowedCaller(instance.address);
+    await activistContract.newAllowedCaller(instance.address);
     await producerContract.newAllowedCaller(instance.address);
     await producerContract.newAllowedCaller(validatorContract.address);
     await producerPool.newAllowedCaller(producerContract.address);
     await inspectorPool.newAllowedCaller(inspectorContract.address);
     await validatorPool.newAllowedCaller(validatorContract.address);
+    await activistPool.newAllowedCaller(activistContract.address);
 
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
     await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);

@@ -151,7 +151,7 @@ contract ProducerContract is Callable {
     producers[addr].pool.currentEra++;
   }
 
-  function incrementInspections(address addr) public mustBeAllowedCaller returns(uint256) {
+  function incrementInspections(address addr) public mustBeAllowedCaller returns (uint256) {
     producers[addr].totalInspections++;
 
     return producers[addr].totalInspections;

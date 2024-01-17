@@ -39,5 +39,6 @@ module.exports = function (deployer) {
     await inspectorContract.newAllowedCaller(sintrop.address);
     await producerContract.newAllowedCaller(sintrop.address);
     await validatorContract.newAllowedCaller(sintrop.address);
+    await activistContract.newAllowedCaller(sintrop.address);
   });
 };
