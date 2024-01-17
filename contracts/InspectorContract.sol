@@ -114,7 +114,7 @@ contract InspectorContract is Callable {
 
     addLevel(addr);
 
-   return inspectors[addr].totalInspections;
+    return inspectors[addr].totalInspections;
   }
 
   function addLevel(address addr) internal {
