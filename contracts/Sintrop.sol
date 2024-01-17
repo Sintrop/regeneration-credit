@@ -172,7 +172,7 @@ contract Sintrop {
   }
 
   function calculateIsa(Inspection memory inspection, IsaInspection[] memory _isas) internal returns (int256) {
-    int256[7] memory points = [int256(20), 10, 5, 0, -5, -10, -20];
+    int256[7] memory points = [int256(25), 10, 1, 0, -1, -10, -25];
     int256 isaScore;
 
     for (uint8 i = 0; i < _isas.length; i++) {

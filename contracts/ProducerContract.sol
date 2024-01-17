@@ -124,7 +124,6 @@ contract ProducerContract is Callable {
     producer.isa.isaScore += isaScore;
     producers[addr] = producer;
 
-    uint256 currentlevel = producer.isa.isaScore < 0 ? 0 : uint256(producer.isa.isaScore);
     uint256 addLevels = isaScore < 0 ? 0 : uint256(isaScore);
 
     if (producer.isa.sustainable) return;
@@ -133,7 +132,7 @@ contract ProducerContract is Callable {
 
     if (!minimumInspections(producer.totalInspections)) return;
 
-    producerPool.addLevel(addr, currentlevel, addLevels);
+    producerPool.addLevel(addr, addLevels, addLevels);
   }
 
   function resetLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {

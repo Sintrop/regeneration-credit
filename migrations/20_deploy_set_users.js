@@ -104,48 +104,48 @@ module.exports = function (deployer) {
       "Carbon footprint",
       `Indicator to evaluate the carbon balance`,
       `We must evaluate everything that the producer emit carbon, and all the carbon sequestration. Carbon balance = sequestration - emissions`,
-      `More then -100 tCO2 / era`,
+      `More than -1000 tCO2 / era`,
+      `Until -1000 tCO2 / era`,
       `Until -100 tCO2 / era`,
-      `Until -1 tCO2 / era`,
       `0`,
       `Until 1 tCO2 / era`,
-      `Until 2 tCO2 / era`,
-      `More then 2 tCO2 / era`
+      `Until 5 tCO2 / era`,
+      `More than 5 tCO2 / era`
     );
 
     await categoryContract.addCategory(
       "Biodiversity indicator",
       `Indicator to evaluate the biodiversity level`,
       `Must evaluate everything related to the biodiversity level and count how many life units were found and estimated at the property. Biodiversity level = regeneration - degradation`,
-      `More then 1000 lifeUnits`,
+      `More than 1000 lifeUnits`,
       `Until 1000 lifeUnits`,
       `Until 100 lifeUnits`,
       `0`,
       `Until -100 lifeUnits`,
       `Until -1000 lifeUnits`,
-      `Less then -1000 lifeUnits`
+      `Less than -1000 lifeUnits`
     );
 
     await categoryContract.addCategory(
       "Water indicator",
       `Indicator to evaluate the water resources level`,
       `Must evaluate the property water level. Positive means water from vegetation and negative water brought from outside the property. Water balance = localWater - outsideWater`,
-      `More then 100 m3`,
+      `More than 100 m3`,
       `Until 100 m3`,
       `Until 10 m3`,
       `0`,
       `Until -10 m3`,
       `Until -100 m3`,
-      `Less then -100 m3`
+      `Less than -100 m3`
     );
 
     await categoryContract.addCategory(
       "Soil indicator",
       `Indicator to evaluate the soil regeneration level`,
       `Must evaluate the property soil regeneration balance. SoilBalance = Regeneration - Degeneration `,
-      `More then 100 hectares of soil under regeneration`,
-      `More then 5 hectare of soil under regeneration`,
-      `More then 1 hectare of soil under regeneration`,
+      `More than 100 hectares of soil under regeneration`,
+      `More than 2 hectares of soil under regeneration`,
+      `Until 2 hectares of soil under regeneration`,
       `0`,
       `Until 1 hectare of soil degradation`,
       `Until 2 hectares of soil degradation`,

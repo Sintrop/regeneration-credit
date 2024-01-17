@@ -124,7 +124,7 @@ contract InspectorContract is Callable {
 
     if (!minimumInspections(inspector.totalInspections)) return;
 
-    inspectorPool.addLevel(addr, inspector.pool.level, 1);
+    inspectorPool.addLevel(addr, 1, 1);
   }
 
   function decrementInspections(address addr) public mustBeAllowedCaller {

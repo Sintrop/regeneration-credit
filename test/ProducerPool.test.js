@@ -396,6 +396,47 @@ contract("ProducerPool", (accounts) => {
           });
         });
       });
+
+      context("when add level in era 2", () => {
+        context("when producers have levels in era 1", () => {
+          beforeEach(async () => {
+            await instance.addLevel(producer1Address, 80, 80);
+          });
+
+          context("when add level", () => {
+            beforeEach(async () => {
+              await advanceBlock(args.blocksPerEra);
+
+              await instance.addLevel(producer1Address, 20, 20);
+              await instance.addLevel(producer1Address, 20, 20);
+            });
+
+            it("era 1 must have 80 level", async () => {
+              const era1 = await instance.getEra(1);
+
+              assert.equal(era1.levels, 80);
+            });
+
+            it("era 2 must have 40 level", async () => {
+              const era2 = await instance.getEra(2);
+
+              assert.equal(era2.levels, 40);
+            });
+
+            it("eraLevels must have 80 level to producer1", async () => {
+              const eraLevels = await instance.eraLevels(1, producer1Address);
+
+              assert.equal(eraLevels, 80);
+            });
+
+            it("eraLevels must have 4 level to producer2", async () => {
+              const eraLevels = await instance.eraLevels(1, producer2Address);
+
+              assert.equal(eraLevels, 0);
+            });
+          });
+        });
+      });
     });
 
     context("with don't allowed caller", () => {

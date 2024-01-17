@@ -87,7 +87,7 @@ contract ResearcherContract {
     researcher.pool.level++;
     researchers[msg.sender] = researcher;
 
-    researcherPool.addLevel(msg.sender, researcher.pool.level, 1);
+    researcherPool.addLevel(msg.sender, 1, 1);
 
     uint256 id = worksCount + 1;
 
