@@ -9,6 +9,7 @@ const ResearcherPool = artifacts.require("ResearcherPool");
 const InspectorPool = artifacts.require("InspectorPool");
 const ValidatorContract = artifacts.require("ValidatorContract");
 const ValidatorPool = artifacts.require("InspectorPool");
+const ActivistContract = artifacts.require("ActivistContract");
 const { userTypes } = require("./shared/user_types");
 
 const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
@@ -24,6 +25,7 @@ contract("Sintrop", (accounts) => {
   let researcherPool;
   let inspectorPool;
   let validatorPool;
+  let activistContract;
 
   const inspectorMaxPenalties = 2;
 
@@ -191,6 +193,7 @@ contract("Sintrop", (accounts) => {
     inspectorContract = await InspectorContract.new(userContract.address, inspectorPool.address, inspectorMaxPenalties);
     researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address, timeBetweenWorks);
     producerContract = await ProducerContract.new(userContract.address, producerPool.address);
+    activistContract = await ActivistContract.new(userContract.address, userContract.address);
 
     categoryContract = await CategoryContract.new(userContract.address);
 
@@ -205,6 +208,7 @@ contract("Sintrop", (accounts) => {
       producerContract.address,
       userContract.address,
       validatorContract.address,
+      activistContract.address,
       sintropArgs.timeBetweenInspections,
       sintropArgs.blocksToExpireAcceptedInspection,
       sintropArgs.allowedInitialRequests,

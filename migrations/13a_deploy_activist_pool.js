@@ -10,10 +10,8 @@ module.exports = function (deployer) {
     const pool_blocks_per_era = process.env["ACTIVIST_POOL_BLOCKS_PER_ERA"];
     const activistPoolFunds = process.env["ACTIVIST_POOL_FUNDS"];
 
-
     await deployer.deploy(ActivistPool, rcToken.address, pool_halving, pool_total_eras, pool_blocks_per_era);
 
     await rcToken.addContractPool(ActivistPool.address, activistPoolFunds);
-
   });
 };
