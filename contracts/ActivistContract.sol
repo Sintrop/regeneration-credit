@@ -66,13 +66,13 @@ contract ActivistContract is Callable {
   }
 
   function addLevel(address activistAddress) public mustBeAllowedCaller {
-    if (activistExists(activistAddress)) return;
+    if (!activistExists(activistAddress)) return;
 
-    Activist storage activist = activists[activistAddress];
+    Activist memory activist = activists[activistAddress];
     activist.pool.level++;
-    activists[msg.sender] = activist;
+    activists[activistAddress] = activist;
 
-    activistPool.addLevel(msg.sender, 1, 1);
+    activistPool.addLevel(activistAddress, 1, 1);
   }
 
   /**
