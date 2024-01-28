@@ -42,7 +42,6 @@ describe("ActivistContract", () => {
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
 
-
     await activistPool.newAllowedCaller(instance.target);
     await rcToken.addContractPool(activistPool.target, activistPoolArgs.totalTokens);
     await addInvitation(owner, activ1Address, userTypes.Activist, owner);
