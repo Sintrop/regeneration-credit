@@ -49,7 +49,7 @@ describe("ActivistContract", () => {
     await addInvitation(owner, activ3Address, userTypes.Activist, owner);
   });
 
-  context("when will create new activist (.addActivist)", () => {
+  describe("#addActivist", () => {
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
         await expect(addActivist("Activist B", activ2Address)).to.be.revertedWith("Invalid invitation");
@@ -73,7 +73,7 @@ describe("ActivistContract", () => {
           expect(activist.activistWallet).to.equal(activ1Address.address);
         });
 
-        it("should increment activistCount after create activist", async () => {
+        it("should increment activistCount", async () => {
           await addActivist("Activist A", activ1Address);
           await addActivist("Activist C", activ3Address);
           const activistsCount = await instance.activistsCount();
@@ -102,45 +102,70 @@ describe("ActivistContract", () => {
     });
   });
 
-  context("when will get activists (.getActivists)", () => {
-    it("should return activists when has activists", async () => {
-      await addActivist("Activist A", activ1Address);
-      await addActivist("Activist C", activ3Address);
+  describe("#getActivists", () => {
+    context("when have activists", () => {
+      beforeEach(async () => {
+        await addActivist("Activist A", activ1Address);
+        await addActivist("Activist C", activ3Address);
+      });
 
-      const activists = await instance.getActivists();
+      it("should return activists when has activists", async () => {
+        const activists = await instance.getActivists();
 
-      expect(activists.length).to.equal(2);
+        expect(activists.length).to.equal(2);
+      });
     });
 
-    it("should return activists equal zero when dont has it", async () => {
-      const activists = await instance.getActivists();
+    context("when do not have activists", () => {
+      it("should return activists equal zero when dont has it", async () => {
+        const activists = await instance.getActivists();
 
-      expect(activists.length).to.equal(0);
-    });
-  });
-
-  context("when will get activist (.getActivist)", () => {
-    it("should return a activist", async () => {
-      await addActivist("Activist A", activ1Address);
-
-      const activist = await instance.getActivist(activ1Address);
-
-      expect(activist.activistWallet).to.equal(activ1Address.address);
+        expect(activists.length).to.equal(0);
+      });
     });
   });
 
-  context("when will check if activist exists", () => {
-    it("should return true when exists", async () => {
-      await addActivist("Activist A", activ1Address);
-      const activistExists = await instance.activistExists(activ1Address);
+  describe("#getActivist", () => {
+    context("when activist is registered", () => {
+      beforeEach(async () => {
+        await addActivist("Activist A", activ1Address);
+      });
 
-      expect(activistExists).to.equal(true);
+      it("should return a activist", async () => {
+        const activist = await instance.getActivist(activ1Address);
+
+        expect(activist.activistWallet).to.equal(activ1Address.address);
+      });
     });
 
-    it("it should return false when don't exist", async () => {
-      const activistExists = await instance.activistExists(activ1Address);
+    context("when activist is registered", () => {
+      it("should do not return a activist", async () => {
+        const activist = await instance.getActivist(activ1Address);
 
-      expect(activistExists).to.equal(false);
+        expect(activist.id).to.equal(0);
+      });
+    });
+  });
+
+  describe("#activistExists", () => {
+    context("when activist is registered", () => {
+      beforeEach(async () => {
+        await addActivist("Activist A", activ1Address);
+      });
+
+      it("should return a activist", async () => {
+        const activistExists = await instance.activistExists(activ1Address);
+
+        expect(activistExists).to.equal(true);
+      });
+    });
+
+    context("when activist is not registered", () => {
+      it("should return a activist", async () => {
+        const activistExists = await instance.activistExists(activ1Address);
+
+        expect(activistExists).to.equal(false);
+      });
     });
   });
 
