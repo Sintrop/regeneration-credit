@@ -2,6 +2,7 @@ const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
 const { expect } = require("chai");
+const { advanceBlock } = require("./shared/advance_block");
 
 describe("ActivistContract", () => {
   let instance, userContract, activistPool, rcToken;
@@ -177,16 +178,38 @@ describe("ActivistContract", () => {
           await instance.addLevel(activ1Address);
         });
 
-        it("add level to activist.pool.level ", async () => {
-          const activist = await instance.getActivist(activ1Address);
+        context("when current era of pool is 1", () => {
+          it("add level to activist.pool.level ", async () => {
+            const activist = await instance.getActivist(activ1Address);
 
-          expect(activist.pool.level).to.equal(1);
+            expect(activist.pool.level).to.equal(1);
+          });
+
+          it("add level to activisPool", async () => {
+            const eraLevels = await activistPool.eraLevels(1, activ1Address);
+
+            expect(eraLevels).to.equal(1);
+          });
         });
 
-        it("add level to activisPool", async () => {
-          const eraLevels = await activistPool.eraLevels(1, activ1Address);
+        context("when current era of pool is 2", () => {
+          beforeEach(async () => {
+            await advanceBlock(activistPoolArgs.blocksPerEra);
+            await instance.addLevel(activ1Address);
+            await instance.addLevel(activ1Address);
+          });
 
-          expect(eraLevels).to.equal(1);
+          it("add level to activist.pool.level ", async () => {
+            const activist = await instance.getActivist(activ1Address);
+
+            expect(activist.pool.level).to.equal(3);
+          });
+
+          it("add level to era 2 activisPool", async () => {
+            const eraLevels = await activistPool.eraLevels(2, activ1Address);
+
+            expect(eraLevels).to.equal(1);
+          });
         });
       });
 
