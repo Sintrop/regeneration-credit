@@ -43,6 +43,7 @@ describe("ActivistContract", () => {
     await userContract.newAllowedCaller(owner);
 
     await activistPool.newAllowedCaller(instance.target);
+    await instance.newAllowedCaller(owner);
     await rcToken.addContractPool(activistPool.target, activistPoolArgs.totalTokens);
     await addInvitation(owner, activ1Address, userTypes.Activist, owner);
     await addInvitation(owner, activ3Address, userTypes.Activist, owner);
@@ -140,6 +141,53 @@ describe("ActivistContract", () => {
       const activistExists = await instance.activistExists(activ1Address);
 
       expect(activistExists).to.equal(false);
+    });
+  });
+
+  describe("#addLevel", () => {
+    context("with allowed caller", () => {
+      context("when activist is registered", () => {
+        beforeEach(async () => {
+          await addActivist("Activist A", activ1Address);
+          await instance.addLevel(activ1Address);
+        });
+
+        it("add level to activist.pool.level ", async () => {
+          const activist = await instance.getActivist(activ1Address);
+
+          expect(activist.pool.level).to.equal(1);
+        });
+
+        it("add level to activisPool", async () => {
+          const eraLevels = await activistPool.eraLevels(1, activ1Address);
+
+          expect(eraLevels).to.equal(1);
+        });
+      });
+
+      context("when activist is not registered", () => {
+        beforeEach(async () => {
+          await instance.addLevel(activ1Address);
+        });
+
+        it("add level to activist.pool.level ", async () => {
+          const activist = await instance.getActivist(activ1Address);
+
+          expect(activist.pool.level).to.equal(0);
+        });
+
+        it("add level to activisPool", async () => {
+          const eraLevels = await activistPool.eraLevels(1, activ1Address);
+
+          expect(eraLevels).to.equal(0);
+        });
+      });
+    });
+
+    context("without allowed caller", () => {
+      it("should return error message", async () => {
+        await expect(instance.connect(activ1Address).addLevel(activ1Address)).to.be.revertedWith("Not allowed caller");
+      });
     });
   });
 });
