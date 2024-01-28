@@ -3,7 +3,7 @@ require("solidity-coverage");
 require("dotenv").config({ path: __dirname + "/.env" });
 
 const infuraKey = process.env.INFURA_API_KEY;
-const privateKey = process.env.PRIVATE_KEY_ACCOUNT_TO_DEPLOY;
+const privateKey = process.env.PRIVATE_KEY_ACCOUNT_TO_DEPLOY || "set private key";
 const etherscanApiKey = process.env.ETHERSCAN_API_KEY;
 
 /** @type import('hardhat/config').HardhatUserConfig */
