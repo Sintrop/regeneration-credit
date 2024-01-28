@@ -1,36 +1,38 @@
-const CategoryContract = artifacts.require("CategoryContract");
+const { expect } = require("chai");
 
-const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
-
-contract("CategoryContract", (accounts) => {
+describe("CategoryContract", () => {
   let instance;
-  let [owner, user1Address] = accounts;
+  let owner, user1Address;
 
   const addCategory = async (name, from) => {
-    await instance.addCategory(
-      name,
-      `The description of ${name}`,
-      `How inspectors should evaluate ${name}`,
-      `${name} regenerative 3`,
-      `${name} regenerative 2`,
-      `${name} regenerative 1`,
-      `${name} neutro`,
-      `${name} notRegenerative 1`,
-      `${name} notRegenerative 2`,
-      `${name} notRegenerative 3`,
-      { from: from }
-    );
+    const params = {
+      name: name,
+      description: `The description of ${name}`,
+      tutorial: `How inspectors should evaluate ${name}`,
+      regenerative3: `${name} regenerative 3`,
+      regenerative2: `${name} regenerative 2`,
+      regenerative1: `${name} regenerative 1`,
+      neutro: `${name} neutro`,
+      notRegenerative1: `${name} notRegenerative 1`,
+      notRegenerative2: `${name} notRegenerative 2`,
+      notRegenerative3: `${name} notRegenerative 3`,
+    };
+
+    await instance.connect(from).addCategory(params);
   };
 
   beforeEach(async () => {
-    instance = await CategoryContract.new();
+    [owner, user1Address] = await ethers.getSigners();
+
+    const instanceContractFactory = await ethers.getContractFactory("CategoryContract");
+    instance = await instanceContractFactory.deploy();
   });
 
   describe("#addCategory", () => {
     context("When is not the owner", () => {
       it("should return error message", async () => {
         const name = "Soil";
-        await expectRevert(addCategory(name, user1Address), "Ownable: caller is not the owner");
+        await expect(addCategory(name, user1Address)).to.be.revertedWith("Ownable: caller is not the owner");
       });
     });
 
@@ -40,7 +42,7 @@ contract("CategoryContract", (accounts) => {
         await addCategory(name, owner);
         const categories = await instance.getCategories();
 
-        assert.equal(categories[0].name, "Soil");
+        expect(categories[0].isasDescription.name).to.equal("Soil");
       });
 
       it("should add owner in createdBy", async () => {
@@ -48,7 +50,7 @@ contract("CategoryContract", (accounts) => {
 
         const category = await instance.categories(1);
 
-        assert.equal(category.createdBy, owner);
+        expect(category.createdBy).to.equal(owner.address);
       });
 
       it("should increment id of category when created", async () => {
@@ -57,7 +59,7 @@ contract("CategoryContract", (accounts) => {
 
         const categories = await instance.getCategories();
 
-        assert.equal(categories[1].id, 2);
+        expect(categories[1].id).to.equal(2);
       });
 
       it("should increment total of categories", async () => {
@@ -65,14 +67,14 @@ contract("CategoryContract", (accounts) => {
         await addCategory("Soil 2", owner);
         const categoryCounts = await instance.categoryCounts();
 
-        assert.equal(categoryCounts, 2);
+        expect(categoryCounts).to.equal(2);
       });
 
       it("should create category with votes equal 0", async () => {
         await addCategory("Soil", owner);
         const categories = await instance.getCategories();
 
-        assert.equal(parseInt(categories[0].votesCount), 0);
+        expect(parseInt(categories[0].votesCount)).to.equal(0);
       });
     });
   });
@@ -83,19 +85,19 @@ contract("CategoryContract", (accounts) => {
       await addCategory(name, owner);
       const category = await instance.categories(1);
 
-      assert.equal(category.id, 1);
-      assert.equal(category.createdBy, owner);
-      assert.equal(category.name, "Soil");
-      assert.equal(category.description, `The description of ${name}`);
-      assert.equal(category.tutorial, `How inspectors should evaluate ${name}`);
-      assert.equal(category.regenerative3, `${name} regenerative 3`);
-      assert.equal(category.regenerative2, `${name} regenerative 2`);
-      assert.equal(category.regenerative1, `${name} regenerative 1`);
-      assert.equal(category.neutro, `${name} neutro`);
-      assert.equal(category.notRegenerative1, `${name} notRegenerative 1`);
-      assert.equal(category.notRegenerative2, `${name} notRegenerative 2`);
-      assert.equal(category.notRegenerative3, `${name} notRegenerative 3`);
-      assert.equal(category.votesCount, 0);
+      expect(category.id).to.equal(1);
+      expect(category.createdBy).to.equal(owner.address);
+      expect(category.isasDescription.name).to.equal("Soil");
+      expect(category.isasDescription.description).to.equal(`The description of ${name}`);
+      expect(category.isasDescription.tutorial).to.equal(`How inspectors should evaluate ${name}`);
+      expect(category.isasDescription.regenerative3).to.equal(`${name} regenerative 3`);
+      expect(category.isasDescription.regenerative2).to.equal(`${name} regenerative 2`);
+      expect(category.isasDescription.regenerative1).to.equal(`${name} regenerative 1`);
+      expect(category.isasDescription.neutro).to.equal(`${name} neutro`);
+      expect(category.isasDescription.notRegenerative1).to.equal(`${name} notRegenerative 1`);
+      expect(category.isasDescription.notRegenerative2).to.equal(`${name} notRegenerative 2`);
+      expect(category.isasDescription.notRegenerative3).to.equal(`${name} notRegenerative 3`);
+      expect(category.votesCount).to.equal(0);
     });
   });
 
@@ -105,7 +107,7 @@ contract("CategoryContract", (accounts) => {
       await addCategory("Soil2", owner);
       const categories = await instance.getCategories();
 
-      assert.equal(categories.length, 2);
+      expect(categories.length).to.equal(2);
     });
   });
 });

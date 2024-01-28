@@ -1,12 +1,11 @@
-const ResearcherPool = artifacts.require("ResearcherPool");
-
-const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
 const { advanceBlock } = require("./shared/advance_block");
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
-contract("ResearcherPool", (accounts) => {
+describe("ResearcherPool", () => {
   let instance;
-  let [owner, researcher1Address, researcher2Address] = accounts;
+  let owner, researcher1Address, researcher2Address;
 
   const args = {
     totalResearcherPoolTokens: "30000000000000000000000000",
@@ -16,24 +15,28 @@ contract("ResearcherPool", (accounts) => {
   };
 
   beforeEach(async () => {
+    [owner, researcher1Address, researcher2Address] = await ethers.getSigners();
+
     const rcToken = await rcTokenDeployed();
-    instance = await ResearcherPool.new(rcToken.address, args.halving, args.totalEras, args.blocksPerEra);
+
+    const instanceFactory = await ethers.getContractFactory("ResearcherPool");
+    instance = await instanceFactory.deploy(rcToken.target, args.halving, args.totalEras, args.blocksPerEra);
 
     await instance.newAllowedCaller(owner);
 
-    await rcToken.addContractPool(instance.address, args.totalResearcherPoolTokens);
+    await rcToken.addContractPool(instance.target, args.totalResearcherPoolTokens);
   });
 
   describe("after deploy", () => {
     it("must blocksPerEra be equal the deployed value", async () => {
       const blocksPerEra = await instance.blocksPerEra();
 
-      assert.equal(blocksPerEra, args.blocksPerEra);
+      expect(blocksPerEra).to.equal(args.blocksPerEra);
     });
 
     it("must initial era equal one", async () => {
       const currentContractEra = await instance.currentContractEra();
-      assert.equal(currentContractEra, 1);
+      expect(currentContractEra).to.equal(1);
     });
   });
 
@@ -42,9 +45,9 @@ contract("ResearcherPool", (accounts) => {
       it("should have fields", async () => {
         const era = await instance.getEra(1);
 
-        assert.equal(era.levels, 0);
-        assert.equal(era.tokens, 0);
-        assert.equal(era.users, 0);
+        expect(era.levels).to.equal(0);
+        expect(era.tokens).to.equal(0);
+        expect(era.users).to.equal(0);
       });
     });
   });
@@ -55,7 +58,7 @@ contract("ResearcherPool", (accounts) => {
         let currentEra = 1;
         const nextApproveIn = await instance.nextApproveIn(currentEra);
 
-        assert.isAbove(parseInt(nextApproveIn), 0);
+        expect(parseInt(nextApproveIn)).to.above(0);
       });
     });
 
@@ -66,7 +69,7 @@ contract("ResearcherPool", (accounts) => {
         await advanceBlock(args.blocksPerEra);
         const nextApproveIn = await instance.nextApproveIn(currentEra);
 
-        assert.isBelow(parseInt(nextApproveIn), 1);
+        expect(parseInt(nextApproveIn)).to.lessThan(1);
       });
     });
   });
@@ -75,15 +78,15 @@ contract("ResearcherPool", (accounts) => {
     it("must return balance of ResearcherPool", async () => {
       const balance = await instance.balance();
 
-      assert.equal(balance, args.totalResearcherPoolTokens);
+      expect(balance).to.equal(args.totalResearcherPoolTokens);
     });
   });
 
   describe("#balanceOf", () => {
     it("should return balanceOf address", async () => {
-      const balanceOf = await instance.balanceOf(instance.address);
+      const balanceOf = await instance.balanceOf(instance.target);
 
-      assert.equal(balanceOf, args.totalResearcherPoolTokens);
+      expect(balanceOf).to.equal(args.totalResearcherPoolTokens);
     });
   });
 
@@ -100,25 +103,25 @@ contract("ResearcherPool", (accounts) => {
             it("era 1 must have 2 level", async () => {
               const era1 = await instance.getEra(1);
 
-              assert.equal(era1.levels, 2);
+              expect(era1.levels).to.equal(2);
             });
 
             it("era 2 must have 0 level", async () => {
               const era2 = await instance.getEra(2);
 
-              assert.equal(era2.levels, 0);
+              expect(era2.levels).to.equal(0);
             });
 
             it("eraLevels must have 1 level to researcher1", async () => {
               const eraLevels = await instance.eraLevels(1, researcher1Address);
 
-              assert.equal(eraLevels, 1);
+              expect(eraLevels).to.equal(1);
             });
 
             it("eraLevels must have 1 level to researcher2", async () => {
               const eraLevels = await instance.eraLevels(1, researcher2Address);
 
-              assert.equal(eraLevels, 1);
+              expect(eraLevels).to.equal(1);
             });
           });
         });
@@ -142,25 +145,25 @@ contract("ResearcherPool", (accounts) => {
             it("era 1 must have 11 level", async () => {
               const era1 = await instance.getEra(1);
 
-              assert.equal(era1.levels, 11);
+              expect(era1.levels).to.equal(11);
             });
 
             it("era 2 must have 0 level", async () => {
               const era2 = await instance.getEra(2);
 
-              assert.equal(era2.levels, 0);
+              expect(era2.levels).to.equal(0);
             });
 
             it("eraLevels must have 7 level to researcher1", async () => {
               const eraLevels = await instance.eraLevels(1, researcher1Address);
 
-              assert.equal(eraLevels, 7);
+              expect(eraLevels).to.equal(7);
             });
 
             it("eraLevels must have 4 level to researcher2", async () => {
               const eraLevels = await instance.eraLevels(1, researcher2Address);
 
-              assert.equal(eraLevels, 4);
+              expect(eraLevels).to.equal(4);
             });
           });
         });
@@ -169,8 +172,7 @@ contract("ResearcherPool", (accounts) => {
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          instance.addLevel(researcher1Address, 1, 1, { from: researcher1Address }),
+        await expect(instance.connect(researcher1Address).addLevel(researcher1Address, 1, 1)).to.be.revertedWith(
           "Not allowed caller"
         );
       });
@@ -194,13 +196,13 @@ contract("ResearcherPool", (accounts) => {
             it("era 1 must have 1 level", async () => {
               const era1 = await instance.getEra(1);
 
-              assert.equal(era1.levels, 1);
+              expect(era1.levels).to.equal(1);
             });
 
             it("researcher1 levels in era 1 must be 1", async () => {
               const level = await instance.eraLevels(1, researcher1Address);
 
-              assert.equal(level, 1);
+              expect(level).to.equal(1);
             });
           });
         });
@@ -221,25 +223,25 @@ contract("ResearcherPool", (accounts) => {
               it("era 1 must have 2 level", async () => {
                 const era = await instance.getEra(1);
 
-                assert.equal(era.levels, 2);
+                expect(era.levels).to.equal(2);
               });
 
               it("researcher1 levels in era 1 must be 2", async () => {
                 const level = await instance.eraLevels(1, researcher1Address);
 
-                assert.equal(level, 2);
+                expect(level).to.equal(2);
               });
 
               it("era 2 must have 1 level", async () => {
                 const era = await instance.getEra(2);
 
-                assert.equal(era.levels, 1);
+                expect(era.levels).to.equal(1);
               });
 
               it("researcher1 levels in era 2 must be 1", async () => {
                 const level = await instance.eraLevels(2, researcher1Address);
 
-                assert.equal(level, 1);
+                expect(level).to.equal(1);
               });
             });
           });
@@ -248,15 +250,14 @@ contract("ResearcherPool", (accounts) => {
 
       context("when researcher1 dont have levels in era", () => {
         it("should return error message", async () => {
-          await expectRevert(instance.removeLevel(researcher1Address), "Not enough levels to remove");
+          await expect(instance.removeLevel(researcher1Address)).to.be.revertedWith("Not enough levels to remove");
         });
       });
     });
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          instance.removeLevel(researcher1Address, { from: researcher1Address }),
+        await expect(instance.connect(researcher1Address).removeLevel(researcher1Address)).to.be.revertedWith(
           "Not allowed caller"
         );
       });
@@ -269,7 +270,7 @@ contract("ResearcherPool", (accounts) => {
         let currentEra = 1;
         const canApproveTimes = await instance.canApproveTimes(currentEra);
 
-        assert.equal(canApproveTimes, 0);
+        expect(canApproveTimes).to.equal(0);
       });
     });
 
@@ -281,9 +282,9 @@ contract("ResearcherPool", (accounts) => {
         const canApproveTimes = await instance.canApproveTimes(currentEra);
 
         const blocksPrecision = await instance.BLOCKS_PRECISION();
-        const fixedPoint = canApproveTimes / 10 ** blocksPrecision;
+        const fixedPoint = parseInt(canApproveTimes) / 10 ** parseInt(blocksPrecision);
 
-        assert.equal(Math.ceil(fixedPoint), 2);
+        expect(Math.ceil(fixedPoint)).to.equal(2);
       });
     });
   });
@@ -310,7 +311,7 @@ contract("ResearcherPool", (accounts) => {
                 await instance.withdraw(researcher1Address, 1);
                 const balanceOf = await instance.balanceOf(researcher1Address);
 
-                assert.equal(balanceOf, 600000000000000000000000n);
+                expect(balanceOf).to.equal(600000000000000000000000n);
               });
             });
 
@@ -330,14 +331,14 @@ contract("ResearcherPool", (accounts) => {
                 await instance.withdraw(researcher1Address, 1);
                 const balanceOf = await instance.balanceOf(researcher1Address);
 
-                assert.equal(balanceOf, 1200000000000000000000000n);
+                expect(balanceOf).to.equal(1200000000000000000000000n);
               });
 
               it("shoud withdraw 0 tokens to researcher2", async () => {
                 await instance.withdraw(researcher2Address, 1);
                 const balanceOf = await instance.balanceOf(researcher2Address);
 
-                assert.equal(balanceOf, "0");
+                expect(balanceOf).to.equal("0");
               });
             });
 
@@ -358,7 +359,7 @@ contract("ResearcherPool", (accounts) => {
                 await instance.withdraw(researcher2Address, 1);
                 const balanceOf = await instance.balanceOf(researcher2Address);
 
-                assert.equal(balanceOf, 600000000000000000000000n);
+                expect(balanceOf).to.equal(600000000000000000000000n);
               });
             });
           });
@@ -398,25 +399,25 @@ contract("ResearcherPool", (accounts) => {
               it("researcher pool balance must be 27600000000000000000000000", async () => {
                 const balance = await instance.balance();
 
-                assert.equal(balance, 27600000000000000000000000n);
+                expect(balance).to.equal(27600000000000000000000000n);
               });
 
               it("researcher1 balance must be 1200000000000000000000000", async () => {
                 const balanceOf = await instance.balanceOf(researcher1Address);
 
-                assert.equal(balanceOf, 1200000000000000000000000n);
+                expect(balanceOf).to.equal(1200000000000000000000000n);
               });
 
               it("researcher1 balance in era 1 must be 600000000000000000000000", async () => {
                 const balanceOf = await instance.eraTokens(1, researcher1Address);
 
-                assert.equal(balanceOf, 600000000000000000000000n);
+                expect(balanceOf).to.equal(600000000000000000000000n);
               });
 
               it("researcher1 balance in era 2 must be 600000000000000000000000", async () => {
                 const balanceOf = await instance.eraTokens(2, researcher1Address);
 
-                assert.equal(balanceOf, 600000000000000000000000n);
+                expect(balanceOf).to.equal(600000000000000000000000n);
               });
             });
 
@@ -432,19 +433,19 @@ contract("ResearcherPool", (accounts) => {
               it("researcher2 balance must be 1200000000000000000000000", async () => {
                 const balanceOf = await instance.balanceOf(researcher2Address);
 
-                assert.equal(balanceOf, 1200000000000000000000000n);
+                expect(balanceOf).to.equal(1200000000000000000000000n);
               });
 
               it("researcher2 balance in era 1 must be 600000000000000000000000", async () => {
                 const balanceOf = await instance.eraTokens(1, researcher2Address);
 
-                assert.equal(balanceOf, 600000000000000000000000n);
+                expect(balanceOf).to.equal(600000000000000000000000n);
               });
 
               it("researcher2 balance in era 2 must be 600000000000000000000000", async () => {
                 const balanceOf = await instance.eraTokens(2, researcher2Address);
 
-                assert.equal(balanceOf, 600000000000000000000000n);
+                expect(balanceOf).to.equal(600000000000000000000000n);
               });
             });
           });
@@ -453,15 +454,14 @@ contract("ResearcherPool", (accounts) => {
 
       context("when cant withdraw", () => {
         it("should return error message", async () => {
-          await expectRevert(instance.withdraw(researcher1Address, 1), "You can't approve yet");
+          await expect(instance.withdraw(researcher1Address, 1)).to.be.revertedWith("You can't approve yet");
         });
       });
     });
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expectRevert(
-          instance.withdraw(researcher1Address, 1, { from: researcher1Address }),
+        await expect(instance.connect(researcher1Address).withdraw(researcher1Address, 1)).to.be.revertedWith(
           "Not allowed caller"
         );
       });

@@ -1,17 +1,15 @@
-const SupporterContract = artifacts.require("SupporterContract");
-const SupporterPool = artifacts.require("SupporterPool");
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
-const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
-
-contract("SupporterContract", (accounts) => {
+describe("SupporterContract", () => {
   let instance, userContract, rcToken, supporterPool;
-  const [ownerAddress, inv1Address, inv2Address] = accounts;
+  let ownerAddress, inv1Address, inv2Address;
 
-  const addSupporter = async (name, address) => {
-    await instance.addSupporter(name, { from: address });
+  const addSupporter = async (name, from) => {
+    await instance.connect(from).addSupporter(name);
   };
 
   const transferTokensTo = async (userAddress, tokens) => {
@@ -19,23 +17,29 @@ contract("SupporterContract", (accounts) => {
   };
 
   beforeEach(async () => {
+    [ownerAddress, inv1Address, inv2Address] = await ethers.getSigners();
+
     userContract = await userContractDeployed();
 
     rcToken = await rcTokenDeployed();
-    supporterPool = await SupporterPool.new(rcToken.address);
-    instance = await SupporterContract.new(userContract.address, supporterPool.address);
 
-    await userContract.newAllowedCaller(instance.address);
+    const supporterPoolFactory = await ethers.getContractFactory("SupporterPool");
+    supporterPool = await supporterPoolFactory.deploy(rcToken.target);
+
+    const instanceFactory = await ethers.getContractFactory("SupporterContract");
+    instance = await instanceFactory.deploy(userContract.target, supporterPool.target);
+
+    await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(ownerAddress);
-    await supporterPool.newAllowedCaller(instance.address);
-    await rcToken.addContractPool(supporterPool.address, 0);
+    await supporterPool.newAllowedCaller(instance.target);
+    await rcToken.addContractPool(supporterPool.target, 0);
   });
 
   describe("#addSupporter", () => {
     context("when supporter exists", () => {
       it("should return error", async () => {
         await addSupporter("Supporter A", inv1Address);
-        await expectRevert(addSupporter("Supporter A", inv1Address), "This supporter already exist");
+        await expect(addSupporter("Supporter A", inv1Address)).to.be.revertedWith("This supporter already exist");
       });
     });
 
@@ -45,7 +49,7 @@ contract("SupporterContract", (accounts) => {
         await addSupporter("Supporter B", inv2Address);
         const supporter = await instance.getSupporter(inv1Address);
 
-        assert.equal(supporter.supporterWallet, inv1Address);
+        expect(supporter.supporterWallet).to.equal(inv1Address.address);
       });
 
       it("increment supporterCount", async () => {
@@ -53,7 +57,7 @@ contract("SupporterContract", (accounts) => {
         await addSupporter("Supporter B", inv2Address);
         const supportersCount = await instance.supportersCount();
 
-        assert.equal(supportersCount, 2);
+        expect(supportersCount).to.equal(2);
       });
 
       it("add created supporter in supporterList", async () => {
@@ -62,7 +66,7 @@ contract("SupporterContract", (accounts) => {
 
         const supporters = await instance.getSupporters();
 
-        assert.equal(supporters[0].supporterWallet, inv1Address);
+        expect(supporters[0].supporterWallet).to.equal(inv1Address.address);
       });
 
       it("add created supporter in userType contract as a SUPPORTER", async () => {
@@ -71,7 +75,7 @@ contract("SupporterContract", (accounts) => {
         const userType = await userContract.getUser(inv1Address);
         const SUPPORTER = 7;
 
-        assert.equal(userType, SUPPORTER);
+        expect(userType).to.equal(SUPPORTER);
       });
     });
   });
@@ -86,7 +90,7 @@ contract("SupporterContract", (accounts) => {
       it("return supporters when has supporters", async () => {
         const supporters = await instance.getSupporters();
 
-        assert.equal(supporters.length, 2);
+        expect(supporters.length).to.equal(2);
       });
     });
 
@@ -94,7 +98,7 @@ contract("SupporterContract", (accounts) => {
       it("return empty supporters array", async () => {
         const supporters = await instance.getSupporters();
 
-        assert.equal(supporters.length, 0);
+        expect(supporters.length).to.equal(0);
       });
     });
   });
@@ -105,7 +109,7 @@ contract("SupporterContract", (accounts) => {
 
       const supporter = await instance.getSupporter(inv1Address);
 
-      assert.equal(supporter.supporterWallet, inv1Address);
+      expect(supporter.supporterWallet).to.equal(inv1Address.address);
     });
   });
 
@@ -118,7 +122,7 @@ contract("SupporterContract", (accounts) => {
       it("return true", async () => {
         const supporterExists = await instance.supporterExists(inv1Address);
 
-        assert.equal(supporterExists, true);
+        expect(supporterExists).to.equal(true);
       });
     });
 
@@ -126,7 +130,7 @@ contract("SupporterContract", (accounts) => {
       it("return false", async () => {
         const supporterExists = await instance.supporterExists(inv1Address);
 
-        assert.equal(supporterExists, false);
+        expect(supporterExists).to.equal(false);
       });
     });
   });
@@ -147,43 +151,43 @@ contract("SupporterContract", (accounts) => {
 
           context("when burn 1000000000000000000 tokens", () => {
             beforeEach(async () => {
-              await instance.burnTokens(1000000000000000000n, { from: inv2Address });
+              await instance.connect(inv2Address).burnTokens(1000000000000000000n);
             });
 
             it("Supporter balance must be 99000000000000000000", async () => {
               const balance = await supporterPool.balanceOf(inv2Address);
-              assert.equal(balance, 99000000000000000000n);
+              expect(balance).to.equal(99000000000000000000n);
             });
 
             it("Supporter inviter balance must be 10000000000000000", async () => {
               const balance = await supporterPool.balanceOf(inv1Address);
-              assert.equal(balance, 10000000000000000n);
+              expect(balance).to.equal(10000000000000000n);
             });
 
             it("totalCertified must be 990000000000000000", async () => {
               const totalCertified = await rcToken.totalCertified();
-              assert.equal(totalCertified, 990000000000000000n);
+              expect(totalCertified).to.equal(990000000000000000n);
             });
           });
 
           context("when burn 500000000000000000 tokens", () => {
             beforeEach(async () => {
-              await instance.burnTokens(500000000000000000n, { from: inv2Address });
+              await instance.connect(inv2Address).burnTokens(500000000000000000n);
             });
 
             it("Supporter balance must be 99500000000000000000", async () => {
               const balance = await supporterPool.balanceOf(inv2Address);
-              assert.equal(balance, 99500000000000000000n);
+              expect(balance).to.equal(99500000000000000000n);
             });
 
             it("Supporter inviter balance must be 5000000000000000", async () => {
               const balance = await supporterPool.balanceOf(inv1Address);
-              assert.equal(balance, 5000000000000000n);
+              expect(balance).to.equal(5000000000000000n);
             });
 
             it("totalCertified must be 495000000000000000", async () => {
               const totalCertified = await rcToken.totalCertified();
-              assert.equal(totalCertified, 495000000000000000n);
+              expect(totalCertified).to.equal(495000000000000000n);
             });
           });
         });
@@ -195,37 +199,37 @@ contract("SupporterContract", (accounts) => {
 
           context("when burn 1000000000000000000 tokens", () => {
             beforeEach(async () => {
-              await instance.burnTokens(1000000000000000000n, { from: inv1Address });
+              await instance.connect(inv1Address).burnTokens(1000000000000000000n);
             });
 
             it("Supporter balance must be 99000000000000000000", async () => {
               const supporterBalance = await supporterPool.balanceOf(inv1Address);
 
-              assert.equal(supporterBalance, 99000000000000000000n);
+              expect(supporterBalance).to.equal(99000000000000000000n);
             });
 
             it("totalCertified must be 1000000000000000000", async () => {
               const totalCertified = await rcToken.totalCertified();
 
-              assert.equal(totalCertified, 1000000000000000000n);
+              expect(totalCertified).to.equal(1000000000000000000n);
             });
           });
 
           context("when burn 500000000000000000 tokens", () => {
             beforeEach(async () => {
-              await instance.burnTokens(500000000000000000n, { from: inv1Address });
+              await instance.connect(inv1Address).burnTokens(500000000000000000n);
             });
 
             it("Supporter balance must be 99500000000000000000", async () => {
               const supporterBalance = await supporterPool.balanceOf(inv1Address);
 
-              assert.equal(supporterBalance, 99500000000000000000n);
+              expect(supporterBalance).to.equal(99500000000000000000n);
             });
 
             it("totalCertified must be 500000000000000000", async () => {
               const totalCertified = await rcToken.totalCertified();
 
-              assert.equal(totalCertified, 500000000000000000n);
+              expect(totalCertified).to.equal(500000000000000000n);
             });
           });
         });
@@ -233,14 +237,14 @@ contract("SupporterContract", (accounts) => {
 
       context("when amount is equal zero", () => {
         it("should return error", async () => {
-          await expectRevert(instance.burnTokens(0, { from: inv1Address }), "Amount invalid");
+          await expect(instance.connect(inv1Address).burnTokens(0)).to.be.revertedWith("Amount invalid");
         });
       });
     });
 
     context("when msg.sender is not SUPPORTER", () => {
       it("should return error", async () => {
-        await expectRevert(instance.burnTokens(1, { from: inv1Address }), "Only supporters");
+        await expect(instance.connect(inv1Address).burnTokens(1)).to.be.revertedWith("Only supporters");
       });
     });
   });

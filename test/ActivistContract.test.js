@@ -1,84 +1,84 @@
-const ActivistContract = artifacts.require("ActivistContract");
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
+const { expect } = require("chai");
 
-const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
-
-contract("ActivistContract", (accounts) => {
+describe("ActivistContract", () => {
   let instance;
   let userContract;
-  let [owner, contr1Address, contr2Address, contr3Address] = accounts;
+  let owner, activ1Address, activ2Address, activ3Address;
 
-  const addActivist = async (name, address) => {
-    await instance.addActivist(name, "photoURL", { from: address });
+  const addActivist = async (name, from) => {
+    await instance.connect(from).addActivist(name, "photoURL");
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userContract.addInvitation(inviter, invited, userType, {
-      from: from,
-    });
+    await userContract.connect(from).addInvitation(inviter, invited, userType);
   };
 
   beforeEach(async () => {
+    [owner, activ1Address, activ2Address, activ3Address] = await ethers.getSigners();
+
     userContract = await userContractDeployed();
 
-    instance = await ActivistContract.new(userContract.address);
+    const instanceContractFactory = await ethers.getContractFactory("ActivistContract");
 
-    await userContract.newAllowedCaller(instance.address);
+    instance = await instanceContractFactory.deploy(userContract.target);
+
+    await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
 
-    await addInvitation(owner, contr1Address, userTypes.Activist, owner);
-    await addInvitation(owner, contr3Address, userTypes.Activist, owner);
+    await addInvitation(owner, activ1Address, userTypes.Activist, owner);
+    await addInvitation(owner, activ3Address, userTypes.Activist, owner);
   });
 
   context("when will create new activist (.addActivist)", () => {
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(addActivist("Activist B", contr2Address), "Invalid invitation");
+        await expect(addActivist("Activist B", activ2Address)).to.be.revertedWith("Invalid invitation");
       });
     });
 
     context("when is an allowed user", () => {
       context("when activist exists", () => {
         it("should return error", async () => {
-          await addActivist("Activist A", contr1Address);
-          await expectRevert(addActivist("Activist A", contr1Address), "This activist already exist");
+          await addActivist("Activist A", activ1Address);
+          await expect(addActivist("Activist A", activ1Address)).to.be.revertedWith("This activist already exist");
         });
       });
 
       context("when activist don't exist", () => {
         it("should create activist", async () => {
-          await addActivist("Activist A", contr1Address);
-          await addActivist("Activist C", contr3Address);
-          const activist = await instance.getActivist(contr1Address);
+          await addActivist("Activist A", activ1Address);
+          await addActivist("Activist C", activ3Address);
+          const activist = await instance.getActivist(activ1Address);
 
-          assert.equal(activist.activistWallet, contr1Address);
+          expect(activist.activistWallet).to.equal(activ1Address.address);
         });
 
         it("should increment activistCount after create activist", async () => {
-          await addActivist("Activist A", contr1Address);
-          await addActivist("Activist C", contr3Address);
+          await addActivist("Activist A", activ1Address);
+          await addActivist("Activist C", activ3Address);
           const activistsCount = await instance.activistsCount();
 
-          assert.equal(activistsCount, 2);
+          expect(activistsCount).to.equal(2);
         });
 
         it("should add created activist in activistList (array)", async () => {
-          await addActivist("Activist A", contr1Address);
-          await addActivist("Activist C", contr3Address);
+          await addActivist("Activist A", activ1Address);
+          await addActivist("Activist C", activ3Address);
 
           const activists = await instance.getActivists();
 
-          assert.equal(activists[0].activistWallet, contr1Address);
+          expect(activists[0].activistWallet).to.equal(activ1Address.address);
         });
 
         it("should add created activist in userType contract as a ACTIVIST", async () => {
-          await addActivist("Activist A", contr1Address);
+          await addActivist("Activist A", activ1Address);
 
-          const userType = await userContract.getUser(contr1Address);
+          const userType = await userContract.getUser(activ1Address);
           const ACTIVIST = 6;
 
-          assert.equal(userType, ACTIVIST);
+          expect(userType).to.equal(ACTIVIST);
         });
       });
     });
@@ -86,43 +86,43 @@ contract("ActivistContract", (accounts) => {
 
   context("when will get activists (.getActivists)", () => {
     it("should return activists when has activists", async () => {
-      await addActivist("Activist A", contr1Address);
-      await addActivist("Activist C", contr3Address);
+      await addActivist("Activist A", activ1Address);
+      await addActivist("Activist C", activ3Address);
 
       const activists = await instance.getActivists();
 
-      assert.equal(activists.length, 2);
+      expect(activists.length).to.equal(2);
     });
 
     it("should return activists equal zero when dont has it", async () => {
       const activists = await instance.getActivists();
 
-      assert.equal(activists.length, 0);
+      expect(activists.length).to.equal(0);
     });
   });
 
   context("when will get activist (.getActivist)", () => {
     it("should return a activist", async () => {
-      await addActivist("Activist A", contr1Address);
+      await addActivist("Activist A", activ1Address);
 
-      const activist = await instance.getActivist(contr1Address);
+      const activist = await instance.getActivist(activ1Address);
 
-      assert.equal(activist.activistWallet, contr1Address);
+      expect(activist.activistWallet).to.equal(activ1Address.address);
     });
   });
 
   context("when will check if activist exists", () => {
     it("should return true when exists", async () => {
-      await addActivist("Activist A", contr1Address);
-      const activistExists = await instance.activistExists(contr1Address);
+      await addActivist("Activist A", activ1Address);
+      const activistExists = await instance.activistExists(activ1Address);
 
-      assert.equal(activistExists, true);
+      expect(activistExists).to.equal(true);
     });
 
     it("it should return false when don't exist", async () => {
-      const activistExists = await instance.activistExists(contr1Address);
+      const activistExists = await instance.activistExists(activ1Address);
 
-      assert.equal(activistExists, false);
+      expect(activistExists).to.equal(false);
     });
   });
 });

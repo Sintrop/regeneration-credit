@@ -1,23 +1,32 @@
-const RcToken = artifacts.require("RcToken");
-const RcTokenIco = artifacts.require("RcTokenIco");
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
-const expectRevert = require("@openzeppelin/test-helpers/src/expectRevert");
-
-contract("RcTokenIco", (accounts) => {
+describe("RcTokenIco", () => {
   let instance;
-  let rcToken;
-  let [ownerAddress, user1Address] = accounts;
+  let rcToken, rcTokenIco;
+  let ownerAddress, user1Address;
 
   let args = {
     totalRcTokens: "1500000000000000000000000000",
   };
 
+  const sendTransation = async (from, to, tokensEthers) => {
+    await from.sendTransaction({
+      to: to,
+      value: ethers.parseEther(`${tokensEthers}`),
+    });
+  };
+
   beforeEach(async () => {
-    instance = await RcTokenIco.new();
+    [ownerAddress, user1Address] = await ethers.getSigners();
 
-    rcToken = await RcToken.new(args.totalRcTokens, instance.address);
+    const instanceFactory = await ethers.getContractFactory("RcTokenIco");
+    instance = await instanceFactory.deploy();
 
-    instance.setRcToken(rcToken.address);
+    const rcTokenFactory = await ethers.getContractFactory("RcToken");
+    rcToken = await rcTokenFactory.deploy(args.totalRcTokens, instance.target);
+
+    instance.setRcToken(rcToken.target);
   });
 
   describe("#receive", () => {
@@ -28,101 +37,98 @@ contract("RcTokenIco", (accounts) => {
 
       context("when user send 0.5 ether", () => {
         beforeEach(async () => {
-          await instance.sendTransaction({ from: user1Address, value: web3.utils.toWei("0.5".toString(), "ether") });
+          await sendTransation(user1Address, instance.target, 0.5);
         });
 
         it("contract ether balance increment 0.5 ether", async () => {
-          const balance = await web3.eth.getBalance(instance.address);
+          const balance = await ethers.provider.getBalance(instance.target);
 
-          assert.equal(balance, web3.utils.toWei("0.5".toString(), "ether"));
+          expect(balance).to.equal(500000000000000000n);
         });
 
         it("user rc token balance increment 40000000000000000000000", async () => {
           const balance = await rcToken.balanceOf(user1Address);
 
-          assert.equal(balance, 40000000000000000000000n);
+          expect(balance).to.equal(40000000000000000000000n);
         });
       });
 
       context("when user send 0.0005 ether", () => {
         beforeEach(async () => {
-          await instance.sendTransaction({ from: user1Address, value: web3.utils.toWei("0.0005".toString(), "ether") });
+          await sendTransation(user1Address, instance.target, 0.0005);
         });
 
         it("contract ether balance increment 0.0005 ether", async () => {
-          const balance = await web3.eth.getBalance(instance.address);
+          const balance = await ethers.provider.getBalance(instance.target);
 
-          assert.equal(balance, web3.utils.toWei("0.0005".toString(), "ether"));
+          expect(balance).to.equal(500000000000000n);
         });
 
         it("user rc token balance increment 40000000000000000000", async () => {
           const balance = await rcToken.balanceOf(user1Address);
 
-          assert.equal(balance, 40000000000000000000n);
+          expect(balance).to.equal(40000000000000000000n);
         });
       });
 
       context("when user send 1 ether", () => {
         beforeEach(async () => {
-          await instance.sendTransaction({ from: user1Address, value: web3.utils.toWei("1".toString(), "ether") });
+          await sendTransation(user1Address, instance.target, 1);
         });
 
         it("contract ether balance increment 1 ether", async () => {
-          const balance = await web3.eth.getBalance(instance.address);
+          const balance = await ethers.provider.getBalance(instance.target);
 
-          assert.equal(balance, web3.utils.toWei("1".toString(), "ether"));
+          expect(balance).to.equal(1000000000000000000n);
         });
 
         it("user rc token balance increment 80000000000000000000000", async () => {
           const balance = await rcToken.balanceOf(user1Address);
 
-          assert.equal(balance, 80000000000000000000000n);
+          expect(balance).to.equal(80000000000000000000000n);
         });
       });
 
       context("when user send 3 tokens", () => {
         beforeEach(async () => {
-          await instance.sendTransaction({ from: user1Address, value: web3.utils.toWei("3".toString(), "ether") });
+          await sendTransation(user1Address, instance.target, 3);
         });
 
         it("contract ether balance increment 3 ether", async () => {
-          const balance = await web3.eth.getBalance(instance.address);
+          const balance = await ethers.provider.getBalance(instance.target);
 
-          assert.equal(balance, web3.utils.toWei("3".toString(), "ether"));
+          expect(balance).to.equal(3000000000000000000n);
         });
 
         it("user rc token balance increment 240000000000000000000000", async () => {
           const balance = await rcToken.balanceOf(user1Address);
 
-          assert.equal(balance, 240000000000000000000000n);
+          expect(balance).to.equal(240000000000000000000000n);
         });
       });
 
       context("when the user send 0 ether", () => {
         beforeEach(async () => {
-          await instance.sendTransaction({ from: user1Address, value: web3.utils.toWei("0".toString(), "ether") });
+          await sendTransation(user1Address, instance.target, 0);
         });
 
         it("contract ether balance increment 0 ether", async () => {
-          const balance = await web3.eth.getBalance(instance.address);
+          const balance = await ethers.provider.getBalance(instance.target);
 
-          assert.equal(balance, web3.utils.toWei("0".toString(), "ether"));
+          expect(balance).to.equal(0);
         });
 
         it("user rc token balance increment 0", async () => {
           const balance = await rcToken.balanceOf(user1Address);
 
-          assert.equal(balance, 0);
+          expect(balance).to.equal(0);
         });
       });
     });
 
     context("when the sales is not open", () => {
       it("it return erro message", async () => {
-        await expectRevert(
-          instance.sendTransaction({ from: user1Address, value: web3.utils.toWei("1".toString(), "ether") }),
-          "ICO: sales not open"
-        );
+        await expect(sendTransation(user1Address, instance.target, 1)).to.be.revertedWith("ICO: sales not open");
       });
     });
   });
@@ -131,7 +137,7 @@ contract("RcTokenIco", (accounts) => {
     it("should return the contract balance", async () => {
       const balance = await instance.balance();
 
-      assert.equal(balance, 0);
+      expect(balance).to.equal(0);
     });
   });
 
@@ -145,7 +151,7 @@ contract("RcTokenIco", (accounts) => {
         await instance.changeSalesOpen({ from: ownerAddress });
         const salesOpen = await instance.salesOpen();
 
-        assert.isFalse(salesOpen);
+        expect(salesOpen).to.equal(false);
       });
     });
 
@@ -157,7 +163,7 @@ contract("RcTokenIco", (accounts) => {
       it("should change the sales status to true", async () => {
         const salesOpen = await instance.salesOpen();
 
-        assert.isTrue(salesOpen);
+        expect(salesOpen).to.equal(true);
       });
     });
   });
@@ -167,22 +173,20 @@ contract("RcTokenIco", (accounts) => {
       context("when have 1 ether", () => {
         beforeEach(async () => {
           await instance.changeSalesOpen({ from: ownerAddress });
-          await instance.sendTransaction({ from: user1Address, value: web3.utils.toWei("1".toString(), "ether") });
+          sendTransation(user1Address, instance.target, 1);
         });
 
         context("when the owner withdraw 1 ether", () => {
           beforeEach(async () => {
-            balanceBefore = await web3.eth.getBalance(ownerAddress);
+            balanceBefore = await ethers.provider.getBalance(ownerAddress);
 
-            const weiAmount = web3.utils.toWei("1".toString(), "ether");
+            await instance.withdraw(1000000000000000000n);
 
-            await instance.withdraw(weiAmount, { from: ownerAddress });
-
-            balanceAfter = await web3.eth.getBalance(ownerAddress);
+            balanceAfter = await await ethers.provider.getBalance(ownerAddress);
           });
 
           it("increment owner ether balance", async () => {
-            assert.isAbove(parseInt(balanceAfter), parseInt(balanceBefore));
+            expect(parseInt(balanceAfter)).to.above(parseInt(balanceBefore));
           });
         });
       });
@@ -190,10 +194,7 @@ contract("RcTokenIco", (accounts) => {
 
     context("when ICO contract dont have ether", () => {
       it("it should return erro message", async () => {
-        await expectRevert(
-          instance.withdraw(web3.utils.toWei("1".toString(), "ether"), { from: ownerAddress }),
-          "ICO: insufficient balance"
-        );
+        await expect(instance.withdraw(1000000000000000000n)).to.be.revertedWith("ICO: insufficient balance");
       });
     });
   });

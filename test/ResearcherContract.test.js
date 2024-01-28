@@ -1,20 +1,18 @@
-const ResearcherContract = artifacts.require("ResearcherContract");
-const ResearcherPool = artifacts.require("ResearcherPool");
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
-
-const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
 const { advanceBlock } = require("./shared/advance_block");
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
-contract("ResearcherContract", (accounts) => {
+describe("ResearcherContract", () => {
   let instance;
   let rcToken;
   let researcherPool;
   let userContract;
-  let [owner, resea1Address, resea2Address] = accounts;
+  let owner, resea1Address, resea2Address;
 
-  const timeBetweenWorks = process.env["RESEARCHER_TIME_BETWEEN_WORKS"];
+  const timeBetweenWorks = 10;
 
   const args = {
     totalTokens: "30000000000000000000000000",
@@ -23,33 +21,38 @@ contract("ResearcherContract", (accounts) => {
     blocksPerEra: 12,
   };
 
-  const addResearcher = async (name, address) => {
-    await instance.addResearcher(name, "photoURL", { from: address });
+  const addResearcher = async (name, from) => {
+    await instance.connect(from).addResearcher(name, "photoURL");
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userContract.addInvitation(inviter, invited, userType, {
-      from: from,
-    });
+    await userContract.connect(from).addInvitation(inviter, invited, userType);
   };
 
   const addWork = async (from) => {
-    await instance.addWork("title", "thesis", "fileURL", {
-      from: from,
-    });
+    await instance.connect(from).addWork("title", "thesis", "fileURL");
   };
 
   beforeEach(async () => {
+    [owner, resea1Address, resea2Address] = await ethers.getSigners();
+
     rcToken = await rcTokenDeployed();
     userContract = await userContractDeployed();
 
-    researcherPool = await ResearcherPool.new(rcToken.address, args.halving, args.totalEras, args.blocksPerEra);
+    const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
+    researcherPool = await researcherPoolFactory.deploy(
+      rcToken.target,
+      args.halving,
+      args.totalEras,
+      args.blocksPerEra
+    );
 
-    instance = await ResearcherContract.new(userContract.address, researcherPool.address, timeBetweenWorks);
+    const instanceFactory = await ethers.getContractFactory("ResearcherContract");
+    instance = await instanceFactory.deploy(userContract.target, researcherPool.target, timeBetweenWorks);
 
-    await researcherPool.newAllowedCaller(instance.address);
-    await rcToken.addContractPool(researcherPool.address, args.totalTokens);
-    await userContract.newAllowedCaller(instance.address);
+    await researcherPool.newAllowedCaller(instance.target);
+    await rcToken.addContractPool(researcherPool.target, args.totalTokens);
+    await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
 
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
@@ -58,7 +61,7 @@ contract("ResearcherContract", (accounts) => {
   describe("#addResearcher", () => {
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(addResearcher("Reseacher B", resea2Address), "Invalid invitation");
+        await expect(addResearcher("Reseacher B", resea2Address)).to.be.revertedWith("Invalid invitation");
       });
     });
 
@@ -66,7 +69,9 @@ contract("ResearcherContract", (accounts) => {
       context("when researcher already exists", () => {
         it("should return error", async () => {
           await addResearcher("Researcher A", resea1Address);
-          await expectRevert(addResearcher("Researcher A", resea1Address), "This researcher already exist");
+          await expect(addResearcher("Researcher A", resea1Address)).to.be.revertedWith(
+            "This researcher already exist"
+          );
         });
       });
 
@@ -78,32 +83,32 @@ contract("ResearcherContract", (accounts) => {
         it("create researcher", async () => {
           const researcher = await instance.getResearcher(resea1Address);
 
-          assert.equal(researcher.researcherWallet, resea1Address);
+          expect(researcher.researcherWallet).to.equal(resea1Address.address);
         });
 
         it("increment researcherCount after create researcher", async () => {
           const researchersCount = await instance.researchersCount();
 
-          assert.equal(researchersCount, 1);
+          expect(researchersCount).to.equal(1);
         });
 
         it("add created researcher in researcherList (array)", async () => {
           const researchers = await instance.getResearchers();
 
-          assert.equal(researchers[0].researcherWallet, resea1Address);
+          expect(researchers[0].researcherWallet).to.equal(resea1Address.address);
         });
 
         it("add created researcher in userType contract as a RESEARCHER", async () => {
           const userType = await userContract.getUser(resea1Address);
           const RESEARCHER = 3;
 
-          assert.equal(userType, RESEARCHER);
+          expect(userType).to.equal(RESEARCHER);
         });
 
         it("add created researcher with 0 published works", async () => {
           const researcher = await instance.getResearcher(resea1Address);
 
-          assert.equal(researcher.publishedWorks, 0);
+          expect(researcher.publishedWorks).to.equal(0);
         });
       });
     });
@@ -118,7 +123,7 @@ contract("ResearcherContract", (accounts) => {
       it("return researchers", async () => {
         const researchers = await instance.getResearchers();
 
-        assert.equal(researchers.length, 1);
+        expect(researchers.length).to.equal(1);
       });
     });
 
@@ -126,7 +131,7 @@ contract("ResearcherContract", (accounts) => {
       it("return zero researchers", async () => {
         const researchers = await instance.getResearchers();
 
-        assert.equal(researchers.length, 0);
+        expect(researchers.length).to.equal(0);
       });
     });
   });
@@ -139,7 +144,7 @@ contract("ResearcherContract", (accounts) => {
     it("return a researcher", async () => {
       const researcher = await instance.getResearcher(resea1Address);
 
-      assert.equal(researcher.researcherWallet, resea1Address);
+      expect(researcher.researcherWallet).to.equal(resea1Address.address);
     });
   });
 
@@ -152,7 +157,7 @@ contract("ResearcherContract", (accounts) => {
       it("return true", async () => {
         const researcherExists = await instance.researcherExists(resea1Address);
 
-        assert.equal(researcherExists, true);
+        expect(researcherExists).to.equal(true);
       });
     });
 
@@ -160,7 +165,7 @@ contract("ResearcherContract", (accounts) => {
       it("return false", async () => {
         const researcherExists = await instance.researcherExists(resea1Address);
 
-        assert.equal(researcherExists, false);
+        expect(researcherExists).to.equal(false);
       });
     });
   });
@@ -173,7 +178,7 @@ contract("ResearcherContract", (accounts) => {
 
       context("when researcher is in era 1 and current era is 1", () => {
         it("should return error", async () => {
-          await expectRevert(instance.withdraw({ from: resea1Address }), "Can't approve withdraw");
+          await expect(instance.connect(resea1Address).withdraw()).to.be.revertedWith("Can't approve withdraw");
         });
       });
 
@@ -184,14 +189,14 @@ contract("ResearcherContract", (accounts) => {
 
             await advanceBlock(args.blocksPerEra);
 
-            await instance.withdraw({ from: resea1Address });
+            await instance.connect(resea1Address).withdraw();
           });
 
           it("withdraw 1200000000000000000000000 tokens", async () => {
             const balanceOf = await researcherPool.balanceOf(resea1Address);
             const expectedBalance = 1200000000000000000000000n;
 
-            assert.equal(balanceOf, expectedBalance);
+            expect(balanceOf).to.equal(expectedBalance);
           });
         });
 
@@ -204,14 +209,14 @@ contract("ResearcherContract", (accounts) => {
 
             await advanceBlock(args.blocksPerEra);
 
-            await instance.withdraw({ from: resea1Address });
+            await instance.connect(resea1Address).withdraw();
           });
 
           it("withdraw 600000000000000000000000n tokens", async () => {
             const balanceOf = await researcherPool.balanceOf(resea1Address);
             const expectedBalance = 600000000000000000000000n;
 
-            assert.equal(balanceOf, expectedBalance);
+            expect(balanceOf).to.equal(expectedBalance);
           });
         });
       });
@@ -219,7 +224,7 @@ contract("ResearcherContract", (accounts) => {
 
     context("when is not a researcher", () => {
       it("should return error", async () => {
-        await expectRevert(instance.withdraw({ from: resea1Address }), "Pool only to researchers");
+        await expect(instance.connect(resea1Address).withdraw()).to.be.revertedWith("Pool only to researchers");
       });
     });
   });
@@ -227,7 +232,7 @@ contract("ResearcherContract", (accounts) => {
   describe("#addWork", () => {
     context("when is not a researcher", () => {
       it("should return error", async () => {
-        await expectRevert(addWork(), "Only allowed to researchers");
+        await expect(addWork(owner)).to.be.revertedWith("Only allowed to researchers");
       });
     });
 
@@ -241,31 +246,31 @@ contract("ResearcherContract", (accounts) => {
         it("add a work", async () => {
           const firstWork = await instance.worksCount();
 
-          assert.equal(firstWork, 1);
+          expect(firstWork).to.equal(1);
         });
 
         it("add 1 to researcher publishedWorks", async () => {
           const researcher = await instance.getResearcher(resea1Address);
 
-          assert.equal(researcher.publishedWorks, 1);
+          expect(researcher.publishedWorks).to.equal(1);
         });
 
         it("add 1 to researcher pool level", async () => {
           const researcher = await instance.getResearcher(resea1Address);
 
-          assert.equal(researcher.pool.level, 1);
+          expect(researcher.pool.level).to.equal(1);
         });
 
         it("add 1 to researcher pool eraLeves", async () => {
           const eraLevel = await researcherPool.eraLevels(1, resea1Address);
 
-          assert.equal(eraLevel, 1);
+          expect(eraLevel).to.equal(1);
         });
 
         it("dont add to researcher pool eraLeves of other era", async () => {
           const eraLevel = await researcherPool.eraLevels(2, resea1Address);
 
-          assert.equal(eraLevel, 0);
+          expect(eraLevel).to.equal(0);
         });
 
         context("when is next era", () => {
@@ -278,26 +283,26 @@ contract("ResearcherContract", (accounts) => {
           it("add +1 to researcher pool eraLeves of era 2", async () => {
             const eraLevel = await researcherPool.eraLevels(2, resea1Address);
 
-            assert.equal(eraLevel, 1);
+            expect(eraLevel).to.equal(1);
           });
 
           it("add +1 to researcher pool level", async () => {
             const researcher = await instance.getResearcher(resea1Address);
 
-            assert.equal(researcher.pool.level, 2);
+            expect(researcher.pool.level).to.equal(2);
           });
 
           it("dont add to researcher pool eraLeves of other era", async () => {
             const eraLevel = await researcherPool.eraLevels(3, resea1Address);
 
-            assert.equal(eraLevel, 0);
+            expect(eraLevel).to.equal(0);
           });
         });
       });
 
       context("when have not waited time between works", () => {
         it("should return error message", async () => {
-          await expectRevert(addWork(resea1Address), "Can't publish yet");
+          await expect(addWork(resea1Address)).to.be.revertedWith("Can't publish yet");
         });
       });
     });
@@ -312,7 +317,7 @@ contract("ResearcherContract", (accounts) => {
     it("should return published works list", async () => {
       const works = await instance.getWorks();
 
-      assert.equal(works.length, 1);
+      expect(works.length).to.equal(1);
     });
   });
 });

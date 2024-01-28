@@ -1,11 +1,10 @@
-const Blockable = artifacts.require("Blockable");
-
 const { advanceBlock } = require("./shared/advance_block");
+const { expect } = require("chai");
 
-contract("Blockable", (accounts) => {
+describe("Blockable", () => {
   let instance;
   let blocksPrecision;
-  let [owner, user1Address, user2Address] = accounts;
+  let owner, user1Address, user2Address;
 
   const params = {
     blocksPerEra: 10,
@@ -13,20 +12,24 @@ contract("Blockable", (accounts) => {
   };
 
   beforeEach(async () => {
-    instance = await Blockable.new(params.blocksPerEra, params.eraMax);
+    [owner, user1Address, user2Address] = await ethers.getSigners();
+
+    const blockableContractFactory = await ethers.getContractFactory("Blockable");
+
+    instance = await blockableContractFactory.deploy(params.blocksPerEra, params.eraMax);
   });
 
   context("when deploy", () => {
     it("should have correct blocksPerEra", async () => {
       const blocksPerEra = await instance.blocksPerEra();
 
-      assert.equal(blocksPerEra, params.blocksPerEra);
+      expect(blocksPerEra).to.equal(params.blocksPerEra);
     });
 
     it("should have correct eraMax", async () => {
       const eraMax = await instance.eraMax();
 
-      assert.equal(eraMax, params.eraMax);
+      expect(eraMax).to.equal(params.eraMax);
     });
 
     it("should have deployedAt state", async () => {
@@ -41,7 +44,7 @@ contract("Blockable", (accounts) => {
       it("should return that be in era 1", async () => {
         const currentContractEra = await instance.currentContractEra();
 
-        assert.equal(currentContractEra, 1);
+        expect(currentContractEra).to.equal(1);
       });
     });
 
@@ -52,7 +55,7 @@ contract("Blockable", (accounts) => {
 
       it("should return that be in era 2", async () => {
         const currentContractEra = await instance.currentContractEra();
-        assert.equal(currentContractEra, 2);
+        expect(currentContractEra).to.equal(2);
       });
     });
 
@@ -63,7 +66,7 @@ contract("Blockable", (accounts) => {
 
       it("should return that be in era 6", async () => {
         const currentContractEra = await instance.currentContractEra();
-        assert.equal(currentContractEra, 6);
+        expect(currentContractEra).to.equal(6);
       });
     });
   });
@@ -82,7 +85,7 @@ contract("Blockable", (accounts) => {
         it("should can aprove zero times", async () => {
           const currentUserEra = 1;
           const canApproveTimes = await instance.canApproveTimes(currentUserEra);
-          assert.equal(canApproveTimes, 0);
+          expect(canApproveTimes).to.equal(0);
         });
       });
 
@@ -95,7 +98,7 @@ contract("Blockable", (accounts) => {
 
         it("should can aprove zero times", async () => {
           const canApproveTimes = await instance.canApproveTimes(currentUserEra);
-          assert.equal(canApproveTimes, 0);
+          expect(canApproveTimes).to.equal(0);
         });
       });
     });
@@ -110,8 +113,10 @@ contract("Blockable", (accounts) => {
 
         it("should can aprove one times", async () => {
           let canApproveTimes = await instance.canApproveTimes(currentUserEra);
-          canApproveTimes = Math.ceil(canApproveTimes / 10 ** blocksPrecision);
-          assert.equal(canApproveTimes, 1);
+
+          canApproveTimes = Math.ceil(parseInt(canApproveTimes) / 10 ** parseInt(blocksPrecision));
+
+          expect(canApproveTimes).to.equal(1);
         });
       });
 
@@ -124,8 +129,8 @@ contract("Blockable", (accounts) => {
 
         it("should can aprove one times", async () => {
           let canApproveTimes = await instance.canApproveTimes(currentUserEra);
-          canApproveTimes = Math.ceil(canApproveTimes / 10 ** blocksPrecision);
-          assert.equal(canApproveTimes, 1);
+          canApproveTimes = Math.ceil(parseInt(canApproveTimes) / 10 ** parseInt(blocksPrecision));
+          expect(canApproveTimes).to.equal(1);
         });
       });
     });
@@ -140,8 +145,8 @@ contract("Blockable", (accounts) => {
 
         it("should can aprove 2 times", async () => {
           let canApproveTimes = await instance.canApproveTimes(currentUserEra);
-          canApproveTimes = Math.ceil(canApproveTimes / 10 ** blocksPrecision);
-          assert.equal(canApproveTimes, 2);
+          canApproveTimes = Math.ceil(parseInt(canApproveTimes) / 10 ** parseInt(blocksPrecision));
+          expect(canApproveTimes).to.equal(2);
         });
       });
 
@@ -154,8 +159,8 @@ contract("Blockable", (accounts) => {
 
         it("should can aprove 2 times", async () => {
           let canApproveTimes = await instance.canApproveTimes(currentUserEra);
-          canApproveTimes = Math.ceil(canApproveTimes / 10 ** blocksPrecision);
-          assert.equal(canApproveTimes, 2);
+          canApproveTimes = Math.ceil(parseInt(canApproveTimes) / 10 ** parseInt(blocksPrecision));
+          expect(canApproveTimes).to.equal(2);
         });
       });
     });
@@ -170,8 +175,8 @@ contract("Blockable", (accounts) => {
 
         it("should can aprove 4 times", async () => {
           let canApproveTimes = await instance.canApproveTimes(currentUserEra);
-          canApproveTimes = Math.ceil(canApproveTimes / 10 ** blocksPrecision);
-          assert.equal(canApproveTimes, 5);
+          canApproveTimes = Math.ceil(parseInt(canApproveTimes) / 10 ** parseInt(blocksPrecision));
+          expect(canApproveTimes).to.equal(5);
         });
       });
     });
@@ -187,7 +192,7 @@ contract("Blockable", (accounts) => {
 
       it("should return negative blocks number", async () => {
         const nextApproveIn = await instance.nextApproveIn(currentUserEra);
-        assert.isBelow(parseInt(nextApproveIn), 0);
+        expect(parseInt(nextApproveIn)).to.lessThan(0);
       });
     });
 
@@ -196,7 +201,7 @@ contract("Blockable", (accounts) => {
 
       it("should return positive blocks number", async () => {
         const nextApproveIn = await instance.nextApproveIn(currentUserEra);
-        assert.isAbove(parseInt(nextApproveIn), 0);
+        expect(parseInt(nextApproveIn)).to.above(0);
       });
     });
   });
@@ -211,7 +216,7 @@ contract("Blockable", (accounts) => {
 
       it("should return true", async () => {
         const canApprove = await instance.canApprove(currentUserEra);
-        assert.equal(canApprove, true);
+        expect(canApprove).to.equal(true);
       });
     });
 
@@ -224,7 +229,7 @@ contract("Blockable", (accounts) => {
 
       it("should return false", async () => {
         const canApprove = await instance.canApprove(currentUserEra);
-        assert.equal(canApprove, false);
+        expect(canApprove).to.equal(false);
       });
     });
 
@@ -233,7 +238,7 @@ contract("Blockable", (accounts) => {
 
       it("should return false", async () => {
         const canApprove = await instance.canApprove(currentUserEra);
-        assert.equal(canApprove, false);
+        expect(canApprove).to.equal(false);
       });
     });
   });

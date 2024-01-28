@@ -1,25 +1,22 @@
-const InspectorContract = artifacts.require("InspectorContract");
 const { userContractDeployed } = require("./shared/user_contract_deployed");
-const InspectorPool = artifacts.require("InspectorPool");
 const { userTypes } = require("./shared/user_types");
 
-const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
 const { advanceBlock } = require("./shared/advance_block");
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
-contract("InspectorContract", (accounts) => {
+describe("InspectorContract", () => {
   let instance;
   let userContract;
-  let [owner, inspe1Address, inspe2Address] = accounts;
+  let owner, inspe1Address, inspe2Address;
 
-  const addInspector = async (name, address) => {
-    await instance.addInspector(name, "photoURL", "135465-005", { from: address });
+  const addInspector = async (name, from) => {
+    await instance.connect(from).addInspector(name, "photoURL", "135465-005");
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userContract.addInvitation(inviter, invited, userType, {
-      from: from,
-    });
+    await userContract.connect(from).addInvitation(inviter, invited, userType);
   };
 
   const args = {
@@ -30,16 +27,21 @@ contract("InspectorContract", (accounts) => {
   };
 
   beforeEach(async () => {
+    [owner, inspe1Address, inspe2Address] = await ethers.getSigners();
+
     rcToken = await rcTokenDeployed();
     userContract = await userContractDeployed();
     const maxPenalties = 2;
 
-    inspectorPool = await InspectorPool.new(rcToken.address, args.halving, args.totalEras, args.blocksPerEra);
-    instance = await InspectorContract.new(userContract.address, inspectorPool.address, maxPenalties);
+    const inspectorPoolFactory = await ethers.getContractFactory("InspectorPool");
+    inspectorPool = await inspectorPoolFactory.deploy(rcToken.target, args.halving, args.totalEras, args.blocksPerEra);
 
-    await inspectorPool.newAllowedCaller(instance.address);
-    await rcToken.addContractPool(inspectorPool.address, args.totalTokens);
-    await userContract.newAllowedCaller(instance.address);
+    const instanceFactory = await ethers.getContractFactory("InspectorContract");
+    instance = await instanceFactory.deploy(userContract.target, inspectorPool.target, maxPenalties);
+
+    await inspectorPool.newAllowedCaller(instance.target);
+    await rcToken.addContractPool(inspectorPool.target, args.totalTokens);
+    await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
     await instance.newAllowedCaller(owner);
 
@@ -52,16 +54,16 @@ contract("InspectorContract", (accounts) => {
       await addInspector("Inspector A", inspe1Address);
       const inspector = await instance.getInspector(inspe1Address);
 
-      assert.equal(inspector.id, "1");
-      assert.equal(inspector.inspectorWallet, inspe1Address);
-      assert.equal(inspector.userType, "2");
-      assert.equal(inspector.name, "Inspector A");
-      assert.equal(inspector.proofPhoto, "photoURL");
-      assert.equal(inspector.totalInspections, "0");
-      assert.equal(inspector.giveUps, "0");
-      assert.equal(inspector.lastAcceptedAt, "0");
-      assert.equal(inspector.lastInspection, "0");
-      assert.equal(inspector.inspectorAddress.coordinate, "135465-005");
+      expect(inspector.id).to.equal("1");
+      expect(inspector.inspectorWallet).to.equal(inspe1Address.address);
+      expect(inspector.userType).to.equal("2");
+      expect(inspector.name).to.equal("Inspector A");
+      expect(inspector.proofPhoto).to.equal("photoURL");
+      expect(inspector.totalInspections).to.equal("0");
+      expect(inspector.giveUps).to.equal("0");
+      expect(inspector.lastAcceptedAt).to.equal("0");
+      expect(inspector.lastInspection).to.equal("0");
+      expect(inspector.inspectorAddress.coordinate).to.equal("135465-005");
     });
   });
 
@@ -70,7 +72,7 @@ contract("InspectorContract", (accounts) => {
       context("when inspector exists", () => {
         it("should return error", async () => {
           await addInspector("Inspector A", inspe1Address);
-          await expectRevert(addInspector("Inspector A", inspe1Address), "This inspector already exist");
+          await expect(addInspector("Inspector A", inspe1Address)).to.be.revertedWith("This inspector already exist");
         });
       });
 
@@ -80,7 +82,7 @@ contract("InspectorContract", (accounts) => {
           await addInspector("Inspector B", inspe2Address);
           const inspector = await instance.getInspector(inspe1Address);
 
-          assert.equal(inspector.inspectorWallet, inspe1Address);
+          expect(inspector.inspectorWallet).to.equal(inspe1Address.address);
         });
 
         it("should be created with totalInspections equal zero", async () => {
@@ -88,7 +90,7 @@ contract("InspectorContract", (accounts) => {
 
           const inspector = await instance.getInspector(inspe1Address);
 
-          assert.equal(inspector.totalInspections, 0);
+          expect(inspector.totalInspections).to.equal(0);
         });
 
         it("should be created with giveUps equal zero", async () => {
@@ -96,7 +98,7 @@ contract("InspectorContract", (accounts) => {
 
           const inspector = await instance.getInspector(inspe1Address);
 
-          assert.equal(inspector.giveUps, 0);
+          expect(inspector.giveUps).to.equal(0);
         });
 
         it("should increment inspectorsCount after create inspector", async () => {
@@ -104,7 +106,7 @@ contract("InspectorContract", (accounts) => {
           await addInspector("Inspector B", inspe2Address);
           const inspectorsCount = await instance.inspectorsCount();
 
-          assert.equal(inspectorsCount, 2);
+          expect(inspectorsCount).to.equal(2);
         });
 
         it("should add created inspector in inspectorList (array)", async () => {
@@ -113,7 +115,7 @@ contract("InspectorContract", (accounts) => {
 
           const inspectors = await instance.getInspectors();
 
-          assert.equal(inspectors[0].inspectorWallet, inspe1Address);
+          expect(inspectors[0].inspectorWallet).to.equal(inspe1Address.address);
         });
 
         it("should add created inspector in userType contract as a INSPECTOR", async () => {
@@ -122,7 +124,7 @@ contract("InspectorContract", (accounts) => {
           const userType = await userContract.getUser(inspe1Address);
           const INSPECTOR = 2;
 
-          assert.equal(userType, INSPECTOR);
+          expect(userType).to.equal(INSPECTOR);
         });
       });
     });
@@ -135,13 +137,13 @@ contract("InspectorContract", (accounts) => {
 
       const inspectors = await instance.getInspectors();
 
-      assert.equal(inspectors.length, 2);
+      expect(inspectors.length).to.equal(2);
     });
 
     it("should return inspectors equal zero when dont has it", async () => {
       const inspectors = await instance.getInspectors();
 
-      assert.equal(inspectors.length, 0);
+      expect(inspectors.length).to.equal(0);
     });
   });
 
@@ -151,7 +153,7 @@ contract("InspectorContract", (accounts) => {
 
       const inspector = await instance.getInspector(inspe1Address);
 
-      assert.equal(inspector.inspectorWallet, inspe1Address);
+      expect(inspector.inspectorWallet).to.equal(inspe1Address.address);
     });
   });
 
@@ -160,7 +162,7 @@ contract("InspectorContract", (accounts) => {
       await addInspector("Inspector A", inspe1Address);
       const inspectorExists = await instance.inspectorExists(inspe1Address);
 
-      assert.equal(inspectorExists, true);
+      expect(inspectorExists).to.equal(true);
     });
 
     // Todo Add when not exists
@@ -177,41 +179,43 @@ contract("InspectorContract", (accounts) => {
         it("should increment", async () => {
           const inspector = await instance.getInspector(inspe1Address);
 
-          assert.equal(inspector.totalInspections, 1);
+          expect(inspector.totalInspections).to.equal(1);
         });
 
         it("should do not add level to pool", async () => {
           const eraLevels = await inspectorPool.eraLevels(1, inspe1Address);
 
-          assert.equal(eraLevels, 0);
-        });
-      });
-
-      context("when reached minimum inspections", () => {
-        beforeEach(async () => {
-          await instance.incrementInspections(inspe1Address);
-          await instance.incrementInspections(inspe1Address);
+          expect(eraLevels).to.equal(0);
         });
 
-        it("should add 1 level to pool", async () => {
-          const eraLevels = await inspectorPool.eraLevels(1, inspe1Address);
+        context("when reached minimum inspections", () => {
+          beforeEach(async () => {
+            await instance.incrementInspections(inspe1Address);
+            await instance.incrementInspections(inspe1Address);
+          });
 
-          assert.equal(eraLevels, 1);
-        });
+          it("should add 1 level to pool", async () => {
+            const eraLevels = await inspectorPool.eraLevels(1, inspe1Address);
 
-        it("should increment", async () => {
-          const inspector = await instance.getInspector(inspe1Address);
+            expect(eraLevels).to.equal(1);
+          });
 
-          assert.equal(inspector.totalInspections, 3);
+          it("should increment", async () => {
+            const inspector = await instance.getInspector(inspe1Address);
+
+            expect(inspector.totalInspections).to.equal(3);
+          });
         });
       });
     });
-  });
 
-  context("without allowed caller", async () => {
-    it("should return error when is not allowed caller", async () => {
-      await addInspector("Inspector A", inspe1Address);
-      await expectRevert(instance.incrementInspections(inspe1Address, { from: inspe1Address }), "Not allowed caller");
+    context("without allowed caller", async () => {
+      it("should return error when is not allowed caller", async () => {
+        await addInspector("Inspector A", inspe1Address);
+        await expect(instance.connect(inspe1Address).incrementInspections(inspe1Address)).to.be.revertedWith(
+          "Not allowed caller"
+        );
+      });
     });
   });
 
@@ -226,14 +230,14 @@ contract("InspectorContract", (accounts) => {
 
       context("when have less then 3 inspections", () => {
         it("should return error", async () => {
-          await expectRevert(instance.withdraw({ from: inspe1Address }), "Minimum inspections");
+          await expect(instance.connect(inspe1Address).withdraw()).to.be.revertedWith("Minimum inspections");
         });
       });
 
       context("when inspector is in era 1 and current era is 1", () => {
         it("should return error", async () => {
           await instance.incrementInspections(inspe1Address);
-          await expectRevert(instance.withdraw({ from: inspe1Address }), "Can't approve withdraw");
+          await expect(instance.connect(inspe1Address).withdraw()).to.be.revertedWith("Can't approve withdraw");
         });
       });
 
@@ -244,14 +248,14 @@ contract("InspectorContract", (accounts) => {
 
             await advanceBlock(args.blocksPerEra);
 
-            await instance.withdraw({ from: inspe1Address });
+            await instance.connect(inspe1Address).withdraw();
           });
 
           it("withdraw 7200000000000000000000000 tokens", async () => {
             const balanceOf = await inspectorPool.balanceOf(inspe1Address);
             const expectedBalance = 7200000000000000000000000n;
 
-            assert.equal(balanceOf, expectedBalance);
+            expect(balanceOf).to.equal(expectedBalance);
           });
         });
 
@@ -266,14 +270,14 @@ contract("InspectorContract", (accounts) => {
 
             await advanceBlock(args.blocksPerEra);
 
-            await instance.withdraw({ from: inspe1Address });
+            await instance.connect(inspe1Address).withdraw();
           });
 
           it("withdraw 3600000000000000000000000n tokens", async () => {
             const balanceOf = await inspectorPool.balanceOf(inspe1Address);
             const expectedBalance = 3600000000000000000000000n;
 
-            assert.equal(balanceOf, expectedBalance);
+            expect(balanceOf).to.equal(expectedBalance);
           });
         });
       });
@@ -281,7 +285,7 @@ contract("InspectorContract", (accounts) => {
 
     context("when is not a inspector", () => {
       it("should return error", async () => {
-        await expectRevert(instance.withdraw({ from: inspe1Address }), "Pool only to inspectors");
+        await expect(instance.connect(inspe1Address).withdraw()).to.be.revertedWith("Pool only to inspectors");
       });
     });
   });
@@ -297,13 +301,15 @@ contract("InspectorContract", (accounts) => {
 
         const totalPenalties = await instance.totalPenalties(inspe1Address);
 
-        assert.equal(totalPenalties, 1);
+        expect(totalPenalties).to.equal(1);
       });
     });
 
     context("without allowed caller", () => {
       it("return erro message", async () => {
-        await expectRevert(instance.addPenalty(inspe1Address, 1, { from: inspe2Address }), "Not allowed caller");
+        await expect(instance.connect(inspe2Address).addPenalty(inspe1Address, 1)).to.be.revertedWith(
+          "Not allowed caller"
+        );
       });
     });
   });
@@ -317,7 +323,7 @@ contract("InspectorContract", (accounts) => {
     it("return penalties", async () => {
       const totalPenalties = await instance.totalPenalties(inspe1Address);
 
-      assert.equal(totalPenalties, 1);
+      expect(totalPenalties).to.equal(1);
     });
   });
 });
