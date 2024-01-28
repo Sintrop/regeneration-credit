@@ -168,25 +168,54 @@ describe("InspectorContract", () => {
     // Todo Add when not exists
   });
 
-  context("when will update incrementInspections (.incrementInspections)", () => {
+  describe("#incrementInspections", () => {
     context("with allowed caller", () => {
-      it("should success when is allowed caller", async () => {
+      beforeEach(async () => {
         await addInspector("Inspector A", inspe1Address);
         await instance.incrementInspections(inspe1Address);
+      });
 
-        const inspector = await instance.getInspector(inspe1Address);
+      context("when do not reached minimum inspections", () => {
+        it("should increment", async () => {
+          const inspector = await instance.getInspector(inspe1Address);
 
-        expect(inspector.totalInspections).to.equal(1);
+          expect(inspector.totalInspections).to.equal(1);
+        });
+
+        it("should do not add level to pool", async () => {
+          const eraLevels = await inspectorPool.eraLevels(1, inspe1Address);
+
+          expect(eraLevels).to.equal(0);
+        });
+
+        context("when reached minimum inspections", () => {
+          beforeEach(async () => {
+            await instance.incrementInspections(inspe1Address);
+            await instance.incrementInspections(inspe1Address);
+          });
+
+          it("should add 1 level to pool", async () => {
+            const eraLevels = await inspectorPool.eraLevels(1, inspe1Address);
+
+            expect(eraLevels).to.equal(1);
+          });
+
+          it("should increment", async () => {
+            const inspector = await instance.getInspector(inspe1Address);
+
+            expect(inspector.totalInspections).to.equal(3);
+          });
+        });
       });
     });
-  });
 
-  context("without allowed caller", async () => {
-    it("should return error when is not allowed caller", async () => {
-      await addInspector("Inspector A", inspe1Address);
-      await expect(instance.connect(inspe1Address).incrementInspections(inspe1Address)).to.be.revertedWith(
-        "Not allowed caller"
-      );
+    context("without allowed caller", async () => {
+      it("should return error when is not allowed caller", async () => {
+        await addInspector("Inspector A", inspe1Address);
+        await expect(instance.connect(inspe1Address).incrementInspections(inspe1Address)).to.be.revertedWith(
+          "Not allowed caller"
+        );
+      });
     });
   });
 

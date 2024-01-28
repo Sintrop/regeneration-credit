@@ -442,6 +442,49 @@ describe("ProducerContract", () => {
           });
         });
       });
+
+      context("when producer have reached minimum inspections", () => {
+        beforeEach(async () => {
+          await instance.incrementInspections(prod1Address);
+          await instance.incrementInspections(prod1Address);
+          await instance.incrementInspections(prod1Address);
+
+          await instance.setIsaScore(prod1Address, 50);
+        });
+
+        context("when is era 1", () => {
+          it("set 50 levels to era 1 pool", async () => {
+            const eraLevels = await producerPool.eraLevels(1, prod1Address);
+
+            expect(eraLevels).to.equal(50);
+          });
+
+          it("producer isaScore must be 50", async () => {
+            const producer = await instance.getProducer(prod1Address);
+
+            expect(producer.isa.isaScore).to.equal(50);
+          });
+        });
+
+        context("when is era 2", () => {
+          beforeEach(async () => {
+            await advanceBlock(producerPoolArgs.blocksPerEra);
+            await instance.setIsaScore(prod1Address, 50);
+          });
+
+          it("set 50 levels to era 2 pool", async () => {
+            const eraLevels = await producerPool.eraLevels(2, prod1Address);
+
+            expect(eraLevels).to.equal(50);
+          });
+
+          it("producer isaScore must be 100", async () => {
+            const producer = await instance.getProducer(prod1Address);
+
+            expect(producer.isa.isaScore).to.equal(100);
+          });
+        });
+      });
     });
 
     context("with not allowed user", () => {

@@ -1,14 +1,15 @@
-const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
-const { rcTokenDeployed } = require("./shared/rc_token_deployed");
 const { expect } = require("chai");
-const { ethers } = require("hardhat");
+const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { advanceBlock } = require("./shared/advance_block");
+const { userContractDeployed } = require("./shared/user_contract_deployed");
 
 describe("ValidatorContract", () => {
   let instance;
   let userContract;
   let producerContract;
   let producerPool;
+  let validatorPool;
   let rcToken;
   let owner,
     producer1Address,
@@ -22,6 +23,13 @@ describe("ValidatorContract", () => {
 
   const producerPoolArgs = {
     totalTokens: "750000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 12,
+  };
+
+  const validatorPoolArgs = {
+    totalTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
     blocksPerEra: 12,
@@ -67,18 +75,31 @@ describe("ValidatorContract", () => {
       producerPoolArgs.blocksPerEra
     );
 
+    const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
+    validatorPool = await validatorPoolFactory.deploy(
+      rcToken.target,
+      validatorPoolArgs.halving,
+      validatorPoolArgs.totalEras,
+      validatorPoolArgs.blocksPerEra
+    );
+
     const producerContractFactory = await ethers.getContractFactory("ProducerContract");
     producerContract = await producerContractFactory.deploy(userContract.target, producerPool.target);
 
-    const instanceFactory = await ethers.getContractFactory("ValidatorContract");
-    instance = await instanceFactory.deploy(userContract.target, producerContract.target);
+    const validatorContractFactory = await ethers.getContractFactory("ValidatorContract");
+    instance = await validatorContractFactory.deploy(
+      userContract.target,
+      producerContract.target,
+      validatorPool.target
+    );
 
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(producerContract.target);
     await userContract.newAllowedCaller(owner);
     await producerContract.newAllowedCaller(instance.target);
     await producerPool.newAllowedCaller(producerContract.target);
-    await rcToken.addContractPool(instance.target, producerPoolArgs.totalTokens);
+    await validatorPool.newAllowedCaller(instance.target);
+    await rcToken.addContractPool(validatorPool.target, validatorPoolArgs.totalTokens);
     await rcToken.addContractPool(producerContract.target, producerPoolArgs.totalTokens);
 
     await addInvitation(owner, validator1Address, userTypes.Validator, owner);
@@ -145,7 +166,7 @@ describe("ValidatorContract", () => {
         });
 
         it("should return error", async () => {
-          await expect(
+          expect(
             instance.connect(validator1Address).addValidation(validator2Address, "justification")
           ).to.be.revertedWith("User already denied");
         });
@@ -233,9 +254,9 @@ describe("ValidatorContract", () => {
 
     context("when caller is not validator", () => {
       it("should return error", async () => {
-        await expect(
-          instance.connect(otherAddress).addValidation(validator1Address, "justification")
-        ).to.be.revertedWith("User must be a validator");
+        expect(instance.connect(otherAddress).addValidation(validator1Address, "justification")).to.be.revertedWith(
+          "User must be a validator"
+        );
       });
     });
   });
@@ -342,6 +363,95 @@ describe("ValidatorContract", () => {
         const majorityValidatorsCount = await instance.majorityValidatorsCount();
 
         expect(majorityValidatorsCount).to.equal(3);
+      });
+    });
+  });
+
+  describe("#addLevel", () => {
+    context("when is not a validator", () => {
+      it("should return error", async () => {
+        await expect(instance.connect(producer1Address).addLevel()).to.be.revertedWith("User must be a validator");
+      });
+    });
+
+    context("when is a validator", () => {
+      beforeEach(async () => {
+        await addValidator(validator1Address);
+      });
+
+      it("should add 1 level", async () => {
+        await instance.connect(validator1Address).addLevel();
+
+        const validator = await instance.getValidator(validator1Address);
+
+        expect(validator.pool.level).to.equal(1);
+      });
+    });
+
+    context("when is a validator and has already added a level in that era", () => {
+      beforeEach(async () => {
+        await addValidator(validator1Address);
+        await instance.connect(validator1Address).addLevel();
+      });
+
+      it("should return error", async () => {
+        await expect(instance.connect(validator1Address).addLevel()).to.be.revertedWith("Only once per era");
+      });
+    });
+  });
+
+  describe("#withdraw", () => {
+    context("when is a validator", () => {
+      beforeEach(async () => {
+        await addValidator(validator1Address);
+        await instance.connect(validator1Address).addLevel();
+      });
+
+      context("when validator is in era 1 and current era is 1", () => {
+        it("should return error", async () => {
+          await expect(instance.connect(validator1Address).withdraw()).to.be.revertedWith("Can't approve withdraw");
+        });
+      });
+
+      context("when validator is in era 1 and current era is 2", () => {
+        context("with one validator", () => {
+          beforeEach(async () => {
+            await advanceBlock(validatorPoolArgs.blocksPerEra);
+            await instance.connect(validator1Address).withdraw();
+          });
+
+          it("withdraw 1200000000000000000000000 tokens", async () => {
+            const balanceOf = await validatorPool.balanceOf(validator1Address);
+            const expectedBalance = 1200000000000000000000000n;
+
+            expect(balanceOf).to.equal(expectedBalance);
+          });
+        });
+
+        context("with two validators", () => {
+          beforeEach(async () => {
+            await addInvitation(owner, validator2Address, userTypes.Validator, owner);
+            await addValidator(validator2Address);
+            await instance.connect(validator2Address).addLevel();
+
+            await advanceBlock(validatorPoolArgs.blocksPerEra);
+
+            await instance.connect(validator1Address).withdraw();
+          });
+
+          it("withdraw 600000000000000000000000n tokens", async () => {
+            const balanceOf = await validatorPool.balanceOf(validator1Address);
+            const expectedBalance = 600000000000000000000000n;
+
+            expect(balanceOf).to.equal(expectedBalance);
+          });
+        });
+      });
+    });
+
+    context("when is not a validator", () => {
+      it("should return error", async () => {
+        await expect(instance.connect(producer1Address).withdraw()).to.be.revertedWith("Pool only to validators");
       });
     });
   });

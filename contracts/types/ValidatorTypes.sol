@@ -7,6 +7,12 @@ struct Validator {
   uint256 id;
   address validatorWallet;
   UserType userType;
+  Pool pool;
+}
+
+struct Pool {
+  uint256 level;
+  uint256 currentEra;
 }
 
 struct Validation {

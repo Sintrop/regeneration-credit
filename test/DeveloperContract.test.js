@@ -14,8 +14,10 @@ describe("DeveloperContract", (accounts) => {
   let owner, dev1Address, dev2Address, dev3Address;
 
   let developerPoolParams = {
+    totalTokens: "30000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
     blocksPerEra: 20,
-    eraMax: 5,
   };
 
   const addDeveloper = async (name, from) => {
@@ -35,8 +37,9 @@ describe("DeveloperContract", (accounts) => {
     developerPoolFactory = await ethers.getContractFactory("DeveloperPool");
     developerPool = await developerPoolFactory.deploy(
       rcToken.target,
-      developerPoolParams.blocksPerEra,
-      developerPoolParams.eraMax
+      developerPoolParams.halving,
+      developerPoolParams.totalEras,
+      developerPoolParams.blocksPerEra
     );
 
     developerContractFactory = await ethers.getContractFactory("DeveloperContract");
@@ -45,7 +48,7 @@ describe("DeveloperContract", (accounts) => {
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
     await developerPool.newAllowedCaller(instance.target);
-    await rcToken.addContractPool(developerPool.target, "15000000000000000000000000");
+    await rcToken.addContractPool(developerPool.target, "30000000000000000000000000");
 
     await addInvitation(owner, dev1Address, userTypes.Developer, owner);
   });
@@ -238,7 +241,7 @@ describe("DeveloperContract", (accounts) => {
         context("when is unique developer in era with 1 level", () => {
           context("when Developer is in era 1 and contract is in era 2", () => {
             beforeEach(async () => {
-              await instance.addLevel(dev1Address);
+              await instance.connect(dev1Address).addContribution("report");
 
               await advanceBlock(developerPoolParams.blocksPerEra + 2);
               await instance.connect(dev1Address).withdraw();
@@ -253,7 +256,7 @@ describe("DeveloperContract", (accounts) => {
             it("should withdraw all tokens from era", async () => {
               let balanceOf = await developerPool.balanceOf(dev1Address);
 
-              let tokensBalance = 833333000000000000000000n;
+              let tokensBalance = 1200000000000000000000000n;
 
               expect(balanceOf).to.equal(tokensBalance);
             });
@@ -269,8 +272,8 @@ describe("DeveloperContract", (accounts) => {
           context("with same levels", () => {
             context("when Developers is in era 1 and contract is in era 2", () => {
               beforeEach(async () => {
-                await instance.addLevel(dev1Address);
-                await instance.addLevel(dev2Address);
+                await instance.connect(dev1Address).addContribution("report");
+                await instance.connect(dev2Address).addContribution("report");
 
                 await advanceBlock(developerPoolParams.blocksPerEra + 2);
                 await instance.connect(dev1Address).withdraw();
@@ -289,60 +292,18 @@ describe("DeveloperContract", (accounts) => {
                 expect(developer.pool.currentEra).to.equal(2);
               });
 
-              it("developer1 balance must be 416666500000000000000000", async () => {
+              it("developer1 balance must be 600000000000000000000000", async () => {
                 let balanceOf = await developerPool.balanceOf(dev1Address);
 
-                let tokensPerEra = 416666500000000000000000n;
+                let tokensPerEra = 600000000000000000000000n;
 
                 expect(balanceOf).to.equal(tokensPerEra);
               });
 
-              it("developer2 balance must be 416666500000000000000000", async () => {
+              it("developer2 balance must be 600000000000000000000000", async () => {
                 let balanceOf = await developerPool.balanceOf(dev2Address);
 
-                let tokensPerEra = 416666500000000000000000n;
-
-                expect(balanceOf).to.equal(tokensPerEra);
-              });
-            });
-          });
-
-          context("with different levels", () => {
-            context("when Developers is in era 1 and contract is in era 2", () => {
-              beforeEach(async () => {
-                await instance.addLevel(dev1Address);
-                await instance.addLevel(dev1Address);
-                await instance.addLevel(dev2Address);
-
-                await advanceBlock(developerPoolParams.blocksPerEra + 2);
-                await instance.connect(dev1Address).withdraw();
-                await instance.connect(dev2Address).withdraw();
-              });
-
-              it("should add developer1 to era 2", async () => {
-                const developer = await instance.getDeveloper(dev1Address);
-
-                expect(developer.pool.currentEra).to.equal(2);
-              });
-
-              it("should add developer2 to era 2", async () => {
-                const developer = await instance.getDeveloper(dev1Address);
-
-                expect(developer.pool.currentEra).to.equal(2);
-              });
-
-              it("developer1 balance must be 555555333333333333333332", async () => {
-                let balanceOf = await developerPool.balanceOf(dev1Address);
-
-                let tokensPerEra = 555555333333333333333333n;
-
-                expect(balanceOf).to.equal(tokensPerEra);
-              });
-
-              it("developer2 balance must be 277777666666666666666666", async () => {
-                let balanceOf = await developerPool.balanceOf(dev2Address);
-
-                let tokensPerEra = 277777666666666666666666n;
+                let tokensPerEra = 600000000000000000000000n;
 
                 expect(balanceOf).to.equal(tokensPerEra);
               });
@@ -352,7 +313,7 @@ describe("DeveloperContract", (accounts) => {
 
         context("when can withdraw only to one era and try withdraw again", () => {
           beforeEach(async () => {
-            await instance.addLevel(dev1Address);
+            await instance.connect(dev1Address).addContribution("report");
             await advanceBlock(developerPoolParams.blocksPerEra + 2);
             await instance.connect(dev1Address).withdraw();
           });
@@ -364,10 +325,10 @@ describe("DeveloperContract", (accounts) => {
 
         context("when can withdraw to two eras and try withdraw again", () => {
           beforeEach(async () => {
-            await instance.addLevel(dev1Address);
+            await instance.connect(dev1Address).addContribution("report");
             await advanceBlock(developerPoolParams.blocksPerEra + 2);
 
-            await instance.addLevel(dev1Address);
+            await instance.connect(dev1Address).addContribution("report");
             await advanceBlock(developerPoolParams.blocksPerEra + 2);
 
             await instance.connect(dev1Address).withdraw();
@@ -376,7 +337,7 @@ describe("DeveloperContract", (accounts) => {
 
           it("should can withdraw in two eras", async () => {
             let balanceOf = await developerPool.balanceOf(dev1Address);
-            let tokensPerEra = 1666666000000000000000000n;
+            let tokensPerEra = 2400000000000000000000000n;
 
             expect(balanceOf).to.equal(tokensPerEra);
           });
@@ -393,124 +354,6 @@ describe("DeveloperContract", (accounts) => {
     context("when is not developer", () => {
       it("should return error message", async () => {
         await expect(instance.connect(dev1Address).withdraw()).to.be.revertedWith("Pool only to developer");
-      });
-    });
-  });
-
-  describe("#addLevel", () => {
-    context("with owner", () => {
-      context("when the developer is in era 1", () => {
-        beforeEach(async () => {
-          await addDeveloper("Developer A", dev1Address);
-        });
-
-        context("when developer1 have 0 levels", () => {
-          context("when receive 1 level", () => {
-            beforeEach(async () => {
-              await instance.addLevel(dev1Address);
-            });
-
-            it("era1 should have 1 level", async () => {
-              let era = await developerPool.getEra(1);
-
-              expect(era.levels).to.equal(1);
-            });
-
-            it("developer1 should have 1 level", async () => {
-              let developer = await instance.getDeveloper(dev1Address);
-
-              expect(developer.pool.level).to.equal(1);
-            });
-          });
-        });
-
-        context("when developer1 have 2 levels", () => {
-          beforeEach(async () => {
-            await instance.addLevel(dev1Address);
-            await instance.addLevel(dev1Address);
-          });
-
-          context("when receive 1 level", () => {
-            beforeEach(async () => {
-              await instance.addLevel(dev1Address);
-            });
-
-            it("era1 should have 3 level", async () => {
-              let era = await developerPool.getEra(1);
-
-              expect(era.levels).to.equal(3);
-            });
-
-            it("developer1 should have 3 levels", async () => {
-              let developer = await instance.getDeveloper(dev1Address);
-
-              expect(developer.pool.level).to.equal(3);
-            });
-          });
-        });
-      });
-    });
-
-    context("with non owner", () => {
-      beforeEach(async () => {
-        await addDeveloper("Developer A", dev1Address);
-      });
-
-      it("should return error message", async () => {
-        await expect(instance.connect(dev1Address).addLevel(dev1Address)).to.be.revertedWith(
-          "Ownable: caller is not the owner"
-        );
-      });
-    });
-  });
-
-  describe("#removeLevel", () => {
-    context("with owner", () => {
-      beforeEach(async () => {
-        await addDeveloper("Developer A", dev1Address);
-      });
-
-      context("when the developer is in era 1", () => {
-        context("when developer1 have 2 levels", () => {
-          beforeEach(async () => {
-            await instance.addLevel(dev1Address);
-            await instance.addLevel(dev1Address);
-          });
-
-          context("when remove 1 level", () => {
-            beforeEach(async () => {
-              await instance.removeLevel(dev1Address);
-            });
-
-            it("developer1 must have 1 level only", async () => {
-              const developer = await instance.getDeveloper(dev1Address);
-
-              expect(developer.pool.level).to.equal(1);
-            });
-          });
-        });
-      });
-    });
-
-    context("with non owner", () => {
-      beforeEach(async () => {
-        await addDeveloper("Developer A", dev1Address);
-      });
-
-      it("should return error message", async () => {
-        await expect(instance.connect(dev1Address).removeLevel(dev1Address)).to.be.revertedWith(
-          "Ownable: caller is not the owner"
-        );
-      });
-    });
-
-    context("when try remove more levels than the developer levels", () => {
-      beforeEach(async () => {
-        await addDeveloper("Developer A", dev1Address);
-      });
-
-      it("should return error message", async () => {
-        await expect(instance.removeLevel(dev1Address)).to.be.revertedWith("Not enough levels to remove");
       });
     });
   });

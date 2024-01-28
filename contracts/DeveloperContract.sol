@@ -115,29 +115,6 @@ contract DeveloperContract is Ownable {
     developerPool.withdraw(msg.sender, currentEra);
   }
 
-  /**
-   * @dev Allow the owner to add a new level to the developer
-   * @param addr The address of the developer
-   */
-  function addLevel(address addr) public onlyOwner {
-    updateLevel(addr);
-  }
-
-  /**
-   * @dev Allow the owner to remove levels from the developer
-   * @param addr The address of the developer
-   */
-  function removeLevel(address addr) public onlyOwner {
-    Developer memory developer = developers[addr];
-
-    require(developer.pool.level != 0, "Not enough levels to remove");
-
-    developer.pool.level--;
-    developers[addr] = developer;
-
-    developerPool.removeLevel(addr);
-  }
-
   function updateLevel(address addr) internal {
     Developer memory developer = developers[addr];
     developer.pool.level++;
@@ -151,13 +128,6 @@ contract DeveloperContract is Ownable {
    */
   function developerPoolEra() internal view returns (uint256) {
     return developerPool.currentContractEra();
-  }
-
-  /**
-   * @dev Returns max era of pool
-   */
-  function eraMax() internal view returns (uint256) {
-    return developerPool.eraMax();
   }
 
   // MODIFIERS

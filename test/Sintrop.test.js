@@ -15,6 +15,7 @@ describe("Sintrop", () => {
   let researcherPool;
   let inspectorPool;
   let producerPool;
+  let validatorPool;
 
   const inspectorMaxPenalties = 2;
 
@@ -66,6 +67,13 @@ describe("Sintrop", () => {
 
   const inspectorPoolargs = {
     totalTokens: "180000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 12,
+  };
+
+  const validatorPoolargs = {
+    totalTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
     blocksPerEra: 12,
@@ -183,6 +191,14 @@ describe("Sintrop", () => {
       producerPoolArgs.blocksPerEra
     );
 
+    const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
+    validatorPool = await validatorPoolFactory.deploy(
+      rcToken.target,
+      validatorPoolargs.halving,
+      validatorPoolargs.totalEras,
+      validatorPoolargs.blocksPerEra
+    );
+
     const inspectorContractFactory = await ethers.getContractFactory("InspectorContract");
     const researcherContractFactory = await ethers.getContractFactory("ResearcherContract");
     const producerContractFactory = await ethers.getContractFactory("ProducerContract");
@@ -203,7 +219,11 @@ describe("Sintrop", () => {
     categoryContract = await categoryContractFactory.deploy();
 
     const validatorContractFactory = await ethers.getContractFactory("ValidatorContract");
-    validatorContract = await validatorContractFactory.deploy(userContract.target, producerContract.target);
+    validatorContract = await validatorContractFactory.deploy(
+      userContract.target,
+      producerContract.target,
+      validatorPool.target
+    );
 
     const instanceFactory = await ethers.getContractFactory("Sintrop");
     instance = await instanceFactory.deploy(
@@ -224,11 +244,13 @@ describe("Sintrop", () => {
     await userContract.newAllowedCaller(owner);
     await inspectorContract.newAllowedCaller(instance.target);
     await inspectorContract.newAllowedCaller(owner);
+
     await validatorContract.newAllowedCaller(instance.target);
     await producerContract.newAllowedCaller(instance.target);
     await producerContract.newAllowedCaller(validatorContract.target);
     await producerPool.newAllowedCaller(producerContract.target);
     await inspectorPool.newAllowedCaller(inspectorContract.target);
+    await validatorPool.newAllowedCaller(validatorContract.target);
 
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
     await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
@@ -660,17 +682,17 @@ describe("Sintrop", () => {
                         categoryId: 1,
                         isaIndex: 0,
                         report: "REGENERATIVE_3",
-                        indicator: 100,
+                        indicator: 25,
                       },
                     ];
 
                     await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
-                  it("should add 20 isaScore to inspection", async () => {
+                  it("should add 25 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    expect(inspection.isaScore).to.equal(20);
+                    expect(inspection.isaScore).to.equal(25);
                   });
                 });
 
@@ -702,17 +724,17 @@ describe("Sintrop", () => {
                         categoryId: 1,
                         isaIndex: 2,
                         report: "REGENERATIVE_1",
-                        indicator: 10,
+                        indicator: 1,
                       },
                     ];
 
                     await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
-                  it("should add 5 isaScore to inspection", async () => {
+                  it("should add 1 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    expect(inspection.isaScore).to.equal(5);
+                    expect(inspection.isaScore).to.equal(1);
                   });
                 });
 
@@ -744,17 +766,17 @@ describe("Sintrop", () => {
                         categoryId: 1,
                         isaIndex: 4,
                         report: "NOT_REGENERATIVE1",
-                        indicator: -5,
+                        indicator: -1,
                       },
                     ];
 
                     await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
-                  it("should add -5 isaScore to inspection", async () => {
+                  it("should add -1 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    expect(inspection.isaScore).to.equal(-5);
+                    expect(inspection.isaScore).to.equal(-1);
                   });
                 });
 
@@ -786,17 +808,17 @@ describe("Sintrop", () => {
                         categoryId: 1,
                         isaIndex: 6,
                         report: "NOT_REGENERATIVE3",
-                        indicator: -20,
+                        indicator: -25,
                       },
                     ];
 
                     await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
-                  it("should add -20 isaScore to inspection", async () => {
+                  it("should add -25 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    expect(inspection.isaScore).to.equal(-20);
+                    expect(inspection.isaScore).to.equal(-25);
                   });
                 });
               });

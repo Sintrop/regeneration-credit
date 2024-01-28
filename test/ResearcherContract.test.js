@@ -283,7 +283,7 @@ describe("ResearcherContract", () => {
           it("add +1 to researcher pool eraLeves of era 2", async () => {
             const eraLevel = await researcherPool.eraLevels(2, resea1Address);
 
-            expect(eraLevel).to.equal(2);
+            expect(eraLevel).to.equal(1);
           });
 
           it("add +1 to researcher pool level", async () => {

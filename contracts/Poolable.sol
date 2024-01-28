@@ -20,8 +20,8 @@ contract Poolable {
     return eras[era];
   }
 
-  function addPoolLevel(address to, uint256 currentLevel, uint256 addLevel, uint256 era) internal {
-    uint256 levels = eraLevels[era][to] > 0 ? addLevel : currentLevel;
+  function addPoolLevel(address to, uint256 levelsNewEra, uint256 addLevel, uint256 era) internal {
+    uint256 levels = eraLevels[era][to] > 0 ? addLevel : levelsNewEra;
 
     eras[era].levels = eras[era].levels.add(levels);
     eraLevels[era][to] += levels;
