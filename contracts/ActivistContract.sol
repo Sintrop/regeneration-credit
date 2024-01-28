@@ -75,6 +75,19 @@ contract ActivistContract is Callable {
     activistPool.addLevel(activistAddress, 1, 1);
   }
 
+  function withdraw() public {
+    require(userContract.userTypeIs(UserType.ACTIVIST, msg.sender), "Pool only to activist");
+
+    Activist memory activist = activists[msg.sender];
+    uint256 currentEra = activist.pool.currentEra;
+
+    require(activistPool.canApprove(currentEra), "Can't approve withdraw");
+
+    activists[msg.sender].pool.currentEra++;
+
+    activistPool.withdraw(msg.sender, currentEra);
+  }
+
   /**
    * @dev Check if a specific activist exists
    * @return a bool that represent if a activist exists or not

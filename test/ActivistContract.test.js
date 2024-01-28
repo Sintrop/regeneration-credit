@@ -12,7 +12,7 @@ describe("ActivistContract", () => {
     totalTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
-    blocksPerEra: 12,
+    blocksPerEra: 20,
   };
 
   const addActivist = async (name, from) => {
@@ -208,7 +208,7 @@ describe("ActivistContract", () => {
           it("add level to era 2 activisPool", async () => {
             const eraLevels = await activistPool.eraLevels(2, activ1Address);
 
-            expect(eraLevels).to.equal(1);
+            expect(eraLevels).to.equal(2);
           });
         });
       });
@@ -235,6 +235,117 @@ describe("ActivistContract", () => {
     context("without allowed caller", () => {
       it("should return error message", async () => {
         await expect(instance.connect(activ1Address).addLevel(activ1Address)).to.be.revertedWith("Not allowed caller");
+      });
+    });
+  });
+
+  describe("#withdraw", () => {
+    context("when is a activist", () => {
+      beforeEach(async () => {
+        await addActivist("Activist A", activ1Address);
+      });
+
+      context("when is era 1", () => {
+        context("when activist have levels", () => {
+          beforeEach(async () => {
+            await instance.addLevel(activ1Address);
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(activ1Address).withdraw()).to.be.revertedWith("Can't approve withdraw");
+          });
+        });
+      });
+
+      context("when is era 2", () => {
+        context("when activist have levels", () => {
+          beforeEach(async () => {
+            await instance.addLevel(activ1Address);
+          });
+
+          context("when have one activist", () => {
+            beforeEach(async () => {
+              await advanceBlock(activistPoolArgs.blocksPerEra);
+
+              await instance.connect(activ1Address).withdraw();
+            });
+
+            it("activist to era 2", async () => {
+              const activist = await instance.getActivist(activ1Address);
+
+              expect(activist.pool.currentEra).to.equal(2);
+            });
+
+            it("activist balance must be", async () => {
+              const balance = await activistPool.balanceOf(activ1Address);
+
+              expect(balance).to.equal(1200000000000000000000000n);
+            });
+          });
+
+          context("when have two activist", () => {
+            beforeEach(async () => {
+              await addActivist("Activist B", activ3Address);
+              await instance.addLevel(activ3Address);
+              await advanceBlock(activistPoolArgs.blocksPerEra);
+
+              await instance.connect(activ1Address).withdraw();
+              await instance.connect(activ3Address).withdraw();
+            });
+
+            it("activist1 to era 2", async () => {
+              const activist = await instance.getActivist(activ1Address);
+
+              expect(activist.pool.currentEra).to.equal(2);
+            });
+
+            it("activist1 balance must be", async () => {
+              const balance = await activistPool.balanceOf(activ1Address);
+
+              expect(balance).to.equal(600000000000000000000000n);
+            });
+
+            it("activist3 to era 2", async () => {
+              const activist = await instance.getActivist(activ3Address);
+
+              expect(activist.pool.currentEra).to.equal(2);
+            });
+
+            it("activist3 balance must be", async () => {
+              const balance = await activistPool.balanceOf(activ3Address);
+
+              expect(balance).to.equal(600000000000000000000000n);
+            });
+          });
+        });
+
+        context("when activist do not have levels", () => {
+          context("when have one activist", () => {
+            beforeEach(async () => {
+              await advanceBlock(activistPoolArgs.blocksPerEra);
+
+              await instance.connect(activ1Address).withdraw();
+            });
+
+            it("activist to era 2", async () => {
+              const activist = await instance.getActivist(activ1Address);
+
+              expect(activist.pool.currentEra).to.equal(2);
+            });
+
+            it("activist balance must be", async () => {
+              const balance = await activistPool.balanceOf(activ1Address);
+
+              expect(balance).to.equal(0n);
+            });
+          });
+        });
+      });
+    });
+
+    context("when is not a activist", () => {
+      it("should return error message", async () => {
+        await expect(instance.withdraw()).to.be.revertedWith("Pool only to activist");
       });
     });
   });
