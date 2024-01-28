@@ -1,18 +1,19 @@
-const Callable = artifacts.require("Callable");
+const { expect } = require("chai");
 
-const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
-
-contract("Callable", (accounts) => {
+describe("Callable", () => {
   let instance;
-  let [owner, user1Address, user2Address] = accounts;
+  let owner, user1Address, user2Address;
 
   beforeEach(async () => {
-    instance = await Callable.new();
+    [owner, user1Address, user2Address] = await ethers.getSigners();
+
+    const instanceFactory = await ethers.getContractFactory("Callable");
+
+    instance = await instanceFactory.deploy();
   });
 
   it("should return error when .newAllowedCaller and is not owner", async () => {
-    await expectRevert(
-      instance.newAllowedCaller(user1Address, { from: user1Address }),
+    await expect(instance.connect(user1Address).newAllowedCaller(user1Address)).to.be.revertedWith(
       "Ownable: caller is not the owner"
     );
   });
@@ -22,7 +23,7 @@ contract("Callable", (accounts) => {
 
     const allowedCaller = await instance.allowedCallers(owner);
 
-    assert.equal(allowedCaller, true);
+    expect(allowedCaller).to.equal(true);
   });
 
   it("should be able to add many callers .newAllowedCaller when is owner", async () => {
@@ -34,8 +35,8 @@ contract("Callable", (accounts) => {
     const allowedCaller2 = await instance.allowedCallers(owner);
     const allowedCaller3 = await instance.allowedCallers(owner);
 
-    assert.equal(allowedCaller1, true);
-    assert.equal(allowedCaller2, true);
-    assert.equal(allowedCaller3, true);
+    expect(allowedCaller1).to.equal(true);
+    expect(allowedCaller2).to.equal(true);
+    expect(allowedCaller3).to.equal(true);
   });
 });

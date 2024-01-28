@@ -1,23 +1,26 @@
-const SupporterPool = artifacts.require("SupporterPool");
-
-const expectEvent = require("@openzeppelin/test-helpers").expectEvent;
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
-contract("SupporterPool", (accounts) => {
+describe("SupporterPool", () => {
   let instance, rcToken;
-  let [owner, user1Address, user2Address] = accounts;
+  let owner, user1Address, user2Address;
 
   const transferTokensTo = async (userAddress, tokens) => {
     await rcToken.transfer(userAddress, tokens);
   };
 
   beforeEach(async () => {
+    [owner, user1Address, user2Address] = await ethers.getSigners();
+
     rcToken = await rcTokenDeployed();
-    instance = await SupporterPool.new(rcToken.address);
+
+    const instanceFactory = await ethers.getContractFactory("SupporterPool");
+    instance = await instanceFactory.deploy(rcToken.target);
 
     await instance.newAllowedCaller(owner);
 
-    await rcToken.addContractPool(instance.address, 0);
+    await rcToken.addContractPool(instance.target, 0);
   });
 
   describe("#burnTokens", () => {
@@ -32,27 +35,29 @@ contract("SupporterPool", (accounts) => {
 
       it("user1Address balance must be 99000000000000000000", async () => {
         const balance = await instance.balanceOf(user1Address);
-        assert.equal(balance, 99000000000000000000n);
+        expect(balance).to.equal(99000000000000000000n);
       });
 
       it("user2Address balance must be 10000000000000000", async () => {
         const balance = await instance.balanceOf(user2Address);
-        assert.equal(balance, 10000000000000000n);
+        expect(balance).to.equal(10000000000000000n);
       });
 
       it("totalCertified must be 990000000000000000", async () => {
         const totalCertified = await rcToken.totalCertified();
-        assert.equal(totalCertified, 990000000000000000n);
+        expect(totalCertified).to.equal(990000000000000000n);
       });
 
       it("send PoolBurnTokensEvent", async () => {
-        expectEvent(receipt, "PoolBurnTokensEvent", {
-          _tokenOwner: user1Address,
-          _amountSend: web3.utils.toBN("1000000000000000000"),
-          _amountBurned: web3.utils.toBN("990000000000000000"),
-          _inviter: user2Address,
-          _inviterTotalTokens: web3.utils.toBN("10000000000000000"),
-        });
+        await expect(receipt)
+          .to.emit(instance, "PoolBurnTokensEvent")
+          .withArgs(
+            user1Address.address,
+            1000000000000000000n,
+            990000000000000000n,
+            user2Address.address,
+            10000000000000000n
+          );
       });
     });
 
@@ -63,27 +68,23 @@ contract("SupporterPool", (accounts) => {
 
       it("user1Address balance must be 99000000000000000000", async () => {
         const balance = await instance.balanceOf(user1Address);
-        assert.equal(balance, 99000000000000000000n);
+        expect(balance).to.equal(99000000000000000000n);
       });
 
       it("user2Address balance must be 0", async () => {
         const balance = await instance.balanceOf(user2Address);
-        assert.equal(balance, 0);
+        expect(balance).to.equal(0);
       });
 
       it("totalCertified must be 1000000000000000000", async () => {
         const totalCertified = await rcToken.totalCertified();
-        assert.equal(totalCertified, 1000000000000000000n);
+        expect(totalCertified).to.equal(1000000000000000000n);
       });
 
       it("send PoolBurnTokensEvent", async () => {
-        expectEvent(receipt, "PoolBurnTokensEvent", {
-          _tokenOwner: user1Address,
-          _amountSend: web3.utils.toBN("1000000000000000000"),
-          _amountBurned: web3.utils.toBN("1000000000000000000"),
-          _inviter: user2Address,
-          _inviterTotalTokens: web3.utils.toBN(0),
-        });
+        await expect(receipt)
+          .to.emit(instance, "PoolBurnTokensEvent")
+          .withArgs(user1Address.address, 1000000000000000000n, 1000000000000000000n, user2Address.address, 0n);
       });
     });
   });
