@@ -13,10 +13,10 @@ module.exports = {
     hardhat: {
       allowUnlimitedContractSize: true,
     },
-    sepolia: {
-      url: `https://sepolia.infura.io/v3/${infuraKey}`,
-      accounts: [privateKey],
-    },
+    // sepolia: {
+    //   url: `https://sepolia.infura.io/v3/${infuraKey}`,
+    //   accounts: [privateKey],
+    // },
   },
   etherscan: {
     apiKey: etherscanApiKey,
