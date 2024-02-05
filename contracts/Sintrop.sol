@@ -8,9 +8,10 @@ import { InspectionStatus, IsaInspection, Inspection } from "./types/InspectionT
 import { Producer } from "./types/ProducerTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
 import { UserContract } from "./UserContract.sol";
-import { UserType } from "./types/UserTypes.sol";
+import { UserType, Invitation } from "./types/UserTypes.sol";
 import { ValidatorContract } from "./ValidatorContract.sol";
 import { Validation } from "./types/ValidatorTypes.sol";
+import { ActivistContract } from "./ActivistContract.sol";
 
 /**
  * @title SintropContract
@@ -23,11 +24,13 @@ contract Sintrop {
   mapping(uint256 => IsaInspection[]) public isas;
   mapping(uint256 => Validation[]) public validations;
   mapping(address => mapping(uint256 => bool)) internal validatorValidations;
+  mapping(address => mapping(address => bool)) internal activistWonLevel;
 
   InspectorContract public inspectorContract;
   ProducerContract public producerContract;
   UserContract public userContract;
   ValidatorContract public validatorContract;
+  ActivistContract public activistContract;
 
   uint256 public inspectionsCount;
   uint256 internal immutable timeBetweenInspections;
@@ -40,6 +43,7 @@ contract Sintrop {
     address producerContractAddress,
     address userContractAddress,
     address validatorContractAddress,
+    address activistContractAddress,
     uint256 timeBetweenInspections_,
     uint256 blocksToExpireAcceptedInspection_,
     uint256 allowedInitialRequests_,
@@ -49,6 +53,7 @@ contract Sintrop {
     producerContract = ProducerContract(producerContractAddress);
     userContract = UserContract(userContractAddress);
     validatorContract = ValidatorContract(validatorContractAddress);
+    activistContract = ActivistContract(activistContractAddress);
     timeBetweenInspections = timeBetweenInspections_;
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
     allowedInitialRequests = allowedInitialRequests_;
@@ -188,15 +193,41 @@ contract Sintrop {
     address createdBy = inspection.createdBy;
     address acceptedBy = inspection.acceptedBy;
 
-    // Increment inspector inspections and release to carry out new inspections
     inspectorContract.incrementInspections(acceptedBy);
     inspectorContract.decreaseGiveUps(acceptedBy);
 
-    // Increment producer requests
     producerContract.incrementInspections(createdBy);
+
+    setActivistLevel(createdBy, acceptedBy);
 
     userInspections[createdBy].push(inspection);
     userInspections[acceptedBy].push(inspection);
+  }
+
+  function setActivistLevel(address producerAddress, address inspectorAddress) internal {
+    Invitation memory producerInvitation = userContract.getInvitation(producerAddress);
+    Invitation memory inspectorInvitation = userContract.getInvitation(inspectorAddress);
+
+    Producer memory producer = producerContract.getProducer(producerAddress);
+    Inspector memory inspector = inspectorContract.getInspector(inspectorAddress);
+
+    uint256 minimumInspectionWonLevel = 3;
+
+    if (
+      producerInvitation.createdAtBlock > 0 &&
+      producer.totalInspections == minimumInspectionWonLevel &&
+      !activistWonLevel[producerInvitation.inviter][producerAddress]
+    ) {
+      activistContract.addLevel(producerInvitation.inviter);
+    }
+
+    if (
+      inspectorInvitation.createdAtBlock > 0 &&
+      inspector.totalInspections == minimumInspectionWonLevel &&
+      !activistWonLevel[inspectorInvitation.inviter][inspectorAddress]
+    ) {
+      activistContract.addLevel(inspectorInvitation.inviter);
+    }
   }
 
   function addInspectionValidation(uint256 id, string memory justification) public {

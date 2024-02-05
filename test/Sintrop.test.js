@@ -12,10 +12,12 @@ describe("Sintrop", () => {
   let inspectorContract;
   let producerContract;
   let researcherContract;
+  let activistContract;
   let researcherPool;
   let inspectorPool;
   let producerPool;
   let validatorPool;
+  let activistPool;
 
   const inspectorMaxPenalties = 2;
 
@@ -28,7 +30,8 @@ describe("Sintrop", () => {
     validator1Address,
     validator2Address,
     validator3Address,
-    validator4Address;
+    validator4Address,
+    activist1Address;
 
   const STATUS = {
     open: 0,
@@ -79,16 +82,23 @@ describe("Sintrop", () => {
     blocksPerEra: 12,
   };
 
+  const activistPoolArgs = {
+    totalTokens: "30000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 12,
+  };
+
   const addProducer = async (name, from) => {
     await producerContract.connect(from).addProducer(10, name, "photoURL", "135465-005");
   };
 
-  const addInvitation = async (inviter, invited, userType, from) => {
-    await userContract.connect(from).addInvitation(inviter, invited, userType);
-  };
-
   const addInspector = async (name, from) => {
     await inspectorContract.connect(from).addInspector(name, "photoURL", "135465-005");
+  };
+
+  const addActivist = async (name, from) => {
+    await activistContract.connect(from).addActivist(name, "photoURL");
   };
 
   const addResearcher = async (name, from) => {
@@ -97,6 +107,10 @@ describe("Sintrop", () => {
 
   const addValidator = async (from) => {
     await validatorContract.connect(from).addValidator();
+  };
+
+  const addInvitation = async (inviter, invited, userType, from) => {
+    await userContract.connect(from).addInvitation(inviter, invited, userType);
   };
 
   const addCategory = async (name, from) => {
@@ -162,6 +176,7 @@ describe("Sintrop", () => {
       validator2Address,
       validator3Address,
       validator4Address,
+      activist1Address,
     ] = await ethers.getSigners();
 
     rcToken = await rcTokenDeployed();
@@ -199,21 +214,33 @@ describe("Sintrop", () => {
       validatorPoolargs.blocksPerEra
     );
 
+    const activistPoolFactory = await ethers.getContractFactory("ActivistPool");
+    activistPool = await activistPoolFactory.deploy(
+      rcToken.target,
+      activistPoolArgs.halving,
+      activistPoolArgs.totalEras,
+      activistPoolArgs.blocksPerEra
+    );
+
     const inspectorContractFactory = await ethers.getContractFactory("InspectorContract");
     const researcherContractFactory = await ethers.getContractFactory("ResearcherContract");
     const producerContractFactory = await ethers.getContractFactory("ProducerContract");
+    const activistContractFactory = await ethers.getContractFactory("ActivistContract");
 
     inspectorContract = await inspectorContractFactory.deploy(
       userContract.target,
       inspectorPool.target,
       inspectorMaxPenalties
     );
+
     researcherContract = await researcherContractFactory.deploy(
       userContract.target,
       researcherPool.target,
       timeBetweenWorks
     );
+
     producerContract = await producerContractFactory.deploy(userContract.target, producerPool.target);
+    activistContract = await activistContractFactory.deploy(userContract.target, activistPool.target);
 
     const categoryContractFactory = await ethers.getContractFactory("CategoryContract");
     categoryContract = await categoryContractFactory.deploy();
@@ -231,6 +258,7 @@ describe("Sintrop", () => {
       producerContract.target,
       userContract.target,
       validatorContract.target,
+      activistContract.target,
       sintropArgs.timeBetweenInspections,
       sintropArgs.blocksToExpireAcceptedInspection,
       sintropArgs.allowedInitialRequests,
@@ -241,26 +269,34 @@ describe("Sintrop", () => {
     await userContract.newAllowedCaller(producerContract.target);
     await userContract.newAllowedCaller(researcherContract.target);
     await userContract.newAllowedCaller(validatorContract.target);
+    await userContract.newAllowedCaller(activistContract.target);
     await userContract.newAllowedCaller(owner);
     await inspectorContract.newAllowedCaller(instance.target);
     await inspectorContract.newAllowedCaller(owner);
-
     await validatorContract.newAllowedCaller(instance.target);
+    await activistContract.newAllowedCaller(instance.target);
+    await activistPool.newAllowedCaller(activistContract.target);
+    await producerContract.newAllowedCaller(owner);
     await producerContract.newAllowedCaller(instance.target);
     await producerContract.newAllowedCaller(validatorContract.target);
     await producerPool.newAllowedCaller(producerContract.target);
     await inspectorPool.newAllowedCaller(inspectorContract.target);
     await validatorPool.newAllowedCaller(validatorContract.target);
+    await validatorPool.newAllowedCaller(validatorContract.target);
 
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
-    await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
-    await addProducer("Producer A", producerAddress);
-    await addInspector("Inspector A", inspectorAddress);
     await addResearcher("Researcher 1", resea1Address);
   });
 
   describe("#getInspection", () => {
+    beforeEach(async () => {
+      await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
+
+      await addProducer("Producer A", producerAddress);
+      await addInspector("Inspector A", inspectorAddress);
+    });
+
     context("when inspection exists", () => {
       beforeEach(async () => {
         await instance.connect(producerAddress).requestInspection();
@@ -283,6 +319,13 @@ describe("Sintrop", () => {
   });
 
   describe("#getInspections", () => {
+    beforeEach(async () => {
+      await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
+
+      await addProducer("Producer A", producerAddress);
+      await addInspector("Inspector A", inspectorAddress);
+    });
+
     context("when have inspections", () => {
       beforeEach(async () => {
         addProducer("Producer B", producer2Address);
@@ -312,6 +355,13 @@ describe("Sintrop", () => {
   });
 
   describe("#requestInspection", () => {
+    beforeEach(async () => {
+      await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
+
+      await addProducer("Producer A", producerAddress);
+      await addInspector("Inspector A", inspectorAddress);
+    });
+
     context("with producer", () => {
       beforeEach(async () => {
         await requestInspection(producerAddress);
@@ -422,6 +472,13 @@ describe("Sintrop", () => {
   });
 
   describe("#acceptInspection", () => {
+    beforeEach(async () => {
+      await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
+
+      await addProducer("Producer A", producerAddress);
+      await addInspector("Inspector A", inspectorAddress);
+    });
+
     context("with inspector", () => {
       context("when inspection exists", () => {
         beforeEach(async () => {
@@ -570,6 +627,17 @@ describe("Sintrop", () => {
   });
 
   describe("#realizeInspection", () => {
+    beforeEach(async () => {
+      await userContract.newAllowedCaller(activist1Address);
+      await addInvitation(owner, activist1Address, userTypes.Activist, owner);
+      await addActivist("Activist 1", activist1Address);
+      await addInvitation(activist1Address, producerAddress, userTypes.Producer, activist1Address);
+      await addInvitation(activist1Address, inspectorAddress, userTypes.Inspector, activist1Address);
+
+      await addProducer("Producer A", producerAddress);
+      await addInspector("Inspector A", inspectorAddress);
+    });
+
     context("with inspector", () => {
       context("when inspection exists", () => {
         beforeEach(async () => {
@@ -600,6 +668,106 @@ describe("Sintrop", () => {
                 await addCategory("Soil A", owner);
                 await addCategory("Soil B", owner);
                 await addCategory("Soil C", owner);
+              });
+
+              describe(".setActivistLevel", () => {
+                context("when producer do not wins minimum inspection", () => {
+                  beforeEach(async () => {
+                    await realizeInspection(1, report, isas(), inspectorAddress);
+                  });
+
+                  it("Activist must do not wins levels", async () => {
+                    const activist = await activistContract.getActivist(activistContract);
+
+                    expect(activist.pool.level).to.equal(0);
+                  });
+
+                  it("Activist pool wins 1 level to activist", async () => {
+                    const levels = await activistPool.eraLevels(4, activist1Address);
+
+                    expect(levels).to.equal(0);
+                  });
+                });
+
+                context("when inspector do not wins minimum inspection", () => {
+                  beforeEach(async () => {
+                    await realizeInspection(1, report, isas(), inspectorAddress);
+                  });
+
+                  it("Activist must do not wins levels", async () => {
+                    const activist = await activistContract.getActivist(activistContract);
+
+                    expect(activist.pool.level).to.equal(0);
+                  });
+
+                  it("Activist pool wins 1 level to activist", async () => {
+                    const levels = await activistPool.eraLevels(4, activist1Address);
+
+                    expect(levels).to.equal(0);
+                  });
+                });
+
+                context("when producer wins minimum inspection", () => {
+                  beforeEach(async () => {
+                    await producerContract.connect(owner).incrementInspections(producerAddress);
+                    await producerContract.connect(owner).incrementInspections(producerAddress);
+                    await realizeInspection(1, report, isas(), inspectorAddress);
+                  });
+
+                  it("Activist must wins 1 level", async () => {
+                    const activist = await activistContract.getActivist(activist1Address);
+
+                    expect(activist.pool.level).to.equal(1);
+                  });
+
+                  it("Activist pool wins 1 level to activist", async () => {
+                    const levels = await activistPool.eraLevels(4, activist1Address);
+
+                    expect(levels).to.equal(1);
+                  });
+                });
+
+                context("when inspector wins minimum inspection", () => {
+                  beforeEach(async () => {
+                    await inspectorContract.connect(owner).incrementInspections(inspectorAddress);
+                    await inspectorContract.connect(owner).incrementInspections(inspectorAddress);
+                    await realizeInspection(1, report, isas(), inspectorAddress);
+                  });
+
+                  it("Activist must wins 1 level", async () => {
+                    const activist = await activistContract.getActivist(activist1Address);
+
+                    expect(activist.pool.level).to.equal(1);
+                  });
+
+                  it("Activist pool wins 1 level to activist", async () => {
+                    const levels = await activistPool.eraLevels(4, activist1Address);
+
+                    expect(levels).to.equal(1);
+                  });
+                });
+
+                context("when producer and inspector wins minimum inspection", () => {
+                  beforeEach(async () => {
+                    await producerContract.connect(owner).incrementInspections(producerAddress);
+                    await producerContract.connect(owner).incrementInspections(producerAddress);
+                    await inspectorContract.connect(owner).incrementInspections(inspectorAddress);
+                    await inspectorContract.connect(owner).incrementInspections(inspectorAddress);
+                    await realizeInspection(1, report, isas(), inspectorAddress);
+                  });
+
+                  it("Activist must wins 1 level", async () => {
+                    const activist = await activistContract.getActivist(activist1Address);
+
+                    expect(activist.pool.level).to.equal(2);
+                  });
+
+                  it("Activist pool wins 1 level to activist", async () => {
+                    const levels = await activistPool.eraLevels(5, activist1Address);
+
+                    expect(levels).to.equal(2);
+                  });
+                });
               });
 
               context("when check inspection", () => {
@@ -871,6 +1039,13 @@ describe("Sintrop", () => {
   });
 
   describe("#addInspectionValidation", () => {
+    beforeEach(async () => {
+      await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
+
+      await addProducer("Producer A", producerAddress);
+      await addInspector("Inspector A", inspectorAddress);
+    });
+
     context("with validator", () => {
       beforeEach(async () => {
         await addInvitation(owner, validator1Address, userTypes.Validator, owner);
