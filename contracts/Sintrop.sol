@@ -193,33 +193,40 @@ contract Sintrop {
     address createdBy = inspection.createdBy;
     address acceptedBy = inspection.acceptedBy;
 
-    // Increment inspector inspections and release to carry out new inspections
-    uint256 inspectorTotalInspections = inspectorContract.incrementInspections(acceptedBy);
+    inspectorContract.incrementInspections(acceptedBy);
     inspectorContract.decreaseGiveUps(acceptedBy);
 
-    // Increment producer requests
-    uint256 producerTotalInspections = producerContract.incrementInspections(createdBy);
+    producerContract.incrementInspections(createdBy);
 
-    setActivistLevel(createdBy, producerTotalInspections, acceptedBy, inspectorTotalInspections);
+    setActivistLevel(createdBy, acceptedBy);
 
     userInspections[createdBy].push(inspection);
     userInspections[acceptedBy].push(inspection);
   }
 
   function setActivistLevel(
-    address producer,
-    uint256 producerTotalInspections,
-    address inspector,
-    uint256 inspectorTotalInspections
+    address producerAddress,
+    address inspectorAddress
   ) internal {
-    Invitation memory producerInvitation = userContract.getInvitation(producer);
-    Invitation memory inspectorInvitation = userContract.getInvitation(inspector);
+    Invitation memory producerInvitation = userContract.getInvitation(producerAddress);
+    Invitation memory inspectorInvitation = userContract.getInvitation(inspectorAddress);
 
-    if (producerTotalInspections == 3 && !activistWonLevel[producerInvitation.inviter][producer]) {
+    Producer memory producer = producerContract.getProducer(producerAddress);
+    Inspector memory inspector = inspectorContract.getInspector(inspectorAddress);
+
+    uint256 minimumInspectionWonLevel = 3;
+
+    if (producerInvitation.createdAtBlock > 0 &&
+      producer.totalInspections == minimumInspectionWonLevel &&
+      !activistWonLevel[producerInvitation.inviter][producerAddress]) {
+
       activistContract.addLevel(producerInvitation.inviter);
     }
 
-    if (inspectorTotalInspections == 3 && !activistWonLevel[inspectorInvitation.inviter][inspector]) {
+    if (inspectorInvitation.createdAtBlock > 0 &&
+      inspector.totalInspections == minimumInspectionWonLevel &&
+      !activistWonLevel[inspectorInvitation.inviter][inspectorAddress]) {
+
       activistContract.addLevel(inspectorInvitation.inviter);
     }
   }
