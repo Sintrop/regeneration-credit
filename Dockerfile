@@ -7,12 +7,11 @@ RUN apt-get update -qq && apt-get install -y curl wget
 
 RUN curl -sL https://deb.nodesource.com/setup_$NODE_VERSION.x -o nodesource_setup.sh
 RUN bash nodesource_setup.sh
-RUN apt install nodejs
+RUN apt install -y nodejs
 
 RUN mkdir -p $INSTALL_PATH
 
 RUN npm install -g ganache-cli
-RUN npm install -g truffle
 
 RUN wget https://dist.ipfs.io/kubo/v0.14.0/kubo_v0.14.0_linux-amd64.tar.gz
 RUN tar -xvzf kubo_v0.14.0_linux-amd64.tar.gz
