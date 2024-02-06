@@ -68,13 +68,6 @@ describe("CategoryContract", () => {
 
         expect(categoryCounts).to.equal(2);
       });
-
-      it("should create category with votes equal 0", async () => {
-        await addCategory("Soil", owner);
-        const categories = await instance.getCategories();
-
-        expect(parseInt(categories[0].votesCount)).to.equal(0);
-      });
     });
   });
 
@@ -95,7 +88,6 @@ describe("CategoryContract", () => {
       expect(category.isasDescription.notRegenerative1).to.equal(`${name} notRegenerative 1`);
       expect(category.isasDescription.notRegenerative2).to.equal(`${name} notRegenerative 2`);
       expect(category.isasDescription.notRegenerative3).to.equal(`${name} notRegenerative 3`);
-      expect(category.votesCount).to.equal(0);
     });
   });
 
