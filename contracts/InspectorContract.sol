@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
-import { Inspector, InspectorAddress, Penalty, Pool } from "./types/InspectorTypes.sol";
+import { Inspector, Penalty, Pool } from "./types/InspectorTypes.sol";
 import { Callable } from "./Callable.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { InspectorPool } from "./InspectorPool.sol";
@@ -29,19 +29,15 @@ contract InspectorContract is Callable {
   /**
    * @dev Allow a new register of inspector
    * @param name the name of the inspector
-   * @param coordinate the coordinate of the inspector
    * @return a Inspector
    */
   // TODO Add mustBeAllowedCaller
   function addInspector(
     string memory name,
-    string memory proofPhoto,
-    string memory coordinate
+    string memory proofPhoto
   ) public uniqueInspector returns (Inspector memory) {
     uint256 id = inspectorsCount + 1;
     UserType userType = UserType.INSPECTOR;
-
-    InspectorAddress memory inspectorAddress = InspectorAddress(coordinate);
 
     uint256 currentEra = inspectorPoolEra();
     Pool memory pool = Pool(0, currentEra);
@@ -54,7 +50,6 @@ contract InspectorContract is Callable {
       proofPhoto,
       0,
       0,
-      inspectorAddress,
       0,
       0,
       pool

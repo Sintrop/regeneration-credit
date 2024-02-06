@@ -11,7 +11,6 @@ struct Inspector {
   string proofPhoto;
   uint256 totalInspections;
   uint256 giveUps;
-  InspectorAddress inspectorAddress;
   uint256 lastAcceptedAt;
   uint256 lastInspection;
   Pool pool;
@@ -19,10 +18,6 @@ struct Inspector {
 
 struct Penalty {
   uint256 inspectionId;
-}
-
-struct InspectorAddress {
-  string coordinate;
 }
 
 struct Pool {
