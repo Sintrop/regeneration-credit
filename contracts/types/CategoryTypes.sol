@@ -21,7 +21,6 @@ struct Category {
 struct IsasDescription {
   string name;
   string description;
-  string tutorial;
   string regenerative3;
   string regenerative2;
   string regenerative1;

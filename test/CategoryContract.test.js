@@ -8,7 +8,6 @@ describe("CategoryContract", () => {
     const params = {
       name: name,
       description: `The description of ${name}`,
-      tutorial: `How inspectors should evaluate ${name}`,
       regenerative3: `${name} regenerative 3`,
       regenerative2: `${name} regenerative 2`,
       regenerative1: `${name} regenerative 1`,
@@ -89,7 +88,6 @@ describe("CategoryContract", () => {
       expect(category.createdBy).to.equal(owner.address);
       expect(category.isasDescription.name).to.equal("Soil");
       expect(category.isasDescription.description).to.equal(`The description of ${name}`);
-      expect(category.isasDescription.tutorial).to.equal(`How inspectors should evaluate ${name}`);
       expect(category.isasDescription.regenerative3).to.equal(`${name} regenerative 3`);
       expect(category.isasDescription.regenerative2).to.equal(`${name} regenerative 2`);
       expect(category.isasDescription.regenerative1).to.equal(`${name} regenerative 1`);

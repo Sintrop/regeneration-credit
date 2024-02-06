@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { Isas, Category, IsasDescription } from "./types/CategoryTypes.sol";
+import { Category, IsasDescription } from "./types/CategoryTypes.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
@@ -11,7 +11,6 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
  */
 contract CategoryContract is Ownable {
   mapping(uint256 => Category) public categories;
-  mapping(address => mapping(uint256 => uint256)) public voted;
 
   Category public category;
   uint256 public categoryCounts;
