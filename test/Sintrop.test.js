@@ -1,32 +1,27 @@
-const Sintrop = artifacts.require("Sintrop");
-const CategoryContract = artifacts.require("CategoryContract");
-const { userContractDeployed } = require("./shared/user_contract_deployed");
-const InspectorContract = artifacts.require("InspectorContract");
-const ProducerContract = artifacts.require("ProducerContract");
-const ResearcherContract = artifacts.require("ResearcherContract");
-const ProducerPool = artifacts.require("ProducerPool");
-const ResearcherPool = artifacts.require("ResearcherPool");
-const InspectorPool = artifacts.require("InspectorPool");
-const ValidatorContract = artifacts.require("ValidatorContract");
 const { userTypes } = require("./shared/user_types");
-
-const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
+const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
 const { advanceBlock } = require("./shared/advance_block");
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
+const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
-contract("Sintrop", (accounts) => {
+describe("Sintrop", () => {
   let instance;
   let userContract;
   let inspectorContract;
   let producerContract;
   let researcherContract;
+  let activistContract;
   let researcherPool;
   let inspectorPool;
+  let producerPool;
+  let validatorPool;
+  let activistPool;
 
   const inspectorMaxPenalties = 2;
 
-  let [
-    owner,
+  let owner,
     producerAddress,
     producer2Address,
     inspectorAddress,
@@ -36,7 +31,7 @@ contract("Sintrop", (accounts) => {
     validator2Address,
     validator3Address,
     validator4Address,
-  ] = accounts;
+    activist1Address;
 
   const STATUS = {
     open: 0,
@@ -50,7 +45,6 @@ contract("Sintrop", (accounts) => {
     denied: 9,
   };
 
-  const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
   const timeBetweenWorks = 6;
 
   const producerPoolArgs = {
@@ -81,44 +75,59 @@ contract("Sintrop", (accounts) => {
     blocksPerEra: 12,
   };
 
-  const addProducer = async (name, address) => {
-    await producerContract.addProducer(10, name, "photoURL", "135465-005", {
-      from: address,
-    });
+  const validatorPoolargs = {
+    totalTokens: "30000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 12,
+  };
+
+  const activistPoolArgs = {
+    totalTokens: "30000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 12,
+  };
+
+  const addProducer = async (name, from) => {
+    await producerContract.connect(from).addProducer(10, name, "photoURL", "135465-005");
+  };
+
+  const addInspector = async (name, from) => {
+    await inspectorContract.connect(from).addInspector(name, "photoURL", "135465-005");
+  };
+
+  const addActivist = async (name, from) => {
+    await activistContract.connect(from).addActivist(name, "photoURL");
+  };
+
+  const addResearcher = async (name, from) => {
+    await researcherContract.connect(from).addResearcher(name, "photoURL");
+  };
+
+  const addValidator = async (from) => {
+    await validatorContract.connect(from).addValidator();
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userContract.addInvitation(inviter, invited, userType, {
-      from: from,
-    });
-  };
-
-  const addInspector = async (name, address) => {
-    await inspectorContract.addInspector(name, "photoURL", "135465-005", { from: address });
-  };
-
-  const addResearcher = async (name, address) => {
-    await researcherContract.addResearcher(name, "photoURL", { from: address });
-  };
-
-  const addValidator = async (address) => {
-    await validatorContract.addValidator({ from: address });
+    await userContract.connect(from).addInvitation(inviter, invited, userType);
   };
 
   const addCategory = async (name, from) => {
-    await categoryContract.addCategory(
-      name,
-      `The description of ${name}`,
-      `How inspectors should evaluate ${name}`,
-      `${name} regenerative 3`,
-      `${name} regenerative 2`,
-      `${name} regenerative 1`,
-      `${name} neutro`,
-      `${name} notRegenerative 1`,
-      `${name} notRegenerative 2`,
-      `${name} notRegenerative 3`,
-      { from: from }
-    );
+    const params = {
+      name: name,
+      description: `The description of ${name}`,
+      tutorial: `How inspectors should evaluate ${name}`,
+      regenerative3: `${name} regenerative 3`,
+      regenerative2: `${name} regenerative 2`,
+      regenerative1: `${name} regenerative 1`,
+      neutro: `${name} neutro`,
+      notRegenerative1: `${name} notRegenerative 1`,
+      notRegenerative2: `${name} notRegenerative 2`,
+      notRegenerative3: `${name} notRegenerative 3`,
+    };
+
+    await categoryContract.connect(from).addCategory(params);
   };
 
   const isas = () => {
@@ -143,85 +152,160 @@ contract("Sintrop", (accounts) => {
 
   const report = "Hash";
 
+  const requestInspection = async (from) => {
+    await instance.connect(from).requestInspection();
+  };
+
+  const acceptInspection = async (inspectionId, from) => {
+    await instance.connect(from).acceptInspection(inspectionId);
+  };
+
   const realizeInspection = async (id, report, isas_, from) => {
-    await instance.realizeInspection(id, report, isas_, { from: from });
+    await instance.connect(from).realizeInspection(id, report, isas_);
   };
 
   beforeEach(async () => {
+    [
+      owner,
+      producerAddress,
+      producer2Address,
+      inspectorAddress,
+      inspector2Address,
+      resea1Address,
+      validator1Address,
+      validator2Address,
+      validator3Address,
+      validator4Address,
+      activist1Address,
+    ] = await ethers.getSigners();
+
     rcToken = await rcTokenDeployed();
     userContract = await userContractDeployed();
 
-    researcherPool = await ResearcherPool.new(
-      rcToken.address,
+    const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
+    researcherPool = await researcherPoolFactory.deploy(
+      rcToken.target,
       researcherPoolargs.halving,
       researcherPoolargs.totalEras,
       researcherPoolargs.blocksPerEra
     );
 
-    inspectorPool = await InspectorPool.new(
-      rcToken.address,
+    const inspectorPoolFactory = await ethers.getContractFactory("InspectorPool");
+    inspectorPool = await inspectorPoolFactory.deploy(
+      rcToken.target,
       inspectorPoolargs.halving,
       inspectorPoolargs.totalEras,
       inspectorPoolargs.blocksPerEra
     );
 
-    producerPool = await ProducerPool.new(
-      rcToken.address,
+    const producerPoolFactory = await ethers.getContractFactory("ProducerPool");
+    producerPool = await producerPoolFactory.deploy(
+      rcToken.target,
       producerPoolArgs.halving,
       producerPoolArgs.totalEras,
       producerPoolArgs.blocksPerEra
     );
 
-    inspectorContract = await InspectorContract.new(userContract.address, inspectorPool.address, inspectorMaxPenalties);
-    researcherContract = await ResearcherContract.new(userContract.address, researcherPool.address, timeBetweenWorks);
-    producerContract = await ProducerContract.new(userContract.address, producerPool.address);
+    const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
+    validatorPool = await validatorPoolFactory.deploy(
+      rcToken.target,
+      validatorPoolargs.halving,
+      validatorPoolargs.totalEras,
+      validatorPoolargs.blocksPerEra
+    );
 
-    categoryContract = await CategoryContract.new(userContract.address);
+    const activistPoolFactory = await ethers.getContractFactory("ActivistPool");
+    activistPool = await activistPoolFactory.deploy(
+      rcToken.target,
+      activistPoolArgs.halving,
+      activistPoolArgs.totalEras,
+      activistPoolArgs.blocksPerEra
+    );
 
-    validatorContract = await ValidatorContract.new(userContract.address, producerContract.address);
+    const inspectorContractFactory = await ethers.getContractFactory("InspectorContract");
+    const researcherContractFactory = await ethers.getContractFactory("ResearcherContract");
+    const producerContractFactory = await ethers.getContractFactory("ProducerContract");
+    const activistContractFactory = await ethers.getContractFactory("ActivistContract");
 
-    instance = await Sintrop.new(
-      inspectorContract.address,
-      producerContract.address,
-      userContract.address,
-      validatorContract.address,
+    inspectorContract = await inspectorContractFactory.deploy(
+      userContract.target,
+      inspectorPool.target,
+      inspectorMaxPenalties
+    );
+
+    researcherContract = await researcherContractFactory.deploy(
+      userContract.target,
+      researcherPool.target,
+      timeBetweenWorks
+    );
+
+    producerContract = await producerContractFactory.deploy(userContract.target, producerPool.target);
+    activistContract = await activistContractFactory.deploy(userContract.target, activistPool.target);
+
+    const categoryContractFactory = await ethers.getContractFactory("CategoryContract");
+    categoryContract = await categoryContractFactory.deploy();
+
+    const validatorContractFactory = await ethers.getContractFactory("ValidatorContract");
+    validatorContract = await validatorContractFactory.deploy(
+      userContract.target,
+      producerContract.target,
+      validatorPool.target
+    );
+
+    const instanceFactory = await ethers.getContractFactory("Sintrop");
+    instance = await instanceFactory.deploy(
+      inspectorContract.target,
+      producerContract.target,
+      userContract.target,
+      validatorContract.target,
+      activistContract.target,
       sintropArgs.timeBetweenInspections,
       sintropArgs.blocksToExpireAcceptedInspection,
       sintropArgs.allowedInitialRequests,
       sintropArgs.acceptInspectionDelayBlocks
     );
 
-    await userContract.newAllowedCaller(inspectorContract.address);
-    await userContract.newAllowedCaller(producerContract.address);
-    await userContract.newAllowedCaller(researcherContract.address);
-    await userContract.newAllowedCaller(validatorContract.address);
+    await userContract.newAllowedCaller(inspectorContract.target);
+    await userContract.newAllowedCaller(producerContract.target);
+    await userContract.newAllowedCaller(researcherContract.target);
+    await userContract.newAllowedCaller(validatorContract.target);
+    await userContract.newAllowedCaller(activistContract.target);
     await userContract.newAllowedCaller(owner);
-    await inspectorContract.newAllowedCaller(instance.address);
+    await inspectorContract.newAllowedCaller(instance.target);
     await inspectorContract.newAllowedCaller(owner);
-    await validatorContract.newAllowedCaller(instance.address);
-    await producerContract.newAllowedCaller(instance.address);
-    await producerContract.newAllowedCaller(validatorContract.address);
-    await producerPool.newAllowedCaller(producerContract.address);
-    await inspectorPool.newAllowedCaller(inspectorContract.address);
+    await validatorContract.newAllowedCaller(instance.target);
+    await activistContract.newAllowedCaller(instance.target);
+    await activistPool.newAllowedCaller(activistContract.target);
+    await producerContract.newAllowedCaller(owner);
+    await producerContract.newAllowedCaller(instance.target);
+    await producerContract.newAllowedCaller(validatorContract.target);
+    await producerPool.newAllowedCaller(producerContract.target);
+    await inspectorPool.newAllowedCaller(inspectorContract.target);
+    await validatorPool.newAllowedCaller(validatorContract.target);
+    await validatorPool.newAllowedCaller(validatorContract.target);
 
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
-    await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
-    await addProducer("Producer A", producerAddress);
-    await addInspector("Inspector A", inspectorAddress);
     await addResearcher("Researcher 1", resea1Address);
   });
 
   describe("#getInspection", () => {
+    beforeEach(async () => {
+      await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
+
+      await addProducer("Producer A", producerAddress);
+      await addInspector("Inspector A", inspectorAddress);
+    });
+
     context("when inspection exists", () => {
       beforeEach(async () => {
-        await instance.requestInspection({ from: producerAddress });
+        await instance.connect(producerAddress).requestInspection();
       });
 
       it("should return inspection", async () => {
         const inspection = await instance.getInspection(1);
 
-        assert.equal(inspection.id, 1);
+        expect(inspection.id).to.equal(1);
       });
     });
 
@@ -229,18 +313,25 @@ contract("Sintrop", (accounts) => {
       it("should return inspection", async () => {
         const inspection = await instance.getInspection(1);
 
-        assert.equal(inspection.id, 0);
+        expect(inspection.id).to.equal(0);
       });
     });
   });
 
   describe("#getInspections", () => {
+    beforeEach(async () => {
+      await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
+
+      await addProducer("Producer A", producerAddress);
+      await addInspector("Inspector A", inspectorAddress);
+    });
+
     context("when have inspections", () => {
       beforeEach(async () => {
         addProducer("Producer B", producer2Address);
 
-        await instance.requestInspection({ from: producerAddress });
-        await instance.requestInspection({ from: producer2Address });
+        await requestInspection(producerAddress);
+        await requestInspection(producer2Address);
       });
 
       it("should return inspections", async () => {
@@ -249,8 +340,8 @@ contract("Sintrop", (accounts) => {
         const inspection1 = await instance.getInspection(1);
         const inspection2 = await instance.getInspection(2);
 
-        assert.equal(inspections[0].id, inspection1.id);
-        assert.equal(inspections[1].id, inspection2.id);
+        expect(inspections[0].id).to.equal(inspection1.id);
+        expect(inspections[1].id).to.equal(inspection2.id);
       });
     });
 
@@ -258,15 +349,22 @@ contract("Sintrop", (accounts) => {
       it("should return zero inspections", async () => {
         const inspections = await instance.getInspections();
 
-        assert.equal(inspections.length, 0);
+        expect(inspections.length).to.equal(0);
       });
     });
   });
 
   describe("#requestInspection", () => {
+    beforeEach(async () => {
+      await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
+
+      await addProducer("Producer A", producerAddress);
+      await addInspector("Inspector A", inspectorAddress);
+    });
+
     context("with producer", () => {
       beforeEach(async () => {
-        await instance.requestInspection({ from: producerAddress });
+        await requestInspection(producerAddress);
         await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
       });
 
@@ -274,20 +372,20 @@ contract("Sintrop", (accounts) => {
         it("should request inspection", async () => {
           const inspection = await instance.getInspection(1);
 
-          assert.equal(inspection.createdBy, producerAddress);
+          expect(inspection.createdBy).to.equal(producerAddress.address);
         });
       });
 
       context("when have more than ALLOWED_INITIAL_REQUESTS", () => {
         context("when has request OPEN or ACCEPTED", () => {
           it("should return error message", async () => {
-            await expectRevert(instance.requestInspection({ from: producerAddress }), "Request OPEN or ACCEPTED");
+            await expect(requestInspection(producerAddress)).to.be.revertedWith("Request OPEN or ACCEPTED");
           });
         });
 
         context("when don't has request OPEN or ACCEPTED", () => {
           beforeEach(async () => {
-            await instance.acceptInspection(1, { from: inspectorAddress });
+            await acceptInspection(1, inspectorAddress);
             await addCategory("Soil A", owner);
 
             const isas = [
@@ -302,7 +400,7 @@ contract("Sintrop", (accounts) => {
 
           context("when last request is recent", () => {
             it("should return error message", async () => {
-              await expectRevert(instance.requestInspection({ from: producerAddress }), "Recent inspection");
+              await expect(requestInspection(producerAddress)).to.be.revertedWith("Recent inspection");
             });
           });
 
@@ -310,10 +408,10 @@ contract("Sintrop", (accounts) => {
             it("should request inspection", async () => {
               await advanceBlock(20);
 
-              await instance.requestInspection({ from: producerAddress });
+              await requestInspection(producerAddress);
               const inspection = await instance.getInspection(2);
 
-              assert.equal(inspection.createdBy, producerAddress);
+              expect(inspection.createdBy).to.equal(producerAddress.address);
             });
           });
         });
@@ -323,43 +421,43 @@ contract("Sintrop", (accounts) => {
         it("initial status should be equal OPEN", async () => {
           const inspection = await instance.getInspection(1);
 
-          assert.equal(inspection.status, STATUS.open);
+          expect(inspection.status).to.equal(STATUS.open);
         });
 
         it("must set createdBy as producer address", async () => {
           const inspection = await instance.getInspection(1);
 
-          assert.equal(inspection.createdBy, producerAddress);
+          expect(inspection.createdBy).to.equal(producerAddress.address);
         });
 
         it("must set acceptedBy as zero address", async () => {
           const inspection = await instance.getInspection(1);
 
-          assert.equal(inspection.acceptedBy, ZERO_ADDRESS);
+          expect(inspection.acceptedBy).to.equal(ZERO_ADDRESS);
         });
 
         it("initial isaScore should be equal zero", async () => {
           const inspection = await instance.getInspection(1);
 
-          assert.equal(inspection.isaScore, 0);
+          expect(inspection.isaScore).to.equal(0);
         });
 
         it("initial isas should be equal empty array", async () => {
           const isas = await instance.getIsa(1);
 
-          assert.equal(isas.length, 0);
+          expect(isas.length).to.equal(0);
         });
 
         it("should increment total of inspections", async () => {
           const inspectionsCount = await instance.inspectionsCount();
 
-          assert.equal(inspectionsCount, 1);
+          expect(inspectionsCount).to.equal(1);
         });
 
         it("should set to true producer recentInspection", async () => {
           const producer = await producerContract.getProducer(producerAddress);
 
-          assert.equal(producer.recentInspection, true);
+          expect(producer.recentInspection).to.equal(true);
         });
       });
     });
@@ -367,31 +465,38 @@ contract("Sintrop", (accounts) => {
     context("with non producer", () => {
       context("when is not producer and try request inspection", () => {
         it("should return message error", async () => {
-          await expectRevert(instance.requestInspection(), "Please register as producer");
+          await expect(instance.requestInspection()).to.be.revertedWith("Please register as producer");
         });
       });
     });
   });
 
   describe("#acceptInspection", () => {
+    beforeEach(async () => {
+      await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
+
+      await addProducer("Producer A", producerAddress);
+      await addInspector("Inspector A", inspectorAddress);
+    });
+
     context("with inspector", () => {
       context("when inspection exists", () => {
         beforeEach(async () => {
-          await instance.requestInspection({ from: producerAddress });
+          await requestInspection(producerAddress);
         });
 
         context("when have not waited inspection delay time", () => {
           it("should return error message", async () => {
-            await expectRevert(instance.acceptInspection(1, { from: inspectorAddress }), "Can't accept yet");
+            await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Can't accept yet");
           });
         });
 
         context("when have waited inspection delay time", () => {
           it("", async () => {
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-            await instance.acceptInspection(1, { from: inspectorAddress });
+            await acceptInspection(1, inspectorAddress);
             const inspection = await instance.getInspection(1);
-            assert.equal(inspection.status, STATUS.accepted);
+            expect(inspection.status).to.equal(STATUS.accepted);
           });
         });
 
@@ -399,25 +504,31 @@ contract("Sintrop", (accounts) => {
           context("when inspection is OPEN", () => {
             beforeEach(async () => {
               await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-              await instance.acceptInspection(1, { from: inspectorAddress });
+              await acceptInspection(1, inspectorAddress);
             });
 
             it("accept inspection with success", async () => {
               const inspection = await instance.getInspection(1);
 
-              assert.equal(inspection.status, STATUS.accepted);
+              expect(inspection.status).to.equal(STATUS.accepted);
             });
 
             it("acceptedBy must be inspectorAddress", async () => {
               const inspection = await instance.getInspection(1);
 
-              assert.equal(inspection.acceptedBy, inspectorAddress);
+              expect(inspection.acceptedBy).to.equal(inspectorAddress.address);
             });
 
             it("should increment inspector giveUps by 1", async () => {
               const inspector = await inspectorContract.getInspector(inspectorAddress);
 
-              assert.equal(inspector.giveUps, "1");
+              expect(inspector.giveUps).to.equal("1");
+            });
+
+            it("Set last inspectionId to accepted inspection 1", async () => {
+              const inspector = await inspectorContract.getInspector(inspectorAddress);
+
+              expect(inspector.lastInspection).to.equal("1");
             });
           });
 
@@ -425,15 +536,12 @@ contract("Sintrop", (accounts) => {
             beforeEach(async () => {
               await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
               await addInvitation(owner, inspector2Address, userTypes.Inspector, owner);
-              await instance.acceptInspection(1, { from: inspectorAddress });
+              await acceptInspection(1, inspectorAddress);
               await addInspector("Inspector B", inspector2Address);
             });
 
             it("should return error message", async () => {
-              await expectRevert(
-                instance.acceptInspection(1, { from: inspector2Address }),
-                "This inspection is not OPEN"
-              );
+              await expect(acceptInspection(1, inspector2Address)).to.be.revertedWith("This inspection is not OPEN");
             });
           });
 
@@ -441,26 +549,46 @@ contract("Sintrop", (accounts) => {
             beforeEach(async () => {
               await addProducer("Producer B", producer2Address);
               await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-              await instance.acceptInspection(1, { from: inspectorAddress });
-              await instance.requestInspection({ from: producer2Address });
+              await acceptInspection(1, inspectorAddress);
+              await requestInspection(producer2Address);
             });
 
             context("when last inspection is not expired", () => {
               it("should return error message", async () => {
-                await expectRevert(instance.acceptInspection(2, { from: inspectorAddress }), "Can't accept yet");
+                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Can't accept yet");
               });
             });
 
             context("when last inspection is expired", () => {
               beforeEach(async () => {
                 await advanceBlock(sintropArgs.timeBetweenInspections);
-                await instance.acceptInspection(2, { from: inspectorAddress });
+                await acceptInspection(2, inspectorAddress);
               });
 
               it("should accept inspection with success after blocksToExpireAcceptedInspection", async () => {
                 const inspection = await instance.getInspection(2);
 
-                assert.equal(inspection.status, STATUS.accepted);
+                expect(inspection.status).to.equal(STATUS.accepted);
+              });
+            });
+
+            context("when have finished last inspection", () => {
+              beforeEach(async () => {
+                await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+                await realizeInspection(1, "", [], inspectorAddress);
+                await acceptInspection(2, inspectorAddress);
+              });
+
+              it("should accept inspection with success after finishing previous one", async () => {
+                const inspection = await instance.getInspection(2);
+
+                expect(inspection.status).to.equal(STATUS.accepted);
+              });
+            });
+
+            context("when dont finished last inspection", () => {
+              it("should return error message", async () => {
+                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Can't accept yet");
               });
             });
           });
@@ -469,49 +597,57 @@ contract("Sintrop", (accounts) => {
         context("when already realized inspection from producer", () => {
           beforeEach(async () => {
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-            await instance.acceptInspection(1, { from: inspectorAddress });
-            await instance.realizeInspection(1, report, [], { from: inspectorAddress });
+            await acceptInspection(1, inspectorAddress);
+            await realizeInspection(1, report, [], inspectorAddress);
 
             await advanceBlock(20);
 
-            await instance.requestInspection({ from: producerAddress });
+            await requestInspection(producerAddress);
           });
 
           it("should return error message", async () => {
-            await expectRevert(
-              instance.acceptInspection(2, { from: inspectorAddress }),
-              "Already inspected this producer"
-            );
+            await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Already inspected this producer");
           });
         });
       });
 
       context("when inspection dont exists", () => {
         it("should return error message", async () => {
-          await expectRevert(instance.acceptInspection(1, { from: inspectorAddress }), "This inspection don't exist");
+          await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("This inspection don't exists");
         });
       });
     });
 
     context("with non inspector", () => {
       it("should return error message", async () => {
-        await instance.requestInspection({ from: producerAddress });
-        await expectRevert(instance.acceptInspection(1, { from: producerAddress }), "Please register as inspector");
+        await requestInspection(producerAddress);
+        await expect(acceptInspection(1, producerAddress)).to.be.revertedWith("Please register as inspector");
       });
     });
   });
 
   describe("#realizeInspection", () => {
+    beforeEach(async () => {
+      await userContract.newAllowedCaller(activist1Address);
+      await addInvitation(owner, activist1Address, userTypes.Activist, owner);
+      await addActivist("Activist 1", activist1Address);
+      await addInvitation(activist1Address, producerAddress, userTypes.Producer, activist1Address);
+      await addInvitation(activist1Address, inspectorAddress, userTypes.Inspector, activist1Address);
+
+      await addProducer("Producer A", producerAddress);
+      await addInspector("Inspector A", inspectorAddress);
+    });
+
     context("with inspector", () => {
       context("when inspection exists", () => {
         beforeEach(async () => {
-          await instance.requestInspection({ from: producerAddress });
+          await requestInspection(producerAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
         });
 
         context("when inspection is accepted", () => {
           beforeEach(async () => {
-            await instance.acceptInspection(1, { from: inspectorAddress });
+            await acceptInspection(1, inspectorAddress);
           });
 
           context("when is accepted by inspector", () => {
@@ -521,8 +657,7 @@ contract("Sintrop", (accounts) => {
               });
 
               it("should return error message", async () => {
-                await expectRevert(
-                  instance.realizeInspection(1, report, [], { from: inspectorAddress }),
+                await expect(realizeInspection(1, report, [], inspectorAddress)).to.be.revertedWith(
                   "Inspection Expired"
                 );
               });
@@ -535,6 +670,106 @@ contract("Sintrop", (accounts) => {
                 await addCategory("Soil C", owner);
               });
 
+              describe(".setActivistLevel", () => {
+                context("when producer do not wins minimum inspection", () => {
+                  beforeEach(async () => {
+                    await realizeInspection(1, report, isas(), inspectorAddress);
+                  });
+
+                  it("Activist must do not wins levels", async () => {
+                    const activist = await activistContract.getActivist(activistContract);
+
+                    expect(activist.pool.level).to.equal(0);
+                  });
+
+                  it("Activist pool wins 1 level to activist", async () => {
+                    const levels = await activistPool.eraLevels(4, activist1Address);
+
+                    expect(levels).to.equal(0);
+                  });
+                });
+
+                context("when inspector do not wins minimum inspection", () => {
+                  beforeEach(async () => {
+                    await realizeInspection(1, report, isas(), inspectorAddress);
+                  });
+
+                  it("Activist must do not wins levels", async () => {
+                    const activist = await activistContract.getActivist(activistContract);
+
+                    expect(activist.pool.level).to.equal(0);
+                  });
+
+                  it("Activist pool wins 1 level to activist", async () => {
+                    const levels = await activistPool.eraLevels(4, activist1Address);
+
+                    expect(levels).to.equal(0);
+                  });
+                });
+
+                context("when producer wins minimum inspection", () => {
+                  beforeEach(async () => {
+                    await producerContract.connect(owner).incrementInspections(producerAddress);
+                    await producerContract.connect(owner).incrementInspections(producerAddress);
+                    await realizeInspection(1, report, isas(), inspectorAddress);
+                  });
+
+                  it("Activist must wins 1 level", async () => {
+                    const activist = await activistContract.getActivist(activist1Address);
+
+                    expect(activist.pool.level).to.equal(1);
+                  });
+
+                  it("Activist pool wins 1 level to activist", async () => {
+                    const levels = await activistPool.eraLevels(4, activist1Address);
+
+                    expect(levels).to.equal(1);
+                  });
+                });
+
+                context("when inspector wins minimum inspection", () => {
+                  beforeEach(async () => {
+                    await inspectorContract.connect(owner).incrementInspections(inspectorAddress);
+                    await inspectorContract.connect(owner).incrementInspections(inspectorAddress);
+                    await realizeInspection(1, report, isas(), inspectorAddress);
+                  });
+
+                  it("Activist must wins 1 level", async () => {
+                    const activist = await activistContract.getActivist(activist1Address);
+
+                    expect(activist.pool.level).to.equal(1);
+                  });
+
+                  it("Activist pool wins 1 level to activist", async () => {
+                    const levels = await activistPool.eraLevels(4, activist1Address);
+
+                    expect(levels).to.equal(1);
+                  });
+                });
+
+                context("when producer and inspector wins minimum inspection", () => {
+                  beforeEach(async () => {
+                    await producerContract.connect(owner).incrementInspections(producerAddress);
+                    await producerContract.connect(owner).incrementInspections(producerAddress);
+                    await inspectorContract.connect(owner).incrementInspections(inspectorAddress);
+                    await inspectorContract.connect(owner).incrementInspections(inspectorAddress);
+                    await realizeInspection(1, report, isas(), inspectorAddress);
+                  });
+
+                  it("Activist must wins 1 level", async () => {
+                    const activist = await activistContract.getActivist(activist1Address);
+
+                    expect(activist.pool.level).to.equal(2);
+                  });
+
+                  it("Activist pool wins 1 level to activist", async () => {
+                    const levels = await activistPool.eraLevels(5, activist1Address);
+
+                    expect(levels).to.equal(2);
+                  });
+                });
+              });
+
               context("when check inspection", () => {
                 beforeEach(async () => {
                   await realizeInspection(1, report, isas(), inspectorAddress);
@@ -543,71 +778,67 @@ contract("Sintrop", (accounts) => {
                 it("should change inspection status to INSPECTED", async () => {
                   const inspection = await instance.getInspection(1);
 
-                  assert.equal(inspection.status, STATUS.inspected);
+                  expect(inspection.status).to.equal(STATUS.inspected);
                 });
 
                 it("should decrease inspector giveUps by 1", async () => {
                   const inspector = await inspectorContract.getInspector(inspectorAddress);
 
-                  assert.equal(inspector.giveUps, "0");
+                  expect(inspector.giveUps).to.equal("0");
                 });
 
                 it("should update inspectionList", async () => {
                   const inspections = await instance.getInspections();
 
-                  assert.equal(inspections[0].status, STATUS.inspected);
+                  expect(inspections[0].status).to.equal(STATUS.inspected);
                 });
 
                 it("should update inspection isas", async () => {
                   const isasResponse = await instance.getIsa(1);
                   const isas_ = [
-                    ["1", "0", "10"],
-                    ["2", "0", "10"],
-                    ["3", "1", "10"],
+                    [1n, 0n, 10n],
+                    [2n, 0n, 10n],
+                    [3n, 1n, 10n],
                   ];
 
-                  assert.equal(JSON.stringify(isasResponse), JSON.stringify(isas_));
+                  expect(isasResponse.join("")).to.equals(isas_.join(""));
                 });
 
                 it("should add isaScore in producer", async () => {
                   const inspection = await instance.getInspection(1);
                   const producer = await producerContract.getProducer(producerAddress);
 
-                  assert.equal(inspection.isaScore, producer.isa.isaScore);
+                  expect(inspection.isaScore).to.equal(producer.isa.isaScore);
                 });
 
                 it("should set producer recentInspection to false", async () => {
                   const producer = await producerContract.getProducer(producerAddress);
 
-                  assert.equal(producer.recentInspection, false);
+                  expect(producer.recentInspection).to.equal(false);
                 });
 
                 it("should increment producer totalInspections", async () => {
                   const producer = await producerContract.getProducer(producerAddress);
 
-                  assert.equal(producer.totalInspections, 1);
+                  expect(producer.totalInspections).to.equal(1);
                 });
 
                 it("should increment inspector totalInspections", async () => {
                   const inspector = await inspectorContract.getInspector(inspectorAddress);
 
-                  assert.equal(inspector.totalInspections, 1);
+                  expect(inspector.totalInspections).to.equal(1);
                 });
 
                 it("should add inspection to inspector in userInspections", async () => {
-                  const userInspections = await instance.getInspectionsHistory({
-                    from: inspectorAddress,
-                  });
+                  const userInspections = await instance.connect(inspectorAddress).getInspectionsHistory();
 
-                  assert.equal(userInspections.length, 1);
+                  expect(userInspections.length).to.equal(1);
                 });
 
                 it("should add inspection to producer in userInspections", async () => {
-                  const userInspections = await instance.getInspectionsHistory({
-                    from: producerAddress,
-                  });
+                  const userInspections = await instance.connect(producerAddress).getInspectionsHistory();
 
-                  assert.equal(userInspections.length, 1);
+                  expect(userInspections.length).to.equal(1);
                 });
               });
 
@@ -619,17 +850,17 @@ contract("Sintrop", (accounts) => {
                         categoryId: 1,
                         isaIndex: 0,
                         report: "REGENERATIVE_3",
-                        indicator: 100,
+                        indicator: 25,
                       },
                     ];
 
                     await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
-                  it("should add 20 isaScore to inspection", async () => {
+                  it("should add 25 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    assert.equal(inspection.isaScore, 20);
+                    expect(inspection.isaScore).to.equal(25);
                   });
                 });
 
@@ -650,7 +881,7 @@ contract("Sintrop", (accounts) => {
                   it("should add 10 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    assert.equal(inspection.isaScore, 10);
+                    expect(inspection.isaScore).to.equal(10);
                   });
                 });
 
@@ -661,17 +892,17 @@ contract("Sintrop", (accounts) => {
                         categoryId: 1,
                         isaIndex: 2,
                         report: "REGENERATIVE_1",
-                        indicator: 10,
+                        indicator: 1,
                       },
                     ];
 
                     await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
-                  it("should add 5 isaScore to inspection", async () => {
+                  it("should add 1 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    assert.equal(inspection.isaScore, 5);
+                    expect(inspection.isaScore).to.equal(1);
                   });
                 });
 
@@ -692,7 +923,7 @@ contract("Sintrop", (accounts) => {
                   it("should add 0 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    assert.equal(inspection.isaScore, 0);
+                    expect(inspection.isaScore).to.equal(0);
                   });
                 });
 
@@ -703,17 +934,17 @@ contract("Sintrop", (accounts) => {
                         categoryId: 1,
                         isaIndex: 4,
                         report: "NOT_REGENERATIVE1",
-                        indicator: -5,
+                        indicator: -1,
                       },
                     ];
 
                     await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
-                  it("should add -5 isaScore to inspection", async () => {
+                  it("should add -1 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    assert.equal(inspection.isaScore, -5);
+                    expect(inspection.isaScore).to.equal(-1);
                   });
                 });
 
@@ -734,7 +965,7 @@ contract("Sintrop", (accounts) => {
                   it("should add -10 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    assert.equal(inspection.isaScore, -10);
+                    expect(inspection.isaScore).to.equal(-10);
                   });
                 });
 
@@ -745,17 +976,17 @@ contract("Sintrop", (accounts) => {
                         categoryId: 1,
                         isaIndex: 6,
                         report: "NOT_REGENERATIVE3",
-                        indicator: -20,
+                        indicator: -25,
                       },
                     ];
 
                     await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
-                  it("should add -20 isaScore to inspection", async () => {
+                  it("should add -25 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    assert.equal(inspection.isaScore, -20);
+                    expect(inspection.isaScore).to.equal(-25);
                   });
                 });
               });
@@ -769,8 +1000,7 @@ contract("Sintrop", (accounts) => {
             });
 
             it("should return error message", async () => {
-              await expectRevert(
-                instance.realizeInspection(1, report, [], { from: inspector2Address }),
+              await expect(realizeInspection(1, report, [], inspector2Address)).to.be.revertedWith(
                 "You not accepted this inspection"
               );
             });
@@ -779,8 +1009,7 @@ contract("Sintrop", (accounts) => {
 
         context("when inspection is not accepted", () => {
           it("should return error message", async () => {
-            await expectRevert(
-              instance.realizeInspection(1, report, [], { from: inspectorAddress }),
+            await expect(realizeInspection(1, report, [], inspectorAddress)).to.be.revertedWith(
               "Accept this inspection before"
             );
           });
@@ -789,9 +1018,8 @@ contract("Sintrop", (accounts) => {
 
       context("when inspection dont exists", () => {
         it("should return error message", async () => {
-          await expectRevert(
-            instance.realizeInspection(1, report, [], { from: inspectorAddress }),
-            "This inspection don't exist"
+          await expect(realizeInspection(1, report, [], inspectorAddress)).to.be.revertedWith(
+            "This inspection don't exists"
           );
         });
       });
@@ -799,12 +1027,11 @@ contract("Sintrop", (accounts) => {
 
     context("with non inspector", () => {
       it("should return error message", async () => {
-        await instance.requestInspection({ from: producerAddress });
+        await requestInspection(producerAddress);
         await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-        await instance.acceptInspection(1, { from: inspectorAddress });
+        await acceptInspection(1, inspectorAddress);
 
-        await expectRevert(
-          instance.realizeInspection(1, report, [], { from: producerAddress }),
+        await expect(realizeInspection(1, report, [], producerAddress)).to.be.revertedWith(
           "Please register as inspector"
         );
       });
@@ -812,6 +1039,13 @@ contract("Sintrop", (accounts) => {
   });
 
   describe("#addInspectionValidation", () => {
+    beforeEach(async () => {
+      await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
+
+      await addProducer("Producer A", producerAddress);
+      await addInspector("Inspector A", inspectorAddress);
+    });
+
     context("with validator", () => {
       beforeEach(async () => {
         await addInvitation(owner, validator1Address, userTypes.Validator, owner);
@@ -827,76 +1061,76 @@ contract("Sintrop", (accounts) => {
 
       context("with valid inspection", () => {
         beforeEach(async () => {
-          await instance.requestInspection({ from: producerAddress });
+          await requestInspection(producerAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-          await instance.acceptInspection(1, { from: inspectorAddress });
+          await acceptInspection(1, inspectorAddress);
           await realizeInspection(1, report, isas(), inspectorAddress);
         });
 
         context("when receive 1 validation", () => {
           beforeEach(async () => {
-            await instance.addInspectionValidation(1, "justification", { from: validator1Address });
+            await instance.connect(validator1Address).addInspectionValidation(1, "justification");
           });
 
           it("add validation", async () => {
             const validation = await instance.validations(1, 0);
 
-            assert.equal(validation.validator, validator1Address);
-            assert.equal(validation.user, inspectorAddress);
-            assert.equal(validation.resourceId, 1);
-            assert.equal(validation.justification, "justification");
-            assert.equal(validation.majorityValidatorsCount, 2);
+            expect(validation.validator).to.equal(validator1Address.address);
+            expect(validation.user).to.equal(inspectorAddress.address);
+            expect(validation.resourceId).to.equal(1);
+            expect(validation.justification).to.equal("justification");
+            expect(validation.majorityValidatorsCount).to.equal(2);
           });
         });
 
         context("when have 2 validations (half of the validators)", () => {
           beforeEach(async () => {
-            await instance.addInspectionValidation(1, "justification", { from: validator1Address });
-            await instance.addInspectionValidation(1, "justification", { from: validator2Address });
+            await instance.connect(validator1Address).addInspectionValidation(1, "justification");
+            await instance.connect(validator2Address).addInspectionValidation(1, "justification");
           });
 
           it("add validations", async () => {
             const validation1 = await instance.validations(1, 0);
             const validation2 = await instance.validations(1, 1);
 
-            assert.equal(validation1.validator, validator1Address);
-            assert.equal(validation2.validator, validator2Address);
+            expect(validation1.validator).to.equal(validator1Address.address);
+            expect(validation2.validator).to.equal(validator2Address.address);
           });
 
           it("inspection status INVALIDATED", async () => {
             const inspection = await instance.getInspection(1);
 
-            assert.equal(inspection.status, STATUS.invalidated);
+            expect(inspection.status).to.equal(STATUS.invalidated);
           });
 
           it("inspector receive 1 penalty", async () => {
             const totalPenalties = await inspectorContract.totalPenalties(inspectorAddress);
 
-            assert.equal(totalPenalties, 1);
+            expect(totalPenalties).to.equal(1);
           });
 
           it("remove producer isaScore", async () => {
             const producer = await producerContract.getProducer(producerAddress);
 
-            assert.equal(producer.isa.isaScore, 0);
+            expect(producer.isa.isaScore).to.equal(0);
           });
 
           it("decrement producer totalInspections", async () => {
             const producer = await producerContract.getProducer(producerAddress);
 
-            assert.equal(producer.totalInspections, 0);
+            expect(producer.totalInspections).to.equal(0);
           });
 
           it("decrement inspector totalInspections", async () => {
             const inspector = await inspectorContract.getInspector(inspectorAddress);
 
-            assert.equal(inspector.totalInspections, 0);
+            expect(inspector.totalInspections).to.equal(0);
           });
 
           it("zero producerPool era level score", async () => {
             const levels = await producerPool.eraLevels(1, producerAddress);
 
-            assert.equal(levels, 0);
+            expect(levels).to.equal(0);
           });
         });
 
@@ -904,50 +1138,47 @@ contract("Sintrop", (accounts) => {
           beforeEach(async () => {
             await inspectorContract.addPenalty(inspectorAddress, 1);
 
-            await instance.addInspectionValidation(1, "justification", { from: validator1Address });
-            await instance.addInspectionValidation(1, "justification", { from: validator2Address });
+            await instance.connect(validator1Address).addInspectionValidation(1, "justification");
+            await instance.connect(validator2Address).addInspectionValidation(1, "justification");
           });
 
           it("inspector type to DENIED", async () => {
             const userType = await userContract.getUser(inspectorAddress);
 
-            assert.equal(userType, USER_TYPES.denied);
+            expect(userType).to.equal(USER_TYPES.denied);
           });
         });
 
         context("when already voted in this inspection", () => {
           beforeEach(async () => {
-            await instance.addInspectionValidation(1, "justification", { from: validator1Address });
+            await instance.connect(validator1Address).addInspectionValidation(1, "justification");
           });
 
           it("should return error message", async () => {
-            await expectRevert(
-              instance.addInspectionValidation(1, "justification", { from: validator1Address }),
-              "Already voted"
-            );
+            await expect(
+              instance.connect(validator1Address).addInspectionValidation(1, "justification")
+            ).to.be.revertedWith("Already voted");
           });
         });
       });
 
       context("with invalid inspection", () => {
         it("should return error message", async () => {
-          await expectRevert(
-            instance.addInspectionValidation(1, "justification", { from: validator1Address }),
-            "This inspection is not INSPECTED"
-          );
+          await expect(
+            instance.connect(validator1Address).addInspectionValidation(1, "justification")
+          ).to.be.revertedWith("This inspection is not INSPECTED");
         });
       });
     });
 
     context("with non validator", () => {
       it("should return error message", async () => {
-        await instance.requestInspection({ from: producerAddress });
+        await requestInspection(producerAddress);
         await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-        await instance.acceptInspection(1, { from: inspectorAddress });
+        await acceptInspection(1, inspectorAddress);
         await realizeInspection(1, report, isas(), inspectorAddress);
 
-        await expectRevert(
-          instance.addInspectionValidation(1, "justification", { from: producerAddress }),
+        await expect(instance.connect(producerAddress).addInspectionValidation(1, "justification")).to.be.revertedWith(
           "Please register as validator"
         );
       });

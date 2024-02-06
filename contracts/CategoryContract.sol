@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { Isas, Category } from "./types/CategoryTypes.sol";
+import { Isas, Category, IsasDescription } from "./types/CategoryTypes.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
@@ -18,45 +18,11 @@ contract CategoryContract is Ownable {
 
   /**
    * @dev add a new category
-   * @param name the name of category
-   * @param description the description of category
-   * @param tutorial how inspectors should evaluate it.
-   * @param regenerative3 the description text to this metric
-   * @param regenerative2 the description text to this metric
-   * @param regenerative1 the description text to this metric
-   * @param neutro the description text to this metric
-   * @param notRegenerative1 the description text to this metric
-   * @param notRegenerative2 the description text to this metric
-   * @param notRegenerative3 the description text to this metric
+   * @param isasDescription IsasDescription
    * @return bool
    */
-  function addCategory(
-    string memory name,
-    string memory description,
-    string memory tutorial,
-    string memory regenerative3,
-    string memory regenerative2,
-    string memory regenerative1,
-    string memory neutro,
-    string memory notRegenerative1,
-    string memory notRegenerative2,
-    string memory notRegenerative3
-  ) public onlyOwner returns (bool) {
-    category = Category(
-      categoryCounts + 1,
-      msg.sender,
-      name,
-      description,
-      tutorial,
-      regenerative3,
-      regenerative2,
-      regenerative1,
-      neutro,
-      notRegenerative1,
-      notRegenerative2,
-      notRegenerative3,
-      0
-    );
+  function addCategory(IsasDescription memory isasDescription) public onlyOwner returns (bool) {
+    category = Category(categoryCounts + 1, msg.sender, isasDescription, 0);
 
     categories[category.id] = category;
     categoryCounts++;

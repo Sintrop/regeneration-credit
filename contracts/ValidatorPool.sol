@@ -11,10 +11,10 @@ import { Poolable } from "./Poolable.sol";
 
 /**
  * @author Sintrop
- * @title DeveloperPool
- * @dev DeveloperPool is a contract to reward developers
+ * @title ValidatorPool
+ * @dev ValidatorPool is a contract to reward validators
  */
-contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
+contract ValidatorPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;
 
   uint256 internal immutable halving;

@@ -1,109 +1,251 @@
-const SupporterContract = artifacts.require("SupporterContract");
 const { userContractDeployed } = require("./shared/user_contract_deployed");
+const { userTypes } = require("./shared/user_types");
+const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
-const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
+describe("SupporterContract", () => {
+  let instance, userContract, rcToken, supporterPool;
+  let ownerAddress, inv1Address, inv2Address;
 
-contract("SupporterContract", (accounts) => {
-  let instance;
-  let userContract;
-  let [ownerAddress, inv1Address, inv2Address] = accounts;
+  const addSupporter = async (name, from) => {
+    await instance.connect(from).addSupporter(name);
+  };
 
-  const addSupporter = async (name, address) => {
-    await instance.addSupporter(name, { from: address });
+  const transferTokensTo = async (userAddress, tokens) => {
+    await rcToken.transfer(userAddress, tokens);
   };
 
   beforeEach(async () => {
+    [ownerAddress, inv1Address, inv2Address] = await ethers.getSigners();
+
     userContract = await userContractDeployed();
 
-    instance = await SupporterContract.new(userContract.address);
+    rcToken = await rcTokenDeployed();
 
-    await userContract.newAllowedCaller(instance.address);
+    const supporterPoolFactory = await ethers.getContractFactory("SupporterPool");
+    supporterPool = await supporterPoolFactory.deploy(rcToken.target);
+
+    const instanceFactory = await ethers.getContractFactory("SupporterContract");
+    instance = await instanceFactory.deploy(userContract.target, supporterPool.target);
+
+    await userContract.newAllowedCaller(instance.target);
+    await userContract.newAllowedCaller(ownerAddress);
+    await supporterPool.newAllowedCaller(instance.target);
+    await rcToken.addContractPool(supporterPool.target, 0);
   });
 
-  context("when will create new supporter (.addSupporter)", () => {
+  describe("#addSupporter", () => {
     context("when supporter exists", () => {
       it("should return error", async () => {
         await addSupporter("Supporter A", inv1Address);
-        await expectRevert(addSupporter("Supporter A", inv1Address), "This supporter already exist");
+        await expect(addSupporter("Supporter A", inv1Address)).to.be.revertedWith("This supporter already exist");
+      });
+    });
+
+    context("when supporter don't exist", () => {
+      it("create supporter", async () => {
+        await addSupporter("Supporter A", inv1Address);
+        await addSupporter("Supporter B", inv2Address);
+        const supporter = await instance.getSupporter(inv1Address);
+
+        expect(supporter.supporterWallet).to.equal(inv1Address.address);
       });
 
-      context("when supporter don't exist", () => {
-        it("should create supporter", async () => {
-          await addSupporter("Supporter A", inv1Address);
-          await addSupporter("Supporter B", inv2Address);
-          const supporter = await instance.getSupporter(inv1Address);
+      it("increment supporterCount", async () => {
+        await addSupporter("Supporter A", inv1Address);
+        await addSupporter("Supporter B", inv2Address);
+        const supportersCount = await instance.supportersCount();
 
-          assert.equal(supporter.supporterWallet, inv1Address);
-        });
+        expect(supportersCount).to.equal(2);
+      });
 
-        it("should increment supporterCount after create supporter", async () => {
-          await addSupporter("Supporter A", inv1Address);
-          await addSupporter("Supporter B", inv2Address);
-          const supportersCount = await instance.supportersCount();
+      it("add created supporter in supporterList", async () => {
+        await addSupporter("Supporter A", inv1Address);
+        await addSupporter("Supporter B", inv2Address);
 
-          assert.equal(supportersCount, 2);
-        });
+        const supporters = await instance.getSupporters();
 
-        it("should add create supporter in supporterList (array)", async () => {
-          await addSupporter("Supporter A", inv1Address);
-          await addSupporter("Supporter B", inv2Address);
+        expect(supporters[0].supporterWallet).to.equal(inv1Address.address);
+      });
 
-          const supporters = await instance.getSupporters();
+      it("add created supporter in userType contract as a SUPPORTER", async () => {
+        await addSupporter("Supporter A", inv1Address);
 
-          assert.equal(supporters[0].supporterWallet, inv1Address);
-        });
+        const userType = await userContract.getUser(inv1Address);
+        const SUPPORTER = 7;
 
-        it("should add created supporter in userType contract as a SUPPORTER", async () => {
-          await addSupporter("Supporter A", inv1Address);
-
-          const userType = await userContract.getUser(inv1Address);
-          const SUPPORTER = 7;
-
-          assert.equal(userType, SUPPORTER);
-        });
+        expect(userType).to.equal(SUPPORTER);
       });
     });
   });
 
-  context("when will get supporters (.getSupporters)", () => {
-    it("should return supporters when has supporters", async () => {
-      await addSupporter("Supporter A", inv1Address);
-      await addSupporter("Supporter B", inv2Address);
+  describe("#getSupporters", () => {
+    context("when have supporters", () => {
+      beforeEach(async () => {
+        await addSupporter("Supporter A", inv1Address);
+        await addSupporter("Supporter B", inv2Address);
+      });
 
-      const supporters = await instance.getSupporters();
+      it("return supporters when has supporters", async () => {
+        const supporters = await instance.getSupporters();
 
-      assert.equal(supporters.length, 2);
+        expect(supporters.length).to.equal(2);
+      });
     });
 
-    it("should return supporters equal zero when don't have it", async () => {
-      const supporters = await instance.getSupporters();
+    context("when dont have supporters", () => {
+      it("return empty supporters array", async () => {
+        const supporters = await instance.getSupporters();
 
-      assert.equal(supporters.length, 0);
+        expect(supporters.length).to.equal(0);
+      });
     });
   });
 
-  context("when will get supporter (.getSupporter)", () => {
-    it("should return a supporter", async () => {
+  describe("#getSupporter", () => {
+    it("return a supporter", async () => {
       await addSupporter("Supporter A", inv1Address);
 
       const supporter = await instance.getSupporter(inv1Address);
 
-      assert.equal(supporter.supporterWallet, inv1Address);
+      expect(supporter.supporterWallet).to.equal(inv1Address.address);
     });
   });
 
-  context("when will check if supporter exists", () => {
-    it("should return true when exists", async () => {
-      await addSupporter("Supporter A", inv1Address);
-      const supporterExists = await instance.supporterExists(inv1Address);
+  context("#supporterExists", () => {
+    context("when supporter exists", () => {
+      beforeEach(async () => {
+        await addSupporter("Supporter A", inv1Address);
+      });
 
-      assert.equal(supporterExists, true);
+      it("return true", async () => {
+        const supporterExists = await instance.supporterExists(inv1Address);
+
+        expect(supporterExists).to.equal(true);
+      });
     });
 
-    it("it should return false when don't exist", async () => {
-      const supporterExists = await instance.supporterExists(inv1Address);
+    context("when supporter dont exists", () => {
+      it("return false", async () => {
+        const supporterExists = await instance.supporterExists(inv1Address);
 
-      assert.equal(supporterExists, false);
+        expect(supporterExists).to.equal(false);
+      });
+    });
+  });
+
+  describe("#burnTokens", () => {
+    context("when msg.sender is SUPPORTER", () => {
+      beforeEach(async () => {
+        await addSupporter("Supporter A", inv1Address);
+      });
+
+      context("when amount is greater than zero", () => {
+        context("when SUPPORTER was invited", () => {
+          beforeEach(async () => {
+            await userContract.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
+            await addSupporter("Supporter B", inv2Address);
+            await transferTokensTo(inv2Address, 100000000000000000000n);
+          });
+
+          context("when burn 1000000000000000000 tokens", () => {
+            beforeEach(async () => {
+              await instance.connect(inv2Address).burnTokens(1000000000000000000n);
+            });
+
+            it("Supporter balance must be 99000000000000000000", async () => {
+              const balance = await supporterPool.balanceOf(inv2Address);
+              expect(balance).to.equal(99000000000000000000n);
+            });
+
+            it("Supporter inviter balance must be 10000000000000000", async () => {
+              const balance = await supporterPool.balanceOf(inv1Address);
+              expect(balance).to.equal(10000000000000000n);
+            });
+
+            it("totalCertified must be 990000000000000000", async () => {
+              const totalCertified = await rcToken.totalCertified();
+              expect(totalCertified).to.equal(990000000000000000n);
+            });
+          });
+
+          context("when burn 500000000000000000 tokens", () => {
+            beforeEach(async () => {
+              await instance.connect(inv2Address).burnTokens(500000000000000000n);
+            });
+
+            it("Supporter balance must be 99500000000000000000", async () => {
+              const balance = await supporterPool.balanceOf(inv2Address);
+              expect(balance).to.equal(99500000000000000000n);
+            });
+
+            it("Supporter inviter balance must be 5000000000000000", async () => {
+              const balance = await supporterPool.balanceOf(inv1Address);
+              expect(balance).to.equal(5000000000000000n);
+            });
+
+            it("totalCertified must be 495000000000000000", async () => {
+              const totalCertified = await rcToken.totalCertified();
+              expect(totalCertified).to.equal(495000000000000000n);
+            });
+          });
+        });
+
+        context("when SUPPORTER wasn't invited", () => {
+          beforeEach(async () => {
+            await transferTokensTo(inv1Address, "100000000000000000000");
+          });
+
+          context("when burn 1000000000000000000 tokens", () => {
+            beforeEach(async () => {
+              await instance.connect(inv1Address).burnTokens(1000000000000000000n);
+            });
+
+            it("Supporter balance must be 99000000000000000000", async () => {
+              const supporterBalance = await supporterPool.balanceOf(inv1Address);
+
+              expect(supporterBalance).to.equal(99000000000000000000n);
+            });
+
+            it("totalCertified must be 1000000000000000000", async () => {
+              const totalCertified = await rcToken.totalCertified();
+
+              expect(totalCertified).to.equal(1000000000000000000n);
+            });
+          });
+
+          context("when burn 500000000000000000 tokens", () => {
+            beforeEach(async () => {
+              await instance.connect(inv1Address).burnTokens(500000000000000000n);
+            });
+
+            it("Supporter balance must be 99500000000000000000", async () => {
+              const supporterBalance = await supporterPool.balanceOf(inv1Address);
+
+              expect(supporterBalance).to.equal(99500000000000000000n);
+            });
+
+            it("totalCertified must be 500000000000000000", async () => {
+              const totalCertified = await rcToken.totalCertified();
+
+              expect(totalCertified).to.equal(500000000000000000n);
+            });
+          });
+        });
+      });
+
+      context("when amount is equal zero", () => {
+        it("should return error", async () => {
+          await expect(instance.connect(inv1Address).burnTokens(0)).to.be.revertedWith("Amount invalid");
+        });
+      });
+    });
+
+    context("when msg.sender is not SUPPORTER", () => {
+      it("should return error", async () => {
+        await expect(instance.connect(inv1Address).burnTokens(1)).to.be.revertedWith("Only supporters");
+      });
     });
   });
 });

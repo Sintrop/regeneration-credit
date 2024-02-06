@@ -3,28 +3,28 @@ const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("ResearcherPool", () => {
+describe("ValidatorPool", () => {
   let instance;
-  let owner, researcher1Address, researcher2Address;
+  let owner, validator1Address, validator2Address;
 
   const args = {
-    totalResearcherPoolTokens: "30000000000000000000000000",
+    totalValidatorPoolTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
     blocksPerEra: 12,
   };
 
   beforeEach(async () => {
-    [owner, researcher1Address, researcher2Address] = await ethers.getSigners();
+    [owner, validator1Address, validator2Address] = await ethers.getSigners();
 
     const rcToken = await rcTokenDeployed();
 
-    const instanceFactory = await ethers.getContractFactory("ResearcherPool");
+    const instanceFactory = await ethers.getContractFactory("ValidatorPool");
     instance = await instanceFactory.deploy(rcToken.target, args.halving, args.totalEras, args.blocksPerEra);
 
     await instance.newAllowedCaller(owner);
 
-    await rcToken.addContractPool(instance.target, args.totalResearcherPoolTokens);
+    await rcToken.addContractPool(instance.target, args.totalValidatorPoolTokens);
   });
 
   describe("after deploy", () => {
@@ -75,10 +75,10 @@ describe("ResearcherPool", () => {
   });
 
   describe("#balance", () => {
-    it("must return balance of ResearcherPool", async () => {
+    it("must return balance of ValidatorPool", async () => {
       const balance = await instance.balance();
 
-      expect(balance).to.equal(args.totalResearcherPoolTokens);
+      expect(balance).to.equal(args.totalValidatorPoolTokens);
     });
   });
 
@@ -86,18 +86,18 @@ describe("ResearcherPool", () => {
     it("should return balanceOf address", async () => {
       const balanceOf = await instance.balanceOf(instance.target);
 
-      expect(balanceOf).to.equal(args.totalResearcherPoolTokens);
+      expect(balanceOf).to.equal(args.totalValidatorPoolTokens);
     });
   });
 
   describe("#addLevel", () => {
     context("with allowed caller", () => {
       context("when add level in era 1", () => {
-        context("when researcher have 0 levels in era 1", () => {
+        context("when validator have 0 levels in era 1", () => {
           context("when add level", () => {
             beforeEach(async () => {
-              await instance.addLevel(researcher1Address, 1, 1);
-              await instance.addLevel(researcher2Address, 1, 1);
+              await instance.addLevel(validator1Address, 1, 1);
+              await instance.addLevel(validator2Address, 1, 1);
             });
 
             it("era 1 must have 2 level", async () => {
@@ -112,34 +112,34 @@ describe("ResearcherPool", () => {
               expect(era2.levels).to.equal(0);
             });
 
-            it("eraLevels must have 1 level to researcher1", async () => {
-              const eraLevels = await instance.eraLevels(1, researcher1Address);
+            it("eraLevels must have 1 level to validator1", async () => {
+              const eraLevels = await instance.eraLevels(1, validator1Address);
 
               expect(eraLevels).to.equal(1);
             });
 
-            it("eraLevels must have 1 level to researcher2", async () => {
-              const eraLevels = await instance.eraLevels(1, researcher2Address);
+            it("eraLevels must have 1 level to validator2", async () => {
+              const eraLevels = await instance.eraLevels(1, validator2Address);
 
               expect(eraLevels).to.equal(1);
             });
           });
         });
 
-        context("when researchers have levels in era 1", () => {
+        context("when validators have levels in era 1", () => {
           beforeEach(async () => {
-            await instance.addLevel(researcher1Address, 1, 1);
-            await instance.addLevel(researcher1Address, 1, 5);
+            await instance.addLevel(validator1Address, 1, 1);
+            await instance.addLevel(validator1Address, 1, 5);
 
-            await instance.addLevel(researcher2Address, 1, 1);
-            await instance.addLevel(researcher2Address, 1, 1);
-            await instance.addLevel(researcher2Address, 1, 1);
+            await instance.addLevel(validator2Address, 1, 1);
+            await instance.addLevel(validator2Address, 1, 1);
+            await instance.addLevel(validator2Address, 1, 1);
           });
 
           context("when add level", () => {
             beforeEach(async () => {
-              await instance.addLevel(researcher1Address, 1, 1);
-              await instance.addLevel(researcher2Address, 1, 1);
+              await instance.addLevel(validator1Address, 1, 1);
+              await instance.addLevel(validator2Address, 1, 1);
             });
 
             it("era 1 must have 11 level", async () => {
@@ -154,14 +154,14 @@ describe("ResearcherPool", () => {
               expect(era2.levels).to.equal(0);
             });
 
-            it("eraLevels must have 7 level to researcher1", async () => {
-              const eraLevels = await instance.eraLevels(1, researcher1Address);
+            it("eraLevels must have 7 level to validator1", async () => {
+              const eraLevels = await instance.eraLevels(1, validator1Address);
 
               expect(eraLevels).to.equal(7);
             });
 
-            it("eraLevels must have 4 level to researcher2", async () => {
-              const eraLevels = await instance.eraLevels(1, researcher2Address);
+            it("eraLevels must have 4 level to validator2", async () => {
+              const eraLevels = await instance.eraLevels(1, validator2Address);
 
               expect(eraLevels).to.equal(4);
             });
@@ -172,7 +172,7 @@ describe("ResearcherPool", () => {
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(researcher1Address).addLevel(researcher1Address, 1, 1)).to.be.revertedWith(
+        await expect(instance.connect(validator1Address).addLevel(validator1Address, 1, 1)).to.be.revertedWith(
           "Not allowed caller"
         );
       });
@@ -181,16 +181,16 @@ describe("ResearcherPool", () => {
 
   describe("#removeLevel", () => {
     context("with allowed caller", () => {
-      context("when researcher1 have 2 levels in era 1", () => {
+      context("when validator1 have 2 levels in era 1", () => {
         beforeEach(async () => {
-          await instance.addLevel(researcher1Address, 1, 1);
-          await instance.addLevel(researcher1Address, 1, 1);
+          await instance.addLevel(validator1Address, 1, 1);
+          await instance.addLevel(validator1Address, 1, 1);
         });
 
         context("when is era 1", () => {
           context("when remove level", () => {
             beforeEach(async () => {
-              await instance.removeLevel(researcher1Address);
+              await instance.removeLevel(validator1Address);
             });
 
             it("era 1 must have 1 level", async () => {
@@ -199,8 +199,8 @@ describe("ResearcherPool", () => {
               expect(era1.levels).to.equal(1);
             });
 
-            it("researcher1 levels in era 1 must be 1", async () => {
-              const level = await instance.eraLevels(1, researcher1Address);
+            it("validator1 levels in era 1 must be 1", async () => {
+              const level = await instance.eraLevels(1, validator1Address);
 
               expect(level).to.equal(1);
             });
@@ -211,13 +211,13 @@ describe("ResearcherPool", () => {
           context("when have 2 levels in era 2", () => {
             beforeEach(async () => {
               await advanceBlock(args.blocksPerEra);
-              await instance.addLevel(researcher1Address, 1, 1);
-              await instance.addLevel(researcher1Address, 1, 1);
+              await instance.addLevel(validator1Address, 1, 1);
+              await instance.addLevel(validator1Address, 1, 1);
             });
 
             context("when remove level", () => {
               beforeEach(async () => {
-                await instance.removeLevel(researcher1Address);
+                await instance.removeLevel(validator1Address);
               });
 
               it("era 1 must have 2 level", async () => {
@@ -226,8 +226,8 @@ describe("ResearcherPool", () => {
                 expect(era.levels).to.equal(2);
               });
 
-              it("researcher1 levels in era 1 must be 2", async () => {
-                const level = await instance.eraLevels(1, researcher1Address);
+              it("validator1 levels in era 1 must be 2", async () => {
+                const level = await instance.eraLevels(1, validator1Address);
 
                 expect(level).to.equal(2);
               });
@@ -238,8 +238,8 @@ describe("ResearcherPool", () => {
                 expect(era.levels).to.equal(1);
               });
 
-              it("researcher1 levels in era 2 must be 1", async () => {
-                const level = await instance.eraLevels(2, researcher1Address);
+              it("validator1 levels in era 2 must be 1", async () => {
+                const level = await instance.eraLevels(2, validator1Address);
 
                 expect(level).to.equal(1);
               });
@@ -248,16 +248,16 @@ describe("ResearcherPool", () => {
         });
       });
 
-      context("when researcher1 dont have levels in era", () => {
+      context("when validator1 dont have levels in era", () => {
         it("should return error message", async () => {
-          await expect(instance.removeLevel(researcher1Address)).to.be.revertedWith("Not enough levels to remove");
+          await expect(instance.removeLevel(validator1Address)).to.be.revertedWith("Not enough levels to remove");
         });
       });
     });
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(researcher1Address).removeLevel(researcher1Address)).to.be.revertedWith(
+        await expect(instance.connect(validator1Address).removeLevel(validator1Address)).to.be.revertedWith(
           "Not allowed caller"
         );
       });
@@ -294,70 +294,70 @@ describe("ResearcherPool", () => {
       context("when can withdraw", () => {
         context("when is era 1", () => {
           context("when total of levels in era is 6", () => {
-            context("when researcher1 have 3 levels in era 1", () => {
+            context("when validator1 have 3 levels in era 1", () => {
               beforeEach(async () => {
-                await instance.addLevel(researcher1Address, 1, 1);
-                await instance.addLevel(researcher1Address, 1, 1);
-                await instance.addLevel(researcher1Address, 1, 1);
+                await instance.addLevel(validator1Address, 1, 1);
+                await instance.addLevel(validator1Address, 1, 1);
+                await instance.addLevel(validator1Address, 1, 1);
 
-                await instance.addLevel(researcher2Address, 1, 1);
-                await instance.addLevel(researcher2Address, 1, 1);
-                await instance.addLevel(researcher2Address, 1, 1);
+                await instance.addLevel(validator2Address, 1, 1);
+                await instance.addLevel(validator2Address, 1, 1);
+                await instance.addLevel(validator2Address, 1, 1);
 
                 await advanceBlock(args.blocksPerEra);
               });
 
               it("must withdraw 600000000000000000000000 tokens", async () => {
-                await instance.withdraw(researcher1Address, 1);
-                const balanceOf = await instance.balanceOf(researcher1Address);
+                await instance.withdraw(validator1Address, 1);
+                const balanceOf = await instance.balanceOf(validator1Address);
 
                 expect(balanceOf).to.equal(600000000000000000000000n);
               });
             });
 
-            context("when researcher1 have 6 levels in era 1", () => {
+            context("when validator1 have 6 levels in era 1", () => {
               beforeEach(async () => {
-                await instance.addLevel(researcher1Address, 1, 1);
-                await instance.addLevel(researcher1Address, 1, 1);
-                await instance.addLevel(researcher1Address, 1, 1);
-                await instance.addLevel(researcher1Address, 1, 1);
-                await instance.addLevel(researcher1Address, 1, 1);
-                await instance.addLevel(researcher1Address, 1, 1);
+                await instance.addLevel(validator1Address, 1, 1);
+                await instance.addLevel(validator1Address, 1, 1);
+                await instance.addLevel(validator1Address, 1, 1);
+                await instance.addLevel(validator1Address, 1, 1);
+                await instance.addLevel(validator1Address, 1, 1);
+                await instance.addLevel(validator1Address, 1, 1);
 
                 await advanceBlock(args.blocksPerEra);
               });
 
               it("shoud withdraw 1200000000000000000000000 tokens", async () => {
-                await instance.withdraw(researcher1Address, 1);
-                const balanceOf = await instance.balanceOf(researcher1Address);
+                await instance.withdraw(validator1Address, 1);
+                const balanceOf = await instance.balanceOf(validator1Address);
 
                 expect(balanceOf).to.equal(1200000000000000000000000n);
               });
 
-              it("shoud withdraw 0 tokens to researcher2", async () => {
-                await instance.withdraw(researcher2Address, 1);
-                const balanceOf = await instance.balanceOf(researcher2Address);
+              it("shoud withdraw 0 tokens to validator2", async () => {
+                await instance.withdraw(validator2Address, 1);
+                const balanceOf = await instance.balanceOf(validator2Address);
 
                 expect(balanceOf).to.equal("0");
               });
             });
 
-            context("when researcher2 have 3 levels in era 1", () => {
+            context("when validator2 have 3 levels in era 1", () => {
               beforeEach(async () => {
-                await instance.addLevel(researcher1Address, 1, 1);
-                await instance.addLevel(researcher1Address, 1, 1);
-                await instance.addLevel(researcher1Address, 1, 1);
+                await instance.addLevel(validator1Address, 1, 1);
+                await instance.addLevel(validator1Address, 1, 1);
+                await instance.addLevel(validator1Address, 1, 1);
 
-                await instance.addLevel(researcher2Address, 1, 1);
-                await instance.addLevel(researcher2Address, 1, 1);
-                await instance.addLevel(researcher2Address, 1, 1);
+                await instance.addLevel(validator2Address, 1, 1);
+                await instance.addLevel(validator2Address, 1, 1);
+                await instance.addLevel(validator2Address, 1, 1);
 
                 await advanceBlock(args.blocksPerEra);
               });
 
               it("shoud withdraw 600000000000000000000000 tokens", async () => {
-                await instance.withdraw(researcher2Address, 1);
-                const balanceOf = await instance.balanceOf(researcher2Address);
+                await instance.withdraw(validator2Address, 1);
+                const balanceOf = await instance.balanceOf(validator2Address);
 
                 expect(balanceOf).to.equal(600000000000000000000000n);
               });
@@ -368,82 +368,82 @@ describe("ResearcherPool", () => {
         context("when is era 2", () => {
           context("when dont have withdraw from era 1", () => {
             beforeEach(async () => {
-              await instance.addLevel(researcher1Address, 1, 1);
-              await instance.addLevel(researcher1Address, 1, 1);
-              await instance.addLevel(researcher1Address, 1, 1);
+              await instance.addLevel(validator1Address, 1, 1);
+              await instance.addLevel(validator1Address, 1, 1);
+              await instance.addLevel(validator1Address, 1, 1);
 
-              await instance.addLevel(researcher2Address, 1, 1);
-              await instance.addLevel(researcher2Address, 1, 1);
-              await instance.addLevel(researcher2Address, 1, 1);
+              await instance.addLevel(validator2Address, 1, 1);
+              await instance.addLevel(validator2Address, 1, 1);
+              await instance.addLevel(validator2Address, 1, 1);
 
               await advanceBlock(8);
 
-              await instance.addLevel(researcher1Address, 1, 1);
-              await instance.addLevel(researcher1Address, 1, 1);
-              await instance.addLevel(researcher1Address, 1, 1);
+              await instance.addLevel(validator1Address, 1, 1);
+              await instance.addLevel(validator1Address, 1, 1);
+              await instance.addLevel(validator1Address, 1, 1);
 
-              await instance.addLevel(researcher2Address, 1, 1);
-              await instance.addLevel(researcher2Address, 1, 1);
-              await instance.addLevel(researcher2Address, 1, 1);
+              await instance.addLevel(validator2Address, 1, 1);
+              await instance.addLevel(validator2Address, 1, 1);
+              await instance.addLevel(validator2Address, 1, 1);
             });
 
-            context("when researcher1 withdraw from era 1 and era 2", () => {
+            context("when validator1 withdraw from era 1 and era 2", () => {
               beforeEach(async () => {
-                await instance.withdraw(researcher1Address, 1);
-                await instance.withdraw(researcher1Address, 2);
+                await instance.withdraw(validator1Address, 1);
+                await instance.withdraw(validator1Address, 2);
 
-                await instance.withdraw(researcher2Address, 1);
-                await instance.withdraw(researcher2Address, 2);
+                await instance.withdraw(validator2Address, 1);
+                await instance.withdraw(validator2Address, 2);
               });
 
-              it("researcher pool balance must be 27600000000000000000000000", async () => {
+              it("validator pool balance must be 27600000000000000000000000", async () => {
                 const balance = await instance.balance();
 
                 expect(balance).to.equal(27600000000000000000000000n);
               });
 
-              it("researcher1 balance must be 1200000000000000000000000", async () => {
-                const balanceOf = await instance.balanceOf(researcher1Address);
+              it("validator1 balance must be 1200000000000000000000000", async () => {
+                const balanceOf = await instance.balanceOf(validator1Address);
 
                 expect(balanceOf).to.equal(1200000000000000000000000n);
               });
 
-              it("researcher1 balance in era 1 must be 600000000000000000000000", async () => {
-                const balanceOf = await instance.eraTokens(1, researcher1Address);
+              it("validator1 balance in era 1 must be 600000000000000000000000", async () => {
+                const balanceOf = await instance.eraTokens(1, validator1Address);
 
                 expect(balanceOf).to.equal(600000000000000000000000n);
               });
 
-              it("researcher1 balance in era 2 must be 600000000000000000000000", async () => {
-                const balanceOf = await instance.eraTokens(2, researcher1Address);
+              it("validator1 balance in era 2 must be 600000000000000000000000", async () => {
+                const balanceOf = await instance.eraTokens(2, validator1Address);
 
                 expect(balanceOf).to.equal(600000000000000000000000n);
               });
             });
 
-            context("when researcher2 withdraw from era 1 and era 2", () => {
+            context("when validator2 withdraw from era 1 and era 2", () => {
               beforeEach(async () => {
-                await instance.withdraw(researcher1Address, 1);
-                await instance.withdraw(researcher1Address, 2);
+                await instance.withdraw(validator1Address, 1);
+                await instance.withdraw(validator1Address, 2);
 
-                await instance.withdraw(researcher2Address, 1);
-                await instance.withdraw(researcher2Address, 2);
+                await instance.withdraw(validator2Address, 1);
+                await instance.withdraw(validator2Address, 2);
               });
 
-              it("researcher2 balance must be 1200000000000000000000000", async () => {
-                const balanceOf = await instance.balanceOf(researcher2Address);
+              it("validator2 balance must be 1200000000000000000000000", async () => {
+                const balanceOf = await instance.balanceOf(validator2Address);
 
                 expect(balanceOf).to.equal(1200000000000000000000000n);
               });
 
-              it("researcher2 balance in era 1 must be 600000000000000000000000", async () => {
-                const balanceOf = await instance.eraTokens(1, researcher2Address);
+              it("validator2 balance in era 1 must be 600000000000000000000000", async () => {
+                const balanceOf = await instance.eraTokens(1, validator2Address);
 
                 expect(balanceOf).to.equal(600000000000000000000000n);
               });
 
-              it("researcher2 balance in era 2 must be 600000000000000000000000", async () => {
-                const balanceOf = await instance.eraTokens(2, researcher2Address);
+              it("validator2 balance in era 2 must be 600000000000000000000000", async () => {
+                const balanceOf = await instance.eraTokens(2, validator2Address);
 
                 expect(balanceOf).to.equal(600000000000000000000000n);
               });
@@ -454,14 +454,14 @@ describe("ResearcherPool", () => {
 
       context("when cant withdraw", () => {
         it("should return error message", async () => {
-          await expect(instance.withdraw(researcher1Address, 1)).to.be.revertedWith("You can't approve yet");
+          await expect(instance.withdraw(validator1Address, 1)).to.be.revertedWith("You can't approve yet");
         });
       });
     });
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(researcher1Address).withdraw(researcher1Address, 1)).to.be.revertedWith(
+        await expect(instance.connect(validator1Address).withdraw(validator1Address, 1)).to.be.revertedWith(
           "Not allowed caller"
         );
       });

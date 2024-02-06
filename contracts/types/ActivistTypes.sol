@@ -9,4 +9,10 @@ struct Activist {
   UserType userType;
   string name;
   string proofPhoto;
+  Pool pool;
+}
+
+struct Pool {
+  uint256 level;
+  uint256 currentEra;
 }

@@ -1,0 +1,91 @@
+const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
+
+describe("SupporterPool", () => {
+  let instance, rcToken;
+  let owner, user1Address, user2Address;
+
+  const transferTokensTo = async (userAddress, tokens) => {
+    await rcToken.transfer(userAddress, tokens);
+  };
+
+  beforeEach(async () => {
+    [owner, user1Address, user2Address] = await ethers.getSigners();
+
+    rcToken = await rcTokenDeployed();
+
+    const instanceFactory = await ethers.getContractFactory("SupporterPool");
+    instance = await instanceFactory.deploy(rcToken.target);
+
+    await instance.newAllowedCaller(owner);
+
+    await rcToken.addContractPool(instance.target, 0);
+  });
+
+  describe("#burnTokens", () => {
+    beforeEach(async () => {
+      await transferTokensTo(user1Address, "100000000000000000000");
+    });
+
+    context("when user was invited", () => {
+      beforeEach(async () => {
+        receipt = await instance.burnTokens(user1Address, user2Address, "1000000000000000000", true);
+      });
+
+      it("user1Address balance must be 99000000000000000000", async () => {
+        const balance = await instance.balanceOf(user1Address);
+        expect(balance).to.equal(99000000000000000000n);
+      });
+
+      it("user2Address balance must be 10000000000000000", async () => {
+        const balance = await instance.balanceOf(user2Address);
+        expect(balance).to.equal(10000000000000000n);
+      });
+
+      it("totalCertified must be 990000000000000000", async () => {
+        const totalCertified = await rcToken.totalCertified();
+        expect(totalCertified).to.equal(990000000000000000n);
+      });
+
+      it("send PoolBurnTokensEvent", async () => {
+        await expect(receipt)
+          .to.emit(instance, "PoolBurnTokensEvent")
+          .withArgs(
+            user1Address.address,
+            1000000000000000000n,
+            990000000000000000n,
+            user2Address.address,
+            10000000000000000n
+          );
+      });
+    });
+
+    context("when user was not invited", () => {
+      beforeEach(async () => {
+        receipt = await instance.burnTokens(user1Address, user2Address, "1000000000000000000", false);
+      });
+
+      it("user1Address balance must be 99000000000000000000", async () => {
+        const balance = await instance.balanceOf(user1Address);
+        expect(balance).to.equal(99000000000000000000n);
+      });
+
+      it("user2Address balance must be 0", async () => {
+        const balance = await instance.balanceOf(user2Address);
+        expect(balance).to.equal(0);
+      });
+
+      it("totalCertified must be 1000000000000000000", async () => {
+        const totalCertified = await rcToken.totalCertified();
+        expect(totalCertified).to.equal(1000000000000000000n);
+      });
+
+      it("send PoolBurnTokensEvent", async () => {
+        await expect(receipt)
+          .to.emit(instance, "PoolBurnTokensEvent")
+          .withArgs(user1Address.address, 1000000000000000000n, 1000000000000000000n, user2Address.address, 0n);
+      });
+    });
+  });
+});

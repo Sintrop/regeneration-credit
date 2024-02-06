@@ -14,6 +14,11 @@ enum Isas {
 struct Category {
   uint256 id;
   address createdBy;
+  IsasDescription isasDescription;
+  uint256 votesCount;
+}
+
+struct IsasDescription {
   string name;
   string description;
   string tutorial;
@@ -24,5 +29,4 @@ struct Category {
   string notRegenerative1;
   string notRegenerative2;
   string notRegenerative3;
-  uint256 votesCount;
 }

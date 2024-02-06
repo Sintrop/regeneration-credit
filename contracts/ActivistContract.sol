@@ -2,18 +2,22 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
-import { Activist } from "./types/ActivistTypes.sol";
+import { Activist, Pool } from "./types/ActivistTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
+import { ActivistPool } from "./ActivistPool.sol";
+import { Callable } from "./Callable.sol";
 
-contract ActivistContract {
+contract ActivistContract is Callable {
   mapping(address => Activist) internal activists;
 
   UserContract internal userContract;
   address[] internal activistsAddress;
   uint256 public activistsCount;
+  ActivistPool internal activistPool;
 
-  constructor(address userContractAddress) {
+  constructor(address userContractAddress, address activistPoolAddress) {
     userContract = UserContract(userContractAddress);
+    activistPool = ActivistPool(activistPoolAddress);
   }
 
   /**
@@ -24,8 +28,11 @@ contract ActivistContract {
   function addActivist(string memory name, string memory proofPhoto) public uniqueActivist returns (Activist memory) {
     uint256 id = activistsCount + 1;
     UserType userType = UserType.ACTIVIST;
+    uint256 currentEra = activistPoolEra();
 
-    Activist memory activist = Activist(id, msg.sender, userType, name, proofPhoto);
+    Pool memory pool = Pool(0, currentEra);
+
+    Activist memory activist = Activist(id, msg.sender, userType, name, proofPhoto, pool);
 
     activists[msg.sender] = activist;
     activistsAddress.push(msg.sender);
@@ -58,12 +65,39 @@ contract ActivistContract {
     return activists[addr];
   }
 
+  function addLevel(address activistAddress) public mustBeAllowedCaller {
+    if (!activistExists(activistAddress)) return;
+
+    Activist memory activist = activists[activistAddress];
+    activist.pool.level++;
+    activists[activistAddress] = activist;
+
+    activistPool.addLevel(activistAddress, 1, 1);
+  }
+
+  function withdraw() public {
+    require(userContract.userTypeIs(UserType.ACTIVIST, msg.sender), "Pool only to activist");
+
+    Activist memory activist = activists[msg.sender];
+    uint256 currentEra = activist.pool.currentEra;
+
+    require(activistPool.canApprove(currentEra), "Can't approve withdraw");
+
+    activists[msg.sender].pool.currentEra++;
+
+    activistPool.withdraw(msg.sender, currentEra);
+  }
+
   /**
    * @dev Check if a specific activist exists
    * @return a bool that represent if a activist exists or not
    */
   function activistExists(address addr) public view returns (bool) {
     return bytes(activists[addr].name).length > 0;
+  }
+
+  function activistPoolEra() internal view returns (uint256) {
+    return activistPool.currentContractEra();
   }
 
   // MODIFIERS

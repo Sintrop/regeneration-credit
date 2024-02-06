@@ -1,30 +1,31 @@
-const InvitationContract = artifacts.require("InvitationContract");
+const { ethers } = require("hardhat");
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
+const { expect } = require("chai");
 
-const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
-
-contract("InvitationContract", (accounts) => {
-  let instance;
-  let [owner, user1Address, user2Address, user3Address, user4Address] = accounts;
+describe("InvitationContract", () => {
+  let instance, userContract;
+  let owner, user1Address, user2Address, user3Address, user4Address;
 
   const inviteDelayBlocks = 25;
 
-  const addUser = async (address, userType, caller) => {
-    await userContract.addUser(address, userType, { from: caller });
+  const addUser = async (address, userType, from) => {
+    await userContract.connect(from).addUser(address, userType);
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userContract.addInvitation(inviter, invited, userType, {
-      from: from,
-    });
+    await userContract.connect(from).addInvitation(inviter, invited, userType);
   };
 
   beforeEach(async () => {
-    userContract = await userContractDeployed();
-    instance = await InvitationContract.new(userContract.address, inviteDelayBlocks);
+    [owner, user1Address, user2Address, user3Address, user4Address] = await ethers.getSigners();
 
-    await userContract.newAllowedCaller(instance.address);
+    userContract = await userContractDeployed();
+
+    const instanceFactory = await ethers.getContractFactory("InvitationContract");
+    instance = await instanceFactory.deploy(userContract.target, inviteDelayBlocks);
+
+    await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
   });
 
@@ -40,12 +41,11 @@ contract("InvitationContract", (accounts) => {
 
         await addUser(user2Address, userTypes.Activist, owner);
         await addUser(user4Address, userTypes.Activist, owner);
-        await instance.invite(user3Address, userTypes.Activist, { from: user2Address });
+        await instance.connect(user2Address).invite(user3Address, userTypes.Activist);
       });
 
       it("revert", async () => {
-        await expectRevert(
-          instance.invite(user3Address, userTypes.Activist, { from: user4Address }),
+        await expect(instance.connect(user4Address).invite(user3Address, userTypes.Activist)).to.be.revertedWith(
           "Already invited"
         );
       });
@@ -55,12 +55,12 @@ contract("InvitationContract", (accounts) => {
       beforeEach(async () => {
         await addInvitation(owner, user2Address, userTypes.Activist, owner);
         await addUser(user2Address, userTypes.Activist, owner);
-        await instance.invite(user3Address, userTypes.Activist, { from: user2Address });
+
+        await instance.connect(user2Address).invite(user3Address, userTypes.Activist);
       });
 
       it("revert", async () => {
-        await expectRevert(
-          instance.invite(user4Address, userTypes.Activist, { from: user2Address }),
+        await expect(instance.connect(user2Address).invite(user4Address, userTypes.Activist)).to.be.revertedWith(
           "Invite delay not reached"
         );
       });
@@ -75,31 +75,31 @@ contract("InvitationContract", (accounts) => {
 
         context("activist", () => {
           it("invite with success", async () => {
-            await instance.invite(user3Address, userTypes.Activist, { from: user2Address });
+            await instance.connect(user2Address).invite(user3Address, userTypes.Activist);
 
             const invitation = await userContract.invitations(user3Address);
 
-            assert.equal(invitation.invited, user3Address);
+            expect(invitation.invited).to.equal(user3Address.address);
           });
         });
 
         context("inspector", () => {
           it("invite with success", async () => {
-            await instance.invite(user3Address, userTypes.Inspector, { from: user2Address });
+            await instance.connect(user2Address).invite(user3Address, userTypes.Inspector);
 
             const invitation = await userContract.invitations(user3Address);
 
-            assert.equal(invitation.invited, user3Address);
+            expect(invitation.invited).to.equal(user3Address.address);
           });
         });
 
         context("producer", () => {
           it("invite with success", async () => {
-            await instance.invite(user3Address, userTypes.Producer, { from: user2Address });
+            await instance.connect(user2Address).invite(user3Address, userTypes.Producer);
 
-            const invitation = await userContract.invitations(user3Address);
+            const invitation = await userContract.invitations(user3Address.address);
 
-            assert.equal(invitation.invited, user3Address);
+            expect(invitation.invited).to.equal(user3Address.address);
           });
         });
       });
@@ -112,11 +112,11 @@ contract("InvitationContract", (accounts) => {
 
         context("developer", () => {
           it("invite with success", async () => {
-            await instance.invite(user3Address, userTypes.Developer, { from: user2Address });
+            await instance.connect(user2Address).invite(user3Address, userTypes.Developer);
 
             const invitation = await userContract.invitations(user3Address);
 
-            assert.equal(invitation.invited, user3Address);
+            expect(invitation.invited).to.equal(user3Address.address);
           });
         });
       });
@@ -129,11 +129,11 @@ contract("InvitationContract", (accounts) => {
 
         context("researcher", () => {
           it("invite with success", async () => {
-            await instance.invite(user3Address, userTypes.Researcher, { from: user2Address });
+            await instance.connect(user2Address).invite(user3Address, userTypes.Researcher);
 
             const invitation = await userContract.invitations(user3Address);
 
-            assert.equal(invitation.invited, user3Address);
+            expect(invitation.invited).to.equal(user3Address.address);
           });
         });
       });
@@ -146,11 +146,11 @@ contract("InvitationContract", (accounts) => {
 
         context("supporter", () => {
           it("invite with success", async () => {
-            await instance.invite(user3Address, userTypes.Supporter, { from: user2Address });
+            await instance.connect(user2Address).invite(user3Address, userTypes.Supporter);
 
             const invitation = await userContract.invitations(user3Address);
 
-            assert.equal(invitation.invited, user3Address);
+            expect(invitation.invited).to.equal(user3Address.address);
           });
         });
       });
@@ -165,20 +165,19 @@ contract("InvitationContract", (accounts) => {
     context("when invite", () => {
       context("with owner", () => {
         it("invite with success", async () => {
-          await instance.onlyOwnerInvite(user3Address, userTypes.Developer, { from: owner });
+          await instance.onlyOwnerInvite(user3Address, userTypes.Developer);
 
           const invitation = await userContract.invitations(user3Address);
 
-          assert.equal(invitation.invited, user3Address);
+          expect(invitation.invited).to.equal(user3Address.address);
         });
       });
 
       context("with not owner", () => {
         it("revert", async () => {
-          await expectRevert(
-            instance.onlyOwnerInvite(user2Address, userTypes.Activist, { from: user1Address }),
-            "Ownable: caller is not the owner"
-          );
+          await expect(
+            instance.connect(user1Address).onlyOwnerInvite(user2Address, userTypes.Activist)
+          ).to.be.revertedWith("Ownable: caller is not the owner");
         });
       });
     });

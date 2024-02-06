@@ -3,17 +3,20 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
 import { Supporter } from "./types/SupporterTypes.sol";
-import { UserType } from "./types/UserTypes.sol";
+import { UserType, Invitation } from "./types/UserTypes.sol";
+import { SupporterPool } from "./SupporterPool.sol";
 
 contract SupporterContract {
   mapping(address => Supporter) internal supporters;
 
   UserContract internal userContract;
+  SupporterPool internal supporterPool;
   address[] internal supportersAddress;
   uint256 public supportersCount;
 
-  constructor(address userContractAddress) {
+  constructor(address userContractAddress, address supporterPoolAddress) {
     userContract = UserContract(userContractAddress);
+    supporterPool = SupporterPool(supporterPoolAddress);
   }
 
   /**
@@ -33,6 +36,16 @@ contract SupporterContract {
     userContract.addUser(msg.sender, userType);
 
     return supporter;
+  }
+
+  function burnTokens(uint256 amount) public {
+    require(userContract.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
+    require(amount > 0, "Amount invalid");
+
+    Invitation memory invitation = userContract.getInvitation(msg.sender);
+    bool isInvited = invitation.createdAtBlock != 0;
+
+    supporterPool.burnTokens(msg.sender, invitation.inviter, amount, isInvited);
   }
 
   /**

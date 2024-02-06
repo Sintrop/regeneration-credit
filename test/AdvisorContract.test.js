@@ -1,30 +1,29 @@
-const AdvisorContract = artifacts.require("AdvisorContract");
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
+const { expect } = require("chai");
 
-const expectRevert = require("@openzeppelin/test-helpers").expectRevert;
-
-contract("AdvisorContract", (accounts) => {
+describe("AdvisorContract", () => {
   let instance;
   let userContract;
-  let [owner, adv1Address, adv2Address, adv3Address] = accounts;
+  let owner, adv1Address, adv2Address, adv3Address;
 
-  const addAdvisor = async (name, address) => {
-    await instance.addAdvisor(name, "photoURL", { from: address });
+  const addAdvisor = async (name, from) => {
+    await instance.connect(from).addAdvisor(name, "photoURL");
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userContract.addInvitation(inviter, invited, userType, {
-      from: from,
-    });
+    await userContract.connect(from).addInvitation(inviter, invited, userType);
   };
 
   beforeEach(async () => {
+    [owner, adv1Address, adv2Address, adv3Address] = await ethers.getSigners();
+
     userContract = await userContractDeployed();
 
-    instance = await AdvisorContract.new(userContract.address);
+    const instanceContractFactory = await ethers.getContractFactory("AdvisorContract");
+    instance = await instanceContractFactory.deploy(userContract.target);
 
-    await userContract.newAllowedCaller(instance.address);
+    await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
 
     await addInvitation(owner, adv1Address, userTypes.Advisor, owner);
@@ -34,7 +33,7 @@ contract("AdvisorContract", (accounts) => {
   context("when will create new advisor (.addAdvisor)", () => {
     context("when is not an allowed user", () => {
       it("should return error message", async () => {
-        await expectRevert(addAdvisor("Advisor B", adv2Address), "Invalid invitation");
+        await expect(addAdvisor("Advisor B", adv2Address)).to.be.revertedWith("Invalid invitation");
       });
     });
 
@@ -42,7 +41,7 @@ contract("AdvisorContract", (accounts) => {
       context("when advisor exists", () => {
         it("should return error", async () => {
           await addAdvisor("Advisor A", adv1Address);
-          await expectRevert(addAdvisor("Advisor A", adv1Address), "This advisor already exist");
+          await expect(addAdvisor("Advisor A", adv1Address)).to.be.revertedWith("This advisor already exist");
         });
       });
 
@@ -52,7 +51,7 @@ contract("AdvisorContract", (accounts) => {
           await addAdvisor("Advisor C", adv3Address);
           const advisor = await instance.getAdvisor(adv1Address);
 
-          assert.equal(advisor.advisorWallet, adv1Address);
+          expect(advisor.advisorWallet).to.equal(adv1Address.address);
         });
 
         it("should increment advisorCount after create advisor", async () => {
@@ -60,7 +59,7 @@ contract("AdvisorContract", (accounts) => {
           await addAdvisor("Advisor C", adv3Address);
           const advisorsCount = await instance.advisorsCount();
 
-          assert.equal(advisorsCount, 2);
+          expect(advisorsCount).to.equal(2);
         });
 
         it("should add created advisor in advisorList (array)", async () => {
@@ -69,7 +68,7 @@ contract("AdvisorContract", (accounts) => {
 
           const advisors = await instance.getAdvisors();
 
-          assert.equal(advisors[0].advisorWallet, adv1Address);
+          expect(advisors[0].advisorWallet).to.equal(adv1Address.address);
         });
 
         it("should add created advisor in userType contract as a ADVISOR", async () => {
@@ -78,7 +77,7 @@ contract("AdvisorContract", (accounts) => {
           const userType = await userContract.getUser(adv1Address);
           const ADVISOR = 5;
 
-          assert.equal(userType, ADVISOR);
+          expect(userType).to.equal(ADVISOR);
         });
       });
     });
@@ -91,13 +90,13 @@ contract("AdvisorContract", (accounts) => {
 
       const advisors = await instance.getAdvisors();
 
-      assert.equal(advisors.length, 2);
+      expect(advisors.length).to.equal(2);
     });
 
     it("should return advisors equal zero when dont has it", async () => {
       const advisors = await instance.getAdvisors();
 
-      assert.equal(advisors.length, 0);
+      expect(advisors.length).to.equal(0);
     });
   });
 
@@ -107,7 +106,7 @@ contract("AdvisorContract", (accounts) => {
 
       const advisor = await instance.getAdvisor(adv1Address);
 
-      assert.equal(advisor.advisorWallet, adv1Address);
+      expect(advisor.advisorWallet).to.equal(adv1Address.address);
     });
   });
 
@@ -116,13 +115,13 @@ contract("AdvisorContract", (accounts) => {
       await addAdvisor("Advisor A", adv1Address);
       const advisorExists = await instance.advisorExists(adv1Address);
 
-      assert.equal(advisorExists, true);
+      expect(advisorExists).to.equal(true);
     });
 
     it("it should return false when don't exist", async () => {
       const advisorExists = await instance.advisorExists(adv1Address);
 
-      assert.equal(advisorExists, false);
+      expect(advisorExists).to.equal(false);
     });
   });
 });
