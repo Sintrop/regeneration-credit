@@ -21,7 +21,7 @@ contract CategoryContract is Ownable {
    * @return bool
    */
   function addCategory(IsasDescription memory isasDescription) public onlyOwner returns (bool) {
-    category = Category(categoryCounts + 1, msg.sender, isasDescription);
+    category = Category(categoryCounts + 1, isasDescription);
 
     categories[category.id] = category;
     categoryCounts++;

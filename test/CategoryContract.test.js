@@ -44,14 +44,6 @@ describe("CategoryContract", () => {
         expect(categories[0].isasDescription.name).to.equal("Soil");
       });
 
-      it("should add owner in createdBy", async () => {
-        await addCategory("Soil", owner);
-
-        const category = await instance.categories(1);
-
-        expect(category.createdBy).to.equal(owner.address);
-      });
-
       it("should increment id of category when created", async () => {
         await addCategory("Soil", owner);
         await addCategory("Soil 2", owner);
@@ -78,7 +70,6 @@ describe("CategoryContract", () => {
       const category = await instance.categories(1);
 
       expect(category.id).to.equal(1);
-      expect(category.createdBy).to.equal(owner.address);
       expect(category.isasDescription.name).to.equal("Soil");
       expect(category.isasDescription.description).to.equal(`The description of ${name}`);
       expect(category.isasDescription.regenerative3).to.equal(`${name} regenerative 3`);

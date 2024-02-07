@@ -13,7 +13,6 @@ enum Isas {
 
 struct Category {
   uint256 id;
-  address createdBy;
   IsasDescription isasDescription;
 }
 
