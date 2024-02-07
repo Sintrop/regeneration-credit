@@ -249,7 +249,6 @@ contract Sintrop {
         inspection.id,
         justification,
         majorityValidatorsCount_,
-        block.timestamp,
         block.number
       )
     );

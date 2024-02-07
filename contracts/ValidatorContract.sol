@@ -53,7 +53,6 @@ contract ValidatorContract is Callable {
         0,
         justification,
         majorityValidatorsCount_,
-        block.timestamp, // solhint-disable-line
         block.number
       )
     );
