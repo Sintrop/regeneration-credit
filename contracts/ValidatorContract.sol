@@ -47,14 +47,7 @@ contract ValidatorContract is Callable {
     uint256 validationsCount = validations[userAddress].length + 1;
 
     validations[userAddress].push(
-      Validation(
-        msg.sender,
-        userAddress,
-        0,
-        justification,
-        majorityValidatorsCount_,
-        block.number
-      )
+      Validation(msg.sender, userAddress, 0, justification, majorityValidatorsCount_, block.number)
     );
 
     if (validationsCount >= majorityValidatorsCount_) denieUser(userAddress);
