@@ -42,18 +42,7 @@ contract InspectorContract is Callable {
     uint256 currentEra = inspectorPoolEra();
     Pool memory pool = Pool(0, currentEra);
 
-    Inspector memory inspector = Inspector(
-      id,
-      msg.sender,
-      userType,
-      name,
-      proofPhoto,
-      0,
-      0,
-      0,
-      0,
-      pool
-    );
+    Inspector memory inspector = Inspector(id, msg.sender, userType, name, proofPhoto, 0, 0, 0, 0, pool);
 
     inspectors[msg.sender] = inspector;
     inspectorsAddress.push(msg.sender);
