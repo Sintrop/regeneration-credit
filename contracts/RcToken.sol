@@ -6,8 +6,8 @@ import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract RcToken is ERC20, Ownable {
-  string public constant NAME = "REGENERATION CREDIT TOKEN";
-  string public constant SYMBOL = "RCT";
+  string public constant NAME = "REGENERATION CREDIT";
+  string public constant SYMBOL = "RC";
   uint8 public constant DECIMALS = 18;
   uint256 public constant FUND_ICO = 135000000 * (10 ** DECIMALS);
 

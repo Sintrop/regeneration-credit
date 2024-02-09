@@ -94,7 +94,7 @@ describe("Sintrop", () => {
   };
 
   const addInspector = async (name, from) => {
-    await inspectorContract.connect(from).addInspector(name, "photoURL", "135465-005");
+    await inspectorContract.connect(from).addInspector(name, "photoURL");
   };
 
   const addActivist = async (name, from) => {
@@ -117,7 +117,6 @@ describe("Sintrop", () => {
     const params = {
       name: name,
       description: `The description of ${name}`,
-      tutorial: `How inspectors should evaluate ${name}`,
       regenerative3: `${name} regenerative 3`,
       regenerative2: `${name} regenerative 2`,
       regenerative1: `${name} regenerative 1`,

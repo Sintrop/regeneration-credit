@@ -12,7 +12,7 @@ describe("InspectorContract", () => {
   let owner, inspe1Address, inspe2Address;
 
   const addInspector = async (name, from) => {
-    await instance.connect(from).addInspector(name, "photoURL", "135465-005");
+    await instance.connect(from).addInspector(name, "photoURL");
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
@@ -63,7 +63,6 @@ describe("InspectorContract", () => {
       expect(inspector.giveUps).to.equal("0");
       expect(inspector.lastAcceptedAt).to.equal("0");
       expect(inspector.lastInspection).to.equal("0");
-      expect(inspector.inspectorAddress.coordinate).to.equal("135465-005");
     });
   });
 

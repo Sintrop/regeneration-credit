@@ -27,7 +27,6 @@ struct Invitation {
   address invited;
   address inviter;
   UserType userType;
-  uint256 createdAtTimestamp;
   uint256 createdAtBlock;
 }
 

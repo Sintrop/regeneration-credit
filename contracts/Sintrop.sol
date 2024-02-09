@@ -99,8 +99,6 @@ contract Sintrop {
     inspection.createdBy = msg.sender;
     inspection.acceptedBy = address(0);
     inspection.createdAt = block.number;
-    inspection.createdAtTimestamp = block.timestamp; // solhint-disable-line
-
     inspections[inspection.id] = inspection;
     inspectionsCount++;
   }
@@ -127,7 +125,6 @@ contract Sintrop {
 
     inspection.status = InspectionStatus.ACCEPTED;
     inspection.acceptedAt = block.number;
-    inspection.acceptedAtTimestamp = block.timestamp; // solhint-disable-line
     inspection.acceptedBy = msg.sender;
     inspections[inspectionId] = inspection;
 
@@ -164,7 +161,6 @@ contract Sintrop {
 
   function markAsRealized(Inspection memory inspection, string memory report, IsaInspection[] memory _isas) internal {
     inspection.status = InspectionStatus.INSPECTED;
-    inspection.inspectedAtTimestamp = block.timestamp; // solhint-disable-line
     inspection.isaScore = calculateIsa(inspection, _isas);
     inspection.report = report;
 
@@ -253,7 +249,6 @@ contract Sintrop {
         inspection.id,
         justification,
         majorityValidatorsCount_,
-        block.timestamp, // solhint-disable-line
         block.number
       )
     );
@@ -270,7 +265,6 @@ contract Sintrop {
   function invalidateInspection(Inspection memory inspection) internal {
     inspection.status = InspectionStatus.INVALIDATED;
     inspection.invalidatedAt = block.number;
-    inspection.invalidatedAtTimestamp = block.timestamp; // solhint-disable-line
     inspections[inspection.id] = inspection;
 
     inspectorContract.decrementInspections(inspection.acceptedBy);
