@@ -138,8 +138,8 @@ contract ProducerContract is Callable {
   function resetLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Producer memory producer = producers[addr];
 
-    producerPool.resetLevels(addr, producer.pool.currentEra, removeSomeLevels);
     producers[addr].isa.isaScore = 0;
+    producerPool.resetLevels(addr, producer.pool.currentEra, removeSomeLevels);
   }
 
   function changeProducerToSustainable(Producer memory producer) internal {

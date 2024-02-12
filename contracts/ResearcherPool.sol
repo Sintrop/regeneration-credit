@@ -23,14 +23,14 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
   RcTokenInterface internal rcToken;
 
   uint256[8] internal tokensPerEpochs = [
-    14400000000000000000000000,
-    7200000000000000000000000,
-    3600000000000000000000000,
-    1800000000000000000000000,
-    900000000000000000000000,
-    450000000000000000000000,
-    225000000000000000000000,
-    112500000000000000000000
+    144 * 10 ** 23,
+    72 * 10 ** 23,
+    36 * 10 ** 23,
+    18 * 10 ** 23,
+    9 * 10 ** 23,
+    45 * 10 ** 22,
+    225 * 10 ** 21,
+    1125 * 10 ** 20
   ];
 
   uint256 internal constant LIMIT_EPOCHS_SIZE = 8;

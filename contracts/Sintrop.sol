@@ -214,6 +214,7 @@ contract Sintrop {
       producer.totalInspections == minimumInspectionWonLevel &&
       !activistWonLevel[producerInvitation.inviter][producerAddress]
     ) {
+      activistWonLevel[producerInvitation.inviter][producerAddress] = true;
       activistContract.addLevel(producerInvitation.inviter);
     }
 
@@ -222,6 +223,7 @@ contract Sintrop {
       inspector.totalInspections == minimumInspectionWonLevel &&
       !activistWonLevel[inspectorInvitation.inviter][inspectorAddress]
     ) {
+      activistWonLevel[inspectorInvitation.inviter][inspectorAddress] = true;
       activistContract.addLevel(inspectorInvitation.inviter);
     }
   }
