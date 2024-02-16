@@ -8,7 +8,6 @@ describe("CategoryContract", () => {
     const params = {
       name: name,
       description: `The description of ${name}`,
-      tutorial: `How inspectors should evaluate ${name}`,
       regenerative3: `${name} regenerative 3`,
       regenerative2: `${name} regenerative 2`,
       regenerative1: `${name} regenerative 1`,
@@ -45,14 +44,6 @@ describe("CategoryContract", () => {
         expect(categories[0].isasDescription.name).to.equal("Soil");
       });
 
-      it("should add owner in createdBy", async () => {
-        await addCategory("Soil", owner);
-
-        const category = await instance.categories(1);
-
-        expect(category.createdBy).to.equal(owner.address);
-      });
-
       it("should increment id of category when created", async () => {
         await addCategory("Soil", owner);
         await addCategory("Soil 2", owner);
@@ -69,13 +60,6 @@ describe("CategoryContract", () => {
 
         expect(categoryCounts).to.equal(2);
       });
-
-      it("should create category with votes equal 0", async () => {
-        await addCategory("Soil", owner);
-        const categories = await instance.getCategories();
-
-        expect(parseInt(categories[0].votesCount)).to.equal(0);
-      });
     });
   });
 
@@ -86,10 +70,8 @@ describe("CategoryContract", () => {
       const category = await instance.categories(1);
 
       expect(category.id).to.equal(1);
-      expect(category.createdBy).to.equal(owner.address);
       expect(category.isasDescription.name).to.equal("Soil");
       expect(category.isasDescription.description).to.equal(`The description of ${name}`);
-      expect(category.isasDescription.tutorial).to.equal(`How inspectors should evaluate ${name}`);
       expect(category.isasDescription.regenerative3).to.equal(`${name} regenerative 3`);
       expect(category.isasDescription.regenerative2).to.equal(`${name} regenerative 2`);
       expect(category.isasDescription.regenerative1).to.equal(`${name} regenerative 1`);
@@ -97,7 +79,6 @@ describe("CategoryContract", () => {
       expect(category.isasDescription.notRegenerative1).to.equal(`${name} notRegenerative 1`);
       expect(category.isasDescription.notRegenerative2).to.equal(`${name} notRegenerative 2`);
       expect(category.isasDescription.notRegenerative3).to.equal(`${name} notRegenerative 3`);
-      expect(category.votesCount).to.equal(0);
     });
   });
 

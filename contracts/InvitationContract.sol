@@ -36,9 +36,9 @@ contract InvitationContract is Ownable {
     require(invitationDelayReached(), "Invite delay not reached");
     require(canBeInviteds[userType] == userContract.getUser(msg.sender), "can't invite this type");
 
-    userContract.addInvitation(msg.sender, invited, userType);
-
     lastInviteBlocks[msg.sender] = block.number;
+
+    userContract.addInvitation(msg.sender, invited, userType);
   }
 
   function onlyOwnerInvite(address invited, UserType userType) public onlyOwner {
@@ -46,6 +46,6 @@ contract InvitationContract is Ownable {
   }
 
   function invitationDelayReached() internal view returns (bool) {
-    return lastInviteBlocks[msg.sender] == 0 || block.number - lastInviteBlocks[msg.sender] >= inviteDelayBlocks;
+    return lastInviteBlocks[msg.sender] <= 0 || block.number - lastInviteBlocks[msg.sender] >= inviteDelayBlocks;
   }
 }

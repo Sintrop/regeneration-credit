@@ -21,6 +21,5 @@ struct Validation {
   uint256 resourceId;
   string justification;
   uint256 majorityValidatorsCount;
-  uint256 createdAtTimeStamp;
   uint256 createdAtBlockNumber;
 }

@@ -55,7 +55,7 @@ contract UserContract is Ownable, Callable {
 
     Invitation memory invitation = invitations[addr];
 
-    return invitation.createdAtBlock != 0 && invitation.userType == userType;
+    return invitation.createdAtBlock > 0 && invitation.userType == userType;
   }
 
   function registrationProportionalityAllowed(UserType userType) internal view returns (bool) {
@@ -129,7 +129,7 @@ contract UserContract is Ownable, Callable {
     require(invitations[invited].invited == address(0), "Already invited");
     require(users[invited] == UserType.UNDEFINED, "Already registered");
 
-    Invitation memory invitation = Invitation(invited, inviter, userType, block.timestamp, block.number); // solhint-disable-line
+    Invitation memory invitation = Invitation(invited, inviter, userType, block.number);
 
     invitations[invited] = invitation;
   }

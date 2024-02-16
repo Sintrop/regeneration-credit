@@ -35,12 +35,8 @@ contract DeveloperContract is Ownable {
     uint256 poolEra = developerPoolEra();
     uint256 level = 0;
 
-    userContract.addUser(msg.sender, userType);
-    developersAddress.push(msg.sender);
-    developersCount++;
-
     developers[msg.sender] = Developer(
-      developersCount,
+      developersCount + 1,
       msg.sender,
       userType,
       name,
@@ -48,6 +44,11 @@ contract DeveloperContract is Ownable {
       Pool(level, poolEra),
       block.number
     );
+
+    developersAddress.push(msg.sender);
+    developersCount++;
+
+    userContract.addUser(msg.sender, userType);
   }
 
   function addContribution(string memory report) public {
@@ -57,8 +58,6 @@ contract DeveloperContract is Ownable {
     require(userContract.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
     require(!contribution.contributed, "Already has contribution");
 
-    updateLevel(msg.sender);
-
     contributions[developerPoolEra()][msg.sender] = Contribution(
       currentEra,
       developers[msg.sender].pool.level,
@@ -67,6 +66,8 @@ contract DeveloperContract is Ownable {
       block.timestamp, // solhint-disable-line not-rely-on-time
       block.number
     );
+
+    updateLevel(msg.sender);
   }
 
   /**
