@@ -6,7 +6,7 @@
 // global scope, and execute the script.
 const hre = require("hardhat");
 var fs = require("fs");
-const rcTokenDeploy = require("../migrations/1_rcTokenDeploy.deploy.js");
+const rcTokenDeploy = require("../migrations/1_rcToken.deploy.js");
 const userContractDeploy = require("../migrations/2_userContract.deploy.js");
 const developerPoolDeploy = require("../migrations/3_developerPool.deploy.js");
 const developerContractDeploy = require("../migrations/4_developerContract.deploy.js");
