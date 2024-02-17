@@ -1,5 +1,5 @@
-const saveContractAddress = require("./shared/saveContractAddress");
-const getDeployedContract = require("./shared/getDeployedContract");
+const saveContractAddress = require("../scripts/shared/saveContractAddress");
+const getDeployedContract = require("../scripts/shared/getDeployedContract");
 
 async function developerPoolDeploy() {
   const pool_halving = process.env["DEVELOPER_POOL_HALVING"];

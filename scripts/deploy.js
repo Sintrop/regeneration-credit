@@ -5,18 +5,50 @@
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
 const hre = require("hardhat");
-const rcTokenDeploy = require("./1_rcTokenDeploy.deploy");
-const userContractDeploy = require("./2_userContract.deploy");
-const developerPoolDeploy = require("./3_developerPool.deploy.js");
+var fs = require("fs");
+const rcTokenDeploy = require("../migrations/1_rcTokenDeploy.deploy.js");
+const userContractDeploy = require("../migrations/2_userContract.deploy.js");
+const developerPoolDeploy = require("../migrations/3_developerPool.deploy.js");
+const developerContractDeploy = require("../migrations/4_developerContract.deploy.js");
+
+const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function startDeployAlert() {
+  console.log(`-------------------  REDE ${hre.network.name} (CTRL + C para cancelar) -------------------`);
+
+  for (let i = 10; i > 0; i--) {
+    await sleep(1000);
+    console.log(`-------------------  DEPLOY INICIANDO EM ${i} SEGUNDOS -------------------`);
+  }
+
+  console.log("------------------- DEPLOY INICIADO -------------------");
+}
+
+function showDeployedAddress() {
+  const filepath = `deployed_contracts/${hre.network.name}`;
+  var files = fs.readdirSync(filepath);
+
+  files.forEach((filename) => {
+    const data = fs.readFileSync(`${filepath}/${filename}`, "utf8");
+    object = JSON.parse(data);
+
+    console.log();
+    console.log(object["name"]);
+    console.log(object["address"]);
+    console.log();
+  });
+}
 
 async function main() {
+  await startDeployAlert();
+
   await rcTokenDeploy();
   await userContractDeploy();
   await developerPoolDeploy();
-  // await developerContractDeploy();
+  await developerContractDeploy();
 
+  showDeployedAddress();
 }
-
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
 main().catch((error) => {

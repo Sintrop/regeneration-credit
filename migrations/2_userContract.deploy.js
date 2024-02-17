@@ -1,4 +1,4 @@
-const saveContractAddress = require("./shared/saveContractAddress");
+const saveContractAddress = require("../scripts/shared/saveContractAddress");
 
 async function userContractDeploy() {
   const inspectorProportionality = process.env["INSPECTOR_PROPORTIONALITY"];

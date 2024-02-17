@@ -11,6 +11,8 @@ function saveContractAddress(contractName, contractAddress) {
   }
 
   const data = {
+    name: contractName,
+    address: contractAddress,
     [contractName.toLowerCase()]: contractAddress,
     deployedAt: currentDateTime,
   };

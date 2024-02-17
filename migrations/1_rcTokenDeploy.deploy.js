@@ -1,4 +1,4 @@
-const saveContractAddress = require("./shared/saveContractAddress");
+const saveContractAddress = require("../scripts/shared/saveContractAddress");
 
 async function rcTokenDeploy() {
   const rcTokensTotalTokens = process.env["RCT_TOKENS_TOTAL_TOKENS"];
