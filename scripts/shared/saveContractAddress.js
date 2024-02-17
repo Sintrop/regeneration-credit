@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 
 function saveContractAddress(contractName, contractAddress) {
-  const contractsDir = `/app/scripts/deployedContracts`;
+  const contractsDir = `/app/deployed_contracts`;
   const filepath = `${contractsDir}/${contractName.toLowerCase()}.json`;
 
   if (!fs.existsSync(contractsDir)) {
