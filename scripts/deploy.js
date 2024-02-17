@@ -14,9 +14,11 @@ const developerContractDeploy = require("../migrations/4_developerContract.deplo
 const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function startDeployAlert() {
+  const deployStartSeconds = process.env["DEPLOY_START_SECONDS"] || 1;
+
   console.log(`-------------------  REDE ${hre.network.name} (CTRL + C para cancelar) -------------------`);
 
-  for (let i = 10; i > 0; i--) {
+  for (let i = deployStartSeconds; i > 0; i--) {
     await sleep(1000);
     console.log(`-------------------  DEPLOY INICIANDO EM ${i} SEGUNDOS -------------------`);
   }
