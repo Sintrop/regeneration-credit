@@ -1,9 +1,12 @@
 FROM ubuntu
 
+ARG DEBIAN_FRONTEND=noninteractive
 ENV NODE_VERSION 20
 ENV INSTALL_PATH /app
 
-RUN apt-get update -qq && apt-get install -y curl wget
+RUN apt-get update -qq && apt-get install -y curl wget python3.9 python3-pip
+
+RUN pip3 install diligence-fuzzing
 
 RUN curl -sL https://deb.nodesource.com/setup_$NODE_VERSION.x -o nodesource_setup.sh
 RUN bash nodesource_setup.sh

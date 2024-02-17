@@ -6,6 +6,7 @@
   "scripts": {
     "test": "npx hardhat test --bail",
     "coverage": "npx hardhat coverage",
+    "ganache:start": "ganache-cli -d -m 'sintrop' -a 10 -e 200 -h 0.0.0.0",
     "solhint": "./node_modules/.bin/solhint -f table contracts/**/**/*.sol",
     "prettier:solidity": "./node_modules/.bin/prettier --write contracts/**/**/*.sol",
     "prettier:js": "./node_modules/.bin/prettier --write test/**/**/*.js",
@@ -18,7 +19,8 @@
     "@nomicfoundation/hardhat-network-helpers": "^1.0.10",
     "@openzeppelin/contracts": "^4.8.3",
     "dotenv": "^16.0.3",
-    "solidity-coverage": "^0.8.5"
+    "solidity-coverage": "^0.8.5",
+    "eth-scribble": "^0.6.5"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
