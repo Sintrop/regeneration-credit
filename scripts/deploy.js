@@ -10,6 +10,8 @@ const rcTokenDeploy = require("../migrations/1_rcToken.deploy.js");
 const userContractDeploy = require("../migrations/2_userContract.deploy.js");
 const developerPoolDeploy = require("../migrations/3_developerPool.deploy.js");
 const developerContractDeploy = require("../migrations/4_developerContract.deploy.js");
+const inspectorPoolDeploy = require("../migrations/5_inspectorPool.deploy.js");
+const inspectorContractDeploy = require("../migrations/6_inspectorContract.deploy.js");
 
 const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -48,6 +50,8 @@ async function main() {
   await userContractDeploy();
   await developerPoolDeploy();
   await developerContractDeploy();
+  await inspectorPoolDeploy();
+  await inspectorContractDeploy();
 
   showDeployedAddress();
 }
