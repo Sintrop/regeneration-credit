@@ -13,6 +13,9 @@ module.exports = {
     hardhat: {
       allowUnlimitedContractSize: true,
     },
+    localhost: {
+      allowUnlimitedContractSize: true,
+    },
     // sepolia: {
     //   url: `https://sepolia.infura.io/v3/${infuraKey}`,
     //   accounts: [privateKey],
@@ -24,6 +27,7 @@ module.exports = {
   settings: {
     optimizer: {
       enabled: true,
+      runs: 200,
       details: {
         yul: true,
         yulDetails: {
