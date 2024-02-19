@@ -18,6 +18,10 @@ const researcherPoolDeploy = require("../migrations/9_researcherPool.deploy.js")
 const researcherContractDeploy = require("../migrations/10_researcherContract.deploy.js");
 const validatorPoolDeploy = require("../migrations/11_validatorPool.deploy.js");
 const validatorContractDeploy = require("../migrations/12_validatorContract.deploy.js");
+const activistPoolDeploy = require("../migrations/13_activistPool.deploy.js");
+const activistContractDeploy = require("../migrations/14_activistContract.deploy.js");
+const supporterPoolDeploy = require("../migrations/15_supporterPool.deploy.js");
+const supporterContractDeploy = require("../migrations/16_supporterContract.deploy.js");
 
 const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -64,6 +68,10 @@ async function main() {
   await researcherContractDeploy();
   await validatorPoolDeploy();
   await validatorContractDeploy();
+  await activistPoolDeploy();
+  await activistContractDeploy();
+  await supporterPoolDeploy();
+  await supporterContractDeploy();
 
   showDeployedAddress();
 }
