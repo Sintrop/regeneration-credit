@@ -12,6 +12,10 @@ const developerPoolDeploy = require("../migrations/3_developerPool.deploy.js");
 const developerContractDeploy = require("../migrations/4_developerContract.deploy.js");
 const inspectorPoolDeploy = require("../migrations/5_inspectorPool.deploy.js");
 const inspectorContractDeploy = require("../migrations/6_inspectorContract.deploy.js");
+const producerPoolDeploy = require("../migrations/7_producerPool.deploy.js");
+const producerContractDeploy = require("../migrations/8_producerContract.deploy.js");
+const researcherPoolDeploy = require("../migrations/9_researcherPool.deploy.js");
+const researcherContractDeploy = require("../migrations/10_researcherContract.deploy.js");
 
 const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -52,6 +56,10 @@ async function main() {
   await developerContractDeploy();
   await inspectorPoolDeploy();
   await inspectorContractDeploy();
+  await producerPoolDeploy();
+  await producerContractDeploy();
+  await researcherPoolDeploy();
+  await researcherContractDeploy();
 
   showDeployedAddress();
 }
