@@ -16,6 +16,8 @@ const producerPoolDeploy = require("../migrations/7_producerPool.deploy.js");
 const producerContractDeploy = require("../migrations/8_producerContract.deploy.js");
 const researcherPoolDeploy = require("../migrations/9_researcherPool.deploy.js");
 const researcherContractDeploy = require("../migrations/10_researcherContract.deploy.js");
+const validatorPoolDeploy = require("../migrations/11_validatorPool.deploy.js");
+const validatorContractDeploy = require("../migrations/12_validatorContract.deploy.js");
 
 const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -60,6 +62,8 @@ async function main() {
   await producerContractDeploy();
   await researcherPoolDeploy();
   await researcherContractDeploy();
+  await validatorPoolDeploy();
+  await validatorContractDeploy();
 
   showDeployedAddress();
 }
