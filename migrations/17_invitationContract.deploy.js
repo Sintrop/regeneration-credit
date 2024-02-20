@@ -15,6 +15,9 @@ async function invitationContractDeploy() {
 
   saveContractAddress("InvitationContract", invitationContract.target);
 
+  console.log(`InvitationContract address ${invitationContract.target}`)
+  
+  return invitationContract
 }
 
 module.exports = invitationContractDeploy;

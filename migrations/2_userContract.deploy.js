@@ -19,6 +19,8 @@ async function userContractDeploy() {
 
   saveContractAddress("UserContract", userContract.target);
 
+  console.log(`UserContract address ${userContract.target}`)
+
   return userContract;
 }
 

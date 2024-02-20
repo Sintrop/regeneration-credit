@@ -17,6 +17,8 @@ async function developerPoolDeploy() {
 
   await rcToken.addContractPool(developerPool.target, developerPoolFunds);
 
+  console.log(`DeveloperPool address ${developerPool.target}`)
+
   return developerPool;
 }
 

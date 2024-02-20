@@ -21,6 +21,8 @@ async function validatorContractDeploy() {
   await producerContract.newAllowedCaller(validatorContract.target);
   await validatorPool.newAllowedCaller(validatorContract.target);
 
+  console.log(`ValidatorContract address ${validatorContract.target}`)
+
   return validatorContract;
 }
 

@@ -20,6 +20,8 @@ async function researcherContractDeploy() {
   await userContract.newAllowedCaller(researcherContract.target);
   await researcherPool.newAllowedCaller(researcherContract.target);
 
+  console.log(`ReseacherContract address ${researcherContract.target}`)
+
   return researcherContract;
 }
 

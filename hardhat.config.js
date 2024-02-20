@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("@nomicfoundation/hardhat-verify");
 require("solidity-coverage");
 require("dotenv").config({ path: __dirname + "/.env" });
 
@@ -16,13 +17,16 @@ module.exports = {
     localhost: {
       allowUnlimitedContractSize: true,
     },
-    // sepolia: {
-    //   url: `https://sepolia.infura.io/v3/${infuraKey}`,
-    //   accounts: [privateKey],
-    // },
+    sepolia: {
+      url: `https://sepolia.infura.io/v3/${infuraKey}`,
+      accounts: [privateKey],
+    },
   },
   etherscan: {
     apiKey: etherscanApiKey,
+  },
+  sourcify: {
+    enabled: false,
   },
   settings: {
     optimizer: {

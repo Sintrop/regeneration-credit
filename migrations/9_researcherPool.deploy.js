@@ -17,6 +17,8 @@ async function researcherPoolDeploy() {
 
   await rcToken.addContractPool(researcherPool.target, researcherPoolFunds);
 
+  console.log(`ReseacherPool address ${researcherPool.target}`)
+
   return researcherPool;
 }
 

@@ -14,6 +14,8 @@ async function supporterContractDeploy() {
   await userContract.newAllowedCaller(supporterContract.target);
   await supporterPool.newAllowedCaller(supporterContract.target);
 
+  console.log(`SupporterContract address ${supporterContract.target}`)
+
   return supporterContract;
 }
 

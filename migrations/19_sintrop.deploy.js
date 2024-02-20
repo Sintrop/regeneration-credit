@@ -38,6 +38,8 @@ async function sintropDeploy() {
   await userContract.newAllowedCaller(sintrop.target);
   await validatorContract.newAllowedCaller(sintrop.target);
 
+  console.log(`Sintrop address ${sintrop.target}`)
+
   return sintrop;
 }
 

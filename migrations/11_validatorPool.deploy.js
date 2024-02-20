@@ -17,6 +17,8 @@ async function validatorPoolDeploy() {
 
   await rcToken.addContractPool(validatorPool.target, validatorPoolFunds);
 
+  console.log(`ValidatorPool address ${validatorPool.target}`)
+
   return validatorPool;
 }
 

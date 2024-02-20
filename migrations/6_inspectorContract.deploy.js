@@ -20,6 +20,8 @@ async function inspectorContractDeploy() {
   await userContract.newAllowedCaller(inspectorContract.target);
   await inspectorPool.newAllowedCaller(inspectorContract.target);
 
+  console.log(`InspectorContract address ${inspectorContract.target}`)
+
   return inspectorContract;
 }
 

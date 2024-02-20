@@ -14,6 +14,8 @@ async function supporterPoolDeploy() {
 
   await rcToken.addContractPool(supporterPool.target, supporterPoolFunds);
 
+  console.log(`SupporterPool address ${supporterPool.target}`)
+
   return supporterPool;
 }
 

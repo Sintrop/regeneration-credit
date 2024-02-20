@@ -17,6 +17,8 @@ async function producerContractDeploy() {
   await userContract.newAllowedCaller(producerContract.target);
   await producerPool.newAllowedCaller(producerContract.target);
 
+  console.log(`ProducerContract address ${producerContract.target}`)
+
   return producerContract;
 }
 

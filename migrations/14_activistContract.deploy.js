@@ -14,6 +14,8 @@ async function activistContractDeploy() {
   await userContract.newAllowedCaller(activistContract.target);
   await activistPool.newAllowedCaller(activistContract.target);
 
+  console.log(`ActivistContract address ${activistContract.target}`)
+
   return activistContract;
 }
 

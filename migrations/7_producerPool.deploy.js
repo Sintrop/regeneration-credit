@@ -17,6 +17,8 @@ async function producerPoolDeploy() {
 
   await rcToken.addContractPool(producerPool.target, producerPoolFunds);
 
+  console.log(`ProducerPool address ${producerPool.target}`)
+
   return producerPool;
 }
 

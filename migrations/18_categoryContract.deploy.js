@@ -8,6 +8,8 @@ async function categoryContractDeploy() {
 
   saveContractAddress("CategoryContract", categoryContract.target);
 
+  console.log(`CategoryContract address ${categoryContract.target}`)
+
   return categoryContract;
 }
 

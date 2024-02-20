@@ -17,6 +17,8 @@ async function inspectorPoolDeploy() {
 
   await rcToken.addContractPool(inspectorPool.target, inspectorPoolFunds);
 
+  console.log(`InspectorPool address ${inspectorPool.target}`)
+
   return inspectorPool;
 }
 

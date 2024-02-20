@@ -14,6 +14,8 @@ async function developerContractDeploy() {
   await developerPool.newAllowedCaller(developerContract.target);
   await userContract.newAllowedCaller(developerContract.target);
 
+  console.log(`DeveloperContract address ${developerContract.target}`)
+
   return developerContract;
 }
 

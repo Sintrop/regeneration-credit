@@ -17,6 +17,8 @@ async function activistPoolDeploy() {
 
   await rcToken.addContractPool(activistPool.target, activistPoolFunds);
 
+  console.log(`ActivistPool address ${activistPool.target}`)
+
   return activistPool;
 }
 
