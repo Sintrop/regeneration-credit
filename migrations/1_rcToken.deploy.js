@@ -12,9 +12,6 @@ async function rcTokenDeploy() {
   saveContractAddress("RcTokenIco", rcTokenIco.target);
   saveContractAddress("RcToken", rcToken.target);
 
-  await verifyRcTokenIcoContract(rcTokenIco.target, rcTokensTotalTokens);
-  await verifyRcTokenContract(rcToken.target);
-
   console.log(`RcToken address ${rcToken.target}`)
 
   return { rcTokenIco, rcToken };
