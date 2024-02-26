@@ -20,7 +20,7 @@ describe("UserContract", function () {
     "INSPECTOR",
     "RESEARCHER",
     "DEVELOPER",
-    "ADVISOR",
+    "CONTRIBUTOR",
     "ACTIVIST",
     "SUPPORTER",
     "VALIDATOR",
@@ -135,14 +135,14 @@ describe("UserContract", function () {
           });
         });
 
-        context("to advisor", () => {
-          it("should add correct enum to advisor", async () => {
-            await addInvitation(owner, user1Address, userTypes.Advisor, owner);
-            await addUser(user1Address, userTypes.Advisor, owner);
+        context("to contributor", () => {
+          it("should add correct enum to contributor", async () => {
+            await addInvitation(owner, user1Address, userTypes.Contributor, owner);
+            await addUser(user1Address, userTypes.Contributor, owner);
 
             const user = await instance.getUser(user1Address);
 
-            expect(user).to.equal(userTypes.Advisor);
+            expect(user).to.equal(userTypes.Contributor);
           });
         });
 
