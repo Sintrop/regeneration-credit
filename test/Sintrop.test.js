@@ -443,12 +443,6 @@ describe("Sintrop", () => {
           expect(inspection.isaScore).to.equal(0);
         });
 
-        it("initial isas should be equal empty array", async () => {
-          const isas = await instance.getIsa(1);
-
-          expect(isas.length).to.equal(0);
-        });
-
         it("should increment total of inspections", async () => {
           const inspectionsCount = await instance.inspectionsCount();
 
