@@ -97,7 +97,11 @@ contract ValidatorContract is Callable {
   }
 
   function majorityValidatorsCount() public view returns (uint256) {
-    return validatorsCount / 2;
+    if (validatorsCount <= 10) return validatorsCount / 2;    
+
+    if (validatorsCount <= 100) return validatorsCount / 4;
+
+    return validatorsCount / 8;
   }
 
   function addLevel() public {
