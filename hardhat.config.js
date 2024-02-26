@@ -21,6 +21,10 @@ module.exports = {
       url: `https://sepolia.infura.io/v3/${infuraKey}`,
       accounts: [privateKey],
     },
+    zkevm: {
+      url: `https://rpc.public.zkevm-test.net`,
+      accounts: [privateKey],
+    },
   },
   etherscan: {
     apiKey: etherscanApiKey,
