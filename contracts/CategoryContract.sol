@@ -55,7 +55,10 @@ contract CategoryContract is Ownable, Callable {
     return isas[inspectionId];
   }
 
-  function calculateIsa(uint256 inspectionId, IsaInspection[] memory _isas) external mustBeAllowedCaller returns (int256) {
+  function calculateIsa(
+    uint256 inspectionId,
+    IsaInspection[] memory _isas
+  ) external mustBeAllowedCaller returns (int256) {
     int256[7] memory points = [int256(25), 10, 1, 0, -1, -10, -25];
     int256 isaScore;
 
