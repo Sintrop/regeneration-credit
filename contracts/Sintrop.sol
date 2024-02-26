@@ -12,6 +12,7 @@ import { UserType, Invitation } from "./types/UserTypes.sol";
 import { ValidatorContract } from "./ValidatorContract.sol";
 import { Validation } from "./types/ValidatorTypes.sol";
 import { ActivistContract } from "./ActivistContract.sol";
+import { CategoryContract } from "./CategoryContract.sol";
 
 /**
  * @title SintropContract
@@ -21,7 +22,6 @@ contract Sintrop {
   mapping(address => mapping(address => bool)) internal inspectorInspected;
   mapping(address => Inspection[]) internal userInspections;
   mapping(uint256 => Inspection) internal inspections;
-  mapping(uint256 => IsaInspection[]) public isas;
   mapping(uint256 => Validation[]) public validations;
   mapping(address => mapping(uint256 => bool)) internal validatorValidations;
   mapping(address => mapping(address => bool)) internal activistWonLevel;
@@ -31,6 +31,7 @@ contract Sintrop {
   UserContract public userContract;
   ValidatorContract public validatorContract;
   ActivistContract public activistContract;
+  CategoryContract public categoryContract;
 
   uint256 public inspectionsCount;
   uint256 internal immutable timeBetweenInspections;
@@ -44,6 +45,7 @@ contract Sintrop {
     address userContractAddress,
     address validatorContractAddress,
     address activistContractAddress,
+    address categoryContractAddress,
     uint256 timeBetweenInspections_,
     uint256 blocksToExpireAcceptedInspection_,
     uint256 allowedInitialRequests_,
@@ -54,6 +56,7 @@ contract Sintrop {
     userContract = UserContract(userContractAddress);
     validatorContract = ValidatorContract(validatorContractAddress);
     activistContract = ActivistContract(activistContractAddress);
+    categoryContract = CategoryContract(categoryContractAddress);
     timeBetweenInspections = timeBetweenInspections_;
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
     allowedInitialRequests = allowedInitialRequests_;
@@ -66,14 +69,6 @@ contract Sintrop {
    */
   function getInspectionsHistory() public view returns (Inspection[] memory) {
     return userInspections[msg.sender];
-  }
-
-  /**
-   * @dev List IsaInspection from inspection
-   * @param inspectionId The id of the inspection to get IsaInspection
-   */
-  function getIsa(uint256 inspectionId) public view returns (IsaInspection[] memory) {
-    return isas[inspectionId];
   }
 
   // TODO: Remove not reutilized modifiers and use require direct in the function
@@ -161,23 +156,10 @@ contract Sintrop {
 
   function markAsRealized(Inspection memory inspection, string memory report, IsaInspection[] memory _isas) internal {
     inspection.status = InspectionStatus.INSPECTED;
-    inspection.isaScore = calculateIsa(inspection, _isas);
+    inspection.isaScore = categoryContract.calculateIsa(inspection.id, _isas);
     inspection.report = report;
 
     inspections[inspection.id] = inspection;
-  }
-
-  function calculateIsa(Inspection memory inspection, IsaInspection[] memory _isas) internal returns (int256) {
-    int256[7] memory points = [int256(25), 10, 1, 0, -1, -10, -25];
-    int256 isaScore;
-
-    for (uint8 i = 0; i < _isas.length; i++) {
-      isas[inspection.id].push(_isas[i]);
-      uint256 isaIndex = _isas[i].isaIndex;
-      isaScore += points[isaIndex];
-    }
-
-    return isaScore;
   }
 
   // TODO: Refact this function

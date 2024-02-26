@@ -86,7 +86,7 @@ describe("Sintrop", () => {
     totalTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
-    blocksPerEra: 12,
+    blocksPerEra: 13,
   };
 
   const addProducer = async (name, from) => {
@@ -258,6 +258,7 @@ describe("Sintrop", () => {
       userContract.target,
       validatorContract.target,
       activistContract.target,
+      categoryContract.target,
       sintropArgs.timeBetweenInspections,
       sintropArgs.blocksToExpireAcceptedInspection,
       sintropArgs.allowedInitialRequests,
@@ -282,6 +283,7 @@ describe("Sintrop", () => {
     await inspectorPool.newAllowedCaller(inspectorContract.target);
     await validatorPool.newAllowedCaller(validatorContract.target);
     await validatorPool.newAllowedCaller(validatorContract.target);
+    await categoryContract.newAllowedCaller(instance.target);
 
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
 
@@ -439,12 +441,6 @@ describe("Sintrop", () => {
           const inspection = await instance.getInspection(1);
 
           expect(inspection.isaScore).to.equal(0);
-        });
-
-        it("initial isas should be equal empty array", async () => {
-          const isas = await instance.getIsa(1);
-
-          expect(isas.length).to.equal(0);
         });
 
         it("should increment total of inspections", async () => {
@@ -762,7 +758,7 @@ describe("Sintrop", () => {
                   });
 
                   it("Activist pool wins 1 level to activist", async () => {
-                    const levels = await activistPool.eraLevels(5, activist1Address);
+                    const levels = await activistPool.eraLevels(4, activist1Address);
 
                     expect(levels).to.equal(2);
                   });
@@ -793,7 +789,7 @@ describe("Sintrop", () => {
                 });
 
                 it("should update inspection isas", async () => {
-                  const isasResponse = await instance.getIsa(1);
+                  const isasResponse = await categoryContract.getIsa(1);
                   const isas_ = [
                     [1n, 0n, 10n],
                     [2n, 0n, 10n],

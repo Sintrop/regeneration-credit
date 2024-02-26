@@ -63,7 +63,7 @@ describe("CategoryContract", () => {
     });
   });
 
-  context("When access category fields", () => {
+  describe("#categories", () => {
     it("should have fields", async () => {
       const name = "Soil";
       await addCategory(name, owner);
@@ -89,6 +89,45 @@ describe("CategoryContract", () => {
       const categories = await instance.getCategories();
 
       expect(categories.length).to.equal(2);
+    });
+  });
+
+  describe("#getIsa", () => {
+    it("returns isas to inspection of id 1", async () => {
+      const isas = await instance.getIsa(1);
+
+      expect(isas.length).to.equal([].length);
+    });
+  });
+
+  describe("#calculateIsa", () => {
+    context("with allowed caller", () => {
+      beforeEach(async () => {
+        await instance.newAllowedCaller(owner);
+      });
+
+      const isasPayload = [
+        {
+          categoryId: 1,
+          isaIndex: 0,
+          indicator: 1,
+        },
+      ];
+
+      it("calculate isaScore to isaIndex 0", async () => {
+        await instance.calculateIsa(1, isasPayload);
+        const isas = await instance.getIsa(1);
+
+        const expectedIsas = [[1n, 0n, 1n]];
+
+        expect(isas.join("")).to.equal(expectedIsas.join(""));
+      });
+    });
+
+    context("without allowed caller", () => {
+      it("returns error message", async () => {
+        await expect(instance.calculateIsa(1, [])).to.be.revertedWith("Not allowed caller");
+      });
     });
   });
 });

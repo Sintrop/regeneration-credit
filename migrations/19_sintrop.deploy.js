@@ -15,6 +15,7 @@ async function sintropDeploy() {
   const userContract = await getDeployedContract("UserContract");
   const producerContract = await getDeployedContract("ProducerContract");
   const validatorContract = await getDeployedContract("ValidatorContract");
+  const categoryContract = await getDeployedContract("CategoryContract");
 
   const Sintrop = await ethers.getContractFactory("Sintrop");
 
@@ -24,6 +25,7 @@ async function sintropDeploy() {
     userContract.target,
     validatorContract.target,
     activistContract.target,
+    categoryContract.target,
     sintropTimeBetweenProducerInspections,
     sintropBlocksToExpireAceeptedInspection,
     allowedInitialRequests,
@@ -37,8 +39,9 @@ async function sintropDeploy() {
   await producerContract.newAllowedCaller(sintrop.target);
   await userContract.newAllowedCaller(sintrop.target);
   await validatorContract.newAllowedCaller(sintrop.target);
+  await categoryContract.newAllowedCaller(sintrop.target);
 
-  console.log(`Sintrop address ${sintrop.target}`)
+  console.log(`Sintrop address ${sintrop.target}`);
 
   return sintrop;
 }
