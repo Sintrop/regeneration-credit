@@ -40,6 +40,7 @@ contract RcTokenIco is Ownable {
   function withdraw(uint256 weiAmount) public onlyOwner returns (bool success) {
     require(weiAmount <= address(this).balance, "ICO: insufficient balance");
 
+    token.transfer(_msgSender(), rcTokenAmount(weiAmount));
     payable(_msgSender()).transfer(weiAmount);
     return true;
   }

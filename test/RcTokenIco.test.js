@@ -170,24 +170,30 @@ describe("RcTokenIco", () => {
 
   describe("#withdraw", () => {
     context("when ICO contract have ether", () => {
-      context("when have 1 ether", () => {
+      context("when sold 1 ether", () => {
         beforeEach(async () => {
           await instance.changeSalesOpen({ from: ownerAddress });
           sendTransation(user1Address, instance.target, 1);
         });
 
-        context("when the owner withdraw 1 ether", () => {
+        context("when the owner withdraw", () => {
           beforeEach(async () => {
             balanceBefore = await ethers.provider.getBalance(ownerAddress);
+            balanceBeforeRc = await rcToken.balanceOf(ownerAddress);
 
             await instance.withdraw(1000000000000000000n);
 
             balanceAfter = await await ethers.provider.getBalance(ownerAddress);
+            balanceAfterRc = await rcToken.balanceOf(ownerAddress);
           });
 
-          it("increment owner ether balance", async () => {
+          it("should increment owner ether balance", async () => {
             expect(parseInt(balanceAfter)).to.above(parseInt(balanceBefore));
           });
+
+          it("should increment owner rc balance", async () => {
+            expect(parseInt(balanceAfterRc)).to.above(parseInt(balanceBeforeRc));
+          });          
         });
       });
     });
