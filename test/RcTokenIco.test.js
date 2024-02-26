@@ -193,7 +193,7 @@ describe("RcTokenIco", () => {
 
           it("should increment owner rc balance", async () => {
             expect(parseInt(balanceAfterRc)).to.above(parseInt(balanceBeforeRc));
-          });          
+          });
         });
       });
     });
