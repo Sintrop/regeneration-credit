@@ -87,8 +87,6 @@ contract ResearcherContract {
     researcher.pool.level++;
     researchers[msg.sender] = researcher;
 
-    researcherPool.addLevel(msg.sender, 1, 1);
-
     uint256 id = worksCount + 1;
 
     Work memory work = Work(id, msg.sender, title, thesis, file, block.timestamp); // solhint-disable-line
@@ -97,6 +95,8 @@ contract ResearcherContract {
     worksCount++;
     researchers[msg.sender].publishedWorks++;
     researchers[msg.sender].lastPublishedAt = block.number;
+
+    researcherPool.addLevel(msg.sender, 1, 1);
   }
 
   function getWorks() public view returns (Work[] memory) {

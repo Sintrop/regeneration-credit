@@ -55,7 +55,7 @@ contract UserContract is Ownable, Callable {
 
     Invitation memory invitation = invitations[addr];
 
-    return invitation.createdAtBlock != 0 && invitation.userType == userType;
+    return invitation.createdAtBlock > 0 && invitation.userType == userType;
   }
 
   function registrationProportionalityAllowed(UserType userType) internal view returns (bool) {
