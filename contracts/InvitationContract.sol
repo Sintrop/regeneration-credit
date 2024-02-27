@@ -4,7 +4,6 @@ pragma solidity >=0.7.0 <=0.9.0;
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { UserContract } from "./UserContract.sol";
 import { UserType } from "./types/UserTypes.sol";
-import { Callable } from "./Callable.sol";
 
 /**
  * @title InvitationContract
@@ -16,8 +15,6 @@ contract InvitationContract is Ownable {
 
   UserContract internal userContract;
 
-  address[] internal developersAddress;
-  uint256 public developersCount;
   uint256 public immutable inviteDelayBlocks;
 
   constructor(address userContractAddress, uint256 _inviteDelayBlocks) {

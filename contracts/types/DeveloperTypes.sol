@@ -23,6 +23,5 @@ struct Contribution {
   uint256 level;
   string report;
   bool contributed;
-  uint256 createdAtTimestamp;
   uint256 createdAtBlockNumber;
 }
