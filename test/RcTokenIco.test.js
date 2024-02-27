@@ -169,7 +169,7 @@ describe("RcTokenIco", () => {
   });
 
   describe("#withdraw", () => {
-    context("when ICO contract have ether", () => {
+    context("when is the owner", () => {
       context("when sold 1 ether", () => {
         beforeEach(async () => {
           await instance.changeSalesOpen({ from: ownerAddress });
@@ -189,12 +189,6 @@ describe("RcTokenIco", () => {
             expect(parseInt(balanceAfter)).to.above(parseInt(balanceBefore));
           });
         });
-
-//        context("when not the owner withdraw", () => {
-//          it("it should return error message", async () => {
-//            await expect(instance.withdraw(1000000000000000000n, { from: user1Address })).to.be.revertedWith("Ownable: caller is not the owner");
-//          });
-//        });        
       });
     });
 
@@ -203,12 +197,20 @@ describe("RcTokenIco", () => {
         await expect(instance.withdraw(1000000000000000000n)).to.be.revertedWith("ICO: insufficient balance");
       });
     });
+
+    context("when not the owner withdraw", () => {
+      it("it should return error message", async () => {
+        await expect(instance.connect(user1Address).withdraw(1000000000000000000n)).to.be.revertedWith(
+          "Ownable: caller is not the owner"
+        );
+      });
+    });
   });
 
   describe("#withdrawTokens", () => {
-    context("when ICO contract have tokens", () => {
-      context("when withdraw total rcTokens", () => {
-        context("when the owner withdraw", () => {
+    context("when is the owner", () => {
+      context("when contract have rcTokens", () => {
+        context("when withdraw total amount", () => {
           beforeEach(async () => {
             balanceBeforeRc = await rcToken.balanceOf(ownerAddress);
 
@@ -257,8 +259,18 @@ describe("RcTokenIco", () => {
 
     context("when ICO contract dont have enough tokens", () => {
       it("it should return error message", async () => {
-        await expect(instance.withdrawTokens(136000000000000000000000000n)).to.be.revertedWith("ICO: insufficient balance");
+        await expect(instance.withdrawTokens(136000000000000000000000000n)).to.be.revertedWith(
+          "ICO: insufficient balance"
+        );
       });
     });
-  });  
+
+    context("when not the owner withdraw", () => {
+      it("it should return error message", async () => {
+        await expect(instance.connect(user1Address).withdraw(80000000000000000000000n)).to.be.revertedWith(
+          "Ownable: caller is not the owner"
+        );
+      });
+    });
+  });
 });

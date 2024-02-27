@@ -45,7 +45,6 @@ contract RcTokenIco is Ownable {
   }
 
   function withdrawTokens(uint256 rcAmount) public onlyOwner returns (bool success) {
-    //uint256 tokenBalance = IERC20(token).balanceOf(address(this));
     uint256 tokenBalance = token.balanceOf(address(this));
     require(rcAmount <= tokenBalance, "ICO: insufficient balance");
 
