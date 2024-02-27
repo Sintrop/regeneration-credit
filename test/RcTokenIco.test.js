@@ -214,7 +214,7 @@ describe("RcTokenIco", () => {
           beforeEach(async () => {
             balanceBeforeRc = await rcToken.balanceOf(ownerAddress);
 
-            await instance.withdrawTokens(135000000000000000000000000n);
+            await instance.withdrawTokens(124500000000000000000000000n);
 
             balanceAfterRc = await rcToken.balanceOf(ownerAddress);
           });
@@ -251,7 +251,7 @@ describe("RcTokenIco", () => {
 
           it("should decrement contract rc balance", async () => {
             contractRcBalance = await rcToken.balanceOf(instance);
-            expect(contractRcBalance).to.equal(134840000000000000000000000n);
+            expect(contractRcBalance).to.equal(124340000000000000000000000n);
           });
         });
       });
