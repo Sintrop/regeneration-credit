@@ -7,21 +7,32 @@ import { Validator, Validation, Pool } from "./types/ValidatorTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { Callable } from "./Callable.sol";
 import { ValidatorPool } from "./ValidatorPool.sol";
+import { InspectorContract } from "./InspectorContract.sol";
+import { Inspection } from "./types/InspectionTypes.sol";
 
 contract ValidatorContract is Callable {
   mapping(address => Validator) internal validators;
-  mapping(address => Validation[]) private validations;
+  mapping(address => Validation[]) private userValidations;
+  mapping(uint256 => Validation[]) public inspectionValidations;
+  mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
   UserContract internal userContract;
   ProducerContract internal producerContract;
   ValidatorPool internal validatorPool;
+  InspectorContract internal inspectorContract;
   address[] internal validatorsAddress;
   uint256 public validatorsCount;
 
-  constructor(address userContractAddress, address producerContractAddress, address validatorPoolAddress) {
+  constructor(
+    address userContractAddress,
+    address producerContractAddress,
+    address validatorPoolAddress,
+    address inspectorContractAddress
+  ) {
     userContract = UserContract(userContractAddress);
     producerContract = ProducerContract(producerContractAddress);
     validatorPool = ValidatorPool(validatorPoolAddress);
+    inspectorContract = InspectorContract(inspectorContractAddress);
   }
 
   function addValidator() public {
@@ -44,20 +55,20 @@ contract ValidatorContract is Callable {
     require(!userContract.userTypeIs(UserType.DENIED, userAddress), "User already denied");
 
     uint256 majorityValidatorsCount_ = majorityValidatorsCount();
-    uint256 validationsCount = validations[userAddress].length + 1;
+    uint256 validationsCount = userValidations[userAddress].length + 1;
 
-    validations[userAddress].push(
+    userValidations[userAddress].push(
       Validation(msg.sender, userAddress, 0, justification, majorityValidatorsCount_, block.number)
     );
 
     if (validationsCount >= majorityValidatorsCount_) denieUser(userAddress);
   }
 
-  function externalDenieUser(address userAddress) external mustBeAllowedCaller {
+  function externalDenieUser(address userAddress) internal {
     denieUser(userAddress);
   }
 
-  function externalRemoveLevels(address userAddress, uint256 levels) external mustBeAllowedCaller {
+  function externalRemoveLevels(address userAddress, uint256 levels) internal {
     resetLevels(userAddress, levels);
   }
 
@@ -73,8 +84,56 @@ contract ValidatorContract is Callable {
     if (oldUserType == UserType.PRODUCER) return producerContract.resetLevels(userAddress, levels);
   }
 
-  function getValidations(address userAddress) public view returns (Validation[] memory) {
-    return validations[userAddress];
+  function addInspectionValidation(
+    Inspection memory inspection,
+    string memory justification,
+    address validatorAddress
+  ) public {
+    require(!validatorValidations[validatorAddress][inspection.id], "Already voted");
+
+    validatorValidations[validatorAddress][inspection.id] = true;
+
+    uint256 majorityValidatorsCount_ = majorityValidatorsCount();
+
+    bool addPenalty = inspection.validationsCount >= majorityValidatorsCount_;
+
+    inspectionValidations[inspection.id].push(
+      Validation(
+        validatorAddress,
+        inspection.acceptedBy,
+        inspection.id,
+        justification,
+        majorityValidatorsCount_,
+        block.number
+      )
+    );
+
+    if (!addPenalty) return;
+
+    uint256 inspectorTotalPenalties = inspectorContract.addPenalty(inspection.acceptedBy, inspection.id);
+    removeInspectionLevels(inspection);
+
+    if (inspectorTotalPenalties >= inspectorContract.maxPenalties()) externalDenieUser(inspection.acceptedBy);
+  }
+
+  function removeInspectionLevels(Inspection memory inspection) internal {
+    inspectorContract.decrementInspections(inspection.acceptedBy);
+    producerContract.decrementInspections(inspection.createdBy);
+
+    if (inspection.isaScore <= 0) return;
+
+    uint256 levels = uint256(inspection.isaScore);
+
+    externalRemoveLevels(inspection.createdBy, levels);
+    externalRemoveLevels(inspection.acceptedBy, levels);
+  }
+
+  function getUserValidations(address userAddress) public view returns (Validation[] memory) {
+    return userValidations[userAddress];
+  }
+
+  function getInspectionValidations(uint256 inspectionId) public view returns (Validation[] memory) {
+    return inspectionValidations[inspectionId];
   }
 
   function getValidators() public view returns (Validator[] memory) {
