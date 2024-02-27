@@ -666,83 +666,83 @@ describe("Sintrop", () => {
               });
 
               describe(".setActivistLevel", () => {
-                context("when producer do not wins minimum inspection", () => {
+                context("when producer do not win minimum inspection", () => {
                   beforeEach(async () => {
                     await realizeInspection(1, report, isas(), inspectorAddress);
                   });
 
-                  it("Activist must do not wins levels", async () => {
+                  it("Activist must do not win levels", async () => {
                     const activist = await activistContract.getActivist(activistContract);
 
                     expect(activist.pool.level).to.equal(0);
                   });
 
-                  it("Activist pool wins 1 level to activist", async () => {
+                  it("Activist pool win 0 level to activist", async () => {
                     const levels = await activistPool.eraLevels(4, activist1Address);
 
                     expect(levels).to.equal(0);
                   });
                 });
 
-                context("when inspector do not wins minimum inspection", () => {
+                context("when inspector do not win minimum inspection", () => {
                   beforeEach(async () => {
                     await realizeInspection(1, report, isas(), inspectorAddress);
                   });
 
-                  it("Activist must do not wins levels", async () => {
+                  it("Activist must do not win levels", async () => {
                     const activist = await activistContract.getActivist(activistContract);
 
                     expect(activist.pool.level).to.equal(0);
                   });
 
-                  it("Activist pool wins 1 level to activist", async () => {
+                  it("Activist pool win 0 level to activist", async () => {
                     const levels = await activistPool.eraLevels(4, activist1Address);
 
                     expect(levels).to.equal(0);
                   });
                 });
 
-                context("when producer wins minimum inspection", () => {
+                context("when producer win minimum inspection", () => {
                   beforeEach(async () => {
                     await producerContract.connect(owner).incrementInspections(producerAddress);
                     await producerContract.connect(owner).incrementInspections(producerAddress);
                     await realizeInspection(1, report, isas(), inspectorAddress);
                   });
 
-                  it("Activist must wins 1 level", async () => {
+                  it("Activist must win 1 level", async () => {
                     const activist = await activistContract.getActivist(activist1Address);
 
                     expect(activist.pool.level).to.equal(1);
                   });
 
-                  it("Activist pool wins 1 level to activist", async () => {
+                  it("Activist pool win 1 level to activist", async () => {
                     const levels = await activistPool.eraLevels(4, activist1Address);
 
                     expect(levels).to.equal(1);
                   });
                 });
 
-                context("when inspector wins minimum inspection", () => {
+                context("when inspector win minimum inspection", () => {
                   beforeEach(async () => {
                     await inspectorContract.connect(owner).incrementInspections(inspectorAddress);
                     await inspectorContract.connect(owner).incrementInspections(inspectorAddress);
                     await realizeInspection(1, report, isas(), inspectorAddress);
                   });
 
-                  it("Activist must wins 1 level", async () => {
+                  it("Activist must win 1 level", async () => {
                     const activist = await activistContract.getActivist(activist1Address);
 
                     expect(activist.pool.level).to.equal(1);
                   });
 
-                  it("Activist pool wins 1 level to activist", async () => {
+                  it("Activist pool win 1 level to activist", async () => {
                     const levels = await activistPool.eraLevels(4, activist1Address);
 
                     expect(levels).to.equal(1);
                   });
                 });
 
-                context("when producer and inspector wins minimum inspection", () => {
+                context("when producer and inspector win minimum inspection", () => {
                   beforeEach(async () => {
                     await producerContract.connect(owner).incrementInspections(producerAddress);
                     await producerContract.connect(owner).incrementInspections(producerAddress);
@@ -751,13 +751,13 @@ describe("Sintrop", () => {
                     await realizeInspection(1, report, isas(), inspectorAddress);
                   });
 
-                  it("Activist must wins 1 level", async () => {
+                  it("Activist must win 1 level", async () => {
                     const activist = await activistContract.getActivist(activist1Address);
 
                     expect(activist.pool.level).to.equal(2);
                   });
 
-                  it("Activist pool wins 1 level to activist", async () => {
+                  it("Activist pool win 1 level to activist", async () => {
                     const levels = await activistPool.eraLevels(4, activist1Address);
 
                     expect(levels).to.equal(2);
