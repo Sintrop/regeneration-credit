@@ -24,6 +24,10 @@ describe("ValidatorContract", () => {
     validator9Address,
     validator10Address,
     validator11Address,
+    validator12Address,
+    validator13Address,
+    validator14Address,
+    validator15Address,
     otherAddress;
 
   const producerPoolArgs = {
@@ -56,6 +60,9 @@ describe("ValidatorContract", () => {
     await userContract.setDeniedType(userAddress);
   };
 
+  const firstLimit = 8;
+  const secondLimit = 14;
+
   beforeEach(async () => {
     [
       owner,
@@ -71,6 +78,10 @@ describe("ValidatorContract", () => {
       validator9Address,
       validator10Address,
       validator11Address,
+      validator12Address,
+      validator13Address,
+      validator14Address,
+      validator15Address,
       otherAddress,
     ] = await ethers.getSigners();
 
@@ -100,7 +111,9 @@ describe("ValidatorContract", () => {
     instance = await validatorContractFactory.deploy(
       userContract.target,
       producerContract.target,
-      validatorPool.target
+      validatorPool.target,
+      firstLimit,
+      secondLimit
     );
 
     await userContract.newAllowedCaller(instance.target);
@@ -376,6 +389,33 @@ describe("ValidatorContract", () => {
       });
     });
 
+    context("when have 8 validators", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator3Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator4Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator5Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator6Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator7Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator8Address, userTypes.Validator, owner);
+
+        await addValidator(validator1Address);
+        await addValidator(validator2Address);
+        await addValidator(validator3Address);
+        await addValidator(validator4Address);
+        await addValidator(validator5Address);
+        await addValidator(validator6Address);
+        await addValidator(validator7Address);
+        await addValidator(validator8Address);
+      });
+
+      it("returns 4", async () => {
+        const majorityValidatorsCount = await instance.majorityValidatorsCount();
+
+        expect(majorityValidatorsCount).to.equal(4);
+      });
+    });
+
     context("when have 10 validators", () => {
       beforeEach(async () => {
         await addInvitation(owner, validator2Address, userTypes.Validator, owner);
@@ -400,14 +440,14 @@ describe("ValidatorContract", () => {
         await addValidator(validator10Address);
       });
 
-      it("returns 5", async () => {
+      it("returns 2", async () => {
         const majorityValidatorsCount = await instance.majorityValidatorsCount();
 
-        expect(majorityValidatorsCount).to.equal(5);
+        expect(majorityValidatorsCount).to.equal(2);
       });
-    });  
+    });
 
-    context("when have 11 validators", () => {
+    context("when have 14 validators", () => {
       beforeEach(async () => {
         await addInvitation(owner, validator2Address, userTypes.Validator, owner);
         await addInvitation(owner, validator3Address, userTypes.Validator, owner);
@@ -419,6 +459,9 @@ describe("ValidatorContract", () => {
         await addInvitation(owner, validator9Address, userTypes.Validator, owner);
         await addInvitation(owner, validator10Address, userTypes.Validator, owner);
         await addInvitation(owner, validator11Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator12Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator13Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator14Address, userTypes.Validator, owner);
 
         await addValidator(validator1Address);
         await addValidator(validator2Address);
@@ -431,14 +474,58 @@ describe("ValidatorContract", () => {
         await addValidator(validator9Address);
         await addValidator(validator10Address);
         await addValidator(validator11Address);
+        await addValidator(validator12Address);
+        await addValidator(validator13Address);
+        await addValidator(validator14Address);
       });
 
-      it("returns 2", async () => {
+      it("returns 3", async () => {
         const majorityValidatorsCount = await instance.majorityValidatorsCount();
 
-        expect(majorityValidatorsCount).to.equal(2);
+        expect(majorityValidatorsCount).to.equal(3);
       });
-    });      
+    });
+
+    context("when have 15 validators", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator3Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator4Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator5Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator6Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator7Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator8Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator9Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator10Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator11Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator12Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator13Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator14Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator15Address, userTypes.Validator, owner);
+
+        await addValidator(validator1Address);
+        await addValidator(validator2Address);
+        await addValidator(validator3Address);
+        await addValidator(validator4Address);
+        await addValidator(validator5Address);
+        await addValidator(validator6Address);
+        await addValidator(validator7Address);
+        await addValidator(validator8Address);
+        await addValidator(validator9Address);
+        await addValidator(validator10Address);
+        await addValidator(validator11Address);
+        await addValidator(validator12Address);
+        await addValidator(validator13Address);
+        await addValidator(validator14Address);
+        await addValidator(validator15Address);
+      });
+
+      it("returns 1", async () => {
+        const majorityValidatorsCount = await instance.majorityValidatorsCount();
+
+        expect(majorityValidatorsCount).to.equal(1);
+      });
+    });
   });
 
   describe("#addLevel", () => {
