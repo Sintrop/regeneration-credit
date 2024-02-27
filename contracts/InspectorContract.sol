@@ -93,10 +93,12 @@ contract InspectorContract is Callable {
     return bytes(inspectors[addr].name).length > 0;
   }
 
-  function incrementInspections(address addr) public mustBeAllowedCaller {
+  function incrementInspections(address addr) public mustBeAllowedCaller returns (uint256) {
     inspectors[addr].totalInspections++;
 
     addLevel(addr);
+
+    return inspectors[addr].totalInspections;
   }
 
   function addLevel(address addr) internal {

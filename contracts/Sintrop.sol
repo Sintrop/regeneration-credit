@@ -24,7 +24,6 @@ contract Sintrop {
   mapping(uint256 => Inspection) internal inspections;
   mapping(uint256 => Validation[]) public validations;
   mapping(address => mapping(uint256 => bool)) internal validatorValidations;
-  mapping(address => mapping(address => bool)) internal activistWonLevel;
 
   InspectorContract public inspectorContract;
   ProducerContract public producerContract;
@@ -171,43 +170,15 @@ contract Sintrop {
     address createdBy = inspection.createdBy;
     address acceptedBy = inspection.acceptedBy;
 
-    inspectorContract.incrementInspections(acceptedBy);
+    uint256 inspectorTotalInspections = inspectorContract.incrementInspections(acceptedBy);
     inspectorContract.decreaseGiveUps(acceptedBy);
 
-    producerContract.incrementInspections(createdBy);
+    uint256 producerTotalInspections = producerContract.incrementInspections(createdBy);
 
-    setActivistLevel(createdBy, acceptedBy);
+    activistContract.addLevel(createdBy, producerTotalInspections, acceptedBy, inspectorTotalInspections);
 
     userInspections[createdBy].push(inspection);
     userInspections[acceptedBy].push(inspection);
-  }
-
-  function setActivistLevel(address producerAddress, address inspectorAddress) internal {
-    Invitation memory producerInvitation = userContract.getInvitation(producerAddress);
-    Invitation memory inspectorInvitation = userContract.getInvitation(inspectorAddress);
-
-    Producer memory producer = producerContract.getProducer(producerAddress);
-    Inspector memory inspector = inspectorContract.getInspector(inspectorAddress);
-
-    uint256 minimumInspectionWonLevel = 3;
-
-    if (
-      producerInvitation.createdAtBlock > 0 &&
-      producer.totalInspections == minimumInspectionWonLevel &&
-      !activistWonLevel[producerInvitation.inviter][producerAddress]
-    ) {
-      activistWonLevel[producerInvitation.inviter][producerAddress] = true;
-      activistContract.addLevel(producerInvitation.inviter);
-    }
-
-    if (
-      inspectorInvitation.createdAtBlock > 0 &&
-      inspector.totalInspections == minimumInspectionWonLevel &&
-      !activistWonLevel[inspectorInvitation.inviter][inspectorAddress]
-    ) {
-      activistWonLevel[inspectorInvitation.inviter][inspectorAddress] = true;
-      activistContract.addLevel(inspectorInvitation.inviter);
-    }
   }
 
   function addInspectionValidation(uint256 id, string memory justification) public {

@@ -6,7 +6,7 @@ const { advanceBlock } = require("./shared/advance_block");
 
 describe("ActivistContract", () => {
   let instance, userContract, activistPool, rcToken;
-  let owner, activ1Address, activ2Address, activ3Address;
+  let owner, activ1Address, activ2Address, activ3Address, producer1Address, inspector1Address, inspector2Address;
 
   const activistPoolArgs = {
     totalTokens: "30000000000000000000000000",
@@ -24,7 +24,8 @@ describe("ActivistContract", () => {
   };
 
   beforeEach(async () => {
-    [owner, activ1Address, activ2Address, activ3Address] = await ethers.getSigners();
+    [owner, activ1Address, activ2Address, activ3Address, producer1Address, inspector1Address, inspector2Address] =
+      await ethers.getSigners();
 
     rcToken = await rcTokenDeployed();
     userContract = await userContractDeployed();
@@ -40,6 +41,7 @@ describe("ActivistContract", () => {
     const instanceContractFactory = await ethers.getContractFactory("ActivistContract");
     instance = await instanceContractFactory.deploy(userContract.target, activistPool.target);
 
+    await userContract.newAllowedCaller(activ1Address);
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
 
@@ -175,28 +177,34 @@ describe("ActivistContract", () => {
       context("when activist is registered", () => {
         beforeEach(async () => {
           await addActivist("Activist A", activ1Address);
-          await instance.addLevel(activ1Address);
+
+          await addInvitation(activ1Address, producer1Address, userTypes.Producer, activ1Address);
+          await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
+
+          await instance.addLevel(producer1Address, 3, inspector1Address, 3);
         });
 
         context("when current era of pool is 1", () => {
           it("add level to activist.pool.level ", async () => {
             const activist = await instance.getActivist(activ1Address);
 
-            expect(activist.pool.level).to.equal(1);
+            expect(activist.pool.level).to.equal(2);
           });
 
           it("add level to activisPool", async () => {
             const eraLevels = await activistPool.eraLevels(1, activ1Address);
 
-            expect(eraLevels).to.equal(1);
+            expect(eraLevels).to.equal(2);
           });
         });
 
         context("when current era of pool is 2", () => {
           beforeEach(async () => {
             await advanceBlock(activistPoolArgs.blocksPerEra);
-            await instance.addLevel(activ1Address);
-            await instance.addLevel(activ1Address);
+
+            await addInvitation(activ1Address, inspector2Address, userTypes.Inspector, activ1Address);
+
+            await instance.addLevel(producer1Address, 3, inspector2Address, 3);
           });
 
           it("add level to activist.pool.level ", async () => {
@@ -208,23 +216,26 @@ describe("ActivistContract", () => {
           it("add level to era 2 activisPool", async () => {
             const eraLevels = await activistPool.eraLevels(2, activ1Address);
 
-            expect(eraLevels).to.equal(2);
+            expect(eraLevels).to.equal(1);
           });
         });
       });
 
       context("when activist is not registered", () => {
         beforeEach(async () => {
-          await instance.addLevel(activ1Address);
+          await addInvitation(activ1Address, producer1Address, userTypes.Producer, activ1Address);
+          await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
+
+          await instance.addLevel(producer1Address, 3, inspector1Address, 3);
         });
 
-        it("add level to activist.pool.level ", async () => {
+        it("do not add level to activist.pool.level ", async () => {
           const activist = await instance.getActivist(activ1Address);
 
           expect(activist.pool.level).to.equal(0);
         });
 
-        it("add level to activisPool", async () => {
+        it("do not add level to activisPool", async () => {
           const eraLevels = await activistPool.eraLevels(1, activ1Address);
 
           expect(eraLevels).to.equal(0);
@@ -234,7 +245,9 @@ describe("ActivistContract", () => {
 
     context("without allowed caller", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(activ1Address).addLevel(activ1Address)).to.be.revertedWith("Not allowed caller");
+        await expect(
+          instance.connect(activ1Address).addLevel(producer1Address, 1, activ1Address, 1)
+        ).to.be.revertedWith("Not allowed caller");
       });
     });
   });
@@ -248,7 +261,9 @@ describe("ActivistContract", () => {
       context("when is era 1", () => {
         context("when activist have levels", () => {
           beforeEach(async () => {
-            await instance.addLevel(activ1Address);
+            await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
+
+            await instance.addLevel(producer1Address, 0, inspector1Address, 3);
           });
 
           it("should return error message", async () => {
@@ -260,7 +275,9 @@ describe("ActivistContract", () => {
       context("when is era 2", () => {
         context("when activist have levels", () => {
           beforeEach(async () => {
-            await instance.addLevel(activ1Address);
+            await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
+
+            await instance.addLevel(producer1Address, 0, inspector1Address, 3);
           });
 
           context("when have one activist", () => {
@@ -286,7 +303,12 @@ describe("ActivistContract", () => {
           context("when have two activist", () => {
             beforeEach(async () => {
               await addActivist("Activist B", activ3Address);
-              await instance.addLevel(activ3Address);
+
+              await userContract.newAllowedCaller(activ3Address);
+              await addInvitation(activ3Address, inspector2Address, userTypes.Inspector, activ3Address);
+
+              await instance.addLevel(producer1Address, 0, inspector2Address, 3);
+
               await advanceBlock(activistPoolArgs.blocksPerEra);
 
               await instance.connect(activ1Address).withdraw();
