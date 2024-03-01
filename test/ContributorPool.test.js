@@ -256,7 +256,9 @@ describe("ContributorPool", () => {
 
     context("without allowed caller", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(contr1Address).removeLevel(contr1Address)).to.be.revertedWith("Not allowed caller");
+        await expect(instance.connect(contr1Address).removeLevel(contr1Address)).to.be.revertedWith(
+          "Not allowed caller"
+        );
       });
     });
   });
@@ -458,7 +460,9 @@ describe("ContributorPool", () => {
 
     context("with don't allowed caller", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(contr1Address).withdraw(contr1Address, 1)).to.be.revertedWith("Not allowed caller");
+        await expect(instance.connect(contr1Address).withdraw(contr1Address, 1)).to.be.revertedWith(
+          "Not allowed caller"
+        );
       });
     });
   });
