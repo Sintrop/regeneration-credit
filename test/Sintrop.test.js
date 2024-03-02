@@ -284,7 +284,6 @@ describe("Sintrop", () => {
     await producerPool.newAllowedCaller(producerContract.target);
     await inspectorPool.newAllowedCaller(inspectorContract.target);
     await validatorPool.newAllowedCaller(validatorContract.target);
-    await validatorPool.newAllowedCaller(validatorContract.target);
     await categoryContract.newAllowedCaller(instance.target);
 
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);

@@ -50,7 +50,7 @@ contract ValidatorContract is Callable {
     userContract.addUser(msg.sender, userType);
   }
 
-  function addValidation(address userAddress, string memory justification) public {
+  function addUserValidation(address userAddress, string memory justification) public {
     require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
     require(!userContract.userTypeIs(UserType.DENIED, userAddress), "User already denied");
 
@@ -64,31 +64,11 @@ contract ValidatorContract is Callable {
     if (validationsCount >= majorityValidatorsCount_) denieUser(userAddress);
   }
 
-  function externalDenieUser(address userAddress) internal {
-    denieUser(userAddress);
-  }
-
-  function externalRemoveLevels(address userAddress, uint256 levels) internal {
-    resetLevels(userAddress, levels);
-  }
-
-  function denieUser(address userAddress) internal {
-    resetLevels(userAddress, 0);
-
-    userContract.setDeniedType(userAddress);
-  }
-
-  function resetLevels(address userAddress, uint256 levels) internal {
-    UserType oldUserType = userContract.getUser(userAddress);
-
-    if (oldUserType == UserType.PRODUCER) return producerContract.resetLevels(userAddress, levels);
-  }
-
   function addInspectionValidation(
     Inspection memory inspection,
     string memory justification,
     address validatorAddress
-  ) public {
+  ) public mustBeAllowedCaller {
     require(!validatorValidations[validatorAddress][inspection.id], "Already voted");
 
     validatorValidations[validatorAddress][inspection.id] = true;
@@ -111,12 +91,12 @@ contract ValidatorContract is Callable {
     if (!addPenalty) return;
 
     uint256 inspectorTotalPenalties = inspectorContract.addPenalty(inspection.acceptedBy, inspection.id);
-    removeInspectionLevels(inspection);
+    removeUserInspection(inspection);
 
     if (inspectorTotalPenalties >= inspectorContract.maxPenalties()) externalDenieUser(inspection.acceptedBy);
   }
 
-  function removeInspectionLevels(Inspection memory inspection) internal {
+  function removeUserInspection(Inspection memory inspection) internal {
     inspectorContract.decrementInspections(inspection.acceptedBy);
     producerContract.decrementInspections(inspection.createdBy);
 
@@ -126,6 +106,26 @@ contract ValidatorContract is Callable {
 
     externalRemoveLevels(inspection.createdBy, levels);
     externalRemoveLevels(inspection.acceptedBy, levels);
+  }
+
+  function externalDenieUser(address userAddress) internal {
+    denieUser(userAddress);
+  }
+
+  function externalRemoveLevels(address userAddress, uint256 levels) internal {
+    resetLevels(userAddress, levels);
+  }
+
+  function denieUser(address userAddress) internal {
+    resetLevels(userAddress, 0);
+
+    userContract.setDeniedType(userAddress);
+  }
+
+  function resetLevels(address userAddress, uint256 levels) internal {
+    UserType oldUserType = userContract.getUser(userAddress);
+
+    if (oldUserType == UserType.PRODUCER) return producerContract.resetLevels(userAddress, levels);
   }
 
   function getUserValidations(address userAddress) public view returns (Validation[] memory) {
