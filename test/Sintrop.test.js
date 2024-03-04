@@ -248,7 +248,8 @@ describe("Sintrop", () => {
     validatorContract = await validatorContractFactory.deploy(
       userContract.target,
       producerContract.target,
-      validatorPool.target
+      validatorPool.target,
+      inspectorContract.target
     );
 
     const instanceFactory = await ethers.getContractFactory("Sintrop");
@@ -273,6 +274,7 @@ describe("Sintrop", () => {
     await userContract.newAllowedCaller(owner);
     await inspectorContract.newAllowedCaller(instance.target);
     await inspectorContract.newAllowedCaller(owner);
+    await inspectorContract.newAllowedCaller(validatorContract.target);
     await validatorContract.newAllowedCaller(instance.target);
     await activistContract.newAllowedCaller(instance.target);
     await activistPool.newAllowedCaller(activistContract.target);
@@ -281,7 +283,6 @@ describe("Sintrop", () => {
     await producerContract.newAllowedCaller(validatorContract.target);
     await producerPool.newAllowedCaller(producerContract.target);
     await inspectorPool.newAllowedCaller(inspectorContract.target);
-    await validatorPool.newAllowedCaller(validatorContract.target);
     await validatorPool.newAllowedCaller(validatorContract.target);
     await categoryContract.newAllowedCaller(instance.target);
 
@@ -1068,7 +1069,8 @@ describe("Sintrop", () => {
           });
 
           it("add validation", async () => {
-            const validation = await instance.validations(1, 0);
+            const validations = await validatorContract.getInspectionValidations(1);
+            const validation = validations[0];
 
             expect(validation.validator).to.equal(validator1Address.address);
             expect(validation.user).to.equal(inspectorAddress.address);
@@ -1085,8 +1087,8 @@ describe("Sintrop", () => {
           });
 
           it("add validations", async () => {
-            const validation1 = await instance.validations(1, 0);
-            const validation2 = await instance.validations(1, 1);
+            const validation1 = await validatorContract.inspectionValidations(1, 0);
+            const validation2 = await validatorContract.inspectionValidations(1, 1);
 
             expect(validation1.validator).to.equal(validator1Address.address);
             expect(validation2.validator).to.equal(validator2Address.address);
@@ -1168,11 +1170,6 @@ describe("Sintrop", () => {
 
     context("with non validator", () => {
       it("should return error message", async () => {
-        await requestInspection(producerAddress);
-        await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-        await acceptInspection(1, inspectorAddress);
-        await realizeInspection(1, report, isas(), inspectorAddress);
-
         await expect(instance.connect(producerAddress).addInspectionValidation(1, "justification")).to.be.revertedWith(
           "Please register as validator"
         );

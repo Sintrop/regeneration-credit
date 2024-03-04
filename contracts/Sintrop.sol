@@ -22,7 +22,6 @@ contract Sintrop {
   mapping(address => mapping(address => bool)) internal inspectorInspected;
   mapping(address => Inspection[]) internal userInspections;
   mapping(uint256 => Inspection) internal inspections;
-  mapping(uint256 => Validation[]) public validations;
   mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
   InspectorContract public inspectorContract;
@@ -185,52 +184,23 @@ contract Sintrop {
     require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
     Inspection memory inspection = inspections[id];
-    require(inspection.status == InspectionStatus.INSPECTED, "This inspection is not INSPECTED");
-    require(!validatorValidations[msg.sender][id], "Already voted");
 
-    validatorValidations[msg.sender][id] = true;
+    require(inspection.status == InspectionStatus.INSPECTED, "This inspection is not INSPECTED");
 
     inspection.validationsCount += 1;
-    inspections[id] = inspection;
+    inspections[inspection.id] = inspection;
 
-    uint256 majorityValidatorsCount_ = validatorContract.majorityValidatorsCount();
-    uint256 validationsCount = inspections[id].validationsCount;
-    bool addPenalty = validationsCount >= majorityValidatorsCount_;
+    bool mustInvalidateInspection = inspection.validationsCount >= validatorContract.majorityValidatorsCount();
 
-    validations[id].push(
-      Validation(
-        msg.sender,
-        inspection.acceptedBy,
-        inspection.id,
-        justification,
-        majorityValidatorsCount_,
-        block.number
-      )
-    );
+    if (mustInvalidateInspection) invalidateInspection(inspection);
 
-    if (!addPenalty) return;
-
-    uint256 inspectorTotalPenalties = inspectorContract.addPenalty(inspection.acceptedBy, inspection.id);
-    invalidateInspection(inspection);
-
-    if (inspectorTotalPenalties >= inspectorContract.maxPenalties())
-      validatorContract.externalDenieUser(inspection.acceptedBy);
+    validatorContract.addInspectionValidation(inspection, justification, msg.sender);
   }
 
   function invalidateInspection(Inspection memory inspection) internal {
     inspection.status = InspectionStatus.INVALIDATED;
     inspection.invalidatedAt = block.number;
     inspections[inspection.id] = inspection;
-
-    inspectorContract.decrementInspections(inspection.acceptedBy);
-    producerContract.decrementInspections(inspection.createdBy);
-
-    if (inspection.isaScore <= 0) return;
-
-    uint256 levels = uint256(inspection.isaScore);
-
-    validatorContract.externalRemoveLevels(inspection.createdBy, levels);
-    validatorContract.externalRemoveLevels(inspection.acceptedBy, levels);
   }
 
   /**
@@ -252,15 +222,6 @@ contract Sintrop {
     }
 
     return inspectionsList;
-  }
-
-  // TODO: Have a better way to return this?
-  // TODO: Is this function necessary?
-  /**
-   * @dev Returns all inpections status string.
-   */
-  function getInspectionsStatus() public pure returns (string memory, string memory, string memory, string memory) {
-    return ("OPEN", "ACCEPTED", "INSPECTED", "EXPIRED");
   }
 
   // TODO: Add specs to this function

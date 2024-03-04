@@ -7,7 +7,7 @@ function saveContractAddress(contractName, contractAddress) {
   const currentDateTime = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
 
   if (!fs.existsSync(contractsDir)) {
-    fs.mkdirSync(contractsDir);
+    fs.mkdirSync(contractsDir, { recursive: true });
   }
 
   const data = {
