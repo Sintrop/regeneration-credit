@@ -56,14 +56,14 @@ describe("RcToken", (accounts) => {
       expect(totalLocked).to.equal(0);
     });
 
-    it("balance of contract owner should be equal to 1365000000000000000000000000", async () => {
+    it("balance of contract owner should be equal to 1375500000000000000000000000", async () => {
       const ownerBalance = await instance.balanceOf(ownerAddress);
-      expect(ownerBalance).to.equal(1365000000000000000000000000n);
+      expect(ownerBalance).to.equal(1375500000000000000000000000n);
     });
 
     it("balance of rcTokenIco should be 135000000000000000000000000", async () => {
       const balance = await instance.balanceOf(rcTokenIco.target);
-      expect(balance).to.equal(135000000000000000000000000n);
+      expect(balance).to.equal(124500000000000000000000000n);
     });
   });
 

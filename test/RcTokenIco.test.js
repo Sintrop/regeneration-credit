@@ -169,14 +169,14 @@ describe("RcTokenIco", () => {
   });
 
   describe("#withdraw", () => {
-    context("when ICO contract have ether", () => {
-      context("when have 1 ether", () => {
+    context("when is the owner", () => {
+      context("when sold 1 ether", () => {
         beforeEach(async () => {
           await instance.changeSalesOpen({ from: ownerAddress });
           sendTransation(user1Address, instance.target, 1);
         });
 
-        context("when the owner withdraw 1 ether", () => {
+        context("when the owner withdraw", () => {
           beforeEach(async () => {
             balanceBefore = await ethers.provider.getBalance(ownerAddress);
 
@@ -185,7 +185,7 @@ describe("RcTokenIco", () => {
             balanceAfter = await await ethers.provider.getBalance(ownerAddress);
           });
 
-          it("increment owner ether balance", async () => {
+          it("should increment owner ether balance", async () => {
             expect(parseInt(balanceAfter)).to.above(parseInt(balanceBefore));
           });
         });
@@ -195,6 +195,81 @@ describe("RcTokenIco", () => {
     context("when ICO contract dont have ether", () => {
       it("it should return erro message", async () => {
         await expect(instance.withdraw(1000000000000000000n)).to.be.revertedWith("ICO: insufficient balance");
+      });
+    });
+
+    context("when not the owner withdraw", () => {
+      it("it should return error message", async () => {
+        await expect(instance.connect(user1Address).withdraw(1000000000000000000n)).to.be.revertedWith(
+          "Ownable: caller is not the owner"
+        );
+      });
+    });
+  });
+
+  describe("#withdrawTokens", () => {
+    context("when is the owner", () => {
+      context("when contract have rcTokens", () => {
+        context("when withdraw total amount", () => {
+          beforeEach(async () => {
+            balanceBeforeRc = await rcToken.balanceOf(ownerAddress);
+
+            await instance.withdrawRcToken(124500000000000000000000000n);
+
+            balanceAfterRc = await rcToken.balanceOf(ownerAddress);
+          });
+
+          it("should increment owner rc balance", async () => {
+            expect(parseInt(balanceAfterRc)).to.above(parseInt(balanceBeforeRc));
+          });
+
+          it("should decrement contract rc balance", async () => {
+            contractRcBalance = await rcToken.balanceOf(instance);
+            expect(contractRcBalance).to.equal(0);
+          });
+        });
+      });
+
+      context("when sold 1 ether", () => {
+        beforeEach(async () => {
+          await instance.changeSalesOpen({ from: ownerAddress });
+          sendTransation(user1Address, instance.target, 1);
+        });
+
+        context("when the owner withdraw", () => {
+          beforeEach(async () => {
+            balanceBeforeRc = await rcToken.balanceOf(ownerAddress);
+
+            await instance.withdrawRcToken(80000000000000000000000n);
+
+            balanceAfterRc = await rcToken.balanceOf(ownerAddress);
+          });
+
+          it("should increment owner rc balance", async () => {
+            expect(parseInt(balanceAfterRc)).to.above(parseInt(balanceBeforeRc));
+          });
+
+          it("should decrement contract rc balance", async () => {
+            contractRcBalance = await rcToken.balanceOf(instance);
+            expect(contractRcBalance).to.equal(124340000000000000000000000n);
+          });
+        });
+      });
+    });
+
+    context("when ICO contract dont have enough tokens", () => {
+      it("it should return error message", async () => {
+        await expect(instance.withdrawRcToken(136000000000000000000000000n)).to.be.revertedWith(
+          "Insufficient balance."
+        );
+      });
+    });
+
+    context("when not the owner withdraw", () => {
+      it("it should return error message", async () => {
+        await expect(instance.connect(user1Address).withdraw(80000000000000000000000n)).to.be.revertedWith(
+          "Ownable: caller is not the owner"
+        );
       });
     });
   });
