@@ -78,9 +78,8 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
     addPoolLevel(producer, currentLevel, addLevels, era);
   }
 
-  function removeLevel(address producer) public mustBeAllowedCaller {
+  function removeLevel(address producer, uint256 levels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
-    uint256 levels = 1;
 
     removePoolLevel(producer, era, levels);
   }

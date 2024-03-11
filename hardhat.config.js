@@ -52,7 +52,7 @@ module.exports = {
     artifacts: "./artifacts",
   },
   mocha: {
-    bail: true,
+    bail: false,
     parallel: false,
     jobs: 0,
     color: true,

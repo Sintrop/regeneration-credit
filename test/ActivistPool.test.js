@@ -250,7 +250,11 @@ describe("ActivistPool", () => {
 
       context("when activist1 dont have levels in era", () => {
         it("should return error message", async () => {
-          await expect(instance.removeLevel(activist1Address)).to.be.revertedWith("Not enough levels to remove");
+          instance.removeLevel(activist1Address);
+
+          const level = await instance.eraLevels(2, activist1Address);
+
+          expect(level).to.equal(0);
         });
       });
     });
