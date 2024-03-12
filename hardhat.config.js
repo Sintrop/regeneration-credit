@@ -52,9 +52,9 @@ module.exports = {
     artifacts: "./artifacts",
   },
   mocha: {
-    bail: true,
-    parallel: false,
-    jobs: 0,
+    bail: false,
+    parallel: true,
+    jobs: 3,
     color: true,
     checkLeaks: false,
     reporter: "spec",

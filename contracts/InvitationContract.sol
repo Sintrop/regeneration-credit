@@ -27,6 +27,7 @@ contract InvitationContract is Ownable {
     canBeInviteds[UserType.DEVELOPER] = UserType.DEVELOPER;
     canBeInviteds[UserType.RESEARCHER] = UserType.RESEARCHER;
     canBeInviteds[UserType.SUPPORTER] = UserType.SUPPORTER;
+    canBeInviteds[UserType.CONTRIBUTOR] = UserType.CONTRIBUTOR;
   }
 
   function invite(address invited, UserType userType) public {

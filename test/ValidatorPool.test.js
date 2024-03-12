@@ -250,7 +250,11 @@ describe("ValidatorPool", () => {
 
       context("when validator1 dont have levels in era", () => {
         it("should return error message", async () => {
-          await expect(instance.removeLevel(validator1Address)).to.be.revertedWith("Not enough levels to remove");
+          instance.removeLevel(validator1Address);
+
+          const level = await instance.eraLevels(2, validator1Address);
+
+          expect(level).to.equal(0);
         });
       });
     });

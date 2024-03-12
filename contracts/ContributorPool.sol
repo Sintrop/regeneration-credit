@@ -11,10 +11,10 @@ import { Poolable } from "./Poolable.sol";
 
 /**
  * @author Sintrop
- * @title ProducerPool
- * @dev ProducerPool is a contract to reward producers
+ * @title ContributorPool
+ * @dev ContributorPool is a contract to reward contributors
  */
-contract ProducerPool is Poolable, Ownable, Blockable, Callable {
+contract ContributorPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;
 
   uint256 internal immutable halving;
@@ -23,14 +23,14 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
   RcTokenInterface internal rcToken;
 
   uint256[8] internal tokensPerEpochs = [
-    360000000000000000000000000,
-    180000000000000000000000000,
-    90000000000000000000000000,
-    45000000000000000000000000,
-    22500000000000000000000000,
-    11250000000000000000000000,
-    5625000000000000000000000,
-    2812500000000000000000000
+    36 * 10 ** 23,
+    18 * 10 ** 23,
+    9 * 10 ** 23,
+    45 * 10 ** 22,
+    225 * 10 ** 21,
+    1125 * 10 ** 20,
+    28125 * 10 ** 18,
+    703125 * 10 ** 16
   ];
 
   uint256 internal constant LIMIT_EPOCHS_SIZE = 8;
@@ -46,17 +46,10 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
     totalEras = _totalEras;
   }
 
-  /**
-   * @dev Returns how much tokens the contract has
-   */
   function balance() public view returns (uint256) {
     return balanceOf(address(this));
   }
 
-  /**
-   * @dev Returns how much tokensa user has
-   * @param addr The address of the developer
-   */
   function balanceOf(address addr) public view returns (uint256) {
     return rcToken.balanceOf(addr);
   }
@@ -69,19 +62,24 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
 
     if (numTokens == 0) return;
 
+    eras[era].users++;
+    eras[era].tokens += numTokens;
+    eraTokens[era][delegate] = numTokens;
+
     rcToken.transferWith(address(this), delegate, numTokens);
   }
 
-  function addLevel(address producer, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
+  function addLevel(address addr, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 
-    addPoolLevel(producer, currentLevel, addLevels, era);
+    addPoolLevel(addr, currentLevel, addLevels, era);
   }
 
-  function removeLevel(address producer, uint256 levels) public mustBeAllowedCaller {
+  function removeLevel(address addr) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
+    uint256 levels = 1;
 
-    removePoolLevel(producer, era, levels);
+    removePoolLevel(addr, era, levels);
   }
 
   function resetLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {

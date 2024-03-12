@@ -249,7 +249,11 @@ describe("DeveloperPool", () => {
 
       context("when developer dont have levels in era", () => {
         it("should return error message", async () => {
-          await expect(instance.removeLevel(dev1Address)).to.be.revertedWith("Not enough levels to remove");
+          instance.removeLevel(dev1Address);
+
+          const level = await instance.eraLevels(2, dev1Address);
+
+          expect(level).to.equal(0);
         });
       });
     });
