@@ -537,13 +537,13 @@ describe("ProducerContract", () => {
                   await instance.setIsaScore(prod1Address, 30);
                 });
 
-                it("set 50 levels to era 1 pool", async () => {
+                it("set 5 levels to era 1 pool", async () => {
                   const eraLevels = await producerPool.eraLevels(1, prod1Address);
 
                   expect(eraLevels).to.equal(5);
                 });
 
-                it("producer isaScore must be 50", async () => {
+                it("producer isaScore must be 5", async () => {
                   const producer = await instance.getProducer(prod1Address);
 
                   expect(producer.isa.isaScore).to.equal(5);
