@@ -248,8 +248,12 @@ describe("ContributorPool", () => {
       });
 
       context("when contributor dont have levels in era", () => {
-        it("should return error message", async () => {
-          await expect(instance.removeLevel(contr1Address)).to.be.revertedWith("Not enough levels to remove");
+        it("", async () => {
+          instance.removeLevel(contr1Address);
+
+          const level = await instance.eraLevels(2, contr1Address);
+
+          expect(level).to.equal(0);
         });
       });
     });
