@@ -286,7 +286,7 @@ describe("ValidatorContract", () => {
             });
           });
 
-          context.only("with inspector", () => {
+          context("with inspector", () => {
             beforeEach(async () => {
               await addInspector("Inspector A", inspector1Address);
 
