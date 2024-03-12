@@ -126,6 +126,7 @@ contract ValidatorContract is Callable {
     UserType oldUserType = userContract.getUser(userAddress);
 
     if (oldUserType == UserType.PRODUCER) return producerContract.resetLevels(userAddress, levels);
+    if (oldUserType == UserType.INSPECTOR) return inspectorContract.resetLevels(userAddress, levels);
   }
 
   function getUserValidations(address userAddress) public view returns (Validation[] memory) {

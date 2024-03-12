@@ -111,6 +111,14 @@ contract InspectorContract is Callable {
     inspectorPool.addLevel(addr, 1, 1);
   }
 
+  function resetLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+    Inspector memory inspector = inspectors[addr];
+
+    inspectors[addr].pool.level = 0;
+
+    inspectorPool.resetLevels(addr, inspector.pool.currentEra, removeSomeLevels);
+  }
+
   function decrementInspections(address addr) public mustBeAllowedCaller {
     require(inspectors[addr].totalInspections > 0, "totalInspections invalid");
 
