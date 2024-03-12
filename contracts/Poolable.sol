@@ -28,7 +28,7 @@ contract Poolable {
   }
 
   function removePoolLevel(address to, uint256 era, uint256 levels) internal {
-    require(eraLevels[era][to] >= levels, "Not enough levels to remove");
+    if (levels > eraLevels[era][to]) levels = eraLevels[era][to];
 
     eras[era].levels = eras[era].levels.sub(levels);
     eraLevels[era][to] = eraLevels[era][to].sub(levels);

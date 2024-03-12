@@ -140,14 +140,11 @@ contract Sintrop {
     require(inspectionExists(inspectionId), "This inspection don't exists");
     require(isAccepted(inspectionId), "Accept this inspection before");
     require(isInspectorOwner(inspectionId), "You not accepted this inspection");
-
     require(!expiredInspection(inspectionId), "Inspection Expired");
 
     markAsRealized(inspection, report, _isas);
 
     afterRealizeInspection(inspection);
-
-    producerContract.setIsaScore(inspection.createdBy, inspection.isaScore);
 
     inspectorInspected[msg.sender][inspection.createdBy] = true;
   }
@@ -175,6 +172,7 @@ contract Sintrop {
     uint256 producerTotalInspections = producerContract.incrementInspections(createdBy);
 
     activistContract.addLevel(createdBy, producerTotalInspections, acceptedBy, inspectorTotalInspections);
+    producerContract.setIsaScore(inspection.createdBy, inspection.isaScore);
 
     userInspections[createdBy].push(inspection);
     userInspections[acceptedBy].push(inspection);
