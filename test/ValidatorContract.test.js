@@ -35,7 +35,7 @@ describe("ValidatorContract", () => {
     totalTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
-    blocksPerEra: 12,
+    blocksPerEra: 16,
   };
 
   const inspectorPoolArgs = {
@@ -55,6 +55,10 @@ describe("ValidatorContract", () => {
 
   const addProducer = async (name, from) => {
     await producerContract.connect(from).addProducer(10, name, "photoURL", "135465-005");
+  };
+
+  const addInspector = async (name, from) => {
+    await inspectorContract.connect(from).addInspector(name, "photoURL");
   };
 
   const denyUser = async (userAddress) => {
@@ -119,12 +123,14 @@ describe("ValidatorContract", () => {
 
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(producerContract.target);
+    await userContract.newAllowedCaller(inspectorContract.target);
     await userContract.newAllowedCaller(owner);
     await producerContract.newAllowedCaller(instance.target);
     await producerContract.newAllowedCaller(owner);
     await producerPool.newAllowedCaller(producerContract.target);
     await producerPool.newAllowedCaller(owner);
     await validatorPool.newAllowedCaller(instance.target);
+    await inspectorPool.newAllowedCaller(inspectorContract.target);
     await inspectorContract.newAllowedCaller(instance.target);
     await inspectorContract.newAllowedCaller(owner);
     await instance.newAllowedCaller(owner);
@@ -133,6 +139,7 @@ describe("ValidatorContract", () => {
     await rcToken.addContractPool(producerContract.target, producerPoolArgs.totalTokens);
 
     await addInvitation(owner, validator1Address, userTypes.Validator, owner);
+    await addInvitation(owner, inspector1Address, userTypes.Inspector, owner);
   });
 
   describe("#addValidator", () => {
@@ -276,6 +283,47 @@ describe("ValidatorContract", () => {
               const producer = await producerContract.getProducer(producer1Address);
 
               expect(producer.isa.isaScore).to.equal(0);
+            });
+          });
+
+          context("with inspector", () => {
+            beforeEach(async () => {
+              await addInspector("Inspector A", inspector1Address);
+
+              await inspectorContract.incrementInspections(inspector1Address);
+              await inspectorContract.incrementInspections(inspector1Address);
+              await inspectorContract.incrementInspections(inspector1Address);
+
+              await instance.connect(validator1Address).addUserValidation(inspector1Address, "my justification");
+              await instance.connect(validator3Address).addUserValidation(inspector1Address, "my justification");
+            });
+
+            it("should add validation", async () => {
+              const validations = await instance.getUserValidations(inspector1Address);
+
+              expect(validations[0].justification).to.equal("my justification");
+              expect(validations.length).to.equal(2);
+            });
+
+            it("user type must be denied", async () => {
+              const user = await userContract.getUser(inspector1Address);
+              const DENIED = 9;
+
+              expect(user).to.equal(DENIED);
+            });
+
+            it("remove user levels from pool", async () => {
+              const levelsEra1 = await inspectorPool.eraLevels(1, inspector1Address);
+              const levelsEra2 = await inspectorPool.eraLevels(2, inspector1Address);
+
+              expect(levelsEra1).to.equal(0);
+              expect(levelsEra2).to.equal(0);
+            });
+
+            it("remove user levels from inspector", async () => {
+              const inspector = await inspectorContract.getInspector(inspector1Address);
+
+              expect(inspector.pool.level).to.equal(0);
             });
           });
         });

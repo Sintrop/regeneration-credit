@@ -53,7 +53,7 @@ module.exports = {
   },
   mocha: {
     bail: false,
-    parallel: true,
+    parallel: false,
     jobs: 3,
     color: true,
     checkLeaks: false,
