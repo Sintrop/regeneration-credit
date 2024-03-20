@@ -3,7 +3,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
 import { ProducerContract } from "./ProducerContract.sol";
-import { Validator, Validation, Pool } from "./types/ValidatorTypes.sol";
+import { Validator, UserValidation, InspectionValidation, Pool } from "./types/ValidatorTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { Callable } from "./Callable.sol";
 import { ValidatorPool } from "./ValidatorPool.sol";
@@ -12,8 +12,8 @@ import { Inspection } from "./types/InspectionTypes.sol";
 
 contract ValidatorContract is Callable {
   mapping(address => Validator) internal validators;
-  mapping(address => Validation[]) private userValidations;
-  mapping(uint256 => Validation[]) public inspectionValidations;
+  mapping(address => UserValidation[]) private userValidations;
+  mapping(uint256 => InspectionValidation[]) public inspectionValidations;
   mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
   UserContract internal userContract;
@@ -58,7 +58,7 @@ contract ValidatorContract is Callable {
     uint256 validationsCount = userValidations[userAddress].length + 1;
 
     userValidations[userAddress].push(
-      Validation(msg.sender, userAddress, 0, justification, majorityValidatorsCount_, block.number)
+      UserValidation(msg.sender, userAddress, 0, justification, majorityValidatorsCount_, block.number)
     );
 
     if (validationsCount >= majorityValidatorsCount_) denieUser(userAddress);
@@ -78,7 +78,7 @@ contract ValidatorContract is Callable {
     bool addPenalty = inspection.validationsCount >= majorityValidatorsCount_;
 
     inspectionValidations[inspection.id].push(
-      Validation(
+      InspectionValidation(
         validatorAddress,
         inspection.acceptedBy,
         inspection.id,
@@ -129,11 +129,11 @@ contract ValidatorContract is Callable {
     if (oldUserType == UserType.INSPECTOR) return inspectorContract.resetLevels(userAddress, levels);
   }
 
-  function getUserValidations(address userAddress) public view returns (Validation[] memory) {
+  function getUserValidations(address userAddress) public view returns (UserValidation[] memory) {
     return userValidations[userAddress];
   }
 
-  function getInspectionValidations(uint256 inspectionId) public view returns (Validation[] memory) {
+  function getInspectionValidations(uint256 inspectionId) public view returns (InspectionValidation[] memory) {
     return inspectionValidations[inspectionId];
   }
 

@@ -15,7 +15,16 @@ struct Pool {
   uint256 currentEra;
 }
 
-struct Validation {
+struct UserValidation {
+  address validator;
+  address user;
+  uint256 resourceId;
+  string justification;
+  uint256 majorityValidatorsCount;
+  uint256 createdAtBlockNumber;
+}
+
+struct InspectionValidation {
   address validator;
   address user;
   uint256 resourceId;
