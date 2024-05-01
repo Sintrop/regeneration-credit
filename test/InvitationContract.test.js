@@ -58,138 +58,340 @@ describe("InvitationContract", () => {
     });
 
     context("when user not registered and not invited", () => {
-      context("when activist invite", () => {
+      context("when activist send invite", () => {
         beforeEach(async () => {
           await addInvitation(owner, user2Address, userTypes.Activist, owner);
           await addUser(user2Address, userTypes.Activist, owner);
         });
 
-        context("activist", () => {
-          it("invite with success", async () => {
-            await instance.connect(user2Address).invite(user3Address, userTypes.Activist);
+        context("when send to activist", () => {
+          context("when have a previous invitation", () => {
+            context("when is not recent", () => {
+              beforeEach(async () => {
+                await instance.connect(user2Address).invite(user3Address, userTypes.Activist);
+                const blocks = await userTypeDelayBlocks(userTypes.Activist);
 
-            const invitation = await userContract.invitations(user3Address);
+                await advanceBlock(blocks);
+              });
 
-            expect(invitation.invited).to.equal(user3Address.address);
+              it("invite with success", async () => {
+                await instance.connect(user2Address).invite(user4Address, userTypes.Activist);
+
+                const invitation = await userContract.invitations(user4Address);
+
+                expect(invitation.invited).to.equal(user4Address.address);
+              });
+            });
+
+            context("when is recent", () => {
+              beforeEach(async () => {
+                await instance.connect(user2Address).invite(user3Address, userTypes.Activist);
+              });
+
+              it("revert", async () => {
+                await expect(
+                  instance.connect(user2Address).invite(user4Address, userTypes.Activist)
+                ).to.be.revertedWith("Invite delay not reached");
+              });
+            });
+          });
+
+          context("when do not have a previous invitation", () => {
+            it("invite with success", async () => {
+              await instance.connect(user2Address).invite(user3Address, userTypes.Activist);
+
+              const invitation = await userContract.invitations(user3Address);
+
+              expect(invitation.invited).to.equal(user3Address.address);
+            });
           });
         });
 
-        context("inspector", () => {
-          it("invite with success", async () => {
-            await instance.connect(user2Address).invite(user3Address, userTypes.Inspector);
+        context("when send to inspector", () => {
+          context("when have a previous invitation", () => {
+            context("when is not recent", () => {
+              beforeEach(async () => {
+                await instance.connect(user2Address).invite(user3Address, userTypes.Inspector);
+                const blocks = await userTypeDelayBlocks(userTypes.Activist);
 
-            const invitation = await userContract.invitations(user3Address);
+                await advanceBlock(blocks);
+              });
 
-            expect(invitation.invited).to.equal(user3Address.address);
+              it("invite with success", async () => {
+                await instance.connect(user2Address).invite(user4Address, userTypes.Inspector);
+
+                const invitation = await userContract.invitations(user4Address);
+
+                expect(invitation.invited).to.equal(user4Address.address);
+              });
+            });
+
+            context("when is recent", () => {
+              beforeEach(async () => {
+                await instance.connect(user2Address).invite(user3Address, userTypes.Inspector);
+              });
+
+              it("revert", async () => {
+                await expect(
+                  instance.connect(user2Address).invite(user4Address, userTypes.Inspector)
+                ).to.be.revertedWith("Invite delay not reached");
+              });
+            });
+          });
+
+          context("when do not have a previous invitation", () => {
+            it("invite with success", async () => {
+              await instance.connect(user2Address).invite(user3Address, userTypes.Inspector);
+
+              const invitation = await userContract.invitations(user3Address);
+
+              expect(invitation.invited).to.equal(user3Address.address);
+            });
           });
         });
 
-        context("producer", () => {
-          it("invite with success", async () => {
-            await instance.connect(user2Address).invite(user3Address, userTypes.Producer);
+        context("when send to producer", () => {
+          context("when have a previous invitation", () => {
+            context("when is not recent", () => {
+              beforeEach(async () => {
+                await instance.connect(user2Address).invite(user3Address, userTypes.Producer);
+                const blocks = await userTypeDelayBlocks(userTypes.Activist);
 
-            const invitation = await userContract.invitations(user3Address.address);
+                await advanceBlock(blocks);
+              });
 
-            expect(invitation.invited).to.equal(user3Address.address);
+              it("invite with success", async () => {
+                await instance.connect(user2Address).invite(user4Address, userTypes.Producer);
+
+                const invitation = await userContract.invitations(user4Address);
+
+                expect(invitation.invited).to.equal(user4Address.address);
+              });
+            });
+
+            context("when is recent", () => {
+              beforeEach(async () => {
+                await instance.connect(user2Address).invite(user3Address, userTypes.Producer);
+              });
+
+              it("revert", async () => {
+                await expect(
+                  instance.connect(user2Address).invite(user4Address, userTypes.Producer)
+                ).to.be.revertedWith("Invite delay not reached");
+              });
+            });
+          });
+
+          context("when do not have a previous invitation", () => {
+            it("invite with success", async () => {
+              await instance.connect(user2Address).invite(user3Address, userTypes.Producer);
+
+              const invitation = await userContract.invitations(user3Address);
+
+              expect(invitation.invited).to.equal(user3Address.address);
+            });
           });
         });
       });
 
-      context("when developer invite", () => {
+      context("when developer send invite", () => {
         beforeEach(async () => {
           await addInvitation(owner, user2Address, userTypes.Developer, owner);
           await addUser(user2Address, userTypes.Developer, owner);
         });
 
-        context("developer", () => {
-          it("invite with success", async () => {
-            await instance.connect(user2Address).invite(user3Address, userTypes.Developer);
+        context("when send to developer", () => {
+          context("when have a previous invitation", () => {
+            context("when is not recent", () => {
+              beforeEach(async () => {
+                await instance.connect(user2Address).invite(user3Address, userTypes.Developer);
+                const blocks = await userTypeDelayBlocks(userTypes.Developer);
 
-            const invitation = await userContract.invitations(user3Address);
+                await advanceBlock(blocks);
+              });
 
-            expect(invitation.invited).to.equal(user3Address.address);
+              it("invite with success", async () => {
+                await instance.connect(user2Address).invite(user4Address, userTypes.Developer);
+
+                const invitation = await userContract.invitations(user4Address);
+
+                expect(invitation.invited).to.equal(user4Address.address);
+              });
+            });
+
+            context("when is recent", () => {
+              beforeEach(async () => {
+                await instance.connect(user2Address).invite(user3Address, userTypes.Developer);
+              });
+
+              it("revert", async () => {
+                await expect(
+                  instance.connect(user2Address).invite(user4Address, userTypes.Developer)
+                ).to.be.revertedWith("Invite delay not reached");
+              });
+            });
+          });
+
+          context("when do not have a previous invitation", () => {
+            it("invite with success", async () => {
+              await instance.connect(user2Address).invite(user3Address, userTypes.Developer);
+
+              const invitation = await userContract.invitations(user3Address);
+
+              expect(invitation.invited).to.equal(user3Address.address);
+            });
           });
         });
       });
 
-      context("when researcher invite", () => {
+      context("when researcher send invite", () => {
         beforeEach(async () => {
           await addInvitation(owner, user2Address, userTypes.Researcher, owner);
           await addUser(user2Address, userTypes.Researcher, owner);
         });
 
-        context("researcher", () => {
-          it("invite with success", async () => {
-            await instance.connect(user2Address).invite(user3Address, userTypes.Researcher);
+        context("when send to researcher", () => {
+          context("when have a previous invitation", () => {
+            context("when is not recent", () => {
+              beforeEach(async () => {
+                await instance.connect(user2Address).invite(user3Address, userTypes.Researcher);
+                const blocks = await userTypeDelayBlocks(userTypes.Researcher);
 
-            const invitation = await userContract.invitations(user3Address);
+                await advanceBlock(blocks);
+              });
 
-            expect(invitation.invited).to.equal(user3Address.address);
+              it("invite with success", async () => {
+                await instance.connect(user2Address).invite(user4Address, userTypes.Researcher);
+
+                const invitation = await userContract.invitations(user4Address);
+
+                expect(invitation.invited).to.equal(user4Address.address);
+              });
+            });
+
+            context("when is recent", () => {
+              beforeEach(async () => {
+                await instance.connect(user2Address).invite(user3Address, userTypes.Researcher);
+              });
+
+              it("revert", async () => {
+                await expect(
+                  instance.connect(user2Address).invite(user4Address, userTypes.Researcher)
+                ).to.be.revertedWith("Invite delay not reached");
+              });
+            });
+          });
+
+          context("when do not have a previous invitation", () => {
+            it("invite with success", async () => {
+              await instance.connect(user2Address).invite(user3Address, userTypes.Researcher);
+
+              const invitation = await userContract.invitations(user3Address);
+
+              expect(invitation.invited).to.equal(user3Address.address);
+            });
           });
         });
       });
 
-      context("when validator invite", () => {
+      context("when validator send invite", () => {
         beforeEach(async () => {
           await addInvitation(owner, user2Address, userTypes.Validator, owner);
           await addUser(user2Address, userTypes.Validator, owner);
         });
 
-        context("when have a previous invitation", () => {
-          context("when is not recent", () => {
-            beforeEach(async () => {
-              await instance.connect(user2Address).invite(user3Address, userTypes.Validator);
-              const blocks = await userTypeDelayBlocks(userTypes.Validator);
+        context("when send to validator", () => {
+          context("when have a previous invitation", () => {
+            context("when is not recent", () => {
+              beforeEach(async () => {
+                await instance.connect(user2Address).invite(user3Address, userTypes.Validator);
+                const blocks = await userTypeDelayBlocks(userTypes.Validator);
 
-              await advanceBlock(blocks);
+                await advanceBlock(blocks);
+              });
+
+              it("invite with success", async () => {
+                await instance.connect(user2Address).invite(user4Address, userTypes.Validator);
+
+                const invitation = await userContract.invitations(user4Address);
+
+                expect(invitation.invited).to.equal(user4Address.address);
+              });
             });
 
+            context("when is recent", () => {
+              beforeEach(async () => {
+                await instance.connect(user2Address).invite(user3Address, userTypes.Validator);
+              });
+
+              it("revert", async () => {
+                await expect(
+                  instance.connect(user2Address).invite(user4Address, userTypes.Validator)
+                ).to.be.revertedWith("Invite delay not reached");
+              });
+            });
+          });
+
+          context("when do not have a previous invitation", () => {
             it("invite with success", async () => {
-              await instance.connect(user2Address).invite(user4Address, userTypes.Validator);
-
-              const invitation = await userContract.invitations(user4Address);
-
-              expect(invitation.invited).to.equal(user4Address.address);
-            });
-          });
-
-          context("when is recent", () => {
-            beforeEach(async () => {
               await instance.connect(user2Address).invite(user3Address, userTypes.Validator);
+
+              const invitation = await userContract.invitations(user3Address);
+
+              expect(invitation.invited).to.equal(user3Address.address);
             });
-
-            it("revert", async () => {
-              await expect(instance.connect(user2Address).invite(user4Address, userTypes.Validator)).to.be.revertedWith(
-                "Invite delay not reached"
-              );
-            });
-          });
-        });
-
-        context("when do not have a previous invitation", () => {
-          it("invite with success", async () => {
-            await instance.connect(user2Address).invite(user3Address, userTypes.Validator);
-
-            const invitation = await userContract.invitations(user3Address);
-
-            expect(invitation.invited).to.equal(user3Address.address);
           });
         });
       });
 
-      context("when supporter invite", () => {
+      context("when supporter send invite", () => {
         beforeEach(async () => {
           await addInvitation(owner, user2Address, userTypes.Supporter, owner);
           await addUser(user2Address, userTypes.Supporter, owner);
         });
 
-        context("supporter", () => {
-          it("invite with success", async () => {
-            await instance.connect(user2Address).invite(user3Address, userTypes.Supporter);
+        context("when send to supporter", () => {
+          context("when have a previous invitation", () => {
+            context("when is not recent", () => {
+              beforeEach(async () => {
+                await instance.connect(user2Address).invite(user3Address, userTypes.Supporter);
+                const blocks = await userTypeDelayBlocks(userTypes.Supporter);
 
-            const invitation = await userContract.invitations(user3Address);
+                await advanceBlock(blocks);
+              });
 
-            expect(invitation.invited).to.equal(user3Address.address);
+              it("invite with success", async () => {
+                await instance.connect(user2Address).invite(user4Address, userTypes.Supporter);
+
+                const invitation = await userContract.invitations(user4Address);
+
+                expect(invitation.invited).to.equal(user4Address.address);
+              });
+            });
+
+            context("when is recent", () => {
+              beforeEach(async () => {
+                await instance.connect(user2Address).invite(user3Address, userTypes.Supporter);
+              });
+
+              it("invite with success", async () => {
+                await instance.connect(user2Address).invite(user4Address, userTypes.Supporter);
+
+                const invitation = await userContract.invitations(user4Address);
+
+                expect(invitation.invited).to.equal(user4Address.address);
+              });
+            });
+          });
+
+          context("when do not have a previous invitation", () => {
+            it("invite with success", async () => {
+              await instance.connect(user2Address).invite(user3Address, userTypes.Supporter);
+
+              const invitation = await userContract.invitations(user3Address);
+
+              expect(invitation.invited).to.equal(user3Address.address);
+            });
           });
         });
       });
@@ -197,10 +399,6 @@ describe("InvitationContract", () => {
   });
 
   describe("#onlyOwnerInvite", () => {
-    beforeEach(async () => {
-      await addUser(user1Address, userTypes.Producer, owner);
-    });
-
     context("when invite", () => {
       context("with owner", () => {
         it("invite with success", async () => {

@@ -46,7 +46,6 @@ contract InvitationContract is Ownable {
   function invitationDelayReached(UserType userType) internal view returns (bool) {
     uint256 delayBlocks = userContract.getUserTypeSettings(userType).invitationDelayBlocks;
 
-    return lastInviteBlocks[msg.sender] <= 0 ||
-      block.number - lastInviteBlocks[msg.sender] >= delayBlocks;
+    return lastInviteBlocks[msg.sender] <= 0 || block.number - lastInviteBlocks[msg.sender] >= delayBlocks;
   }
 }
