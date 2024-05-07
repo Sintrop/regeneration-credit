@@ -293,6 +293,7 @@ describe("Sintrop", () => {
 
   describe("#getInspection", () => {
     beforeEach(async () => {
+      await addInvitation(owner, producerAddress, userTypes.Producer, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
       await addProducer("Producer A", producerAddress);
@@ -322,6 +323,8 @@ describe("Sintrop", () => {
 
   describe("#getInspections", () => {
     beforeEach(async () => {
+      await addInvitation(owner, producerAddress, userTypes.Producer, owner);
+      await addInvitation(owner, producer2Address, userTypes.Producer, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
       await addProducer("Producer A", producerAddress);
@@ -358,6 +361,8 @@ describe("Sintrop", () => {
 
   describe("#requestInspection", () => {
     beforeEach(async () => {
+      await addInvitation(owner, producerAddress, userTypes.Producer, owner);
+      await addInvitation(owner, producer2Address, userTypes.Producer, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
       await addProducer("Producer A", producerAddress);
@@ -469,6 +474,7 @@ describe("Sintrop", () => {
 
   describe("#acceptInspection", () => {
     beforeEach(async () => {
+      await addInvitation(owner, producerAddress, userTypes.Producer, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
       await addProducer("Producer A", producerAddress);
@@ -543,6 +549,7 @@ describe("Sintrop", () => {
 
           context("when have accepted other inspection", () => {
             beforeEach(async () => {
+              await addInvitation(owner, producer2Address, userTypes.Producer, owner);
               await addProducer("Producer B", producer2Address);
               await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
               await acceptInspection(1, inspectorAddress);
@@ -1036,6 +1043,7 @@ describe("Sintrop", () => {
 
   describe("#addInspectionValidation", () => {
     beforeEach(async () => {
+      await addInvitation(owner, producerAddress, userTypes.Producer, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
       await addProducer("Producer A", producerAddress);

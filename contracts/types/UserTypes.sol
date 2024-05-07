@@ -34,4 +34,5 @@ struct UserTypeSetting {
   uint256 proportionalityOnRegister;
   bool directProportionalityRegistration;
   bool needInvitationOnRegister;
+  uint256 invitationDelayBlocks;
 }

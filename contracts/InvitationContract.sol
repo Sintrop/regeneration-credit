@@ -15,11 +15,8 @@ contract InvitationContract is Ownable {
 
   UserContract internal userContract;
 
-  uint256 public immutable inviteDelayBlocks;
-
-  constructor(address userContractAddress, uint256 _inviteDelayBlocks) {
+  constructor(address userContractAddress) {
     userContract = UserContract(userContractAddress);
-    inviteDelayBlocks = _inviteDelayBlocks;
 
     canBeInviteds[UserType.ACTIVIST] = UserType.ACTIVIST;
     canBeInviteds[UserType.INSPECTOR] = UserType.ACTIVIST;
@@ -28,11 +25,14 @@ contract InvitationContract is Ownable {
     canBeInviteds[UserType.RESEARCHER] = UserType.RESEARCHER;
     canBeInviteds[UserType.SUPPORTER] = UserType.SUPPORTER;
     canBeInviteds[UserType.CONTRIBUTOR] = UserType.CONTRIBUTOR;
+    canBeInviteds[UserType.VALIDATOR] = UserType.VALIDATOR;
   }
 
   function invite(address invited, UserType userType) public {
-    require(invitationDelayReached(), "Invite delay not reached");
-    require(canBeInviteds[userType] == userContract.getUser(msg.sender), "can't invite this type");
+    UserType msgSenderUserType = userContract.getUser(msg.sender);
+
+    require(invitationDelayReached(msgSenderUserType), "Invite delay not reached");
+    require(canBeInviteds[userType] == msgSenderUserType, "can't invite this type");
 
     lastInviteBlocks[msg.sender] = block.number;
 
@@ -43,7 +43,9 @@ contract InvitationContract is Ownable {
     userContract.addInvitation(msg.sender, invited, userType);
   }
 
-  function invitationDelayReached() internal view returns (bool) {
-    return lastInviteBlocks[msg.sender] <= 0 || block.number - lastInviteBlocks[msg.sender] >= inviteDelayBlocks;
+  function invitationDelayReached(UserType userType) internal view returns (bool) {
+    uint256 delayBlocks = userContract.getUserTypeSettings(userType).invitationDelayBlocks;
+
+    return lastInviteBlocks[msg.sender] <= 0 || block.number - lastInviteBlocks[msg.sender] >= delayBlocks;
   }
 }

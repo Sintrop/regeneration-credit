@@ -253,6 +253,7 @@ describe("ValidatorContract", () => {
 
           context("with producer", () => {
             beforeEach(async () => {
+              await addInvitation(owner, producer1Address, userTypes.Producer, owner);
               await addProducer("Producer A", producer1Address);
 
               await instance.connect(validator1Address).addUserValidation(producer1Address, "my justification");
@@ -396,6 +397,7 @@ describe("ValidatorContract", () => {
                 invalidatedAt: 0,
               };
 
+              await addInvitation(owner, producer1Address, userTypes.Producer, owner);
               await addProducer("Producer A", producer1Address);
 
               await inspectorContract.incrementInspections(inspectionMock.acceptedBy);
@@ -456,6 +458,7 @@ describe("ValidatorContract", () => {
                 invalidatedAt: 0,
               };
 
+              await addInvitation(owner, producer1Address, userTypes.Producer, owner);
               await addProducer("Producer A", producer1Address);
 
               await inspectorContract.incrementInspections(inspectionMock.acceptedBy);

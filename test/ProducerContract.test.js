@@ -1,6 +1,7 @@
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
 const { advanceBlock } = require("./shared/advance_block");
+const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 
 describe("ProducerContract", () => {
@@ -8,10 +9,14 @@ describe("ProducerContract", () => {
   let rcToken;
   let userContract;
   let producerPool;
-  let ownerAddress, prod1Address, prod2Address;
+  let owner, prod1Address, prod2Address;
 
   const addProducer = async (name, from) => {
     await instance.connect(from).addProducer(10, name, "photoURL", "135465-005");
+  };
+
+  const addInvitation = async (inviter, invited, userType, from) => {
+    await userContract.connect(from).addInvitation(inviter, invited, userType);
   };
 
   const producerPoolArgs = {
@@ -22,7 +27,7 @@ describe("ProducerContract", () => {
   };
 
   beforeEach(async () => {
-    [ownerAddress, prod1Address, prod2Address] = await ethers.getSigners();
+    [owner, prod1Address, prod2Address] = await ethers.getSigners();
 
     rcToken = await rcTokenDeployed();
 
@@ -43,8 +48,12 @@ describe("ProducerContract", () => {
 
     await rcToken.addContractPool(producerPool.target, producerPoolArgs.totalTokens);
     await userContract.newAllowedCaller(instance.target);
-    await instance.newAllowedCaller(ownerAddress);
+    await userContract.newAllowedCaller(owner);
+    await instance.newAllowedCaller(owner);
     await producerPool.newAllowedCaller(instance.target);
+
+    await addInvitation(owner, prod1Address, userTypes.Producer, owner);
+    await addInvitation(owner, prod2Address, userTypes.Producer, owner);
   });
 
   context("when access producer fields", () => {

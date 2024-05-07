@@ -4,13 +4,10 @@ const getDeployedContract = require("../scripts/shared/getDeployedContract");
 async function invitationContractDeploy() {
   const userContract = await getDeployedContract("UserContract");
 
-  const invitationDelayBlocks = process.env["INVITATION_DELAY_BLOCKS"];
-
   const InvitationContract = await ethers.getContractFactory("InvitationContract");
 
   const invitationContract = await InvitationContract.deploy(
-    userContract.target,
-    invitationDelayBlocks
+    userContract.target
   );
 
   saveContractAddress("InvitationContract", invitationContract.target);
