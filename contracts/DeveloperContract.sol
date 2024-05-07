@@ -13,13 +13,16 @@ import { Developer, Pool, Contribution } from "./types/DeveloperTypes.sol";
  */
 contract DeveloperContract is Ownable {
   mapping(address => Developer) public developers;
-  mapping(uint256 => mapping(address => Contribution)) public contributions;
+  mapping(uint256 => mapping(address => uint256)) public developerContributionsEra;
+  mapping(uint256 => Contribution) public contributions;
 
   UserContract internal userContract;
   DeveloperPool internal developerPool;
 
   address[] internal developersAddress;
   uint256 public developersCount;
+  uint256 public contributionsCount;
+  uint256 public immutable maxPenalties = 3;
 
   constructor(address userContractAddress, address developerPoolAddress) {
     userContract = UserContract(userContractAddress);
@@ -53,15 +56,21 @@ contract DeveloperContract is Ownable {
 
   function addContribution(string memory report) public {
     uint256 currentEra = developerPoolEra();
-    Contribution memory contribution = contributions[currentEra][msg.sender];
+    uint256 contributionEra = developerContributionsEra[currentEra][msg.sender];
 
     require(userContract.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
-    require(!contribution.contributed, "Already has contribution");
+    require(contributionEra > 0, "Already has contribution");
 
-    contributions[developerPoolEra()][msg.sender] = Contribution(
+    contributionsCount++;
+    uint256 id = contributionsCount;
+
+    contributions[id] = Contribution(
+      id,
       currentEra,
+      msg.sender,
       developers[msg.sender].pool.level,
       report,
+      0,
       true,
       block.number
     );

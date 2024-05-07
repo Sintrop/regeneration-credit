@@ -543,6 +543,187 @@ describe("ValidatorContract", () => {
     });
   });
 
+  describe("#addDeveloperContributionValidation", () => {
+    context("with allowed caller", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator3Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator4Address, userTypes.Validator, owner);
+
+        await addValidator(validator1Address);
+        await addValidator(validator2Address);
+        await addValidator(validator3Address);
+        await addValidator(validator4Address);
+      });
+
+      context("when validator already voted to contribution", () => {
+        beforeEach(async () => {
+          contributionMock = {
+            id: 1,
+            era: 1,
+            developer: developer1Address,
+            level: 1,
+            report: "Report",
+            validationsCount: 1,
+            contributed: true,
+            createdAtBlockNumber: 100
+
+          };
+
+          await instance.connect(owner).addDeveloperContributionValidation(contributionMock, "justification", validator1Address);
+        });
+
+        it("should return error", async () => {
+          expect(
+            instance.connect(owner).addDeveloperContributionValidation(contributionMock, "justification", validator1Address)
+          ).to.be.revertedWith("Already voted");
+        });
+      });
+
+      context("when validator did not vote to contribution", () => {
+        context("when contribution validations is => majorityValidatorsCount (addPenalty == true)", () => {
+          context("when developer total penalties is >= developerContract.maxPenalties", () => {
+            beforeEach(async () => {
+              contributionMock = {
+                id: 1,
+                era: 1,
+                developer: developer1Address,
+                level: 1,
+                report: "Report",
+                validationsCount: 1,
+                contributed: true,
+                createdAtBlockNumber: 100
+              };
+
+              await addInvitation(owner, developer1Address, userTypes.Developer, owner);
+              await addDeveloper("Developer A", developer1Address);
+
+              await developerContract.addPenalty(contributionMock.developer, 2);
+              await instance.connect(owner).addDeveloperContributionValidation(contributionMock, "foo", validator1Address);
+            });
+
+            it.only("deny developer", async () => {
+              const newDeveloperType = await userContract.getUser(contributionMock.developer);
+
+              expect(newDeveloperType).to.equal(9);
+            });
+
+            it("remove 1 level from developer", async () => {
+              const producer = await producerContract.getProducer(developer1Address);
+
+              expect(producer.isa.isaScore).to.equal(0);
+            });
+
+            it("remove 1 level from developer pool", async () => {
+              const levels = await producerPool.eraLevels(3, developer1Address);
+
+              expect(levels).to.equal(0);
+            });
+          });
+
+          context("when inspectorTotal penalties is < inspectorContract.maxPenalties", () => {
+            beforeEach(async () => {
+              inspectionMock = {
+                id: 1,
+                status: 3,
+                createdBy: producer1Address,
+                acceptedBy: inspector1Address,
+                isaScore: 20,
+                report: "",
+                validationsCount: 2,
+                createdAt: 100,
+                acceptedAt: 100,
+                inspectedAtEra: 10,
+                invalidatedAt: 0,
+              };
+
+              await addProducer("Producer A", producer1Address);
+
+              await inspectorContract.incrementInspections(inspectionMock.acceptedBy);
+              await producerContract.incrementInspections(inspectionMock.createdBy);
+              await producerContract.incrementInspections(inspectionMock.createdBy);
+              await producerContract.incrementInspections(inspectionMock.createdBy);
+
+              await producerContract.setIsaScore(inspectionMock.createdBy, 20);
+
+              await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", validator1Address);
+            });
+
+            it("inspector is the same", async () => {
+              const newInspectorType = await userContract.getUser(inspectionMock.acceptedBy);
+
+              expect(newInspectorType).to.equal(0);
+            });
+
+            it("decrement total inspections of inspector", async () => {
+              const inspector = await inspectorContract.getInspector(inspector1Address);
+
+              expect(inspector.totalInspections).to.equal(0);
+            });
+
+            it("decrement total inspections of producer", async () => {
+              const producer = await producerContract.getProducer(producer1Address);
+
+              expect(producer.totalInspections).to.equal(2);
+            });
+
+            it("remove inspection isa level from producer isaScore", async () => {
+              const producer = await producerContract.getProducer(producer1Address);
+
+              expect(producer.isa.isaScore).to.equal(0);
+            });
+
+            it("remove inspection isa level from producer pool", async () => {
+              const levels = await producerPool.eraLevels(3, producer1Address);
+
+              expect(levels).to.equal(0);
+            });
+          });
+        });
+
+        context("when inspection validations is < majorityValidatorsCount (addPenalty == false)", () => {
+          beforeEach(async () => {
+            inspectionMock = {
+              id: 1,
+              status: 3,
+              createdBy: producer1Address,
+              acceptedBy: inspector1Address,
+              isaScore: 20,
+              report: "",
+              validationsCount: 1,
+              createdAt: 100,
+              acceptedAt: 100,
+              inspectedAtEra: 10,
+              invalidatedAt: 0,
+            };
+
+            await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", validator1Address);
+          });
+
+          it("add inspection validation", async () => {
+            const validations = await instance.getInspectionValidations(1);
+            const validation = validations[0];
+
+            expect(validations.length).to.equal(1);
+            expect(validation.validator).to.equal(validator1Address.address);
+            expect(validation.user).to.equal(inspectionMock.acceptedBy.address);
+            expect(validation.resourceId).to.equal(1);
+            expect(validation.justification).to.equal("foo");
+            expect(validation.majorityValidatorsCount).to.equal(2);
+          });
+        });
+      });
+    });
+
+    context("without allowed caller", () => {
+      it("should return error", async () => {
+        expect(
+          instance.connect(owner).addInspectionValidation(1, "justification", validator1Address)
+        ).to.be.revertedWith("Not allowed caller");
+      });
+    });
+  });
+
   describe("#getValidator", () => {
     context("when validator exists", () => {
       beforeEach(async () => {

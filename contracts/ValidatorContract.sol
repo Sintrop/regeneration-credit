@@ -3,18 +3,22 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
 import { ProducerContract } from "./ProducerContract.sol";
-import { Validator, Validation, Pool } from "./types/ValidatorTypes.sol";
+import { Validator, Validation, ResourceType, Pool } from "./types/ValidatorTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { Callable } from "./Callable.sol";
 import { ValidatorPool } from "./ValidatorPool.sol";
 import { InspectorContract } from "./InspectorContract.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
+import { Contribution } from "./types/DeveloperTypes.sol";
+import "hardhat/console.sol";
 
 contract ValidatorContract is Callable {
   mapping(address => Validator) internal validators;
   mapping(address => Validation[]) private userValidations;
   mapping(uint256 => Validation[]) public inspectionValidations;
-  mapping(address => mapping(uint256 => bool)) internal validatorValidations;
+  mapping(uint256 => Validation[]) public contributionValidations;
+  mapping(address => mapping(uint256 => bool)) internal validatorInspectionsValidations;
+  mapping(address => mapping(uint256 => bool)) internal validatorContributionsValidations;
 
   UserContract internal userContract;
   ProducerContract internal producerContract;
@@ -69,9 +73,9 @@ contract ValidatorContract is Callable {
     string memory justification,
     address validatorAddress
   ) public mustBeAllowedCaller {
-    require(!validatorValidations[validatorAddress][inspection.id], "Already voted");
+    require(!validatorInspectionsValidations[validatorAddress][inspection.id], "Already voted");
 
-    validatorValidations[validatorAddress][inspection.id] = true;
+    validatorInspectionsValidations[validatorAddress][inspection.id] = true;
 
     uint256 majorityValidatorsCount_ = majorityValidatorsCount();
 
@@ -94,6 +98,39 @@ contract ValidatorContract is Callable {
     removeUserInspection(inspection);
 
     if (inspectorTotalPenalties >= inspectorContract.maxPenalties()) externalDenieUser(inspection.acceptedBy);
+  }
+
+  function addDeveloperContributionValidation(
+    Contribution memory contribution,
+    string memory justification,
+    address validatorAddress
+  ) public mustBeAllowedCaller {
+    require(!validatorContributionsValidations[validatorAddress][contribution.id], "Already voted");
+
+    console.log("OK");
+    validatorContributionsValidations[validatorAddress][contribution.id] = true;
+
+    uint256 majorityValidatorsCount_ = majorityValidatorsCount();
+
+    bool addPenalty = contribution.validationsCount >= majorityValidatorsCount_;
+
+    contributionValidations[contribution.id].push(
+      Validation(
+        validatorAddress,
+        contribution.developer,
+        contribution.id,
+        justification,
+        majorityValidatorsCount_,
+        block.number
+      )
+    );
+
+    if (!addPenalty) return;
+
+    // uint256 developerTotalPenalties = developerContract.addPenalty(contribution.developer, contribution.id);
+    // // removeDeveloperContribution(contribution);
+
+    // if (developerTotalPenalties >= developerContract.maxPenalties()) externalDenieUser(contribution.developer);
   }
 
   function removeUserInspection(Inspection memory inspection) internal {

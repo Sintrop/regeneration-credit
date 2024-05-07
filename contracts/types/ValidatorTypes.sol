@@ -3,6 +3,13 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserType } from "./UserTypes.sol";
 
+enum ResourceType {
+  INSPECTION,
+  DEVELOPER_CONTRIBUTION,
+  RESEARCHER_WORKER
+}
+
+
 struct Validator {
   uint256 id;
   address validatorWallet;

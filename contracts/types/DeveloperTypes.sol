@@ -19,9 +19,12 @@ struct Pool {
 }
 
 struct Contribution {
+  uint256 id;
   uint256 era;
+  address developer;
   uint256 level;
   string report;
+  uint256 validationsCount;
   bool contributed;
   uint256 createdAtBlockNumber;
 }
