@@ -5,19 +5,20 @@ describe("CategoryContract", () => {
   let owner, user1Address;
 
   const addCategory = async (name, from) => {
-    const params = {
-      name: name,
-      description: `The description of ${name}`,
-      regenerative3: `${name} regenerative 3`,
-      regenerative2: `${name} regenerative 2`,
-      regenerative1: `${name} regenerative 1`,
-      neutro: `${name} neutro`,
-      notRegenerative1: `${name} notRegenerative 1`,
-      notRegenerative2: `${name} notRegenerative 2`,
-      notRegenerative3: `${name} notRegenerative 3`,
-    };
+    const description = `The description of ${name}`;
 
-    await instance.connect(from).addCategory(params);
+    const isaDescriptions = [
+      {
+        isaId: 1,
+        description: "Description for isaId 1 to category",
+      },
+      {
+        isaId: 2,
+        description: "Description for isaId 2 to category",
+      },
+    ];
+
+    await instance.connect(from).addCategory(name, description, isaDescriptions);
   };
 
   beforeEach(async () => {
@@ -41,7 +42,7 @@ describe("CategoryContract", () => {
         await addCategory(name, owner);
         const categories = await instance.getCategories();
 
-        expect(categories[0].isasDescription.name).to.equal("Soil");
+        expect(categories[0].name).to.equal("Soil");
       });
 
       it("should increment id of category when created", async () => {
@@ -60,6 +61,18 @@ describe("CategoryContract", () => {
 
         expect(categoryCounts).to.equal(2);
       });
+
+      it("should insert isa descriptions", async () => {
+        await addCategory("Soil", owner);
+        const isaDescriptions = await instance.getCategoryIsaDescription(1);
+
+        const expected = [
+          [1n, "Description for isaId 1 to category"],
+          [2n, "Description for isaId 2 to category"],
+        ];
+
+        expect(isaDescriptions).deep.to.equal(expected);
+      });
     });
   });
 
@@ -70,15 +83,8 @@ describe("CategoryContract", () => {
       const category = await instance.categories(1);
 
       expect(category.id).to.equal(1);
-      expect(category.isasDescription.name).to.equal("Soil");
-      expect(category.isasDescription.description).to.equal(`The description of ${name}`);
-      expect(category.isasDescription.regenerative3).to.equal(`${name} regenerative 3`);
-      expect(category.isasDescription.regenerative2).to.equal(`${name} regenerative 2`);
-      expect(category.isasDescription.regenerative1).to.equal(`${name} regenerative 1`);
-      expect(category.isasDescription.neutro).to.equal(`${name} neutro`);
-      expect(category.isasDescription.notRegenerative1).to.equal(`${name} notRegenerative 1`);
-      expect(category.isasDescription.notRegenerative2).to.equal(`${name} notRegenerative 2`);
-      expect(category.isasDescription.notRegenerative3).to.equal(`${name} notRegenerative 3`);
+      expect(category.name).to.equal("Soil");
+      expect(category.description).to.equal(`The description of ${name}`);
     });
   });
 
@@ -106,21 +112,59 @@ describe("CategoryContract", () => {
         await instance.newAllowedCaller(owner);
       });
 
-      const isasPayload = [
-        {
-          categoryId: 1,
-          isaIndex: 0,
-          indicator: 1,
-        },
-      ];
+      context("when category and isa exists", () => {
+        beforeEach(async () => {
+          await addCategory("Soil", owner);
+        });
 
-      it("calculate isaScore to isaIndex 0", async () => {
-        await instance.calculateIsa(1, isasPayload);
-        const isas = await instance.getIsa(1);
+        const isasPayload = [
+          {
+            categoryId: 1,
+            isaId: 1,
+            indicator: 1,
+          },
+        ];
 
-        const expectedIsas = [[1n, 0n, 1n]];
+        it("calculate isaScore", async () => {
+          await instance.calculateIsa(1, isasPayload);
+          const isas = await instance.getIsa(1);
 
-        expect(isas.join("")).to.equal(expectedIsas.join(""));
+          const expectedIsas = [[1n, 1n, 1n]];
+
+          expect(isas.join("")).to.equal(expectedIsas.join(""));
+        });
+      });
+
+      context("when category do not exists", () => {
+        const isasPayload = [
+          {
+            categoryId: 1,
+            isaId: 1,
+            indicator: 1,
+          },
+        ];
+
+        it("returns error message", async () => {
+          await expect(instance.calculateIsa(1, isasPayload)).to.be.revertedWith("Category or Isa do not exists");
+        });
+      });
+
+      context("when isa do not exists", () => {
+        beforeEach(async () => {
+          await addCategory("Soil", owner);
+        });
+
+        const isasPayload = [
+          {
+            categoryId: 1,
+            isaId: 100,
+            indicator: 1,
+          },
+        ];
+
+        it("returns error message", async () => {
+          await expect(instance.calculateIsa(1, isasPayload)).to.be.revertedWith("Category or Isa do not exists");
+        });
       });
     });
 

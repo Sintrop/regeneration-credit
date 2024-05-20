@@ -114,36 +114,37 @@ describe("Sintrop", () => {
   };
 
   const addCategory = async (name, from) => {
-    const params = {
-      name: name,
-      description: `The description of ${name}`,
-      regenerative3: `${name} regenerative 3`,
-      regenerative2: `${name} regenerative 2`,
-      regenerative1: `${name} regenerative 1`,
-      neutro: `${name} neutro`,
-      notRegenerative1: `${name} notRegenerative 1`,
-      notRegenerative2: `${name} notRegenerative 2`,
-      notRegenerative3: `${name} notRegenerative 3`,
-    };
+    const description = `The description of ${name}`;
 
-    await categoryContract.connect(from).addCategory(params);
+    const isaDescriptions = [
+      {
+        isaId: 1,
+        description: "Description for isaId 1 to category",
+      },
+      {
+        isaId: 2,
+        description: "Description for isaId 2 to category",
+      },
+    ];
+
+    await categoryContract.connect(from).addCategory(name, description, isaDescriptions);
   };
 
   const isas = () => {
     return [
       {
         categoryId: 1,
-        isaIndex: 0,
+        isaId: 1,
         indicator: 10,
       },
       {
         categoryId: 2,
-        isaIndex: 0,
+        isaId: 1,
         indicator: 10,
       },
       {
         categoryId: 3,
-        isaIndex: 1,
+        isaId: 2,
         indicator: 10,
       },
     ];
@@ -398,7 +399,7 @@ describe("Sintrop", () => {
             const isas = [
               {
                 categoryId: 1,
-                isaIndex: 0,
+                isaId: 1,
                 indicator: 10,
               },
             ];
@@ -799,9 +800,9 @@ describe("Sintrop", () => {
                 it("should update inspection isas", async () => {
                   const isasResponse = await categoryContract.getIsa(1);
                   const isas_ = [
-                    [1n, 0n, 10n],
-                    [2n, 0n, 10n],
-                    [3n, 1n, 10n],
+                    [1n, 1n, 10n],
+                    [2n, 1n, 10n],
+                    [3n, 2n, 10n],
                   ];
 
                   expect(isasResponse.join("")).to.equals(isas_.join(""));
@@ -851,8 +852,7 @@ describe("Sintrop", () => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaIndex: 0,
-                        report: "REGENERATIVE_3",
+                        isaId: 1,
                         indicator: 25,
                       },
                     ];
@@ -872,8 +872,7 @@ describe("Sintrop", () => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaIndex: 1,
-                        report: "REGENERATIVE_2",
+                        isaId: 2,
                         indicator: 10,
                       },
                     ];
@@ -893,7 +892,7 @@ describe("Sintrop", () => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaIndex: 2,
+                        isaId: 3,
                         report: "REGENERATIVE_1",
                         indicator: 1,
                       },
@@ -914,8 +913,7 @@ describe("Sintrop", () => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaIndex: 3,
-                        report: "NEUTRO",
+                        isaId: 4,
                         indicator: 0,
                       },
                     ];
@@ -935,8 +933,7 @@ describe("Sintrop", () => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaIndex: 4,
-                        report: "NOT_REGENERATIVE1",
+                        isaId: 5,
                         indicator: -1,
                       },
                     ];
@@ -956,8 +953,7 @@ describe("Sintrop", () => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaIndex: 5,
-                        report: "NOT_REGENERATIVE2",
+                        isaId: 6,
                         indicator: -10,
                       },
                     ];
@@ -977,7 +973,7 @@ describe("Sintrop", () => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaIndex: 6,
+                        isaId: 7,
                         report: "NOT_REGENERATIVE3",
                         indicator: -25,
                       },
@@ -1065,6 +1061,10 @@ describe("Sintrop", () => {
 
       context("with valid inspection", () => {
         beforeEach(async () => {
+          await addCategory("Soil A", owner);
+          await addCategory("Soil B", owner);
+          await addCategory("Soil C", owner);
+
           await requestInspection(producerAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(1, inspectorAddress);
