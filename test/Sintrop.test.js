@@ -163,8 +163,8 @@ describe("Sintrop", () => {
     await instance.connect(from).realizeInspection(id, report, isas_);
   };
 
-  const firstLimit = 8;
-  const secondLimit = 14;
+  const firstValidatorLimit = 8;
+  const secondValidatorLimit = 14;
 
   beforeEach(async () => {
     [
@@ -253,8 +253,8 @@ describe("Sintrop", () => {
       producerContract.target,
       validatorPool.target,
       inspectorContract.target,
-      firstLimit,
-      secondLimit
+      firstValidatorLimit,
+      secondValidatorLimit
     );
 
     const instanceFactory = await ethers.getContractFactory("Sintrop");

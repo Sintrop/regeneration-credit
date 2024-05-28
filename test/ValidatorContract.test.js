@@ -74,8 +74,8 @@ describe("ValidatorContract", () => {
     await userContract.setDeniedType(userAddress);
   };
 
-  const firstLimit = 8;
-  const secondLimit = 14;
+  const firstValidatorLimit = 8;
+  const secondValidatorLimit = 14;
 
   beforeEach(async () => {
     [
@@ -140,8 +140,8 @@ describe("ValidatorContract", () => {
       producerContract.target,
       validatorPool.target,
       inspectorContract.target,
-      firstLimit,
-      secondLimit
+      firstValidatorLimit,
+      secondValidatorLimit
     );
 
     await userContract.newAllowedCaller(instance.target);
