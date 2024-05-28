@@ -847,7 +847,7 @@ describe("Sintrop", () => {
               });
 
               context("when check inspection isas", () => {
-                context("when select REGENERATIVE_3", () => {
+                context("when select REGENERATIVE_6", () => {
                   beforeEach(async () => {
                     const isas = [
                       {
@@ -867,7 +867,7 @@ describe("Sintrop", () => {
                   });
                 });
 
-                context("when select REGENERATIVE_2", () => {
+                context("when select REGENERATIVE_5", () => {
                   beforeEach(async () => {
                     const isas = [
                       {
@@ -880,10 +880,71 @@ describe("Sintrop", () => {
                     await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
-                  it("should add 10 isaScore to inspection", async () => {
+                  it("should add 16 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    expect(inspection.isaScore).to.equal(10);
+                    expect(inspection.isaScore).to.equal(16);
+                  });
+                });
+
+                context("when select REGENERATIVE_4", () => {
+                  beforeEach(async () => {
+                    const isas = [
+                      {
+                        categoryId: 1,
+                        isaId: 3,
+                        report: "REGENERATIVE_1",
+                        indicator: 1,
+                      },
+                    ];
+
+                    await realizeInspection(1, report, isas, inspectorAddress);
+                  });
+
+                  it("should add 8 isaScore to inspection", async () => {
+                    const inspection = await instance.getInspection(1);
+
+                    expect(inspection.isaScore).to.equal(8);
+                  });
+                });
+
+                context("when select REGENERATIVE_3", () => {
+                  beforeEach(async () => {
+                    const isas = [
+                      {
+                        categoryId: 1,
+                        isaId: 4,
+                        indicator: 25,
+                      },
+                    ];
+
+                    await realizeInspection(1, report, isas, inspectorAddress);
+                  });
+
+                  it("should add 4 isaScore to inspection", async () => {
+                    const inspection = await instance.getInspection(1);
+
+                    expect(inspection.isaScore).to.equal(4);
+                  });
+                });
+
+                context("when select REGENERATIVE_2", () => {
+                  beforeEach(async () => {
+                    const isas = [
+                      {
+                        categoryId: 1,
+                        isaId: 5,
+                        indicator: 10,
+                      },
+                    ];
+
+                    await realizeInspection(1, report, isas, inspectorAddress);
+                  });
+
+                  it("should add 2 isaScore to inspection", async () => {
+                    const inspection = await instance.getInspection(1);
+
+                    expect(inspection.isaScore).to.equal(2);
                   });
                 });
 
@@ -892,7 +953,7 @@ describe("Sintrop", () => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaId: 3,
+                        isaId: 6,
                         report: "REGENERATIVE_1",
                         indicator: 1,
                       },
@@ -913,7 +974,7 @@ describe("Sintrop", () => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaId: 4,
+                        isaId: 7,
                         indicator: 0,
                       },
                     ];
@@ -928,12 +989,12 @@ describe("Sintrop", () => {
                   });
                 });
 
-                context("when select NOT_REGENERATIVE1", () => {
+                context("when select NOT_REGENERATIVE_1", () => {
                   beforeEach(async () => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaId: 5,
+                        isaId: 8,
                         indicator: -1,
                       },
                     ];
@@ -948,12 +1009,12 @@ describe("Sintrop", () => {
                   });
                 });
 
-                context("when select NOT_REGENERATIVE2", () => {
+                context("when select NOT_REGENERATIVE_2", () => {
                   beforeEach(async () => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaId: 6,
+                        isaId: 9,
                         indicator: -10,
                       },
                     ];
@@ -961,20 +1022,79 @@ describe("Sintrop", () => {
                     await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
-                  it("should add -10 isaScore to inspection", async () => {
+                  it("should add -2 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    expect(inspection.isaScore).to.equal(-10);
+                    expect(inspection.isaScore).to.equal(-2);
                   });
                 });
 
-                context("when select NOT_REGENERATIVE3", () => {
+                context("when select NOT_REGENERATIVE_3", () => {
                   beforeEach(async () => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaId: 7,
-                        report: "NOT_REGENERATIVE3",
+                        isaId: 10,
+                        indicator: -25,
+                      },
+                    ];
+
+                    await realizeInspection(1, report, isas, inspectorAddress);
+                  });
+
+                  it("should add -4 isaScore to inspection", async () => {
+                    const inspection = await instance.getInspection(1);
+
+                    expect(inspection.isaScore).to.equal(-4);
+                  });
+                });
+
+                context("when select NOT_REGENERATIVE_4", () => {
+                  beforeEach(async () => {
+                    const isas = [
+                      {
+                        categoryId: 1,
+                        isaId: 11,
+                        indicator: -25,
+                      },
+                    ];
+
+                    await realizeInspection(1, report, isas, inspectorAddress);
+                  });
+
+                  it("should add -8 isaScore to inspection", async () => {
+                    const inspection = await instance.getInspection(1);
+
+                    expect(inspection.isaScore).to.equal(-8);
+                  });
+                });
+
+                context("when select NOT_REGENERATIVE_5", () => {
+                  beforeEach(async () => {
+                    const isas = [
+                      {
+                        categoryId: 1,
+                        isaId: 12,
+                        indicator: -25,
+                      },
+                    ];
+
+                    await realizeInspection(1, report, isas, inspectorAddress);
+                  });
+
+                  it("should add -16 isaScore to inspection", async () => {
+                    const inspection = await instance.getInspection(1);
+
+                    expect(inspection.isaScore).to.equal(-16);
+                  });
+                });
+
+                context("when select NOT_REGENERATIVE_6", () => {
+                  beforeEach(async () => {
+                    const isas = [
+                      {
+                        categoryId: 1,
+                        isaId: 13,
                         indicator: -25,
                       },
                     ];
