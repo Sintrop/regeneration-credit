@@ -22,17 +22,23 @@ contract ValidatorContract is Callable {
   InspectorContract internal inspectorContract;
   address[] internal validatorsAddress;
   uint256 public validatorsCount;
+  uint256 internal firstValidatorLimit;
+  uint256 internal secondValidatorLimit;
 
   constructor(
     address userContractAddress,
     address producerContractAddress,
     address validatorPoolAddress,
-    address inspectorContractAddress
+    address inspectorContractAddress,
+    uint256 firstValidatorLimit_,
+    uint256 secondValidatorLimit_
   ) {
     userContract = UserContract(userContractAddress);
     producerContract = ProducerContract(producerContractAddress);
     validatorPool = ValidatorPool(validatorPoolAddress);
     inspectorContract = InspectorContract(inspectorContractAddress);
+    firstValidatorLimit = firstValidatorLimit_;
+    secondValidatorLimit = secondValidatorLimit_;
   }
 
   function addValidator() public {
@@ -157,7 +163,12 @@ contract ValidatorContract is Callable {
   }
 
   function majorityValidatorsCount() public view returns (uint256) {
-    return validatorsCount / 2;
+    uint256 _validatorsCount = validatorsCount;
+
+    if (_validatorsCount <= firstValidatorLimit) return _validatorsCount / 2;
+    if (_validatorsCount <= secondValidatorLimit) return _validatorsCount / 4;
+
+    return _validatorsCount / 8;
   }
 
   function addLevel() public {
