@@ -3,12 +3,13 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
 import { Activist, Pool } from "./types/ActivistTypes.sol";
-import { UserType } from "./types/UserTypes.sol";
+import { UserType, Invitation } from "./types/UserTypes.sol";
 import { ActivistPool } from "./ActivistPool.sol";
 import { Callable } from "./Callable.sol";
 
 contract ActivistContract is Callable {
   mapping(address => Activist) internal activists;
+  mapping(address => mapping(address => bool)) internal activistWonLevel;
 
   UserContract internal userContract;
   address[] internal activistsAddress;
@@ -65,7 +66,7 @@ contract ActivistContract is Callable {
     return activists[addr];
   }
 
-  function addLevel(address activistAddress) public mustBeAllowedCaller {
+  function setActivistLevel(address activistAddress) internal {
     if (!activistExists(activistAddress)) return;
 
     Activist memory activist = activists[activistAddress];
@@ -73,6 +74,36 @@ contract ActivistContract is Callable {
     activists[activistAddress] = activist;
 
     activistPool.addLevel(activistAddress, 1, 1);
+  }
+
+  function addLevel(
+    address producerAddress,
+    uint256 producerTotalInspections,
+    address inspectorAddress,
+    uint256 inspectorTotalInspections
+  ) external mustBeAllowedCaller {
+    Invitation memory producerInvitation = userContract.getInvitation(producerAddress);
+    Invitation memory inspectorInvitation = userContract.getInvitation(inspectorAddress);
+
+    uint256 minimumInspectionWonLevel = 3;
+
+    if (
+      producerInvitation.createdAtBlock > 0 &&
+      producerTotalInspections == minimumInspectionWonLevel &&
+      !activistWonLevel[producerInvitation.inviter][producerAddress]
+    ) {
+      activistWonLevel[producerInvitation.inviter][producerAddress] = true;
+      setActivistLevel(producerInvitation.inviter);
+    }
+
+    if (
+      inspectorInvitation.createdAtBlock > 0 &&
+      inspectorTotalInspections == minimumInspectionWonLevel &&
+      !activistWonLevel[inspectorInvitation.inviter][inspectorAddress]
+    ) {
+      activistWonLevel[inspectorInvitation.inviter][inspectorAddress] = true;
+      setActivistLevel(inspectorInvitation.inviter);
+    }
   }
 
   function withdraw() public {

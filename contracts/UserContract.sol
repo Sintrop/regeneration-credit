@@ -26,12 +26,13 @@ contract UserContract is Ownable, Callable {
     uint256 developerProportionality,
     uint256 validatorProportionality
   ) {
-    userTypeSettings[UserType.ADVISOR] = UserTypeSetting(0, false, true);
-    userTypeSettings[UserType.INSPECTOR] = UserTypeSetting(inspectorProportionality, true, true);
-    userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(activistProportionality, false, true);
-    userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(researcherProportionality, false, true);
-    userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(developerProportionality, false, true);
-    userTypeSettings[UserType.VALIDATOR] = UserTypeSetting(validatorProportionality, false, true);
+    userTypeSettings[UserType.PRODUCER] = UserTypeSetting(0, false, true, 100);
+    userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(0, false, true, 100);
+    userTypeSettings[UserType.INSPECTOR] = UserTypeSetting(inspectorProportionality, true, true, 100);
+    userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(activistProportionality, false, true, 1000);
+    userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(researcherProportionality, false, true, 1000);
+    userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(developerProportionality, false, true, 1000);
+    userTypeSettings[UserType.VALIDATOR] = UserTypeSetting(validatorProportionality, false, true, 10000);
   }
 
   /**
@@ -59,10 +60,7 @@ contract UserContract is Ownable, Callable {
   }
 
   function registrationProportionalityAllowed(UserType userType) internal view returns (bool) {
-    UserType producerType = UserType.PRODUCER;
-    if (userType == producerType) return true;
-
-    uint256 producersCount = userTypesCount[producerType];
+    uint256 producersCount = userTypesCount[UserType.PRODUCER];
     uint256 registeredUserTypeCount = userTypesCount[userType];
     UserTypeSetting memory setting = userTypeSettings[userType];
     uint256 proportionality = setting.proportionalityOnRegister;
@@ -75,6 +73,10 @@ contract UserContract is Ownable, Callable {
 
   function getUser(address addr) public view returns (UserType) {
     return users[addr];
+  }
+
+  function getUserTypeSettings(UserType userType) public view returns (UserTypeSetting memory) {
+    return userTypeSettings[userType];
   }
 
   function userTypes()
@@ -99,7 +101,7 @@ contract UserContract is Ownable, Callable {
       "INSPECTOR",
       "RESEARCHER",
       "DEVELOPER",
-      "ADVISOR",
+      "CONTRIBUTOR",
       "ACTIVIST",
       "SUPPORTER",
       "VALIDATOR",

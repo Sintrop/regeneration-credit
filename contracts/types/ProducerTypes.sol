@@ -19,6 +19,7 @@ struct Producer {
 }
 
 struct Pool {
+  bool onContractPool;
   uint256 currentEra;
 }
 

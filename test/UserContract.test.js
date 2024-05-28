@@ -20,7 +20,7 @@ describe("UserContract", function () {
     "INSPECTOR",
     "RESEARCHER",
     "DEVELOPER",
-    "ADVISOR",
+    "CONTRIBUTOR",
     "ACTIVIST",
     "SUPPORTER",
     "VALIDATOR",
@@ -51,6 +51,7 @@ describe("UserContract", function () {
     context("with allowed caller", () => {
       context("when the user don't exist", () => {
         beforeEach(async () => {
+          await addInvitation(owner, user1Address, userTypes.Producer, owner);
           await addUser(user1Address, userTypes.Producer, owner);
         });
 
@@ -75,6 +76,7 @@ describe("UserContract", function () {
 
       context("when the user exists", () => {
         it("should return error message", async () => {
+          await addInvitation(owner, user1Address, userTypes.Producer, owner);
           await addUser(user1Address, userTypes.Producer, owner);
 
           expect(addUser(user1Address, userTypes.Producer, owner)).to.be.revertedWith("User already exists");
@@ -89,11 +91,14 @@ describe("UserContract", function () {
 
       context("when enum correctly", () => {
         beforeEach(async () => {
-          await addUser(owner, userTypes.Producer, owner);
+          await addInvitation(owner, user2Address, userTypes.Producer, owner);
+
+          await addUser(user2Address, userTypes.Producer, owner);
         });
 
         context("to Producer", () => {
           it("should add correct enum to producer", async () => {
+            await addInvitation(owner, user1Address, userTypes.Producer, owner);
             await addUser(user1Address, userTypes.Producer, owner);
 
             const user = await instance.getUser(user1Address);
@@ -135,14 +140,14 @@ describe("UserContract", function () {
           });
         });
 
-        context("to advisor", () => {
-          it("should add correct enum to advisor", async () => {
-            await addInvitation(owner, user1Address, userTypes.Advisor, owner);
-            await addUser(user1Address, userTypes.Advisor, owner);
+        context("to contributor", () => {
+          it("should add correct enum to contributor", async () => {
+            await addInvitation(owner, user1Address, userTypes.Contributor, owner);
+            await addUser(user1Address, userTypes.Contributor, owner);
 
             const user = await instance.getUser(user1Address);
 
-            expect(user).to.equal(userTypes.Advisor);
+            expect(user).to.equal(userTypes.Contributor);
           });
         });
 
@@ -191,6 +196,7 @@ describe("UserContract", function () {
 
       context("with proportionality invalid", () => {
         beforeEach(async () => {
+          await addInvitation(owner, user1Address, userTypes.Producer, owner);
           await addUser(user1Address, userTypes.Producer, owner);
         });
 
@@ -264,6 +270,7 @@ describe("UserContract", function () {
 
       context("when user was invited", () => {
         beforeEach(async () => {
+          await addInvitation(owner, user2Address, userTypes.Producer, owner);
           await addUser(user2Address, userTypes.Producer, owner);
           await addInvitation(owner, user1Address, userTypes.Inspector, owner);
         });
@@ -287,6 +294,7 @@ describe("UserContract", function () {
 
       context("when user was not invited", () => {
         beforeEach(async () => {
+          await addInvitation(owner, user1Address, userTypes.Producer, owner);
           await addUser(user1Address, userTypes.Producer, owner);
         });
 
@@ -360,6 +368,7 @@ describe("UserContract", function () {
 
     context("with 1 user", () => {
       it("should usersCount be one", async () => {
+        await addInvitation(owner, user1Address, userTypes.Producer, owner);
         await addUser(user1Address, userTypes.Producer, owner);
 
         const usersCount = await instance.usersCount();
@@ -397,6 +406,9 @@ describe("UserContract", function () {
     context("when user1 and user2 is registed on system", () => {
       context("when user1 receive delation", () => {
         beforeEach(async () => {
+          await addInvitation(owner, user1Address, userTypes.Producer, owner);
+          await addInvitation(owner, user2Address, userTypes.Producer, owner);
+
           await addUser(user1Address, userTypes.Producer, owner);
           await addUser(user2Address, userTypes.Producer, owner);
 
@@ -435,6 +447,7 @@ describe("UserContract", function () {
 
     context("when user1 (reported) is not registed on system", () => {
       it("should return error message", async () => {
+        await addInvitation(owner, user2Address, userTypes.Producer, owner);
         await addUser(user2Address, userTypes.Producer, owner);
 
         await expect(addDelation(user1Address, user2Address)).to.be.revertedWith("User must be registered");
@@ -443,6 +456,7 @@ describe("UserContract", function () {
 
     context("when user2 (informer) is not registed on system", () => {
       it("should return error message", async () => {
+        await addInvitation(owner, user1Address, userTypes.Producer, owner);
         await addUser(user1Address, userTypes.Producer, owner);
 
         await expect(addDelation(user1Address, user2Address)).to.be.revertedWith("Caller must be registered");
@@ -453,6 +467,9 @@ describe("UserContract", function () {
   describe("#getUserDelations", () => {
     context("when user1 have 2 delations", () => {
       beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Producer, owner);
+        await addInvitation(owner, user2Address, userTypes.Producer, owner);
+
         await addUser(user1Address, userTypes.Producer, owner);
         await addUser(user2Address, userTypes.Producer, owner);
 
@@ -472,6 +489,64 @@ describe("UserContract", function () {
         const delations = await instance.getUserDelations(user1Address);
 
         expect(delations.length).to.equal(0);
+      });
+    });
+  });
+
+  describe("#getUserTypeSettings", () => {
+    context("when get to producer", () => {
+      it("", async () => {
+        const settings = await instance.getUserTypeSettings(userTypes.Producer);
+
+        expect(settings).deep.to.equal([0n, false, true, 100n]);
+      });
+    });
+
+    context("when get to contributor", () => {
+      it("returns settings", async () => {
+        const settings = await instance.getUserTypeSettings(userTypes.Contributor);
+
+        expect(settings).deep.to.equal([0n, false, true, 100n]);
+      });
+    });
+
+    context("when get to inspector", () => {
+      it("returns settings", async () => {
+        const settings = await instance.getUserTypeSettings(userTypes.Inspector);
+
+        expect(settings).deep.to.equal([2n, true, true, 100n]);
+      });
+    });
+
+    context("when get to activist", () => {
+      it("returns settings", async () => {
+        const settings = await instance.getUserTypeSettings(userTypes.Activist);
+
+        expect(settings).deep.to.equal([1n, false, true, 1000n]);
+      });
+    });
+
+    context("when get to reseacher", () => {
+      it("returns settings", async () => {
+        const settings = await instance.getUserTypeSettings(userTypes.Researcher);
+
+        expect(settings).deep.to.equal([1n, false, true, 1000n]);
+      });
+    });
+
+    context("when get to developer", () => {
+      it("returns settings", async () => {
+        const settings = await instance.getUserTypeSettings(userTypes.Developer);
+
+        expect(settings).deep.to.equal([1n, false, true, 1000n]);
+      });
+    });
+
+    context("when get to validator", () => {
+      it("", async () => {
+        const settings = await instance.getUserTypeSettings(userTypes.Developer);
+
+        expect(settings).deep.to.equal([1n, false, true, 1000n]);
       });
     });
   });

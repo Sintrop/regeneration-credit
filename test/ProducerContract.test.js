@@ -1,6 +1,7 @@
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
 const { advanceBlock } = require("./shared/advance_block");
+const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 
 describe("ProducerContract", () => {
@@ -8,10 +9,14 @@ describe("ProducerContract", () => {
   let rcToken;
   let userContract;
   let producerPool;
-  let ownerAddress, prod1Address, prod2Address;
+  let owner, prod1Address, prod2Address;
 
   const addProducer = async (name, from) => {
     await instance.connect(from).addProducer(10, name, "photoURL", "135465-005");
+  };
+
+  const addInvitation = async (inviter, invited, userType, from) => {
+    await userContract.connect(from).addInvitation(inviter, invited, userType);
   };
 
   const producerPoolArgs = {
@@ -22,7 +27,7 @@ describe("ProducerContract", () => {
   };
 
   beforeEach(async () => {
-    [ownerAddress, prod1Address, prod2Address] = await ethers.getSigners();
+    [owner, prod1Address, prod2Address] = await ethers.getSigners();
 
     rcToken = await rcTokenDeployed();
 
@@ -43,8 +48,12 @@ describe("ProducerContract", () => {
 
     await rcToken.addContractPool(producerPool.target, producerPoolArgs.totalTokens);
     await userContract.newAllowedCaller(instance.target);
-    await instance.newAllowedCaller(ownerAddress);
+    await userContract.newAllowedCaller(owner);
+    await instance.newAllowedCaller(owner);
     await producerPool.newAllowedCaller(instance.target);
+
+    await addInvitation(owner, prod1Address, userTypes.Producer, owner);
+    await addInvitation(owner, prod2Address, userTypes.Producer, owner);
   });
 
   context("when access producer fields", () => {
@@ -445,43 +454,134 @@ describe("ProducerContract", () => {
 
       context("when producer have reached minimum inspections", () => {
         beforeEach(async () => {
-          await instance.incrementInspections(prod1Address);
-          await instance.incrementInspections(prod1Address);
-          await instance.incrementInspections(prod1Address);
+          await instance.setIsaScore(prod1Address, 25);
+          await instance.setIsaScore(prod1Address, 25);
 
-          await instance.setIsaScore(prod1Address, 50);
+          await instance.incrementInspections(prod1Address);
+          await instance.incrementInspections(prod1Address);
+          await instance.incrementInspections(prod1Address);
         });
 
         context("when is era 1", () => {
-          it("set 50 levels to era 1 pool", async () => {
-            const eraLevels = await producerPool.eraLevels(1, prod1Address);
+          context("when already have 50 levels in producer contract", () => {
+            context("when receives more 25 levels", () => {
+              beforeEach(async () => {
+                await instance.setIsaScore(prod1Address, 25);
+              });
 
-            expect(eraLevels).to.equal(50);
-          });
+              context("when is not in the pool yet", () => {
+                it("set 75 levels to era 1 pool", async () => {
+                  const eraLevels = await producerPool.eraLevels(1, prod1Address);
 
-          it("producer isaScore must be 50", async () => {
-            const producer = await instance.getProducer(prod1Address);
+                  expect(eraLevels).to.equal(75);
+                });
 
-            expect(producer.isa.isaScore).to.equal(50);
+                it("producer isaScore must be 75", async () => {
+                  const producer = await instance.getProducer(prod1Address);
+
+                  expect(producer.isa.isaScore).to.equal(75);
+                });
+              });
+
+              context("when already in the pool", () => {
+                beforeEach(async () => {
+                  await instance.setIsaScore(prod1Address, 25);
+                });
+
+                it("set 100 levels to era 1 pool", async () => {
+                  const eraLevels = await producerPool.eraLevels(1, prod1Address);
+
+                  expect(eraLevels).to.equal(100);
+                });
+
+                it("producer isaScore must be 100", async () => {
+                  const producer = await instance.getProducer(prod1Address);
+
+                  expect(producer.isa.isaScore).to.equal(100);
+                });
+              });
+            });
+
+            context("when receives more -25 levels", () => {
+              context("when is not in the pool yet", () => {
+                beforeEach(async () => {
+                  await instance.setIsaScore(prod1Address, -25);
+                });
+
+                it("set 0 levels to era 1 pool", async () => {
+                  const eraLevels = await producerPool.eraLevels(1, prod1Address);
+
+                  expect(eraLevels).to.equal(0);
+                });
+
+                it("producer isaScore must be 25", async () => {
+                  const producer = await instance.getProducer(prod1Address);
+
+                  expect(producer.isa.isaScore).to.equal(25);
+                });
+              });
+
+              context("when already in the pool", () => {
+                beforeEach(async () => {
+                  await instance.setIsaScore(prod1Address, 25);
+                  await instance.setIsaScore(prod1Address, -25);
+                });
+
+                it("set 50 levels to era 1 pool", async () => {
+                  const eraLevels = await producerPool.eraLevels(1, prod1Address);
+
+                  expect(eraLevels).to.equal(50);
+                });
+
+                it("producer isaScore must be 50", async () => {
+                  const producer = await instance.getProducer(prod1Address);
+
+                  expect(producer.isa.isaScore).to.equal(50);
+                });
+              });
+
+              context("when have negative values in producer contract", () => {
+                beforeEach(async () => {
+                  await instance.setIsaScore(prod1Address, -75);
+                  await instance.setIsaScore(prod1Address, 30);
+                });
+
+                it("set 5 levels to era 1 pool", async () => {
+                  const eraLevels = await producerPool.eraLevels(1, prod1Address);
+
+                  expect(eraLevels).to.equal(5);
+                });
+
+                it("producer isaScore must be 5", async () => {
+                  const producer = await instance.getProducer(prod1Address);
+
+                  expect(producer.isa.isaScore).to.equal(5);
+                });
+              });
+            });
           });
         });
 
         context("when is era 2", () => {
-          beforeEach(async () => {
-            await advanceBlock(producerPoolArgs.blocksPerEra);
-            await instance.setIsaScore(prod1Address, 50);
-          });
+          context("when already have 50 levels in producer contract", () => {
+            context("when receives more 50 levels", () => {
+              beforeEach(async () => {
+                await advanceBlock(producerPoolArgs.blocksPerEra);
+                await instance.setIsaScore(prod1Address, 50);
+              });
 
-          it("set 50 levels to era 2 pool", async () => {
-            const eraLevels = await producerPool.eraLevels(2, prod1Address);
+              it("set 50 levels to era 2 pool", async () => {
+                const eraLevels = await producerPool.eraLevels(2, prod1Address);
 
-            expect(eraLevels).to.equal(50);
-          });
+                expect(eraLevels).to.equal(100);
+              });
 
-          it("producer isaScore must be 100", async () => {
-            const producer = await instance.getProducer(prod1Address);
+              it("producer isaScore must be 100", async () => {
+                const producer = await instance.getProducer(prod1Address);
 
-            expect(producer.isa.isaScore).to.equal(100);
+                expect(producer.isa.isaScore).to.equal(100);
+              });
+            });
           });
         });
       });

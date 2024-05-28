@@ -93,10 +93,12 @@ contract InspectorContract is Callable {
     return bytes(inspectors[addr].name).length > 0;
   }
 
-  function incrementInspections(address addr) public mustBeAllowedCaller {
+  function incrementInspections(address addr) public mustBeAllowedCaller returns (uint256) {
     inspectors[addr].totalInspections++;
 
     addLevel(addr);
+
+    return inspectors[addr].totalInspections;
   }
 
   function addLevel(address addr) internal {
@@ -107,6 +109,14 @@ contract InspectorContract is Callable {
     if (!minimumInspections(inspector.totalInspections)) return;
 
     inspectorPool.addLevel(addr, 1, 1);
+  }
+
+  function resetLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+    Inspector memory inspector = inspectors[addr];
+
+    inspectors[addr].pool.level = 0;
+
+    inspectorPool.resetLevels(addr, inspector.pool.currentEra, removeSomeLevels);
   }
 
   function decrementInspections(address addr) public mustBeAllowedCaller {

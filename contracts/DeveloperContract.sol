@@ -63,7 +63,6 @@ contract DeveloperContract is Ownable {
       developers[msg.sender].pool.level,
       report,
       true,
-      block.timestamp, // solhint-disable-line not-rely-on-time
       block.number
     );
 

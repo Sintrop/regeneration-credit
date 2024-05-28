@@ -12,6 +12,7 @@ import { UserType, Invitation } from "./types/UserTypes.sol";
 import { ValidatorContract } from "./ValidatorContract.sol";
 import { Validation } from "./types/ValidatorTypes.sol";
 import { ActivistContract } from "./ActivistContract.sol";
+import { CategoryContract } from "./CategoryContract.sol";
 
 /**
  * @title SintropContract
@@ -21,16 +22,14 @@ contract Sintrop {
   mapping(address => mapping(address => bool)) internal inspectorInspected;
   mapping(address => Inspection[]) internal userInspections;
   mapping(uint256 => Inspection) internal inspections;
-  mapping(uint256 => IsaInspection[]) public isas;
-  mapping(uint256 => Validation[]) public validations;
   mapping(address => mapping(uint256 => bool)) internal validatorValidations;
-  mapping(address => mapping(address => bool)) internal activistWonLevel;
 
   InspectorContract public inspectorContract;
   ProducerContract public producerContract;
   UserContract public userContract;
   ValidatorContract public validatorContract;
   ActivistContract public activistContract;
+  CategoryContract public categoryContract;
 
   uint256 public inspectionsCount;
   uint256 internal immutable timeBetweenInspections;
@@ -44,6 +43,7 @@ contract Sintrop {
     address userContractAddress,
     address validatorContractAddress,
     address activistContractAddress,
+    address categoryContractAddress,
     uint256 timeBetweenInspections_,
     uint256 blocksToExpireAcceptedInspection_,
     uint256 allowedInitialRequests_,
@@ -54,6 +54,7 @@ contract Sintrop {
     userContract = UserContract(userContractAddress);
     validatorContract = ValidatorContract(validatorContractAddress);
     activistContract = ActivistContract(activistContractAddress);
+    categoryContract = CategoryContract(categoryContractAddress);
     timeBetweenInspections = timeBetweenInspections_;
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
     allowedInitialRequests = allowedInitialRequests_;
@@ -66,14 +67,6 @@ contract Sintrop {
    */
   function getInspectionsHistory() public view returns (Inspection[] memory) {
     return userInspections[msg.sender];
-  }
-
-  /**
-   * @dev List IsaInspection from inspection
-   * @param inspectionId The id of the inspection to get IsaInspection
-   */
-  function getIsa(uint256 inspectionId) public view returns (IsaInspection[] memory) {
-    return isas[inspectionId];
   }
 
   // TODO: Remove not reutilized modifiers and use require direct in the function
@@ -147,37 +140,21 @@ contract Sintrop {
     require(inspectionExists(inspectionId), "This inspection don't exists");
     require(isAccepted(inspectionId), "Accept this inspection before");
     require(isInspectorOwner(inspectionId), "You not accepted this inspection");
-
     require(!expiredInspection(inspectionId), "Inspection Expired");
 
     markAsRealized(inspection, report, _isas);
 
     afterRealizeInspection(inspection);
 
-    producerContract.setIsaScore(inspection.createdBy, inspection.isaScore);
-
     inspectorInspected[msg.sender][inspection.createdBy] = true;
   }
 
   function markAsRealized(Inspection memory inspection, string memory report, IsaInspection[] memory _isas) internal {
     inspection.status = InspectionStatus.INSPECTED;
-    inspection.isaScore = calculateIsa(inspection, _isas);
+    inspection.isaScore = categoryContract.calculateIsa(inspection.id, _isas);
     inspection.report = report;
 
     inspections[inspection.id] = inspection;
-  }
-
-  function calculateIsa(Inspection memory inspection, IsaInspection[] memory _isas) internal returns (int256) {
-    int256[7] memory points = [int256(25), 10, 1, 0, -1, -10, -25];
-    int256 isaScore;
-
-    for (uint8 i = 0; i < _isas.length; i++) {
-      isas[inspection.id].push(_isas[i]);
-      uint256 isaIndex = _isas[i].isaIndex;
-      isaScore += points[isaIndex];
-    }
-
-    return isaScore;
   }
 
   // TODO: Refact this function
@@ -189,95 +166,39 @@ contract Sintrop {
     address createdBy = inspection.createdBy;
     address acceptedBy = inspection.acceptedBy;
 
-    inspectorContract.incrementInspections(acceptedBy);
+    uint256 inspectorTotalInspections = inspectorContract.incrementInspections(acceptedBy);
     inspectorContract.decreaseGiveUps(acceptedBy);
 
-    producerContract.incrementInspections(createdBy);
+    uint256 producerTotalInspections = producerContract.incrementInspections(createdBy);
 
-    setActivistLevel(createdBy, acceptedBy);
+    activistContract.addLevel(createdBy, producerTotalInspections, acceptedBy, inspectorTotalInspections);
+    producerContract.setIsaScore(inspection.createdBy, inspection.isaScore);
 
     userInspections[createdBy].push(inspection);
     userInspections[acceptedBy].push(inspection);
-  }
-
-  function setActivistLevel(address producerAddress, address inspectorAddress) internal {
-    Invitation memory producerInvitation = userContract.getInvitation(producerAddress);
-    Invitation memory inspectorInvitation = userContract.getInvitation(inspectorAddress);
-
-    Producer memory producer = producerContract.getProducer(producerAddress);
-    Inspector memory inspector = inspectorContract.getInspector(inspectorAddress);
-
-    uint256 minimumInspectionWonLevel = 3;
-
-    if (
-      producerInvitation.createdAtBlock > 0 &&
-      producer.totalInspections == minimumInspectionWonLevel &&
-      !activistWonLevel[producerInvitation.inviter][producerAddress]
-    ) {
-      activistWonLevel[producerInvitation.inviter][producerAddress] = true;
-      activistContract.addLevel(producerInvitation.inviter);
-    }
-
-    if (
-      inspectorInvitation.createdAtBlock > 0 &&
-      inspector.totalInspections == minimumInspectionWonLevel &&
-      !activistWonLevel[inspectorInvitation.inviter][inspectorAddress]
-    ) {
-      activistWonLevel[inspectorInvitation.inviter][inspectorAddress] = true;
-      activistContract.addLevel(inspectorInvitation.inviter);
-    }
   }
 
   function addInspectionValidation(uint256 id, string memory justification) public {
     require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
     Inspection memory inspection = inspections[id];
-    require(inspection.status == InspectionStatus.INSPECTED, "This inspection is not INSPECTED");
-    require(!validatorValidations[msg.sender][id], "Already voted");
 
-    validatorValidations[msg.sender][id] = true;
+    require(inspection.status == InspectionStatus.INSPECTED, "This inspection is not INSPECTED");
 
     inspection.validationsCount += 1;
-    inspections[id] = inspection;
+    inspections[inspection.id] = inspection;
 
-    uint256 majorityValidatorsCount_ = validatorContract.majorityValidatorsCount();
-    uint256 validationsCount = inspections[id].validationsCount;
-    bool addPenalty = validationsCount >= majorityValidatorsCount_;
+    bool mustInvalidateInspection = inspection.validationsCount >= validatorContract.majorityValidatorsCount();
 
-    validations[id].push(
-      Validation(
-        msg.sender,
-        inspection.acceptedBy,
-        inspection.id,
-        justification,
-        majorityValidatorsCount_,
-        block.number
-      )
-    );
+    if (mustInvalidateInspection) invalidateInspection(inspection);
 
-    if (!addPenalty) return;
-
-    uint256 inspectorTotalPenalties = inspectorContract.addPenalty(inspection.acceptedBy, inspection.id);
-    invalidateInspection(inspection);
-
-    if (inspectorTotalPenalties >= inspectorContract.maxPenalties())
-      validatorContract.externalDenieUser(inspection.acceptedBy);
+    validatorContract.addInspectionValidation(inspection, justification, msg.sender);
   }
 
   function invalidateInspection(Inspection memory inspection) internal {
     inspection.status = InspectionStatus.INVALIDATED;
     inspection.invalidatedAt = block.number;
     inspections[inspection.id] = inspection;
-
-    inspectorContract.decrementInspections(inspection.acceptedBy);
-    producerContract.decrementInspections(inspection.createdBy);
-
-    if (inspection.isaScore <= 0) return;
-
-    uint256 levels = uint256(inspection.isaScore);
-
-    validatorContract.externalRemoveLevels(inspection.createdBy, levels);
-    validatorContract.externalRemoveLevels(inspection.acceptedBy, levels);
   }
 
   /**
@@ -299,15 +220,6 @@ contract Sintrop {
     }
 
     return inspectionsList;
-  }
-
-  // TODO: Have a better way to return this?
-  // TODO: Is this function necessary?
-  /**
-   * @dev Returns all inpections status string.
-   */
-  function getInspectionsStatus() public pure returns (string memory, string memory, string memory, string memory) {
-    return ("OPEN", "ACCEPTED", "INSPECTED", "EXPIRED");
   }
 
   // TODO: Add specs to this function

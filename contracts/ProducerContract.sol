@@ -54,7 +54,7 @@ contract ProducerContract is Callable {
     producer.name = name;
     producer.proofPhoto = proofPhoto;
     producer.propertyAddress = PropertyAddress(coordinate);
-    producer.pool = Pool(producerPool.currentContractEra());
+    producer.pool = Pool(false, producerPool.currentContractEra());
 
     producers[msg.sender] = producer;
     producersAddress.push(msg.sender);
@@ -121,18 +121,35 @@ contract ProducerContract is Callable {
   function setIsaScore(address addr, int256 isaScore) public mustBeAllowedCaller {
     Producer memory producer = producers[addr];
 
+    int256 beforeIsaScore = producer.isa.isaScore;
     producer.isa.isaScore += isaScore;
     producers[addr] = producer;
 
-    uint256 addLevels = isaScore < 0 ? 0 : uint256(isaScore);
-
     if (producer.isa.sustainable) return;
-
     if (limitIsaScore(producer)) changeProducerToSustainable(producer);
-
     if (!minimumInspections(producer.totalInspections)) return;
+    if (isaScore > 0) addIsaScore(producer, beforeIsaScore, isaScore);
+    if (isaScore < 0) removeIsaScore(producer, isaScore);
+  }
 
-    producerPool.addLevel(addr, addLevels, addLevels);
+  function addIsaScore(Producer memory producer, int256 beforeIsaScore, int256 isaScore) internal {
+    if (producer.isa.isaScore <= 0) return;
+    uint256 levels;
+
+    if (beforeIsaScore < 0) {
+      levels = uint256(producer.isa.isaScore);
+    } else {
+      levels = producer.pool.onContractPool ? uint256(isaScore) : uint256(producer.isa.isaScore);
+    }
+
+    if (!producer.pool.onContractPool) producers[producer.producerWallet].pool.onContractPool = true;
+    producerPool.addLevel(producer.producerWallet, levels, levels);
+  }
+
+  function removeIsaScore(Producer memory producer, int256 isaScore) internal {
+    if (!producer.pool.onContractPool) return;
+
+    producerPool.removeLevel(producer.producerWallet, uint256(-(isaScore)));
   }
 
   function resetLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
@@ -151,8 +168,10 @@ contract ProducerContract is Callable {
     producers[addr].pool.currentEra++;
   }
 
-  function incrementInspections(address addr) public mustBeAllowedCaller {
+  function incrementInspections(address addr) public mustBeAllowedCaller returns (uint256) {
     producers[addr].totalInspections++;
+
+    return producers[addr].totalInspections;
   }
 
   function decrementInspections(address addr) public mustBeAllowedCaller {

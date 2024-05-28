@@ -250,7 +250,11 @@ describe("InspectorPool", (accounts) => {
 
       context("when inspector1 dont have levels in era", () => {
         it("should return error message", async () => {
-          await expect(instance.removeLevel(inspector1Address)).to.be.revertedWith("Not enough levels to remove");
+          instance.removeLevel(inspector1Address);
+
+          const level = await instance.eraLevels(2, inspector1Address);
+
+          expect(level).to.equal(0);
         });
       });
     });

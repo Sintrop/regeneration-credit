@@ -14,7 +14,7 @@ contract RcTokenIco is Ownable {
 
   bool public salesOpen = false;
 
-  RcToken internal token;
+  RcToken internal rcToken;
 
   event BuyTokensEvent(address indexed _buyer, uint256 _totalWei, uint256 _totalRcTokens, bool _transferStatus);
 
@@ -23,7 +23,7 @@ contract RcTokenIco is Ownable {
 
     uint256 rcTokens = rcTokenAmount(msg.value);
 
-    bool response = token.transfer(msg.sender, rcTokens);
+    bool response = rcToken.transfer(msg.sender, rcTokens);
 
     emit BuyTokensEvent(msg.sender, msg.value, rcTokens, response);
   }
@@ -44,11 +44,16 @@ contract RcTokenIco is Ownable {
     return true;
   }
 
+  function withdrawRcToken(uint256 rcAmount) public onlyOwner returns (bool success) {
+    rcToken.transfer(_msgSender(), rcAmount);
+    return true;
+  }
+
   function rcTokenAmount(uint256 weiAmount) internal pure returns (uint256) {
     return weiAmount.mul(RATE);
   }
 
   function setRcToken(address _tokenAddr) public onlyOwner {
-    token = RcToken(_tokenAddr);
+    rcToken = RcToken(_tokenAddr);
   }
 }
