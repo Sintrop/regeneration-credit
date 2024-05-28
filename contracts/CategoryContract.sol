@@ -21,13 +21,19 @@ contract CategoryContract is Ownable, Callable {
   uint256 public categoryCounts;
 
   constructor() {
-    isas[1] = Isa("REGENERATIVO 3", 25);
-    isas[2] = Isa("REGENERATIVO 2", 10);
-    isas[3] = Isa("REGENERATIVO 1", 1);
-    isas[4] = Isa("NEUTRO", 0);
-    isas[5] = Isa("NOT_REGENERATIVE 1", -1);
-    isas[6] = Isa("NOT_REGENERATIVE 2", -10);
-    isas[7] = Isa("NOT_REGENERATIVE 3", -25);
+    isas[1] = Isa("REGENERATIVO 6", 25);
+    isas[2] = Isa("REGENERATIVO 5", 16);
+    isas[3] = Isa("REGENERATIVO 4", 8);
+    isas[4] = Isa("REGENERATIVO 3", 4);
+    isas[5] = Isa("REGENERATIVO 2", 2);
+    isas[6] = Isa("REGENERATIVO 1", 1);
+    isas[7] = Isa("NEUTRO", 0);
+    isas[8] = Isa("NOT_REGENERATIVE 1", -1);
+    isas[9] = Isa("NOT_REGENERATIVE 2", -2);
+    isas[10] = Isa("NOT_REGENERATIVE 3", -4);
+    isas[11] = Isa("NOT_REGENERATIVE 4", -8);
+    isas[12] = Isa("NOT_REGENERATIVE 5", -16);
+    isas[13] = Isa("NOT_REGENERATIVE 6", -25);
   }
 
   /**
