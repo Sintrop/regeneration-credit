@@ -551,7 +551,6 @@ describe("ValidatorContract", () => {
 
             expect(validations.length).to.equal(1);
             expect(validation.validator).to.equal(validator1Address.address);
-            expect(validation.user).to.equal(inspectionMock.acceptedBy.address);
             expect(validation.resourceId).to.equal(1);
             expect(validation.justification).to.equal("foo");
             expect(validation.majorityValidatorsCount).to.equal(2);

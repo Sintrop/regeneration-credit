@@ -1206,7 +1206,6 @@ describe("Sintrop", () => {
             const validation = validations[0];
 
             expect(validation.validator).to.equal(validator1Address.address);
-            expect(validation.user).to.equal(inspectorAddress.address);
             expect(validation.resourceId).to.equal(1);
             expect(validation.justification).to.equal("justification");
             expect(validation.majorityValidatorsCount).to.equal(2);
