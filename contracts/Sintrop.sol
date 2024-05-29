@@ -131,9 +131,9 @@ contract Sintrop {
   /**
    * @dev Allow a inspector realize a inspection and mark as INSPECTED
    * @param inspectionId The id of the inspection to be realized
-   * @param _isas The IsaIsaInspection[] of the inspection to be realized
+   * @param _isaInspection The IsaIsaInspection[] of the inspection to be realized
    */
-  function realizeInspection(uint256 inspectionId, string memory report, IsaInspection[] memory _isas) public {
+  function realizeInspection(uint256 inspectionId, string memory report, IsaInspection[] memory _isaInspection) public {
     Inspection memory inspection = inspections[inspectionId];
 
     require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
@@ -142,16 +142,20 @@ contract Sintrop {
     require(isInspectorOwner(inspectionId), "You not accepted this inspection");
     require(!expiredInspection(inspectionId), "Inspection Expired");
 
-    markAsRealized(inspection, report, _isas);
+    markAsRealized(inspection, report, _isaInspection);
 
     afterRealizeInspection(inspection);
 
     inspectorInspected[msg.sender][inspection.createdBy] = true;
   }
 
-  function markAsRealized(Inspection memory inspection, string memory report, IsaInspection[] memory _isas) internal {
+  function markAsRealized(
+    Inspection memory inspection,
+    string memory report,
+    IsaInspection[] memory _isaInspection
+  ) internal {
     inspection.status = InspectionStatus.INSPECTED;
-    inspection.isaScore = categoryContract.calculateIsa(inspection.id, _isas);
+    inspection.isaScore = categoryContract.calculateIsa(inspection.id, _isaInspection);
     inspection.report = report;
 
     inspections[inspection.id] = inspection;
