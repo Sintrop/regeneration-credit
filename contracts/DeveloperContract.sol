@@ -125,7 +125,7 @@ contract DeveloperContract is Ownable, Callable {
 
   function resetLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Developer memory developer = developers[addr];
-    
+
     developers[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : developer.pool.level;
 
     developerPool.resetLevels(addr, developer.pool.currentEra, removeSomeLevels);
