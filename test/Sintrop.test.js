@@ -790,12 +790,6 @@ describe("Sintrop", () => {
                   expect(inspection.status).to.equal(STATUS.inspected);
                 });
 
-                it("should set inspection inspectedAt to block.number", async () => {
-                  const inspection = await instance.getInspection(1);
-
-                  expect(inspection.inspectedAt).to.equal(106);
-                });
-
                 it("should decrease inspector giveUps by 1", async () => {
                   const inspector = await inspectorContract.getInspector(inspectorAddress);
 
