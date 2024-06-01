@@ -3,7 +3,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
 import { ProducerContract } from "./ProducerContract.sol";
-import { Validator, UserValidation, ResourceValidation, Pool } from "./types/ValidatorTypes.sol";
+import { Validator, UserValidation, ResourceValidation, Pool, ContractsDependency } from "./types/ValidatorTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { Callable } from "./Callable.sol";
 import { ValidatorPool } from "./ValidatorPool.sol";
@@ -30,22 +30,17 @@ contract ValidatorContract is Callable {
   uint256 internal firstValidatorLimit;
   uint256 internal secondValidatorLimit;
 
-  constructor(
-    address userContractAddress,
-    address producerContractAddress,
-    address validatorPoolAddress,
-    address inspectorContractAddress,
-    address developerContractAddress,
-    uint256 firstValidatorLimit_,
-    uint256 secondValidatorLimit_
-  ) {
-    userContract = UserContract(userContractAddress);
-    producerContract = ProducerContract(producerContractAddress);
-    validatorPool = ValidatorPool(validatorPoolAddress);
-    inspectorContract = InspectorContract(inspectorContractAddress);
-    developerContract = DeveloperContract(developerContractAddress);
+  constructor(uint256 firstValidatorLimit_, uint256 secondValidatorLimit_) {
     firstValidatorLimit = firstValidatorLimit_;
     secondValidatorLimit = secondValidatorLimit_;
+  }
+
+  function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+    userContract = UserContract(contractDependency.userContractAddress);
+    producerContract = ProducerContract(contractDependency.producerContractAddress);
+    validatorPool = ValidatorPool(contractDependency.validatorPoolAddress);
+    inspectorContract = InspectorContract(contractDependency.inspectorContractAddress);
+    developerContract = DeveloperContract(contractDependency.developerContractAddress);
   }
 
   function addValidator() public {
@@ -128,8 +123,6 @@ contract ValidatorContract is Callable {
   }
 
   function removeDeveloperContribution(Contribution memory contribution) internal {
-    developerContract.decrementContributions(contribution.developer);
-
     externalRemoveLevels(contribution.developer, 1);
   }
 

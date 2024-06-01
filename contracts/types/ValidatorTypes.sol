@@ -30,3 +30,11 @@ struct ResourceValidation {
   uint256 majorityValidatorsCount;
   uint256 createdAtBlockNumber;
 }
+
+struct ContractsDependency {
+  address userContractAddress;
+  address producerContractAddress;
+  address validatorPoolAddress;
+  address inspectorContractAddress;
+  address developerContractAddress;
+}

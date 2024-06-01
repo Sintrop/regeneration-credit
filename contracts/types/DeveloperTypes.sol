@@ -29,7 +29,6 @@ struct Contribution {
   bool contributed;
   bool valid;
   uint256 invalidatedAt;
-  uint256 createdInEra;
   uint256 createdAtBlockNumber;
 }
 

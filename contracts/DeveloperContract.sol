@@ -17,8 +17,8 @@ contract DeveloperContract is Ownable, Callable {
   mapping(address => Developer) public developers;
   mapping(uint256 => mapping(address => uint256)) public developerContributionsEra;
   mapping(uint256 => Contribution) public contributions;
-
   mapping(address => Penalty[]) public penalties;
+
   UserContract internal userContract;
   DeveloperPool internal developerPool;
   ValidatorContract internal validatorContract;
@@ -74,7 +74,7 @@ contract DeveloperContract is Ownable, Callable {
 
     uint256 contributionEra = developerContributionsEra[currentEra][msg.sender];
 
-    require(contributionEra > 0, "Already has contribution");
+    require(contributionEra == 0, "Already has contribution");
 
     developerContributionsEra[currentEra][msg.sender] = 1;
 
@@ -93,7 +93,6 @@ contract DeveloperContract is Ownable, Callable {
       true,
       true,
       0,
-      currentEra,
       block.number
     );
 
@@ -105,7 +104,7 @@ contract DeveloperContract is Ownable, Callable {
 
     Contribution memory contribution = contributions[id];
 
-    require(contribution.valid && contribution.createdInEra == developerPoolEra(), "This contribution is not VALID");
+    require(contribution.valid && contribution.era == developerPoolEra(), "This contribution is not VALID");
 
     contribution.validationsCount += 1;
     contributions[id] = contribution;
@@ -129,12 +128,6 @@ contract DeveloperContract is Ownable, Callable {
     developers[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : developer.pool.level;
 
     developerPool.resetLevels(addr, developer.pool.currentEra, removeSomeLevels);
-  }
-
-  function decrementContributions(address addr) public mustBeAllowedCaller {
-    require(developers[addr].totalContributions > 0, "totalInspections invalid");
-
-    developers[addr].totalContributions--;
   }
 
   /**
