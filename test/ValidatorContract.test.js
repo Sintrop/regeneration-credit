@@ -12,6 +12,7 @@ describe("ValidatorContract", () => {
   let validatorPool;
   let inspectorPool;
   let inspectorContract;
+  let developerContract;
   let rcToken;
   let owner,
     producer1Address,
@@ -31,6 +32,8 @@ describe("ValidatorContract", () => {
     validator13Address,
     validator14Address,
     validator15Address,
+    dev1Address,
+    dev2Address,
     otherAddress;
 
   const producerPoolArgs = {
@@ -54,6 +57,17 @@ describe("ValidatorContract", () => {
     blocksPerEra: 20,
   };
 
+  let developerPoolParams = {
+    totalTokens: "30000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 30,
+  };
+
+  const addDeveloper = async (name, from) => {
+    await developerContract.connect(from).addDeveloper(name, "photoURL");
+  };
+
   const addValidator = async (from) => {
     await instance.connect(from).addValidator();
   };
@@ -72,6 +86,21 @@ describe("ValidatorContract", () => {
 
   const denyUser = async (userAddress) => {
     await userContract.setDeniedType(userAddress);
+  };
+
+  const generateContributionObject = (contribution) => {
+    return {
+      id: contribution.id,
+      era: contribution.era,
+      developer: contribution.developer,
+      level: contribution.level,
+      report: contribution.report,
+      validationsCount: contribution.validationsCount,
+      contributed: contribution.contributed,
+      valid: contribution.valid,
+      invalidatedAt: contribution.invalidatedAt,
+      createdAtBlockNumber: contribution.createdAtBlockNumber,
+    };
   };
 
   const firstValidatorLimit = 8;
@@ -97,6 +126,8 @@ describe("ValidatorContract", () => {
       validator13Address,
       validator14Address,
       validator15Address,
+      dev1Address,
+      dev2Address,
       otherAddress,
     ] = await ethers.getSigners();
 
@@ -130,33 +161,58 @@ describe("ValidatorContract", () => {
       inspectorPoolArgs.blocksPerEra
     );
 
+    developerPoolFactory = await ethers.getContractFactory("DeveloperPool");
+    developerPool = await developerPoolFactory.deploy(
+      rcToken.target,
+      developerPoolParams.halving,
+      developerPoolParams.totalEras,
+      developerPoolParams.blocksPerEra
+    );
+
     const maxPenalties = 2;
     const inspectorContractFactory = await ethers.getContractFactory("InspectorContract");
     inspectorContract = await inspectorContractFactory.deploy(userContract.target, inspectorPool.target, maxPenalties);
 
     const validatorContractFactory = await ethers.getContractFactory("ValidatorContract");
-    instance = await validatorContractFactory.deploy(
+    instance = await validatorContractFactory.deploy(firstValidatorLimit, secondValidatorLimit);
+
+    const developerMaxPenalties = 3;
+    developerContractFactory = await ethers.getContractFactory("DeveloperContract");
+    developerContract = await developerContractFactory.deploy(
       userContract.target,
-      producerContract.target,
-      validatorPool.target,
-      inspectorContract.target,
-      firstValidatorLimit,
-      secondValidatorLimit
+      developerPool.target,
+      instance.target,
+      developerMaxPenalties
     );
+
+    const validatorContractDependencies = {
+      userContractAddress: userContract.target,
+      producerContractAddress: producerContract.target,
+      validatorPoolAddress: validatorPool.target,
+      inspectorContractAddress: inspectorContract.target,
+      developerContractAddress: developerContract.target,
+    };
 
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(producerContract.target);
     await userContract.newAllowedCaller(inspectorContract.target);
+    await userContract.newAllowedCaller(developerContract.target);
     await userContract.newAllowedCaller(owner);
     await producerContract.newAllowedCaller(instance.target);
     await producerContract.newAllowedCaller(owner);
+    await developerContract.newAllowedCaller(owner);
+    await developerContract.newAllowedCaller(instance.target);
     await producerPool.newAllowedCaller(producerContract.target);
     await producerPool.newAllowedCaller(owner);
     await validatorPool.newAllowedCaller(instance.target);
+    await developerPool.newAllowedCaller(developerContract.target);
     await inspectorPool.newAllowedCaller(inspectorContract.target);
     await inspectorContract.newAllowedCaller(instance.target);
     await inspectorContract.newAllowedCaller(owner);
     await instance.newAllowedCaller(owner);
+    await instance.newAllowedCaller(developerContract);
+
+    await instance.setContractAddressDependencies(validatorContractDependencies);
 
     await rcToken.addContractPool(validatorPool.target, validatorPoolArgs.totalTokens);
     await rcToken.addContractPool(producerContract.target, producerPoolArgs.totalTokens);
@@ -563,6 +619,173 @@ describe("ValidatorContract", () => {
       it("should return error", async () => {
         expect(
           instance.connect(owner).addInspectionValidation(1, "justification", validator1Address)
+        ).to.be.revertedWith("Not allowed caller");
+      });
+    });
+  });
+
+  describe("#addDeveloperContributionValidation", () => {
+    context("with allowed caller", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, dev1Address, userTypes.Developer, owner);
+        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator3Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator4Address, userTypes.Validator, owner);
+
+        await addDeveloper("Developer A", dev1Address);
+        await addValidator(validator1Address);
+        await addValidator(validator2Address);
+        await addValidator(validator3Address);
+        await addValidator(validator4Address);
+
+        await developerContract.connect(dev1Address).addContribution("report");
+      });
+
+      context("when validator already voted to contribution", () => {
+        beforeEach(async () => {
+          let contribution = await developerContract.getContribution(1);
+          contribution = generateContributionObject(contribution);
+
+          await instance
+            .connect(owner)
+            .addDeveloperContributionValidation(contribution, "justification", validator1Address);
+        });
+
+        it("should return error", async () => {
+          let contribution = await developerContract.getContribution(1);
+          contribution = generateContributionObject(contribution);
+
+          await expect(
+            instance.connect(owner).addDeveloperContributionValidation(contribution, "justification", validator1Address)
+          ).to.be.revertedWith("Already voted");
+        });
+      });
+
+      context("when validator did not vote to contribution", () => {
+        context("when contribution validations is => majorityValidatorsCount (addPenalty == true)", () => {
+          context("when developer total penalties is >= developerContract.maxPenalties", () => {
+            beforeEach(async () => {
+              let contribution = await developerContract.getContribution(1);
+              contribution = generateContributionObject(contribution);
+              contribution.validationsCount = 1;
+
+              await instance
+                .connect(owner)
+                .addDeveloperContributionValidation(contribution, "justification", validator1Address);
+
+              contribution.validationsCount = 2;
+              await instance
+                .connect(owner)
+                .addDeveloperContributionValidation(contribution, "justification", validator2Address);
+
+              await advanceBlock(developerPoolParams.blocksPerEra);
+              await developerContract.connect(dev1Address).addContribution("report");
+
+              let contribution2 = await developerContract.getContribution(2);
+              contribution2 = generateContributionObject(contribution2);
+              contribution2.validationsCount = 1;
+
+              await instance
+                .connect(owner)
+                .addDeveloperContributionValidation(contribution2, "justification", validator1Address);
+
+              contribution2.validationsCount = 2;
+              await instance
+                .connect(owner)
+                .addDeveloperContributionValidation(contribution2, "justification", validator2Address);
+
+              await advanceBlock(developerPoolParams.blocksPerEra);
+              await developerContract.connect(dev1Address).addContribution("report");
+
+              let contribution3 = await developerContract.getContribution(3);
+              contribution3 = generateContributionObject(contribution3);
+              contribution3.validationsCount = 1;
+
+              await instance
+                .connect(owner)
+                .addDeveloperContributionValidation(contribution3, "justification", validator1Address);
+
+              contribution3.validationsCount = 2;
+              await instance
+                .connect(owner)
+                .addDeveloperContributionValidation(contribution3, "justification", validator2Address);
+            });
+
+            it("deny developer", async () => {
+              const newInspectorType = await userContract.getUser(dev1Address);
+
+              expect(newInspectorType).to.equal(9);
+            });
+
+            it("remove contribution isa level from developer pool", async () => {
+              const levels = await developerPool.eraLevels(4, dev1Address);
+
+              expect(levels).to.equal(0);
+            });
+          });
+
+          context("when developer total penalties is < developerContract.maxPenalties", () => {
+            beforeEach(async () => {
+              let contribution = await developerContract.getContribution(1);
+              contribution = generateContributionObject(contribution);
+              contribution.validationsCount = 1;
+
+              await instance
+                .connect(owner)
+                .addDeveloperContributionValidation(contribution, "justification", validator1Address);
+
+              contribution = await developerContract.getContribution(1);
+              contribution = generateContributionObject(contribution);
+              contribution.validationsCount = 2;
+
+              await instance
+                .connect(owner)
+                .addDeveloperContributionValidation(contribution, "justification", validator2Address);
+            });
+
+            it("developer is the same", async () => {
+              const newInspectorType = await userContract.getUser(dev1Address);
+
+              expect(newInspectorType).to.equal(4);
+            });
+
+            it("remove contribution isa level from developer pool", async () => {
+              const levels = await developerPool.eraLevels(2, dev1Address);
+
+              expect(levels).to.equal(0);
+            });
+          });
+        });
+
+        context("when contribution validations is < majorityValidatorsCount (addPenalty == false)", () => {
+          beforeEach(async () => {
+            let contribution = await developerContract.getContribution(1);
+            contribution = generateContributionObject(contribution);
+            contribution.validationsCount = 1;
+
+            await instance
+              .connect(owner)
+              .addDeveloperContributionValidation(contribution, "justification", validator1Address);
+          });
+
+          it("total penalties is zero", async () => {
+            const totalPenalties = await developerContract.totalPenalties(dev1Address);
+
+            expect(totalPenalties).to.equal(0);
+          });
+        });
+      });
+    });
+
+    context("without allowed caller", () => {
+      it("should return error", async () => {
+        let contribution = await developerContract.getContribution(1);
+        contribution = generateContributionObject(contribution);
+
+        await expect(
+          instance
+            .connect(validator1Address)
+            .addDeveloperContributionValidation(contribution, "justification", validator1Address)
         ).to.be.revertedWith("Not allowed caller");
       });
     });

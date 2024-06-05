@@ -109,9 +109,9 @@ contract DeveloperContract is Ownable, Callable {
     contribution.validationsCount += 1;
     contributions[id] = contribution;
 
-    bool mustInvalidateInspection = contribution.validationsCount >= validatorContract.majorityValidatorsCount();
+    bool mustInvalidateContribution = contribution.validationsCount >= validatorContract.majorityValidatorsCount();
 
-    if (mustInvalidateInspection) invalidateContribution(contribution);
+    if (mustInvalidateContribution) invalidateContribution(contribution);
 
     validatorContract.addDeveloperContributionValidation(contribution, justification, msg.sender);
   }
@@ -126,8 +126,7 @@ contract DeveloperContract is Ownable, Callable {
     Developer memory developer = developers[addr];
 
     developers[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : developer.pool.level;
-
-    developerPool.resetLevels(addr, developer.pool.currentEra, removeSomeLevels);
+    developerPool.resetLevels(addr, developerPoolEra(), removeSomeLevels);
   }
 
   /**
@@ -150,6 +149,14 @@ contract DeveloperContract is Ownable, Callable {
    */
   function getDeveloper(address addr) public view returns (Developer memory developer) {
     return developers[addr];
+  }
+
+  /**
+   * @dev Returns a contribution
+   * @param id contributionId
+   */
+  function getContribution(uint256 id) public view returns (Contribution memory) {
+    return contributions[id];
   }
 
   /**

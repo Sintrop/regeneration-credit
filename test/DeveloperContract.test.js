@@ -47,7 +47,7 @@ describe("DeveloperContract", (accounts) => {
     await validatorContract.connect(from).addValidator();
   };
 
-  const penalties = 3;
+  const maxPenalties = 3;
   const firstValidatorLimit = 8;
   const secondValidatorLimit = 14;
 
@@ -90,10 +90,10 @@ describe("DeveloperContract", (accounts) => {
       userContract.target,
       developerPool.target,
       validatorContract.target,
-      penalties
+      maxPenalties
     );
 
-    const contractDependencies = {
+    const validatorContractDependencies = {
       userContractAddress: userContract.target,
       producerContractAddress: userContract.target,
       validatorPoolAddress: validatorPool.target,
@@ -108,7 +108,7 @@ describe("DeveloperContract", (accounts) => {
     await validatorContract.newAllowedCaller(instance.target);
     await instance.newAllowedCaller(validatorContract.target);
     await rcToken.addContractPool(developerPool.target, "30000000000000000000000000");
-    await validatorContract.setContractAddressDependencies(contractDependencies);
+    await validatorContract.setContractAddressDependencies(validatorContractDependencies);
     await addInvitation(owner, dev1Address, userTypes.Developer, owner);
   });
 
@@ -293,10 +293,16 @@ describe("DeveloperContract", (accounts) => {
             expect(construbution.invalidatedAt).to.above(0);
           });
 
-          it("set penalties to developer", async () => {
+          it("set maxPenalties to developer", async () => {
             const totalPenalties = await instance.totalPenalties(dev1Address);
 
             expect(totalPenalties).to.eq(1);
+          });
+
+          it("user type must be DEVELOPER yet", async () => {
+            const userType = await userContract.getUser(dev1Address);
+
+            expect(userType).to.eq(userTypes.Developer);
           });
 
           it("must remove one pool level from current era", async () => {
@@ -342,6 +348,31 @@ describe("DeveloperContract", (accounts) => {
 
             expect(eraLevels).to.eq(1);
           });
+        });
+      });
+
+      context("when developer reach max maxPenalties", () => {
+        beforeEach(async () => {
+          await addValidator(validator2Address);
+
+          await instance.connect(dev1Address).addContribution("report");
+          await instance.connect(validator1Address).addContributionValidation(1, "justification");
+
+          await advanceBlock(developerPoolParams.blocksPerEra);
+
+          await instance.connect(dev1Address).addContribution("report");
+          await instance.connect(validator1Address).addContributionValidation(2, "justification");
+
+          await advanceBlock(developerPoolParams.blocksPerEra);
+
+          await instance.connect(dev1Address).addContribution("report");
+          await instance.connect(validator1Address).addContributionValidation(3, "justification");
+        });
+
+        it("user type must be DENIED", async () => {
+          const userType = await userContract.getUser(dev1Address);
+
+          expect(userType).to.eq(userTypes.Denied);
         });
       });
 
