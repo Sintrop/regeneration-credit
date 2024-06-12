@@ -248,15 +248,16 @@ describe("Sintrop", () => {
     const categoryContractFactory = await ethers.getContractFactory("CategoryContract");
     categoryContract = await categoryContractFactory.deploy();
 
+    const validatorContractDependencies = {
+      userContractAddress: userContract.target,
+      producerContractAddress: producerContract.target,
+      validatorPoolAddress: validatorPool.target,
+      inspectorContractAddress: inspectorContract.target,
+      developerContractAddress: ZERO_ADDRESS,
+    };
+
     const validatorContractFactory = await ethers.getContractFactory("ValidatorContract");
-    validatorContract = await validatorContractFactory.deploy(
-      userContract.target,
-      producerContract.target,
-      validatorPool.target,
-      inspectorContract.target,
-      firstValidatorLimit,
-      secondValidatorLimit
-    );
+    validatorContract = await validatorContractFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
     const instanceFactory = await ethers.getContractFactory("Sintrop");
     instance = await instanceFactory.deploy(
@@ -272,6 +273,7 @@ describe("Sintrop", () => {
       sintropArgs.acceptInspectionDelayBlocks
     );
 
+    await validatorContract.setContractAddressDependencies(validatorContractDependencies);
     await userContract.newAllowedCaller(inspectorContract.target);
     await userContract.newAllowedCaller(producerContract.target);
     await userContract.newAllowedCaller(researcherContract.target);
