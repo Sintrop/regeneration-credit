@@ -5,6 +5,7 @@ const { expect } = require("chai");
 const { rcTokenDeployed } = require("./shared/rc_token_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { ethers } = require("hardhat");
+const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
 describe("DeveloperContract", (accounts) => {
   let instance;
@@ -95,7 +96,7 @@ describe("DeveloperContract", (accounts) => {
 
     const validatorContractDependencies = {
       userContractAddress: userContract.target,
-      producerContractAddress: userContract.target,
+      producerContractAddress: ZERO_ADDRESS,
       validatorPoolAddress: validatorPool.target,
       inspectorContractAddress: userContract.target,
       developerContractAddress: instance.target,
@@ -122,6 +123,7 @@ describe("DeveloperContract", (accounts) => {
       expect(developer.userType).to.equal(4);
       expect(developer.name).to.equal("Developer A");
       expect(developer.proofPhoto).to.equal("photoURL");
+      expect(developer.totalContributions).to.equal(0);
       expect(developer.pool.level).to.equal(0);
       expect(developer.pool.currentEra).to.equal(1);
     });
@@ -253,6 +255,27 @@ describe("DeveloperContract", (accounts) => {
       it("should return error message", async () => {
         await expect(instance.connect(owner).addContribution("report")).to.be.revertedWith("Only Developer");
       });
+    });
+  });
+
+  describe("#getContribution", () => {
+    beforeEach(async () => {
+      await addDeveloper("Developer A", dev1Address);
+      await instance.connect(dev1Address).addContribution("report");
+    });
+
+    it("should have fields", async () => {
+      const contribution = await instance.getContribution(1);
+
+      expect(contribution.id).to.equal("1");
+      expect(contribution.era).to.equal("1");
+      expect(contribution.developer).to.equal(dev1Address.address);
+      expect(contribution.level).to.equal("0"); // TODO: Remover esse campo pois não vai ser mais utilizado
+      expect(contribution.report).to.equal("report");
+      expect(contribution.validationsCount).to.equal("0");
+      expect(contribution.contributed).to.equal(true);
+      expect(contribution.valid).to.equal(true);
+      expect(contribution.invalidatedAt).to.equal("0");
     });
   });
 
