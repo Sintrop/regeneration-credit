@@ -47,7 +47,7 @@ describe("ValidatorContract", () => {
     totalTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
-    blocksPerEra: 16,
+    blocksPerEra: 24,
   };
 
   const inspectorPoolArgs = {
