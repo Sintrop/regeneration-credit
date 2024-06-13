@@ -25,6 +25,7 @@ const supporterContractDeploy = require("../migrations/16_supporterContract.depl
 const invitationContractDeploy = require("../migrations/17_invitationContract.deploy.js");
 const categoryContractDeploy = require("../migrations/18_categoryContract.deploy.js");
 const sintropDeploy = require("../migrations/19_sintrop.deploy.js");
+const afterDeploy = require("../migrations/after_deploy.js");
 
 const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -61,6 +62,8 @@ async function main() {
 
   await rcTokenDeploy();
   await userContractDeploy();
+  await validatorPoolDeploy();
+  await validatorContractDeploy();
   await developerPoolDeploy();
   await developerContractDeploy();
   await inspectorPoolDeploy();
@@ -69,8 +72,6 @@ async function main() {
   await producerContractDeploy();
   await researcherPoolDeploy();
   await researcherContractDeploy();
-  await validatorPoolDeploy();
-  await validatorContractDeploy();
   await activistPoolDeploy();
   await activistContractDeploy();
   await supporterPoolDeploy();
@@ -78,6 +79,8 @@ async function main() {
   await categoryContractDeploy();
   await invitationContractDeploy();
   await sintropDeploy();
+
+  await afterDeploy();
 
   showDeployedAddress();
 }

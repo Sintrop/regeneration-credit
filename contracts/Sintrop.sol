@@ -10,7 +10,6 @@ import { Inspector } from "./types/InspectorTypes.sol";
 import { UserContract } from "./UserContract.sol";
 import { UserType, Invitation } from "./types/UserTypes.sol";
 import { ValidatorContract } from "./ValidatorContract.sol";
-import { Validation } from "./types/ValidatorTypes.sol";
 import { ActivistContract } from "./ActivistContract.sol";
 import { CategoryContract } from "./CategoryContract.sol";
 

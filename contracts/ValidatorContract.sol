@@ -3,42 +3,44 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
 import { ProducerContract } from "./ProducerContract.sol";
-import { Validator, Validation, Pool } from "./types/ValidatorTypes.sol";
+import { Validator, UserValidation, ResourceValidation, Pool, ContractsDependency } from "./types/ValidatorTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { Callable } from "./Callable.sol";
 import { ValidatorPool } from "./ValidatorPool.sol";
 import { InspectorContract } from "./InspectorContract.sol";
+import { DeveloperContract } from "./DeveloperContract.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
+import { Contribution } from "./types/DeveloperTypes.sol";
 
 contract ValidatorContract is Callable {
   mapping(address => Validator) internal validators;
-  mapping(address => Validation[]) private userValidations;
-  mapping(uint256 => Validation[]) public inspectionValidations;
-  mapping(address => mapping(uint256 => bool)) internal validatorValidations;
+  mapping(address => UserValidation[]) private userValidations;
+  mapping(uint256 => ResourceValidation[]) public inspectionValidations;
+  mapping(uint256 => ResourceValidation[]) public contributionValidations;
+  mapping(address => mapping(uint256 => bool)) internal validatorContributionsValidations;
+  mapping(address => mapping(uint256 => bool)) internal validatorInspectionsValidations;
 
   UserContract internal userContract;
   ProducerContract internal producerContract;
   ValidatorPool internal validatorPool;
   InspectorContract internal inspectorContract;
+  DeveloperContract internal developerContract;
   address[] internal validatorsAddress;
   uint256 public validatorsCount;
   uint256 internal firstValidatorLimit;
   uint256 internal secondValidatorLimit;
 
-  constructor(
-    address userContractAddress,
-    address producerContractAddress,
-    address validatorPoolAddress,
-    address inspectorContractAddress,
-    uint256 firstValidatorLimit_,
-    uint256 secondValidatorLimit_
-  ) {
-    userContract = UserContract(userContractAddress);
-    producerContract = ProducerContract(producerContractAddress);
-    validatorPool = ValidatorPool(validatorPoolAddress);
-    inspectorContract = InspectorContract(inspectorContractAddress);
+  constructor(uint256 firstValidatorLimit_, uint256 secondValidatorLimit_) {
     firstValidatorLimit = firstValidatorLimit_;
     secondValidatorLimit = secondValidatorLimit_;
+  }
+
+  function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+    userContract = UserContract(contractDependency.userContractAddress);
+    producerContract = ProducerContract(contractDependency.producerContractAddress);
+    validatorPool = ValidatorPool(contractDependency.validatorPoolAddress);
+    inspectorContract = InspectorContract(contractDependency.inspectorContractAddress);
+    developerContract = DeveloperContract(contractDependency.developerContractAddress);
   }
 
   function addValidator() public {
@@ -64,7 +66,7 @@ contract ValidatorContract is Callable {
     uint256 validationsCount = userValidations[userAddress].length + 1;
 
     userValidations[userAddress].push(
-      Validation(msg.sender, userAddress, 0, justification, majorityValidatorsCount_, block.number)
+      UserValidation(msg.sender, userAddress, justification, majorityValidatorsCount_, block.number)
     );
 
     if (validationsCount >= majorityValidatorsCount_) denieUser(userAddress);
@@ -75,23 +77,16 @@ contract ValidatorContract is Callable {
     string memory justification,
     address validatorAddress
   ) public mustBeAllowedCaller {
-    require(!validatorValidations[validatorAddress][inspection.id], "Already voted");
+    require(!validatorInspectionsValidations[validatorAddress][inspection.id], "Already voted");
 
-    validatorValidations[validatorAddress][inspection.id] = true;
+    validatorInspectionsValidations[validatorAddress][inspection.id] = true;
 
     uint256 majorityValidatorsCount_ = majorityValidatorsCount();
 
     bool addPenalty = inspection.validationsCount >= majorityValidatorsCount_;
 
     inspectionValidations[inspection.id].push(
-      Validation(
-        validatorAddress,
-        inspection.acceptedBy,
-        inspection.id,
-        justification,
-        majorityValidatorsCount_,
-        block.number
-      )
+      ResourceValidation(validatorAddress, inspection.id, justification, majorityValidatorsCount_, block.number)
     );
 
     if (!addPenalty) return;
@@ -100,6 +95,35 @@ contract ValidatorContract is Callable {
     removeUserInspection(inspection);
 
     if (inspectorTotalPenalties >= inspectorContract.maxPenalties()) externalDenieUser(inspection.acceptedBy);
+  }
+
+  function addDeveloperContributionValidation(
+    Contribution memory contribution,
+    string memory justification,
+    address validatorAddress
+  ) public mustBeAllowedCaller {
+    require(!validatorContributionsValidations[validatorAddress][contribution.id], "Already voted");
+
+    validatorContributionsValidations[validatorAddress][contribution.id] = true;
+
+    uint256 majorityValidatorsCount_ = majorityValidatorsCount();
+
+    bool addPenalty = contribution.validationsCount >= majorityValidatorsCount_;
+
+    contributionValidations[contribution.id].push(
+      ResourceValidation(validatorAddress, contribution.id, justification, majorityValidatorsCount_, block.number)
+    );
+
+    if (!addPenalty) return;
+
+    uint256 developerTotalPenalties = developerContract.addPenalty(contribution.developer, contribution.id);
+    removeDeveloperContribution(contribution);
+
+    if (developerTotalPenalties >= developerContract.MAX_PENALTIES()) externalDenieUser(contribution.developer);
+  }
+
+  function removeDeveloperContribution(Contribution memory contribution) internal {
+    externalRemoveLevels(contribution.developer, 1);
   }
 
   function removeUserInspection(Inspection memory inspection) internal {
@@ -133,13 +157,14 @@ contract ValidatorContract is Callable {
 
     if (oldUserType == UserType.PRODUCER) return producerContract.resetLevels(userAddress, levels);
     if (oldUserType == UserType.INSPECTOR) return inspectorContract.resetLevels(userAddress, levels);
+    if (oldUserType == UserType.DEVELOPER) return developerContract.resetLevels(userAddress, levels);
   }
 
-  function getUserValidations(address userAddress) public view returns (Validation[] memory) {
+  function getUserValidations(address userAddress) public view returns (UserValidation[] memory) {
     return userValidations[userAddress];
   }
 
-  function getInspectionValidations(uint256 inspectionId) public view returns (Validation[] memory) {
+  function getInspectionValidations(uint256 inspectionId) public view returns (ResourceValidation[] memory) {
     return inspectionValidations[inspectionId];
   }
 
