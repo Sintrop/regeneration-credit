@@ -444,6 +444,7 @@ describe("ValidatorContract", () => {
             validationsCount: 0,
             createdAt: 100,
             acceptedAt: 100,
+            inspectedAt: 100,
             inspectedAtEra: 10,
             invalidatedAt: 0,
           };
@@ -472,6 +473,7 @@ describe("ValidatorContract", () => {
                 validationsCount: 2,
                 createdAt: 100,
                 acceptedAt: 100,
+                inspectedAt: 100,
                 inspectedAtEra: 10,
                 invalidatedAt: 0,
               };
@@ -533,6 +535,7 @@ describe("ValidatorContract", () => {
                 validationsCount: 2,
                 createdAt: 100,
                 acceptedAt: 100,
+                inspectedAt: 100,
                 inspectedAtEra: 10,
                 invalidatedAt: 0,
               };
@@ -594,6 +597,7 @@ describe("ValidatorContract", () => {
               validationsCount: 1,
               createdAt: 100,
               acceptedAt: 100,
+              inspectedAt: 100,
               inspectedAtEra: 10,
               invalidatedAt: 0,
             };

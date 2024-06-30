@@ -25,6 +25,7 @@ struct Inspection {
   uint256 validationsCount;
   uint256 createdAt;
   uint256 acceptedAt;
+  uint256 inspectedAt;
   uint256 inspectedAtEra;
   uint256 invalidatedAt;
 }

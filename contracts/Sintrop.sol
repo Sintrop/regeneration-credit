@@ -156,6 +156,7 @@ contract Sintrop {
     inspection.status = InspectionStatus.INSPECTED;
     inspection.isaScore = categoryContract.calculateIsa(inspection.id, _isaInspection);
     inspection.report = report;
+    inspection.inspectedAt = block.number;
 
     inspections[inspection.id] = inspection;
   }
