@@ -13,6 +13,9 @@ module.exports = {
   networks: {
     hardhat: {
       allowUnlimitedContractSize: true,
+      accounts: {
+        count: 30,
+      },
     },
     localhost: {
       allowUnlimitedContractSize: true,
