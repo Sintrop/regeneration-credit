@@ -1,26 +1,41 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
+import { Callable } from "./Callable.sol";
 import { UserContract } from "./UserContract.sol";
-import { Researcher, Work, Pool } from "./types/ResearcherTypes.sol";
+import { Researcher, Work, Pool, Penalty } from "./types/ResearcherTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { ResearcherPool } from "./ResearcherPool.sol";
+import { ValidatorContract } from "./ValidatorContract.sol";
 
-contract ResearcherContract {
+contract ResearcherContract is Callable {
   mapping(address => Researcher) internal researchers;
-  mapping(uint256 => Work) internal works;
+  mapping(uint256 => Work) public works;
+  mapping(address => Penalty[]) public penalties;
 
   UserContract internal userContract;
   ResearcherPool internal researcherPool;
+  ValidatorContract internal validatorContract;
+
   address[] internal researchersAddress;
   uint256 public researchersCount;
   uint256 public worksCount;
   uint256 internal immutable timeBetweenWorks;
 
-  constructor(address userContractAddress, address researcherPoolAddress, uint256 timeBetweenWorks_) {
+  uint256 public immutable MAX_PENALTIES;
+
+  constructor(
+    address userContractAddress,
+    address researcherPoolAddress,
+    address validatorContractAddress,
+    uint256 timeBetweenWorks_,
+    uint256 maxPenalties_
+  ) {
     userContract = UserContract(userContractAddress);
     researcherPool = ResearcherPool(researcherPoolAddress);
+    validatorContract = ValidatorContract(validatorContractAddress);
     timeBetweenWorks = timeBetweenWorks_;
+    MAX_PENALTIES = maxPenalties_;
   }
 
   /**
@@ -89,7 +104,7 @@ contract ResearcherContract {
 
     uint256 id = worksCount + 1;
 
-    Work memory work = Work(id, msg.sender, title, thesis, file, block.timestamp); // solhint-disable-line
+    Work memory work = Work(id, researcherPoolEra(), msg.sender, title, thesis, file, 0, true, 0, block.timestamp); // solhint-disable-line
 
     works[id] = work;
     worksCount++;
@@ -97,6 +112,46 @@ contract ResearcherContract {
     researchers[msg.sender].lastPublishedAt = block.number;
 
     researcherPool.addLevel(msg.sender, 1, 1);
+  }
+
+  function addWorkValidation(uint256 id, string memory justification) public {
+    require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+
+    Work memory work = works[id];
+
+    require(work.valid && work.era == researcherPoolEra(), "This work is not VALID");
+
+    work.validationsCount += 1;
+    works[id] = work;
+
+    bool mustInvalidateWork = work.validationsCount >= validatorContract.majorityValidatorsCount();
+
+    if (mustInvalidateWork) invalidateWork(work);
+
+    validatorContract.addResearcheWorkValidation(work, justification, msg.sender);
+  }
+
+  function invalidateWork(Work memory work) internal {
+    work.valid = false;
+    work.invalidatedAt = block.number;
+    works[work.id] = work;
+  }
+
+  function resetLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+    Researcher memory researcher = researchers[addr];
+
+    researchers[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : researcher.pool.level;
+    researcherPool.resetLevels(addr, researcherPoolEra(), removeSomeLevels);
+  }
+
+  function addPenalty(address addr, uint256 workId) public mustBeAllowedCaller returns (uint256) {
+    penalties[addr].push(Penalty(workId));
+
+    return totalPenalties(addr);
+  }
+
+  function totalPenalties(address addr) public view returns (uint256) {
+    return penalties[addr].length;
   }
 
   function getWorks() public view returns (Work[] memory) {
