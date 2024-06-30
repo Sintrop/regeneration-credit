@@ -9,8 +9,10 @@ import { Callable } from "./Callable.sol";
 import { ValidatorPool } from "./ValidatorPool.sol";
 import { InspectorContract } from "./InspectorContract.sol";
 import { DeveloperContract } from "./DeveloperContract.sol";
+import { ResearcherContract } from "./ResearcherContract.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
 import { Contribution } from "./types/DeveloperTypes.sol";
+import { Work } from "./types/ResearcherTypes.sol";
 
 contract ValidatorContract is Callable {
   mapping(address => Validator) internal validators;
@@ -19,12 +21,15 @@ contract ValidatorContract is Callable {
   mapping(uint256 => ResourceValidation[]) public contributionValidations;
   mapping(address => mapping(uint256 => bool)) internal validatorContributionsValidations;
   mapping(address => mapping(uint256 => bool)) internal validatorInspectionsValidations;
+  mapping(address => mapping(uint256 => bool)) internal validatorWorksValidations;
 
   UserContract internal userContract;
   ProducerContract internal producerContract;
   ValidatorPool internal validatorPool;
   InspectorContract internal inspectorContract;
   DeveloperContract internal developerContract;
+  ResearcherContract internal researcherContract;
+
   address[] internal validatorsAddress;
   uint256 public validatorsCount;
   uint256 internal firstValidatorLimit;
@@ -41,6 +46,7 @@ contract ValidatorContract is Callable {
     validatorPool = ValidatorPool(contractDependency.validatorPoolAddress);
     inspectorContract = InspectorContract(contractDependency.inspectorContractAddress);
     developerContract = DeveloperContract(contractDependency.developerContractAddress);
+    researcherContract = ResearcherContract(contractDependency.researcherContractAddress);
   }
 
   function addValidator() public {
@@ -122,8 +128,37 @@ contract ValidatorContract is Callable {
     if (developerTotalPenalties >= developerContract.MAX_PENALTIES()) externalDenieUser(contribution.developer);
   }
 
+  function addResearcheWorkValidation(
+    Work memory work,
+    string memory justification,
+    address validatorAddress
+  ) public mustBeAllowedCaller {
+    require(!validatorWorksValidations[validatorAddress][work.id], "Already voted");
+
+    validatorWorksValidations[validatorAddress][work.id] = true;
+
+    uint256 majorityValidatorsCount_ = majorityValidatorsCount();
+
+    bool addPenalty = work.validationsCount >= majorityValidatorsCount_;
+
+    contributionValidations[work.id].push(
+      ResourceValidation(validatorAddress, work.id, justification, majorityValidatorsCount_, block.number)
+    );
+
+    if (!addPenalty) return;
+
+    uint256 totalPenalties = researcherContract.addPenalty(work.createdBy, work.id);
+    removeReseacherWork(work);
+
+    if (totalPenalties >= researcherContract.MAX_PENALTIES()) externalDenieUser(work.createdBy);
+  }
+
   function removeDeveloperContribution(Contribution memory contribution) internal {
     externalRemoveLevels(contribution.developer, 1);
+  }
+
+  function removeReseacherWork(Work memory work) internal {
+    externalRemoveLevels(work.createdBy, 1);
   }
 
   function removeUserInspection(Inspection memory inspection) internal {
@@ -158,6 +193,7 @@ contract ValidatorContract is Callable {
     if (oldUserType == UserType.PRODUCER) return producerContract.resetLevels(userAddress, levels);
     if (oldUserType == UserType.INSPECTOR) return inspectorContract.resetLevels(userAddress, levels);
     if (oldUserType == UserType.DEVELOPER) return developerContract.resetLevels(userAddress, levels);
+    if (oldUserType == UserType.RESEARCHER) return researcherContract.resetLevels(userAddress, levels);
   }
 
   function getUserValidations(address userAddress) public view returns (UserValidation[] memory) {

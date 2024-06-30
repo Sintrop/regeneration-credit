@@ -37,4 +37,5 @@ struct ContractsDependency {
   address validatorPoolAddress;
   address inspectorContractAddress;
   address developerContractAddress;
+  address researcherContractAddress;
 }
