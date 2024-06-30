@@ -64,6 +64,13 @@ describe("ValidatorContract", () => {
     blocksPerEra: 30,
   };
 
+  let researcherPoolParams = {
+    totalTokens: "30000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 30,
+  };
+
   const addDeveloper = async (name, from) => {
     await developerContract.connect(from).addDeveloper(name, "photoURL");
   };
@@ -169,6 +176,14 @@ describe("ValidatorContract", () => {
       developerPoolParams.blocksPerEra
     );
 
+    reseacherPoolFactory = await ethers.getContractFactory("ResearcherPool");
+    researcherPool = await reseacherPoolFactory.deploy(
+      rcToken.target,
+      researcherPoolParams.halving,
+      researcherPoolParams.totalEras,
+      researcherPoolParams.blocksPerEra
+    );
+
     const maxPenalties = 2;
     const inspectorContractFactory = await ethers.getContractFactory("InspectorContract");
     inspectorContract = await inspectorContractFactory.deploy(userContract.target, inspectorPool.target, maxPenalties);
@@ -185,12 +200,24 @@ describe("ValidatorContract", () => {
       developerMaxPenalties
     );
 
+    const reseacherMaxPenalties = 3;
+    const reseacherTimeBetweenWorks = 10;
+    researcherContractFactory = await ethers.getContractFactory("ResearcherContract");
+    researcherContract = await researcherContractFactory.deploy(
+      userContract.target,
+      researcherPool.target,
+      instance.target,
+      reseacherMaxPenalties,
+      reseacherTimeBetweenWorks
+    );
+
     const validatorContractDependencies = {
       userContractAddress: userContract.target,
       producerContractAddress: producerContract.target,
       validatorPoolAddress: validatorPool.target,
       inspectorContractAddress: inspectorContract.target,
       developerContractAddress: developerContract.target,
+      researcherContractAddress: researcherContract.target,
     };
 
     await userContract.newAllowedCaller(instance.target);
