@@ -378,14 +378,6 @@ describe("UserContract", function () {
     });
   });
 
-  describe("#userTypes", () => {
-    it("should have enums", async () => {
-      const types = await instance.userTypes();
-
-      expect(JSON.stringify(types)).to.equal(JSON.stringify(definedTypes));
-    });
-  });
-
   describe("#newAllowedCaller", () => {
     context("with owner", () => {
       it("should add new allowed caller with success", async () => {

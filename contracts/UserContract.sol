@@ -7,7 +7,7 @@ import { Callable } from "./Callable.sol";
 
 /**
  * @title UserContract
- * @dev This contract work as a centralized user's system, where all users has your userType here
+ * @dev This contract works as a centralized user's registration system
  */
 contract UserContract is Ownable, Callable {
   mapping(address => UserType) internal users;
@@ -78,37 +78,6 @@ contract UserContract is Ownable, Callable {
   function getUserTypeSettings(UserType userType) public view returns (UserTypeSetting memory) {
     return userTypeSettings[userType];
   }
-
-  function userTypes()
-    public
-    pure
-    returns (
-      string memory,
-      string memory,
-      string memory,
-      string memory,
-      string memory,
-      string memory,
-      string memory,
-      string memory,
-      string memory,
-      string memory
-    )
-  {
-    return (
-      "UNDEFINED",
-      "PRODUCER",
-      "INSPECTOR",
-      "RESEARCHER",
-      "DEVELOPER",
-      "CONTRIBUTOR",
-      "ACTIVIST",
-      "SUPPORTER",
-      "VALIDATOR",
-      "DENIED"
-    );
-  }
-
   /**
    * @dev Add new delation in the system
    * @param addr The address of the user

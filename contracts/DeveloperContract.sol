@@ -68,10 +68,9 @@ contract DeveloperContract is Ownable, Callable {
   }
 
   function addContribution(string memory report) public {
-    uint256 currentEra = developerPoolEra();
-
     require(userContract.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
-
+    
+    uint256 currentEra = developerPoolEra();
     uint256 contributionEra = developerContributionsEra[currentEra][msg.sender];
 
     require(contributionEra == 0, "Already has contribution");
