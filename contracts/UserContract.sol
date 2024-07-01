@@ -78,6 +78,7 @@ contract UserContract is Ownable, Callable {
   function getUserTypeSettings(UserType userType) public view returns (UserTypeSetting memory) {
     return userTypeSettings[userType];
   }
+
   /**
    * @dev Add new delation in the system
    * @param addr The address of the user
