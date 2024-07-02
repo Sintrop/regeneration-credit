@@ -36,7 +36,7 @@ describe("UserContract", function () {
   };
 
   const addDelation = async (denouncedAddress, from) => {
-    await instance.connect(from).addDelation(denouncedAddress, "title", "testimony", "proofPhoto");
+    await instance.connect(from).addDelation(denouncedAddress, "title", "testimony");
   };
 
   beforeEach(async function () {
@@ -435,12 +435,10 @@ describe("UserContract", function () {
           const id = delations[0].id;
           const title = delations[0].title;
           const testimony = delations[0].testimony;
-          const proofPhoto = delations[0].proofPhoto;
 
           expect(id).to.equal(1);
           expect(title).to.equal("title");
           expect(testimony).to.equal("testimony");
-          expect(proofPhoto).to.equal("proofPhoto");
         });
       });
     });

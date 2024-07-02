@@ -20,7 +20,6 @@ struct Delation {
   address reported;
   string title;
   string testimony;
-  string proofPhoto;
 }
 
 struct Invitation {
