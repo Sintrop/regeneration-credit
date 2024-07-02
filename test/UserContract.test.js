@@ -12,6 +12,7 @@ describe("UserContract", function () {
     researcherProportionality: 1,
     developerProportionality: 1,
     validatorProportionality: 1,
+    contributorProportionality: 1,
   };
 
   const definedTypes = [
@@ -251,6 +252,19 @@ describe("UserContract", function () {
 
           it("should return error message", async () => {
             expect(addUser(user3Address, userTypes.Developer, owner)).to.be.revertedWith("Proportionality invalid");
+          });
+        });
+
+        context("to contributor with proportionality 1", () => {
+          beforeEach(async () => {
+            await addInvitation(owner, user2Address, userTypes.Contributor, owner);
+            await addInvitation(owner, user3Address, userTypes.Contributor, owner);
+
+            await addUser(user2Address, userTypes.Contributor, owner);
+          });
+
+          it("should return error message", async () => {
+            expect(addUser(user3Address, userTypes.Contributor, owner)).to.be.revertedWith("Proportionality invalid");
           });
         });
 
@@ -506,7 +520,7 @@ describe("UserContract", function () {
       it("returns settings", async () => {
         const settings = await instance.getUserTypeSettings(userTypes.Contributor);
 
-        expect(settings).deep.to.equal([0n, false, true, 100n]);
+        expect(settings).deep.to.equal([1n, false, true, 1000n]);
       });
     });
 
