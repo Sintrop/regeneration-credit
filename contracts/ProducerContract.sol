@@ -9,7 +9,7 @@ import { UserType } from "./types/UserTypes.sol";
 
 /**
  * @title ProducerContract
- * @dev Producer resource that represent a user that can request a inspection
+ * @dev Contract with the producer user logic. Producers must be projects that are restoring nature ecosystems.
  */
 contract ProducerContract is Callable {
   uint256 internal constant MINIMUM_INSPECTION_TO_POOL = 3;
