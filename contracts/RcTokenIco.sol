@@ -16,10 +16,13 @@ contract RcTokenIco is Ownable {
 
   RcToken internal rcToken;
 
+  uint256 icoEnds;
+
   event BuyTokensEvent(address indexed _buyer, uint256 _totalWei, uint256 _totalRcTokens, bool _transferStatus);
 
   receive() external payable {
-    require(salesOpen, "ICO: sales not open");
+    require(salesOpen, "ICO: sales is not open");
+    require(icoTime(), "ICO: sales is not open anymore");
 
     uint256 rcTokens = rcTokenAmount(msg.value);
 
@@ -30,6 +33,12 @@ contract RcTokenIco is Ownable {
 
   function balance() public view returns (uint256) {
     return address(this).balance;
+  }
+
+  function icoTime() internal view returns (bool) {
+    uint256 expiresAt = rcToken.deployedAt() + icoEnds;
+    
+    if (expiresAt > block.number) return true;
   }
 
   function changeSalesOpen() public onlyOwner returns (bool success) {
