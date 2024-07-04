@@ -12,6 +12,7 @@ describe("UserContract", function () {
     researcherProportionality: 1,
     developerProportionality: 1,
     validatorProportionality: 1,
+    contributorProportionality: 1,
   };
 
   const definedTypes = [
