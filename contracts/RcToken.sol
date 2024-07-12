@@ -19,7 +19,7 @@ contract RcToken is ERC20, Ownable {
   uint256 internal totalCertified_;
   uint256 internal totalLocked_;
 
-  uint256 deployedAt_;
+  uint256 public deployedAt_;
 
   using SafeMath for uint256;
 

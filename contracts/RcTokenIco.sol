@@ -38,7 +38,7 @@ contract RcTokenIco is Ownable {
   function icoTime() internal view returns (bool) {
     uint256 expiresAt = rcToken.deployedAt() + icoEnds;
     
-    if (expiresAt > block.number) return true;
+    return expiresAt > block.number;
   }
 
   function changeSalesOpen() public onlyOwner returns (bool success) {
