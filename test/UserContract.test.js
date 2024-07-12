@@ -505,7 +505,7 @@ describe("UserContract", function () {
       it("returns settings", async () => {
         const settings = await instance.getUserTypeSettings(userTypes.Contributor);
 
-        expect(settings).deep.to.equal([0n, false, true, 100n]);
+        expect(settings).deep.to.equal([1n, false, true, 1000n]);
       });
     });
 
