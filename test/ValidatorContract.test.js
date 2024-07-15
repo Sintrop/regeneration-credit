@@ -1294,7 +1294,7 @@ describe("ValidatorContract", () => {
           });
 
           it("withdraw 1200000000000000000000000 tokens", async () => {
-            const balanceOf = await validatorPool.balanceOf(validator1Address);
+            const balanceOf = await rcToken.balanceOf(validator1Address);
             const expectedBalance = 1200000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
@@ -1313,7 +1313,7 @@ describe("ValidatorContract", () => {
           });
 
           it("withdraw 600000000000000000000000n tokens", async () => {
-            const balanceOf = await validatorPool.balanceOf(validator1Address);
+            const balanceOf = await rcToken.balanceOf(validator1Address);
             const expectedBalance = 600000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);

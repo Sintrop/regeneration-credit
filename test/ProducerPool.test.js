@@ -32,22 +32,6 @@ describe("ProducerPool", () => {
     await rcToken.addContractPool(instance.target, args.totalTokens);
   });
 
-  describe("#balanceOf", () => {
-    beforeEach(async () => {
-      await transferTokensTo(producer2Address, "10000000000000000000");
-    });
-
-    it("must return the balance of the producer 1", async () => {
-      const balanceOf = await instance.balanceOf(producer1Address);
-      expect(balanceOf).to.equal(0);
-    });
-
-    it("must return the balance of the producer 2", async () => {
-      const balanceOf = await instance.balanceOf(producer2Address);
-      expect(balanceOf).to.equal(10000000000000000000n);
-    });
-  });
-
   describe("#tokensPerEpoch", () => {
     context("when is epoch 1", () => {
       it("must return 360000000000000000000000000", async () => {
@@ -250,7 +234,7 @@ describe("ProducerPool", () => {
 
           it("balanceOf must be 0", async () => {
             await instance.withdraw(producer1Address, 1);
-            const balanceOf = await instance.balanceOf(producer1Address);
+            const balanceOf = await rcToken.balanceOf(producer1Address);
 
             expect(balanceOf).to.equal(0);
           });
@@ -265,7 +249,7 @@ describe("ProducerPool", () => {
 
             it("must withdraw 30000000000000000000000000 of tokens", async () => {
               await instance.withdraw(producer1Address, 1);
-              const balanceOf = await instance.balanceOf(producer1Address);
+              const balanceOf = await rcToken.balanceOf(producer1Address);
 
               expect(balanceOf).to.equal(30000000000000000000000000n);
             });
@@ -289,7 +273,7 @@ describe("ProducerPool", () => {
           context("when producer1 have 80 isaScore", () => {
             it("must withdraw 19200000000000000000000000 of tokens", async () => {
               await instance.withdraw(producer1Address, 1);
-              const balanceOf = await instance.balanceOf(producer1Address);
+              const balanceOf = await rcToken.balanceOf(producer1Address);
 
               expect(balanceOf).to.equal(19200000000000000000000000n);
             });
@@ -298,7 +282,7 @@ describe("ProducerPool", () => {
           context("when producer2 have 45 isaScore", () => {
             it("must withdraw 10800000000000000000000000 tokens", async () => {
               await instance.withdraw(producer2Address, 1);
-              const balanceOf = await instance.balanceOf(producer2Address);
+              const balanceOf = await rcToken.balanceOf(producer2Address);
 
               expect(balanceOf).to.equal(10800000000000000000000000n);
             });

@@ -628,13 +628,13 @@ describe("ProducerContract", () => {
               });
 
               it("producer A must withdraw 3600000000000000000000000n tokens", async () => {
-                const balanceOf = await producerPool.balanceOf(prod1Address);
+                const balanceOf = await rcToken.balanceOf(prod1Address);
 
                 expect(balanceOf).to.equal(3600000000000000000000000n);
               });
 
               it("producer B must withdraw 3600000000000000000000000n tokens", async () => {
-                const balanceOf = await producerPool.balanceOf(prod2Address);
+                const balanceOf = await rcToken.balanceOf(prod2Address);
 
                 expect(balanceOf).to.equal(3600000000000000000000000n);
               });
@@ -660,7 +660,7 @@ describe("ProducerContract", () => {
               });
 
               it("must withdraw 7200000000000000000000000n tokens", async () => {
-                const balanceOf = await producerPool.balanceOf(prod1Address);
+                const balanceOf = await rcToken.balanceOf(prod1Address);
 
                 expect(balanceOf).to.equal(7200000000000000000000000n);
               });

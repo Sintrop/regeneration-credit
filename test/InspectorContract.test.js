@@ -251,7 +251,7 @@ describe("InspectorContract", () => {
           });
 
           it("withdraw 7200000000000000000000000 tokens", async () => {
-            const balanceOf = await inspectorPool.balanceOf(inspe1Address);
+            const balanceOf = await rcToken.balanceOf(inspe1Address);
             const expectedBalance = 7200000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
@@ -273,7 +273,7 @@ describe("InspectorContract", () => {
           });
 
           it("withdraw 3600000000000000000000000n tokens", async () => {
-            const balanceOf = await inspectorPool.balanceOf(inspe1Address);
+            const balanceOf = await rcToken.balanceOf(inspe1Address);
             const expectedBalance = 3600000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);

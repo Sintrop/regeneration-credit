@@ -4,7 +4,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("ContributorPool", () => {
-  let instance;
+  let instance, rcToken;
   let owner, contr1Address, contr2Address;
   let args = {
     totalContributorPoolTokens: "7500000000000000000000000",
@@ -16,7 +16,7 @@ describe("ContributorPool", () => {
   beforeEach(async () => {
     [owner, contr1Address, contr2Address] = await ethers.getSigners();
 
-    const rcToken = await rcTokenDeployed();
+    rcToken = await rcTokenDeployed();
 
     const instanceFactory = await ethers.getContractFactory("ContributorPool");
     instance = await instanceFactory.deploy(rcToken.target, args.halving, args.totalEras, args.blocksPerEra);
@@ -27,12 +27,6 @@ describe("ContributorPool", () => {
   });
 
   context("when deploy contract", () => {
-    it("should blocksPerEra be equal the deployed value", async () => {
-      const blocksPerEra = await instance.blocksPerEra();
-
-      expect(blocksPerEra).to.equal(args.blocksPerEra);
-    });
-
     it("should initial be era equal one", async () => {
       const currentContractEra = await instance.currentContractEra();
       expect(currentContractEra).to.equal(1);
@@ -78,14 +72,6 @@ describe("ContributorPool", () => {
       const balance = await instance.balance();
 
       expect(balance).to.equal(args.totalContributorPoolTokens);
-    });
-  });
-
-  context("#balanceOf", () => {
-    it("should return balanceOf address", async () => {
-      const balanceOf = await instance.balanceOf(instance.target);
-
-      expect(balanceOf).to.equal(args.totalContributorPoolTokens);
     });
   });
 
@@ -312,7 +298,7 @@ describe("ContributorPool", () => {
 
               it("must withdraw 600000000000000000000000 tokens", async () => {
                 await instance.withdraw(contr1Address, 1);
-                const balanceOf = await instance.balanceOf(contr1Address);
+                const balanceOf = await rcToken.balanceOf(contr1Address);
 
                 expect(balanceOf).to.equal(150000000000000000000000n);
               });
@@ -332,14 +318,14 @@ describe("ContributorPool", () => {
 
               it("shoud withdraw 300000000000000000000000 tokens", async () => {
                 await instance.withdraw(contr1Address, 1);
-                const balanceOf = await instance.balanceOf(contr1Address);
+                const balanceOf = await rcToken.balanceOf(contr1Address);
 
                 expect(balanceOf).to.equal(300000000000000000000000n);
               });
 
               it("shoud withdraw 0 tokens to contr2", async () => {
                 await instance.withdraw(contr2Address, 1);
-                const balanceOf = await instance.balanceOf(contr2Address);
+                const balanceOf = await rcToken.balanceOf(contr2Address);
 
                 expect(balanceOf).to.equal("0");
               });
@@ -360,7 +346,7 @@ describe("ContributorPool", () => {
 
               it("shoud withdraw 150000000000000000000000 tokens", async () => {
                 await instance.withdraw(contr2Address, 1);
-                const balanceOf = await instance.balanceOf(contr2Address);
+                const balanceOf = await rcToken.balanceOf(contr2Address);
 
                 expect(balanceOf).to.equal(150000000000000000000000n);
               });
@@ -406,7 +392,7 @@ describe("ContributorPool", () => {
               });
 
               it("contr1 balance must be 300000000000000000000000", async () => {
-                const balanceOf = await instance.balanceOf(contr1Address);
+                const balanceOf = await rcToken.balanceOf(contr1Address);
 
                 expect(balanceOf).to.equal(300000000000000000000000n);
               });
@@ -434,7 +420,7 @@ describe("ContributorPool", () => {
               });
 
               it("contr2 balance must be 300000000000000000000000", async () => {
-                const balanceOf = await instance.balanceOf(contr2Address);
+                const balanceOf = await rcToken.balanceOf(contr2Address);
 
                 expect(balanceOf).to.equal(300000000000000000000000n);
               });

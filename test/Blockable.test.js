@@ -8,7 +8,18 @@ describe("Blockable", () => {
 
   const params = {
     blocksPerEra: 10,
+    tokensPerEpochs: [
+      360000000000000000000000000n,
+      180000000000000000000000000n,
+      90000000000000000000000000n,
+      45000000000000000000000000n,
+      22500000000000000000000000n,
+      11250000000000000000000000n,
+      5625000000000000000000000n,
+      2812500000000000000000000n,
+    ],
     eraMax: 12,
+    halving: 12,
   };
 
   beforeEach(async () => {
@@ -16,27 +27,12 @@ describe("Blockable", () => {
 
     const blockableContractFactory = await ethers.getContractFactory("Blockable");
 
-    instance = await blockableContractFactory.deploy(params.blocksPerEra, params.eraMax);
-  });
-
-  context("when deploy", () => {
-    it("should have correct blocksPerEra", async () => {
-      const blocksPerEra = await instance.blocksPerEra();
-
-      expect(blocksPerEra).to.equal(params.blocksPerEra);
-    });
-
-    it("should have correct eraMax", async () => {
-      const eraMax = await instance.eraMax();
-
-      expect(eraMax).to.equal(params.eraMax);
-    });
-
-    it("should have deployedAt state", async () => {
-      const deployedAt = await instance.deployedAt();
-
-      expect(parseInt(deployedAt)).to.be.greaterThan(0);
-    });
+    instance = await blockableContractFactory.deploy(
+      params.blocksPerEra,
+      params.tokensPerEpochs,
+      params.eraMax,
+      params.halving
+    );
   });
 
   context("when call currentContractEra", () => {

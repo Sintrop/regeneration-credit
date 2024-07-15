@@ -46,6 +46,7 @@ describe("Sintrop", () => {
   };
 
   const timeBetweenWorks = 6;
+  const researcherMaxPenalties = 3;
 
   const producerPoolArgs = {
     totalTokens: "750000000000000000000000000",
@@ -230,6 +231,9 @@ describe("Sintrop", () => {
     const producerContractFactory = await ethers.getContractFactory("ProducerContract");
     const activistContractFactory = await ethers.getContractFactory("ActivistContract");
 
+    const validatorContractFactory = await ethers.getContractFactory("ValidatorContract");
+    validatorContract = await validatorContractFactory.deploy(firstValidatorLimit, secondValidatorLimit);
+
     inspectorContract = await inspectorContractFactory.deploy(
       userContract.target,
       inspectorPool.target,
@@ -239,7 +243,9 @@ describe("Sintrop", () => {
     researcherContract = await researcherContractFactory.deploy(
       userContract.target,
       researcherPool.target,
-      timeBetweenWorks
+      validatorContract.target,
+      timeBetweenWorks,
+      researcherMaxPenalties
     );
 
     producerContract = await producerContractFactory.deploy(userContract.target, producerPool.target);
@@ -254,10 +260,8 @@ describe("Sintrop", () => {
       validatorPoolAddress: validatorPool.target,
       inspectorContractAddress: inspectorContract.target,
       developerContractAddress: ZERO_ADDRESS,
+      researcherContractAddress: researcherContract.target,
     };
-
-    const validatorContractFactory = await ethers.getContractFactory("ValidatorContract");
-    validatorContract = await validatorContractFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
     const instanceFactory = await ethers.getContractFactory("Sintrop");
     instance = await instanceFactory.deploy(
