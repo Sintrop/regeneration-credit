@@ -47,7 +47,7 @@ contract RcTokenIco is Ownable {
     uint256 expiresAt = DEPLOYED_AT + ICO_END_BLOCK;
 
     return expiresAt > block.number;
-  }  
+  }
 
   function withdraw(uint256 weiAmount) public onlyOwner returns (bool success) {
     require(weiAmount <= address(this).balance, "ICO: insufficient balance");

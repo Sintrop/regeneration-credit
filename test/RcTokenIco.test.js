@@ -136,12 +136,12 @@ describe("RcTokenIco", () => {
     context("when the sales is not open anymore", () => {
       it("it return erro message", async () => {
         await advanceBlock(10000);
-        await expect(sendTransation(user1Address, instance.target, 1)).to.be.revertedWith("ICO: sales is not open anymore");
+        await expect(sendTransation(user1Address, instance.target, 1)).to.be.revertedWith(
+          "ICO: sales is not open anymore"
+        );
       });
     });
   });
-
-  
 
   describe("#balance", () => {
     it("should return the contract balance", async () => {
