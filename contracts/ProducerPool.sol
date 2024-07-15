@@ -54,7 +54,7 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
   }
 
   /**
-   * @dev Returns how much tokensa user has
+   * @dev Returns how much tokens a user has
    * @param addr The address of the developer
    */
   function balanceOf(address addr) public view returns (uint256) {

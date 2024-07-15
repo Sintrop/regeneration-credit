@@ -14,14 +14,13 @@ contract RcToken is ERC20, Ownable {
   mapping(address => uint256) internal balances;
   mapping(address => mapping(address => uint256)) internal allowed;
   mapping(address => uint256) public certificate;
+  mapping(address => bool) internal contractsPools;
 
   uint256 internal totalSupply_;
   uint256 internal totalCertified_;
   uint256 internal totalLocked_;
 
   using SafeMath for uint256;
-
-  mapping(address => bool) internal contractsPools;
 
   constructor(uint256 total, address _icoAddr) ERC20(NAME, SYMBOL) {
     totalSupply_ = total;
@@ -35,17 +34,6 @@ contract RcToken is ERC20, Ownable {
     totalLocked_ += _numTokens;
 
     return true;
-  }
-
-  function removeContractPool(address _fundAddress) public onlyOwner returns (bool) {
-    contractsPools[_fundAddress] = false;
-    return true;
-  }
-
-  function approveWith(address delegate, uint256 numTokens) public mustBeContractPool returns (uint256) {
-    allowed[msg.sender][delegate] = numTokens + allowance(msg.sender, delegate);
-    emit Approval(msg.sender, delegate, numTokens);
-    return numTokens;
   }
 
   function transferWith(
