@@ -27,11 +27,10 @@ contract InspectorContract is Callable {
   }
 
   /**
-   * @dev Allow a new register of inspector
+   * @dev Allow a new registration of inspector
    * @param name the name of the inspector
    * @return a Inspector
    */
-  // TODO Add mustBeAllowedCaller
   function addInspector(
     string memory name,
     string memory proofPhoto
