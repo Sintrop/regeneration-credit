@@ -255,6 +255,19 @@ describe("UserContract", function () {
           });
         });
 
+        context("to contributor with proportionality 1", () => {
+          beforeEach(async () => {
+            await addInvitation(owner, user2Address, userTypes.Contributor, owner);
+            await addInvitation(owner, user3Address, userTypes.Contributor, owner);
+
+            await addUser(user2Address, userTypes.Contributor, owner);
+          });
+
+          it("should return error message", async () => {
+            expect(addUser(user3Address, userTypes.Contributor, owner)).to.be.revertedWith("Proportionality invalid");
+          });
+        });        
+
         context("to validator with proportionality 1", () => {
           beforeEach(async () => {
             await addInvitation(owner, user2Address, userTypes.Validator, owner);
