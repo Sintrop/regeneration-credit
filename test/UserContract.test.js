@@ -266,7 +266,7 @@ describe("UserContract", function () {
           it("should return error message", async () => {
             expect(addUser(user3Address, userTypes.Contributor, owner)).to.be.revertedWith("Proportionality invalid");
           });
-        });        
+        });
 
         context("to validator with proportionality 1", () => {
           beforeEach(async () => {
