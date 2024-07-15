@@ -16,12 +16,12 @@ contract RcTokenIco is Ownable {
 
   RcToken internal rcToken;
 
-  uint256 icoEnds;
+  uint256 internal icoEnds;
 
   event BuyTokensEvent(address indexed _buyer, uint256 _totalWei, uint256 _totalRcTokens, bool _transferStatus);
 
   receive() external payable {
-    require(salesOpen, "ICO: sales is not open");
+    //require(salesOpen, "ICO: sales is not open");
     require(icoTime(), "ICO: sales is not open anymore");
 
     uint256 rcTokens = rcTokenAmount(msg.value);
