@@ -12,17 +12,19 @@ contract RcTokenIco is Ownable {
   uint256 public constant RATE = 80000;
   uint256 public constant MAXIMUM_EXCHANGE = 80000 * 100;
 
-  bool public salesOpen = false;
-
   RcToken internal rcToken;
 
-  uint256 internal icoEnds;
+  uint256 internal immutable DEPLOYED_AT = block.number;
+
+  // ATTENTION: Update before deploy
+  uint256 internal immutable ICO_START_BLOCK = 100;
+  uint256 internal immutable ICO_END_BLOCK = 10000;
 
   event BuyTokensEvent(address indexed _buyer, uint256 _totalWei, uint256 _totalRcTokens, bool _transferStatus);
 
   receive() external payable {
-    //require(salesOpen, "ICO: sales is not open");
-    require(icoTime(), "ICO: sales is not open anymore");
+    require(icoStart(), "ICO: sales is not open yet");
+    require(icoEnd(), "ICO: sales is not open anymore");
 
     uint256 rcTokens = rcTokenAmount(msg.value);
 
@@ -35,16 +37,17 @@ contract RcTokenIco is Ownable {
     return address(this).balance;
   }
 
-  function icoTime() internal view returns (bool) {
-    uint256 expiresAt = rcToken.deployedAt() + icoEnds;
-    
-    return expiresAt > block.number;
+  function icoStart() internal view returns (bool) {
+    uint256 startsAt = DEPLOYED_AT + ICO_START_BLOCK;
+
+    return block.number > startsAt;
   }
 
-  function changeSalesOpen() public onlyOwner returns (bool success) {
-    salesOpen = !salesOpen;
-    return true;
-  }
+  function icoEnd() internal view returns (bool) {
+    uint256 expiresAt = DEPLOYED_AT + ICO_END_BLOCK;
+
+    return expiresAt > block.number;
+  }  
 
   function withdraw(uint256 weiAmount) public onlyOwner returns (bool success) {
     require(weiAmount <= address(this).balance, "ICO: insufficient balance");

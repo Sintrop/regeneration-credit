@@ -19,8 +19,6 @@ contract RcToken is ERC20, Ownable {
   uint256 internal totalCertified_;
   uint256 internal totalLocked_;
 
-  uint256 public deployedAt_;
-
   using SafeMath for uint256;
 
   mapping(address => bool) internal contractsPools;
@@ -29,7 +27,6 @@ contract RcToken is ERC20, Ownable {
     totalSupply_ = total;
     balances[msg.sender] = totalSupply_;
     transfer(_icoAddr, FUND_ICO);
-    deployedAt_ = block.number;
   }
 
   function addContractPool(address _fundAddress, uint256 _numTokens) public onlyOwner returns (bool) {
@@ -145,10 +142,6 @@ contract RcToken is ERC20, Ownable {
 
   function totalLocked() public view returns (uint256) {
     return totalLocked_;
-  }
-
-  function deployedAt() public view returns (uint256) {
-    return deployedAt_;
   }
 
   modifier mustBeContractPool() {

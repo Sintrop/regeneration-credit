@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const { advanceBlock } = require("./shared/advance_block");
 
 describe("RcTokenIco", () => {
   let instance;
@@ -32,7 +33,7 @@ describe("RcTokenIco", () => {
   describe("#receive", () => {
     context("when the sales is open", () => {
       beforeEach(async () => {
-        await instance.changeSalesOpen({ from: ownerAddress });
+        await advanceBlock(100);
       });
 
       context("when user send 0.5 ether", () => {
@@ -126,12 +127,21 @@ describe("RcTokenIco", () => {
       });
     });
 
-    context("when the sales is not open", () => {
+    context("when the sales is not open yet", () => {
       it("it return erro message", async () => {
-        await expect(sendTransation(user1Address, instance.target, 1)).to.be.revertedWith("ICO: sales not open");
+        await expect(sendTransation(user1Address, instance.target, 1)).to.be.revertedWith("ICO: sales is not open yet");
+      });
+    });
+
+    context("when the sales is not open anymore", () => {
+      it("it return erro message", async () => {
+        await advanceBlock(10000);
+        await expect(sendTransation(user1Address, instance.target, 1)).to.be.revertedWith("ICO: sales is not open anymore");
       });
     });
   });
+
+  
 
   describe("#balance", () => {
     it("should return the contract balance", async () => {
@@ -141,38 +151,11 @@ describe("RcTokenIco", () => {
     });
   });
 
-  describe("#changeSalesOpen", () => {
-    context("when the sales is open", () => {
-      beforeEach(async () => {
-        await instance.changeSalesOpen({ from: ownerAddress });
-      });
-
-      it("should change the sales status to false", async () => {
-        await instance.changeSalesOpen({ from: ownerAddress });
-        const salesOpen = await instance.salesOpen();
-
-        expect(salesOpen).to.equal(false);
-      });
-    });
-
-    context("when the sales is not open", () => {
-      beforeEach(async () => {
-        await instance.changeSalesOpen({ from: ownerAddress });
-      });
-
-      it("should change the sales status to true", async () => {
-        const salesOpen = await instance.salesOpen();
-
-        expect(salesOpen).to.equal(true);
-      });
-    });
-  });
-
   describe("#withdraw", () => {
     context("when is the owner", () => {
       context("when sold 1 ether", () => {
         beforeEach(async () => {
-          await instance.changeSalesOpen({ from: ownerAddress });
+          await advanceBlock(100);
           sendTransation(user1Address, instance.target, 1);
         });
 
@@ -232,7 +215,7 @@ describe("RcTokenIco", () => {
 
       context("when sold 1 ether", () => {
         beforeEach(async () => {
-          await instance.changeSalesOpen({ from: ownerAddress });
+          await advanceBlock(100);
           sendTransation(user1Address, instance.target, 1);
         });
 
