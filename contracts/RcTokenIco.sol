@@ -9,8 +9,8 @@ contract RcTokenIco is Ownable {
   using SafeMath for uint256;
 
   uint8 public constant DECIMALS = 18;
-  uint256 public constant RATE = 80000;
-  uint256 public constant MAXIMUM_EXCHANGE = 80000 * 100;
+  uint256 public constant RATE = 240000;
+  uint256 public constant MAXIMUM_EXCHANGE = 240000 * 100;
 
   bool public salesOpen = false;
 
