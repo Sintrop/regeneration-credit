@@ -20,7 +20,7 @@ describe("Blockable", () => {
     instance = await blockableContractFactory.deploy(params.blocksPerEra, params.eraMax, params.halving);
   });
 
-  context("when call currentContractEra", () => {
+  describe("#currentContractEra", () => {
     context("when don't have passed eras", () => {
       it("should return that be in era 1", async () => {
         const currentContractEra = await instance.currentContractEra();
@@ -52,7 +52,41 @@ describe("Blockable", () => {
     });
   });
 
-  context("when call canApproveTimes", () => {
+  describe("#currentEpoch", () => {
+    context("when is era 1", () => {
+      it("return currentEpoch equal 1", async () => {
+        const currentEpoch = await instance.currentEpoch();
+
+        expect(currentEpoch).to.equal(1);
+      });
+    });
+
+    context("when is era 6", () => {
+      beforeEach(async () => {
+        await advanceBlock(5 * params.blocksPerEra);
+      });
+
+      it("return currentEpoch equal 1", async () => {
+        const currentEpoch = await instance.currentEpoch();
+
+        expect(currentEpoch).to.equal(1);
+      });
+    });
+
+    context("when is era 15", () => {
+      beforeEach(async () => {
+        await advanceBlock(14 * params.blocksPerEra);
+      });
+
+      it("return currentEpoch equal 1", async () => {
+        const currentEpoch = await instance.currentEpoch();
+
+        expect(currentEpoch).to.equal(2);
+      });
+    });
+  });
+
+  describe("#canApproveTimes", () => {
     beforeEach(async () => {
       blocksPrecision = await instance.BLOCKS_PRECISION();
     });
@@ -163,7 +197,7 @@ describe("Blockable", () => {
     });
   });
 
-  context("when call nextApproveIn", () => {
+  context("#nextApproveIn", () => {
     context("when user can approve", () => {
       beforeEach(async () => {
         await advanceBlock(2 * params.blocksPerEra);
@@ -187,7 +221,7 @@ describe("Blockable", () => {
     });
   });
 
-  context("when call canApprove", () => {
+  context("#canApprove", () => {
     context("when currentUserEra is less than currentContractEra and currentUserEra don't have passed eraMax", () => {
       beforeEach(async () => {
         await advanceBlock(5 * params.blocksPerEra);
