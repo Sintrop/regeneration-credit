@@ -197,7 +197,7 @@ describe("Blockable", () => {
     });
   });
 
-  context("#nextApproveIn", () => {
+  describe("#nextApproveIn", () => {
     context("when user can approve", () => {
       beforeEach(async () => {
         await advanceBlock(2 * params.blocksPerEra);
@@ -221,7 +221,7 @@ describe("Blockable", () => {
     });
   });
 
-  context("#canApprove", () => {
+  describe("#canApprove", () => {
     context("when currentUserEra is less than currentContractEra and currentUserEra don't have passed eraMax", () => {
       beforeEach(async () => {
         await advanceBlock(5 * params.blocksPerEra);
