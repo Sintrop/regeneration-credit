@@ -356,7 +356,7 @@ describe("ResearcherContract", () => {
     });
   });
 
-  describe.only("addWorkValidation", () => {
+  describe("addWorkValidation", () => {
     context("with validator", () => {
       beforeEach(async () => {
         await addInvitation(owner, validator1Address, userTypes.Validator, owner);
