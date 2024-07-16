@@ -241,7 +241,7 @@ describe("ResearcherContract", () => {
           });
 
           it("withdraw 1200000000000000000000000 tokens", async () => {
-            const balanceOf = await researcherPool.balanceOf(resea1Address);
+            const balanceOf = await rcToken.balanceOf(resea1Address);
             const expectedBalance = 1200000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
@@ -261,7 +261,7 @@ describe("ResearcherContract", () => {
           });
 
           it("withdraw 600000000000000000000000n tokens", async () => {
-            const balanceOf = await researcherPool.balanceOf(resea1Address);
+            const balanceOf = await rcToken.balanceOf(resea1Address);
             const expectedBalance = 600000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
@@ -356,7 +356,7 @@ describe("ResearcherContract", () => {
     });
   });
 
-  describe.only("addWorkValidation", () => {
+  describe("addWorkValidation", () => {
     context("with validator", () => {
       beforeEach(async () => {
         await addInvitation(owner, validator1Address, userTypes.Validator, owner);

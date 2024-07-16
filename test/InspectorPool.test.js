@@ -4,7 +4,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("InspectorPool", (accounts) => {
-  let instance;
+  let instance, rcToken;
   let owner, inspector1Address, inspector2Address;
 
   const args = {
@@ -17,7 +17,7 @@ describe("InspectorPool", (accounts) => {
   beforeEach(async () => {
     [owner, inspector1Address, inspector2Address] = await ethers.getSigners();
 
-    const rcToken = await rcTokenDeployed();
+    rcToken = await rcTokenDeployed();
 
     const instanceFactory = await ethers.getContractFactory("InspectorPool");
     instance = await instanceFactory.deploy(rcToken.target, args.halving, args.totalEras, args.blocksPerEra);
@@ -28,12 +28,6 @@ describe("InspectorPool", (accounts) => {
   });
 
   describe("after deploy", () => {
-    it("must blocksPerEra be equal the deployed value", async () => {
-      const blocksPerEra = await instance.blocksPerEra();
-
-      expect(blocksPerEra).to.equal(args.blocksPerEra);
-    });
-
     it("must initial era equal one", async () => {
       const currentContractEra = await instance.currentContractEra();
       expect(currentContractEra).to.equal(1);
@@ -79,14 +73,6 @@ describe("InspectorPool", (accounts) => {
       const balance = await instance.balance();
 
       expect(balance).to.equal(args.totalInspectorPoolTokens);
-    });
-  });
-
-  describe("#balanceOf", () => {
-    it("should return balanceOf address", async () => {
-      const balanceOf = await instance.balanceOf(instance.target);
-
-      expect(balanceOf).to.equal(args.totalInspectorPoolTokens);
     });
   });
 
@@ -224,7 +210,7 @@ describe("InspectorPool", (accounts) => {
 
               it("must withdraw 600000000000000000000000 tokens", async () => {
                 await instance.withdraw(inspector1Address, 1);
-                const balanceOf = await instance.balanceOf(inspector1Address);
+                const balanceOf = await rcToken.balanceOf(inspector1Address);
 
                 expect(balanceOf).to.equal(3600000000000000000000000n);
               });
@@ -244,14 +230,14 @@ describe("InspectorPool", (accounts) => {
 
               it("shoud withdraw 1200000000000000000000000 tokens", async () => {
                 await instance.withdraw(inspector1Address, 1);
-                const balanceOf = await instance.balanceOf(inspector1Address);
+                const balanceOf = await rcToken.balanceOf(inspector1Address);
 
                 expect(balanceOf).to.equal(7200000000000000000000000n);
               });
 
               it("shoud withdraw 0 tokens to inspector2", async () => {
                 await instance.withdraw(inspector2Address, 1);
-                const balanceOf = await instance.balanceOf(inspector2Address);
+                const balanceOf = await rcToken.balanceOf(inspector2Address);
 
                 expect(balanceOf).to.equal("0");
               });
@@ -272,7 +258,7 @@ describe("InspectorPool", (accounts) => {
 
               it("shoud withdraw 600000000000000000000000 tokens", async () => {
                 await instance.withdraw(inspector2Address, 1);
-                const balanceOf = await instance.balanceOf(inspector2Address);
+                const balanceOf = await rcToken.balanceOf(inspector2Address);
 
                 expect(balanceOf).to.equal(3600000000000000000000000n);
               });
@@ -318,7 +304,7 @@ describe("InspectorPool", (accounts) => {
               });
 
               it("inspector1 balance must be 1200000000000000000000000", async () => {
-                const balanceOf = await instance.balanceOf(inspector1Address);
+                const balanceOf = await rcToken.balanceOf(inspector1Address);
 
                 expect(balanceOf).to.equal(7200000000000000000000000n);
               });
@@ -346,7 +332,7 @@ describe("InspectorPool", (accounts) => {
               });
 
               it("inspector2 balance must be 1200000000000000000000000", async () => {
-                const balanceOf = await instance.balanceOf(inspector2Address);
+                const balanceOf = await rcToken.balanceOf(inspector2Address);
 
                 expect(balanceOf).to.equal(7200000000000000000000000n);
               });

@@ -4,7 +4,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("ActivistPool", () => {
-  let instance;
+  let instance, rcToken;
   let owner, activist1Address, activist2Address;
 
   const args = {
@@ -17,7 +17,7 @@ describe("ActivistPool", () => {
   beforeEach(async () => {
     [owner, activist1Address, activist2Address] = await ethers.getSigners();
 
-    const rcToken = await rcTokenDeployed();
+    rcToken = await rcTokenDeployed();
 
     const activistPoolFactory = await ethers.getContractFactory("ActivistPool");
     instance = await activistPoolFactory.deploy(rcToken.target, args.halving, args.totalEras, args.blocksPerEra);
@@ -28,12 +28,6 @@ describe("ActivistPool", () => {
   });
 
   describe("after deploy", () => {
-    it("must blocksPerEra be equal the deployed value", async () => {
-      const blocksPerEra = await instance.blocksPerEra();
-
-      expect(blocksPerEra).to.equal(args.blocksPerEra);
-    });
-
     it("must initial era equal one", async () => {
       const currentContractEra = await instance.currentContractEra();
       expect(currentContractEra).to.equal(1);
@@ -79,14 +73,6 @@ describe("ActivistPool", () => {
       const balance = await instance.balance();
 
       expect(balance).to.equal(args.totalActivistPoolTokens);
-    });
-  });
-
-  describe("#balanceOf", () => {
-    it("should return balanceOf address", async () => {
-      const balanceOf = await instance.balanceOf(instance.target);
-
-      expect(balanceOf).to.equal(args.totalActivistPoolTokens);
     });
   });
 
@@ -313,7 +299,7 @@ describe("ActivistPool", () => {
 
               it("must withdraw 600000000000000000000000 tokens", async () => {
                 await instance.withdraw(activist1Address, 1);
-                const balanceOf = await instance.balanceOf(activist1Address);
+                const balanceOf = await rcToken.balanceOf(activist1Address);
 
                 expect(balanceOf).to.equal(600000000000000000000000n);
               });
@@ -333,14 +319,14 @@ describe("ActivistPool", () => {
 
               it("shoud withdraw 1200000000000000000000000 tokens", async () => {
                 await instance.withdraw(activist1Address, 1);
-                const balanceOf = await instance.balanceOf(activist1Address);
+                const balanceOf = await rcToken.balanceOf(activist1Address);
 
                 expect(balanceOf).to.equal(1200000000000000000000000n);
               });
 
               it("shoud withdraw 0 tokens to activist2", async () => {
                 await instance.withdraw(activist2Address, 1);
-                const balanceOf = await instance.balanceOf(activist2Address);
+                const balanceOf = await rcToken.balanceOf(activist2Address);
 
                 expect(balanceOf).to.equal("0");
               });
@@ -361,7 +347,7 @@ describe("ActivistPool", () => {
 
               it("shoud withdraw 600000000000000000000000 tokens", async () => {
                 await instance.withdraw(activist2Address, 1);
-                const balanceOf = await instance.balanceOf(activist2Address);
+                const balanceOf = await rcToken.balanceOf(activist2Address);
 
                 expect(balanceOf).to.equal(600000000000000000000000n);
               });
@@ -407,7 +393,7 @@ describe("ActivistPool", () => {
               });
 
               it("activist1 balance must be 1200000000000000000000000", async () => {
-                const balanceOf = await instance.balanceOf(activist1Address);
+                const balanceOf = await rcToken.balanceOf(activist1Address);
 
                 expect(balanceOf).to.equal(1200000000000000000000000n);
               });
@@ -435,7 +421,7 @@ describe("ActivistPool", () => {
               });
 
               it("activist2 balance must be 1200000000000000000000000", async () => {
-                const balanceOf = await instance.balanceOf(activist2Address);
+                const balanceOf = await rcToken.balanceOf(activist2Address);
 
                 expect(balanceOf).to.equal(1200000000000000000000000n);
               });
