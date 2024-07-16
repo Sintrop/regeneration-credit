@@ -37,7 +37,7 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
     uint256 _halving,
     uint256 _totalEras,
     uint256 _blocksPerEra
-  ) Blockable(_blocksPerEra, tokensPerEpochs, _totalEras, _halving) {
+  ) Blockable(_blocksPerEra, _totalEras, _halving) Poolable(tokensPerEpochs) {
     rcToken = RcTokenInterface(rcTokenAddress);
   }
 
@@ -52,7 +52,7 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
     require(canApprove(era), "You can't approve yet");
     require(currentEpoch() <= LIMIT_EPOCHS_SIZE, "You can't approve anymore");
 
-    uint256 numTokens = tokens(era, delegate, tokensPerEra());
+    uint256 numTokens = tokens(era, delegate, tokensPerEra(currentEpoch(), HALVING));
 
     if (numTokens == 0) return;
 

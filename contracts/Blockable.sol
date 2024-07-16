@@ -14,14 +14,12 @@ contract Blockable {
   uint256 public constant BLOCKS_PRECISION = 5;
 
   uint256 private immutable BLOCKS_PER_ERA;
-  uint256[8] private tokensPerEpochs;
   uint256 private immutable DEPLOYED_AT;
   uint256 private immutable ERA_MAX;
-  uint256 private immutable HALVING;
+  uint256 internal immutable HALVING;
 
-  constructor(uint256 blocksPerEra, uint256[8] memory _tokensPerEpochs, uint256 _eraMax, uint256 _halving) {
+  constructor(uint256 blocksPerEra, uint256 _eraMax, uint256 _halving) {
     BLOCKS_PER_ERA = blocksPerEra;
-    tokensPerEpochs = _tokensPerEpochs;
     ERA_MAX = _eraMax;
     DEPLOYED_AT = currentBlockNumber();
     HALVING = _halving;
@@ -33,14 +31,6 @@ contract Blockable {
 
   function currentContractEra() public view returns (uint256) {
     return currentBlockNumber().sub(DEPLOYED_AT).div(BLOCKS_PER_ERA).add(1);
-  }
-
-  function tokensPerEra() public view returns (uint256) {
-    return tokensPerEpoch().div(HALVING);
-  }
-
-  function tokensPerEpoch() public view returns (uint256) {
-    return tokensPerEpochs[currentEpoch().sub(1)];
   }
 
   function currentEpoch() public view returns (uint256) {

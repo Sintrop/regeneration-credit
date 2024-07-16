@@ -8,16 +8,6 @@ describe("Blockable", () => {
 
   const params = {
     blocksPerEra: 10,
-    tokensPerEpochs: [
-      360000000000000000000000000n,
-      180000000000000000000000000n,
-      90000000000000000000000000n,
-      45000000000000000000000000n,
-      22500000000000000000000000n,
-      11250000000000000000000000n,
-      5625000000000000000000000n,
-      2812500000000000000000000n,
-    ],
     eraMax: 12,
     halving: 12,
   };
@@ -27,12 +17,7 @@ describe("Blockable", () => {
 
     const blockableContractFactory = await ethers.getContractFactory("Blockable");
 
-    instance = await blockableContractFactory.deploy(
-      params.blocksPerEra,
-      params.tokensPerEpochs,
-      params.eraMax,
-      params.halving
-    );
+    instance = await blockableContractFactory.deploy(params.blocksPerEra, params.eraMax, params.halving);
   });
 
   context("when call currentContractEra", () => {
