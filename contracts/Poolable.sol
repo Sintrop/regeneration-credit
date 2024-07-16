@@ -64,7 +64,7 @@ contract Poolable {
     return tokensPerEpoch(currentEpoch).div(halving);
   }
 
-  function tokensPerEpoch(uint256 currentEpoch) private view returns (uint256) {
+  function tokensPerEpoch(uint256 currentEpoch) public view returns (uint256) {
     if (currentEpoch > ERA_MAX) return 0;
 
     return tokensPerEpochs[currentEpoch.sub(1)];

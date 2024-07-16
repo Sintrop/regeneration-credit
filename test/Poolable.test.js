@@ -101,4 +101,82 @@ describe("Poolable", () => {
       });
     });
   });
+
+  describe("#tokensPerEpoch", () => {
+    context("with valid epoch", () => {
+      context("when current epoch is 1", () => {
+        it("returns 360000000000000000000000000 tokens", async () => {
+          const tokensPerEpoch = await instance.tokensPerEpoch(1);
+
+          expect(tokensPerEpoch).to.equal(360000000000000000000000000n);
+        });
+      });
+
+      context("when current epoch is 2", () => {
+        it("returns 180000000000000000000000000 tokens", async () => {
+          const tokensPerEpoch = await instance.tokensPerEpoch(2);
+
+          expect(tokensPerEpoch).to.equal(180000000000000000000000000n);
+        });
+      });
+
+      context("when current epoch is 3", () => {
+        it("returns 90000000000000000000000000 tokens", async () => {
+          const tokensPerEpoch = await instance.tokensPerEpoch(3);
+
+          expect(tokensPerEpoch).to.equal(90000000000000000000000000n);
+        });
+      });
+
+      context("when current epoch is 4", () => {
+        it("returns 45000000000000000000000000 tokens", async () => {
+          const tokensPerEpoch = await instance.tokensPerEpoch(4);
+
+          expect(tokensPerEpoch).to.equal(45000000000000000000000000n);
+        });
+      });
+
+      context("when current epoch is 5", () => {
+        it("returns 22500000000000000000000000 tokens", async () => {
+          const tokensPerEpoch = await instance.tokensPerEpoch(5);
+
+          expect(tokensPerEpoch).to.equal(22500000000000000000000000n);
+        });
+      });
+
+      context("when current epoch is 6", () => {
+        it("returns 11250000000000000000000000 tokens", async () => {
+          const tokensPerEpoch = await instance.tokensPerEpoch(6);
+
+          expect(tokensPerEpoch).to.equal(11250000000000000000000000n);
+        });
+      });
+
+      context("when current epoch is 7", () => {
+        it("returns 5625000000000000000000000 tokens", async () => {
+          const tokensPerEpoch = await instance.tokensPerEpoch(7);
+
+          expect(tokensPerEpoch).to.equal(5625000000000000000000000n);
+        });
+      });
+
+      context("when current epoch is 8", () => {
+        it("returns 2812500000000000000000000 tokens", async () => {
+          const tokensPerEpoch = await instance.tokensPerEpoch(8);
+
+          expect(tokensPerEpoch).to.equal(2812500000000000000000000n);
+        });
+      });
+    });
+
+    context("with invalid epoch", () => {
+      context("with current epoch equal 9", () => {
+        it("returns 0 tokens", async () => {
+          const tokensPerEpoch = await instance.tokensPerEpoch(9);
+
+          expect(tokensPerEpoch).to.equal(0);
+        });
+      });
+    });
+  });
 });
