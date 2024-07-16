@@ -75,13 +75,6 @@ contract ContributorPool is Poolable, Ownable, Blockable, Callable {
     addPoolLevel(addr, currentLevel, addLevels, era);
   }
 
-  function removeLevel(address addr) public mustBeAllowedCaller {
-    uint256 era = currentContractEra();
-    uint256 levels = 1;
-
-    removePoolLevel(addr, era, levels);
-  }
-
   function resetLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
     resetLevelsFromEra(addr, era, removeSomeLevels);
   }
