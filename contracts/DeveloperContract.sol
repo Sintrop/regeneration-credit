@@ -175,7 +175,7 @@ contract DeveloperContract is Ownable, Callable {
     Developer memory developer = developers[msg.sender];
     uint256 currentEra = developer.pool.currentEra;
 
-    require(developerPool.canApprove(currentEra), "Can't approve withdraw");
+    require(developerPool.canWithdraw(currentEra), "Can't approve withdraw");
 
     developers[msg.sender].pool.currentEra++;
 

@@ -171,7 +171,7 @@ contract ResearcherContract is Callable {
     Researcher memory researcher = researchers[msg.sender];
     uint256 currentEra = researcher.pool.currentEra;
 
-    require(researcherPool.canApprove(currentEra), "Can't approve withdraw");
+    require(researcherPool.canWithdraw(currentEra), "Can't approve withdraw");
 
     researchers[msg.sender].pool.currentEra++;
 
