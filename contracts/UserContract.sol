@@ -24,15 +24,16 @@ contract UserContract is Ownable, Callable {
     uint256 activistProportionality,
     uint256 researcherProportionality,
     uint256 developerProportionality,
-    uint256 validatorProportionality
+    uint256 validatorProportionality,
+    uint256 contributorProportionality
   ) {
     userTypeSettings[UserType.PRODUCER] = UserTypeSetting(0, false, true, 100);
-    userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(0, false, true, 100);
     userTypeSettings[UserType.INSPECTOR] = UserTypeSetting(inspectorProportionality, true, true, 100);
     userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(activistProportionality, false, true, 1000);
     userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(researcherProportionality, false, true, 1000);
     userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(developerProportionality, false, true, 1000);
     userTypeSettings[UserType.VALIDATOR] = UserTypeSetting(validatorProportionality, false, true, 10000);
+    userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(contributorProportionality, false, true, 1000);
   }
 
   /**
