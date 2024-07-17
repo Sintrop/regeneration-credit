@@ -12,21 +12,21 @@ contract Blockable {
   using SafeMath for uint256;
 
   uint256 public constant BLOCKS_PRECISION = 5;
-
+  uint256 internal constant LIMIT_EPOCHS_SIZE = 8;
   uint256 private immutable BLOCKS_PER_ERA;
   uint256 private immutable DEPLOYED_AT;
-  uint256 private immutable ERA_MAX;
+  uint256 private immutable LIMIT_ERAS_SIZE;
   uint256 internal immutable HALVING;
 
-  constructor(uint256 blocksPerEra, uint256 _eraMax, uint256 _halving) {
+  constructor(uint256 blocksPerEra, uint256 _limitErasSize, uint256 _halving) {
     BLOCKS_PER_ERA = blocksPerEra;
-    ERA_MAX = _eraMax;
+    LIMIT_ERAS_SIZE = _limitErasSize;
     DEPLOYED_AT = currentBlockNumber();
     HALVING = _halving;
   }
 
   function canApprove(uint256 currentUserEra) public view returns (bool) {
-    return currentUserEra < currentContractEra() && validEra(currentUserEra);
+    return currentUserEra < currentContractEra() && isAValidEra(currentUserEra);
   }
 
   function currentContractEra() public view returns (uint256) {
@@ -51,8 +51,12 @@ contract Blockable {
 
   // PRIVATE FUNCTIONS
 
-  function validEra(uint256 currentEra) internal view returns (bool) {
-    return currentEra <= ERA_MAX;
+  function isAValidEra(uint256 currentEra) internal view returns (bool) {
+    return currentEra <= LIMIT_ERAS_SIZE;
+  }
+
+  function isAValidEpoch() internal view returns (bool) {
+    return currentEpoch() <= LIMIT_EPOCHS_SIZE;
   }
 
   function currentUserBlockNumber(uint256 currentUserEra) internal view returns (uint256) {

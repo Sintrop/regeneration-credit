@@ -30,8 +30,6 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
     1125 * 10 ** 20
   ];
 
-  uint256 internal constant LIMIT_EPOCHS_SIZE = 8;
-
   constructor(
     address rcTokenAddress,
     uint256 _halving,
@@ -50,7 +48,7 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
 
   function withdraw(address delegate, uint256 era) public mustBeAllowedCaller {
     require(canApprove(era), "You can't approve yet");
-    require(currentEpoch() <= LIMIT_EPOCHS_SIZE, "You can't approve anymore");
+    require(isAValidEpoch(), "You can't approve anymore");
 
     uint256 numTokens = tokens(era, delegate, tokensPerEra(currentEpoch(), HALVING));
 
