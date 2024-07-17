@@ -252,7 +252,7 @@ contract ValidatorContract is Callable {
     Validator memory validator = validators[msg.sender];
     uint256 currentEra = validator.pool.currentEra;
 
-    require(validatorPool.canApprove(currentEra), "Can't approve withdraw");
+    require(validatorPool.canWithdraw(currentEra), "Can't approve withdraw");
 
     validators[msg.sender].pool.currentEra++;
 

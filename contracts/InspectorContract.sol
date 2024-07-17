@@ -152,7 +152,7 @@ contract InspectorContract is Callable {
 
     uint256 currentEra = inspector.pool.currentEra;
 
-    require(inspectorPool.canApprove(currentEra), "Can't approve withdraw");
+    require(inspectorPool.canWithdraw(currentEra), "Can't approve withdraw");
 
     inspectors[msg.sender].pool.currentEra++;
 

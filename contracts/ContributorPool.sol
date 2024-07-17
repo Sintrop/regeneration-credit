@@ -46,17 +46,15 @@ contract ContributorPool is Poolable, Ownable, Blockable, Callable {
     return rcToken.balanceOf(address(this));
   }
 
-  function withdraw(address delegate, uint256 era) public mustBeAllowedCaller {
-    require(canApprove(era), "You can't approve yet");
-    require(isAValidEpoch(), "You can't approve anymore");
-
+  function withdraw(
+    address delegate,
+    uint256 era
+  ) public mustBeAllowedCaller canWithdrawModifier(era) isAValidEpochModifier {
     uint256 numTokens = tokens(era, delegate, tokensPerEra(currentEpoch(), HALVING));
 
-    if (numTokens == 0) return;
+    updateEraAfterWithdraw(era, delegate, numTokens);
 
-    eras[era].users++;
-    eras[era].tokens += numTokens;
-    eraTokens[era][delegate] = numTokens;
+    if (numTokens == 0) return;
 
     rcToken.transferWith(address(this), delegate, numTokens);
   }

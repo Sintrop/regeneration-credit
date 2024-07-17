@@ -108,7 +108,7 @@ contract ContributorContract is Ownable {
     Contributor memory contributor = contributors[msg.sender];
     uint256 currentEra = contributor.pool.currentEra;
 
-    require(contributorPool.canApprove(currentEra), "Can't approve withdraw");
+    require(contributorPool.canWithdraw(currentEra), "Can't approve withdraw");
 
     contributors[msg.sender].pool.currentEra++;
 

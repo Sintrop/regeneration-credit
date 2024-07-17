@@ -49,9 +49,9 @@ describe("DeveloperPool", () => {
     context("when cant approve", () => {
       it("should return integer > zero", async () => {
         let currentEra = 1;
-        const nextApproveIn = await instance.nextApproveIn(currentEra);
+        const nextWithdrawIn = await instance.nextWithdrawIn(currentEra);
 
-        expect(parseInt(nextApproveIn)).to.above(0);
+        expect(parseInt(nextWithdrawIn)).to.above(0);
       });
     });
 
@@ -60,9 +60,9 @@ describe("DeveloperPool", () => {
         let currentEra = 1;
 
         await advanceBlock(args.blocksPerEra);
-        const nextApproveIn = await instance.nextApproveIn(currentEra);
+        const nextWithdrawIn = await instance.nextWithdrawIn(currentEra);
 
-        expect(parseInt(nextApproveIn)).to.lessThan(1);
+        expect(parseInt(nextWithdrawIn)).to.lessThan(1);
       });
     });
   });
@@ -168,9 +168,9 @@ describe("DeveloperPool", () => {
     context("when cant approve", () => {
       it("should return zero times", async () => {
         let currentEra = 1;
-        const canApproveTimes = await instance.canApproveTimes(currentEra);
+        const canWithdrawTimes = await instance.canWithdrawTimes(currentEra);
 
-        expect(canApproveTimes).to.equal(0);
+        expect(canWithdrawTimes).to.equal(0);
       });
     });
 
@@ -179,10 +179,10 @@ describe("DeveloperPool", () => {
         let currentEra = 1;
         await advanceBlock(args.blocksPerEra * 2 + 2);
 
-        const canApproveTimes = await instance.canApproveTimes(currentEra);
+        const canWithdrawTimes = await instance.canWithdrawTimes(currentEra);
 
         const blocksPrecision = await instance.BLOCKS_PRECISION();
-        const fixedPoint = parseInt(canApproveTimes) / 10 ** parseInt(blocksPrecision);
+        const fixedPoint = parseInt(canWithdrawTimes) / 10 ** parseInt(blocksPrecision);
 
         expect(Math.ceil(fixedPoint)).to.equal(2);
       });
