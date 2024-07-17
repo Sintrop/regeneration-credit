@@ -32,110 +32,66 @@ describe("ProducerPool", () => {
     await rcToken.addContractPool(instance.target, args.totalTokens);
   });
 
-  describe("#balanceOf", () => {
-    beforeEach(async () => {
-      await transferTokensTo(producer2Address, "10000000000000000000");
-    });
-
-    it("must return the balance of the producer 1", async () => {
-      const balanceOf = await instance.balanceOf(producer1Address);
-      expect(balanceOf).to.equal(0);
-    });
-
-    it("must return the balance of the producer 2", async () => {
-      const balanceOf = await instance.balanceOf(producer2Address);
-      expect(balanceOf).to.equal(10000000000000000000n);
-    });
-  });
-
   describe("#tokensPerEpoch", () => {
     context("when is epoch 1", () => {
       it("must return 360000000000000000000000000", async () => {
-        const tokensPerEpoch = await instance.tokensPerEpoch();
+        const tokensPerEpoch = await instance.tokensPerEpoch(1);
 
         expect(tokensPerEpoch).to.equal("360000000000000000000000000");
       });
     });
 
     context("when is epoch 2", () => {
-      beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.halving);
-      });
-
       it("must return 180000000000000000000000000", async () => {
-        const tokensPerEpoch = await instance.tokensPerEpoch();
+        const tokensPerEpoch = await instance.tokensPerEpoch(2);
 
         expect(tokensPerEpoch).to.equal("180000000000000000000000000");
       });
     });
 
     context("when is epoch 3", () => {
-      beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.halving * 2);
-      });
-
       it("must return 90000000000000000000000000", async () => {
-        const tokensPerEpoch = await instance.tokensPerEpoch();
+        const tokensPerEpoch = await instance.tokensPerEpoch(3);
 
         expect(tokensPerEpoch).to.equal("90000000000000000000000000");
       });
     });
 
     context("when is epoch 4", () => {
-      beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.halving * 3);
-      });
-
       it("must return 45000000000000000000000000", async () => {
-        const tokensPerEpoch = await instance.tokensPerEpoch();
+        const tokensPerEpoch = await instance.tokensPerEpoch(4);
 
         expect(tokensPerEpoch).to.equal("45000000000000000000000000");
       });
     });
 
     context("when is epoch 5", () => {
-      beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.halving * 4);
-      });
-
       it("must return 22500000000000000000000000", async () => {
-        const tokensPerEpoch = await instance.tokensPerEpoch();
+        const tokensPerEpoch = await instance.tokensPerEpoch(5);
 
         expect(tokensPerEpoch).to.equal("22500000000000000000000000");
       });
     });
 
     context("when is epoch 6", () => {
-      beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.halving * 5);
-      });
-
       it("must return 11250000000000000000000000", async () => {
-        const tokensPerEpoch = await instance.tokensPerEpoch();
+        const tokensPerEpoch = await instance.tokensPerEpoch(6);
 
         expect(tokensPerEpoch).to.equal("11250000000000000000000000");
       });
     });
 
     context("when is epoch 7", () => {
-      beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.halving * 6);
-      });
-
       it("must return 5625000000000000000000000", async () => {
-        const tokensPerEpoch = await instance.tokensPerEpoch();
+        const tokensPerEpoch = await instance.tokensPerEpoch(7);
 
         expect(tokensPerEpoch).to.equal("5625000000000000000000000");
       });
     });
 
     context("when is epoch 8", () => {
-      beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.halving * 7);
-      });
-
       it("must return 2812500000000000000000000", async () => {
-        const tokensPerEpoch = await instance.tokensPerEpoch();
+        const tokensPerEpoch = await instance.tokensPerEpoch(8);
 
         expect(tokensPerEpoch).to.equal("2812500000000000000000000");
       });
@@ -145,91 +101,63 @@ describe("ProducerPool", () => {
   describe("#tokensPerEra", () => {
     context("when is epoch 1", () => {
       it("must return 30000000000000000000000000", async () => {
-        const tokensPerEra = await instance.tokensPerEra();
+        const tokensPerEra = await instance.tokensPerEra(1, args.halving);
 
         expect(tokensPerEra).to.equal("30000000000000000000000000");
       });
     });
 
     context("when is epoch 2", () => {
-      beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.halving);
-      });
-
       it("must return 15000000000000000000000000", async () => {
-        const tokensPerEra = await instance.tokensPerEra();
+        const tokensPerEra = await instance.tokensPerEra(2, args.halving);
 
         expect(tokensPerEra).to.equal("15000000000000000000000000");
       });
     });
 
     context("when is epoch 3", () => {
-      beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.halving * 2);
-      });
-
       it("must return 7500000000000000000000000", async () => {
-        const tokensPerEra = await instance.tokensPerEra();
+        const tokensPerEra = await instance.tokensPerEra(3, args.halving);
 
         expect(tokensPerEra).to.equal("7500000000000000000000000");
       });
     });
 
     context("when is epoch 4", () => {
-      beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.halving * 3);
-      });
-
       it("must return 3750000000000000000000000", async () => {
-        const tokensPerEra = await instance.tokensPerEra();
+        const tokensPerEra = await instance.tokensPerEra(4, args.halving);
 
         expect(tokensPerEra).to.equal("3750000000000000000000000");
       });
     });
 
     context("when is epoch 5", () => {
-      beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.halving * 4);
-      });
-
       it("must return 1875000000000000000000000", async () => {
-        const tokensPerEra = await instance.tokensPerEra();
+        const tokensPerEra = await instance.tokensPerEra(5, args.halving);
 
         expect(tokensPerEra).to.equal("1875000000000000000000000");
       });
     });
 
     context("when is epoch 6", () => {
-      beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.halving * 5);
-      });
-
       it("must return 937500000000000000000000", async () => {
-        const tokensPerEra = await instance.tokensPerEra();
+        const tokensPerEra = await instance.tokensPerEra(6, args.halving);
 
         expect(tokensPerEra).to.equal("937500000000000000000000");
       });
     });
 
     context("when is epoch 7", () => {
-      beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.halving * 6);
-      });
-
       it("must return 468750000000000000000000", async () => {
-        const tokensPerEra = await instance.tokensPerEra();
+        const tokensPerEra = await instance.tokensPerEra(7, args.halving);
 
         expect(tokensPerEra).to.equal("468750000000000000000000");
       });
     });
 
     context("when is epoch 8", () => {
-      beforeEach(async () => {
-        await advanceBlock(args.blocksPerEra * args.halving * 7);
-      });
-
       it("must return 234375000000000000000000", async () => {
-        const tokensPerEra = await instance.tokensPerEra();
+        const tokensPerEra = await instance.tokensPerEra(8, args.halving);
 
         expect(tokensPerEra).to.equal("234375000000000000000000");
       });
@@ -250,7 +178,7 @@ describe("ProducerPool", () => {
 
           it("balanceOf must be 0", async () => {
             await instance.withdraw(producer1Address, 1);
-            const balanceOf = await instance.balanceOf(producer1Address);
+            const balanceOf = await rcToken.balanceOf(producer1Address);
 
             expect(balanceOf).to.equal(0);
           });
@@ -265,7 +193,7 @@ describe("ProducerPool", () => {
 
             it("must withdraw 30000000000000000000000000 of tokens", async () => {
               await instance.withdraw(producer1Address, 1);
-              const balanceOf = await instance.balanceOf(producer1Address);
+              const balanceOf = await rcToken.balanceOf(producer1Address);
 
               expect(balanceOf).to.equal(30000000000000000000000000n);
             });
@@ -289,7 +217,7 @@ describe("ProducerPool", () => {
           context("when producer1 have 80 isaScore", () => {
             it("must withdraw 19200000000000000000000000 of tokens", async () => {
               await instance.withdraw(producer1Address, 1);
-              const balanceOf = await instance.balanceOf(producer1Address);
+              const balanceOf = await rcToken.balanceOf(producer1Address);
 
               expect(balanceOf).to.equal(19200000000000000000000000n);
             });
@@ -298,7 +226,7 @@ describe("ProducerPool", () => {
           context("when producer2 have 45 isaScore", () => {
             it("must withdraw 10800000000000000000000000 tokens", async () => {
               await instance.withdraw(producer2Address, 1);
-              const balanceOf = await instance.balanceOf(producer2Address);
+              const balanceOf = await rcToken.balanceOf(producer2Address);
 
               expect(balanceOf).to.equal(10800000000000000000000000n);
             });

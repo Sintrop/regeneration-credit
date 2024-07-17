@@ -294,7 +294,7 @@ describe("ActivistContract", () => {
             });
 
             it("activist balance must be", async () => {
-              const balance = await activistPool.balanceOf(activ1Address);
+              const balance = await rcToken.balanceOf(activ1Address);
 
               expect(balance).to.equal(1200000000000000000000000n);
             });
@@ -322,7 +322,7 @@ describe("ActivistContract", () => {
             });
 
             it("activist1 balance must be", async () => {
-              const balance = await activistPool.balanceOf(activ1Address);
+              const balance = await rcToken.balanceOf(activ1Address);
 
               expect(balance).to.equal(600000000000000000000000n);
             });
@@ -334,7 +334,7 @@ describe("ActivistContract", () => {
             });
 
             it("activist3 balance must be", async () => {
-              const balance = await activistPool.balanceOf(activ3Address);
+              const balance = await rcToken.balanceOf(activ3Address);
 
               expect(balance).to.equal(600000000000000000000000n);
             });
@@ -356,7 +356,7 @@ describe("ActivistContract", () => {
             });
 
             it("activist balance must be", async () => {
-              const balance = await activistPool.balanceOf(activ1Address);
+              const balance = await rcToken.balanceOf(activ1Address);
 
               expect(balance).to.equal(0n);
             });
