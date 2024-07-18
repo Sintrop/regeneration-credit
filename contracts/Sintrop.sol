@@ -74,8 +74,8 @@ contract Sintrop {
    */
   function requestInspection() public {
     require(userContract.userTypeIs(UserType.PRODUCER, msg.sender), "Please register as producer");
-    require(!producerContract.getProducer(msg.sender).recentInspection, "Request OPEN or ACCEPTED");
-    require(canRequestInspection(), "Recent inspection");
+    require(!producerContract.getProducer(msg.sender).pendingInspection, "Request already OPEN");
+    require(canRequestInspection(), "Wait to request");
 
     addRequest();
 
@@ -96,7 +96,7 @@ contract Sintrop {
   }
 
   function afterRequestInspection() internal {
-    producerContract.recentInspection(msg.sender, true);
+    producerContract.pendingInspection(msg.sender, true);
     producerContract.lastRequestAt(msg.sender, block.number);
   }
 
@@ -121,7 +121,7 @@ contract Sintrop {
     inspection.acceptedBy = msg.sender;
     inspections[inspectionId] = inspection;
 
-    producerContract.recentInspection(inspection.createdBy, false); // Talvez não precise, pois estamos usando a expiração da inspeção pra checar se o produtor pode solicitar uma nova inspeção
+    producerContract.pendingInspection(inspection.createdBy, false); // Talvez não precise, pois estamos usando a expiração da inspeção pra checar se o produtor pode solicitar uma nova inspeção
     inspectorContract.incrementGiveUps(msg.sender);
 
     inspectorContract.lastAcceptedAt(msg.sender, block.number);
