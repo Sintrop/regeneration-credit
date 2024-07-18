@@ -398,7 +398,7 @@ describe("Sintrop", () => {
       context("when have more than ALLOWED_INITIAL_REQUESTS", () => {
         context("when has request OPEN or ACCEPTED", () => {
           it("should return error message", async () => {
-            await expect(requestInspection(producerAddress)).to.be.revertedWith("Request OPEN or ACCEPTED");
+            await expect(requestInspection(producerAddress)).to.be.revertedWith("Request already OPEN");
           });
         });
 
@@ -419,7 +419,7 @@ describe("Sintrop", () => {
 
           context("when last request is recent", () => {
             it("should return error message", async () => {
-              await expect(requestInspection(producerAddress)).to.be.revertedWith("Recent inspection");
+              await expect(requestInspection(producerAddress)).to.be.revertedWith("Wait to request");
             });
           });
 
@@ -467,10 +467,10 @@ describe("Sintrop", () => {
           expect(inspectionsCount).to.equal(1);
         });
 
-        it("should set to true producer recentInspection", async () => {
+        it("should set to true producer pendingInspection", async () => {
           const producer = await producerContract.getProducer(producerAddress);
 
-          expect(producer.recentInspection).to.equal(true);
+          expect(producer.pendingInspection).to.equal(true);
         });
       });
     });
@@ -826,10 +826,10 @@ describe("Sintrop", () => {
                   expect(inspection.isaScore).to.equal(producer.isa.isaScore);
                 });
 
-                it("should set producer recentInspection to false", async () => {
+                it("should set producer pendingInspection to false", async () => {
                   const producer = await producerContract.getProducer(producerAddress);
 
-                  expect(producer.recentInspection).to.equal(false);
+                  expect(producer.pendingInspection).to.equal(false);
                 });
 
                 it("should increment producer totalInspections", async () => {

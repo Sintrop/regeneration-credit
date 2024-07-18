@@ -9,7 +9,7 @@ interface ProducerInterface {
     string name;
     string document;
     string documentType;
-    bool recentInspection;
+    bool pendingInspection;
     uint256 totalRequests;
     int256 isaScore;
     TokenApprove tokenApprove;
