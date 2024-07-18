@@ -114,8 +114,8 @@ contract ProducerContract is Callable {
     return producers[addr].id > 0;
   }
 
-  function recentInspection(address addr, bool state) public mustBeAllowedCaller {
-    producers[addr].recentInspection = state;
+  function pendingInspection(address addr, bool state) public mustBeAllowedCaller {
+    producers[addr].pendingInspection = state;
   }
 
   function setIsaScore(address addr, int256 isaScore) public mustBeAllowedCaller {

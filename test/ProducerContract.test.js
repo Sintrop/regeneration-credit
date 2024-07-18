@@ -67,7 +67,7 @@ describe("ProducerContract", () => {
       expect(producer.name).to.equal("Producer A");
       expect(producer.proofPhoto).to.equal("photoURL");
       expect(producer.totalInspections).to.equal(0);
-      expect(producer.recentInspection).to.equal(false);
+      expect(producer.pendingInspection).to.equal(false);
       expect(producer.isa.isaAverage).to.equal("0");
       expect(producer.isa.isaScore).to.equal("0");
 
@@ -199,13 +199,13 @@ describe("ProducerContract", () => {
   });
 
   context("when is allowed caller", () => {
-    it("should success .recentInspection when is allowed caller", async () => {
+    it("should success .pendingInspection when is allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
-      await instance.recentInspection(prod1Address, true);
+      await instance.pendingInspection(prod1Address, true);
 
       const producer = await instance.getProducer(prod1Address);
 
-      expect(producer.recentInspection).to.equal(true);
+      expect(producer.pendingInspection).to.equal(true);
     });
 
     it("should success .incrementInspections when is allowed caller", async () => {
@@ -219,9 +219,9 @@ describe("ProducerContract", () => {
   });
 
   context("when is not allowed caller", () => {
-    it("should return error .recentInspection when is not allowed caller", async () => {
+    it("should return error .pendingInspection when is not allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
-      await expect(instance.connect(prod1Address).recentInspection(prod1Address, true)).to.be.revertedWith(
+      await expect(instance.connect(prod1Address).pendingInspection(prod1Address, true)).to.be.revertedWith(
         "Not allowed caller"
       );
     });
