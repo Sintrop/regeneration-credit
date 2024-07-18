@@ -461,6 +461,14 @@ describe("ValidatorContract", () => {
               expect(inspector.pool.level).to.equal(0);
             });
           });
+
+          context("with developer", () => {
+
+          });
+
+          context("with researcher", () => {
+
+          });
         });
       });
     });
@@ -534,14 +542,19 @@ describe("ValidatorContract", () => {
               };
 
               await addInvitation(owner, producer1Address, userTypes.Producer, owner);
+
               await addProducer("Producer A", producer1Address);
+              await addInspector("Inspector A", inspector1Address);
 
               await inspectorContract.incrementInspections(inspectionMock.acceptedBy);
+              await inspectorContract.incrementInspections(inspectionMock.acceptedBy);
+
               await producerContract.incrementInspections(inspectionMock.createdBy);
               await producerContract.incrementInspections(inspectionMock.createdBy);
               await producerContract.incrementInspections(inspectionMock.createdBy);
 
               await producerContract.setIsaScore(inspectionMock.createdBy, 20);
+              await producerContract.setIsaScore(inspectionMock.createdBy, 30);
 
               await inspectorContract.addPenalty(inspectionMock.acceptedBy, 2);
               await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", validator1Address);
@@ -553,10 +566,16 @@ describe("ValidatorContract", () => {
               expect(newInspectorType).to.equal(9);
             });
 
+            it("all inspector contract levels is removed", async () => {
+              const inspector = await inspectorContract.getInspector(inspector1Address);
+
+              expect(inspector.pool.level).to.equal(0);
+            });
+
             it("decrement total inspections of inspector", async () => {
               const inspector = await inspectorContract.getInspector(inspector1Address);
 
-              expect(inspector.totalInspections).to.equal(0);
+              expect(inspector.totalInspections).to.equal(1);
             });
 
             it("decrement total inspections of producer", async () => {
@@ -568,7 +587,7 @@ describe("ValidatorContract", () => {
             it("remove inspection isa level from producer isaScore", async () => {
               const producer = await producerContract.getProducer(producer1Address);
 
-              expect(producer.isa.isaScore).to.equal(0);
+              expect(producer.isa.isaScore).to.equal(30);
             });
 
             it("remove inspection isa level from producer pool", async () => {
@@ -596,14 +615,19 @@ describe("ValidatorContract", () => {
               };
 
               await addInvitation(owner, producer1Address, userTypes.Producer, owner);
+
               await addProducer("Producer A", producer1Address);
+              await addInspector("Inspector A", inspector1Address);
 
               await inspectorContract.incrementInspections(inspectionMock.acceptedBy);
+              await inspectorContract.incrementInspections(inspectionMock.acceptedBy);
+
               await producerContract.incrementInspections(inspectionMock.createdBy);
               await producerContract.incrementInspections(inspectionMock.createdBy);
               await producerContract.incrementInspections(inspectionMock.createdBy);
 
               await producerContract.setIsaScore(inspectionMock.createdBy, 20);
+              await producerContract.setIsaScore(inspectionMock.createdBy, 30);
 
               await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", validator1Address);
             });
@@ -611,13 +635,19 @@ describe("ValidatorContract", () => {
             it("inspector is the same", async () => {
               const newInspectorType = await userContract.getUser(inspectionMock.acceptedBy);
 
-              expect(newInspectorType).to.equal(0);
+              expect(newInspectorType).to.equal(2);
+            });
+
+            it("inspector contract levels is removed", async () => {
+              const inspector = await inspectorContract.getInspector(inspector1Address);
+
+              expect(inspector.pool.level).to.equal(1);
             });
 
             it("decrement total inspections of inspector", async () => {
               const inspector = await inspectorContract.getInspector(inspector1Address);
 
-              expect(inspector.totalInspections).to.equal(0);
+              expect(inspector.totalInspections).to.equal(1);
             });
 
             it("decrement total inspections of producer", async () => {
@@ -629,7 +659,7 @@ describe("ValidatorContract", () => {
             it("remove inspection isa level from producer isaScore", async () => {
               const producer = await producerContract.getProducer(producer1Address);
 
-              expect(producer.isa.isaScore).to.equal(0);
+              expect(producer.isa.isaScore).to.equal(30);
             });
 
             it("remove inspection isa level from producer pool", async () => {
