@@ -164,11 +164,10 @@ contract InspectorContract is Callable {
     return totalInspections >= MINIMUM_INSPECTIONS_TO_POOL;
   }
 
-
   function isInspectorValid(address addr) public view returns (bool) {
     Inspector memory inspector = inspectors[addr];
-    return inspector.giveUps <= MAX_GIVEUPS;
-  } 
+    return inspector.giveUps < MAX_GIVEUPS;
+  }
 
   // MODIFIERS
 

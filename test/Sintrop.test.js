@@ -175,6 +175,8 @@ describe("Sintrop", () => {
       owner,
       producerAddress,
       producer2Address,
+      producer3Address,
+      producer4Address,
       inspectorAddress,
       inspector2Address,
       resea1Address,
@@ -517,7 +519,7 @@ describe("Sintrop", () => {
         });
 
         context("when inspector has less than 3 giveups", () => {
-          it("should accept inspection with success", async () => {
+          it("should accept with success", async () => {
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
             await acceptInspection(1, inspectorAddress);
             const inspection = await instance.getInspection(1);
@@ -525,32 +527,35 @@ describe("Sintrop", () => {
           });
         });
 
-        context.only("when inspector has more than 3 giveups", () => {
-          it("should return error message", async () => {
-            await addInvitation(owner, producer2Address, userTypes.Producer, owner);      
+        context("when inspector has more than 3 giveups", () => {
+          beforeEach(async () => {
+            await addInvitation(owner, producer2Address, userTypes.Producer, owner);
+            await addInvitation(owner, producer3Address, userTypes.Producer, owner);
+            await addInvitation(owner, producer4Address, userTypes.Producer, owner);
+
             await addProducer("Producer B", producer2Address);
-            await addInvitation(owner, producer3Address, userTypes.Producer, owner);      
-            await addProducer("Producer C", producerAddress);
-            await addInvitation(owner, producer4Address, userTypes.Producer, owner);      
-            await addProducer("Producer D", producerAddress);
+            await addProducer("Producer C", producer3Address);
+            await addProducer("Producer D", producer4Address);
 
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
             await acceptInspection(1, inspectorAddress);
-            await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-            
+            await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
+
             await requestInspection(producer2Address);
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
             await acceptInspection(2, inspectorAddress);
-            await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+            await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
 
             await requestInspection(producer3Address);
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
             await acceptInspection(3, inspectorAddress);
-            await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+            await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
 
             await requestInspection(producer4Address);
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          });
 
+          it("should return error message", async () => {
             await expect(acceptInspection(4, inspectorAddress)).to.be.revertedWith("No more than 3 giveUps allowed");
           });
         });
