@@ -110,12 +110,13 @@ contract InspectorContract is Callable {
     inspectorPool.addLevel(addr, 1, 1);
   }
 
-  function resetLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Inspector memory inspector = inspectors[addr];
 
-    inspectors[addr].pool.level = 0;
+    if (removeSomeLevels == 0) inspectors[addr].pool.level = 0;
+    if (removeSomeLevels > 0) inspectors[addr].pool.level -= removeSomeLevels;
 
-    inspectorPool.resetLevels(addr, inspector.pool.currentEra, removeSomeLevels);
+    inspectorPool.removePoolLevels(addr, inspector.pool.currentEra, removeSomeLevels);
   }
 
   function decrementInspections(address addr) public mustBeAllowedCaller {

@@ -155,7 +155,9 @@ contract ProducerContract is Callable {
   function resetLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Producer memory producer = producers[addr];
 
-    producers[addr].isa.isaScore = 0;
+    if (removeSomeLevels == 0) producers[addr].isa.isaScore = 0;
+    if (removeSomeLevels > 0) producers[addr].isa.isaScore -= int256(removeSomeLevels);
+
     producerPool.resetLevels(addr, producer.pool.currentEra, removeSomeLevels);
   }
 

@@ -170,7 +170,7 @@ contract ValidatorContract is Callable {
     uint256 levels = uint256(inspection.isaScore);
 
     externalRemoveLevels(inspection.createdBy, levels);
-    externalRemoveLevels(inspection.acceptedBy, levels);
+    externalRemoveLevels(inspection.acceptedBy, 1);
   }
 
   function externalDenieUser(address userAddress) internal {
@@ -178,20 +178,20 @@ contract ValidatorContract is Callable {
   }
 
   function externalRemoveLevels(address userAddress, uint256 levels) internal {
-    resetLevels(userAddress, levels);
+    removeLevelsFromPool(userAddress, levels);
   }
 
   function denieUser(address userAddress) internal {
-    resetLevels(userAddress, 0);
+    removeLevelsFromPool(userAddress, 0);
 
     userContract.setDeniedType(userAddress);
   }
 
-  function resetLevels(address userAddress, uint256 levels) internal {
+  function removeLevelsFromPool(address userAddress, uint256 levels) internal {
     UserType oldUserType = userContract.getUser(userAddress);
 
     if (oldUserType == UserType.PRODUCER) return producerContract.resetLevels(userAddress, levels);
-    if (oldUserType == UserType.INSPECTOR) return inspectorContract.resetLevels(userAddress, levels);
+    if (oldUserType == UserType.INSPECTOR) return inspectorContract.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.DEVELOPER) return developerContract.resetLevels(userAddress, levels);
     if (oldUserType == UserType.RESEARCHER) return researcherContract.resetLevels(userAddress, levels);
   }

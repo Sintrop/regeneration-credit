@@ -66,6 +66,6 @@ contract ActivistPool is Poolable, Ownable, Blockable, Callable {
   }
 
   function resetLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
-    resetLevelsFromEra(addr, era, removeSomeLevels);
+    removeLevelsFromEra(addr, era, removeSomeLevels);
   }
 }
