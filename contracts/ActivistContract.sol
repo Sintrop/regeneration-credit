@@ -112,7 +112,7 @@ contract ActivistContract is Callable {
     Activist memory activist = activists[msg.sender];
     uint256 currentEra = activist.pool.currentEra;
 
-    require(activistPool.canApprove(currentEra), "Can't approve withdraw");
+    require(activistPool.canWithdraw(currentEra), "Can't approve withdraw");
 
     activists[msg.sender].pool.currentEra++;
 

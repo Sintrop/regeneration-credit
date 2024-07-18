@@ -46,11 +46,13 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
     return rcToken.balanceOf(address(this));
   }
 
-  function withdraw(address delegate, uint256 era) public mustBeAllowedCaller {
-    require(canApprove(era), "You can't approve yet");
-    require(isAValidEpoch(), "You can't approve anymore");
-
+  function withdraw(
+    address delegate,
+    uint256 era
+  ) public mustBeAllowedCaller canWithdrawModifier(era) isAValidEpochModifier {
     uint256 numTokens = tokens(era, delegate, tokensPerEra(currentEpoch(), HALVING));
+
+    updateEraAfterWithdraw(era, delegate, numTokens);
 
     if (numTokens == 0) return;
 

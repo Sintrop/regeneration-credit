@@ -25,7 +25,7 @@ contract Blockable {
     HALVING = _halving;
   }
 
-  function canApprove(uint256 currentUserEra) public view returns (bool) {
+  function canWithdraw(uint256 currentUserEra) public view returns (bool) {
     return currentUserEra < currentContractEra() && isAValidEra(currentUserEra);
   }
 
@@ -37,12 +37,12 @@ contract Blockable {
     return currentContractEra().div(HALVING).add(1);
   }
 
-  function nextApproveIn(uint256 currentUserEra) public view returns (int256) {
+  function nextWithdrawIn(uint256 currentUserEra) public view returns (int256) {
     return int256(DEPLOYED_AT) + (int256(BLOCKS_PER_ERA) * int256(currentUserEra)) - int256(currentBlockNumber());
   }
 
-  function canApproveTimes(uint256 currentUserEra) public view returns (uint256) {
-    int256 approvesTimes = nextApproveIn(currentUserEra);
+  function canWithdrawTimes(uint256 currentUserEra) public view returns (uint256) {
+    int256 approvesTimes = nextWithdrawIn(currentUserEra);
 
     if (approvesTimes > 0) return 0;
 
@@ -65,5 +65,17 @@ contract Blockable {
 
   function currentBlockNumber() internal view returns (uint256) {
     return block.number;
+  }
+
+  // MODIFIERS
+
+  modifier canWithdrawModifier(uint256 era) {
+    require(canWithdraw(era), "You can't approve yet");
+    _;
+  }
+
+  modifier isAValidEpochModifier() {
+    require(isAValidEpoch(), "You can't approve anymore");
+    _;
   }
 }

@@ -27,6 +27,12 @@ contract Poolable {
     return eras[era];
   }
 
+  function updateEraAfterWithdraw(uint256 era, address user, uint256 numTokens) internal {
+    eras[era].users++;
+    eras[era].tokens += numTokens;
+    eraTokens[era][user] = numTokens;
+  }
+
   function addPoolLevel(address to, uint256 levelsNewEra, uint256 addLevel, uint256 era) internal {
     uint256 levels = eraLevels[era][to] > 0 ? addLevel : levelsNewEra;
 
