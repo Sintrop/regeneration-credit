@@ -387,7 +387,7 @@ describe("Sintrop", () => {
         await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
       });
 
-      context.only("when is sustainable", () => {
+      context("when is sustainable", () => {
         beforeEach(async () => {
           await addProducer("Producer B", producer2Address);
           await producerContract.setIsaScore(producer2Address, 1000);
