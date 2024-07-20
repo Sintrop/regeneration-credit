@@ -124,8 +124,7 @@ contract Sintrop {
     producerContract.pendingInspection(inspection.createdBy, false); // Talvez não precise, pois estamos usando a expiração da inspeção pra checar se o produtor pode solicitar uma nova inspeção
     inspectorContract.incrementGiveUps(msg.sender);
 
-    inspectorContract.lastAcceptedAt(msg.sender, block.number);
-    inspectorContract.lastInspection(msg.sender, inspectionId);
+    inspectorContract.markLastInspection(msg.sender, block.number, inspectionId);
   }
 
   /**
