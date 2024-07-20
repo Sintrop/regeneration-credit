@@ -76,6 +76,10 @@ contract Sintrop {
     require(userContract.userTypeIs(UserType.PRODUCER, msg.sender), "Please register as producer");
     require(!producerContract.getProducer(msg.sender).pendingInspection, "Request already OPEN");
     require(canRequestInspection(), "Wait to request");
+    require(
+      producerContract.checkSustainable(msg.sender),
+      "Congratulations on your effort in regenerating the Earth, you have completed your mission"
+    );
 
     addRequest();
 

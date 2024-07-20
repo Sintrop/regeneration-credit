@@ -387,6 +387,19 @@ describe("Sintrop", () => {
         await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
       });
 
+      context.only("when is sustainable", () => {
+        beforeEach(async () => {
+          await addProducer("Producer B", producer2Address);
+          await producerContract.setIsaScore(producer2Address, 1000);
+        });
+
+        it("should return error", async () => {
+          await expect(requestInspection(producer2Address)).to.be.revertedWith(
+            "Congratulations on your effort in regenerating the Earth, you have completed your mission"
+          );
+        });
+      });
+
       context("when have less than ALLOWED_INITIAL_REQUESTS", () => {
         it("should request inspection", async () => {
           const inspection = await instance.getInspection(1);
