@@ -359,7 +359,7 @@ describe("DeveloperPool", () => {
       });
     });
 
-    context("with don't allowed caller", () => {
+    context("without allowed caller", () => {
       it("should return error message", async () => {
         await expect(instance.connect(dev1Address).withdraw(dev1Address, 1)).to.be.revertedWith("Not allowed caller");
       });
