@@ -131,11 +131,8 @@ contract InspectorContract is Callable {
     inspectors[addr].giveUps--;
   }
 
-  function lastAcceptedAt(address addr, uint256 blocksNumber) public mustBeAllowedCaller {
+  function markLastInspection(address addr, uint256 blocksNumber, uint256 lastInspectionId) public mustBeAllowedCaller {
     inspectors[addr].lastAcceptedAt = blocksNumber;
-  }
-
-  function lastInspection(address addr, uint256 lastInspectionId) public mustBeAllowedCaller {
     inspectors[addr].lastInspection = lastInspectionId;
   }
 
