@@ -31,10 +31,9 @@ contract InspectorContract is Callable {
    * @param name the name of the inspector
    * @return a Inspector
    */
-  function addInspector(
-    string memory name,
-    string memory proofPhoto
-  ) public uniqueInspector returns (Inspector memory) {
+  function addInspector(string memory name, string memory proofPhoto) public returns (Inspector memory) {
+    require(!inspectorExists(msg.sender), "This inspector already exist");
+
     uint256 id = inspectorsCount + 1;
     UserType userType = UserType.INSPECTOR;
 
@@ -161,12 +160,5 @@ contract InspectorContract is Callable {
 
   function minimumInspections(uint256 totalInspections) internal pure returns (bool) {
     return totalInspections >= MINIMUM_INSPECTIONS_TO_POOL;
-  }
-
-  // MODIFIERS
-
-  modifier uniqueInspector() {
-    require(!inspectorExists(msg.sender), "This inspector already exist");
-    _;
   }
 }
