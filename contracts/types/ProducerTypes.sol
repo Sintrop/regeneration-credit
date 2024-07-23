@@ -10,7 +10,7 @@ struct Producer {
   uint256 certifiedArea;
   string name;
   string proofPhoto;
-  bool recentInspection;
+  bool pendingInspection;
   uint256 totalInspections;
   uint256 lastRequestAt;
   Isa isa;

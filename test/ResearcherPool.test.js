@@ -156,7 +156,7 @@ describe("ResearcherPool", () => {
       });
     });
 
-    context("with don't allowed caller", () => {
+    context("without allowed caller", () => {
       it("should return error message", async () => {
         await expect(instance.connect(researcher1Address).addLevel(researcher1Address, 1, 1)).to.be.revertedWith(
           "Not allowed caller"
@@ -360,7 +360,7 @@ describe("ResearcherPool", () => {
       });
     });
 
-    context("with don't allowed caller", () => {
+    context("without allowed caller", () => {
       it("should return error message", async () => {
         await expect(instance.connect(researcher1Address).withdraw(researcher1Address, 1)).to.be.revertedWith(
           "Not allowed caller"

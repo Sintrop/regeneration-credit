@@ -371,7 +371,7 @@ describe("ProducerPool", () => {
       });
     });
 
-    context("with don't allowed caller", () => {
+    context("without allowed caller", () => {
       it("should return error message", async () => {
         await expect(instance.connect(producer1Address).addLevel(producer1Address, 1, 1)).to.be.revertedWith(
           "Not allowed caller"
