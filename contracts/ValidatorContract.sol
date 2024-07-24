@@ -10,6 +10,7 @@ import { ValidatorPool } from "./ValidatorPool.sol";
 import { InspectorContract } from "./InspectorContract.sol";
 import { DeveloperContract } from "./DeveloperContract.sol";
 import { ResearcherContract } from "./ResearcherContract.sol";
+import { ContributorContract } from "./ContributorContract.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
 import { Contribution } from "./types/DeveloperTypes.sol";
 import { Work } from "./types/ResearcherTypes.sol";
@@ -29,6 +30,7 @@ contract ValidatorContract is Callable {
   InspectorContract internal inspectorContract;
   DeveloperContract internal developerContract;
   ResearcherContract internal researcherContract;
+  ContributorContract internal contributorContract;
 
   address[] internal validatorsAddress;
   uint256 public validatorsCount;
@@ -47,6 +49,7 @@ contract ValidatorContract is Callable {
     inspectorContract = InspectorContract(contractDependency.inspectorContractAddress);
     developerContract = DeveloperContract(contractDependency.developerContractAddress);
     researcherContract = ResearcherContract(contractDependency.researcherContractAddress);
+    contributorContract = ContributorContract(contractDependency.contributorContractAddress);
   }
 
   function addValidator() public {
@@ -194,6 +197,7 @@ contract ValidatorContract is Callable {
     if (oldUserType == UserType.INSPECTOR) return inspectorContract.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.DEVELOPER) return developerContract.resetLevels(userAddress, levels);
     if (oldUserType == UserType.RESEARCHER) return researcherContract.resetLevels(userAddress, levels);
+    if (oldUserType == UserType.CONTRIBUTOR) return contributorContract.removePoolLevels(userAddress, levels);
   }
 
   function getUserValidations(address userAddress) public view returns (UserValidation[] memory) {

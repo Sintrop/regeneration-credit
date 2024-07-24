@@ -91,6 +91,7 @@ describe("ResearcherContract", () => {
       inspectorContractAddress: ZERO_ADDRESS,
       developerContractAddress: ZERO_ADDRESS,
       researcherContractAddress: instance.target,
+      contributorContractAddress: ZERO_ADDRESS
     };
 
     await validatorContract.setContractAddressDependencies(validatorContractDependencies);

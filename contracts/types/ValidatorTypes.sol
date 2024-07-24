@@ -38,4 +38,5 @@ struct ContractsDependency {
   address inspectorContractAddress;
   address developerContractAddress;
   address researcherContractAddress;
+  address contributorContractAddress;
 }
