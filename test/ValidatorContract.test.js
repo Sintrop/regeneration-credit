@@ -11,10 +11,13 @@ describe("ValidatorContract", () => {
   let producerPool;
   let validatorPool;
   let inspectorPool;
+  let researcherPool;
   let inspectorContract;
   let developerContract;
   let researcherContract;
+  let contributorContract;
   let rcToken;
+
   let owner,
     producer1Address,
     inspector1Address,
@@ -33,6 +36,7 @@ describe("ValidatorContract", () => {
     validator13Address,
     validator14Address,
     validator15Address,
+    contributor1Address,
     dev1Address,
     otherAddress,
     resea1Address;
@@ -72,12 +76,23 @@ describe("ValidatorContract", () => {
     blocksPerEra: 30,
   };
 
+  let contributorPoolParams = {
+    totalTokens: "30000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 30,
+  };
+
   const addDeveloper = async (name, from) => {
     await developerContract.connect(from).addDeveloper(name, "photoURL");
   };
 
   const addResearcher = async (name, from) => {
     await researcherContract.connect(from).addResearcher(name, "photoURL");
+  };
+
+  const addContributor = async (name, from) => {
+    await contributorContract.connect(from).addContributor(name, "photoURL");
   };
 
   const addValidator = async (from) => {
@@ -157,6 +172,7 @@ describe("ValidatorContract", () => {
       validator13Address,
       validator14Address,
       validator15Address,
+      contributor1Address,
       dev1Address,
       dev2Address,
       resea1Address,
@@ -209,6 +225,14 @@ describe("ValidatorContract", () => {
       researcherPoolParams.blocksPerEra
     );
 
+    contributorPoolFactory = await ethers.getContractFactory("ContributorPool");
+    contributorPool = await contributorPoolFactory.deploy(
+      rcToken.target,
+      contributorPoolParams.halving,
+      contributorPoolParams.totalEras,
+      contributorPoolParams.blocksPerEra
+    );
+
     const maxPenalties = 2;
     const inspectorContractFactory = await ethers.getContractFactory("InspectorContract");
     inspectorContract = await inspectorContractFactory.deploy(userContract.target, inspectorPool.target, maxPenalties);
@@ -224,6 +248,9 @@ describe("ValidatorContract", () => {
       instance.target,
       developerMaxPenalties
     );
+
+    contributorContractFactory = await ethers.getContractFactory("ContributorContract");
+    contributorContract = await contributorContractFactory.deploy(userContract.target, contributorPool.target);
 
     const reseacherMaxPenalties = 3;
     const reseacherTimeBetweenWorks = 10;
@@ -243,6 +270,7 @@ describe("ValidatorContract", () => {
       inspectorContractAddress: inspectorContract.target,
       developerContractAddress: developerContract.target,
       researcherContractAddress: researcherContract.target,
+      contributorContractAddress: contributorContract.target,
     };
 
     await userContract.newAllowedCaller(instance.target);
@@ -250,17 +278,20 @@ describe("ValidatorContract", () => {
     await userContract.newAllowedCaller(inspectorContract.target);
     await userContract.newAllowedCaller(developerContract.target);
     await userContract.newAllowedCaller(researcherContract.target);
+    await userContract.newAllowedCaller(contributorContract.target);
     await userContract.newAllowedCaller(owner);
     await producerContract.newAllowedCaller(instance.target);
     await producerContract.newAllowedCaller(owner);
     await developerContract.newAllowedCaller(owner);
     await developerContract.newAllowedCaller(instance.target);
     await researcherContract.newAllowedCaller(instance.target);
+    await contributorContract.newAllowedCaller(instance.target);
     await producerPool.newAllowedCaller(producerContract.target);
     await producerPool.newAllowedCaller(owner);
     await validatorPool.newAllowedCaller(instance.target);
     await developerPool.newAllowedCaller(developerContract.target);
     await researcherPool.newAllowedCaller(researcherContract.target);
+    await contributorPool.newAllowedCaller(contributorContract.target);
     await inspectorPool.newAllowedCaller(inspectorContract.target);
     await inspectorContract.newAllowedCaller(instance.target);
     await inspectorContract.newAllowedCaller(owner);
@@ -462,13 +493,49 @@ describe("ValidatorContract", () => {
             });
           });
 
-          context("with developer", () => {
+          context("with contributor", () => {
+            beforeEach(async () => {
+              await addInvitation(owner, contributor1Address, userTypes.Contributor, owner);
+              await addContributor("Contributor  A", contributor1Address);
 
+              await contributorContract.connect(contributor1Address).addContribution("report");
+
+              await instance.connect(validator1Address).addUserValidation(contributor1Address, "my justification");
+              await instance.connect(validator3Address).addUserValidation(contributor1Address, "my justification");
+            });
+
+            it("should add validation", async () => {
+              const validations = await instance.getUserValidations(contributor1Address);
+
+              expect(validations[0].justification).to.equal("my justification");
+              expect(validations.length).to.equal(2);
+            });
+
+            it("user type must be denied", async () => {
+              const user = await userContract.getUser(contributor1Address);
+              const DENIED = 9;
+
+              expect(user).to.equal(DENIED);
+            });
+
+            it("remove user levels from pool", async () => {
+              const levelsEra1 = await contributorPool.eraLevels(1, contributor1Address);
+              const levelsEra2 = await contributorPool.eraLevels(2, contributor1Address);
+
+              expect(levelsEra1).to.equal(0);
+              expect(levelsEra2).to.equal(0);
+            });
+
+            it("do not remove user levels from contributor", async () => {
+              const contributor = await contributorContract.getContributor(contributor1Address);
+
+              expect(contributor.pool.level).to.equal(1);
+            });
           });
 
-          context("with researcher", () => {
+          context("with developer", () => {});
 
-          });
+          context("with researcher", () => {});
         });
       });
     });

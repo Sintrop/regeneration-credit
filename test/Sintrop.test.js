@@ -261,6 +261,7 @@ describe("Sintrop", () => {
       inspectorContractAddress: inspectorContract.target,
       developerContractAddress: ZERO_ADDRESS,
       researcherContractAddress: researcherContract.target,
+      contributorContractAddress: ZERO_ADDRESS
     };
 
     const instanceFactory = await ethers.getContractFactory("Sintrop");
