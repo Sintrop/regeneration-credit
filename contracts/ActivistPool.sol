@@ -27,7 +27,7 @@ contract ActivistPool is Poolable, Ownable, Blockable, Callable {
     9 * 10 ** 23,
     45 * 10 ** 22,
     225 * 10 ** 21,
-    1125 * 10 ** 22
+    1125 * 10 ** 20
   ];
 
   constructor(
