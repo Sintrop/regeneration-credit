@@ -196,7 +196,7 @@ contract ValidatorContract is Callable {
     if (oldUserType == UserType.PRODUCER) return producerContract.resetLevels(userAddress, levels);
     if (oldUserType == UserType.INSPECTOR) return inspectorContract.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.DEVELOPER) return developerContract.resetLevels(userAddress, levels);
-    if (oldUserType == UserType.RESEARCHER) return researcherContract.resetLevels(userAddress, levels);
+    if (oldUserType == UserType.RESEARCHER) return researcherContract.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.CONTRIBUTOR) return contributorContract.removePoolLevels(userAddress, levels);
   }
 

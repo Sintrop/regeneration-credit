@@ -39,7 +39,8 @@ describe("ValidatorContract", () => {
     contributor1Address,
     dev1Address,
     otherAddress,
-    resea1Address;
+    resea1Address,
+    resea2Address;
 
   const producerPoolArgs = {
     totalTokens: "750000000000000000000000000",
@@ -533,9 +534,47 @@ describe("ValidatorContract", () => {
             });
           });
 
-          context("with developer", () => {});
+          context("with researcher", () => {
+            beforeEach(async () => {
+              await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
+              await addResearcher("Researcher  A", resea1Address);
 
-          context("with researcher", () => {});
+              await addWork(resea1Address);
+
+              await instance.connect(validator1Address).addUserValidation(resea1Address, "my justification");
+              await instance.connect(validator3Address).addUserValidation(resea1Address, "my justification");
+            });
+
+            it("should add validation", async () => {
+              const validations = await instance.getUserValidations(resea1Address);
+
+              expect(validations[0].justification).to.equal("my justification");
+              expect(validations.length).to.equal(2);
+            });
+
+            it("user type must be denied", async () => {
+              const user = await userContract.getUser(resea1Address);
+              const DENIED = 9;
+
+              expect(user).to.equal(DENIED);
+            });
+
+            it("remove user levels from pool", async () => {
+              const levelsEra1 = await researcherPool.eraLevels(1, resea1Address);
+              const levelsEra2 = await researcherPool.eraLevels(2, resea1Address);
+
+              expect(levelsEra1).to.equal(0);
+              expect(levelsEra2).to.equal(0);
+            });
+
+            it("remove user levels from researcher", async () => {
+              const reseacher = await researcherContract.getResearcher(resea1Address);
+
+              expect(reseacher.pool.level).to.equal(0);
+            });
+          });
+
+          context("with developer", () => {});
         });
       });
     });
