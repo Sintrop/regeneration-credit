@@ -534,6 +534,46 @@ describe("ValidatorContract", () => {
             });
           });
 
+          context("with developer", () => {
+            beforeEach(async () => {
+              await addInvitation(owner, dev1Address, userTypes.Developer, owner);
+              await addDeveloper("Developer  A", dev1Address);
+
+              await developerContract.connect(dev1Address).addContribution("contribution");
+
+              await instance.connect(validator1Address).addUserValidation(dev1Address, "my justification");
+              await instance.connect(validator3Address).addUserValidation(dev1Address, "my justification");
+            });
+
+            it("should add validation", async () => {
+              const validations = await instance.getUserValidations(dev1Address);
+
+              expect(validations[0].justification).to.equal("my justification");
+              expect(validations.length).to.equal(2);
+            });
+
+            it("user type must be denied", async () => {
+              const user = await userContract.getUser(dev1Address);
+              const DENIED = 9;
+
+              expect(user).to.equal(DENIED);
+            });
+
+            it("remove user levels from pool", async () => {
+              const levelsEra1 = await developerPool.eraLevels(1, dev1Address);
+              const levelsEra2 = await developerPool.eraLevels(2, dev1Address);
+
+              expect(levelsEra1).to.equal(0);
+              expect(levelsEra2).to.equal(0);
+            });
+
+            it("remove user levels from developer", async () => {
+              const developer = await developerContract.getDeveloper(dev1Address);
+
+              expect(developer.pool.level).to.equal(0);
+            });
+          });
+
           context("with researcher", () => {
             beforeEach(async () => {
               await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
@@ -573,8 +613,6 @@ describe("ValidatorContract", () => {
               expect(reseacher.pool.level).to.equal(0);
             });
           });
-
-          context("with developer", () => {});
         });
       });
     });
