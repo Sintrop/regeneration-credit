@@ -202,7 +202,7 @@ contract ValidatorContract is Callable {
     if (oldUserType == UserType.RESEARCHER) return researcherContract.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.CONTRIBUTOR) return contributorContract.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.ACTIVIST) return activistContract.removePoolLevels(userAddress, levels);
-    if (oldUserType == UserType.VALIDATOR) validatorRemovePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.VALIDATOR) return validatorRemovePoolLevels(userAddress, levels);
   }
 
   function getUserValidations(address userAddress) public view returns (UserValidation[] memory) {
