@@ -102,6 +102,7 @@ describe("DeveloperContract", (accounts) => {
       developerContractAddress: instance.target,
       researcherContractAddress: ZERO_ADDRESS,
       contributorContractAddress: ZERO_ADDRESS,
+      activistContractAddress: ZERO_ADDRESS,
     };
 
     await userContract.newAllowedCaller(instance.target);
