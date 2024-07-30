@@ -371,4 +371,29 @@ describe("ActivistContract", () => {
       });
     });
   });
+
+  describe("#removePoolLevels", () => {
+    beforeEach(async () => {
+      await addActivist("Activist  A", activ1Address);
+
+      await addInvitation(activ1Address, producer1Address, userTypes.Producer, owner);
+      await addInvitation(activ1Address, inspector2Address, userTypes.Inspector, owner);
+
+      await instance.addLevel(producer1Address, 3, inspector2Address, 3);
+
+      await instance.removePoolLevels(activ1Address, 1);
+    });
+
+    it("remove user levels from pool", async () => {
+      const levelsEra1 = await activistPool.eraLevels(1, activ1Address);
+
+      expect(levelsEra1).to.equal(1);
+    });
+
+    it("remove user levels from activist", async () => {
+      const activist = await instance.getActivist(activ1Address);
+
+      expect(activist.pool.level).to.equal(1);
+    });
+  });
 });
