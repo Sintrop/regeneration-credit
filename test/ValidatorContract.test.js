@@ -686,6 +686,43 @@ describe("ValidatorContract", () => {
               expect(activist.pool.level).to.equal(0);
             });
           });
+
+          context("with validator", () => {
+            beforeEach(async () => {
+              await instance.connect(validator1Address).addLevel();
+
+              await instance.connect(validator1Address).addUserValidation(validator1Address, "my justification");
+              await instance.connect(validator3Address).addUserValidation(validator1Address, "my justification");
+            });
+
+            it("should add validation", async () => {
+              const validations = await instance.getUserValidations(validator1Address);
+
+              expect(validations[0].justification).to.equal("my justification");
+              expect(validations.length).to.equal(2);
+            });
+
+            it("user type must be denied", async () => {
+              const user = await userContract.getUser(validator1Address);
+              const DENIED = 9;
+
+              expect(user).to.equal(DENIED);
+            });
+
+            it("remove user levels from pool", async () => {
+              const levelsEra1 = await validatorPool.eraLevels(1, validator1Address);
+              const levelsEra2 = await validatorPool.eraLevels(2, validator1Address);
+
+              expect(levelsEra1).to.equal(0);
+              expect(levelsEra2).to.equal(0);
+            });
+
+            it("remove user levels from activist", async () => {
+              const validator = await instance.getValidator(validator1Address);
+
+              expect(validator.pool.level).to.equal(0);
+            });
+          });
         });
       });
     });
