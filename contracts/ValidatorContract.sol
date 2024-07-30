@@ -202,6 +202,7 @@ contract ValidatorContract is Callable {
     if (oldUserType == UserType.RESEARCHER) return researcherContract.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.CONTRIBUTOR) return contributorContract.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.ACTIVIST) return activistContract.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.VALIDATOR) validatorRemovePoolLevels(userAddress, levels);
   }
 
   function getUserValidations(address userAddress) public view returns (UserValidation[] memory) {
@@ -265,6 +266,13 @@ contract ValidatorContract is Callable {
     validators[msg.sender].pool.currentEra++;
 
     validatorPool.withdraw(msg.sender, currentEra);
+  }
+
+  function validatorRemovePoolLevels(address addr, uint256 removeSomeLevels) private {
+    Validator memory validator = validators[addr];
+
+    validators[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : validator.pool.level;
+    validatorPool.removePoolLevels(addr, validatorPoolEra(), removeSomeLevels);
   }
 
   function validatorPoolEra() internal view returns (uint256) {
