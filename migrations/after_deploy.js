@@ -14,6 +14,7 @@ async function configureValidatorContract() {
   const inspectorContract = await getDeployedContract("InspectorContract");
   const developerContract = await getDeployedContract("DeveloperContract");
   const researcherContract = await getDeployedContract("ResearcherContract");
+  const activistContract = await getDeployedContract("ActivistContract");
   const contributorContract = await getDeployedContract("ContributorContract");
 
   const contractDependencies = {
@@ -23,6 +24,7 @@ async function configureValidatorContract() {
     inspectorContractAddress: inspectorContract.target,
     developerContractAddress: developerContract.target,
     researcherContractAddress: researcherContract.target,
+    activistContractAddress: activistContract.target,
     contributorContractAddress: contributorContract
   };
 
