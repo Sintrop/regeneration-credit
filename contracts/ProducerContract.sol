@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
-import { Producer, Pool, Isa, PropertyAddress } from "./types/ProducerTypes.sol";
+import { Producer, Pool, Isa, AreaInformation } from "./types/ProducerTypes.sol";
 import { Callable } from "./Callable.sol";
 import { ProducerPool } from "./ProducerPool.sol";
 import { UserType } from "./types/UserTypes.sol";
@@ -30,16 +30,16 @@ contract ProducerContract is Callable {
   }
 
   /**
-   * @dev Allow a new register of producer
-   * @param name the name of the producer
-   * @param coordinate the coordinate of the producer
-   * @param certifiedArea in hectares = he = 10.000 m2
+   * @dev New producers registration
+   * @param name the name of the person or institution
+   * @param coordinates the coordinates of the producer
+   * @param totalArea in hectares = 1 he = 10.000 m2
    */
   function addProducer(
-    uint256 certifiedArea,
+    uint256 totalArea,
     string memory name,
     string memory proofPhoto,
-    string memory coordinate
+    string memory coordinates
   ) public {
     require(!producerExists(msg.sender), "This producer already exist");
 
@@ -50,10 +50,9 @@ contract ProducerContract is Callable {
     producer.id = producersCount + 1;
     producer.producerWallet = msg.sender;
     producer.userType = userType;
-    producer.certifiedArea = certifiedArea;
     producer.name = name;
     producer.proofPhoto = proofPhoto;
-    producer.propertyAddress = PropertyAddress(coordinate);
+    producer.propertyAddress = AreaInformation(coordinates, totalArea);
     producer.pool = Pool(false, producerPool.currentContractEra());
 
     producers[msg.sender] = producer;

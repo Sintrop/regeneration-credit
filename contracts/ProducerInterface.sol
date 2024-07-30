@@ -13,7 +13,7 @@ interface ProducerInterface {
     uint256 totalRequests;
     int256 isaScore;
     TokenApprove tokenApprove;
-    PropertyAddress propertyAddress;
+    AreaInformation propertyAddress;
   }
 
   enum UserType {
@@ -31,7 +31,7 @@ interface ProducerInterface {
     bool withdrewToken;
   }
 
-  struct PropertyAddress {
+  struct AreaInformation {
     string country;
     string state;
     string city;

@@ -73,7 +73,8 @@ describe("ProducerContract", () => {
 
       expect(producer.pool.currentEra).to.equal(1);
 
-      expect(producer.propertyAddress.coordinate).to.equal("135465-005");
+      expect(producer.propertyAddress.coordinates).to.equal("135465-005");
+      expect(producer.propertyAddress.totalArea).to.equal("10");
     });
   });
 
