@@ -196,7 +196,7 @@ contract ValidatorContract is Callable {
   function removeLevelsFromPool(address userAddress, uint256 levels) internal {
     UserType oldUserType = userContract.getUser(userAddress);
 
-    if (oldUserType == UserType.PRODUCER) return producerContract.resetLevels(userAddress, levels);
+    if (oldUserType == UserType.PRODUCER) return producerContract.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.INSPECTOR) return inspectorContract.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.DEVELOPER) return developerContract.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.RESEARCHER) return researcherContract.removePoolLevels(userAddress, levels);
