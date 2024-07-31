@@ -160,11 +160,11 @@ contract ValidatorContract is Callable {
   }
 
   function removeDeveloperContribution(Contribution memory contribution) internal {
-    externalRemoveLevels(contribution.developer, 1);
+    removeLevelsFromPool(contribution.developer, 1);
   }
 
   function removeReseacherWork(Work memory work) internal {
-    externalRemoveLevels(work.createdBy, 1);
+    removeLevelsFromPool(work.createdBy, 1);
   }
 
   function removeUserInspection(Inspection memory inspection) internal {
@@ -175,16 +175,12 @@ contract ValidatorContract is Callable {
 
     uint256 levels = uint256(inspection.isaScore);
 
-    externalRemoveLevels(inspection.createdBy, levels);
-    externalRemoveLevels(inspection.acceptedBy, 1);
+    removeLevelsFromPool(inspection.createdBy, levels);
+    removeLevelsFromPool(inspection.acceptedBy, 1);
   }
 
   function externalDenieUser(address userAddress) internal {
     denieUser(userAddress);
-  }
-
-  function externalRemoveLevels(address userAddress, uint256 levels) internal {
-    removeLevelsFromPool(userAddress, levels);
   }
 
   function denieUser(address userAddress) internal {
