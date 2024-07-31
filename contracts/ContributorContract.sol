@@ -6,12 +6,13 @@ import { UserContract } from "./UserContract.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { ContributorPool } from "./ContributorPool.sol";
 import { Contributor, Pool, Contribution } from "./types/ContributorTypes.sol";
+import { Callable } from "./Callable.sol";
 
 /**
  * @title ContributorContract
  * @dev Contributor resource that represent dev
  */
-contract ContributorContract is Ownable {
+contract ContributorContract is Ownable, Callable {
   mapping(address => Contributor) public contributors;
   mapping(uint256 => mapping(address => Contribution)) public contributions;
 
@@ -66,7 +67,7 @@ contract ContributorContract is Ownable {
       block.number
     );
 
-    updateLevel(msg.sender);
+    addPoolLevel(msg.sender);
   }
 
   /**
@@ -115,12 +116,18 @@ contract ContributorContract is Ownable {
     contributorPool.withdraw(msg.sender, currentEra);
   }
 
-  function updateLevel(address addr) internal {
+  function addPoolLevel(address addr) internal {
     Contributor memory contributor = contributors[addr];
     contributor.pool.level++;
     contributors[addr] = contributor;
 
     contributorPool.addLevel(addr, contributor.pool.level, 1);
+  }
+
+  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+    Contributor memory contributor = contributors[addr];
+
+    contributorPool.removePoolLevels(addr, contributor.pool.currentEra, removeSomeLevels);
   }
 
   /**

@@ -101,6 +101,8 @@ describe("DeveloperContract", (accounts) => {
       inspectorContractAddress: userContract.target,
       developerContractAddress: instance.target,
       researcherContractAddress: ZERO_ADDRESS,
+      contributorContractAddress: ZERO_ADDRESS,
+      activistContractAddress: ZERO_ADDRESS,
     };
 
     await userContract.newAllowedCaller(instance.target);
@@ -109,6 +111,7 @@ describe("DeveloperContract", (accounts) => {
     await developerPool.newAllowedCaller(instance.target);
     await validatorContract.newAllowedCaller(instance.target);
     await instance.newAllowedCaller(validatorContract.target);
+    await instance.newAllowedCaller(owner);
     await rcToken.addContractPool(developerPool.target, "30000000000000000000000000");
     await validatorContract.setContractAddressDependencies(validatorContractDependencies);
     await addInvitation(owner, dev1Address, userTypes.Developer, owner);
@@ -622,6 +625,32 @@ describe("DeveloperContract", (accounts) => {
       it("should return error message", async () => {
         await expect(instance.connect(dev1Address).withdraw()).to.be.revertedWith("Pool only to developer");
       });
+    });
+  });
+
+  describe("#removePoolLevels", () => {
+    beforeEach(async () => {
+      await addDeveloper("Developer  A", dev1Address);
+
+      await instance.connect(dev1Address).addContribution("report");
+
+      await advanceBlock(developerPoolParams.blocksPerEra);
+
+      await instance.connect(dev1Address).addContribution("report");
+
+      await instance.removePoolLevels(dev1Address, 1);
+    });
+
+    it("remove user levels from pool", async () => {
+      const levelsEra1 = await developerPool.eraLevels(1, dev1Address);
+
+      expect(levelsEra1).to.equal(1);
+    });
+
+    it("remove user levels from researcher", async () => {
+      const developer = await instance.getDeveloper(dev1Address);
+
+      expect(developer.pool.level).to.equal(1);
     });
   });
 });

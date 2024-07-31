@@ -27,7 +27,7 @@ contract ActivistPool is Poolable, Ownable, Blockable, Callable {
     9 * 10 ** 23,
     45 * 10 ** 22,
     225 * 10 ** 21,
-    1125 * 10 ** 22
+    1125 * 10 ** 20
   ];
 
   constructor(
@@ -65,7 +65,7 @@ contract ActivistPool is Poolable, Ownable, Blockable, Callable {
     addPoolLevel(addr, currentLevel, addLevels, era);
   }
 
-  function resetLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
-    resetLevelsFromEra(addr, era, removeSomeLevels);
+  function removePoolLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
+    removeLevelsFromEra(addr, era, removeSomeLevels);
   }
 }

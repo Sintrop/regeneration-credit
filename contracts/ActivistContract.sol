@@ -119,6 +119,13 @@ contract ActivistContract is Callable {
     activistPool.withdraw(msg.sender, currentEra);
   }
 
+  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+    Activist memory activist = activists[addr];
+
+    activists[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : activist.pool.level;
+    activistPool.removePoolLevels(addr, activistPoolEra(), removeSomeLevels);
+  }
+
   /**
    * @dev Check if a specific activist exists
    * @return a bool that represent if a activist exists or not

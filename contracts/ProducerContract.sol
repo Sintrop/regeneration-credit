@@ -117,6 +117,10 @@ contract ProducerContract is Callable {
     producers[addr].pendingInspection = state;
   }
 
+  function isSustainable(address addr) public view returns (bool) {
+    return producers[addr].isa.sustainable;
+  }
+
   function setIsaScore(address addr, int256 isaScore) public mustBeAllowedCaller {
     Producer memory producer = producers[addr];
 
@@ -124,7 +128,6 @@ contract ProducerContract is Callable {
     producer.isa.isaScore += isaScore;
     producers[addr] = producer;
 
-    if (producer.isa.sustainable) return;
     if (limitIsaScore(producer)) changeProducerToSustainable(producer);
     if (!minimumInspections(producer.totalInspections)) return;
     if (isaScore > 0) addIsaScore(producer, beforeIsaScore, isaScore);
@@ -151,11 +154,13 @@ contract ProducerContract is Callable {
     producerPool.removeLevel(producer.producerWallet, uint256(-(isaScore)));
   }
 
-  function resetLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Producer memory producer = producers[addr];
 
-    producers[addr].isa.isaScore = 0;
-    producerPool.resetLevels(addr, producer.pool.currentEra, removeSomeLevels);
+    if (removeSomeLevels == 0) producers[addr].isa.isaScore = 0;
+    if (removeSomeLevels > 0) producers[addr].isa.isaScore -= int256(removeSomeLevels);
+
+    producerPool.removePoolLevels(addr, producer.pool.currentEra, removeSomeLevels);
   }
 
   function changeProducerToSustainable(Producer memory producer) internal {
