@@ -176,7 +176,7 @@ contract ValidatorContract is Callable {
     uint256 levels = uint256(inspection.isaScore);
 
     removeLevelsFromPool(inspection.createdBy, levels);
-    removeLevelsFromPool(inspection.acceptedBy, levels);
+    removeLevelsFromPool(inspection.acceptedBy, 1);
   }
 
   function externalDenieUser(address userAddress) internal {
