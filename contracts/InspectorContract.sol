@@ -161,14 +161,6 @@ contract InspectorContract is Callable {
   }
 
   function isInspectorValid(address addr) public view returns (bool) {
-    Inspector memory inspector = inspectors[addr];
-    return inspector.giveUps < MAX_GIVEUPS;
-  }
-
-  // MODIFIERS
-
-  modifier uniqueInspector() {
-    require(!inspectorExists(msg.sender), "This inspector already exist");
-    _;
+    return inspectors[addr].giveUps < MAX_GIVEUPS;
   }
 }
