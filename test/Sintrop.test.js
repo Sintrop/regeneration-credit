@@ -401,7 +401,7 @@ describe("Sintrop", () => {
 
         it("should return error", async () => {
           await expect(requestInspection(producer2Address)).to.be.revertedWith(
-            "Congratulations on your effort in regenerating the Earth, you have completed your mission"
+            "You can't request inspections anymore, you have completed your mission"
           );
         });
       });

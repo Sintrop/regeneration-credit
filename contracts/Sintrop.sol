@@ -77,8 +77,8 @@ contract Sintrop {
     require(!producerContract.getProducer(msg.sender).pendingInspection, "Request already OPEN");
     require(canRequestInspection(), "Wait to request");
     require(
-      producerContract.isSustainable(msg.sender),
-      "Congratulations on your effort in regenerating the Earth, you have completed your mission"
+      !producerContract.isSustainable(msg.sender),
+      "You can't request inspections anymore, you have completed your mission"
     );
 
     addRequest();
