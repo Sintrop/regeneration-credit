@@ -137,11 +137,11 @@ contract ResearcherContract is Callable {
     works[work.id] = work;
   }
 
-  function resetLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Researcher memory researcher = researchers[addr];
 
     researchers[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : researcher.pool.level;
-    researcherPool.resetLevels(addr, researcherPoolEra(), removeSomeLevels);
+    researcherPool.removePoolLevels(addr, researcherPoolEra(), removeSomeLevels);
   }
 
   function addPenalty(address addr, uint256 workId) public mustBeAllowedCaller returns (uint256) {

@@ -10,6 +10,8 @@ import { ValidatorPool } from "./ValidatorPool.sol";
 import { InspectorContract } from "./InspectorContract.sol";
 import { DeveloperContract } from "./DeveloperContract.sol";
 import { ResearcherContract } from "./ResearcherContract.sol";
+import { ContributorContract } from "./ContributorContract.sol";
+import { ActivistContract } from "./ActivistContract.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
 import { Contribution } from "./types/DeveloperTypes.sol";
 import { Work } from "./types/ResearcherTypes.sol";
@@ -29,6 +31,8 @@ contract ValidatorContract is Callable {
   InspectorContract internal inspectorContract;
   DeveloperContract internal developerContract;
   ResearcherContract internal researcherContract;
+  ContributorContract internal contributorContract;
+  ActivistContract internal activistContract;
 
   address[] internal validatorsAddress;
   uint256 public validatorsCount;
@@ -47,6 +51,8 @@ contract ValidatorContract is Callable {
     inspectorContract = InspectorContract(contractDependency.inspectorContractAddress);
     developerContract = DeveloperContract(contractDependency.developerContractAddress);
     researcherContract = ResearcherContract(contractDependency.researcherContractAddress);
+    contributorContract = ContributorContract(contractDependency.contributorContractAddress);
+    activistContract = ActivistContract(contractDependency.activistContractAddress);
   }
 
   function addValidator() public {
@@ -154,11 +160,11 @@ contract ValidatorContract is Callable {
   }
 
   function removeDeveloperContribution(Contribution memory contribution) internal {
-    resetLevels(contribution.developer, 1);
+    removeLevelsFromPool(contribution.developer, 1);
   }
 
   function removeReseacherWork(Work memory work) internal {
-    resetLevels(work.createdBy, 1);
+    removeLevelsFromPool(work.createdBy, 1);
   }
 
   function removeUserInspection(Inspection memory inspection) internal {
@@ -169,8 +175,8 @@ contract ValidatorContract is Callable {
 
     uint256 levels = uint256(inspection.isaScore);
 
-    resetLevels(inspection.createdBy, levels);
-    resetLevels(inspection.acceptedBy, levels);
+    removeLevelsFromPool(inspection.createdBy, levels);
+    removeLevelsFromPool(inspection.acceptedBy, levels);
   }
 
   function externalDenieUser(address userAddress) internal {
@@ -178,18 +184,21 @@ contract ValidatorContract is Callable {
   }
 
   function denieUser(address userAddress) internal {
-    resetLevels(userAddress, 0);
+    removeLevelsFromPool(userAddress, 0);
 
     userContract.setDeniedType(userAddress);
   }
 
-  function resetLevels(address userAddress, uint256 levels) internal {
+  function removeLevelsFromPool(address userAddress, uint256 levels) internal {
     UserType oldUserType = userContract.getUser(userAddress);
 
-    if (oldUserType == UserType.PRODUCER) return producerContract.resetLevels(userAddress, levels);
-    if (oldUserType == UserType.INSPECTOR) return inspectorContract.resetLevels(userAddress, levels);
-    if (oldUserType == UserType.DEVELOPER) return developerContract.resetLevels(userAddress, levels);
-    if (oldUserType == UserType.RESEARCHER) return researcherContract.resetLevels(userAddress, levels);
+    if (oldUserType == UserType.PRODUCER) return producerContract.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.INSPECTOR) return inspectorContract.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.DEVELOPER) return developerContract.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.RESEARCHER) return researcherContract.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.CONTRIBUTOR) return contributorContract.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.ACTIVIST) return activistContract.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.VALIDATOR) return validatorRemovePoolLevels(userAddress, levels);
   }
 
   function getUserValidations(address userAddress) public view returns (UserValidation[] memory) {
@@ -253,6 +262,13 @@ contract ValidatorContract is Callable {
     validators[msg.sender].pool.currentEra++;
 
     validatorPool.withdraw(msg.sender, currentEra);
+  }
+
+  function validatorRemovePoolLevels(address addr, uint256 removeSomeLevels) private {
+    Validator memory validator = validators[addr];
+
+    validators[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : validator.pool.level;
+    validatorPool.removePoolLevels(addr, validatorPoolEra(), removeSomeLevels);
   }
 
   function validatorPoolEra() internal view returns (uint256) {

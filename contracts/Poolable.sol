@@ -40,7 +40,7 @@ contract Poolable {
     eraLevels[era][to] += levels;
   }
 
-  function resetLevelsFromEra(address to, uint256 era, uint256 removeSomeLevels) internal {
+  function removeLevelsFromEra(address to, uint256 era, uint256 removeSomeLevels) internal {
     uint256 currentLevels = eraLevels[era][to];
 
     if (currentLevels == 0) return;

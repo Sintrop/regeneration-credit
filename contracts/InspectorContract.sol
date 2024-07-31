@@ -19,6 +19,7 @@ contract InspectorContract is Callable {
   uint256 public inspectorsCount;
 
   uint256 public immutable maxPenalties;
+  uint256 private constant MAX_GIVEUPS = 3;
 
   constructor(address userContractAddress, address inspectorPoolAddress, uint256 maxPenalties_) {
     userContract = UserContract(userContractAddress);
@@ -109,12 +110,13 @@ contract InspectorContract is Callable {
     inspectorPool.addLevel(addr, 1, 1);
   }
 
-  function resetLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Inspector memory inspector = inspectors[addr];
 
-    inspectors[addr].pool.level = 0;
+    if (removeSomeLevels == 0) inspectors[addr].pool.level = 0;
+    if (removeSomeLevels > 0) inspectors[addr].pool.level -= removeSomeLevels;
 
-    inspectorPool.resetLevels(addr, inspector.pool.currentEra, removeSomeLevels);
+    inspectorPool.removePoolLevels(addr, inspector.pool.currentEra, removeSomeLevels);
   }
 
   function decrementInspections(address addr) public mustBeAllowedCaller {
@@ -157,5 +159,9 @@ contract InspectorContract is Callable {
 
   function minimumInspections(uint256 totalInspections) internal pure returns (bool) {
     return totalInspections >= MINIMUM_INSPECTIONS_TO_POOL;
+  }
+
+  function isInspectorValid(address addr) public view returns (bool) {
+    return inspectors[addr].giveUps < MAX_GIVEUPS;
   }
 }
