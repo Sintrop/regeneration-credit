@@ -52,7 +52,7 @@ contract ProducerContract is Callable {
     producer.userType = userType;
     producer.name = name;
     producer.proofPhoto = proofPhoto;
-    producer.propertyAddress = AreaInformation(coordinates, totalArea);
+    producer.areaInformation = AreaInformation(coordinates, totalArea);
     producer.pool = Pool(false, producerPool.currentContractEra());
 
     producers[msg.sender] = producer;

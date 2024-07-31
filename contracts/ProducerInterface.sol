@@ -13,7 +13,7 @@ interface ProducerInterface {
     uint256 totalRequests;
     int256 isaScore;
     TokenApprove tokenApprove;
-    AreaInformation propertyAddress;
+    AreaInformation areaInformation;
   }
 
   enum UserType {

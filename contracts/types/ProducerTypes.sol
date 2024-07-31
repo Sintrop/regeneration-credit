@@ -13,7 +13,7 @@ struct Producer {
   uint256 totalInspections;
   uint256 lastRequestAt;
   Isa isa;
-  AreaInformation propertyAddress;
+  AreaInformation areaInformation;
   Pool pool;
 }
 
