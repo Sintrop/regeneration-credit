@@ -20,14 +20,14 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
   RcTokenInterface internal rcToken;
 
   uint256[8] internal tokensPerEpochs = [
-    360000000000000000000000000,
-    180000000000000000000000000,
-    90000000000000000000000000,
-    45000000000000000000000000,
-    22500000000000000000000000,
-    11250000000000000000000000,
-    5625000000000000000000000,
-    2812500000000000000000000
+    360 * 10 ** 24,
+    180 * 10 ** 24,
+    90 * 10 ** 24,
+    45 * 10 ** 24,
+    225 * 10 ** 23,
+    1125 * 10 ** 22,
+    5625 * 10 ** 21,
+    28125 * 10 ** 20
   ];
 
   constructor(
@@ -71,7 +71,7 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
     removePoolLevel(producer, era, levels);
   }
 
-  function resetLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
-    resetLevelsFromEra(addr, era, removeSomeLevels);
+  function removePoolLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
+    removeLevelsFromEra(addr, era, removeSomeLevels);
   }
 }

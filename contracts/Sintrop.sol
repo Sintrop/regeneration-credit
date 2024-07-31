@@ -110,10 +110,11 @@ contract Sintrop {
    */
   function acceptInspection(uint256 inspectionId) public {
     require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
+    require(inspectorContract.isInspectorValid(msg.sender), "No more than 3 giveUps allowed");
 
     Inspection memory inspection = inspections[inspectionId];
 
-    require(inspectionExists(inspectionId), "This inspection don't exists");
+    require(inspectionExists(inspectionId), "This inspection do not exist");
     require(!inspectorInspected[msg.sender][inspection.createdBy], "Already inspected this producer");
 
     require(canAcceptInspection(inspectionId), "Can't accept yet");
@@ -127,8 +128,7 @@ contract Sintrop {
     producerContract.pendingInspection(inspection.createdBy, false); // Talvez não precise, pois estamos usando a expiração da inspeção pra checar se o produtor pode solicitar uma nova inspeção
     inspectorContract.incrementGiveUps(msg.sender);
 
-    inspectorContract.lastAcceptedAt(msg.sender, block.number);
-    inspectorContract.lastInspection(msg.sender, inspectionId);
+    inspectorContract.markLastInspection(msg.sender, block.number, inspectionId);
   }
 
   /**
@@ -140,7 +140,7 @@ contract Sintrop {
     Inspection memory inspection = inspections[inspectionId];
 
     require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
-    require(inspectionExists(inspectionId), "This inspection don't exists");
+    require(inspectionExists(inspectionId), "This inspection do not exist");
     require(isAccepted(inspectionId), "Accept this inspection before");
     require(isInspectorOwner(inspectionId), "You not accepted this inspection");
     require(!expiredInspection(inspectionId), "Inspection Expired");

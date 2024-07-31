@@ -91,6 +91,8 @@ describe("ResearcherContract", () => {
       inspectorContractAddress: ZERO_ADDRESS,
       developerContractAddress: ZERO_ADDRESS,
       researcherContractAddress: instance.target,
+      contributorContractAddress: ZERO_ADDRESS,
+      activistContractAddress: ZERO_ADDRESS,
     };
 
     await validatorContract.setContractAddressDependencies(validatorContractDependencies);
@@ -99,6 +101,7 @@ describe("ResearcherContract", () => {
     await researcherPool.newAllowedCaller(instance.target);
     await validatorContract.newAllowedCaller(instance.target);
     await instance.newAllowedCaller(validatorContract.target);
+    await instance.newAllowedCaller(owner);
     await rcToken.addContractPool(researcherPool.target, args.totalTokens);
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
@@ -540,6 +543,32 @@ describe("ResearcherContract", () => {
       const works = await instance.getWorks();
 
       expect(works.length).to.equal(1);
+    });
+  });
+
+  describe("#removePoolLevels", () => {
+    beforeEach(async () => {
+      await addResearcher("Researcher  A", resea1Address);
+
+      await addWork(resea1Address);
+
+      await advanceBlock(timeBetweenWorks);
+
+      await addWork(resea1Address);
+
+      await instance.removePoolLevels(resea1Address, 1);
+    });
+
+    it("remove user levels from pool", async () => {
+      const levelsEra1 = await researcherPool.eraLevels(1, resea1Address);
+
+      expect(levelsEra1).to.equal(1);
+    });
+
+    it("remove user levels from researcher", async () => {
+      const reseacher = await instance.getResearcher(resea1Address);
+
+      expect(reseacher.pool.level).to.equal(1);
     });
   });
 });

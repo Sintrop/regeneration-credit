@@ -121,11 +121,11 @@ contract DeveloperContract is Ownable, Callable {
     contributions[contribution.id] = contribution;
   }
 
-  function resetLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Developer memory developer = developers[addr];
 
     developers[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : developer.pool.level;
-    developerPool.resetLevels(addr, developerPoolEra(), removeSomeLevels);
+    developerPool.removePoolLevels(addr, developerPoolEra(), removeSomeLevels);
   }
 
   /**

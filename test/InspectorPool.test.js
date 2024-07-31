@@ -156,7 +156,7 @@ describe("InspectorPool", (accounts) => {
       });
     });
 
-    context("with don't allowed caller", () => {
+    context("without allowed caller", () => {
       it("should return error message", async () => {
         await expect(instance.connect(inspector1Address).addLevel(inspector1Address, 1, 1)).to.be.revertedWith(
           "Not allowed caller"
@@ -186,6 +186,138 @@ describe("InspectorPool", (accounts) => {
         const fixedPoint = parseInt(canWithdrawTimes) / 10 ** parseInt(blocksPrecision);
 
         expect(Math.ceil(fixedPoint)).to.equal(2);
+      });
+    });
+  });
+
+  describe("#tokensPerEpoch", () => {
+    context("when is epoch 1", () => {
+      it("must return 86400000000000000000000000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(1);
+
+        expect(tokensPerEpoch).to.equal("86400000000000000000000000");
+      });
+    });
+
+    context("when is epoch 2", () => {
+      it("must return 43200000000000000000000000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(2);
+
+        expect(tokensPerEpoch).to.equal("43200000000000000000000000");
+      });
+    });
+
+    context("when is epoch 3", () => {
+      it("must return 21600000000000000000000000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(3);
+
+        expect(tokensPerEpoch).to.equal("21600000000000000000000000");
+      });
+    });
+
+    context("when is epoch 4", () => {
+      it("must return 10800000000000000000000000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(4);
+
+        expect(tokensPerEpoch).to.equal("10800000000000000000000000");
+      });
+    });
+
+    context("when is epoch 5", () => {
+      it("must return 5400000000000000000000000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(5);
+
+        expect(tokensPerEpoch).to.equal("5400000000000000000000000");
+      });
+    });
+
+    context("when is epoch 6", () => {
+      it("must return 2700000000000000000000000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(6);
+
+        expect(tokensPerEpoch).to.equal("2700000000000000000000000");
+      });
+    });
+
+    context("when is epoch 7", () => {
+      it("must return 1350000000000000000000000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(7);
+
+        expect(tokensPerEpoch).to.equal("1350000000000000000000000");
+      });
+    });
+
+    context("when is epoch 8", () => {
+      it("must return 675000000000000000000000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(8);
+
+        expect(tokensPerEpoch).to.equal("675000000000000000000000");
+      });
+    });
+  });
+
+  describe("#tokensPerEra", () => {
+    context("when is epoch 1", () => {
+      it("must return 7200000000000000000000000", async () => {
+        const tokensPerEra = await instance.tokensPerEra(1, args.halving);
+
+        expect(tokensPerEra).to.equal("7200000000000000000000000");
+      });
+    });
+
+    context("when is epoch 2", () => {
+      it("must return 3600000000000000000000000", async () => {
+        const tokensPerEra = await instance.tokensPerEra(2, args.halving);
+
+        expect(tokensPerEra).to.equal("3600000000000000000000000");
+      });
+    });
+
+    context("when is epoch 3", () => {
+      it("must return 1800000000000000000000000", async () => {
+        const tokensPerEra = await instance.tokensPerEra(3, args.halving);
+
+        expect(tokensPerEra).to.equal("1800000000000000000000000");
+      });
+    });
+
+    context("when is epoch 4", () => {
+      it("must return 900000000000000000000000", async () => {
+        const tokensPerEra = await instance.tokensPerEra(4, args.halving);
+
+        expect(tokensPerEra).to.equal("900000000000000000000000");
+      });
+    });
+
+    context("when is epoch 5", () => {
+      it("must return 450000000000000000000000", async () => {
+        const tokensPerEra = await instance.tokensPerEra(5, args.halving);
+
+        expect(tokensPerEra).to.equal("450000000000000000000000");
+      });
+    });
+
+    context("when is epoch 6", () => {
+      it("must return 225000000000000000000000", async () => {
+        const tokensPerEra = await instance.tokensPerEra(6, args.halving);
+
+        expect(tokensPerEra).to.equal("225000000000000000000000");
+      });
+    });
+
+    context("when is epoch 7", () => {
+      it("must return 112500000000000000000000", async () => {
+        const tokensPerEra = await instance.tokensPerEra(7, args.halving);
+
+        expect(tokensPerEra).to.equal("112500000000000000000000");
+      });
+    });
+
+    context("when is epoch 8", () => {
+      it("must return 56250000000000000000000", async () => {
+        const tokensPerEra = await instance.tokensPerEra(8, args.halving);
+
+        expect(tokensPerEra).to.equal("56250000000000000000000");
       });
     });
   });
@@ -360,7 +492,7 @@ describe("InspectorPool", (accounts) => {
       });
     });
 
-    context("with don't allowed caller", () => {
+    context("without allowed caller", () => {
       it("should return error message", async () => {
         await expect(instance.connect(inspector1Address).withdraw(inspector1Address, 1)).to.be.revertedWith(
           "Not allowed caller"

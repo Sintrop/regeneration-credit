@@ -19,6 +19,7 @@ contract InspectorContract is Callable {
   uint256 public inspectorsCount;
 
   uint256 public immutable maxPenalties;
+  uint256 private constant MAX_GIVEUPS = 3;
 
   constructor(address userContractAddress, address inspectorPoolAddress, uint256 maxPenalties_) {
     userContract = UserContract(userContractAddress);
@@ -31,10 +32,9 @@ contract InspectorContract is Callable {
    * @param name the name of the inspector
    * @return a Inspector
    */
-  function addInspector(
-    string memory name,
-    string memory proofPhoto
-  ) public uniqueInspector returns (Inspector memory) {
+  function addInspector(string memory name, string memory proofPhoto) public returns (Inspector memory) {
+    require(!inspectorExists(msg.sender), "This inspector already exist");
+
     uint256 id = inspectorsCount + 1;
     UserType userType = UserType.INSPECTOR;
 
@@ -110,12 +110,13 @@ contract InspectorContract is Callable {
     inspectorPool.addLevel(addr, 1, 1);
   }
 
-  function resetLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Inspector memory inspector = inspectors[addr];
 
-    inspectors[addr].pool.level = 0;
+    if (removeSomeLevels == 0) inspectors[addr].pool.level = 0;
+    if (removeSomeLevels > 0) inspectors[addr].pool.level -= removeSomeLevels;
 
-    inspectorPool.resetLevels(addr, inspector.pool.currentEra, removeSomeLevels);
+    inspectorPool.removePoolLevels(addr, inspector.pool.currentEra, removeSomeLevels);
   }
 
   function decrementInspections(address addr) public mustBeAllowedCaller {
@@ -132,11 +133,8 @@ contract InspectorContract is Callable {
     inspectors[addr].giveUps--;
   }
 
-  function lastAcceptedAt(address addr, uint256 blocksNumber) public mustBeAllowedCaller {
+  function markLastInspection(address addr, uint256 blocksNumber, uint256 lastInspectionId) public mustBeAllowedCaller {
     inspectors[addr].lastAcceptedAt = blocksNumber;
-  }
-
-  function lastInspection(address addr, uint256 lastInspectionId) public mustBeAllowedCaller {
     inspectors[addr].lastInspection = lastInspectionId;
   }
 
@@ -163,10 +161,7 @@ contract InspectorContract is Callable {
     return totalInspections >= MINIMUM_INSPECTIONS_TO_POOL;
   }
 
-  // MODIFIERS
-
-  modifier uniqueInspector() {
-    require(!inspectorExists(msg.sender), "This inspector already exist");
-    _;
+  function isInspectorValid(address addr) public view returns (bool) {
+    return inspectors[addr].giveUps < MAX_GIVEUPS;
   }
 }
