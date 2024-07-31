@@ -152,11 +152,13 @@ contract ProducerContract is Callable {
     producerPool.removeLevel(producer.producerWallet, uint256(-(isaScore)));
   }
 
-  function resetLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Producer memory producer = producers[addr];
 
-    producers[addr].isa.isaScore = 0;
-    producerPool.resetLevels(addr, producer.pool.currentEra, removeSomeLevels);
+    if (removeSomeLevels == 0) producers[addr].isa.isaScore = 0;
+    if (removeSomeLevels > 0) producers[addr].isa.isaScore -= int256(removeSomeLevels);
+
+    producerPool.removePoolLevels(addr, producer.pool.currentEra, removeSomeLevels);
   }
 
   function changeProducerToSustainable(Producer memory producer) internal {
