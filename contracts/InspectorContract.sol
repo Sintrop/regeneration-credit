@@ -19,6 +19,7 @@ contract InspectorContract is Callable {
   uint256 public inspectorsCount;
 
   uint256 public immutable maxPenalties;
+  uint256 private constant MAX_GIVEUPS = 3;
 
   constructor(address userContractAddress, address inspectorPoolAddress, uint256 maxPenalties_) {
     userContract = UserContract(userContractAddress);
@@ -158,5 +159,9 @@ contract InspectorContract is Callable {
 
   function minimumInspections(uint256 totalInspections) internal pure returns (bool) {
     return totalInspections >= MINIMUM_INSPECTIONS_TO_POOL;
+  }
+
+  function isInspectorValid(address addr) public view returns (bool) {
+    return inspectors[addr].giveUps < MAX_GIVEUPS;
   }
 }

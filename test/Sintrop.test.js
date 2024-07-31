@@ -24,6 +24,8 @@ describe("Sintrop", () => {
   let owner,
     producerAddress,
     producer2Address,
+    producer3Address,
+    producer4Address,
     inspectorAddress,
     inspector2Address,
     resea1Address,
@@ -173,6 +175,8 @@ describe("Sintrop", () => {
       owner,
       producerAddress,
       producer2Address,
+      producer3Address,
+      producer4Address,
       inspectorAddress,
       inspector2Address,
       resea1Address,
@@ -508,11 +512,53 @@ describe("Sintrop", () => {
         });
 
         context("when have waited inspection delay time", () => {
-          it("", async () => {
+          it("should accept with success", async () => {
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
             await acceptInspection(1, inspectorAddress);
             const inspection = await instance.getInspection(1);
             expect(inspection.status).to.equal(STATUS.accepted);
+          });
+        });
+
+        context("when inspector has less than 3 giveups", () => {
+          it("should accept with success", async () => {
+            await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+            await acceptInspection(1, inspectorAddress);
+            const inspection = await instance.getInspection(1);
+            expect(inspection.status).to.equal(STATUS.accepted);
+          });
+        });
+
+        context("when inspector has more than 3 giveups", () => {
+          beforeEach(async () => {
+            await addInvitation(owner, producer2Address, userTypes.Producer, owner);
+            await addInvitation(owner, producer3Address, userTypes.Producer, owner);
+            await addInvitation(owner, producer4Address, userTypes.Producer, owner);
+
+            await addProducer("Producer B", producer2Address);
+            await addProducer("Producer C", producer3Address);
+            await addProducer("Producer D", producer4Address);
+
+            await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+            await acceptInspection(1, inspectorAddress);
+            await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
+
+            await requestInspection(producer2Address);
+            await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+            await acceptInspection(2, inspectorAddress);
+            await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
+
+            await requestInspection(producer3Address);
+            await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+            await acceptInspection(3, inspectorAddress);
+            await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
+
+            await requestInspection(producer4Address);
+            await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          });
+
+          it("should return error message", async () => {
+            await expect(acceptInspection(4, inspectorAddress)).to.be.revertedWith("No more than 3 giveUps allowed");
           });
         });
 
@@ -630,7 +676,7 @@ describe("Sintrop", () => {
 
       context("when inspection dont exists", () => {
         it("should return error message", async () => {
-          await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("This inspection don't exists");
+          await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("This inspection do not exist");
         });
       });
     });
@@ -1151,7 +1197,7 @@ describe("Sintrop", () => {
       context("when inspection dont exists", () => {
         it("should return error message", async () => {
           await expect(realizeInspection(1, report, [], inspectorAddress)).to.be.revertedWith(
-            "This inspection don't exists"
+            "This inspection do not exist"
           );
         });
       });
