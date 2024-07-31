@@ -118,6 +118,10 @@ contract ProducerContract is Callable {
     producers[addr].pendingInspection = state;
   }
 
+  function isSustainable(address addr) public view returns (bool) {
+    return producers[addr].isa.sustainable;
+  }
+
   function setIsaScore(address addr, int256 isaScore) public mustBeAllowedCaller {
     Producer memory producer = producers[addr];
 
@@ -125,7 +129,6 @@ contract ProducerContract is Callable {
     producer.isa.isaScore += isaScore;
     producers[addr] = producer;
 
-    if (producer.isa.sustainable) return;
     if (limitIsaScore(producer)) changeProducerToSustainable(producer);
     if (!minimumInspections(producer.totalInspections)) return;
     if (isaScore > 0) addIsaScore(producer, beforeIsaScore, isaScore);

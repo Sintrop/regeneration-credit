@@ -393,6 +393,19 @@ describe("Sintrop", () => {
         await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
       });
 
+      context("when is sustainable", () => {
+        beforeEach(async () => {
+          await addProducer("Producer B", producer2Address);
+          await producerContract.setIsaScore(producer2Address, 1000);
+        });
+
+        it("should return error", async () => {
+          await expect(requestInspection(producer2Address)).to.be.revertedWith(
+            "You can't request inspections anymore, you have completed your mission"
+          );
+        });
+      });
+
       context("when have less than ALLOWED_INITIAL_REQUESTS", () => {
         it("should request inspection", async () => {
           const inspection = await instance.getInspection(1);
