@@ -120,9 +120,9 @@ contract ActivistContract is Callable {
   }
 
   function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
-    Activist memory developer = activists[addr];
+    Activist memory activist = activists[addr];
 
-    activists[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : developer.pool.level;
+    activists[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : activist.pool.level;
     activistPool.removePoolLevels(addr, activistPoolEra(), removeSomeLevels);
   }
 
