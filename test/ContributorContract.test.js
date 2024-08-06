@@ -161,6 +161,12 @@ describe("ContributorContract", (accounts) => {
           await instance.connect(contr1Address).addContribution("report");
         });
 
+        it("add contribution id", async () => {
+          const construbution = await instance.contributions(1, contr1Address);
+
+          expect(construbution.id).to.equal(1);
+        });
+
         it("add contribution", async () => {
           const construbution = await instance.contributions(1, contr1Address);
 
@@ -178,6 +184,18 @@ describe("ContributorContract", (accounts) => {
 
           expect(eraLevels).to.equal(1);
         });
+
+        it("add user to contribution", async () => {
+          const construbution = await instance.contributions(1, contr1Address);
+
+          expect(construbution.user).to.equal(contr1Address.address);
+        });
+
+        it("increment contributiosCount", async () => {
+          const contributionsCount = await instance.contributionsCount();
+
+          expect(contributionsCount).to.equal(1);
+        });
       });
     });
 
@@ -185,6 +203,23 @@ describe("ContributorContract", (accounts) => {
       it("should return error message", async () => {
         await expect(instance.connect(owner).addContribution("report")).to.be.revertedWith("Only Contributor");
       });
+    });
+  });
+
+  describe("#getContribution", () => {
+    beforeEach(async () => {
+      await addContributor("Contributor A", contr1Address);
+      await instance.connect(contr1Address).addContribution("report");
+    });
+
+    it("should have fields", async () => {
+      const contribution = await instance.getContribution(1);
+
+      expect(contribution.id).to.equal("1");
+      expect(contribution.era).to.equal("1");
+      expect(contribution.user).to.equal(contr1Address.address);
+      expect(contribution.level).to.equal("0");
+      expect(contribution.report).to.equal("report");
     });
   });
 
