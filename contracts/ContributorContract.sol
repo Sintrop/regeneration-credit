@@ -14,13 +14,15 @@ import { Callable } from "./Callable.sol";
  */
 contract ContributorContract is Ownable, Callable {
   mapping(address => Contributor) public contributors;
-  mapping(uint256 => mapping(address => Contribution)) public contributions;
+  mapping(uint256 => mapping(address => bool)) public researcherContributionsEra;
+  mapping(uint256 => Contribution) public contributions;
 
   UserContract internal userContract;
   ContributorPool internal contributorPool;
 
   address[] internal contributorsAddress;
   uint256 public contributorsCount;
+  uint256 public contributionsCount;
 
   constructor(address userContractAddress, address contributorPoolAddress) {
     userContract = UserContract(userContractAddress);
@@ -53,17 +55,24 @@ contract ContributorContract is Ownable, Callable {
   }
 
   function addContribution(string memory report) public {
-    uint256 currentEra = contributorPoolEra();
-    Contribution memory contribution = contributions[currentEra][msg.sender];
-
     require(userContract.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Only Contributor");
-    require(!contribution.contributed, "Already has contribution");
 
-    contributions[contributorPoolEra()][msg.sender] = Contribution(
+    uint256 currentEra = contributorPoolEra();
+
+    bool contributionEra = researcherContributionsEra[currentEra][msg.sender];
+    require(!contributionEra, "Already has contribution");
+
+    researcherContributionsEra[currentEra][msg.sender] = true;
+
+    contributionsCount++;
+    uint256 id = contributionsCount;
+
+    contributions[id] = Contribution(
+      id,
       currentEra,
+      msg.sender,
       contributors[msg.sender].pool.level,
       report,
-      true,
       block.number
     );
 
@@ -90,6 +99,14 @@ contract ContributorContract is Ownable, Callable {
    */
   function getContributor(address addr) public view returns (Contributor memory contributor) {
     return contributors[addr];
+  }
+
+  /**
+   * @dev Returns a contribution
+   * @param id contributionId
+   */
+  function getContribution(uint256 id) public view returns (Contribution memory) {
+    return contributions[id];
   }
 
   /**

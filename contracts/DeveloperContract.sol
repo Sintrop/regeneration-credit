@@ -15,7 +15,7 @@ import { Developer, Pool, Contribution, Penalty } from "./types/DeveloperTypes.s
  */
 contract DeveloperContract is Ownable, Callable {
   mapping(address => Developer) public developers;
-  mapping(uint256 => mapping(address => uint256)) public developerContributionsEra;
+  mapping(uint256 => mapping(address => bool)) public developerContributionsEra;
   mapping(uint256 => Contribution) public contributions;
   mapping(address => Penalty[]) public penalties;
 
@@ -71,11 +71,11 @@ contract DeveloperContract is Ownable, Callable {
     require(userContract.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
 
     uint256 currentEra = developerPoolEra();
-    uint256 contributionEra = developerContributionsEra[currentEra][msg.sender];
+    bool contributionEra = developerContributionsEra[currentEra][msg.sender];
 
-    require(contributionEra == 0, "Already has contribution");
+    require(!contributionEra, "Already has contribution");
 
-    developerContributionsEra[currentEra][msg.sender] = 1;
+    developerContributionsEra[currentEra][msg.sender] = true;
 
     contributionsCount++;
     uint256 id = contributionsCount;
