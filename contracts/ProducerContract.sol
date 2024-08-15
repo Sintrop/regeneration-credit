@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
-import { Producer, Pool, Isa, AreaInformation } from "./types/ProducerTypes.sol";
+import { Producer, Pool, AreaInformation } from "./types/ProducerTypes.sol";
 import { Callable } from "./Callable.sol";
 import { ProducerPool } from "./ProducerPool.sol";
 import { UserType } from "./types/UserTypes.sol";
@@ -13,7 +13,7 @@ import { UserType } from "./types/UserTypes.sol";
  */
 contract ProducerContract is Callable {
   uint256 internal constant MINIMUM_INSPECTION_TO_POOL = 3;
-  int256 internal constant LIMIT_ISA_SCORE_TO_POOL = 1000;
+  uint8 internal constant LIMIT_ISA_SCORE_TO_POOL = 1000;
 
   mapping(address => Producer) public producers;
 
@@ -92,16 +92,16 @@ contract ProducerContract is Callable {
     require(minimumInspections(producer.totalInspections), "Minimum inspections");
     require(!limitIsaScore(producer), "Limit ISA Score");
 
-    incrementCurrentEra(msg.sender);
+    producers[msg,sender].pool.currentEra++;
 
     producerPool.withdraw(msg.sender, producer.pool.currentEra);
   }
 
-  function minimumInspections(uint256 totalInspections) internal pure returns (bool) {
+  function minimumInspections(uint256 totalInspections) private pure returns (bool) {
     return totalInspections >= MINIMUM_INSPECTION_TO_POOL;
   }
 
-  function limitIsaScore(Producer memory producer) internal pure returns (bool) {
+  function limitIsaScore(Producer memory producer) private pure returns (bool) {
     return producer.isa.isaScore >= LIMIT_ISA_SCORE_TO_POOL;
   }
 
@@ -138,7 +138,9 @@ contract ProducerContract is Callable {
     if (producer.isa.isaScore <= 0) return;
     uint256 levels;
 
-    if (beforeIsaScore < 0) {
+    bool newIsaScoreDoProducerPositive = beforeIsaScore < 0;
+
+    if (newIsaScoreDoProducerPositive) {
       levels = uint256(producer.isa.isaScore);
     } else {
       levels = producer.pool.onContractPool ? uint256(isaScore) : uint256(producer.isa.isaScore);
@@ -167,11 +169,7 @@ contract ProducerContract is Callable {
     producersSustainable++;
     producers[producer.producerWallet].isa.sustainable = true;
   }
-
-  function incrementCurrentEra(address addr) internal {
-    producers[addr].pool.currentEra++;
-  }
-
+  
   function incrementInspections(address addr) public mustBeAllowedCaller returns (uint256) {
     producers[addr].totalInspections++;
 

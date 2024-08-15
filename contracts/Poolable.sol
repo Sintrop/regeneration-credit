@@ -6,8 +6,8 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 contract Poolable {
   using SafeMath for uint256;
 
-  uint256 private constant ERA_MAX = 8;
-  uint256[ERA_MAX] private tokensPerEpochs;
+  uint256 private constant EPOCH_MAX = 8;
+  uint256[EPOCH_MAX] private tokensPerEpochs;
 
   struct Era {
     uint256 users;
@@ -50,7 +50,7 @@ contract Poolable {
     removePoolLevel(to, era, levels);
   }
 
-  function removePoolLevel(address to, uint256 era, uint256 levels) internal {
+  function removePoolLevel(address to, uint256 era, uint256 levels) private {
     if (levels > eraLevels[era][to]) levels = eraLevels[era][to];
 
     eras[era].levels = eras[era].levels.sub(levels);
@@ -71,7 +71,7 @@ contract Poolable {
   }
 
   function tokensPerEpoch(uint256 currentEpoch) public view returns (uint256) {
-    if (currentEpoch > ERA_MAX) return 0;
+    if (currentEpoch > EPOCH_MAX) return 0;
 
     return tokensPerEpochs[currentEpoch.sub(1)];
   }
