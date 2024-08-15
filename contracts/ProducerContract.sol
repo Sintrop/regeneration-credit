@@ -13,7 +13,7 @@ import { UserType } from "./types/UserTypes.sol";
  */
 contract ProducerContract is Callable {
   uint256 internal constant MINIMUM_INSPECTION_TO_POOL = 3;
-  uint8 internal constant LIMIT_ISA_SCORE_TO_POOL = 1000;
+  int256 internal constant LIMIT_ISA_SCORE_TO_POOL = 1000;
 
   mapping(address => Producer) public producers;
 
@@ -92,7 +92,7 @@ contract ProducerContract is Callable {
     require(minimumInspections(producer.totalInspections), "Minimum inspections");
     require(!limitIsaScore(producer), "Limit ISA Score");
 
-    producers[msg,sender].pool.currentEra++;
+    producers[msg.sender].pool.currentEra++;
 
     producerPool.withdraw(msg.sender, producer.pool.currentEra);
   }
@@ -169,7 +169,7 @@ contract ProducerContract is Callable {
     producersSustainable++;
     producers[producer.producerWallet].isa.sustainable = true;
   }
-  
+
   function incrementInspections(address addr) public mustBeAllowedCaller returns (uint256) {
     producers[addr].totalInspections++;
 
