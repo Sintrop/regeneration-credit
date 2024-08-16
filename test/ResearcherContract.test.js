@@ -138,7 +138,7 @@ describe("ResearcherContract", () => {
         });
 
         it("increment researcherCount after create researcher", async () => {
-          const researchersCount = await instance.researchersCount();
+          const researchersCount = await userContract.userTypesCount(userTypes.Researcher);
 
           expect(researchersCount).to.equal(1);
         });

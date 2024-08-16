@@ -55,7 +55,7 @@ describe("SupporterContract", () => {
       it("increment supporterCount", async () => {
         await addSupporter("Supporter A", inv1Address);
         await addSupporter("Supporter B", inv2Address);
-        const supportersCount = await instance.supportersCount();
+        const supportersCount = await userContract.userTypesCount(userTypes.Supporter);
 
         expect(supportersCount).to.equal(2);
       });

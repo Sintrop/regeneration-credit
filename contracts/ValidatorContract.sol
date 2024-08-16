@@ -35,13 +35,14 @@ contract ValidatorContract is Callable {
   ActivistContract internal activistContract;
 
   address[] internal validatorsAddress;
-  uint256 public validatorsCount;
+  UserType private immutable USER_TYPE;
   uint256 internal firstValidatorLimit;
   uint256 internal secondValidatorLimit;
 
   constructor(uint256 firstValidatorLimit_, uint256 secondValidatorLimit_) {
     firstValidatorLimit = firstValidatorLimit_;
     secondValidatorLimit = secondValidatorLimit_;
+    USER_TYPE = UserType.VALIDATOR;
   }
 
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
@@ -58,16 +59,13 @@ contract ValidatorContract is Callable {
   function addValidator() public {
     require(!validatorExists(msg.sender), "This validator already exist");
 
-    uint256 id = validatorsCount + 1;
-    UserType userType = UserType.VALIDATOR;
     uint256 currentEra = validatorPoolEra();
 
     Pool memory pool = Pool(0, currentEra);
 
-    validators[msg.sender] = Validator(id, msg.sender, userType, pool);
+    validators[msg.sender] = Validator(userContract.userTypesCount(USER_TYPE) + 1, msg.sender, USER_TYPE, pool);
     validatorsAddress.push(msg.sender);
-    validatorsCount++;
-    userContract.addUser(msg.sender, userType);
+    userContract.addUser(msg.sender, USER_TYPE);
   }
 
   function addUserValidation(address userAddress, string memory justification) public {
@@ -210,9 +208,10 @@ contract ValidatorContract is Callable {
   }
 
   function getValidators() public view returns (Validator[] memory) {
-    Validator[] memory validatorList = new Validator[](validatorsCount);
+    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    Validator[] memory validatorList = new Validator[](usersCount);
 
-    for (uint256 i = 0; i < validatorsCount; i++) {
+    for (uint256 i = 0; i < usersCount; i++) {
       address acAddress = validatorsAddress[i];
       validatorList[i] = validators[acAddress];
     }
@@ -229,7 +228,7 @@ contract ValidatorContract is Callable {
   }
 
   function majorityValidatorsCount() public view returns (uint256) {
-    uint256 _validatorsCount = validatorsCount;
+    uint256 _validatorsCount = userContract.userTypesCount(USER_TYPE);
 
     if (_validatorsCount <= firstValidatorLimit) return _validatorsCount / 2;
     if (_validatorsCount <= secondValidatorLimit) return _validatorsCount / 4;

@@ -16,7 +16,7 @@ contract InspectorContract is Callable {
   UserContract internal userContract;
   InspectorPool internal inspectorPool;
   address[] internal inspectorsAddress;
-  uint256 public inspectorsCount;
+  UserType private immutable USER_TYPE;
 
   uint256 public immutable maxPenalties;
   uint256 private constant MAX_GIVEUPS = 3;
@@ -25,6 +25,7 @@ contract InspectorContract is Callable {
     userContract = UserContract(userContractAddress);
     inspectorPool = InspectorPool(inspectorPoolAddress);
     maxPenalties = maxPenalties_;
+    USER_TYPE = UserType.INSPECTOR;
   }
 
   /**
@@ -35,18 +36,25 @@ contract InspectorContract is Callable {
   function addInspector(string memory name, string memory proofPhoto) public returns (Inspector memory) {
     require(!inspectorExists(msg.sender), "This inspector already exist");
 
-    uint256 id = inspectorsCount + 1;
-    UserType userType = UserType.INSPECTOR;
-
     uint256 currentEra = inspectorPoolEra();
     Pool memory pool = Pool(0, currentEra);
 
-    Inspector memory inspector = Inspector(id, msg.sender, userType, name, proofPhoto, 0, 0, 0, 0, pool);
+    Inspector memory inspector = Inspector(
+      userContract.userTypesCount(USER_TYPE) + 1,
+      msg.sender,
+      USER_TYPE,
+      name,
+      proofPhoto,
+      0,
+      0,
+      0,
+      0,
+      pool
+    );
 
     inspectors[msg.sender] = inspector;
     inspectorsAddress.push(msg.sender);
-    inspectorsCount++;
-    userContract.addUser(msg.sender, userType);
+    userContract.addUser(msg.sender, USER_TYPE);
 
     return inspector;
   }
@@ -66,9 +74,10 @@ contract InspectorContract is Callable {
    * @return Inspector struct array
    */
   function getInspectors() public view returns (Inspector[] memory) {
-    Inspector[] memory inspectorList = new Inspector[](inspectorsCount);
+    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    Inspector[] memory inspectorList = new Inspector[](usersCount);
 
-    for (uint256 i = 0; i < inspectorsCount; i++) {
+    for (uint256 i = 0; i < usersCount; i++) {
       address acAddress = inspectorsAddress[i];
       inspectorList[i] = inspectors[acAddress];
     }

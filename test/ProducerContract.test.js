@@ -121,7 +121,7 @@ describe("ProducerContract", () => {
     it("should increment producersCount after create producer", async () => {
       await addProducer("Producer A", prod1Address);
       await addProducer("Producer B", prod2Address);
-      const producersCount = await instance.producersCount();
+      const producersCount = await userContract.userTypesCount(userTypes.Producer);
 
       expect(producersCount).to.equal(2);
     });

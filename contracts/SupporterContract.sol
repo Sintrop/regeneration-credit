@@ -12,11 +12,12 @@ contract SupporterContract {
   UserContract internal userContract;
   SupporterPool internal supporterPool;
   address[] internal supportersAddress;
-  uint256 public supportersCount;
+  UserType private immutable USER_TYPE;
 
   constructor(address userContractAddress, address supporterPoolAddress) {
     userContract = UserContract(userContractAddress);
     supporterPool = SupporterPool(supporterPoolAddress);
+    USER_TYPE = UserType.SUPPORTER;
   }
 
   /**
@@ -25,15 +26,11 @@ contract SupporterContract {
    * @return a supporter
    */
   function addSupporter(string memory name) public uniqueSupporter returns (Supporter memory) {
-    uint256 id = supportersCount + 1;
-    UserType userType = UserType.SUPPORTER;
-
-    Supporter memory supporter = Supporter(id, msg.sender, userType, name);
+    Supporter memory supporter = Supporter(userContract.userTypesCount(USER_TYPE) + 1, msg.sender, USER_TYPE, name);
 
     supporters[msg.sender] = supporter;
     supportersAddress.push(msg.sender);
-    supportersCount++;
-    userContract.addUser(msg.sender, userType);
+    userContract.addUser(msg.sender, USER_TYPE);
 
     return supporter;
   }
@@ -53,9 +50,10 @@ contract SupporterContract {
    * @return Supporter struct array
    */
   function getSupporters() public view returns (Supporter[] memory) {
-    Supporter[] memory supporterList = new Supporter[](supportersCount);
+    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    Supporter[] memory supporterList = new Supporter[](usersCount);
 
-    for (uint256 i = 0; i < supportersCount; i++) {
+    for (uint256 i = 0; i < usersCount; i++) {
       address acAddress = supportersAddress[i];
       supporterList[i] = supporters[acAddress];
     }

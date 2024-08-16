@@ -159,7 +159,7 @@ describe("DeveloperContract", (accounts) => {
 
         it("should increment developersCount after create developer", async () => {
           await addDeveloper("Developer A", dev1Address);
-          const developersCount = await instance.developersCount();
+          const developersCount = await userContract.userTypesCount(userTypes.Developer);
 
           expect(developersCount).to.equal(1);
         });

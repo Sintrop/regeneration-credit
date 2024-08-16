@@ -103,7 +103,7 @@ describe("InspectorContract", () => {
         it("should increment inspectorsCount after create inspector", async () => {
           await addInspector("Inspector A", inspe1Address);
           await addInspector("Inspector B", inspe2Address);
-          const inspectorsCount = await instance.inspectorsCount();
+          const inspectorsCount = await userContract.userTypesCount(userTypes.Inspector);
 
           expect(inspectorsCount).to.equal(2);
         });

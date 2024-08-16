@@ -24,7 +24,7 @@ contract DeveloperContract is Ownable, Callable {
   ValidatorContract internal validatorContract;
 
   address[] internal developersAddress;
-  uint256 public developersCount;
+  UserType private immutable USER_TYPE;
   uint256 public contributionsCount;
 
   uint256 public immutable MAX_PENALTIES;
@@ -39,19 +39,22 @@ contract DeveloperContract is Ownable, Callable {
     developerPool = DeveloperPool(developerPoolAddress);
     validatorContract = ValidatorContract(validatorContractAddress);
     MAX_PENALTIES = maxPenalties_;
+    USER_TYPE = UserType.DEVELOPER;
   }
 
   /**
    * @dev Allow a new register of developer
    * @param name the name of the developer
    */
-  function addDeveloper(string memory name, string memory proofPhoto) public uniqueDeveloper {
+  function addDeveloper(string memory name, string memory proofPhoto) public {
+    require(!developerExists(msg.sender), "This developer already exist");
+
     UserType userType = UserType.DEVELOPER;
     uint256 poolEra = developerPoolEra();
     uint256 level = 0;
 
     developers[msg.sender] = Developer(
-      developersCount + 1,
+      userContract.userTypesCount(USER_TYPE) + 1,
       msg.sender,
       userType,
       name,
@@ -62,8 +65,6 @@ contract DeveloperContract is Ownable, Callable {
     );
 
     developersAddress.push(msg.sender);
-    developersCount++;
-
     userContract.addUser(msg.sender, userType);
   }
 
@@ -132,9 +133,10 @@ contract DeveloperContract is Ownable, Callable {
    * @dev Returns all developers
    */
   function getDevelopers() public view returns (Developer[] memory) {
-    Developer[] memory developerList = new Developer[](developersCount);
+    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    Developer[] memory developerList = new Developer[](usersCount);
 
-    for (uint256 i = 0; i < developersCount; i++) {
+    for (uint256 i = 0; i < usersCount; i++) {
       address devAddress = developersAddress[i];
       developerList[i] = developers[devAddress];
     }
@@ -205,12 +207,5 @@ contract DeveloperContract is Ownable, Callable {
    */
   function developerPoolEra() internal view returns (uint256) {
     return developerPool.currentContractEra();
-  }
-
-  // MODIFIERS
-
-  modifier uniqueDeveloper() {
-    require(!developerExists(msg.sender), "This developer already exist");
-    _;
   }
 }
