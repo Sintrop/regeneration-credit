@@ -13,12 +13,13 @@ contract ActivistContract is Callable {
 
   UserContract internal userContract;
   address[] internal activistsAddress;
-  uint256 public activistsCount;
   ActivistPool internal activistPool;
+  UserType private immutable USER_TYPE;
 
   constructor(address userContractAddress, address activistPoolAddress) {
     userContract = UserContract(userContractAddress);
     activistPool = ActivistPool(activistPoolAddress);
+    USER_TYPE = UserType.ACTIVIST;
   }
 
   /**
@@ -27,18 +28,16 @@ contract ActivistContract is Callable {
    * @return a Activist
    */
   function addActivist(string memory name, string memory proofPhoto) public uniqueActivist returns (Activist memory) {
-    uint256 id = activistsCount + 1;
-    UserType userType = UserType.ACTIVIST;
+    uint256 id = userContract.userTypesCount(USER_TYPE) + 1;
     uint256 currentEra = activistPoolEra();
 
     Pool memory pool = Pool(0, currentEra);
 
-    Activist memory activist = Activist(id, msg.sender, userType, name, proofPhoto, pool);
+    Activist memory activist = Activist(id, msg.sender, USER_TYPE, name, proofPhoto, pool);
 
     activists[msg.sender] = activist;
     activistsAddress.push(msg.sender);
-    activistsCount++;
-    userContract.addUser(msg.sender, userType);
+    userContract.addUser(msg.sender, USER_TYPE);
 
     return activist;
   }
@@ -48,9 +47,10 @@ contract ActivistContract is Callable {
    * @return Activist struct array
    */
   function getActivists() public view returns (Activist[] memory) {
-    Activist[] memory activistList = new Activist[](activistsCount);
+    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    Activist[] memory activistList = new Activist[](usersCount);
 
-    for (uint256 i = 0; i < activistsCount; i++) {
+    for (uint256 i = 0; i < usersCount; i++) {
       address acAddress = activistsAddress[i];
       activistList[i] = activists[acAddress];
     }
