@@ -43,10 +43,7 @@ contract ResearcherContract is Callable {
    * @param name the name of the researcher
    * @return a Researcher
    */
-  function addResearcher(
-    string memory name,
-    string memory proofPhoto
-  ) public returns (Researcher memory) {
+  function addResearcher(string memory name, string memory proofPhoto) public returns (Researcher memory) {
     require(!researcherExists(msg.sender), "This researcher already exist");
 
     Pool memory pool = Pool(0, researcherPoolEra());
