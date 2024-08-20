@@ -20,11 +20,13 @@ contract SupporterContract {
   }
 
   /**
-   * @dev Allow a new register of supporter
+   * @dev Allow new register of supporter
    * @param name the name of the supporter
    * @return a supporter
    */
-  function addSupporter(string memory name) public uniqueSupporter returns (Supporter memory) {
+  function addSupporter(string memory name) public returns (Supporter memory) {
+    require(!supporterExists(msg.sender), "This supporter already exist");
+
     Supporter memory supporter = Supporter(userContract.userTypesCount(USER_TYPE) + 1, msg.sender, name);
 
     supporters[msg.sender] = supporter;
@@ -74,12 +76,5 @@ contract SupporterContract {
    */
   function supporterExists(address addr) public view returns (bool) {
     return bytes(supporters[addr].name).length > 0;
-  }
-
-  //MODIFIERS
-
-  modifier uniqueSupporter() {
-    require(!supporterExists(msg.sender), "This supporter already exist");
-    _;
   }
 }
