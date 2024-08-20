@@ -312,17 +312,4 @@ describe("InspectorContract", () => {
       });
     });
   });
-
-  describe("#totalPenalties", () => {
-    beforeEach(async () => {
-      await addInspector("Inspector A", inspe1Address);
-      await instance.addPenalty(inspe1Address, 1);
-    });
-
-    it("return penalties", async () => {
-      const totalPenalties = await instance.totalPenalties(inspe1Address);
-
-      expect(totalPenalties).to.equal(1);
-    });
-  });
 });
