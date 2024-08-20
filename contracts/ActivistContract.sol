@@ -31,9 +31,7 @@ contract ActivistContract is Callable {
   function addActivist(string memory name, string memory proofPhoto) public returns (Activist memory) {
     require(!activistExists(msg.sender), "This activist already exist");
 
-    uint256 currentEra = activistPoolEra();
-
-    Pool memory pool = Pool(0, currentEra);
+    Pool memory pool = Pool(0, activistPoolEra());
 
     Activist memory activist = Activist(userContract.userTypesCount(USER_TYPE) + 1, msg.sender, name, proofPhoto, pool);
 
