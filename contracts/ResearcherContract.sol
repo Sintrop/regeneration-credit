@@ -1,26 +1,41 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
+import { Callable } from "./Callable.sol";
 import { UserContract } from "./UserContract.sol";
-import { Researcher, Work, Pool } from "./types/ResearcherTypes.sol";
+import { Researcher, Work, Pool, Penalty } from "./types/ResearcherTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { ResearcherPool } from "./ResearcherPool.sol";
+import { ValidatorContract } from "./ValidatorContract.sol";
 
-contract ResearcherContract {
+contract ResearcherContract is Callable {
   mapping(address => Researcher) internal researchers;
-  mapping(uint256 => Work) internal works;
+  mapping(uint256 => Work) public works;
+  mapping(address => Penalty[]) public penalties;
 
   UserContract internal userContract;
   ResearcherPool internal researcherPool;
+  ValidatorContract internal validatorContract;
+
   address[] internal researchersAddress;
-  uint256 public researchersCount;
+  UserType private constant USER_TYPE = UserType.RESEARCHER;
   uint256 public worksCount;
   uint256 internal immutable timeBetweenWorks;
 
-  constructor(address userContractAddress, address researcherPoolAddress, uint256 timeBetweenWorks_) {
+  uint256 public immutable MAX_PENALTIES;
+
+  constructor(
+    address userContractAddress,
+    address researcherPoolAddress,
+    address validatorContractAddress,
+    uint256 timeBetweenWorks_,
+    uint256 maxPenalties_
+  ) {
     userContract = UserContract(userContractAddress);
     researcherPool = ResearcherPool(researcherPoolAddress);
+    validatorContract = ValidatorContract(validatorContractAddress);
     timeBetweenWorks = timeBetweenWorks_;
+    MAX_PENALTIES = maxPenalties_;
   }
 
   /**
@@ -28,22 +43,25 @@ contract ResearcherContract {
    * @param name the name of the researcher
    * @return a Researcher
    */
-  function addResearcher(
-    string memory name,
-    string memory proofPhoto
-  ) public uniqueResearcher returns (Researcher memory) {
-    uint256 id = researchersCount + 1;
-    UserType userType = UserType.RESEARCHER;
-    uint256 currentEra = researcherPoolEra();
+  function addResearcher(string memory name, string memory proofPhoto) public returns (Researcher memory) {
+    require(!researcherExists(msg.sender), "This researcher already exist");
 
-    Pool memory pool = Pool(0, currentEra);
+    Pool memory pool = Pool(0, researcherPoolEra());
 
-    Researcher memory researcher = Researcher(id, msg.sender, userType, name, pool, proofPhoto, 0, 0);
+    Researcher memory researcher = Researcher(
+      userContract.userTypesCount(USER_TYPE) + 1,
+      msg.sender,
+      USER_TYPE,
+      name,
+      pool,
+      proofPhoto,
+      0,
+      0
+    );
 
     researchers[msg.sender] = researcher;
     researchersAddress.push(msg.sender);
-    researchersCount++;
-    userContract.addUser(msg.sender, userType);
+    userContract.addUser(msg.sender, USER_TYPE);
 
     return researcher;
   }
@@ -53,9 +71,10 @@ contract ResearcherContract {
    * @return Researcher struct array
    */
   function getResearchers() public view returns (Researcher[] memory) {
-    Researcher[] memory researcherList = new Researcher[](researchersCount);
+    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    Researcher[] memory researcherList = new Researcher[](usersCount);
 
-    for (uint256 i = 0; i < researchersCount; i++) {
+    for (uint256 i = 0; i < usersCount; i++) {
       address acAddress = researchersAddress[i];
       researcherList[i] = researchers[acAddress];
     }
@@ -89,7 +108,7 @@ contract ResearcherContract {
 
     uint256 id = worksCount + 1;
 
-    Work memory work = Work(id, msg.sender, title, thesis, file, block.timestamp); // solhint-disable-line
+    Work memory work = Work(id, researcherPoolEra(), msg.sender, title, thesis, file, 0, true, 0, block.timestamp); // solhint-disable-line
 
     works[id] = work;
     worksCount++;
@@ -97,6 +116,46 @@ contract ResearcherContract {
     researchers[msg.sender].lastPublishedAt = block.number;
 
     researcherPool.addLevel(msg.sender, 1, 1);
+  }
+
+  function addWorkValidation(uint256 id, string memory justification) public {
+    require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+
+    Work memory work = works[id];
+
+    require(work.valid && work.era == researcherPoolEra(), "This work is not VALID");
+
+    work.validationsCount += 1;
+    works[id] = work;
+
+    bool mustInvalidateWork = work.validationsCount >= validatorContract.majorityValidatorsCount();
+
+    if (mustInvalidateWork) invalidateWork(work);
+
+    validatorContract.addResearcheWorkValidation(work, justification, msg.sender);
+  }
+
+  function invalidateWork(Work memory work) internal {
+    work.valid = false;
+    work.invalidatedAt = block.number;
+    works[work.id] = work;
+  }
+
+  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+    Researcher memory researcher = researchers[addr];
+
+    researchers[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : researcher.pool.level;
+    researcherPool.removePoolLevels(addr, researcherPoolEra(), removeSomeLevels);
+  }
+
+  function addPenalty(address addr, uint256 workId) public mustBeAllowedCaller returns (uint256) {
+    penalties[addr].push(Penalty(workId));
+
+    return totalPenalties(addr);
+  }
+
+  function totalPenalties(address addr) public view returns (uint256) {
+    return penalties[addr].length;
   }
 
   function getWorks() public view returns (Work[] memory) {
@@ -116,7 +175,7 @@ contract ResearcherContract {
     Researcher memory researcher = researchers[msg.sender];
     uint256 currentEra = researcher.pool.currentEra;
 
-    require(researcherPool.canApprove(currentEra), "Can't approve withdraw");
+    require(researcherPool.canWithdraw(currentEra), "Can't approve withdraw");
 
     researchers[msg.sender].pool.currentEra++;
 
@@ -133,12 +192,5 @@ contract ResearcherContract {
 
     bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
     return canPublish || lastPublishedAt == 0;
-  }
-
-  // MODIFIERS
-
-  modifier uniqueResearcher() {
-    require(!researcherExists(msg.sender), "This researcher already exist");
-    _;
   }
 }

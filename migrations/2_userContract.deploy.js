@@ -6,6 +6,7 @@ async function userContractDeploy() {
   const researcherProportionality = process.env["RESEARCHER_PROPORTIONALITY"];
   const developerProportionality = process.env["DEVELOPER_PROPORTIONALITY"];
   const validatorProportionality = process.env["VALIDATOR_PROPORTIONALITY"];
+  const contributorProportionality = process.env["CONTRIBUTOR_PROPORTIONALITY"];
 
   const UserContract = await ethers.getContractFactory("UserContract");
 
@@ -14,7 +15,8 @@ async function userContractDeploy() {
     activistProportionality,
     researcherProportionality,
     developerProportionality,
-    validatorProportionality
+    validatorProportionality,
+    contributorProportionality
   );
 
   saveContractAddress("UserContract", userContract.target);

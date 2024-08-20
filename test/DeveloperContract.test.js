@@ -100,6 +100,9 @@ describe("DeveloperContract", (accounts) => {
       validatorPoolAddress: validatorPool.target,
       inspectorContractAddress: userContract.target,
       developerContractAddress: instance.target,
+      researcherContractAddress: ZERO_ADDRESS,
+      contributorContractAddress: ZERO_ADDRESS,
+      activistContractAddress: ZERO_ADDRESS,
     };
 
     await userContract.newAllowedCaller(instance.target);
@@ -108,6 +111,7 @@ describe("DeveloperContract", (accounts) => {
     await developerPool.newAllowedCaller(instance.target);
     await validatorContract.newAllowedCaller(instance.target);
     await instance.newAllowedCaller(validatorContract.target);
+    await instance.newAllowedCaller(owner);
     await rcToken.addContractPool(developerPool.target, "30000000000000000000000000");
     await validatorContract.setContractAddressDependencies(validatorContractDependencies);
     await addInvitation(owner, dev1Address, userTypes.Developer, owner);
@@ -155,7 +159,7 @@ describe("DeveloperContract", (accounts) => {
 
         it("should increment developersCount after create developer", async () => {
           await addDeveloper("Developer A", dev1Address);
-          const developersCount = await instance.developersCount();
+          const developersCount = await userContract.userTypesCount(userTypes.Developer);
 
           expect(developersCount).to.equal(1);
         });
@@ -520,7 +524,7 @@ describe("DeveloperContract", (accounts) => {
             });
 
             it("should withdraw all tokens from era", async () => {
-              let balanceOf = await developerPool.balanceOf(dev1Address);
+              let balanceOf = await rcToken.balanceOf(dev1Address);
 
               let tokensBalance = 1200000000000000000000000n;
 
@@ -559,7 +563,7 @@ describe("DeveloperContract", (accounts) => {
               });
 
               it("developer1 balance must be 600000000000000000000000", async () => {
-                let balanceOf = await developerPool.balanceOf(dev1Address);
+                let balanceOf = await rcToken.balanceOf(dev1Address);
 
                 let tokensPerEra = 600000000000000000000000n;
 
@@ -567,7 +571,7 @@ describe("DeveloperContract", (accounts) => {
               });
 
               it("developer2 balance must be 600000000000000000000000", async () => {
-                let balanceOf = await developerPool.balanceOf(dev2Address);
+                let balanceOf = await rcToken.balanceOf(dev2Address);
 
                 let tokensPerEra = 600000000000000000000000n;
 
@@ -602,7 +606,7 @@ describe("DeveloperContract", (accounts) => {
           });
 
           it("should can withdraw in two eras", async () => {
-            let balanceOf = await developerPool.balanceOf(dev1Address);
+            let balanceOf = await rcToken.balanceOf(dev1Address);
             let tokensPerEra = 2400000000000000000000000n;
 
             expect(balanceOf).to.equal(tokensPerEra);
@@ -621,6 +625,32 @@ describe("DeveloperContract", (accounts) => {
       it("should return error message", async () => {
         await expect(instance.connect(dev1Address).withdraw()).to.be.revertedWith("Pool only to developer");
       });
+    });
+  });
+
+  describe("#removePoolLevels", () => {
+    beforeEach(async () => {
+      await addDeveloper("Developer  A", dev1Address);
+
+      await instance.connect(dev1Address).addContribution("report");
+
+      await advanceBlock(developerPoolParams.blocksPerEra);
+
+      await instance.connect(dev1Address).addContribution("report");
+
+      await instance.removePoolLevels(dev1Address, 1);
+    });
+
+    it("remove user levels from pool", async () => {
+      const levelsEra1 = await developerPool.eraLevels(1, dev1Address);
+
+      expect(levelsEra1).to.equal(1);
+    });
+
+    it("remove user levels from researcher", async () => {
+      const developer = await instance.getDeveloper(dev1Address);
+
+      expect(developer.pool.level).to.equal(1);
     });
   });
 });

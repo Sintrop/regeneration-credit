@@ -11,12 +11,19 @@ describe("ValidatorContract", () => {
   let producerPool;
   let validatorPool;
   let inspectorPool;
+  let researcherPool;
+  let activistPool;
+  let activistContract;
   let inspectorContract;
   let developerContract;
+  let researcherContract;
+  let contributorContract;
   let rcToken;
+
   let owner,
     producer1Address,
     inspector1Address,
+    inspector2Address,
     validator1Address,
     validator2Address,
     validator3Address,
@@ -32,9 +39,11 @@ describe("ValidatorContract", () => {
     validator13Address,
     validator14Address,
     validator15Address,
+    contributor1Address,
     dev1Address,
-    dev2Address,
-    otherAddress;
+    otherAddress,
+    resea1Address,
+    activist1Address;
 
   const producerPoolArgs = {
     totalTokens: "750000000000000000000000000",
@@ -47,7 +56,7 @@ describe("ValidatorContract", () => {
     totalTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
-    blocksPerEra: 24,
+    blocksPerEra: 36,
   };
 
   const inspectorPoolArgs = {
@@ -61,15 +70,48 @@ describe("ValidatorContract", () => {
     totalTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
+    blocksPerEra: 36,
+  };
+
+  let researcherPoolParams = {
+    totalTokens: "30000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
     blocksPerEra: 30,
+  };
+
+  let contributorPoolParams = {
+    totalTokens: "30000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 30,
+  };
+
+  const activistPoolArgs = {
+    totalTokens: "30000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 20,
   };
 
   const addDeveloper = async (name, from) => {
     await developerContract.connect(from).addDeveloper(name, "photoURL");
   };
 
+  const addResearcher = async (name, from) => {
+    await researcherContract.connect(from).addResearcher(name, "photoURL");
+  };
+
+  const addContributor = async (name, from) => {
+    await contributorContract.connect(from).addContributor(name, "photoURL");
+  };
+
   const addValidator = async (from) => {
     await instance.connect(from).addValidator();
+  };
+
+  const addActivist = async (name, from) => {
+    await activistContract.connect(from).addActivist(name, "photoURL");
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
@@ -82,6 +124,10 @@ describe("ValidatorContract", () => {
 
   const addInspector = async (name, from) => {
     await inspectorContract.connect(from).addInspector(name, "photoURL");
+  };
+
+  const addWork = async (from) => {
+    await researcherContract.connect(from).addWork("title", "thesis", "fileURL");
   };
 
   const denyUser = async (userAddress) => {
@@ -103,6 +149,21 @@ describe("ValidatorContract", () => {
     };
   };
 
+  const generateWorkObject = (work) => {
+    return {
+      id: work.id,
+      era: work.era,
+      createdBy: work.createdBy,
+      title: work.title,
+      thesis: work.thesis,
+      file: work.file,
+      validationsCount: work.validationsCount,
+      valid: work.valid,
+      invalidatedAt: work.invalidatedAt,
+      createdAtTimeStamp: work.createdAtTimeStamp,
+    };
+  };
+
   const firstValidatorLimit = 8;
   const secondValidatorLimit = 14;
 
@@ -111,6 +172,7 @@ describe("ValidatorContract", () => {
       owner,
       producer1Address,
       inspector1Address,
+      inspector2Address,
       validator1Address,
       validator2Address,
       validator3Address,
@@ -126,9 +188,11 @@ describe("ValidatorContract", () => {
       validator13Address,
       validator14Address,
       validator15Address,
+      contributor1Address,
       dev1Address,
       dev2Address,
-      otherAddress,
+      resea1Address,
+      activist1Address,
     ] = await ethers.getSigners();
 
     rcToken = await rcTokenDeployed();
@@ -169,6 +233,22 @@ describe("ValidatorContract", () => {
       developerPoolParams.blocksPerEra
     );
 
+    reseacherPoolFactory = await ethers.getContractFactory("ResearcherPool");
+    researcherPool = await reseacherPoolFactory.deploy(
+      rcToken.target,
+      researcherPoolParams.halving,
+      researcherPoolParams.totalEras,
+      researcherPoolParams.blocksPerEra
+    );
+
+    contributorPoolFactory = await ethers.getContractFactory("ContributorPool");
+    contributorPool = await contributorPoolFactory.deploy(
+      rcToken.target,
+      contributorPoolParams.halving,
+      contributorPoolParams.totalEras,
+      contributorPoolParams.blocksPerEra
+    );
+
     const maxPenalties = 2;
     const inspectorContractFactory = await ethers.getContractFactory("InspectorContract");
     inspectorContract = await inspectorContractFactory.deploy(userContract.target, inspectorPool.target, maxPenalties);
@@ -185,27 +265,65 @@ describe("ValidatorContract", () => {
       developerMaxPenalties
     );
 
+    contributorContractFactory = await ethers.getContractFactory("ContributorContract");
+    contributorContract = await contributorContractFactory.deploy(userContract.target, contributorPool.target);
+
+    const reseacherMaxPenalties = 3;
+    const reseacherTimeBetweenWorks = 10;
+    researcherContractFactory = await ethers.getContractFactory("ResearcherContract");
+    researcherContract = await researcherContractFactory.deploy(
+      userContract.target,
+      researcherPool.target,
+      instance.target,
+      reseacherTimeBetweenWorks,
+      reseacherMaxPenalties
+    );
+
+    const activistPoolFactory = await ethers.getContractFactory("ActivistPool");
+    activistPool = await activistPoolFactory.deploy(
+      rcToken.target,
+      activistPoolArgs.halving,
+      activistPoolArgs.totalEras,
+      activistPoolArgs.blocksPerEra
+    );
+
+    const activistContractFactory = await ethers.getContractFactory("ActivistContract");
+    activistContract = await activistContractFactory.deploy(userContract.target, activistPool.target);
+
     const validatorContractDependencies = {
       userContractAddress: userContract.target,
       producerContractAddress: producerContract.target,
       validatorPoolAddress: validatorPool.target,
       inspectorContractAddress: inspectorContract.target,
       developerContractAddress: developerContract.target,
+      researcherContractAddress: researcherContract.target,
+      contributorContractAddress: contributorContract.target,
+      activistContractAddress: activistContract.target,
     };
 
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(producerContract.target);
     await userContract.newAllowedCaller(inspectorContract.target);
     await userContract.newAllowedCaller(developerContract.target);
+    await userContract.newAllowedCaller(researcherContract.target);
+    await userContract.newAllowedCaller(contributorContract.target);
+    await userContract.newAllowedCaller(activistContract.target);
     await userContract.newAllowedCaller(owner);
     await producerContract.newAllowedCaller(instance.target);
     await producerContract.newAllowedCaller(owner);
     await developerContract.newAllowedCaller(owner);
     await developerContract.newAllowedCaller(instance.target);
+    await researcherContract.newAllowedCaller(instance.target);
+    await activistContract.newAllowedCaller(instance.target);
+    await activistContract.newAllowedCaller(owner);
+    await contributorContract.newAllowedCaller(instance.target);
     await producerPool.newAllowedCaller(producerContract.target);
     await producerPool.newAllowedCaller(owner);
     await validatorPool.newAllowedCaller(instance.target);
     await developerPool.newAllowedCaller(developerContract.target);
+    await researcherPool.newAllowedCaller(researcherContract.target);
+    await contributorPool.newAllowedCaller(contributorContract.target);
+    await activistPool.newAllowedCaller(activistContract.target);
     await inspectorPool.newAllowedCaller(inspectorContract.target);
     await inspectorContract.newAllowedCaller(instance.target);
     await inspectorContract.newAllowedCaller(owner);
@@ -246,7 +364,7 @@ describe("ValidatorContract", () => {
 
         it("should increment validatorCount after create validator", async () => {
           await addValidator(validator1Address);
-          const validatorsCount = await instance.validatorsCount();
+          const validatorsCount = await userContract.userTypesCount(userTypes.Validator);
 
           expect(validatorsCount).to.equal(1);
         });
@@ -406,6 +524,205 @@ describe("ValidatorContract", () => {
               expect(inspector.pool.level).to.equal(0);
             });
           });
+
+          context("with contributor", () => {
+            beforeEach(async () => {
+              await addInvitation(owner, contributor1Address, userTypes.Contributor, owner);
+              await addContributor("Contributor  A", contributor1Address);
+
+              await contributorContract.connect(contributor1Address).addContribution("report");
+
+              await instance.connect(validator1Address).addUserValidation(contributor1Address, "my justification");
+              await instance.connect(validator3Address).addUserValidation(contributor1Address, "my justification");
+            });
+
+            it("should add validation", async () => {
+              const validations = await instance.getUserValidations(contributor1Address);
+
+              expect(validations[0].justification).to.equal("my justification");
+              expect(validations.length).to.equal(2);
+            });
+
+            it("user type must be denied", async () => {
+              const user = await userContract.getUser(contributor1Address);
+              const DENIED = 9;
+
+              expect(user).to.equal(DENIED);
+            });
+
+            it("remove user levels from pool", async () => {
+              const levelsEra1 = await contributorPool.eraLevels(1, contributor1Address);
+              const levelsEra2 = await contributorPool.eraLevels(2, contributor1Address);
+
+              expect(levelsEra1).to.equal(0);
+              expect(levelsEra2).to.equal(0);
+            });
+
+            it("do not remove user levels from contributor", async () => {
+              const contributor = await contributorContract.getContributor(contributor1Address);
+
+              expect(contributor.pool.level).to.equal(1);
+            });
+          });
+
+          context("with developer", () => {
+            beforeEach(async () => {
+              await addInvitation(owner, dev1Address, userTypes.Developer, owner);
+              await addDeveloper("Developer  A", dev1Address);
+
+              await developerContract.connect(dev1Address).addContribution("contribution");
+
+              await instance.connect(validator1Address).addUserValidation(dev1Address, "my justification");
+              await instance.connect(validator3Address).addUserValidation(dev1Address, "my justification");
+            });
+
+            it("should add validation", async () => {
+              const validations = await instance.getUserValidations(dev1Address);
+
+              expect(validations[0].justification).to.equal("my justification");
+              expect(validations.length).to.equal(2);
+            });
+
+            it("user type must be denied", async () => {
+              const user = await userContract.getUser(dev1Address);
+              const DENIED = 9;
+
+              expect(user).to.equal(DENIED);
+            });
+
+            it("remove user levels from pool", async () => {
+              const levelsEra1 = await developerPool.eraLevels(1, dev1Address);
+              const levelsEra2 = await developerPool.eraLevels(2, dev1Address);
+
+              expect(levelsEra1).to.equal(0);
+              expect(levelsEra2).to.equal(0);
+            });
+
+            it("remove user levels from developer", async () => {
+              const developer = await developerContract.getDeveloper(dev1Address);
+
+              expect(developer.pool.level).to.equal(0);
+            });
+          });
+
+          context("with researcher", () => {
+            beforeEach(async () => {
+              await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
+              await addResearcher("Researcher  A", resea1Address);
+
+              await addWork(resea1Address);
+
+              await instance.connect(validator1Address).addUserValidation(resea1Address, "my justification");
+              await instance.connect(validator3Address).addUserValidation(resea1Address, "my justification");
+            });
+
+            it("should add validation", async () => {
+              const validations = await instance.getUserValidations(resea1Address);
+
+              expect(validations[0].justification).to.equal("my justification");
+              expect(validations.length).to.equal(2);
+            });
+
+            it("user type must be denied", async () => {
+              const user = await userContract.getUser(resea1Address);
+              const DENIED = 9;
+
+              expect(user).to.equal(DENIED);
+            });
+
+            it("remove user levels from pool", async () => {
+              const levelsEra1 = await researcherPool.eraLevels(1, resea1Address);
+              const levelsEra2 = await researcherPool.eraLevels(2, resea1Address);
+
+              expect(levelsEra1).to.equal(0);
+              expect(levelsEra2).to.equal(0);
+            });
+
+            it("remove user levels from researcher", async () => {
+              const reseacher = await researcherContract.getResearcher(resea1Address);
+
+              expect(reseacher.pool.level).to.equal(0);
+            });
+          });
+
+          context("with activist", () => {
+            beforeEach(async () => {
+              await addInvitation(owner, activist1Address, userTypes.Activist, owner);
+              await addActivist("Activist  A", activist1Address);
+
+              await addInvitation(activist1Address, inspector2Address, userTypes.Inspector, owner);
+
+              await activistContract.addLevel(producer1Address, 0, inspector2Address, 3);
+
+              await instance.connect(validator1Address).addUserValidation(activist1Address, "my justification");
+              await instance.connect(validator3Address).addUserValidation(activist1Address, "my justification");
+            });
+
+            it("should add validation", async () => {
+              const validations = await instance.getUserValidations(activist1Address);
+
+              expect(validations[0].justification).to.equal("my justification");
+              expect(validations.length).to.equal(2);
+            });
+
+            it("user type must be denied", async () => {
+              const user = await userContract.getUser(activist1Address);
+              const DENIED = 9;
+
+              expect(user).to.equal(DENIED);
+            });
+
+            it("remove user levels from pool", async () => {
+              const levelsEra1 = await activistPool.eraLevels(1, activist1Address);
+              const levelsEra2 = await activistPool.eraLevels(2, activist1Address);
+
+              expect(levelsEra1).to.equal(0);
+              expect(levelsEra2).to.equal(0);
+            });
+
+            it("remove user levels from activist", async () => {
+              const activist = await activistContract.getActivist(activist1Address);
+
+              expect(activist.pool.level).to.equal(0);
+            });
+          });
+
+          context("with validator", () => {
+            beforeEach(async () => {
+              await instance.connect(validator1Address).addLevel();
+
+              await instance.connect(validator1Address).addUserValidation(validator1Address, "my justification");
+              await instance.connect(validator3Address).addUserValidation(validator1Address, "my justification");
+            });
+
+            it("should add validation", async () => {
+              const validations = await instance.getUserValidations(validator1Address);
+
+              expect(validations[0].justification).to.equal("my justification");
+              expect(validations.length).to.equal(2);
+            });
+
+            it("user type must be denied", async () => {
+              const user = await userContract.getUser(validator1Address);
+              const DENIED = 9;
+
+              expect(user).to.equal(DENIED);
+            });
+
+            it("remove user levels from pool", async () => {
+              const levelsEra1 = await validatorPool.eraLevels(1, validator1Address);
+              const levelsEra2 = await validatorPool.eraLevels(2, validator1Address);
+
+              expect(levelsEra1).to.equal(0);
+              expect(levelsEra2).to.equal(0);
+            });
+
+            it("remove user levels from activist", async () => {
+              const validator = await instance.getValidator(validator1Address);
+
+              expect(validator.pool.level).to.equal(0);
+            });
+          });
         });
       });
     });
@@ -479,14 +796,19 @@ describe("ValidatorContract", () => {
               };
 
               await addInvitation(owner, producer1Address, userTypes.Producer, owner);
+
               await addProducer("Producer A", producer1Address);
+              await addInspector("Inspector A", inspector1Address);
 
               await inspectorContract.incrementInspections(inspectionMock.acceptedBy);
+              await inspectorContract.incrementInspections(inspectionMock.acceptedBy);
+
               await producerContract.incrementInspections(inspectionMock.createdBy);
               await producerContract.incrementInspections(inspectionMock.createdBy);
               await producerContract.incrementInspections(inspectionMock.createdBy);
 
               await producerContract.setIsaScore(inspectionMock.createdBy, 20);
+              await producerContract.setIsaScore(inspectionMock.createdBy, 30);
 
               await inspectorContract.addPenalty(inspectionMock.acceptedBy, 2);
               await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", validator1Address);
@@ -498,10 +820,16 @@ describe("ValidatorContract", () => {
               expect(newInspectorType).to.equal(9);
             });
 
+            it("all inspector contract levels is removed", async () => {
+              const inspector = await inspectorContract.getInspector(inspector1Address);
+
+              expect(inspector.pool.level).to.equal(0);
+            });
+
             it("decrement total inspections of inspector", async () => {
               const inspector = await inspectorContract.getInspector(inspector1Address);
 
-              expect(inspector.totalInspections).to.equal(0);
+              expect(inspector.totalInspections).to.equal(1);
             });
 
             it("decrement total inspections of producer", async () => {
@@ -513,7 +841,7 @@ describe("ValidatorContract", () => {
             it("remove inspection isa level from producer isaScore", async () => {
               const producer = await producerContract.getProducer(producer1Address);
 
-              expect(producer.isa.isaScore).to.equal(0);
+              expect(producer.isa.isaScore).to.equal(30);
             });
 
             it("remove inspection isa level from producer pool", async () => {
@@ -541,14 +869,19 @@ describe("ValidatorContract", () => {
               };
 
               await addInvitation(owner, producer1Address, userTypes.Producer, owner);
+
               await addProducer("Producer A", producer1Address);
+              await addInspector("Inspector A", inspector1Address);
 
               await inspectorContract.incrementInspections(inspectionMock.acceptedBy);
+              await inspectorContract.incrementInspections(inspectionMock.acceptedBy);
+
               await producerContract.incrementInspections(inspectionMock.createdBy);
               await producerContract.incrementInspections(inspectionMock.createdBy);
               await producerContract.incrementInspections(inspectionMock.createdBy);
 
               await producerContract.setIsaScore(inspectionMock.createdBy, 20);
+              await producerContract.setIsaScore(inspectionMock.createdBy, 30);
 
               await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", validator1Address);
             });
@@ -556,13 +889,19 @@ describe("ValidatorContract", () => {
             it("inspector is the same", async () => {
               const newInspectorType = await userContract.getUser(inspectionMock.acceptedBy);
 
-              expect(newInspectorType).to.equal(0);
+              expect(newInspectorType).to.equal(2);
+            });
+
+            it("inspector contract levels is removed", async () => {
+              const inspector = await inspectorContract.getInspector(inspector1Address);
+
+              expect(inspector.pool.level).to.equal(1);
             });
 
             it("decrement total inspections of inspector", async () => {
               const inspector = await inspectorContract.getInspector(inspector1Address);
 
-              expect(inspector.totalInspections).to.equal(0);
+              expect(inspector.totalInspections).to.equal(1);
             });
 
             it("decrement total inspections of producer", async () => {
@@ -574,7 +913,7 @@ describe("ValidatorContract", () => {
             it("remove inspection isa level from producer isaScore", async () => {
               const producer = await producerContract.getProducer(producer1Address);
 
-              expect(producer.isa.isaScore).to.equal(0);
+              expect(producer.isa.isaScore).to.equal(30);
             });
 
             it("remove inspection isa level from producer pool", async () => {
@@ -790,6 +1129,152 @@ describe("ValidatorContract", () => {
           instance
             .connect(validator1Address)
             .addDeveloperContributionValidation(contribution, "justification", validator1Address)
+        ).to.be.revertedWith("Not allowed caller");
+      });
+    });
+  });
+
+  describe("#addDeveloperContributionValidation", () => {
+    context("with allowed caller", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
+        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator3Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator4Address, userTypes.Validator, owner);
+
+        await addResearcher("Researcher A", resea1Address);
+        await addValidator(validator1Address);
+        await addValidator(validator2Address);
+        await addValidator(validator3Address);
+        await addValidator(validator4Address);
+
+        await addWork(resea1Address);
+      });
+
+      context("when validator already voted to work", () => {
+        beforeEach(async () => {
+          let work = await researcherContract.works(1);
+          work = generateWorkObject(work);
+
+          await instance.connect(owner).addResearcheWorkValidation(work, "justification", validator1Address);
+        });
+
+        it("should return error", async () => {
+          let work = await researcherContract.works(1);
+          work = generateWorkObject(work);
+
+          await expect(
+            instance.connect(owner).addResearcheWorkValidation(work, "justification", validator1Address)
+          ).to.be.revertedWith("Already voted");
+        });
+      });
+
+      context("when validator did not vote to work", () => {
+        context("when work validations is => majorityValidatorsCount (addPenalty == true)", () => {
+          context("when researcher total penalties is >= researcherContract.maxPenalties", () => {
+            beforeEach(async () => {
+              let work = await researcherContract.works(1);
+              work = generateWorkObject(work);
+              work.validationsCount = 1;
+
+              await instance.connect(owner).addResearcheWorkValidation(work, "justification", validator1Address);
+
+              work.validationsCount = 2;
+              await instance.connect(owner).addResearcheWorkValidation(work, "justification", validator2Address);
+
+              await advanceBlock(researcherPoolParams.blocksPerEra);
+              await addWork(resea1Address);
+
+              let work2 = await researcherContract.works(2);
+              work2 = generateWorkObject(work2);
+              work2.validationsCount = 1;
+
+              await instance.connect(owner).addResearcheWorkValidation(work2, "justification", validator1Address);
+
+              work2.validationsCount = 2;
+              await instance.connect(owner).addResearcheWorkValidation(work2, "justification", validator2Address);
+
+              await advanceBlock(researcherPoolParams.blocksPerEra);
+              await addWork(resea1Address);
+
+              let work3 = await researcherContract.works(3);
+              work3 = generateWorkObject(work3);
+              work3.validationsCount = 1;
+
+              await instance.connect(owner).addResearcheWorkValidation(work3, "justification", validator1Address);
+
+              work3.validationsCount = 2;
+              await instance.connect(owner).addResearcheWorkValidation(work3, "justification", validator2Address);
+            });
+
+            it("deny developer", async () => {
+              const newInspectorType = await userContract.getUser(resea1Address);
+
+              expect(newInspectorType).to.equal(9);
+            });
+
+            it("remove work isa level from researcher pool", async () => {
+              const levels = await developerPool.eraLevels(4, resea1Address);
+
+              expect(levels).to.equal(0);
+            });
+          });
+
+          context("when researcher total penalties is < researcherContract.maxPenalties", () => {
+            beforeEach(async () => {
+              let work = await researcherContract.works(1);
+              work = generateWorkObject(work);
+              work.validationsCount = 1;
+
+              await instance.connect(owner).addResearcheWorkValidation(work, "justification", validator1Address);
+
+              work = await researcherContract.works(1);
+              work = generateWorkObject(work);
+              work.validationsCount = 2;
+
+              await instance.connect(owner).addResearcheWorkValidation(work, "justification", validator2Address);
+            });
+
+            it("researcher is the same", async () => {
+              const userType = await userContract.getUser(resea1Address);
+
+              expect(userType).to.equal(3);
+            });
+
+            it("remove contribution isa level from developer pool", async () => {
+              let work = await researcherContract.works(1);
+              const levels = await developerPool.eraLevels(work.era, resea1Address);
+
+              expect(levels).to.equal(0);
+            });
+          });
+        });
+
+        context("when work validations is < majorityValidatorsCount (addPenalty == false)", () => {
+          beforeEach(async () => {
+            let work = await researcherContract.works(1);
+            work = generateWorkObject(work);
+            work.validationsCount = 1;
+
+            await instance.connect(owner).addResearcheWorkValidation(work, "justification", validator1Address);
+          });
+
+          it("total penalties is zero", async () => {
+            const totalPenalties = await researcherContract.totalPenalties(resea1Address);
+
+            expect(totalPenalties).to.equal(0);
+          });
+        });
+      });
+    });
+
+    context("without allowed caller", () => {
+      it("should return error", async () => {
+        let work = await researcherContract.works(1);
+        work = generateWorkObject(work);
+
+        await expect(
+          instance.connect(validator1Address).addResearcheWorkValidation(work, "justification", validator1Address)
         ).to.be.revertedWith("Not allowed caller");
       });
     });
@@ -1093,7 +1578,7 @@ describe("ValidatorContract", () => {
           });
 
           it("withdraw 1200000000000000000000000 tokens", async () => {
-            const balanceOf = await validatorPool.balanceOf(validator1Address);
+            const balanceOf = await rcToken.balanceOf(validator1Address);
             const expectedBalance = 1200000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
@@ -1112,7 +1597,7 @@ describe("ValidatorContract", () => {
           });
 
           it("withdraw 600000000000000000000000n tokens", async () => {
-            const balanceOf = await validatorPool.balanceOf(validator1Address);
+            const balanceOf = await rcToken.balanceOf(validator1Address);
             const expectedBalance = 600000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);

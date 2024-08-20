@@ -6,20 +6,23 @@ import { UserContract } from "./UserContract.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { ContributorPool } from "./ContributorPool.sol";
 import { Contributor, Pool, Contribution } from "./types/ContributorTypes.sol";
+import { Callable } from "./Callable.sol";
 
 /**
  * @title ContributorContract
  * @dev Contributor resource that represent dev
  */
-contract ContributorContract is Ownable {
+contract ContributorContract is Ownable, Callable {
   mapping(address => Contributor) public contributors;
-  mapping(uint256 => mapping(address => Contribution)) public contributions;
+  mapping(uint256 => mapping(address => bool)) public researcherContributionsEra;
+  mapping(uint256 => Contribution) public contributions;
 
   UserContract internal userContract;
   ContributorPool internal contributorPool;
 
   address[] internal contributorsAddress;
-  uint256 public contributorsCount;
+  UserType private constant USER_TYPE = UserType.CONTRIBUTOR;
+  uint256 public contributionsCount;
 
   constructor(address userContractAddress, address contributorPoolAddress) {
     userContract = UserContract(userContractAddress);
@@ -31,14 +34,13 @@ contract ContributorContract is Ownable {
    * @param name the name of the contributor
    */
   function addContributor(string memory name, string memory proofPhoto) public uniqueContributor {
-    UserType userType = UserType.CONTRIBUTOR;
     uint256 poolEra = contributorPoolEra();
     uint256 level = 0;
 
     contributors[msg.sender] = Contributor(
-      contributorsCount + 1,
+      userContract.userTypesCount(USER_TYPE) + 1,
       msg.sender,
-      userType,
+      USER_TYPE,
       name,
       proofPhoto,
       Pool(level, poolEra),
@@ -46,36 +48,43 @@ contract ContributorContract is Ownable {
     );
 
     contributorsAddress.push(msg.sender);
-    contributorsCount++;
 
-    userContract.addUser(msg.sender, userType);
+    userContract.addUser(msg.sender, USER_TYPE);
   }
 
   function addContribution(string memory report) public {
-    uint256 currentEra = contributorPoolEra();
-    Contribution memory contribution = contributions[currentEra][msg.sender];
-
     require(userContract.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Only Contributor");
-    require(!contribution.contributed, "Already has contribution");
 
-    contributions[contributorPoolEra()][msg.sender] = Contribution(
+    uint256 currentEra = contributorPoolEra();
+
+    bool contributionEra = researcherContributionsEra[currentEra][msg.sender];
+    require(!contributionEra, "Already has contribution");
+
+    researcherContributionsEra[currentEra][msg.sender] = true;
+
+    contributionsCount++;
+    uint256 id = contributionsCount;
+
+    contributions[id] = Contribution(
+      id,
       currentEra,
+      msg.sender,
       contributors[msg.sender].pool.level,
       report,
-      true,
       block.number
     );
 
-    updateLevel(msg.sender);
+    addPoolLevel(msg.sender);
   }
 
   /**
    * @dev Returns all contributors
    */
   function getContributors() public view returns (Contributor[] memory) {
-    Contributor[] memory contributorList = new Contributor[](contributorsCount);
+    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    Contributor[] memory contributorList = new Contributor[](usersCount);
 
-    for (uint256 i = 0; i < contributorsCount; i++) {
+    for (uint256 i = 0; i < usersCount; i++) {
       address devAddress = contributorsAddress[i];
       contributorList[i] = contributors[devAddress];
     }
@@ -89,6 +98,14 @@ contract ContributorContract is Ownable {
    */
   function getContributor(address addr) public view returns (Contributor memory contributor) {
     return contributors[addr];
+  }
+
+  /**
+   * @dev Returns a contribution
+   * @param id contributionId
+   */
+  function getContribution(uint256 id) public view returns (Contribution memory) {
+    return contributions[id];
   }
 
   /**
@@ -108,19 +125,25 @@ contract ContributorContract is Ownable {
     Contributor memory contributor = contributors[msg.sender];
     uint256 currentEra = contributor.pool.currentEra;
 
-    require(contributorPool.canApprove(currentEra), "Can't approve withdraw");
+    require(contributorPool.canWithdraw(currentEra), "Can't approve withdraw");
 
     contributors[msg.sender].pool.currentEra++;
 
     contributorPool.withdraw(msg.sender, currentEra);
   }
 
-  function updateLevel(address addr) internal {
+  function addPoolLevel(address addr) internal {
     Contributor memory contributor = contributors[addr];
     contributor.pool.level++;
     contributors[addr] = contributor;
 
     contributorPool.addLevel(addr, contributor.pool.level, 1);
+  }
+
+  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+    Contributor memory contributor = contributors[addr];
+
+    contributorPool.removePoolLevels(addr, contributor.pool.currentEra, removeSomeLevels);
   }
 
   /**

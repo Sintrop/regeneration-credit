@@ -9,8 +9,12 @@ import { Callable } from "./Callable.sol";
 import { ValidatorPool } from "./ValidatorPool.sol";
 import { InspectorContract } from "./InspectorContract.sol";
 import { DeveloperContract } from "./DeveloperContract.sol";
+import { ResearcherContract } from "./ResearcherContract.sol";
+import { ContributorContract } from "./ContributorContract.sol";
+import { ActivistContract } from "./ActivistContract.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
 import { Contribution } from "./types/DeveloperTypes.sol";
+import { Work } from "./types/ResearcherTypes.sol";
 
 contract ValidatorContract is Callable {
   mapping(address => Validator) internal validators;
@@ -19,14 +23,19 @@ contract ValidatorContract is Callable {
   mapping(uint256 => ResourceValidation[]) public contributionValidations;
   mapping(address => mapping(uint256 => bool)) internal validatorContributionsValidations;
   mapping(address => mapping(uint256 => bool)) internal validatorInspectionsValidations;
+  mapping(address => mapping(uint256 => bool)) internal validatorWorksValidations;
 
   UserContract internal userContract;
   ProducerContract internal producerContract;
   ValidatorPool internal validatorPool;
   InspectorContract internal inspectorContract;
   DeveloperContract internal developerContract;
+  ResearcherContract internal researcherContract;
+  ContributorContract internal contributorContract;
+  ActivistContract internal activistContract;
+
   address[] internal validatorsAddress;
-  uint256 public validatorsCount;
+  UserType private constant USER_TYPE = UserType.VALIDATOR;
   uint256 internal firstValidatorLimit;
   uint256 internal secondValidatorLimit;
 
@@ -41,21 +50,21 @@ contract ValidatorContract is Callable {
     validatorPool = ValidatorPool(contractDependency.validatorPoolAddress);
     inspectorContract = InspectorContract(contractDependency.inspectorContractAddress);
     developerContract = DeveloperContract(contractDependency.developerContractAddress);
+    researcherContract = ResearcherContract(contractDependency.researcherContractAddress);
+    contributorContract = ContributorContract(contractDependency.contributorContractAddress);
+    activistContract = ActivistContract(contractDependency.activistContractAddress);
   }
 
   function addValidator() public {
     require(!validatorExists(msg.sender), "This validator already exist");
 
-    uint256 id = validatorsCount + 1;
-    UserType userType = UserType.VALIDATOR;
     uint256 currentEra = validatorPoolEra();
 
     Pool memory pool = Pool(0, currentEra);
 
-    validators[msg.sender] = Validator(id, msg.sender, userType, pool);
+    validators[msg.sender] = Validator(userContract.userTypesCount(USER_TYPE) + 1, msg.sender, USER_TYPE, pool);
     validatorsAddress.push(msg.sender);
-    validatorsCount++;
-    userContract.addUser(msg.sender, userType);
+    userContract.addUser(msg.sender, USER_TYPE);
   }
 
   function addUserValidation(address userAddress, string memory justification) public {
@@ -122,8 +131,37 @@ contract ValidatorContract is Callable {
     if (developerTotalPenalties >= developerContract.MAX_PENALTIES()) externalDenieUser(contribution.developer);
   }
 
+  function addResearcheWorkValidation(
+    Work memory work,
+    string memory justification,
+    address validatorAddress
+  ) public mustBeAllowedCaller {
+    require(!validatorWorksValidations[validatorAddress][work.id], "Already voted");
+
+    validatorWorksValidations[validatorAddress][work.id] = true;
+
+    uint256 majorityValidatorsCount_ = majorityValidatorsCount();
+
+    bool addPenalty = work.validationsCount >= majorityValidatorsCount_;
+
+    contributionValidations[work.id].push(
+      ResourceValidation(validatorAddress, work.id, justification, majorityValidatorsCount_, block.number)
+    );
+
+    if (!addPenalty) return;
+
+    uint256 totalPenalties = researcherContract.addPenalty(work.createdBy, work.id);
+    removeReseacherWork(work);
+
+    if (totalPenalties >= researcherContract.MAX_PENALTIES()) externalDenieUser(work.createdBy);
+  }
+
   function removeDeveloperContribution(Contribution memory contribution) internal {
-    externalRemoveLevels(contribution.developer, 1);
+    removeLevelsFromPool(contribution.developer, 1);
+  }
+
+  function removeReseacherWork(Work memory work) internal {
+    removeLevelsFromPool(work.createdBy, 1);
   }
 
   function removeUserInspection(Inspection memory inspection) internal {
@@ -134,30 +172,30 @@ contract ValidatorContract is Callable {
 
     uint256 levels = uint256(inspection.isaScore);
 
-    externalRemoveLevels(inspection.createdBy, levels);
-    externalRemoveLevels(inspection.acceptedBy, levels);
+    removeLevelsFromPool(inspection.createdBy, levels);
+    removeLevelsFromPool(inspection.acceptedBy, 1);
   }
 
   function externalDenieUser(address userAddress) internal {
     denieUser(userAddress);
   }
 
-  function externalRemoveLevels(address userAddress, uint256 levels) internal {
-    resetLevels(userAddress, levels);
-  }
-
   function denieUser(address userAddress) internal {
-    resetLevels(userAddress, 0);
+    removeLevelsFromPool(userAddress, 0);
 
     userContract.setDeniedType(userAddress);
   }
 
-  function resetLevels(address userAddress, uint256 levels) internal {
+  function removeLevelsFromPool(address userAddress, uint256 levels) internal {
     UserType oldUserType = userContract.getUser(userAddress);
 
-    if (oldUserType == UserType.PRODUCER) return producerContract.resetLevels(userAddress, levels);
-    if (oldUserType == UserType.INSPECTOR) return inspectorContract.resetLevels(userAddress, levels);
-    if (oldUserType == UserType.DEVELOPER) return developerContract.resetLevels(userAddress, levels);
+    if (oldUserType == UserType.PRODUCER) return producerContract.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.INSPECTOR) return inspectorContract.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.DEVELOPER) return developerContract.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.RESEARCHER) return researcherContract.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.CONTRIBUTOR) return contributorContract.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.ACTIVIST) return activistContract.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.VALIDATOR) return validatorRemovePoolLevels(userAddress, levels);
   }
 
   function getUserValidations(address userAddress) public view returns (UserValidation[] memory) {
@@ -169,9 +207,10 @@ contract ValidatorContract is Callable {
   }
 
   function getValidators() public view returns (Validator[] memory) {
-    Validator[] memory validatorList = new Validator[](validatorsCount);
+    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    Validator[] memory validatorList = new Validator[](usersCount);
 
-    for (uint256 i = 0; i < validatorsCount; i++) {
+    for (uint256 i = 0; i < usersCount; i++) {
       address acAddress = validatorsAddress[i];
       validatorList[i] = validators[acAddress];
     }
@@ -188,7 +227,7 @@ contract ValidatorContract is Callable {
   }
 
   function majorityValidatorsCount() public view returns (uint256) {
-    uint256 _validatorsCount = validatorsCount;
+    uint256 _validatorsCount = userContract.userTypesCount(USER_TYPE);
 
     if (_validatorsCount <= firstValidatorLimit) return _validatorsCount / 2;
     if (_validatorsCount <= secondValidatorLimit) return _validatorsCount / 4;
@@ -216,11 +255,18 @@ contract ValidatorContract is Callable {
     Validator memory validator = validators[msg.sender];
     uint256 currentEra = validator.pool.currentEra;
 
-    require(validatorPool.canApprove(currentEra), "Can't approve withdraw");
+    require(validatorPool.canWithdraw(currentEra), "Can't approve withdraw");
 
     validators[msg.sender].pool.currentEra++;
 
     validatorPool.withdraw(msg.sender, currentEra);
+  }
+
+  function validatorRemovePoolLevels(address addr, uint256 removeSomeLevels) private {
+    Validator memory validator = validators[addr];
+
+    validators[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : validator.pool.level;
+    validatorPool.removePoolLevels(addr, validatorPoolEra(), removeSomeLevels);
   }
 
   function validatorPoolEra() internal view returns (uint256) {

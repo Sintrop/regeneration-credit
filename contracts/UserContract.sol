@@ -7,7 +7,7 @@ import { Callable } from "./Callable.sol";
 
 /**
  * @title UserContract
- * @dev This contract work as a centralized user's system, where all users has your userType here
+ * @dev This contract works as a centralized user's registration system
  */
 contract UserContract is Ownable, Callable {
   mapping(address => UserType) internal users;
@@ -24,15 +24,16 @@ contract UserContract is Ownable, Callable {
     uint256 activistProportionality,
     uint256 researcherProportionality,
     uint256 developerProportionality,
-    uint256 validatorProportionality
+    uint256 validatorProportionality,
+    uint256 contributorProportionality
   ) {
     userTypeSettings[UserType.PRODUCER] = UserTypeSetting(0, false, true, 100);
-    userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(0, false, true, 100);
     userTypeSettings[UserType.INSPECTOR] = UserTypeSetting(inspectorProportionality, true, true, 100);
     userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(activistProportionality, false, true, 1000);
     userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(researcherProportionality, false, true, 1000);
     userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(developerProportionality, false, true, 1000);
     userTypeSettings[UserType.VALIDATOR] = UserTypeSetting(validatorProportionality, false, true, 10000);
+    userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(contributorProportionality, false, true, 1000);
   }
 
   /**
@@ -79,36 +80,6 @@ contract UserContract is Ownable, Callable {
     return userTypeSettings[userType];
   }
 
-  function userTypes()
-    public
-    pure
-    returns (
-      string memory,
-      string memory,
-      string memory,
-      string memory,
-      string memory,
-      string memory,
-      string memory,
-      string memory,
-      string memory,
-      string memory
-    )
-  {
-    return (
-      "UNDEFINED",
-      "PRODUCER",
-      "INSPECTOR",
-      "RESEARCHER",
-      "DEVELOPER",
-      "CONTRIBUTOR",
-      "ACTIVIST",
-      "SUPPORTER",
-      "VALIDATOR",
-      "DENIED"
-    );
-  }
-
   /**
    * @dev Add new delation in the system
    * @param addr The address of the user
@@ -120,9 +91,7 @@ contract UserContract is Ownable, Callable {
     require(users[addr] != UserType.UNDEFINED, "User must be registered");
     uint256 id = delationsCount + 1;
 
-    Delation memory delation = Delation(id, msg.sender, addr, title, testimony);
-
-    delations[addr].push(delation);
+    delations[addr].push(Delation(id, msg.sender, addr, title, testimony));
     delationsCount++;
   }
 
@@ -130,9 +99,7 @@ contract UserContract is Ownable, Callable {
     require(invitations[invited].invited == address(0), "Already invited");
     require(users[invited] == UserType.UNDEFINED, "Already registered");
 
-    Invitation memory invitation = Invitation(invited, inviter, userType, block.number);
-
-    invitations[invited] = invitation;
+    invitations[invited] = Invitation(invited, inviter, userType, block.number);
   }
 
   function setDeniedType(address userAddress) public mustBeAllowedCaller {

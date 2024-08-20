@@ -50,7 +50,7 @@ describe("RcTokenIco", () => {
         it("user rc token balance increment 40000000000000000000000", async () => {
           const balance = await rcToken.balanceOf(user1Address);
 
-          expect(balance).to.equal(40000000000000000000000n);
+          expect(balance).to.equal(120000000000000000000000n);
         });
       });
 
@@ -68,7 +68,7 @@ describe("RcTokenIco", () => {
         it("user rc token balance increment 40000000000000000000", async () => {
           const balance = await rcToken.balanceOf(user1Address);
 
-          expect(balance).to.equal(40000000000000000000n);
+          expect(balance).to.equal(120000000000000000000n);
         });
       });
 
@@ -83,10 +83,10 @@ describe("RcTokenIco", () => {
           expect(balance).to.equal(1000000000000000000n);
         });
 
-        it("user rc token balance increment 80000000000000000000000", async () => {
+        it("user rc token balance increment 240000000000000000000000", async () => {
           const balance = await rcToken.balanceOf(user1Address);
 
-          expect(balance).to.equal(80000000000000000000000n);
+          expect(balance).to.equal(240000000000000000000000n);
         });
       });
 
@@ -104,7 +104,7 @@ describe("RcTokenIco", () => {
         it("user rc token balance increment 240000000000000000000000", async () => {
           const balance = await rcToken.balanceOf(user1Address);
 
-          expect(balance).to.equal(240000000000000000000000n);
+          expect(balance).to.equal(720000000000000000000000n);
         });
       });
 
@@ -234,7 +234,7 @@ describe("RcTokenIco", () => {
 
           it("should decrement contract rc balance", async () => {
             contractRcBalance = await rcToken.balanceOf(instance);
-            expect(contractRcBalance).to.equal(124340000000000000000000000n);
+            expect(contractRcBalance).to.equal(124180000000000000000000000n);
           });
         });
       });

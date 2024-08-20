@@ -12,48 +12,70 @@ contract Blockable {
   using SafeMath for uint256;
 
   uint256 public constant BLOCKS_PRECISION = 5;
+  uint256 internal constant LIMIT_EPOCHS_SIZE = 8;
+  uint256 private immutable BLOCKS_PER_ERA;
+  uint256 private immutable DEPLOYED_AT;
+  uint256 private immutable LIMIT_ERAS_SIZE;
+  uint256 internal immutable HALVING;
 
-  uint256 public blocksPerEra;
-  uint256 public deployedAt;
-  uint256 public eraMax;
-
-  constructor(uint256 _blocksPerEra, uint256 _eraMax) {
-    blocksPerEra = _blocksPerEra;
-    eraMax = _eraMax;
-    deployedAt = currentBlockNumber();
+  constructor(uint256 blocksPerEra, uint256 _limitErasSize, uint256 _halving) {
+    BLOCKS_PER_ERA = blocksPerEra;
+    LIMIT_ERAS_SIZE = _limitErasSize;
+    DEPLOYED_AT = currentBlockNumber();
+    HALVING = _halving;
   }
 
-  function canApprove(uint256 currentUserEra) public view returns (bool) {
-    return currentUserEra < currentContractEra() && validEra(currentUserEra);
+  function canWithdraw(uint256 currentUserEra) public view returns (bool) {
+    return currentUserEra < currentContractEra() && isAValidEra(currentUserEra);
   }
 
   function currentContractEra() public view returns (uint256) {
-    return currentBlockNumber().sub(deployedAt).div(blocksPerEra).add(1);
+    return currentBlockNumber().sub(DEPLOYED_AT).div(BLOCKS_PER_ERA).add(1);
   }
 
-  function nextApproveIn(uint256 currentUserEra) public view returns (int256) {
-    return int256(deployedAt) + (int256(blocksPerEra) * int256(currentUserEra)) - int256(currentBlockNumber());
+  function currentEpoch() public view returns (uint256) {
+    return currentContractEra().div(HALVING).add(1);
   }
 
-  function canApproveTimes(uint256 currentUserEra) public view returns (uint256) {
-    int256 approvesTimes = nextApproveIn(currentUserEra);
+  function nextWithdrawIn(uint256 currentUserEra) public view returns (int256) {
+    return int256(DEPLOYED_AT) + (int256(BLOCKS_PER_ERA) * int256(currentUserEra)) - int256(currentBlockNumber());
+  }
+
+  function canWithdrawTimes(uint256 currentUserEra) public view returns (uint256) {
+    int256 approvesTimes = nextWithdrawIn(currentUserEra);
 
     if (approvesTimes > 0) return 0;
 
-    return uint256(-approvesTimes).mul(10 ** BLOCKS_PRECISION).div(blocksPerEra);
+    return uint256(-approvesTimes).mul(10 ** BLOCKS_PRECISION).div(BLOCKS_PER_ERA);
   }
 
   // PRIVATE FUNCTIONS
 
-  function validEra(uint256 currentEra) internal view returns (bool) {
-    return currentEra <= eraMax;
+  function isAValidEra(uint256 currentEra) internal view returns (bool) {
+    return currentEra <= LIMIT_ERAS_SIZE;
+  }
+
+  function isAValidEpoch() internal view returns (bool) {
+    return currentEpoch() <= LIMIT_EPOCHS_SIZE;
   }
 
   function currentUserBlockNumber(uint256 currentUserEra) internal view returns (uint256) {
-    return deployedAt.add(blocksPerEra.mul(currentUserEra));
+    return DEPLOYED_AT.add(BLOCKS_PER_ERA.mul(currentUserEra));
   }
 
   function currentBlockNumber() internal view returns (uint256) {
     return block.number;
+  }
+
+  // MODIFIERS
+
+  modifier canWithdrawModifier(uint256 era) {
+    require(canWithdraw(era), "You can't approve yet");
+    _;
+  }
+
+  modifier isAValidEpochModifier() {
+    require(isAValidEpoch(), "You can't approve anymore");
+    _;
   }
 }

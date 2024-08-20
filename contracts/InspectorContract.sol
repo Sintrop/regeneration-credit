@@ -16,9 +16,10 @@ contract InspectorContract is Callable {
   UserContract internal userContract;
   InspectorPool internal inspectorPool;
   address[] internal inspectorsAddress;
-  uint256 public inspectorsCount;
+  UserType private constant USER_TYPE = UserType.INSPECTOR;
 
   uint256 public immutable maxPenalties;
+  uint256 private constant MAX_GIVEUPS = 3;
 
   constructor(address userContractAddress, address inspectorPoolAddress, uint256 maxPenalties_) {
     userContract = UserContract(userContractAddress);
@@ -27,27 +28,32 @@ contract InspectorContract is Callable {
   }
 
   /**
-   * @dev Allow a new register of inspector
+   * @dev Allow a new registration of inspector
    * @param name the name of the inspector
    * @return a Inspector
    */
-  // TODO Add mustBeAllowedCaller
-  function addInspector(
-    string memory name,
-    string memory proofPhoto
-  ) public uniqueInspector returns (Inspector memory) {
-    uint256 id = inspectorsCount + 1;
-    UserType userType = UserType.INSPECTOR;
+  function addInspector(string memory name, string memory proofPhoto) public returns (Inspector memory) {
+    require(!inspectorExists(msg.sender), "This inspector already exist");
 
     uint256 currentEra = inspectorPoolEra();
     Pool memory pool = Pool(0, currentEra);
 
-    Inspector memory inspector = Inspector(id, msg.sender, userType, name, proofPhoto, 0, 0, 0, 0, pool);
+    Inspector memory inspector = Inspector(
+      userContract.userTypesCount(USER_TYPE) + 1,
+      msg.sender,
+      USER_TYPE,
+      name,
+      proofPhoto,
+      0,
+      0,
+      0,
+      0,
+      pool
+    );
 
     inspectors[msg.sender] = inspector;
     inspectorsAddress.push(msg.sender);
-    inspectorsCount++;
-    userContract.addUser(msg.sender, userType);
+    userContract.addUser(msg.sender, USER_TYPE);
 
     return inspector;
   }
@@ -67,9 +73,10 @@ contract InspectorContract is Callable {
    * @return Inspector struct array
    */
   function getInspectors() public view returns (Inspector[] memory) {
-    Inspector[] memory inspectorList = new Inspector[](inspectorsCount);
+    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    Inspector[] memory inspectorList = new Inspector[](usersCount);
 
-    for (uint256 i = 0; i < inspectorsCount; i++) {
+    for (uint256 i = 0; i < usersCount; i++) {
       address acAddress = inspectorsAddress[i];
       inspectorList[i] = inspectors[acAddress];
     }
@@ -111,12 +118,13 @@ contract InspectorContract is Callable {
     inspectorPool.addLevel(addr, 1, 1);
   }
 
-  function resetLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Inspector memory inspector = inspectors[addr];
 
-    inspectors[addr].pool.level = 0;
+    if (removeSomeLevels == 0) inspectors[addr].pool.level = 0;
+    if (removeSomeLevels > 0) inspectors[addr].pool.level -= removeSomeLevels;
 
-    inspectorPool.resetLevels(addr, inspector.pool.currentEra, removeSomeLevels);
+    inspectorPool.removePoolLevels(addr, inspector.pool.currentEra, removeSomeLevels);
   }
 
   function decrementInspections(address addr) public mustBeAllowedCaller {
@@ -133,11 +141,8 @@ contract InspectorContract is Callable {
     inspectors[addr].giveUps--;
   }
 
-  function lastAcceptedAt(address addr, uint256 blocksNumber) public mustBeAllowedCaller {
+  function markLastInspection(address addr, uint256 blocksNumber, uint256 lastInspectionId) public mustBeAllowedCaller {
     inspectors[addr].lastAcceptedAt = blocksNumber;
-  }
-
-  function lastInspection(address addr, uint256 lastInspectionId) public mustBeAllowedCaller {
     inspectors[addr].lastInspection = lastInspectionId;
   }
 
@@ -153,7 +158,7 @@ contract InspectorContract is Callable {
 
     uint256 currentEra = inspector.pool.currentEra;
 
-    require(inspectorPool.canApprove(currentEra), "Can't approve withdraw");
+    require(inspectorPool.canWithdraw(currentEra), "Can't approve withdraw");
 
     inspectors[msg.sender].pool.currentEra++;
 
@@ -164,10 +169,7 @@ contract InspectorContract is Callable {
     return totalInspections >= MINIMUM_INSPECTIONS_TO_POOL;
   }
 
-  // MODIFIERS
-
-  modifier uniqueInspector() {
-    require(!inspectorExists(msg.sender), "This inspector already exist");
-    _;
+  function isInspectorValid(address addr) public view returns (bool) {
+    return inspectors[addr].giveUps < MAX_GIVEUPS;
   }
 }

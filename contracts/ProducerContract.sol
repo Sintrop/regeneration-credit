@@ -2,14 +2,14 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
-import { Producer, Pool, Isa, PropertyAddress } from "./types/ProducerTypes.sol";
+import { Producer, Pool, AreaInformation } from "./types/ProducerTypes.sol";
 import { Callable } from "./Callable.sol";
 import { ProducerPool } from "./ProducerPool.sol";
 import { UserType } from "./types/UserTypes.sol";
 
 /**
  * @title ProducerContract
- * @dev Producer resource that represent a user that can request a inspection
+ * @dev Contract with the producer user logic. Producers must be projects that are restoring nature ecosystems.
  */
 contract ProducerContract is Callable {
   uint256 internal constant MINIMUM_INSPECTION_TO_POOL = 3;
@@ -21,7 +21,7 @@ contract ProducerContract is Callable {
   ProducerPool internal producerPool;
 
   address[] internal producersAddress;
-  uint256 public producersCount;
+  UserType private constant USER_TYPE = UserType.PRODUCER;
   uint256 public producersSustainable;
 
   constructor(address userContractAddress, address producerPoolAddress) {
@@ -30,36 +30,32 @@ contract ProducerContract is Callable {
   }
 
   /**
-   * @dev Allow a new register of producer
-   * @param name the name of the producer
-   * @param coordinate the coordinate of the producer
-   * @param certifiedArea in hectares = he = 10.000 m2
+   * @dev New producers registration
+   * @param name the name of the person or institution
+   * @param coordinates the coordinates of the producer
+   * @param totalArea in hectares = 1 he = 10.000 m2
    */
   function addProducer(
-    uint256 certifiedArea,
+    uint256 totalArea,
     string memory name,
     string memory proofPhoto,
-    string memory coordinate
+    string memory coordinates
   ) public {
     require(!producerExists(msg.sender), "This producer already exist");
 
-    UserType userType = UserType.PRODUCER;
-
     Producer memory producer = producers[msg.sender];
 
-    producer.id = producersCount + 1;
+    producer.id = userContract.userTypesCount(USER_TYPE) + 1;
     producer.producerWallet = msg.sender;
-    producer.userType = userType;
-    producer.certifiedArea = certifiedArea;
+    producer.userType = USER_TYPE;
     producer.name = name;
     producer.proofPhoto = proofPhoto;
-    producer.propertyAddress = PropertyAddress(coordinate);
+    producer.areaInformation = AreaInformation(coordinates, totalArea);
     producer.pool = Pool(false, producerPool.currentContractEra());
 
     producers[msg.sender] = producer;
     producersAddress.push(msg.sender);
-    producersCount++;
-    userContract.addUser(msg.sender, userType);
+    userContract.addUser(msg.sender, USER_TYPE);
   }
 
   /**
@@ -67,10 +63,10 @@ contract ProducerContract is Callable {
    * @return Producer struct array
    */
   function getProducers() public view returns (Producer[] memory) {
-    uint256 count = producersCount;
-    Producer[] memory producerList = new Producer[](count);
+    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    Producer[] memory producerList = new Producer[](usersCount);
 
-    for (uint256 i = 0; i < count; i++) {
+    for (uint256 i = 0; i < usersCount; i++) {
       address acAddress = producersAddress[i];
       producerList[i] = producers[acAddress];
     }
@@ -93,16 +89,16 @@ contract ProducerContract is Callable {
     require(minimumInspections(producer.totalInspections), "Minimum inspections");
     require(!limitIsaScore(producer), "Limit ISA Score");
 
-    incrementCurrentEra(msg.sender);
+    producers[msg.sender].pool.currentEra++;
 
     producerPool.withdraw(msg.sender, producer.pool.currentEra);
   }
 
-  function minimumInspections(uint256 totalInspections) internal pure returns (bool) {
+  function minimumInspections(uint256 totalInspections) private pure returns (bool) {
     return totalInspections >= MINIMUM_INSPECTION_TO_POOL;
   }
 
-  function limitIsaScore(Producer memory producer) internal pure returns (bool) {
+  function limitIsaScore(Producer memory producer) private pure returns (bool) {
     return producer.isa.isaScore >= LIMIT_ISA_SCORE_TO_POOL;
   }
 
@@ -114,8 +110,12 @@ contract ProducerContract is Callable {
     return producers[addr].id > 0;
   }
 
-  function recentInspection(address addr, bool state) public mustBeAllowedCaller {
-    producers[addr].recentInspection = state;
+  function pendingInspection(address addr, bool state) public mustBeAllowedCaller {
+    producers[addr].pendingInspection = state;
+  }
+
+  function isSustainable(address addr) public view returns (bool) {
+    return producers[addr].isa.sustainable;
   }
 
   function setIsaScore(address addr, int256 isaScore) public mustBeAllowedCaller {
@@ -125,7 +125,6 @@ contract ProducerContract is Callable {
     producer.isa.isaScore += isaScore;
     producers[addr] = producer;
 
-    if (producer.isa.sustainable) return;
     if (limitIsaScore(producer)) changeProducerToSustainable(producer);
     if (!minimumInspections(producer.totalInspections)) return;
     if (isaScore > 0) addIsaScore(producer, beforeIsaScore, isaScore);
@@ -136,7 +135,9 @@ contract ProducerContract is Callable {
     if (producer.isa.isaScore <= 0) return;
     uint256 levels;
 
-    if (beforeIsaScore < 0) {
+    bool newScoreMakeProducerPositive = beforeIsaScore < 0;
+
+    if (newScoreMakeProducerPositive) {
       levels = uint256(producer.isa.isaScore);
     } else {
       levels = producer.pool.onContractPool ? uint256(isaScore) : uint256(producer.isa.isaScore);
@@ -152,20 +153,18 @@ contract ProducerContract is Callable {
     producerPool.removeLevel(producer.producerWallet, uint256(-(isaScore)));
   }
 
-  function resetLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Producer memory producer = producers[addr];
 
-    producers[addr].isa.isaScore = 0;
-    producerPool.resetLevels(addr, producer.pool.currentEra, removeSomeLevels);
+    if (removeSomeLevels == 0) producers[addr].isa.isaScore = 0;
+    if (removeSomeLevels > 0) producers[addr].isa.isaScore -= int256(removeSomeLevels);
+
+    producerPool.removePoolLevels(addr, producer.pool.currentEra, removeSomeLevels);
   }
 
   function changeProducerToSustainable(Producer memory producer) internal {
     producersSustainable++;
     producers[producer.producerWallet].isa.sustainable = true;
-  }
-
-  function incrementCurrentEra(address addr) internal {
-    producers[addr].pool.currentEra++;
   }
 
   function incrementInspections(address addr) public mustBeAllowedCaller returns (uint256) {

@@ -13,6 +13,9 @@ async function configureValidatorContract() {
   const producerContract = await getDeployedContract("ProducerContract");
   const inspectorContract = await getDeployedContract("InspectorContract");
   const developerContract = await getDeployedContract("DeveloperContract");
+  const researcherContract = await getDeployedContract("ResearcherContract");
+  const activistContract = await getDeployedContract("ActivistContract");
+  const contributorContract = await getDeployedContract("ContributorContract");
 
   const contractDependencies = {
     userContractAddress: userContract.target,
@@ -20,6 +23,9 @@ async function configureValidatorContract() {
     validatorPoolAddress: validatorPool.target,
     inspectorContractAddress: inspectorContract.target,
     developerContractAddress: developerContract.target,
+    researcherContractAddress: researcherContract.target,
+    activistContractAddress: activistContract.target,
+    contributorContractAddress: contributorContract
   };
 
   await validatorContract.setContractAddressDependencies(contractDependencies);

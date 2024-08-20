@@ -13,8 +13,10 @@ contract ActivistContract is Callable {
 
   UserContract internal userContract;
   address[] internal activistsAddress;
-  uint256 public activistsCount;
   ActivistPool internal activistPool;
+  UserType private constant USER_TYPE = UserType.ACTIVIST;
+
+  uint256 private constant MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS = 3;
 
   constructor(address userContractAddress, address activistPoolAddress) {
     userContract = UserContract(userContractAddress);
@@ -27,18 +29,16 @@ contract ActivistContract is Callable {
    * @return a Activist
    */
   function addActivist(string memory name, string memory proofPhoto) public uniqueActivist returns (Activist memory) {
-    uint256 id = activistsCount + 1;
-    UserType userType = UserType.ACTIVIST;
+    uint256 id = userContract.userTypesCount(USER_TYPE) + 1;
     uint256 currentEra = activistPoolEra();
 
     Pool memory pool = Pool(0, currentEra);
 
-    Activist memory activist = Activist(id, msg.sender, userType, name, proofPhoto, pool);
+    Activist memory activist = Activist(id, msg.sender, USER_TYPE, name, proofPhoto, pool);
 
     activists[msg.sender] = activist;
     activistsAddress.push(msg.sender);
-    activistsCount++;
-    userContract.addUser(msg.sender, userType);
+    userContract.addUser(msg.sender, USER_TYPE);
 
     return activist;
   }
@@ -48,9 +48,10 @@ contract ActivistContract is Callable {
    * @return Activist struct array
    */
   function getActivists() public view returns (Activist[] memory) {
-    Activist[] memory activistList = new Activist[](activistsCount);
+    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    Activist[] memory activistList = new Activist[](usersCount);
 
-    for (uint256 i = 0; i < activistsCount; i++) {
+    for (uint256 i = 0; i < usersCount; i++) {
       address acAddress = activistsAddress[i];
       activistList[i] = activists[acAddress];
     }
@@ -82,24 +83,28 @@ contract ActivistContract is Callable {
     address inspectorAddress,
     uint256 inspectorTotalInspections
   ) external mustBeAllowedCaller {
-    Invitation memory producerInvitation = userContract.getInvitation(producerAddress);
-    Invitation memory inspectorInvitation = userContract.getInvitation(inspectorAddress);
+    addLevelFromProducer(producerAddress, producerTotalInspections);
+    addLevelFromInspector(inspectorAddress, inspectorTotalInspections);
+  }
 
-    uint256 minimumInspectionWonLevel = 3;
+  function addLevelFromProducer(address producerAddress, uint256 producerTotalInspections) private {
+    Invitation memory producerInvitation = userContract.getInvitation(producerAddress);
 
     if (
-      producerInvitation.createdAtBlock > 0 &&
-      producerTotalInspections == minimumInspectionWonLevel &&
-      !activistWonLevel[producerInvitation.inviter][producerAddress]
+      !activistWonLevel[producerInvitation.inviter][producerAddress] &&
+      producerTotalInspections >= MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS
     ) {
       activistWonLevel[producerInvitation.inviter][producerAddress] = true;
       setActivistLevel(producerInvitation.inviter);
     }
+  }
+
+  function addLevelFromInspector(address inspectorAddress, uint256 inspectorTotalInspections) private {
+    Invitation memory inspectorInvitation = userContract.getInvitation(inspectorAddress);
 
     if (
-      inspectorInvitation.createdAtBlock > 0 &&
-      inspectorTotalInspections == minimumInspectionWonLevel &&
-      !activistWonLevel[inspectorInvitation.inviter][inspectorAddress]
+      !activistWonLevel[inspectorInvitation.inviter][inspectorAddress] &&
+      inspectorTotalInspections >= MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS
     ) {
       activistWonLevel[inspectorInvitation.inviter][inspectorAddress] = true;
       setActivistLevel(inspectorInvitation.inviter);
@@ -112,11 +117,18 @@ contract ActivistContract is Callable {
     Activist memory activist = activists[msg.sender];
     uint256 currentEra = activist.pool.currentEra;
 
-    require(activistPool.canApprove(currentEra), "Can't approve withdraw");
+    require(activistPool.canWithdraw(currentEra), "Can't approve withdraw");
 
     activists[msg.sender].pool.currentEra++;
 
     activistPool.withdraw(msg.sender, currentEra);
+  }
+
+  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+    Activist memory activist = activists[addr];
+
+    activists[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : activist.pool.level;
+    activistPool.removePoolLevels(addr, activistPoolEra(), removeSomeLevels);
   }
 
   /**

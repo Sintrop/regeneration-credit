@@ -67,13 +67,14 @@ describe("ProducerContract", () => {
       expect(producer.name).to.equal("Producer A");
       expect(producer.proofPhoto).to.equal("photoURL");
       expect(producer.totalInspections).to.equal(0);
-      expect(producer.recentInspection).to.equal(false);
+      expect(producer.pendingInspection).to.equal(false);
       expect(producer.isa.isaAverage).to.equal("0");
       expect(producer.isa.isaScore).to.equal("0");
 
       expect(producer.pool.currentEra).to.equal(1);
 
-      expect(producer.propertyAddress.coordinate).to.equal("135465-005");
+      expect(producer.areaInformation.coordinates).to.equal("135465-005");
+      expect(producer.areaInformation.totalArea).to.equal("10");
     });
   });
 
@@ -120,7 +121,7 @@ describe("ProducerContract", () => {
     it("should increment producersCount after create producer", async () => {
       await addProducer("Producer A", prod1Address);
       await addProducer("Producer B", prod2Address);
-      const producersCount = await instance.producersCount();
+      const producersCount = await userContract.userTypesCount(userTypes.Producer);
 
       expect(producersCount).to.equal(2);
     });
@@ -199,13 +200,13 @@ describe("ProducerContract", () => {
   });
 
   context("when is allowed caller", () => {
-    it("should success .recentInspection when is allowed caller", async () => {
+    it("should success .pendingInspection when is allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
-      await instance.recentInspection(prod1Address, true);
+      await instance.pendingInspection(prod1Address, true);
 
       const producer = await instance.getProducer(prod1Address);
 
-      expect(producer.recentInspection).to.equal(true);
+      expect(producer.pendingInspection).to.equal(true);
     });
 
     it("should success .incrementInspections when is allowed caller", async () => {
@@ -219,9 +220,9 @@ describe("ProducerContract", () => {
   });
 
   context("when is not allowed caller", () => {
-    it("should return error .recentInspection when is not allowed caller", async () => {
+    it("should return error .pendingInspection when is not allowed caller", async () => {
       await addProducer("Producer A", prod1Address);
-      await expect(instance.connect(prod1Address).recentInspection(prod1Address, true)).to.be.revertedWith(
+      await expect(instance.connect(prod1Address).pendingInspection(prod1Address, true)).to.be.revertedWith(
         "Not allowed caller"
       );
     });
@@ -628,13 +629,13 @@ describe("ProducerContract", () => {
               });
 
               it("producer A must withdraw 3600000000000000000000000n tokens", async () => {
-                const balanceOf = await producerPool.balanceOf(prod1Address);
+                const balanceOf = await rcToken.balanceOf(prod1Address);
 
                 expect(balanceOf).to.equal(3600000000000000000000000n);
               });
 
               it("producer B must withdraw 3600000000000000000000000n tokens", async () => {
-                const balanceOf = await producerPool.balanceOf(prod2Address);
+                const balanceOf = await rcToken.balanceOf(prod2Address);
 
                 expect(balanceOf).to.equal(3600000000000000000000000n);
               });
@@ -660,7 +661,7 @@ describe("ProducerContract", () => {
               });
 
               it("must withdraw 7200000000000000000000000n tokens", async () => {
-                const balanceOf = await producerPool.balanceOf(prod1Address);
+                const balanceOf = await rcToken.balanceOf(prod1Address);
 
                 expect(balanceOf).to.equal(7200000000000000000000000n);
               });

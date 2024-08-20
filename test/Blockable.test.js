@@ -9,6 +9,7 @@ describe("Blockable", () => {
   const params = {
     blocksPerEra: 10,
     eraMax: 12,
+    halving: 12,
   };
 
   beforeEach(async () => {
@@ -16,30 +17,10 @@ describe("Blockable", () => {
 
     const blockableContractFactory = await ethers.getContractFactory("Blockable");
 
-    instance = await blockableContractFactory.deploy(params.blocksPerEra, params.eraMax);
+    instance = await blockableContractFactory.deploy(params.blocksPerEra, params.eraMax, params.halving);
   });
 
-  context("when deploy", () => {
-    it("should have correct blocksPerEra", async () => {
-      const blocksPerEra = await instance.blocksPerEra();
-
-      expect(blocksPerEra).to.equal(params.blocksPerEra);
-    });
-
-    it("should have correct eraMax", async () => {
-      const eraMax = await instance.eraMax();
-
-      expect(eraMax).to.equal(params.eraMax);
-    });
-
-    it("should have deployedAt state", async () => {
-      const deployedAt = await instance.deployedAt();
-
-      expect(parseInt(deployedAt)).to.be.greaterThan(0);
-    });
-  });
-
-  context("when call currentContractEra", () => {
+  describe("#currentContractEra", () => {
     context("when don't have passed eras", () => {
       it("should return that be in era 1", async () => {
         const currentContractEra = await instance.currentContractEra();
@@ -71,7 +52,41 @@ describe("Blockable", () => {
     });
   });
 
-  context("when call canApproveTimes", () => {
+  describe("#currentEpoch", () => {
+    context("when is era 1", () => {
+      it("return currentEpoch equal 1", async () => {
+        const currentEpoch = await instance.currentEpoch();
+
+        expect(currentEpoch).to.equal(1);
+      });
+    });
+
+    context("when is era 6", () => {
+      beforeEach(async () => {
+        await advanceBlock(5 * params.blocksPerEra);
+      });
+
+      it("return currentEpoch equal 1", async () => {
+        const currentEpoch = await instance.currentEpoch();
+
+        expect(currentEpoch).to.equal(1);
+      });
+    });
+
+    context("when is era 15", () => {
+      beforeEach(async () => {
+        await advanceBlock(14 * params.blocksPerEra);
+      });
+
+      it("return currentEpoch equal 1", async () => {
+        const currentEpoch = await instance.currentEpoch();
+
+        expect(currentEpoch).to.equal(2);
+      });
+    });
+  });
+
+  describe("#canWithdrawTimes", () => {
     beforeEach(async () => {
       blocksPrecision = await instance.BLOCKS_PRECISION();
     });
@@ -84,8 +99,8 @@ describe("Blockable", () => {
 
         it("should can aprove zero times", async () => {
           const currentUserEra = 1;
-          const canApproveTimes = await instance.canApproveTimes(currentUserEra);
-          expect(canApproveTimes).to.equal(0);
+          const canWithdrawTimes = await instance.canWithdrawTimes(currentUserEra);
+          expect(canWithdrawTimes).to.equal(0);
         });
       });
 
@@ -97,8 +112,8 @@ describe("Blockable", () => {
         const currentUserEra = 5;
 
         it("should can aprove zero times", async () => {
-          const canApproveTimes = await instance.canApproveTimes(currentUserEra);
-          expect(canApproveTimes).to.equal(0);
+          const canWithdrawTimes = await instance.canWithdrawTimes(currentUserEra);
+          expect(canWithdrawTimes).to.equal(0);
         });
       });
     });
@@ -112,11 +127,11 @@ describe("Blockable", () => {
         const currentUserEra = 1;
 
         it("should can aprove one times", async () => {
-          let canApproveTimes = await instance.canApproveTimes(currentUserEra);
+          let canWithdrawTimes = await instance.canWithdrawTimes(currentUserEra);
 
-          canApproveTimes = Math.ceil(parseInt(canApproveTimes) / 10 ** parseInt(blocksPrecision));
+          canWithdrawTimes = Math.ceil(parseInt(canWithdrawTimes) / 10 ** parseInt(blocksPrecision));
 
-          expect(canApproveTimes).to.equal(1);
+          expect(canWithdrawTimes).to.equal(1);
         });
       });
 
@@ -128,9 +143,9 @@ describe("Blockable", () => {
         const currentUserEra = 4;
 
         it("should can aprove one times", async () => {
-          let canApproveTimes = await instance.canApproveTimes(currentUserEra);
-          canApproveTimes = Math.ceil(parseInt(canApproveTimes) / 10 ** parseInt(blocksPrecision));
-          expect(canApproveTimes).to.equal(1);
+          let canWithdrawTimes = await instance.canWithdrawTimes(currentUserEra);
+          canWithdrawTimes = Math.ceil(parseInt(canWithdrawTimes) / 10 ** parseInt(blocksPrecision));
+          expect(canWithdrawTimes).to.equal(1);
         });
       });
     });
@@ -144,9 +159,9 @@ describe("Blockable", () => {
         const currentUserEra = 1;
 
         it("should can aprove 2 times", async () => {
-          let canApproveTimes = await instance.canApproveTimes(currentUserEra);
-          canApproveTimes = Math.ceil(parseInt(canApproveTimes) / 10 ** parseInt(blocksPrecision));
-          expect(canApproveTimes).to.equal(2);
+          let canWithdrawTimes = await instance.canWithdrawTimes(currentUserEra);
+          canWithdrawTimes = Math.ceil(parseInt(canWithdrawTimes) / 10 ** parseInt(blocksPrecision));
+          expect(canWithdrawTimes).to.equal(2);
         });
       });
 
@@ -158,9 +173,9 @@ describe("Blockable", () => {
         const currentUserEra = 8;
 
         it("should can aprove 2 times", async () => {
-          let canApproveTimes = await instance.canApproveTimes(currentUserEra);
-          canApproveTimes = Math.ceil(parseInt(canApproveTimes) / 10 ** parseInt(blocksPrecision));
-          expect(canApproveTimes).to.equal(2);
+          let canWithdrawTimes = await instance.canWithdrawTimes(currentUserEra);
+          canWithdrawTimes = Math.ceil(parseInt(canWithdrawTimes) / 10 ** parseInt(blocksPrecision));
+          expect(canWithdrawTimes).to.equal(2);
         });
       });
     });
@@ -174,15 +189,15 @@ describe("Blockable", () => {
         const currentUserEra = 1;
 
         it("should can aprove 4 times", async () => {
-          let canApproveTimes = await instance.canApproveTimes(currentUserEra);
-          canApproveTimes = Math.ceil(parseInt(canApproveTimes) / 10 ** parseInt(blocksPrecision));
-          expect(canApproveTimes).to.equal(5);
+          let canWithdrawTimes = await instance.canWithdrawTimes(currentUserEra);
+          canWithdrawTimes = Math.ceil(parseInt(canWithdrawTimes) / 10 ** parseInt(blocksPrecision));
+          expect(canWithdrawTimes).to.equal(5);
         });
       });
     });
   });
 
-  context("when call nextApproveIn", () => {
+  describe("#nextWithdrawIn", () => {
     context("when user can approve", () => {
       beforeEach(async () => {
         await advanceBlock(2 * params.blocksPerEra);
@@ -191,8 +206,8 @@ describe("Blockable", () => {
       const currentUserEra = 1;
 
       it("should return negative blocks number", async () => {
-        const nextApproveIn = await instance.nextApproveIn(currentUserEra);
-        expect(parseInt(nextApproveIn)).to.lessThan(0);
+        const nextWithdrawIn = await instance.nextWithdrawIn(currentUserEra);
+        expect(parseInt(nextWithdrawIn)).to.lessThan(0);
       });
     });
 
@@ -200,13 +215,13 @@ describe("Blockable", () => {
       const currentUserEra = 1;
 
       it("should return positive blocks number", async () => {
-        const nextApproveIn = await instance.nextApproveIn(currentUserEra);
-        expect(parseInt(nextApproveIn)).to.above(0);
+        const nextWithdrawIn = await instance.nextWithdrawIn(currentUserEra);
+        expect(parseInt(nextWithdrawIn)).to.above(0);
       });
     });
   });
 
-  context("when call canApprove", () => {
+  describe("#canWithdraw", () => {
     context("when currentUserEra is less than currentContractEra and currentUserEra don't have passed eraMax", () => {
       beforeEach(async () => {
         await advanceBlock(5 * params.blocksPerEra);
@@ -215,8 +230,8 @@ describe("Blockable", () => {
       const currentUserEra = 1;
 
       it("should return true", async () => {
-        const canApprove = await instance.canApprove(currentUserEra);
-        expect(canApprove).to.equal(true);
+        const canWithdraw = await instance.canWithdraw(currentUserEra);
+        expect(canWithdraw).to.equal(true);
       });
     });
 
@@ -228,8 +243,8 @@ describe("Blockable", () => {
       const currentUserEra = params.eraMax + 1;
 
       it("should return false", async () => {
-        const canApprove = await instance.canApprove(currentUserEra);
-        expect(canApprove).to.equal(false);
+        const canWithdraw = await instance.canWithdraw(currentUserEra);
+        expect(canWithdraw).to.equal(false);
       });
     });
 
@@ -237,8 +252,8 @@ describe("Blockable", () => {
       const currentUserEra = 1;
 
       it("should return false", async () => {
-        const canApprove = await instance.canApprove(currentUserEra);
-        expect(canApprove).to.equal(false);
+        const canWithdraw = await instance.canWithdraw(currentUserEra);
+        expect(canWithdraw).to.equal(false);
       });
     });
   });

@@ -79,7 +79,7 @@ describe("ActivistContract", () => {
         it("should increment activistCount", async () => {
           await addActivist("Activist A", activ1Address);
           await addActivist("Activist C", activ3Address);
-          const activistsCount = await instance.activistsCount();
+          const activistsCount = await userContract.userTypesCount(userTypes.Activist);
 
           expect(activistsCount).to.equal(2);
         });
@@ -294,7 +294,7 @@ describe("ActivistContract", () => {
             });
 
             it("activist balance must be", async () => {
-              const balance = await activistPool.balanceOf(activ1Address);
+              const balance = await rcToken.balanceOf(activ1Address);
 
               expect(balance).to.equal(1200000000000000000000000n);
             });
@@ -322,7 +322,7 @@ describe("ActivistContract", () => {
             });
 
             it("activist1 balance must be", async () => {
-              const balance = await activistPool.balanceOf(activ1Address);
+              const balance = await rcToken.balanceOf(activ1Address);
 
               expect(balance).to.equal(600000000000000000000000n);
             });
@@ -334,7 +334,7 @@ describe("ActivistContract", () => {
             });
 
             it("activist3 balance must be", async () => {
-              const balance = await activistPool.balanceOf(activ3Address);
+              const balance = await rcToken.balanceOf(activ3Address);
 
               expect(balance).to.equal(600000000000000000000000n);
             });
@@ -356,7 +356,7 @@ describe("ActivistContract", () => {
             });
 
             it("activist balance must be", async () => {
-              const balance = await activistPool.balanceOf(activ1Address);
+              const balance = await rcToken.balanceOf(activ1Address);
 
               expect(balance).to.equal(0n);
             });
@@ -369,6 +369,31 @@ describe("ActivistContract", () => {
       it("should return error message", async () => {
         await expect(instance.withdraw()).to.be.revertedWith("Pool only to activist");
       });
+    });
+  });
+
+  describe("#removePoolLevels", () => {
+    beforeEach(async () => {
+      await addActivist("Activist  A", activ1Address);
+
+      await addInvitation(activ1Address, producer1Address, userTypes.Producer, owner);
+      await addInvitation(activ1Address, inspector2Address, userTypes.Inspector, owner);
+
+      await instance.addLevel(producer1Address, 3, inspector2Address, 3);
+
+      await instance.removePoolLevels(activ1Address, 1);
+    });
+
+    it("remove user levels from pool", async () => {
+      const levelsEra1 = await activistPool.eraLevels(1, activ1Address);
+
+      expect(levelsEra1).to.equal(1);
+    });
+
+    it("remove user levels from activist", async () => {
+      const activist = await instance.getActivist(activ1Address);
+
+      expect(activist.pool.level).to.equal(1);
     });
   });
 });

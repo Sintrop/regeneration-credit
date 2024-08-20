@@ -74,8 +74,12 @@ contract Sintrop {
    */
   function requestInspection() public {
     require(userContract.userTypeIs(UserType.PRODUCER, msg.sender), "Please register as producer");
-    require(!producerContract.getProducer(msg.sender).recentInspection, "Request OPEN or ACCEPTED");
-    require(canRequestInspection(), "Recent inspection");
+    require(!producerContract.getProducer(msg.sender).pendingInspection, "Request already OPEN");
+    require(canRequestInspection(), "Wait to request");
+    require(
+      !producerContract.isSustainable(msg.sender),
+      "You can't request inspections anymore, you have completed your mission"
+    );
 
     addRequest();
 
@@ -96,7 +100,7 @@ contract Sintrop {
   }
 
   function afterRequestInspection() internal {
-    producerContract.recentInspection(msg.sender, true);
+    producerContract.pendingInspection(msg.sender, true);
     producerContract.lastRequestAt(msg.sender, block.number);
   }
 
@@ -106,10 +110,11 @@ contract Sintrop {
    */
   function acceptInspection(uint256 inspectionId) public {
     require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
+    require(inspectorContract.isInspectorValid(msg.sender), "No more than 3 giveUps allowed");
 
     Inspection memory inspection = inspections[inspectionId];
 
-    require(inspectionExists(inspectionId), "This inspection don't exists");
+    require(inspectionExists(inspectionId), "This inspection do not exist");
     require(!inspectorInspected[msg.sender][inspection.createdBy], "Already inspected this producer");
 
     require(canAcceptInspection(inspectionId), "Can't accept yet");
@@ -120,11 +125,10 @@ contract Sintrop {
     inspection.acceptedBy = msg.sender;
     inspections[inspectionId] = inspection;
 
-    producerContract.recentInspection(inspection.createdBy, false); // Talvez não precise, pois estamos usando a expiração da inspeção pra checar se o produtor pode solicitar uma nova inspeção
+    producerContract.pendingInspection(inspection.createdBy, false); // Talvez não precise, pois estamos usando a expiração da inspeção pra checar se o produtor pode solicitar uma nova inspeção
     inspectorContract.incrementGiveUps(msg.sender);
 
-    inspectorContract.lastAcceptedAt(msg.sender, block.number);
-    inspectorContract.lastInspection(msg.sender, inspectionId);
+    inspectorContract.markLastInspection(msg.sender, block.number, inspectionId);
   }
 
   /**
@@ -136,7 +140,7 @@ contract Sintrop {
     Inspection memory inspection = inspections[inspectionId];
 
     require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
-    require(inspectionExists(inspectionId), "This inspection don't exists");
+    require(inspectionExists(inspectionId), "This inspection do not exist");
     require(isAccepted(inspectionId), "Accept this inspection before");
     require(isInspectorOwner(inspectionId), "You not accepted this inspection");
     require(!expiredInspection(inspectionId), "Inspection Expired");
@@ -243,7 +247,6 @@ contract Sintrop {
     return inspections[inspectionId].status == InspectionStatus.ACCEPTED;
   }
 
-  // TODO: Add specs to this function
   function canRequestInspection() public view returns (bool) {
     Producer memory producer = producerContract.getProducer(msg.sender);
 

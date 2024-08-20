@@ -21,9 +21,17 @@ struct Pool {
 
 struct Work {
   uint256 id;
+  uint256 era;
   address createdBy;
   string title;
   string thesis;
   string file;
+  uint256 validationsCount;
+  bool valid;
+  uint256 invalidatedAt;
   uint256 createdAtTimeStamp;
+}
+
+struct Penalty {
+  uint256 workId;
 }

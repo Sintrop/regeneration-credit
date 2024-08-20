@@ -4,12 +4,14 @@ const userContractDeployed = async ({
   researcherProportionality = 0,
   developerProportionality = 0,
   validatorProportionality = 0,
+  contributorProportionality = 0,
 } = {}) => {
   const INSPECTOR_PROPORTIONALITY = inspectorProportionality;
   const ACTIVIST_PROPORTIONALITY = activistProportionality;
   const RESEARCHER_PROPORTIONALITY = researcherProportionality;
   const DEVELOPER_PROPORTIONALITY = developerProportionality;
   const VALIDATOR_PROPORTIONALITY = validatorProportionality;
+  const CONTRIBUTOR_PROPORTIONALITY = contributorProportionality;
 
   const userContractFactory = await ethers.getContractFactory("UserContract");
   userContract = await userContractFactory.deploy(
@@ -17,7 +19,8 @@ const userContractDeployed = async ({
     ACTIVIST_PROPORTIONALITY,
     RESEARCHER_PROPORTIONALITY,
     DEVELOPER_PROPORTIONALITY,
-    VALIDATOR_PROPORTIONALITY
+    VALIDATOR_PROPORTIONALITY,
+    CONTRIBUTOR_PROPORTIONALITY
   );
 
   return userContract;

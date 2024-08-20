@@ -103,7 +103,7 @@ describe("InspectorContract", () => {
         it("should increment inspectorsCount after create inspector", async () => {
           await addInspector("Inspector A", inspe1Address);
           await addInspector("Inspector B", inspe2Address);
-          const inspectorsCount = await instance.inspectorsCount();
+          const inspectorsCount = await userContract.userTypesCount(userTypes.Inspector);
 
           expect(inspectorsCount).to.equal(2);
         });
@@ -251,7 +251,7 @@ describe("InspectorContract", () => {
           });
 
           it("withdraw 7200000000000000000000000 tokens", async () => {
-            const balanceOf = await inspectorPool.balanceOf(inspe1Address);
+            const balanceOf = await rcToken.balanceOf(inspe1Address);
             const expectedBalance = 7200000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
@@ -273,7 +273,7 @@ describe("InspectorContract", () => {
           });
 
           it("withdraw 3600000000000000000000000n tokens", async () => {
-            const balanceOf = await inspectorPool.balanceOf(inspe1Address);
+            const balanceOf = await rcToken.balanceOf(inspe1Address);
             const expectedBalance = 3600000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);

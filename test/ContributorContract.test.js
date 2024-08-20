@@ -97,7 +97,7 @@ describe("ContributorContract", (accounts) => {
 
         it("should increment contributorsCount after create contributor", async () => {
           await addContributor("Contributor A", contr1Address);
-          const contributorsCount = await instance.contributorsCount();
+          const contributorsCount = await userContract.userTypesCount(userTypes.Contributor);
 
           expect(contributorsCount).to.equal(1);
         });
@@ -161,6 +161,12 @@ describe("ContributorContract", (accounts) => {
           await instance.connect(contr1Address).addContribution("report");
         });
 
+        it("add contribution id", async () => {
+          const construbution = await instance.contributions(1, contr1Address);
+
+          expect(construbution.id).to.equal(1);
+        });
+
         it("add contribution", async () => {
           const construbution = await instance.contributions(1, contr1Address);
 
@@ -178,6 +184,18 @@ describe("ContributorContract", (accounts) => {
 
           expect(eraLevels).to.equal(1);
         });
+
+        it("add user to contribution", async () => {
+          const construbution = await instance.contributions(1, contr1Address);
+
+          expect(construbution.user).to.equal(contr1Address.address);
+        });
+
+        it("increment contributiosCount", async () => {
+          const contributionsCount = await instance.contributionsCount();
+
+          expect(contributionsCount).to.equal(1);
+        });
       });
     });
 
@@ -185,6 +203,23 @@ describe("ContributorContract", (accounts) => {
       it("should return error message", async () => {
         await expect(instance.connect(owner).addContribution("report")).to.be.revertedWith("Only Contributor");
       });
+    });
+  });
+
+  describe("#getContribution", () => {
+    beforeEach(async () => {
+      await addContributor("Contributor A", contr1Address);
+      await instance.connect(contr1Address).addContribution("report");
+    });
+
+    it("should have fields", async () => {
+      const contribution = await instance.getContribution(1);
+
+      expect(contribution.id).to.equal("1");
+      expect(contribution.era).to.equal("1");
+      expect(contribution.user).to.equal(contr1Address.address);
+      expect(contribution.level).to.equal("0");
+      expect(contribution.report).to.equal("report");
     });
   });
 
@@ -256,7 +291,7 @@ describe("ContributorContract", (accounts) => {
             });
 
             it("should withdraw all tokens from era", async () => {
-              let balanceOf = await contributorPool.balanceOf(contr1Address);
+              let balanceOf = await rcToken.balanceOf(contr1Address);
 
               let tokensBalance = 300000000000000000000000n;
 
@@ -295,7 +330,7 @@ describe("ContributorContract", (accounts) => {
               });
 
               it("contributor1 balance must be 150000000000000000000000", async () => {
-                let balanceOf = await contributorPool.balanceOf(contr1Address);
+                let balanceOf = await rcToken.balanceOf(contr1Address);
 
                 let tokensPerEra = 150000000000000000000000n;
 
@@ -303,7 +338,7 @@ describe("ContributorContract", (accounts) => {
               });
 
               it("contributor2 balance must be 150000000000000000000000", async () => {
-                let balanceOf = await contributorPool.balanceOf(contr2Address);
+                let balanceOf = await rcToken.balanceOf(contr2Address);
 
                 let tokensPerEra = 150000000000000000000000n;
 
@@ -338,7 +373,7 @@ describe("ContributorContract", (accounts) => {
           });
 
           it("should can withdraw in two eras", async () => {
-            let balanceOf = await contributorPool.balanceOf(contr1Address);
+            let balanceOf = await rcToken.balanceOf(contr1Address);
             let tokensPerEra = 600000000000000000000000n;
 
             expect(balanceOf).to.equal(tokensPerEra);
