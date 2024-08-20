@@ -21,13 +21,12 @@ contract ContributorContract is Ownable, Callable {
   ContributorPool internal contributorPool;
 
   address[] internal contributorsAddress;
-  UserType private immutable USER_TYPE;
+  UserType private constant USER_TYPE = UserType.CONTRIBUTOR;
   uint256 public contributionsCount;
 
   constructor(address userContractAddress, address contributorPoolAddress) {
     userContract = UserContract(userContractAddress);
     contributorPool = ContributorPool(contributorPoolAddress);
-    USER_TYPE = UserType.CONTRIBUTOR;
   }
 
   /**

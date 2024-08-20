@@ -24,7 +24,7 @@ contract DeveloperContract is Ownable, Callable {
   ValidatorContract internal validatorContract;
 
   address[] internal developersAddress;
-  UserType private immutable USER_TYPE;
+  UserType private constant USER_TYPE = UserType.DEVELOPER;
   uint256 public contributionsCount;
 
   uint256 public immutable MAX_PENALTIES;
@@ -39,7 +39,6 @@ contract DeveloperContract is Ownable, Callable {
     developerPool = DeveloperPool(developerPoolAddress);
     validatorContract = ValidatorContract(validatorContractAddress);
     MAX_PENALTIES = maxPenalties_;
-    USER_TYPE = UserType.DEVELOPER;
   }
 
   /**

@@ -35,14 +35,13 @@ contract ValidatorContract is Callable {
   ActivistContract internal activistContract;
 
   address[] internal validatorsAddress;
-  UserType private immutable USER_TYPE;
+  UserType private constant USER_TYPE = UserType.VALIDATOR;
   uint256 internal firstValidatorLimit;
   uint256 internal secondValidatorLimit;
 
   constructor(uint256 firstValidatorLimit_, uint256 secondValidatorLimit_) {
     firstValidatorLimit = firstValidatorLimit_;
     secondValidatorLimit = secondValidatorLimit_;
-    USER_TYPE = UserType.VALIDATOR;
   }
 
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {

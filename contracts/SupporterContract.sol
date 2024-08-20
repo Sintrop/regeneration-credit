@@ -12,12 +12,11 @@ contract SupporterContract {
   UserContract internal userContract;
   SupporterPool internal supporterPool;
   address[] internal supportersAddress;
-  UserType private immutable USER_TYPE;
+  UserType private constant USER_TYPE = UserType.SUPPORTER;
 
   constructor(address userContractAddress, address supporterPoolAddress) {
     userContract = UserContract(userContractAddress);
     supporterPool = SupporterPool(supporterPoolAddress);
-    USER_TYPE = UserType.SUPPORTER;
   }
 
   /**

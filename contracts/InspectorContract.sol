@@ -16,7 +16,7 @@ contract InspectorContract is Callable {
   UserContract internal userContract;
   InspectorPool internal inspectorPool;
   address[] internal inspectorsAddress;
-  UserType private immutable USER_TYPE;
+  UserType private constant USER_TYPE = UserType.INSPECTOR;
 
   uint256 public immutable maxPenalties;
   uint256 private constant MAX_GIVEUPS = 3;
@@ -25,7 +25,6 @@ contract InspectorContract is Callable {
     userContract = UserContract(userContractAddress);
     inspectorPool = InspectorPool(inspectorPoolAddress);
     maxPenalties = maxPenalties_;
-    USER_TYPE = UserType.INSPECTOR;
   }
 
   /**

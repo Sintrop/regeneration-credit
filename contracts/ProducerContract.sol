@@ -21,13 +21,12 @@ contract ProducerContract is Callable {
   ProducerPool internal producerPool;
 
   address[] internal producersAddress;
-  UserType private immutable USER_TYPE;
+  UserType private constant USER_TYPE = UserType.PRODUCER;
   uint256 public producersSustainable;
 
   constructor(address userContractAddress, address producerPoolAddress) {
     userContract = UserContract(userContractAddress);
     producerPool = ProducerPool(producerPoolAddress);
-    USER_TYPE = UserType.PRODUCER;
   }
 
   /**

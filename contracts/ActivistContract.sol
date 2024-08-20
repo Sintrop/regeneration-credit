@@ -14,12 +14,11 @@ contract ActivistContract is Callable {
   UserContract internal userContract;
   address[] internal activistsAddress;
   ActivistPool internal activistPool;
-  UserType private immutable USER_TYPE;
+  UserType private constant USER_TYPE = UserType.ACTIVIST;
 
   constructor(address userContractAddress, address activistPoolAddress) {
     userContract = UserContract(userContractAddress);
     activistPool = ActivistPool(activistPoolAddress);
-    USER_TYPE = UserType.ACTIVIST;
   }
 
   /**

@@ -18,7 +18,7 @@ contract ResearcherContract is Callable {
   ValidatorContract internal validatorContract;
 
   address[] internal researchersAddress;
-  UserType private immutable USER_TYPE;
+  UserType private constant USER_TYPE = UserType.RESEARCHER;
   uint256 public worksCount;
   uint256 internal immutable timeBetweenWorks;
 
@@ -36,7 +36,6 @@ contract ResearcherContract is Callable {
     validatorContract = ValidatorContract(validatorContractAddress);
     timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
-    USER_TYPE = UserType.RESEARCHER;
   }
 
   /**
