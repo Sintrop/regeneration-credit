@@ -124,7 +124,6 @@ describe("DeveloperContract", (accounts) => {
 
       expect(developer.id).to.equal("1");
       expect(developer.developerWallet).to.equal(dev1Address.address);
-      expect(developer.userType).to.equal(4);
       expect(developer.name).to.equal("Developer A");
       expect(developer.proofPhoto).to.equal("photoURL");
       expect(developer.totalContributions).to.equal(0);

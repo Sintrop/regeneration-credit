@@ -29,12 +29,11 @@ contract ActivistContract is Callable {
    * @return a Activist
    */
   function addActivist(string memory name, string memory proofPhoto) public uniqueActivist returns (Activist memory) {
-    uint256 id = userContract.userTypesCount(USER_TYPE) + 1;
     uint256 currentEra = activistPoolEra();
 
     Pool memory pool = Pool(0, currentEra);
 
-    Activist memory activist = Activist(id, msg.sender, USER_TYPE, name, proofPhoto, pool);
+    Activist memory activist = Activist(userContract.userTypesCount(USER_TYPE) + 1, msg.sender, name, proofPhoto, pool);
 
     activists[msg.sender] = activist;
     activistsAddress.push(msg.sender);
