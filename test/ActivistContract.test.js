@@ -79,7 +79,7 @@ describe("ActivistContract", () => {
         it("should increment activistCount", async () => {
           await addActivist("Activist A", activ1Address);
           await addActivist("Activist C", activ3Address);
-          const activistsCount = await instance.activistsCount();
+          const activistsCount = await userContract.userTypesCount(userTypes.Activist);
 
           expect(activistsCount).to.equal(2);
         });

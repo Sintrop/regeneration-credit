@@ -21,7 +21,7 @@ contract ProducerContract is Callable {
   ProducerPool internal producerPool;
 
   address[] internal producersAddress;
-  uint256 public producersCount;
+  UserType private constant USER_TYPE = UserType.PRODUCER;
   uint256 public producersSustainable;
 
   constructor(address userContractAddress, address producerPoolAddress) {
@@ -43,13 +43,11 @@ contract ProducerContract is Callable {
   ) public {
     require(!producerExists(msg.sender), "This producer already exist");
 
-    UserType userType = UserType.PRODUCER;
-
     Producer memory producer = producers[msg.sender];
 
-    producer.id = producersCount + 1;
+    producer.id = userContract.userTypesCount(USER_TYPE) + 1;
     producer.producerWallet = msg.sender;
-    producer.userType = userType;
+    producer.userType = USER_TYPE;
     producer.name = name;
     producer.proofPhoto = proofPhoto;
     producer.areaInformation = AreaInformation(coordinates, totalArea);
@@ -57,8 +55,7 @@ contract ProducerContract is Callable {
 
     producers[msg.sender] = producer;
     producersAddress.push(msg.sender);
-    producersCount++;
-    userContract.addUser(msg.sender, userType);
+    userContract.addUser(msg.sender, USER_TYPE);
   }
 
   /**
@@ -66,10 +63,10 @@ contract ProducerContract is Callable {
    * @return Producer struct array
    */
   function getProducers() public view returns (Producer[] memory) {
-    uint256 count = producersCount;
-    Producer[] memory producerList = new Producer[](count);
+    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    Producer[] memory producerList = new Producer[](usersCount);
 
-    for (uint256 i = 0; i < count; i++) {
+    for (uint256 i = 0; i < usersCount; i++) {
       address acAddress = producersAddress[i];
       producerList[i] = producers[acAddress];
     }
