@@ -27,7 +27,7 @@ contract SupporterContract {
   function addSupporter(string memory name) public returns (Supporter memory) {
     require(!supporterExists(msg.sender), "This supporter already exist");
 
-    Supporter memory supporter = Supporter(userContract.userTypesCount(USER_TYPE) + 1, msg.sender, USER_TYPE, name);
+    Supporter memory supporter = Supporter(userContract.userTypesCount(USER_TYPE) + 1, msg.sender, name);
 
     supporters[msg.sender] = supporter;
     supportersAddress.push(msg.sender);

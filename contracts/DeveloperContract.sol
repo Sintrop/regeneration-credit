@@ -55,7 +55,6 @@ contract DeveloperContract is Ownable, Callable {
     developers[msg.sender] = Developer(
       userContract.userTypesCount(USER_TYPE) + 1,
       msg.sender,
-      userType,
       name,
       proofPhoto,
       Pool(level, poolEra),

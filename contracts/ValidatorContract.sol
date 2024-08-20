@@ -62,7 +62,7 @@ contract ValidatorContract is Callable {
 
     Pool memory pool = Pool(0, currentEra);
 
-    validators[msg.sender] = Validator(userContract.userTypesCount(USER_TYPE) + 1, msg.sender, USER_TYPE, pool);
+    validators[msg.sender] = Validator(userContract.userTypesCount(USER_TYPE) + 1, msg.sender, pool);
     validatorsAddress.push(msg.sender);
     userContract.addUser(msg.sender, USER_TYPE);
   }
