@@ -135,9 +135,9 @@ contract ProducerContract is Callable {
     if (producer.isa.isaScore <= 0) return;
     uint256 levels;
 
-    bool newIsaScoreDoProducerPositive = beforeIsaScore < 0;
+    bool newScoreMakeProducerPositive = beforeIsaScore < 0;
 
-    if (newIsaScoreDoProducerPositive) {
+    if (newScoreMakeProducerPositive) {
       levels = uint256(producer.isa.isaScore);
     } else {
       levels = producer.pool.onContractPool ? uint256(isaScore) : uint256(producer.isa.isaScore);
