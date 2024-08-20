@@ -43,13 +43,10 @@ contract ResearcherContract is Callable {
    * @param name the name of the researcher
    * @return a Researcher
    */
-  function addResearcher(
-    string memory name,
-    string memory proofPhoto
-  ) public uniqueResearcher returns (Researcher memory) {
-    uint256 currentEra = researcherPoolEra();
+  function addResearcher(string memory name, string memory proofPhoto) public returns (Researcher memory) {
+    require(!researcherExists(msg.sender), "This researcher already exist");
 
-    Pool memory pool = Pool(0, currentEra);
+    Pool memory pool = Pool(0, researcherPoolEra());
 
     Researcher memory researcher = Researcher(
       userContract.userTypesCount(USER_TYPE) + 1,
@@ -195,12 +192,5 @@ contract ResearcherContract is Callable {
 
     bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
     return canPublish || lastPublishedAt == 0;
-  }
-
-  // MODIFIERS
-
-  modifier uniqueResearcher() {
-    require(!researcherExists(msg.sender), "This researcher already exist");
-    _;
   }
 }

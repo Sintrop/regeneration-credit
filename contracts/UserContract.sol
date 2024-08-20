@@ -91,9 +91,7 @@ contract UserContract is Ownable, Callable {
     require(users[addr] != UserType.UNDEFINED, "User must be registered");
     uint256 id = delationsCount + 1;
 
-    Delation memory delation = Delation(id, msg.sender, addr, title, testimony);
-
-    delations[addr].push(delation);
+    delations[addr].push(Delation(id, msg.sender, addr, title, testimony));
     delationsCount++;
   }
 
@@ -101,9 +99,7 @@ contract UserContract is Ownable, Callable {
     require(invitations[invited].invited == address(0), "Already invited");
     require(users[invited] == UserType.UNDEFINED, "Already registered");
 
-    Invitation memory invitation = Invitation(invited, inviter, userType, block.number);
-
-    invitations[invited] = invitation;
+    invitations[invited] = Invitation(invited, inviter, userType, block.number);
   }
 
   function setDeniedType(address userAddress) public mustBeAllowedCaller {

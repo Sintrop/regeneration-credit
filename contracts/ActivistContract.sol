@@ -16,6 +16,8 @@ contract ActivistContract is Callable {
   ActivistPool internal activistPool;
   UserType private constant USER_TYPE = UserType.ACTIVIST;
 
+  uint256 private constant MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS = 3;
+
   constructor(address userContractAddress, address activistPoolAddress) {
     userContract = UserContract(userContractAddress);
     activistPool = ActivistPool(activistPoolAddress);
@@ -81,24 +83,28 @@ contract ActivistContract is Callable {
     address inspectorAddress,
     uint256 inspectorTotalInspections
   ) external mustBeAllowedCaller {
-    Invitation memory producerInvitation = userContract.getInvitation(producerAddress);
-    Invitation memory inspectorInvitation = userContract.getInvitation(inspectorAddress);
+    addLevelFromProducer(producerAddress, producerTotalInspections);
+    addLevelFromInspector(inspectorAddress, inspectorTotalInspections);
+  }
 
-    uint256 minimumInspectionWonLevel = 3;
+  function addLevelFromProducer(address producerAddress, uint256 producerTotalInspections) private {
+    Invitation memory producerInvitation = userContract.getInvitation(producerAddress);
 
     if (
-      producerInvitation.createdAtBlock > 0 &&
-      producerTotalInspections == minimumInspectionWonLevel &&
-      !activistWonLevel[producerInvitation.inviter][producerAddress]
+      !activistWonLevel[producerInvitation.inviter][producerAddress] &&
+      producerTotalInspections >= MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS
     ) {
       activistWonLevel[producerInvitation.inviter][producerAddress] = true;
       setActivistLevel(producerInvitation.inviter);
     }
+  }
+
+  function addLevelFromInspector(address inspectorAddress, uint256 inspectorTotalInspections) private {
+    Invitation memory inspectorInvitation = userContract.getInvitation(inspectorAddress);
 
     if (
-      inspectorInvitation.createdAtBlock > 0 &&
-      inspectorTotalInspections == minimumInspectionWonLevel &&
-      !activistWonLevel[inspectorInvitation.inviter][inspectorAddress]
+      !activistWonLevel[inspectorInvitation.inviter][inspectorAddress] &&
+      inspectorTotalInspections >= MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS
     ) {
       activistWonLevel[inspectorInvitation.inviter][inspectorAddress] = true;
       setActivistLevel(inspectorInvitation.inviter);
