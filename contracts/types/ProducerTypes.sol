@@ -6,7 +6,6 @@ import "./UserTypes.sol";
 struct Producer {
   uint256 id;
   address producerWallet;
-  UserType userType;
   string name;
   string proofPhoto;
   bool pendingInspection;

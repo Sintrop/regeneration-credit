@@ -6,7 +6,6 @@ import { UserType } from "./UserTypes.sol";
 struct Contributor {
   uint256 id;
   address contributorWallet;
-  UserType userType;
   string name;
   string proofPhoto;
   Pool pool;

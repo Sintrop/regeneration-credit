@@ -60,7 +60,6 @@ describe("ContributorContract", (accounts) => {
 
       expect(contributor.id).to.equal("1");
       expect(contributor.contributorWallet).to.equal(contr1Address.address);
-      expect(contributor.userType).to.equal(5);
       expect(contributor.name).to.equal("Contributor A");
       expect(contributor.proofPhoto).to.equal("photoURL");
 

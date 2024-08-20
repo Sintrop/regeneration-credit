@@ -6,6 +6,5 @@ import "./UserTypes.sol";
 struct Supporter {
   uint256 id;
   address supporterWallet;
-  UserType userType;
   string name;
 }

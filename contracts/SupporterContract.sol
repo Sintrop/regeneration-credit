@@ -25,7 +25,7 @@ contract SupporterContract {
    * @return a supporter
    */
   function addSupporter(string memory name) public uniqueSupporter returns (Supporter memory) {
-    Supporter memory supporter = Supporter(userContract.userTypesCount(USER_TYPE) + 1, msg.sender, USER_TYPE, name);
+    Supporter memory supporter = Supporter(userContract.userTypesCount(USER_TYPE) + 1, msg.sender, name);
 
     supporters[msg.sender] = supporter;
     supportersAddress.push(msg.sender);

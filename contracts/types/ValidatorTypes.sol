@@ -6,7 +6,6 @@ import { UserType } from "./UserTypes.sol";
 struct Validator {
   uint256 id;
   address validatorWallet;
-  UserType userType;
   Pool pool;
 }
 

@@ -63,7 +63,6 @@ describe("ProducerContract", () => {
 
       expect(producer.id).to.equal("1");
       expect(producer.producerWallet).to.equal(prod1Address.address);
-      expect(producer.userType).to.equal(1);
       expect(producer.name).to.equal("Producer A");
       expect(producer.proofPhoto).to.equal("photoURL");
       expect(producer.totalInspections).to.equal(0);
