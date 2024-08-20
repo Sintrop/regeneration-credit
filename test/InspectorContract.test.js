@@ -56,7 +56,6 @@ describe("InspectorContract", () => {
 
       expect(inspector.id).to.equal("1");
       expect(inspector.inspectorWallet).to.equal(inspe1Address.address);
-      expect(inspector.userType).to.equal("2");
       expect(inspector.name).to.equal("Inspector A");
       expect(inspector.proofPhoto).to.equal("photoURL");
       expect(inspector.totalInspections).to.equal("0");

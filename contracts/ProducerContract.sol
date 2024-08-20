@@ -47,7 +47,6 @@ contract ProducerContract is Callable {
 
     producer.id = userContract.userTypesCount(USER_TYPE) + 1;
     producer.producerWallet = msg.sender;
-    producer.userType = USER_TYPE;
     producer.name = name;
     producer.proofPhoto = proofPhoto;
     producer.areaInformation = AreaInformation(coordinates, totalArea);

@@ -40,7 +40,6 @@ contract ContributorContract is Ownable, Callable {
     contributors[msg.sender] = Contributor(
       userContract.userTypesCount(USER_TYPE) + 1,
       msg.sender,
-      USER_TYPE,
       name,
       proofPhoto,
       Pool(level, poolEra),

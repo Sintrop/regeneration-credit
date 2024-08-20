@@ -51,7 +51,6 @@ contract ResearcherContract is Callable {
     Researcher memory researcher = Researcher(
       userContract.userTypesCount(USER_TYPE) + 1,
       msg.sender,
-      USER_TYPE,
       name,
       pool,
       proofPhoto,

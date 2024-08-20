@@ -41,7 +41,6 @@ contract InspectorContract is Callable {
     Inspector memory inspector = Inspector(
       userContract.userTypesCount(USER_TYPE) + 1,
       msg.sender,
-      USER_TYPE,
       name,
       proofPhoto,
       0,
