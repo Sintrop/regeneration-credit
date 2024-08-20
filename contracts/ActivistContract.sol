@@ -28,7 +28,8 @@ contract ActivistContract is Callable {
    * @param name the name of the activist
    * @return a Activist
    */
-  function addActivist(string memory name, string memory proofPhoto) public uniqueActivist returns (Activist memory) {
+  function addActivist(string memory name, string memory proofPhoto) public returns (Activist memory) {
+    require(!activistExists(msg.sender), "This activist already exist");
     uint256 id = userContract.userTypesCount(USER_TYPE) + 1;
     uint256 currentEra = activistPoolEra();
 
@@ -141,12 +142,5 @@ contract ActivistContract is Callable {
 
   function activistPoolEra() internal view returns (uint256) {
     return activistPool.currentContractEra();
-  }
-
-  // MODIFIERS
-
-  modifier uniqueActivist() {
-    require(!activistExists(msg.sender), "This activist already exist");
-    _;
   }
 }
