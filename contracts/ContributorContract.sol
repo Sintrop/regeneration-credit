@@ -21,7 +21,7 @@ contract ContributorContract is Ownable, Callable {
   ContributorPool internal contributorPool;
 
   address[] internal contributorsAddress;
-  uint256 public contributorsCount;
+  UserType private constant USER_TYPE = UserType.CONTRIBUTOR;
   uint256 public contributionsCount;
 
   constructor(address userContractAddress, address contributorPoolAddress) {
@@ -34,14 +34,13 @@ contract ContributorContract is Ownable, Callable {
    * @param name the name of the contributor
    */
   function addContributor(string memory name, string memory proofPhoto) public uniqueContributor {
-    UserType userType = UserType.CONTRIBUTOR;
     uint256 poolEra = contributorPoolEra();
     uint256 level = 0;
 
     contributors[msg.sender] = Contributor(
-      contributorsCount + 1,
+      userContract.userTypesCount(USER_TYPE) + 1,
       msg.sender,
-      userType,
+      USER_TYPE,
       name,
       proofPhoto,
       Pool(level, poolEra),
@@ -49,9 +48,8 @@ contract ContributorContract is Ownable, Callable {
     );
 
     contributorsAddress.push(msg.sender);
-    contributorsCount++;
 
-    userContract.addUser(msg.sender, userType);
+    userContract.addUser(msg.sender, USER_TYPE);
   }
 
   function addContribution(string memory report) public {
@@ -83,9 +81,10 @@ contract ContributorContract is Ownable, Callable {
    * @dev Returns all contributors
    */
   function getContributors() public view returns (Contributor[] memory) {
-    Contributor[] memory contributorList = new Contributor[](contributorsCount);
+    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    Contributor[] memory contributorList = new Contributor[](usersCount);
 
-    for (uint256 i = 0; i < contributorsCount; i++) {
+    for (uint256 i = 0; i < usersCount; i++) {
       address devAddress = contributorsAddress[i];
       contributorList[i] = contributors[devAddress];
     }

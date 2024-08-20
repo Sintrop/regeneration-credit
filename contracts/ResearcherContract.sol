@@ -18,7 +18,7 @@ contract ResearcherContract is Callable {
   ValidatorContract internal validatorContract;
 
   address[] internal researchersAddress;
-  uint256 public researchersCount;
+  UserType private constant USER_TYPE = UserType.RESEARCHER;
   uint256 public worksCount;
   uint256 internal immutable timeBetweenWorks;
 
@@ -49,17 +49,22 @@ contract ResearcherContract is Callable {
   ) public returns (Researcher memory) {
     require(!researcherExists(msg.sender), "This researcher already exist");
 
-    uint256 id = researchersCount + 1;
-    UserType userType = UserType.RESEARCHER;
-
     Pool memory pool = Pool(0, researcherPoolEra());
 
-    Researcher memory researcher = Researcher(id, msg.sender, userType, name, pool, proofPhoto, 0, 0);
+    Researcher memory researcher = Researcher(
+      userContract.userTypesCount(USER_TYPE) + 1,
+      msg.sender,
+      USER_TYPE,
+      name,
+      pool,
+      proofPhoto,
+      0,
+      0
+    );
 
     researchers[msg.sender] = researcher;
     researchersAddress.push(msg.sender);
-    researchersCount++;
-    userContract.addUser(msg.sender, userType);
+    userContract.addUser(msg.sender, USER_TYPE);
 
     return researcher;
   }
@@ -69,9 +74,10 @@ contract ResearcherContract is Callable {
    * @return Researcher struct array
    */
   function getResearchers() public view returns (Researcher[] memory) {
-    Researcher[] memory researcherList = new Researcher[](researchersCount);
+    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    Researcher[] memory researcherList = new Researcher[](usersCount);
 
-    for (uint256 i = 0; i < researchersCount; i++) {
+    for (uint256 i = 0; i < usersCount; i++) {
       address acAddress = researchersAddress[i];
       researcherList[i] = researchers[acAddress];
     }

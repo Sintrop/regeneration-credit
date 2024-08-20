@@ -97,7 +97,7 @@ describe("ContributorContract", (accounts) => {
 
         it("should increment contributorsCount after create contributor", async () => {
           await addContributor("Contributor A", contr1Address);
-          const contributorsCount = await instance.contributorsCount();
+          const contributorsCount = await userContract.userTypesCount(userTypes.Contributor);
 
           expect(contributorsCount).to.equal(1);
         });

@@ -364,7 +364,7 @@ describe("ValidatorContract", () => {
 
         it("should increment validatorCount after create validator", async () => {
           await addValidator(validator1Address);
-          const validatorsCount = await instance.validatorsCount();
+          const validatorsCount = await userContract.userTypesCount(userTypes.Validator);
 
           expect(validatorsCount).to.equal(1);
         });
