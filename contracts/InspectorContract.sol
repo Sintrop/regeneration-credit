@@ -61,10 +61,6 @@ contract InspectorContract is Callable {
   function addPenalty(address addr, uint256 inspectionId) public mustBeAllowedCaller returns (uint256) {
     penalties[addr].push(Penalty(inspectionId));
 
-    return totalPenalties(addr);
-  }
-
-  function totalPenalties(address addr) public view returns (uint256) {
     return penalties[addr].length;
   }
 
