@@ -35,9 +35,6 @@ contract InspectorContract is Callable {
   function addInspector(string memory name, string memory proofPhoto) public returns (Inspector memory) {
     require(!inspectorExists(msg.sender), "This inspector already exist");
 
-    uint256 currentEra = inspectorPoolEra();
-    Pool memory pool = Pool(0, currentEra);
-
     Inspector memory inspector = Inspector(
       userContract.userTypesCount(USER_TYPE) + 1,
       msg.sender,
@@ -47,7 +44,7 @@ contract InspectorContract is Callable {
       0,
       0,
       0,
-      pool
+      Pool(0, inspectorPoolEra())
     );
 
     inspectors[msg.sender] = inspector;

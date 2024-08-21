@@ -58,11 +58,12 @@ contract ValidatorContract is Callable {
   function addValidator() public {
     require(!validatorExists(msg.sender), "This validator already exist");
 
-    uint256 currentEra = validatorPoolEra();
+    validators[msg.sender] = Validator(
+      userContract.userTypesCount(USER_TYPE) + 1,
+      msg.sender,
+      Pool(0, validatorPoolEra())
+    );
 
-    Pool memory pool = Pool(0, currentEra);
-
-    validators[msg.sender] = Validator(userContract.userTypesCount(USER_TYPE) + 1, msg.sender, pool);
     validatorsAddress.push(msg.sender);
     userContract.addUser(msg.sender, USER_TYPE);
   }

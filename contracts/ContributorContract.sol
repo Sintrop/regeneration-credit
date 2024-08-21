@@ -34,7 +34,6 @@ contract ContributorContract is Ownable, Callable {
    * @param name the name of the contributor
    */
   function addContributor(string memory name, string memory proofPhoto) public uniqueContributor {
-    uint256 poolEra = contributorPoolEra();
     uint256 level = 0;
 
     contributors[msg.sender] = Contributor(
@@ -42,7 +41,7 @@ contract ContributorContract is Ownable, Callable {
       msg.sender,
       name,
       proofPhoto,
-      Pool(level, poolEra),
+      Pool(level, contributorPoolEra()),
       block.number
     );
 

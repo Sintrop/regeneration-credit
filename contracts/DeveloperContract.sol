@@ -48,8 +48,6 @@ contract DeveloperContract is Ownable, Callable {
   function addDeveloper(string memory name, string memory proofPhoto) public {
     require(!developerExists(msg.sender), "This developer already exist");
 
-    UserType userType = UserType.DEVELOPER;
-    uint256 poolEra = developerPoolEra();
     uint256 level = 0;
 
     developers[msg.sender] = Developer(
@@ -57,13 +55,13 @@ contract DeveloperContract is Ownable, Callable {
       msg.sender,
       name,
       proofPhoto,
-      Pool(level, poolEra),
+      Pool(level, developerPoolEra()),
       0,
       block.number
     );
 
     developersAddress.push(msg.sender);
-    userContract.addUser(msg.sender, userType);
+    userContract.addUser(msg.sender, USER_TYPE);
   }
 
   function addContribution(string memory report) public {
