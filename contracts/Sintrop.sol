@@ -35,6 +35,7 @@ contract Sintrop {
   uint256 internal blocksToExpireAcceptedInspection;
   uint256 internal immutable allowedInitialRequests;
   uint256 internal acceptInspectionDelayBlocks;
+  uint256 internal immutable securityBlocksToValidatorAnalysis;
 
   constructor(
     address inspectorContractAddress,
@@ -46,7 +47,8 @@ contract Sintrop {
     uint256 timeBetweenInspections_,
     uint256 blocksToExpireAcceptedInspection_,
     uint256 allowedInitialRequests_,
-    uint256 acceptInspectionDelayBlocks_
+    uint256 acceptInspectionDelayBlocks_,
+    uint256 securityBlocksToValidatorAnalysis_
   ) {
     inspectorContract = InspectorContract(inspectorContractAddress);
     producerContract = ProducerContract(producerContractAddress);
@@ -58,6 +60,7 @@ contract Sintrop {
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
     allowedInitialRequests = allowedInitialRequests_;
     acceptInspectionDelayBlocks = acceptInspectionDelayBlocks_;
+    securityBlocksToValidatorAnalysis = securityBlocksToValidatorAnalysis_;
   }
 
   // TODO: Refact this mapping to not duplicate inspections
@@ -281,6 +284,10 @@ contract Sintrop {
     bool finishedLastInspection = lastInspection.status == InspectionStatus.INSPECTED ||
       lastInspection.status == InspectionStatus.INVALIDATED;
 
+    bool haveSecurityBlocksToVote = (producerContract.nextEraIn() - blocksToExpireAcceptedInspection) >
+      securityBlocksToValidatorAnalysis;
+
+    if (!haveSecurityBlocksToVote) return false;
     if (!waitedInspectionDelay) return false;
 
     return finishedLastInspection || acceptedInspectionExpired || inspector.lastInspection == 0;

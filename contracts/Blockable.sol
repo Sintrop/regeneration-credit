@@ -37,12 +37,12 @@ contract Blockable {
     return currentContractEra().div(HALVING).add(1);
   }
 
-  function nextWithdrawIn(uint256 currentUserEra) public view returns (int256) {
+  function nextEraIn(uint256 currentUserEra) public view returns (int256) {
     return int256(DEPLOYED_AT) + (int256(BLOCKS_PER_ERA) * int256(currentUserEra)) - int256(currentBlockNumber());
   }
 
   function canWithdrawTimes(uint256 currentUserEra) public view returns (uint256) {
-    int256 approvesTimes = nextWithdrawIn(currentUserEra);
+    int256 approvesTimes = nextEraIn(currentUserEra);
 
     if (approvesTimes > 0) return 0;
 
