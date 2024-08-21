@@ -710,4 +710,26 @@ describe("ProducerContract", () => {
       });
     });
   });
+
+  describe("#producerPoolEra", () => {
+    context("when pool is in era 1", () => {
+      it("return era equal 1", async () => {
+        const currentEra = await instance.producerPoolEra();
+
+        expect(currentEra).to.equal(1);
+      });
+    });
+
+    context("when pool is in era 2", () => {
+      beforeEach(async () => {
+        await advanceBlock(producerPoolArgs.blocksPerEra);
+      });
+
+      it("return era equal 1", async () => {
+        const currentEra = await instance.producerPoolEra();
+
+        expect(currentEra).to.equal(2);
+      });
+    });
+  });
 });

@@ -181,4 +181,8 @@ contract ProducerContract is Callable {
   function lastRequestAt(address addr, uint256 blocksNumber) public mustBeAllowedCaller {
     producers[addr].lastRequestAt = blocksNumber;
   }
+
+  function producerPoolEra() public view returns (uint256) {
+    return producerPool.currentContractEra();
+  }
 }
