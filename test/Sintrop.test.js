@@ -857,6 +857,12 @@ describe("Sintrop", () => {
                   expect(inspection.status).to.equal(STATUS.inspected);
                 });
 
+                it("populate inspection inspectedAt", async () => {
+                  const inspection = await instance.getInspection(1);
+
+                  expect(inspection.inspectedAtEra).to.equal(1);
+                });
+
                 it("should decrease inspector giveUps by 1", async () => {
                   const inspector = await inspectorContract.getInspector(inspectorAddress);
 
@@ -1358,11 +1364,32 @@ describe("Sintrop", () => {
         });
       });
 
-      context("with invalid inspection", () => {
+      context("when inspection inspectedAtEra is passed", () => {
+        beforeEach(async () => {
+          await addCategory("Soil A", owner);
+          await addCategory("Soil B", owner);
+          await addCategory("Soil C", owner);
+
+          await requestInspection(producerAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await acceptInspection(1, inspectorAddress);
+          await realizeInspection(1, report, isas(), inspectorAddress);
+
+          await advanceBlock(producerPoolArgs.blocksPerEra);
+        });
+
         it("should return error message", async () => {
           await expect(
             instance.connect(validator1Address).addInspectionValidation(1, "justification")
-          ).to.be.revertedWith("This inspection is not INSPECTED");
+          ).to.be.revertedWith("Can not add validation anymore");
+        });
+      });
+
+      context("when inspection is not inspected", () => {
+        it("should return error message", async () => {
+          await expect(
+            instance.connect(validator1Address).addInspectionValidation(1, "justification")
+          ).to.be.revertedWith("Can not add validation anymore");
         });
       });
     });

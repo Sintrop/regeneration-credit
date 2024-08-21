@@ -161,6 +161,7 @@ contract Sintrop {
     inspection.isaScore = categoryContract.calculateIsa(inspection.id, _isaInspection);
     inspection.report = report;
     inspection.inspectedAt = block.number;
+    inspection.inspectedAtEra = producerContract.producerPoolEra();
 
     inspections[inspection.id] = inspection;
   }
@@ -191,7 +192,7 @@ contract Sintrop {
 
     Inspection memory inspection = inspections[id];
 
-    require(inspection.status == InspectionStatus.INSPECTED, "This inspection is not INSPECTED");
+    require(inspection.inspectedAtEra == producerContract.producerPoolEra(), "Can not add validation anymore");
 
     inspection.validationsCount += 1;
     inspections[inspection.id] = inspection;
