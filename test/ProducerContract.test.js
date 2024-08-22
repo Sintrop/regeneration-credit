@@ -1,5 +1,5 @@
 const { userContractDeployed } = require("./shared/user_contract_deployed");
-const { regenerationCreditDeployed } = require("./shared/rc_token_deployed");
+const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");

@@ -1,4 +1,4 @@
-const { regenerationCreditDeployed } = require("./shared/rc_token_deployed");
+const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
