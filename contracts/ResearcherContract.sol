@@ -105,7 +105,7 @@ contract ResearcherContract is Callable {
 
     uint256 id = worksCount + 1;
 
-    Work memory work = Work(id, researcherPoolEra(), msg.sender, title, thesis, file, 0, true, 0, block.timestamp); // solhint-disable-line
+    Work memory work = Work(id, researcherPoolEra(), msg.sender, title, thesis, file, 0, true, 0, block.number);
 
     works[id] = work;
     worksCount++;
