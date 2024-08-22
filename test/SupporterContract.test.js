@@ -1,11 +1,11 @@
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
-const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { regenerationCreditDeployed } = require("./shared/rc_token_deployed");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("SupporterContract", () => {
-  let instance, userContract, rcToken, supporterPool;
+  let instance, userContract, regenerationCredit, supporterPool;
   let ownerAddress, inv1Address, inv2Address;
 
   const addSupporter = async (name, from) => {
@@ -13,7 +13,7 @@ describe("SupporterContract", () => {
   };
 
   const transferTokensTo = async (userAddress, tokens) => {
-    await rcToken.transfer(userAddress, tokens);
+    await regenerationCredit.transfer(userAddress, tokens);
   };
 
   beforeEach(async () => {
@@ -21,10 +21,10 @@ describe("SupporterContract", () => {
 
     userContract = await userContractDeployed();
 
-    rcToken = await rcTokenDeployed();
+    regenerationCredit = await regenerationCreditDeployed();
 
     const supporterPoolFactory = await ethers.getContractFactory("SupporterPool");
-    supporterPool = await supporterPoolFactory.deploy(rcToken.target);
+    supporterPool = await supporterPoolFactory.deploy(regenerationCredit.target);
 
     const instanceFactory = await ethers.getContractFactory("SupporterContract");
     instance = await instanceFactory.deploy(userContract.target, supporterPool.target);
@@ -32,7 +32,7 @@ describe("SupporterContract", () => {
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(ownerAddress);
     await supporterPool.newAllowedCaller(instance.target);
-    await rcToken.addContractPool(supporterPool.target, 0);
+    await regenerationCredit.addContractPool(supporterPool.target, 0);
   });
 
   describe("#addSupporter", () => {
@@ -165,7 +165,7 @@ describe("SupporterContract", () => {
             });
 
             it("totalCertified must be 990000000000000000", async () => {
-              const totalCertified = await rcToken.totalCertified();
+              const totalCertified = await regenerationCredit.totalCertified();
               expect(totalCertified).to.equal(990000000000000000n);
             });
           });
@@ -186,7 +186,7 @@ describe("SupporterContract", () => {
             });
 
             it("totalCertified must be 495000000000000000", async () => {
-              const totalCertified = await rcToken.totalCertified();
+              const totalCertified = await regenerationCredit.totalCertified();
               expect(totalCertified).to.equal(495000000000000000n);
             });
           });
@@ -209,7 +209,7 @@ describe("SupporterContract", () => {
             });
 
             it("totalCertified must be 1000000000000000000", async () => {
-              const totalCertified = await rcToken.totalCertified();
+              const totalCertified = await regenerationCredit.totalCertified();
 
               expect(totalCertified).to.equal(1000000000000000000n);
             });
@@ -227,7 +227,7 @@ describe("SupporterContract", () => {
             });
 
             it("totalCertified must be 500000000000000000", async () => {
-              const totalCertified = await rcToken.totalCertified();
+              const totalCertified = await regenerationCredit.totalCertified();
 
               expect(totalCertified).to.equal(500000000000000000n);
             });

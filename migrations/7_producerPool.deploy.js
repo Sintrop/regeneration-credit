@@ -7,15 +7,15 @@ async function producerPoolDeploy() {
   const pool_blocks_per_era = process.env["PRODUCER_POOL_BLOCKS_PER_ERA"];
   const producerPoolFunds = process.env["PRODUCER_POOL_FUNDS"];
 
-  const rcToken = await getDeployedContract("RcToken");
+  const regenerationCredit = await getDeployedContract("RegenerationCredit");
 
   const ProducerPool = await ethers.getContractFactory("ProducerPool");
 
-  const producerPool = await ProducerPool.deploy(rcToken.target, pool_halving, pool_total_eras, pool_blocks_per_era);
+  const producerPool = await ProducerPool.deploy(regenerationCredit.target, pool_halving, pool_total_eras, pool_blocks_per_era);
 
   saveContractAddress("ProducerPool", producerPool.target);
 
-  await rcToken.addContractPool(producerPool.target, producerPoolFunds);
+  await regenerationCredit.addContractPool(producerPool.target, producerPoolFunds);
 
   console.log(`ProducerPool address ${producerPool.target}`)
 

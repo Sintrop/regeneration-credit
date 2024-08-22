@@ -7,15 +7,15 @@ async function researcherPoolDeploy() {
   const pool_blocks_per_era = process.env["RESEARCHER_POOL_BLOCKS_PER_ERA"];
   const researcherPoolFunds = process.env["RESEARCHER_POOL_FUNDS"];
 
-  const rcToken = await getDeployedContract("RcToken");
+  const regenerationCredit = await getDeployedContract("RegenerationCredit");
 
   const ResearcherPool = await ethers.getContractFactory("ResearcherPool");
 
-  const researcherPool = await ResearcherPool.deploy(rcToken.target, pool_halving, pool_total_eras, pool_blocks_per_era);
+  const researcherPool = await ResearcherPool.deploy(regenerationCredit.target, pool_halving, pool_total_eras, pool_blocks_per_era);
 
   saveContractAddress("ResearcherPool", researcherPool.target);
 
-  await rcToken.addContractPool(researcherPool.target, researcherPoolFunds);
+  await regenerationCredit.addContractPool(researcherPool.target, researcherPoolFunds);
 
   console.log(`ReseacherPool address ${researcherPool.target}`)
 

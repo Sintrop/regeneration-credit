@@ -1,13 +1,13 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("RcTokenIco", () => {
+describe("RegenerationCreditIco", () => {
   let instance;
-  let rcToken, rcTokenIco;
+  let regenerationCredit, regenerationCreditIco;
   let ownerAddress, user1Address;
 
   let args = {
-    totalRcTokens: "1500000000000000000000000000",
+    totalRegenerationCredits: "1500000000000000000000000000",
   };
 
   const sendTransation = async (from, to, tokensEthers) => {
@@ -20,13 +20,13 @@ describe("RcTokenIco", () => {
   beforeEach(async () => {
     [ownerAddress, user1Address] = await ethers.getSigners();
 
-    const instanceFactory = await ethers.getContractFactory("RcTokenIco");
+    const instanceFactory = await ethers.getContractFactory("RegenerationCreditIco");
     instance = await instanceFactory.deploy();
 
-    const rcTokenFactory = await ethers.getContractFactory("RcToken");
-    rcToken = await rcTokenFactory.deploy(args.totalRcTokens, instance.target);
+    const regenerationCreditFactory = await ethers.getContractFactory("RegenerationCredit");
+    regenerationCredit = await regenerationCreditFactory.deploy(args.totalRegenerationCredits, instance.target);
 
-    instance.setRcToken(rcToken.target);
+    instance.setRegenerationCredit(regenerationCredit.target);
   });
 
   describe("#receive", () => {
@@ -47,7 +47,7 @@ describe("RcTokenIco", () => {
         });
 
         it("user rc token balance increment 40000000000000000000000", async () => {
-          const balance = await rcToken.balanceOf(user1Address);
+          const balance = await regenerationCredit.balanceOf(user1Address);
 
           expect(balance).to.equal(120000000000000000000000n);
         });
@@ -65,7 +65,7 @@ describe("RcTokenIco", () => {
         });
 
         it("user rc token balance increment 40000000000000000000", async () => {
-          const balance = await rcToken.balanceOf(user1Address);
+          const balance = await regenerationCredit.balanceOf(user1Address);
 
           expect(balance).to.equal(120000000000000000000n);
         });
@@ -83,7 +83,7 @@ describe("RcTokenIco", () => {
         });
 
         it("user rc token balance increment 240000000000000000000000", async () => {
-          const balance = await rcToken.balanceOf(user1Address);
+          const balance = await regenerationCredit.balanceOf(user1Address);
 
           expect(balance).to.equal(240000000000000000000000n);
         });
@@ -101,7 +101,7 @@ describe("RcTokenIco", () => {
         });
 
         it("user rc token balance increment 240000000000000000000000", async () => {
-          const balance = await rcToken.balanceOf(user1Address);
+          const balance = await regenerationCredit.balanceOf(user1Address);
 
           expect(balance).to.equal(720000000000000000000000n);
         });
@@ -119,7 +119,7 @@ describe("RcTokenIco", () => {
         });
 
         it("user rc token balance increment 0", async () => {
-          const balance = await rcToken.balanceOf(user1Address);
+          const balance = await regenerationCredit.balanceOf(user1Address);
 
           expect(balance).to.equal(0);
         });
@@ -209,14 +209,14 @@ describe("RcTokenIco", () => {
 
   describe("#withdrawTokens", () => {
     context("when is the owner", () => {
-      context("when contract have rcTokens", () => {
+      context("when contract have regenerationCredits", () => {
         context("when withdraw total amount", () => {
           beforeEach(async () => {
-            balanceBeforeRc = await rcToken.balanceOf(ownerAddress);
+            balanceBeforeRc = await regenerationCredit.balanceOf(ownerAddress);
 
-            await instance.withdrawRcToken(124500000000000000000000000n);
+            await instance.withdrawRegenerationCredit(124500000000000000000000000n);
 
-            balanceAfterRc = await rcToken.balanceOf(ownerAddress);
+            balanceAfterRc = await regenerationCredit.balanceOf(ownerAddress);
           });
 
           it("should increment owner rc balance", async () => {
@@ -224,7 +224,7 @@ describe("RcTokenIco", () => {
           });
 
           it("should decrement contract rc balance", async () => {
-            contractRcBalance = await rcToken.balanceOf(instance);
+            contractRcBalance = await regenerationCredit.balanceOf(instance);
             expect(contractRcBalance).to.equal(0);
           });
         });
@@ -238,11 +238,11 @@ describe("RcTokenIco", () => {
 
         context("when the owner withdraw", () => {
           beforeEach(async () => {
-            balanceBeforeRc = await rcToken.balanceOf(ownerAddress);
+            balanceBeforeRc = await regenerationCredit.balanceOf(ownerAddress);
 
-            await instance.withdrawRcToken(80000000000000000000000n);
+            await instance.withdrawRegenerationCredit(80000000000000000000000n);
 
-            balanceAfterRc = await rcToken.balanceOf(ownerAddress);
+            balanceAfterRc = await regenerationCredit.balanceOf(ownerAddress);
           });
 
           it("should increment owner rc balance", async () => {
@@ -250,7 +250,7 @@ describe("RcTokenIco", () => {
           });
 
           it("should decrement contract rc balance", async () => {
-            contractRcBalance = await rcToken.balanceOf(instance);
+            contractRcBalance = await regenerationCredit.balanceOf(instance);
             expect(contractRcBalance).to.equal(124180000000000000000000000n);
           });
         });
@@ -259,7 +259,7 @@ describe("RcTokenIco", () => {
 
     context("when ICO contract dont have enough tokens", () => {
       it("it should return error message", async () => {
-        await expect(instance.withdrawRcToken(136000000000000000000000000n)).to.be.revertedWith(
+        await expect(instance.withdrawRegenerationCredit(136000000000000000000000000n)).to.be.revertedWith(
           "Insufficient balance."
         );
       });

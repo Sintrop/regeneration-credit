@@ -5,7 +5,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract RcToken is ERC20, Ownable {
+contract RegenerationCredit is ERC20, Ownable {
   string public constant NAME = "REGENERATION CREDIT";
   string public constant SYMBOL = "RC";
   uint8 public constant DECIMALS = 18;
@@ -40,7 +40,7 @@ contract RcToken is ERC20, Ownable {
     address tokenOwner,
     address receiver,
     uint256 numTokens
-  ) public mustBeContractPool mustHaveRcTokens(tokenOwner, numTokens) returns (bool) {
+  ) public mustBeContractPool mustHaveRegenerationCredits(tokenOwner, numTokens) returns (bool) {
     balances[tokenOwner] = balances[tokenOwner].sub(numTokens);
     balances[receiver] = balances[receiver].add(numTokens);
     emit Transfer(tokenOwner, receiver, numTokens);
@@ -137,7 +137,7 @@ contract RcToken is ERC20, Ownable {
     _;
   }
 
-  modifier mustHaveRcTokens(address tokenOwner, uint256 numTokens) {
+  modifier mustHaveRegenerationCredits(address tokenOwner, uint256 numTokens) {
     require(numTokens <= balances[tokenOwner], "You don't have RCT Tokens");
     _;
   }

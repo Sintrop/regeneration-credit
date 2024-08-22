@@ -1,13 +1,13 @@
 const { ZERO_ADDRESS } = require("./zeroAddress");
 
-const rcTokenDeployed = async () => {
-  const rcTokenIcoAddress = ZERO_ADDRESS;
+const regenerationCreditDeployed = async () => {
+  const regenerationCreditIcoAddress = ZERO_ADDRESS;
 
-  const rcTokenContractFactory = await ethers.getContractFactory("RcToken");
+  const regenerationCreditContractFactory = await ethers.getContractFactory("RegenerationCredit");
 
-  const rcToken = await rcTokenContractFactory.deploy("150000000000000000000000000000", rcTokenIcoAddress);
+  const regenerationCredit = await regenerationCreditContractFactory.deploy("150000000000000000000000000000", regenerationCreditIcoAddress);
 
-  return rcToken;
+  return regenerationCredit;
 };
 
-module.exports = { rcTokenDeployed };
+module.exports = { regenerationCreditDeployed };

@@ -1,6 +1,6 @@
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
-const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { regenerationCreditDeployed } = require("./shared/rc_token_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
@@ -8,7 +8,7 @@ const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
 describe("ResearcherContract", () => {
   let instance;
-  let rcToken;
+  let regenerationCredit;
   let researcherPool;
   let userContract;
   let validatorContract;
@@ -53,12 +53,12 @@ describe("ResearcherContract", () => {
     [owner, resea1Address, resea2Address, validator1Address, validator2Address, validator3Address, validator4Address] =
       await ethers.getSigners();
 
-    rcToken = await rcTokenDeployed();
+    regenerationCredit = await regenerationCreditDeployed();
     userContract = await userContractDeployed();
 
     const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
     researcherPool = await researcherPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       args.halving,
       args.totalEras,
       args.blocksPerEra
@@ -66,7 +66,7 @@ describe("ResearcherContract", () => {
 
     const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
     validatorPool = await validatorPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       validatorPoolargs.halving,
       validatorPoolargs.totalEras,
       validatorPoolargs.blocksPerEra
@@ -102,7 +102,7 @@ describe("ResearcherContract", () => {
     await validatorContract.newAllowedCaller(instance.target);
     await instance.newAllowedCaller(validatorContract.target);
     await instance.newAllowedCaller(owner);
-    await rcToken.addContractPool(researcherPool.target, args.totalTokens);
+    await regenerationCredit.addContractPool(researcherPool.target, args.totalTokens);
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
 
@@ -244,7 +244,7 @@ describe("ResearcherContract", () => {
           });
 
           it("withdraw 1200000000000000000000000 tokens", async () => {
-            const balanceOf = await rcToken.balanceOf(resea1Address);
+            const balanceOf = await regenerationCredit.balanceOf(resea1Address);
             const expectedBalance = 1200000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
@@ -264,7 +264,7 @@ describe("ResearcherContract", () => {
           });
 
           it("withdraw 600000000000000000000000n tokens", async () => {
-            const balanceOf = await rcToken.balanceOf(resea1Address);
+            const balanceOf = await regenerationCredit.balanceOf(resea1Address);
             const expectedBalance = 600000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);

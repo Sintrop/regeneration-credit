@@ -2,14 +2,14 @@ const { ethers } = require("hardhat");
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { expect } = require("chai");
 
-describe("RcToken", (accounts) => {
+describe("RegenerationCredit", (accounts) => {
   let instance;
-  let rcTokenIco;
+  let regenerationCreditIco;
   let ownerAddress, user1Address, user2Address;
   let producerPool;
 
   let args = {
-    totalRcTokens: "1500000000000000000000000000",
+    totalRegenerationCredits: "1500000000000000000000000000",
   };
 
   const argsProducerPool = {
@@ -22,11 +22,11 @@ describe("RcToken", (accounts) => {
   beforeEach(async () => {
     [ownerAddress, user1Address, user2Address] = await ethers.getSigners();
 
-    const rcTokenIcoFactory = await ethers.getContractFactory("RcTokenIco");
-    rcTokenIco = await rcTokenIcoFactory.deploy();
+    const regenerationCreditIcoFactory = await ethers.getContractFactory("RegenerationCreditIco");
+    regenerationCreditIco = await regenerationCreditIcoFactory.deploy();
 
-    const instanceFactory = await ethers.getContractFactory("RcToken");
-    instance = await instanceFactory.deploy(args.totalRcTokens, rcTokenIco.target);
+    const instanceFactory = await ethers.getContractFactory("RegenerationCredit");
+    instance = await instanceFactory.deploy(args.totalRegenerationCredits, regenerationCreditIco.target);
     userContract = await userContractDeployed();
 
     const producerPoolFactory = await ethers.getContractFactory("ProducerPool");
@@ -37,13 +37,13 @@ describe("RcToken", (accounts) => {
       argsProducerPool.blocksPerEra
     );
 
-    await rcTokenIco.setRcToken(instance.target);
+    await regenerationCreditIco.setRegenerationCredit(instance.target);
   });
 
   describe(".afterDeploy", () => {
     it("total suply should be equal to 1500000000000000000000000000", async () => {
       const totalSupply = await instance.totalSupply();
-      expect(totalSupply).to.equal(args.totalRcTokens);
+      expect(totalSupply).to.equal(args.totalRegenerationCredits);
     });
 
     it("totalCertified should be equal zero", async () => {
@@ -61,8 +61,8 @@ describe("RcToken", (accounts) => {
       expect(ownerBalance).to.equal(1375500000000000000000000000n);
     });
 
-    it("balance of rcTokenIco should be 135000000000000000000000000", async () => {
-      const balance = await instance.balanceOf(rcTokenIco.target);
+    it("balance of regenerationCreditIco should be 135000000000000000000000000", async () => {
+      const balance = await instance.balanceOf(regenerationCreditIco.target);
       expect(balance).to.equal(124500000000000000000000000n);
     });
   });

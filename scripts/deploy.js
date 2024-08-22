@@ -6,7 +6,7 @@
 // global scope, and execute the script.
 const hre = require("hardhat");
 var fs = require("fs");
-const rcTokenDeploy = require("../migrations/1_rcToken.deploy.js");
+const regenerationCreditDeploy = require("../migrations/1_regenerationCredit.deploy.js");
 const userContractDeploy = require("../migrations/2_userContract.deploy.js");
 const developerPoolDeploy = require("../migrations/3_developerPool.deploy.js");
 const developerContractDeploy = require("../migrations/4_developerContract.deploy.js");
@@ -62,7 +62,7 @@ function showDeployedAddress() {
 async function main() {
   await startDeployAlert();
 
-  await rcTokenDeploy();
+  await regenerationCreditDeploy();
   await userContractDeploy();
   await validatorPoolDeploy();
   await validatorContractDeploy();

@@ -1,20 +1,20 @@
 const saveContractAddress = require("../scripts/shared/saveContractAddress");
 
-async function rcTokenDeploy() {
-  const rcTokensTotalTokens = process.env["RCT_TOKENS_TOTAL_TOKENS"];
+async function regenerationCreditDeploy() {
+  const regenerationCreditsTotalTokens = process.env["RCT_TOKENS_TOTAL_TOKENS"];
 
-  const RcTokenIco = await ethers.getContractFactory("RcTokenIco");
-  const RcToken = await ethers.getContractFactory("RcToken");
+  const RegenerationCreditIco = await ethers.getContractFactory("RegenerationCreditIco");
+  const RegenerationCredit = await ethers.getContractFactory("RegenerationCredit");
 
-  const rcTokenIco = await RcTokenIco.deploy();
-  const rcToken = await RcToken.deploy(rcTokensTotalTokens, rcTokenIco.target);
+  const regenerationCreditIco = await RegenerationCreditIco.deploy();
+  const regenerationCredit = await RegenerationCredit.deploy(regenerationCreditsTotalTokens, regenerationCreditIco.target);
 
-  saveContractAddress("RcTokenIco", rcTokenIco.target);
-  saveContractAddress("RcToken", rcToken.target);
+  saveContractAddress("RegenerationCreditIco", regenerationCreditIco.target);
+  saveContractAddress("RegenerationCredit", regenerationCredit.target);
 
-  console.log(`RcToken address ${rcToken.target}`)
+  console.log(`RegenerationCredit address ${regenerationCredit.target}`)
 
-  return { rcTokenIco, rcToken };
+  return { regenerationCreditIco, regenerationCredit };
 }
 
-module.exports = rcTokenDeploy;
+module.exports = regenerationCreditDeploy;

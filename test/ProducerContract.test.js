@@ -1,12 +1,12 @@
 const { userContractDeployed } = require("./shared/user_contract_deployed");
-const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { regenerationCreditDeployed } = require("./shared/rc_token_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 
 describe("ProducerContract", () => {
   let instance;
-  let rcToken;
+  let regenerationCredit;
   let userContract;
   let producerPool;
   let owner, prod1Address, prod2Address;
@@ -29,14 +29,14 @@ describe("ProducerContract", () => {
   beforeEach(async () => {
     [owner, prod1Address, prod2Address] = await ethers.getSigners();
 
-    rcToken = await rcTokenDeployed();
+    regenerationCredit = await regenerationCreditDeployed();
 
     userContract = await userContractDeployed();
 
     const producerPoolFactory = await ethers.getContractFactory("ProducerPool");
 
     producerPool = await producerPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       producerPoolArgs.halving,
       producerPoolArgs.totalEras,
       producerPoolArgs.blocksPerEra
@@ -46,7 +46,7 @@ describe("ProducerContract", () => {
 
     instance = await instanceFactory.deploy(userContract.target, producerPool.target);
 
-    await rcToken.addContractPool(producerPool.target, producerPoolArgs.totalTokens);
+    await regenerationCredit.addContractPool(producerPool.target, producerPoolArgs.totalTokens);
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
     await instance.newAllowedCaller(owner);
@@ -628,13 +628,13 @@ describe("ProducerContract", () => {
               });
 
               it("producer A must withdraw 3600000000000000000000000n tokens", async () => {
-                const balanceOf = await rcToken.balanceOf(prod1Address);
+                const balanceOf = await regenerationCredit.balanceOf(prod1Address);
 
                 expect(balanceOf).to.equal(3600000000000000000000000n);
               });
 
               it("producer B must withdraw 3600000000000000000000000n tokens", async () => {
-                const balanceOf = await rcToken.balanceOf(prod2Address);
+                const balanceOf = await regenerationCredit.balanceOf(prod2Address);
 
                 expect(balanceOf).to.equal(3600000000000000000000000n);
               });
@@ -660,7 +660,7 @@ describe("ProducerContract", () => {
               });
 
               it("must withdraw 7200000000000000000000000n tokens", async () => {
-                const balanceOf = await rcToken.balanceOf(prod1Address);
+                const balanceOf = await regenerationCredit.balanceOf(prod1Address);
 
                 expect(balanceOf).to.equal(7200000000000000000000000n);
               });

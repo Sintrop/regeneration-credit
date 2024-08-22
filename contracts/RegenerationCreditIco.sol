@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { RcToken } from "./RcToken.sol";
+import { RegenerationCredit } from "./RegenerationCredit.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract RcTokenIco is Ownable {
+contract RegenerationCreditIco is Ownable {
   using SafeMath for uint256;
 
   uint8 public constant DECIMALS = 18;
@@ -14,18 +14,18 @@ contract RcTokenIco is Ownable {
 
   bool public salesOpen = false;
 
-  RcToken internal rcToken;
+  RegenerationCredit internal regenerationCredit;
 
-  event BuyTokensEvent(address indexed _buyer, uint256 _totalWei, uint256 _totalRcTokens, bool _transferStatus);
+  event BuyTokensEvent(address indexed _buyer, uint256 _totalWei, uint256 _totalRegenerationCredits, bool _transferStatus);
 
   receive() external payable {
     require(salesOpen, "ICO: sales not open");
 
-    uint256 rcTokens = rcTokenAmount(msg.value);
+    uint256 regenerationCredits = regenerationCreditAmount(msg.value);
 
-    bool response = rcToken.transfer(msg.sender, rcTokens);
+    bool response = regenerationCredit.transfer(msg.sender, regenerationCredits);
 
-    emit BuyTokensEvent(msg.sender, msg.value, rcTokens, response);
+    emit BuyTokensEvent(msg.sender, msg.value, regenerationCredits, response);
   }
 
   function balance() public view returns (uint256) {
@@ -44,16 +44,16 @@ contract RcTokenIco is Ownable {
     return true;
   }
 
-  function withdrawRcToken(uint256 rcAmount) public onlyOwner returns (bool success) {
-    rcToken.transfer(_msgSender(), rcAmount);
+  function withdrawRegenerationCredit(uint256 rcAmount) public onlyOwner returns (bool success) {
+    regenerationCredit.transfer(_msgSender(), rcAmount);
     return true;
   }
 
-  function rcTokenAmount(uint256 weiAmount) internal pure returns (uint256) {
+  function regenerationCreditAmount(uint256 weiAmount) internal pure returns (uint256) {
     return weiAmount.mul(RATE);
   }
 
-  function setRcToken(address _tokenAddr) public onlyOwner {
-    rcToken = RcToken(_tokenAddr);
+  function setRegenerationCredit(address _tokenAddr) public onlyOwner {
+    regenerationCredit = RegenerationCredit(_tokenAddr);
   }
 }

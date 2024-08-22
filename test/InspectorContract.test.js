@@ -1,7 +1,7 @@
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 
-const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { regenerationCreditDeployed } = require("./shared/rc_token_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
@@ -29,18 +29,18 @@ describe("InspectorContract", () => {
   beforeEach(async () => {
     [owner, inspe1Address, inspe2Address] = await ethers.getSigners();
 
-    rcToken = await rcTokenDeployed();
+    regenerationCredit = await regenerationCreditDeployed();
     userContract = await userContractDeployed();
     const maxPenalties = 2;
 
     const inspectorPoolFactory = await ethers.getContractFactory("InspectorPool");
-    inspectorPool = await inspectorPoolFactory.deploy(rcToken.target, args.halving, args.totalEras, args.blocksPerEra);
+    inspectorPool = await inspectorPoolFactory.deploy(regenerationCredit.target, args.halving, args.totalEras, args.blocksPerEra);
 
     const instanceFactory = await ethers.getContractFactory("InspectorContract");
     instance = await instanceFactory.deploy(userContract.target, inspectorPool.target, maxPenalties);
 
     await inspectorPool.newAllowedCaller(instance.target);
-    await rcToken.addContractPool(inspectorPool.target, args.totalTokens);
+    await regenerationCredit.addContractPool(inspectorPool.target, args.totalTokens);
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
     await instance.newAllowedCaller(owner);
@@ -250,7 +250,7 @@ describe("InspectorContract", () => {
           });
 
           it("withdraw 7200000000000000000000000 tokens", async () => {
-            const balanceOf = await rcToken.balanceOf(inspe1Address);
+            const balanceOf = await regenerationCredit.balanceOf(inspe1Address);
             const expectedBalance = 7200000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
@@ -272,7 +272,7 @@ describe("InspectorContract", () => {
           });
 
           it("withdraw 3600000000000000000000000n tokens", async () => {
-            const balanceOf = await rcToken.balanceOf(inspe1Address);
+            const balanceOf = await regenerationCredit.balanceOf(inspe1Address);
             const expectedBalance = 3600000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);

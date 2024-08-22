@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { PoolInterface } from "./PoolInterface.sol";
-import { RcTokenInterface } from "./RcTokenInterface.sol";
+import { RegenerationCreditInterface } from "./RegenerationCreditInterface.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Blockable } from "./Blockable.sol";
@@ -17,7 +17,7 @@ import { Poolable } from "./Poolable.sol";
 contract InspectorPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;
 
-  RcTokenInterface internal rcToken;
+  RegenerationCreditInterface internal regenerationCredit;
 
   uint256[8] private tokensPerEpochs = [
     864 * 10 ** 23,
@@ -31,19 +31,19 @@ contract InspectorPool is Poolable, Ownable, Blockable, Callable {
   ];
 
   constructor(
-    address rcTokenAddress,
+    address regenerationCreditAddress,
     uint256 _halving,
     uint256 _totalEras,
     uint256 _blocksPerEra
   ) Blockable(_blocksPerEra, _totalEras, _halving) Poolable(tokensPerEpochs) {
-    rcToken = RcTokenInterface(rcTokenAddress);
+    regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
   }
 
   /**
    * @dev Returns how much tokens the contract has
    */
   function balance() public view returns (uint256) {
-    return rcToken.balanceOf(address(this));
+    return regenerationCredit.balanceOf(address(this));
   }
 
   function withdraw(
@@ -56,7 +56,7 @@ contract InspectorPool is Poolable, Ownable, Blockable, Callable {
 
     if (numTokens == 0) return;
 
-    rcToken.transferWith(address(this), delegate, numTokens);
+    regenerationCredit.transferWith(address(this), delegate, numTokens);
   }
 
   function addLevel(address addr, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {

@@ -7,15 +7,15 @@ async function inspectorPoolDeploy() {
   const pool_blocks_per_era = process.env["INSPECTOR_POOL_BLOCKS_PER_ERA"];
   const inspectorPoolFunds = process.env["INSPECTOR_POOL_FUNDS"];
 
-  const rcToken = await getDeployedContract("RcToken");
+  const regenerationCredit = await getDeployedContract("RegenerationCredit");
 
   const InspectorPool = await ethers.getContractFactory("InspectorPool");
 
-  const inspectorPool = await InspectorPool.deploy(rcToken.target, pool_halving, pool_total_eras, pool_blocks_per_era);
+  const inspectorPool = await InspectorPool.deploy(regenerationCredit.target, pool_halving, pool_total_eras, pool_blocks_per_era);
 
   saveContractAddress("InspectorPool", inspectorPool.target);
 
-  await rcToken.addContractPool(inspectorPool.target, inspectorPoolFunds);
+  await regenerationCredit.addContractPool(inspectorPool.target, inspectorPoolFunds);
 
   console.log(`InspectorPool address ${inspectorPool.target}`)
 
