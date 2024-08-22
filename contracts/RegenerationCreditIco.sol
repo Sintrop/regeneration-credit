@@ -16,7 +16,12 @@ contract RegenerationCreditIco is Ownable {
 
   RegenerationCredit internal regenerationCredit;
 
-  event BuyTokensEvent(address indexed _buyer, uint256 _totalWei, uint256 _totalRegenerationCredits, bool _transferStatus);
+  event BuyTokensEvent(
+    address indexed _buyer,
+    uint256 _totalWei,
+    uint256 _totalRegenerationCredits,
+    bool _transferStatus
+  );
 
   receive() external payable {
     require(salesOpen, "ICO: sales not open");

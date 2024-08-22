@@ -20,7 +20,12 @@ describe("ActivistPool", () => {
     regenerationCredit = await regenerationCreditDeployed();
 
     const activistPoolFactory = await ethers.getContractFactory("ActivistPool");
-    instance = await activistPoolFactory.deploy(regenerationCredit.target, args.halving, args.totalEras, args.blocksPerEra);
+    instance = await activistPoolFactory.deploy(
+      regenerationCredit.target,
+      args.halving,
+      args.totalEras,
+      args.blocksPerEra
+    );
 
     await instance.newAllowedCaller(owner);
 
