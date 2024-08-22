@@ -86,7 +86,6 @@ contract ProducerContract is Callable {
 
     Producer memory producer = producers[msg.sender];
     require(minimumInspections(producer.totalInspections), "Minimum inspections");
-    require(!limitIsaScore(producer), "Limit ISA Score");
 
     producers[msg.sender].pool.currentEra++;
 

@@ -671,16 +671,6 @@ describe("ProducerContract", () => {
                 expect(producer.pool.currentEra).to.equal(2);
               });
             });
-
-            context("when producer have isa score >= limiteIsaScore", () => {
-              beforeEach(async () => {
-                await instance.setIsaScore(prod1Address, 1000);
-              });
-
-              it("should return error message", async () => {
-                await expect(instance.connect(prod1Address).withdraw()).to.be.revertedWith("Limit ISA Score");
-              });
-            });
           });
         });
 
