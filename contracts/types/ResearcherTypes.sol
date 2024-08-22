@@ -28,7 +28,7 @@ struct Work {
   uint256 validationsCount;
   bool valid;
   uint256 invalidatedAt;
-  uint256 createdAtTimeStamp;
+  uint256 createdAtBlock;
 }
 
 struct Penalty {

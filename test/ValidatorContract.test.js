@@ -160,7 +160,7 @@ describe("ValidatorContract", () => {
       validationsCount: work.validationsCount,
       valid: work.valid,
       invalidatedAt: work.invalidatedAt,
-      createdAtTimeStamp: work.createdAtTimeStamp,
+      createdAtBlock: work.createdAtBlock,
     };
   };
 
