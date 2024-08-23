@@ -12,12 +12,17 @@ import { UserType, Invitation } from "./types/UserTypes.sol";
 import { ValidatorContract } from "./ValidatorContract.sol";
 import { ActivistContract } from "./ActivistContract.sol";
 import { CategoryContract } from "./CategoryContract.sol";
+import { ContractsDependency } from "./types/SintropTypes.sol";
+import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import { Callable } from "./Callable.sol";
 
 /**
  * @title SintropContract
  * @dev Sintrop application to certificate a rural producer
  */
-contract Sintrop {
+contract Sintrop is Callable {
+  using SafeMath for uint256;
+
   mapping(address => mapping(address => bool)) internal inspectorInspected;
   mapping(address => Inspection[]) internal userInspections;
   mapping(uint256 => Inspection) internal inspections;
@@ -38,29 +43,25 @@ contract Sintrop {
   uint256 internal immutable securityBlocksToValidatorAnalysis;
 
   constructor(
-    address inspectorContractAddress,
-    address producerContractAddress,
-    address userContractAddress,
-    address validatorContractAddress,
-    address activistContractAddress,
-    address categoryContractAddress,
     uint256 timeBetweenInspections_,
     uint256 blocksToExpireAcceptedInspection_,
     uint256 allowedInitialRequests_,
     uint256 acceptInspectionDelayBlocks_,
     uint256 securityBlocksToValidatorAnalysis_
   ) {
-    inspectorContract = InspectorContract(inspectorContractAddress);
-    producerContract = ProducerContract(producerContractAddress);
-    userContract = UserContract(userContractAddress);
-    validatorContract = ValidatorContract(validatorContractAddress);
-    activistContract = ActivistContract(activistContractAddress);
-    categoryContract = CategoryContract(categoryContractAddress);
     timeBetweenInspections = timeBetweenInspections_;
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
     allowedInitialRequests = allowedInitialRequests_;
     acceptInspectionDelayBlocks = acceptInspectionDelayBlocks_;
     securityBlocksToValidatorAnalysis = securityBlocksToValidatorAnalysis_;
+  }
+
+  function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+    userContract = UserContract(contractDependency.userContractAddress);
+    producerContract = ProducerContract(contractDependency.producerContractAddress);
+    inspectorContract = InspectorContract(contractDependency.inspectorContractAddress);
+    categoryContract = CategoryContract(contractDependency.categoryContractAddress);
+    activistContract = ActivistContract(contractDependency.activistContractAddress);
   }
 
   // TODO: Refact this mapping to not duplicate inspections
@@ -284,10 +285,13 @@ contract Sintrop {
     bool finishedLastInspection = lastInspection.status == InspectionStatus.INSPECTED ||
       lastInspection.status == InspectionStatus.INVALIDATED;
 
-    bool haveSecurityBlocksToVote = (producerContract.nextEraIn() - blocksToExpireAcceptedInspection) >
-      securityBlocksToValidatorAnalysis;
+    if (producerContract.nextEraIn() < blocksToExpireAcceptedInspection) return false;
 
+    bool haveSecurityBlocksToVote = (producerContract.nextEraIn().sub(blocksToExpireAcceptedInspection)) >
+      securityBlocksToValidatorAnalysis;
+      
     if (!haveSecurityBlocksToVote) return false;
+
     if (!waitedInspectionDelay) return false;
 
     return finishedLastInspection || acceptedInspectionExpired || inspector.lastInspection == 0;

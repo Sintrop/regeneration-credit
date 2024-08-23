@@ -54,14 +54,15 @@ describe("Sintrop", () => {
     totalTokens: "750000000000000000000000000",
     halving: 50,
     totalEras: 50,
-    blocksPerEra: 50,
+    blocksPerEra: 500,
   };
 
   const sintropArgs = {
     timeBetweenInspections: 20,
-    blocksToExpireAcceptedInspection: 15,
+    blocksToExpireAcceptedInspection: 50,
     allowedInitialRequests: 1,
     acceptInspectionDelayBlocks: 5,
+    securityBlocksToValidatorAnalysis: 100,
   };
 
   const researcherPoolargs = {
@@ -280,7 +281,8 @@ describe("Sintrop", () => {
       sintropArgs.timeBetweenInspections,
       sintropArgs.blocksToExpireAcceptedInspection,
       sintropArgs.allowedInitialRequests,
-      sintropArgs.acceptInspectionDelayBlocks
+      sintropArgs.acceptInspectionDelayBlocks,
+      sintropArgs.securityBlocksToValidatorAnalysis
     );
 
     await validatorContract.setContractAddressDependencies(validatorContractDependencies);
@@ -524,6 +526,34 @@ describe("Sintrop", () => {
           });
         });
 
+        context("when do not have security blocks to validator analysis", () => {
+          context("when nextEraIn is less than blocksToExpireAcceptedInspection", () => {
+            beforeEach(async () => {
+              const nextEraIn = await producerContract.nextEraIn();
+              const blocks = parseInt(nextEraIn) - sintropArgs.blocksToExpireAcceptedInspection;
+
+              await advanceBlock(blocks);
+            });
+
+            it("should return error message", async () => {
+              await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Can't accept yet");
+            });
+          });
+
+          context("when nextEraIn is bigger than blocksToExpireAcceptedInspection", () => {
+            beforeEach(async () => {
+              const nextEraIn = await producerContract.nextEraIn();
+
+              const blocks = parseInt(nextEraIn) - sintropArgs.blocksToExpireAcceptedInspection - 20;
+              await advanceBlock(blocks);
+            });
+
+            it("should return error message", async () => {
+              await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Can't accept yet");
+            });
+          });
+        });
+
         context("when have waited inspection delay time", () => {
           it("should accept with success", async () => {
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
@@ -637,7 +667,7 @@ describe("Sintrop", () => {
 
             context("when last inspection is expired", () => {
               beforeEach(async () => {
-                await advanceBlock(sintropArgs.timeBetweenInspections);
+                await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
                 await acceptInspection(2, inspectorAddress);
               });
 
@@ -729,7 +759,7 @@ describe("Sintrop", () => {
           context("when is accepted by inspector", () => {
             context("when inspection is expired", () => {
               beforeEach(async () => {
-                await advanceBlock(20);
+                await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
               });
 
               it("should return error message", async () => {
