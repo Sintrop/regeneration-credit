@@ -10,36 +10,19 @@ async function sintropDeploy() {
 
   const acceptInspectionDelayBlocks = process.env["SINTROP_ACCEPT_INSPECTION_DELAY_BLOCKS"];
 
-  const inspectorContract = await getDeployedContract("InspectorContract");
-  const activistContract = await getDeployedContract("ActivistContract");
-  const userContract = await getDeployedContract("UserContract");
-  const producerContract = await getDeployedContract("ProducerContract");
-  const validatorContract = await getDeployedContract("ValidatorContract");
-  const categoryContract = await getDeployedContract("CategoryContract");
+  const securityBlocksToValidatorAnalysis = process.env["SINTROP_SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS"];
 
   const Sintrop = await ethers.getContractFactory("Sintrop");
 
   const sintrop = await Sintrop.deploy(
-    inspectorContract.target,
-    producerContract.target,
-    userContract.target,
-    validatorContract.target,
-    activistContract.target,
-    categoryContract.target,
     sintropTimeBetweenProducerInspections,
     sintropBlocksToExpireAceeptedInspection,
     allowedInitialRequests,
-    acceptInspectionDelayBlocks
+    acceptInspectionDelayBlocks,
+    securityBlocksToValidatorAnalysis
   );
 
   saveContractAddress("Sintrop", sintrop.target);
-
-  await activistContract.newAllowedCaller(sintrop.target);
-  await inspectorContract.newAllowedCaller(sintrop.target);
-  await producerContract.newAllowedCaller(sintrop.target);
-  await userContract.newAllowedCaller(sintrop.target);
-  await validatorContract.newAllowedCaller(sintrop.target);
-  await categoryContract.newAllowedCaller(sintrop.target);
 
   console.log(`Sintrop address ${sintrop.target}`);
 
