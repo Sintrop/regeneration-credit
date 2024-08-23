@@ -129,7 +129,7 @@ contract ValidatorContract is Callable {
     uint256 developerTotalPenalties = developerContract.addPenalty(contribution.developer, contribution.id);
     removeDeveloperContribution(contribution);
 
-    if (developerTotalPenalties >= developerContract.MAX_PENALTIES()) externalDenieUser(contribution.developer);
+    if (developerTotalPenalties >= developerContract.maxPenalties()) externalDenieUser(contribution.developer);
   }
 
   function addResearcheWorkValidation(
@@ -154,7 +154,7 @@ contract ValidatorContract is Callable {
     uint256 totalPenalties = researcherContract.addPenalty(work.createdBy, work.id);
     removeReseacherWork(work);
 
-    if (totalPenalties >= researcherContract.MAX_PENALTIES()) externalDenieUser(work.createdBy);
+    if (totalPenalties >= researcherContract.maxPenalties()) externalDenieUser(work.createdBy);
   }
 
   function removeDeveloperContribution(Contribution memory contribution) internal {

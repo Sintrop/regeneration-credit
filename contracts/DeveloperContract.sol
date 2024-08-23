@@ -27,7 +27,7 @@ contract DeveloperContract is Ownable, Callable {
   UserType private constant USER_TYPE = UserType.DEVELOPER;
   uint256 public contributionsCount;
 
-  uint256 public immutable MAX_PENALTIES;
+  uint256 public immutable maxPenalties;
 
   constructor(
     address userContractAddress,
@@ -38,7 +38,7 @@ contract DeveloperContract is Ownable, Callable {
     userContract = UserContract(userContractAddress);
     developerPool = DeveloperPool(developerPoolAddress);
     validatorContract = ValidatorContract(validatorContractAddress);
-    MAX_PENALTIES = maxPenalties_;
+    maxPenalties = maxPenalties_;
   }
 
   /**

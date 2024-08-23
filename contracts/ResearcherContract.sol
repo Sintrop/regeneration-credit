@@ -22,7 +22,7 @@ contract ResearcherContract is Callable {
   uint256 public worksCount;
   uint256 internal immutable timeBetweenWorks;
 
-  uint256 public immutable MAX_PENALTIES;
+  uint256 public immutable maxPenalties;
 
   constructor(
     address userContractAddress,
@@ -35,7 +35,7 @@ contract ResearcherContract is Callable {
     researcherPool = ResearcherPool(researcherPoolAddress);
     validatorContract = ValidatorContract(validatorContractAddress);
     timeBetweenWorks = timeBetweenWorks_;
-    MAX_PENALTIES = maxPenalties_;
+    maxPenalties = maxPenalties_;
   }
 
   /**
