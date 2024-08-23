@@ -1,11 +1,11 @@
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
-const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { expect } = require("chai");
 const { advanceBlock } = require("./shared/advance_block");
 
 describe("ActivistContract", () => {
-  let instance, userContract, activistPool, rcToken;
+  let instance, userContract, activistPool, regenerationCredit;
   let owner, activ1Address, activ2Address, activ3Address, producer1Address, inspector1Address, inspector2Address;
 
   const activistPoolArgs = {
@@ -27,12 +27,12 @@ describe("ActivistContract", () => {
     [owner, activ1Address, activ2Address, activ3Address, producer1Address, inspector1Address, inspector2Address] =
       await ethers.getSigners();
 
-    rcToken = await rcTokenDeployed();
+    regenerationCredit = await regenerationCreditDeployed();
     userContract = await userContractDeployed();
 
     const activistPoolFactory = await ethers.getContractFactory("ActivistPool");
     activistPool = await activistPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       activistPoolArgs.halving,
       activistPoolArgs.totalEras,
       activistPoolArgs.blocksPerEra
@@ -47,7 +47,7 @@ describe("ActivistContract", () => {
 
     await activistPool.newAllowedCaller(instance.target);
     await instance.newAllowedCaller(owner);
-    await rcToken.addContractPool(activistPool.target, activistPoolArgs.totalTokens);
+    await regenerationCredit.addContractPool(activistPool.target, activistPoolArgs.totalTokens);
     await addInvitation(owner, activ1Address, userTypes.Activist, owner);
     await addInvitation(owner, activ3Address, userTypes.Activist, owner);
   });
@@ -294,7 +294,7 @@ describe("ActivistContract", () => {
             });
 
             it("activist balance must be", async () => {
-              const balance = await rcToken.balanceOf(activ1Address);
+              const balance = await regenerationCredit.balanceOf(activ1Address);
 
               expect(balance).to.equal(1200000000000000000000000n);
             });
@@ -322,7 +322,7 @@ describe("ActivistContract", () => {
             });
 
             it("activist1 balance must be", async () => {
-              const balance = await rcToken.balanceOf(activ1Address);
+              const balance = await regenerationCredit.balanceOf(activ1Address);
 
               expect(balance).to.equal(600000000000000000000000n);
             });
@@ -334,7 +334,7 @@ describe("ActivistContract", () => {
             });
 
             it("activist3 balance must be", async () => {
-              const balance = await rcToken.balanceOf(activ3Address);
+              const balance = await regenerationCredit.balanceOf(activ3Address);
 
               expect(balance).to.equal(600000000000000000000000n);
             });
@@ -356,7 +356,7 @@ describe("ActivistContract", () => {
             });
 
             it("activist balance must be", async () => {
-              const balance = await rcToken.balanceOf(activ1Address);
+              const balance = await regenerationCredit.balanceOf(activ1Address);
 
               expect(balance).to.equal(0n);
             });

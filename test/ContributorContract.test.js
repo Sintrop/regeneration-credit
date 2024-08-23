@@ -2,7 +2,7 @@ const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 
-const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { ethers } = require("hardhat");
 
@@ -10,7 +10,7 @@ describe("ContributorContract", (accounts) => {
   let instance;
   let userContract;
   let contributorPool;
-  let rcToken;
+  let regenerationCredit;
   let owner, contr1Address, contr2Address, contr3Address;
 
   let contributorPoolParams = {
@@ -31,12 +31,12 @@ describe("ContributorContract", (accounts) => {
   beforeEach(async () => {
     [owner, contr1Address, contr2Address, contr3Address] = await ethers.getSigners();
 
-    rcToken = await rcTokenDeployed();
+    regenerationCredit = await regenerationCreditDeployed();
     userContract = await userContractDeployed();
 
     contributorPoolFactory = await ethers.getContractFactory("ContributorPool");
     contributorPool = await contributorPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       contributorPoolParams.halving,
       contributorPoolParams.totalEras,
       contributorPoolParams.blocksPerEra
@@ -48,7 +48,7 @@ describe("ContributorContract", (accounts) => {
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
     await contributorPool.newAllowedCaller(instance.target);
-    await rcToken.addContractPool(contributorPool.target, "30000000000000000000000000");
+    await regenerationCredit.addContractPool(contributorPool.target, "30000000000000000000000000");
 
     await addInvitation(owner, contr1Address, userTypes.Contributor, owner);
   });
@@ -290,7 +290,7 @@ describe("ContributorContract", (accounts) => {
             });
 
             it("should withdraw all tokens from era", async () => {
-              let balanceOf = await rcToken.balanceOf(contr1Address);
+              let balanceOf = await regenerationCredit.balanceOf(contr1Address);
 
               let tokensBalance = 300000000000000000000000n;
 
@@ -329,7 +329,7 @@ describe("ContributorContract", (accounts) => {
               });
 
               it("contributor1 balance must be 150000000000000000000000", async () => {
-                let balanceOf = await rcToken.balanceOf(contr1Address);
+                let balanceOf = await regenerationCredit.balanceOf(contr1Address);
 
                 let tokensPerEra = 150000000000000000000000n;
 
@@ -337,7 +337,7 @@ describe("ContributorContract", (accounts) => {
               });
 
               it("contributor2 balance must be 150000000000000000000000", async () => {
-                let balanceOf = await rcToken.balanceOf(contr2Address);
+                let balanceOf = await regenerationCredit.balanceOf(contr2Address);
 
                 let tokensPerEra = 150000000000000000000000n;
 
@@ -372,7 +372,7 @@ describe("ContributorContract", (accounts) => {
           });
 
           it("should can withdraw in two eras", async () => {
-            let balanceOf = await rcToken.balanceOf(contr1Address);
+            let balanceOf = await regenerationCredit.balanceOf(contr1Address);
             let tokensPerEra = 600000000000000000000000n;
 
             expect(balanceOf).to.equal(tokensPerEra);

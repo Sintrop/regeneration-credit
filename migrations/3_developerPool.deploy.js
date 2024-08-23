@@ -7,15 +7,15 @@ async function developerPoolDeploy() {
   const pool_blocks_per_era = process.env["DEVELOPER_POOL_BLOCKS_PER_ERA"];
   const developerPoolFunds = process.env["DEVELOPER_POOL_FUNDS"];
 
-  const rcToken = await getDeployedContract("RcToken");
+  const regenerationCredit = await getDeployedContract("RegenerationCredit");
 
   const DeveloperPool = await ethers.getContractFactory("DeveloperPool");
 
-  const developerPool = await DeveloperPool.deploy(rcToken.target, pool_halving, pool_total_eras, pool_blocks_per_era);
+  const developerPool = await DeveloperPool.deploy(regenerationCredit.target, pool_halving, pool_total_eras, pool_blocks_per_era);
 
   saveContractAddress("DeveloperPool", developerPool.target);
 
-  await rcToken.addContractPool(developerPool.target, developerPoolFunds);
+  await regenerationCredit.addContractPool(developerPool.target, developerPoolFunds);
 
   console.log(`DeveloperPool address ${developerPool.target}`)
 

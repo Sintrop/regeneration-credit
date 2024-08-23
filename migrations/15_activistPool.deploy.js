@@ -7,15 +7,15 @@ async function activistPoolDeploy() {
   const poolBlocksPerEra = process.env["ACTIVIST_POOL_BLOCKS_PER_ERA"];
   const activistPoolFunds = process.env["ACTIVIST_POOL_FUNDS"];
 
-  const rcToken = await getDeployedContract("RcToken");
+  const regenerationCredit = await getDeployedContract("RegenerationCredit");
 
   const ActivistPool = await ethers.getContractFactory("ActivistPool");
 
-  const activistPool = await ActivistPool.deploy(rcToken.target, poolHalving, poolTotalEras, poolBlocksPerEra);
+  const activistPool = await ActivistPool.deploy(regenerationCredit.target, poolHalving, poolTotalEras, poolBlocksPerEra);
 
   saveContractAddress("ActivistPool", activistPool.target);
 
-  await rcToken.addContractPool(activistPool.target, activistPoolFunds);
+  await regenerationCredit.addContractPool(activistPool.target, activistPoolFunds);
 
   console.log(`ActivistPool address ${activistPool.target}`)
 

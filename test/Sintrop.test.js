@@ -1,6 +1,6 @@
 const { userTypes } = require("./shared/user_types");
 const { userContractDeployed } = require("./shared/user_contract_deployed");
-const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
@@ -187,12 +187,12 @@ describe("Sintrop", () => {
       activist1Address,
     ] = await ethers.getSigners();
 
-    rcToken = await rcTokenDeployed();
+    regenerationCredit = await regenerationCreditDeployed();
     userContract = await userContractDeployed();
 
     const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
     researcherPool = await researcherPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       researcherPoolargs.halving,
       researcherPoolargs.totalEras,
       researcherPoolargs.blocksPerEra
@@ -200,7 +200,7 @@ describe("Sintrop", () => {
 
     const inspectorPoolFactory = await ethers.getContractFactory("InspectorPool");
     inspectorPool = await inspectorPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       inspectorPoolargs.halving,
       inspectorPoolargs.totalEras,
       inspectorPoolargs.blocksPerEra
@@ -208,7 +208,7 @@ describe("Sintrop", () => {
 
     const producerPoolFactory = await ethers.getContractFactory("ProducerPool");
     producerPool = await producerPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       producerPoolArgs.halving,
       producerPoolArgs.totalEras,
       producerPoolArgs.blocksPerEra
@@ -216,7 +216,7 @@ describe("Sintrop", () => {
 
     const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
     validatorPool = await validatorPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       validatorPoolargs.halving,
       validatorPoolargs.totalEras,
       validatorPoolargs.blocksPerEra
@@ -224,7 +224,7 @@ describe("Sintrop", () => {
 
     const activistPoolFactory = await ethers.getContractFactory("ActivistPool");
     activistPool = await activistPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       activistPoolArgs.halving,
       activistPoolArgs.totalEras,
       activistPoolArgs.blocksPerEra

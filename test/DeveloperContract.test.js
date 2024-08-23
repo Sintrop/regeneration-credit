@@ -2,7 +2,7 @@ const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 
-const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { ethers } = require("hardhat");
 const { ZERO_ADDRESS } = require("./shared/zeroAddress");
@@ -11,7 +11,7 @@ describe("DeveloperContract", (accounts) => {
   let instance;
   let userContract;
   let developerPool;
-  let rcToken;
+  let regenerationCredit;
   let validatorContract;
   let owner,
     dev1Address,
@@ -64,12 +64,12 @@ describe("DeveloperContract", (accounts) => {
       validator4Address,
     ] = await ethers.getSigners();
 
-    rcToken = await rcTokenDeployed();
+    regenerationCredit = await regenerationCreditDeployed();
     userContract = await userContractDeployed();
 
     developerPoolFactory = await ethers.getContractFactory("DeveloperPool");
     developerPool = await developerPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       developerPoolParams.halving,
       developerPoolParams.totalEras,
       developerPoolParams.blocksPerEra
@@ -77,7 +77,7 @@ describe("DeveloperContract", (accounts) => {
 
     const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
     validatorPool = await validatorPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       validatorPoolargs.halving,
       validatorPoolargs.totalEras,
       validatorPoolargs.blocksPerEra
@@ -112,7 +112,7 @@ describe("DeveloperContract", (accounts) => {
     await validatorContract.newAllowedCaller(instance.target);
     await instance.newAllowedCaller(validatorContract.target);
     await instance.newAllowedCaller(owner);
-    await rcToken.addContractPool(developerPool.target, "30000000000000000000000000");
+    await regenerationCredit.addContractPool(developerPool.target, "30000000000000000000000000");
     await validatorContract.setContractAddressDependencies(validatorContractDependencies);
     await addInvitation(owner, dev1Address, userTypes.Developer, owner);
   });
@@ -523,7 +523,7 @@ describe("DeveloperContract", (accounts) => {
             });
 
             it("should withdraw all tokens from era", async () => {
-              let balanceOf = await rcToken.balanceOf(dev1Address);
+              let balanceOf = await regenerationCredit.balanceOf(dev1Address);
 
               let tokensBalance = 1200000000000000000000000n;
 
@@ -562,7 +562,7 @@ describe("DeveloperContract", (accounts) => {
               });
 
               it("developer1 balance must be 600000000000000000000000", async () => {
-                let balanceOf = await rcToken.balanceOf(dev1Address);
+                let balanceOf = await regenerationCredit.balanceOf(dev1Address);
 
                 let tokensPerEra = 600000000000000000000000n;
 
@@ -570,7 +570,7 @@ describe("DeveloperContract", (accounts) => {
               });
 
               it("developer2 balance must be 600000000000000000000000", async () => {
-                let balanceOf = await rcToken.balanceOf(dev2Address);
+                let balanceOf = await regenerationCredit.balanceOf(dev2Address);
 
                 let tokensPerEra = 600000000000000000000000n;
 
@@ -605,7 +605,7 @@ describe("DeveloperContract", (accounts) => {
           });
 
           it("should can withdraw in two eras", async () => {
-            let balanceOf = await rcToken.balanceOf(dev1Address);
+            let balanceOf = await regenerationCredit.balanceOf(dev1Address);
             let tokensPerEra = 2400000000000000000000000n;
 
             expect(balanceOf).to.equal(tokensPerEra);

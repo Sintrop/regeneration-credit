@@ -1,10 +1,10 @@
-const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("ResearcherPool", () => {
-  let instance, rcToken;
+  let instance, regenerationCredit;
   let owner, researcher1Address, researcher2Address;
 
   const args = {
@@ -17,14 +17,14 @@ describe("ResearcherPool", () => {
   beforeEach(async () => {
     [owner, researcher1Address, researcher2Address] = await ethers.getSigners();
 
-    rcToken = await rcTokenDeployed();
+    regenerationCredit = await regenerationCreditDeployed();
 
     const instanceFactory = await ethers.getContractFactory("ResearcherPool");
-    instance = await instanceFactory.deploy(rcToken.target, args.halving, args.totalEras, args.blocksPerEra);
+    instance = await instanceFactory.deploy(regenerationCredit.target, args.halving, args.totalEras, args.blocksPerEra);
 
     await instance.newAllowedCaller(owner);
 
-    await rcToken.addContractPool(instance.target, args.totalResearcherPoolTokens);
+    await regenerationCredit.addContractPool(instance.target, args.totalResearcherPoolTokens);
   });
 
   describe("after deploy", () => {
@@ -342,7 +342,7 @@ describe("ResearcherPool", () => {
 
               it("must withdraw 600000000000000000000000 tokens", async () => {
                 await instance.withdraw(researcher1Address, 1);
-                const balanceOf = await rcToken.balanceOf(researcher1Address);
+                const balanceOf = await regenerationCredit.balanceOf(researcher1Address);
 
                 expect(balanceOf).to.equal(600000000000000000000000n);
               });
@@ -362,14 +362,14 @@ describe("ResearcherPool", () => {
 
               it("shoud withdraw 1200000000000000000000000 tokens", async () => {
                 await instance.withdraw(researcher1Address, 1);
-                const balanceOf = await rcToken.balanceOf(researcher1Address);
+                const balanceOf = await regenerationCredit.balanceOf(researcher1Address);
 
                 expect(balanceOf).to.equal(1200000000000000000000000n);
               });
 
               it("shoud withdraw 0 tokens to researcher2", async () => {
                 await instance.withdraw(researcher2Address, 1);
-                const balanceOf = await rcToken.balanceOf(researcher2Address);
+                const balanceOf = await regenerationCredit.balanceOf(researcher2Address);
 
                 expect(balanceOf).to.equal("0");
               });
@@ -390,7 +390,7 @@ describe("ResearcherPool", () => {
 
               it("shoud withdraw 600000000000000000000000 tokens", async () => {
                 await instance.withdraw(researcher2Address, 1);
-                const balanceOf = await rcToken.balanceOf(researcher2Address);
+                const balanceOf = await regenerationCredit.balanceOf(researcher2Address);
 
                 expect(balanceOf).to.equal(600000000000000000000000n);
               });
@@ -436,7 +436,7 @@ describe("ResearcherPool", () => {
               });
 
               it("researcher1 balance must be 1200000000000000000000000", async () => {
-                const balanceOf = await rcToken.balanceOf(researcher1Address);
+                const balanceOf = await regenerationCredit.balanceOf(researcher1Address);
 
                 expect(balanceOf).to.equal(1200000000000000000000000n);
               });
@@ -464,7 +464,7 @@ describe("ResearcherPool", () => {
               });
 
               it("researcher2 balance must be 1200000000000000000000000", async () => {
-                const balanceOf = await rcToken.balanceOf(researcher2Address);
+                const balanceOf = await regenerationCredit.balanceOf(researcher2Address);
 
                 expect(balanceOf).to.equal(1200000000000000000000000n);
               });

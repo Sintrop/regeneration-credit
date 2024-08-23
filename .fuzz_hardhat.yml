@@ -44,7 +44,7 @@ fuzz:
         - "contracts/InspectorContract"
         - "contracts/InvitationContract"
         - "contracts/CategoryContract"
-        - "contracts/RcToken.sol"
-        - "contracts/RcTokenIco.sol"
+        - "contracts/RegenerationCredit.sol"
+        - "contracts/RegenerationCreditIco.sol"
 
 
