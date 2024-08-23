@@ -12,6 +12,7 @@
     "ganache:start": "ganache-cli -d -m 'sintrop' -a 10 -e 200 -h 0.0.0.0",
     "solhint": "./node_modules/.bin/solhint -f table contracts/**/**/*.sol",
     "prettier:solidity": "./node_modules/.bin/prettier --write contracts/**/**/*.sol",
+    "prettier:sol": "./node_modules/.bin/prettier --write contracts/**/**/*.sol",
     "prettier:js": "./node_modules/.bin/prettier --write test/**/**/*.js",
     "ipfs:start": "ipfs init || ipfs config Addresses.Gateway /ip4/0.0.0.0/tcp/8080 && ipfs config Addresses.API /ip4/0.0.0.0/tcp/5001 && ipfs daemon"
   },

@@ -289,7 +289,7 @@ contract Sintrop is Callable {
 
     bool haveSecurityBlocksToVote = (producerContract.nextEraIn().sub(blocksToExpireAcceptedInspection)) >
       securityBlocksToValidatorAnalysis;
-      
+
     if (!haveSecurityBlocksToVote) return false;
 
     if (!waitedInspectionDelay) return false;
