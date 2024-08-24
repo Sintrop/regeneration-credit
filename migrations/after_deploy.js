@@ -50,6 +50,7 @@ async function configureSintrop() {
   const contractDependencies = {
     userContractAddress: userContract.target,
     producerContractAddress: producerContract.target,
+    validatorContractAddress: validatorContract.target,
     inspectorContractAddress: inspectorContract.target,
     activistContractAddress: activistContract.target,
     categoryContractAddress: categoryContract.target

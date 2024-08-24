@@ -4,6 +4,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 struct ContractsDependency {
   address userContractAddress;
   address producerContractAddress;
+  address validatorContractAddress;
   address inspectorContractAddress;
   address categoryContractAddress;
   address activistContractAddress;

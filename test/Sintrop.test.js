@@ -267,23 +267,28 @@ describe("Sintrop", () => {
       developerContractAddress: ZERO_ADDRESS,
       researcherContractAddress: researcherContract.target,
       contributorContractAddress: ZERO_ADDRESS,
-      activistContractAddress: ZERO_ADDRESS,
+      activistContractAddress: activistContract.target,
+    };
+
+    const sintropDependencies = {
+      userContractAddress: userContract.target,
+      producerContractAddress: producerContract.target,
+      validatorContractAddress: validatorContract.target,
+      inspectorContractAddress: inspectorContract.target,
+      activistContractAddress: activistContract.target,
+      categoryContractAddress: categoryContract.target,
     };
 
     const instanceFactory = await ethers.getContractFactory("Sintrop");
     instance = await instanceFactory.deploy(
-      inspectorContract.target,
-      producerContract.target,
-      userContract.target,
-      validatorContract.target,
-      activistContract.target,
-      categoryContract.target,
       sintropArgs.timeBetweenInspections,
       sintropArgs.blocksToExpireAcceptedInspection,
       sintropArgs.allowedInitialRequests,
       sintropArgs.acceptInspectionDelayBlocks,
       sintropArgs.securityBlocksToValidatorAnalysis
     );
+
+    await instance.setContractAddressDependencies(sintropDependencies);
 
     await validatorContract.setContractAddressDependencies(validatorContractDependencies);
     await userContract.newAllowedCaller(inspectorContract.target);

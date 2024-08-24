@@ -59,6 +59,7 @@ contract Sintrop is Callable {
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
     userContract = UserContract(contractDependency.userContractAddress);
     producerContract = ProducerContract(contractDependency.producerContractAddress);
+    validatorContract = ValidatorContract(contractDependency.validatorContractAddress);
     inspectorContract = InspectorContract(contractDependency.inspectorContractAddress);
     categoryContract = CategoryContract(contractDependency.categoryContractAddress);
     activistContract = ActivistContract(contractDependency.activistContractAddress);
