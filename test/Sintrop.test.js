@@ -874,7 +874,7 @@ describe("Sintrop", () => {
                   });
 
                   it("Activist pool win 1 level to activist", async () => {
-                    const levels = await activistPool.eraLevels(4, activist1Address);
+                    const levels = await activistPool.eraLevels(5, activist1Address);
 
                     expect(levels).to.equal(2);
                   });
