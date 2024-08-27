@@ -46,13 +46,13 @@ describe("ResearcherPool", () => {
     });
   });
 
-  describe("#nextWithdrawIn", () => {
+  describe("#nextEraIn", () => {
     context("when cant approve", () => {
       it("should return integer > zero", async () => {
         let currentEra = 1;
-        const nextWithdrawIn = await instance.nextWithdrawIn(currentEra);
+        const nextEraIn = await instance.nextEraIn(currentEra);
 
-        expect(parseInt(nextWithdrawIn)).to.above(0);
+        expect(parseInt(nextEraIn)).to.above(0);
       });
     });
 
@@ -61,9 +61,9 @@ describe("ResearcherPool", () => {
         let currentEra = 1;
 
         await advanceBlock(args.blocksPerEra);
-        const nextWithdrawIn = await instance.nextWithdrawIn(currentEra);
+        const nextEraIn = await instance.nextEraIn(currentEra);
 
-        expect(parseInt(nextWithdrawIn)).to.lessThan(1);
+        expect(parseInt(nextEraIn)).to.lessThan(1);
       });
     });
   });

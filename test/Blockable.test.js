@@ -197,7 +197,7 @@ describe("Blockable", () => {
     });
   });
 
-  describe("#nextWithdrawIn", () => {
+  describe("#nextEraIn", () => {
     context("when user can approve", () => {
       beforeEach(async () => {
         await advanceBlock(2 * params.blocksPerEra);
@@ -206,8 +206,8 @@ describe("Blockable", () => {
       const currentUserEra = 1;
 
       it("should return negative blocks number", async () => {
-        const nextWithdrawIn = await instance.nextWithdrawIn(currentUserEra);
-        expect(parseInt(nextWithdrawIn)).to.lessThan(0);
+        const nextEraIn = await instance.nextEraIn(currentUserEra);
+        expect(parseInt(nextEraIn)).to.lessThan(0);
       });
     });
 
@@ -215,8 +215,8 @@ describe("Blockable", () => {
       const currentUserEra = 1;
 
       it("should return positive blocks number", async () => {
-        const nextWithdrawIn = await instance.nextWithdrawIn(currentUserEra);
-        expect(parseInt(nextWithdrawIn)).to.above(0);
+        const nextEraIn = await instance.nextEraIn(currentUserEra);
+        expect(parseInt(nextEraIn)).to.above(0);
       });
     });
   });

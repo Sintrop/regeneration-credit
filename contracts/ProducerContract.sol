@@ -184,4 +184,8 @@ contract ProducerContract is Callable {
   function producerPoolEra() public view returns (uint256) {
     return producerPool.currentContractEra();
   }
+
+  function nextEraIn() public view returns (uint256) {
+    return uint256(producerPool.nextEraIn(producerPoolEra()));
+  }
 }

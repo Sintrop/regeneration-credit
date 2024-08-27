@@ -70,16 +70,6 @@ contract ActivistContract is Callable {
     return activists[addr];
   }
 
-  function setActivistLevel(address activistAddress) internal {
-    if (!activistExists(activistAddress)) return;
-
-    Activist memory activist = activists[activistAddress];
-    activist.pool.level++;
-    activists[activistAddress] = activist;
-
-    activistPool.addLevel(activistAddress, 1, 1);
-  }
-
   function addLevel(
     address producerAddress,
     uint256 producerTotalInspections,
@@ -112,6 +102,16 @@ contract ActivistContract is Callable {
       activistWonLevel[inspectorInvitation.inviter][inspectorAddress] = true;
       setActivistLevel(inspectorInvitation.inviter);
     }
+  }
+
+  function setActivistLevel(address activistAddress) private {
+    if (!activistExists(activistAddress)) return;
+
+    Activist memory activist = activists[activistAddress];
+    activist.pool.level++;
+    activists[activistAddress] = activist;
+
+    activistPool.addLevel(activistAddress, 1, 1);
   }
 
   function withdraw() public {
