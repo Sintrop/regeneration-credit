@@ -278,7 +278,7 @@ describe("ResearcherContract", () => {
     });
   });
 
-  describe("#addWork", () => {
+  describe.only("#addWork", () => {
     context("when is not a researcher", () => {
       it("should return error", async () => {
         await expect(addWork(owner)).to.be.revertedWith("Only allowed to researchers");

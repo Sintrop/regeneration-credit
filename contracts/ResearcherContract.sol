@@ -99,7 +99,6 @@ contract ResearcherContract is Callable {
 
     Researcher storage researcher = researchers[msg.sender];
     researcher.pool.level++;
-    researchers[msg.sender] = researcher;
 
     uint256 id = worksCount + 1;
 
@@ -107,8 +106,8 @@ contract ResearcherContract is Callable {
 
     works[id] = work;
     worksCount++;
-    researchers[msg.sender].publishedWorks++;
-    researchers[msg.sender].lastPublishedAt = block.number;
+    researcher.publishedWorks++;
+    researcher.lastPublishedAt = block.number;
 
     researcherPool.addLevel(msg.sender, 1, 1);
   }
