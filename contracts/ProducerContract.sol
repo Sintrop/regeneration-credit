@@ -41,8 +41,6 @@ contract ProducerContract is Callable {
     string memory proofPhoto,
     string memory coordinates
   ) public {
-    require(!producerExists(msg.sender), "This producer already exist");
-
     Producer memory producer = producers[msg.sender];
 
     producer.id = userContract.userTypesCount(USER_TYPE) + 1;

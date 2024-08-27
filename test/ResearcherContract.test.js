@@ -120,9 +120,7 @@ describe("ResearcherContract", () => {
       context("when researcher already exists", () => {
         it("should return error", async () => {
           await addResearcher("Researcher A", resea1Address);
-          await expect(addResearcher("Researcher A", resea1Address)).to.be.revertedWith(
-            "This researcher already exist"
-          );
+          await expect(addResearcher("Researcher A", resea1Address)).to.be.revertedWith("User already exists");
         });
       });
 

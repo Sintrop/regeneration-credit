@@ -63,7 +63,7 @@ describe("ActivistContract", () => {
       context("when activist exists", () => {
         it("should return error", async () => {
           await addActivist("Activist A", activ1Address);
-          await expect(addActivist("Activist A", activ1Address)).to.be.revertedWith("This activist already exist");
+          await expect(addActivist("Activist A", activ1Address)).to.be.revertedWith("User already exists");
         });
       });
 

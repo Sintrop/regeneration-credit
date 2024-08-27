@@ -75,7 +75,7 @@ describe("InspectorContract", () => {
       context("when inspector exists", () => {
         it("should return error", async () => {
           await addInspector("Inspector A", inspe1Address);
-          await expect(addInspector("Inspector A", inspe1Address)).to.be.revertedWith("This inspector already exist");
+          await expect(addInspector("Inspector A", inspe1Address)).to.be.revertedWith("User already exists");
         });
       });
 

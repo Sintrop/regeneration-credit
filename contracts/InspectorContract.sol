@@ -33,8 +33,6 @@ contract InspectorContract is Callable {
    * @return a Inspector
    */
   function addInspector(string memory name, string memory proofPhoto) public returns (Inspector memory) {
-    require(!inspectorExists(msg.sender), "This inspector already exist");
-
     Inspector memory inspector = Inspector(
       userContract.userTypesCount(USER_TYPE) + 1,
       msg.sender,
