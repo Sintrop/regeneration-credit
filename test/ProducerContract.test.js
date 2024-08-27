@@ -139,7 +139,7 @@ describe("ProducerContract", () => {
     it("should return error when try create same producer", async () => {
       await addProducer("Producer A", prod1Address);
 
-      await expect(addProducer("Producer A", prod1Address)).to.be.revertedWith("This producer already exist");
+      await expect(addProducer("Producer A", prod1Address)).to.be.revertedWith("User already exists");
     });
   });
 

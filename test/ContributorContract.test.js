@@ -80,9 +80,7 @@ describe("ContributorContract", (accounts) => {
         it("should return error message", async () => {
           await addContributor("Contributor A", contr1Address);
 
-          await expect(addContributor("Contributor A", contr1Address)).to.be.revertedWith(
-            "This contributor already exist"
-          );
+          await expect(addContributor("Contributor A", contr1Address)).to.be.revertedWith("User already exists");
         });
       });
 

@@ -144,7 +144,7 @@ describe("DeveloperContract", (accounts) => {
         it("should return error message", async () => {
           await addDeveloper("Developer A", dev1Address);
 
-          await expect(addDeveloper("Developer A", dev1Address)).to.be.revertedWith("This developer already exist");
+          await expect(addDeveloper("Developer A", dev1Address)).to.be.revertedWith("User already exists");
         });
       });
 

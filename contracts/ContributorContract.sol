@@ -33,7 +33,7 @@ contract ContributorContract is Ownable, Callable {
    * @dev Allow a new register of contributor
    * @param name the name of the contributor
    */
-  function addContributor(string memory name, string memory proofPhoto) public uniqueContributor {
+  function addContributor(string memory name, string memory proofPhoto) public {
     uint256 level = 0;
 
     contributors[msg.sender] = Contributor(
@@ -149,12 +149,5 @@ contract ContributorContract is Ownable, Callable {
    */
   function contributorPoolEra() internal view returns (uint256) {
     return contributorPool.currentContractEra();
-  }
-
-  // MODIFIERS
-
-  modifier uniqueContributor() {
-    require(!contributorExists(msg.sender), "This contributor already exist");
-    _;
   }
 }

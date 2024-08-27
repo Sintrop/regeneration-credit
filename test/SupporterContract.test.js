@@ -39,7 +39,7 @@ describe("SupporterContract", () => {
     context("when supporter exists", () => {
       it("should return error", async () => {
         await addSupporter("Supporter A", inv1Address);
-        await expect(addSupporter("Supporter A", inv1Address)).to.be.revertedWith("This supporter already exist");
+        await expect(addSupporter("Supporter A", inv1Address)).to.be.revertedWith("User already exists");
       });
     });
 

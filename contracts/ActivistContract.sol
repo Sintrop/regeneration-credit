@@ -29,8 +29,6 @@ contract ActivistContract is Callable {
    * @return a Activist
    */
   function addActivist(string memory name, string memory proofPhoto) public returns (Activist memory) {
-    require(!activistExists(msg.sender), "This activist already exist");
-
     Activist memory activist = Activist(
       userContract.userTypesCount(USER_TYPE) + 1,
       msg.sender,

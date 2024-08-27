@@ -46,8 +46,6 @@ contract DeveloperContract is Ownable, Callable {
    * @param name the name of the developer
    */
   function addDeveloper(string memory name, string memory proofPhoto) public {
-    require(!developerExists(msg.sender), "This developer already exist");
-
     uint256 level = 0;
 
     developers[msg.sender] = Developer(

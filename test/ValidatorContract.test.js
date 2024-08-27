@@ -350,7 +350,7 @@ describe("ValidatorContract", () => {
       context("when validator exists", () => {
         it("should return error", async () => {
           await addValidator(validator1Address);
-          await expect(addValidator(validator1Address)).to.be.revertedWith("This validator already exist");
+          await expect(addValidator(validator1Address)).to.be.revertedWith("User already exists");
         });
       });
 

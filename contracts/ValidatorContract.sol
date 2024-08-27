@@ -56,8 +56,6 @@ contract ValidatorContract is Callable {
   }
 
   function addValidator() public {
-    require(!validatorExists(msg.sender), "This validator already exist");
-
     validators[msg.sender] = Validator(
       userContract.userTypesCount(USER_TYPE) + 1,
       msg.sender,

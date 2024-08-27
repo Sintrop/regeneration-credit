@@ -44,8 +44,6 @@ contract ResearcherContract is Callable {
    * @return a Researcher
    */
   function addResearcher(string memory name, string memory proofPhoto) public returns (Researcher memory) {
-    require(!researcherExists(msg.sender), "This researcher already exist");
-
     Researcher memory researcher = Researcher(
       userContract.userTypesCount(USER_TYPE) + 1,
       msg.sender,
