@@ -28,6 +28,7 @@ describe("Sintrop", () => {
     producer4Address,
     inspectorAddress,
     inspector2Address,
+    inspector3Address,
     resea1Address,
     validator1Address,
     validator2Address,
@@ -180,6 +181,7 @@ describe("Sintrop", () => {
       producer4Address,
       inspectorAddress,
       inspector2Address,
+      inspector3Address,
       resea1Address,
       validator1Address,
       validator2Address,
@@ -1321,53 +1323,164 @@ describe("Sintrop", () => {
         });
 
         context("when have 2 validations (half of the validators)", () => {
-          beforeEach(async () => {
-            await instance.connect(validator1Address).addInspectionValidation(1, "justification");
-            await instance.connect(validator2Address).addInspectionValidation(1, "justification");
+          context("when inspection score is negative", () => {
+            beforeEach(async () => {
+              await addInvitation(owner, inspector2Address, userTypes.Inspector, owner);
+              await addInspector("Inspector B", inspector2Address);
+
+              await addInvitation(owner, inspector3Address, userTypes.Inspector, owner);
+              await addInspector("Inspector C", inspector3Address);
+
+              await advanceBlock(sintropArgs.timeBetweenInspections);
+              await requestInspection(producerAddress);
+              await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+              await acceptInspection(2, inspector2Address);
+              await realizeInspection(2, report, nevativeScore(), inspector2Address);
+
+              await advanceBlock(sintropArgs.timeBetweenInspections);
+              await requestInspection(producerAddress);
+              await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+              await acceptInspection(3, inspector3Address);
+              await realizeInspection(3, report, isas(), inspector3Address);
+
+              await instance.connect(validator1Address).addInspectionValidation(2, "justification");
+              await instance.connect(validator2Address).addInspectionValidation(2, "justification");
+            });
+
+            const nevativeScore = () => {
+              return [
+                {
+                  categoryId: 1,
+                  isaId: 8,
+                  indicator: 10,
+                },
+                {
+                  categoryId: 2,
+                  isaId: 8,
+                  indicator: 10,
+                },
+                {
+                  categoryId: 3,
+                  isaId: 8,
+                  indicator: 10,
+                },
+              ];
+            };
+
+            const isas = () => {
+              return [
+                {
+                  categoryId: 1,
+                  isaId: 1,
+                  indicator: 10,
+                },
+                {
+                  categoryId: 2,
+                  isaId: 1,
+                  indicator: 10,
+                },
+                {
+                  categoryId: 3,
+                  isaId: 2,
+                  indicator: 10,
+                },
+              ];
+            };
+
+            it("add validations", async () => {
+              const validation1 = await validatorContract.inspectionValidations(2, 0);
+              const validation2 = await validatorContract.inspectionValidations(2, 1);
+
+              expect(validation1.validator).to.equal(validator1Address.address);
+              expect(validation2.validator).to.equal(validator2Address.address);
+            });
+
+            it("inspection status INVALIDATED", async () => {
+              const inspection = await instance.getInspection(2);
+
+              expect(inspection.status).to.equal(STATUS.invalidated);
+            });
+
+            it("inspector receive 1 penalty", async () => {
+              const totalPenalties = await inspectorContract.totalPenalties(inspector2Address);
+
+              expect(totalPenalties).to.equal(1);
+            });
+
+            it("remove producer isaScore", async () => {
+              const producer = await producerContract.getProducer(producerAddress);
+
+              expect(producer.isa.isaScore).to.equal(132);
+            });
+
+            it("decrement producer totalInspections", async () => {
+              const producer = await producerContract.getProducer(producerAddress);
+
+              expect(producer.totalInspections).to.equal(2);
+            });
+
+            it("decrement inspector totalInspections", async () => {
+              const inspector = await inspectorContract.getInspector(inspector2Address);
+
+              expect(inspector.totalInspections).to.equal(0);
+            });
+
+            it("zero producerPool era level score", async () => {
+              const levels = await producerPool.eraLevels(1, producerAddress);
+
+              expect(levels).to.equal(132);
+            });
           });
 
-          it("add validations", async () => {
-            const validation1 = await validatorContract.inspectionValidations(1, 0);
-            const validation2 = await validatorContract.inspectionValidations(1, 1);
+          context("when inspection score is positive", () => {
+            beforeEach(async () => {
+              await instance.connect(validator1Address).addInspectionValidation(1, "justification");
+              await instance.connect(validator2Address).addInspectionValidation(1, "justification");
+            });
 
-            expect(validation1.validator).to.equal(validator1Address.address);
-            expect(validation2.validator).to.equal(validator2Address.address);
-          });
+            it("add validations", async () => {
+              const validation1 = await validatorContract.inspectionValidations(1, 0);
+              const validation2 = await validatorContract.inspectionValidations(1, 1);
 
-          it("inspection status INVALIDATED", async () => {
-            const inspection = await instance.getInspection(1);
+              expect(validation1.validator).to.equal(validator1Address.address);
+              expect(validation2.validator).to.equal(validator2Address.address);
+            });
 
-            expect(inspection.status).to.equal(STATUS.invalidated);
-          });
+            it("inspection status INVALIDATED", async () => {
+              const inspection = await instance.getInspection(1);
 
-          it("inspector receive 1 penalty", async () => {
-            const totalPenalties = await inspectorContract.totalPenalties(inspectorAddress);
+              expect(inspection.status).to.equal(STATUS.invalidated);
+            });
 
-            expect(totalPenalties).to.equal(1);
-          });
+            it("inspector receive 1 penalty", async () => {
+              const totalPenalties = await inspectorContract.totalPenalties(inspectorAddress);
 
-          it("remove producer isaScore", async () => {
-            const producer = await producerContract.getProducer(producerAddress);
+              expect(totalPenalties).to.equal(1);
+            });
 
-            expect(producer.isa.isaScore).to.equal(0);
-          });
+            it("remove producer isaScore", async () => {
+              const producer = await producerContract.getProducer(producerAddress);
 
-          it("decrement producer totalInspections", async () => {
-            const producer = await producerContract.getProducer(producerAddress);
+              expect(producer.isa.isaScore).to.equal(0);
+            });
 
-            expect(producer.totalInspections).to.equal(0);
-          });
+            it("decrement producer totalInspections", async () => {
+              const producer = await producerContract.getProducer(producerAddress);
 
-          it("decrement inspector totalInspections", async () => {
-            const inspector = await inspectorContract.getInspector(inspectorAddress);
+              expect(producer.totalInspections).to.equal(0);
+            });
 
-            expect(inspector.totalInspections).to.equal(0);
-          });
+            it("decrement inspector totalInspections", async () => {
+              const inspector = await inspectorContract.getInspector(inspectorAddress);
 
-          it("zero producerPool era level score", async () => {
-            const levels = await producerPool.eraLevels(1, producerAddress);
+              expect(inspector.totalInspections).to.equal(0);
+            });
 
-            expect(levels).to.equal(0);
+            it("zero producerPool era level score", async () => {
+              const levels = await producerPool.eraLevels(1, producerAddress);
+
+              expect(levels).to.equal(0);
+            });
           });
         });
 
