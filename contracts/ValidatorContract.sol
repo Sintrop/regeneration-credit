@@ -169,7 +169,8 @@ contract ValidatorContract is Callable {
 
     removeLevelsFromPool(inspection.acceptedBy, 1);
 
-    if (inspection.isaScore < 0) return producerContract.removeNegativeScore(inspection.createdBy, inspection.isaScore);
+    if (inspection.isaScore < 0)
+      return producerContract.removeNegativeScore(inspection.createdBy, -(inspection.isaScore));
 
     removeLevelsFromPool(inspection.createdBy, uint256(inspection.isaScore));
   }

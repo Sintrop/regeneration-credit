@@ -159,8 +159,8 @@ contract ProducerContract is Callable {
   }
 
   function removeNegativeScore(address addr, int256 levels) public mustBeAllowedCaller {
-    producers[addr].isa.isaScore += -(levels);
-    producerPool.addLevel(addr, uint256(-(levels)), uint256(-(levels)));
+    producers[addr].isa.isaScore += levels;
+    producerPool.addLevel(addr, uint256(levels), uint256(levels));
   }
 
   function changeProducerToSustainable(Producer memory producer) internal {
