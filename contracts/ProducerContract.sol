@@ -158,6 +158,11 @@ contract ProducerContract is Callable {
     producerPool.removePoolLevels(addr, producer.pool.currentEra, removeSomeLevels);
   }
 
+  function removeNegativeScore(address addr, int256 levels) public mustBeAllowedCaller {
+    producers[addr].isa.isaScore += levels;
+    producerPool.addLevel(addr, uint256(levels), uint256(levels));
+  }
+
   function changeProducerToSustainable(Producer memory producer) internal {
     producersSustainable++;
     producers[producer.producerWallet].isa.sustainable = true;
