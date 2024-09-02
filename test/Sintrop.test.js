@@ -1335,7 +1335,7 @@ describe("Sintrop", () => {
               await requestInspection(producerAddress);
               await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
               await acceptInspection(2, inspector2Address);
-              await realizeInspection(2, report, nevativeScore(), inspector2Address);
+              await realizeInspection(2, report, negativeScore(), inspector2Address);
 
               await advanceBlock(sintropArgs.timeBetweenInspections);
               await requestInspection(producerAddress);
@@ -1347,7 +1347,7 @@ describe("Sintrop", () => {
               await instance.connect(validator2Address).addInspectionValidation(2, "justification");
             });
 
-            const nevativeScore = () => {
+            const negativeScore = () => {
               return [
                 {
                   categoryId: 1,
@@ -1407,7 +1407,7 @@ describe("Sintrop", () => {
               expect(totalPenalties).to.equal(1);
             });
 
-            it("remove producer isaScore", async () => {
+            it("remove  negative producer isaScore", async () => {
               const producer = await producerContract.getProducer(producerAddress);
 
               expect(producer.isa.isaScore).to.equal(132);
@@ -1425,7 +1425,7 @@ describe("Sintrop", () => {
               expect(inspector.totalInspections).to.equal(0);
             });
 
-            it("zero producerPool era level score", async () => {
+            it("remove negative producerPool era level score", async () => {
               const levels = await producerPool.eraLevels(1, producerAddress);
 
               expect(levels).to.equal(132);
