@@ -89,9 +89,8 @@ contract UserContract is Ownable, Callable {
   function addDelation(address addr, string memory title, string memory testimony) public {
     require(users[msg.sender] != UserType.UNDEFINED, "Caller must be registered");
     require(users[addr] != UserType.UNDEFINED, "User must be registered");
-    uint256 id = delationsCount + 1;
 
-    delations[addr].push(Delation(id, msg.sender, addr, title, testimony));
+    delations[addr].push(Delation(delationsCount + 1, msg.sender, addr, title, testimony));
     delationsCount++;
   }
 
