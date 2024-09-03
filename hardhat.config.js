@@ -48,6 +48,15 @@ module.exports = {
       },
     },
   },
+  gasReporter: {
+    enabled: true,
+    currencyDisplayPrecision: 5,
+    outputJSONFile: "gas_reporter.json",
+    darkMode: true,
+    L1: "ethereum",
+    currency: "EUR",
+    offline: true
+  },
   paths: {
     sources: "./contracts",
     tests: "./test",
