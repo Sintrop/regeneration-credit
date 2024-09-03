@@ -6,6 +6,8 @@ require("dotenv").config({ path: __dirname + "/.env" });
 const infuraKey = process.env.INFURA_API_KEY;
 const privateKey = process.env.PRIVATE_KEY_ACCOUNT_TO_DEPLOY || "set private key";
 const etherscanApiKey = process.env.ETHERSCAN_API_KEY;
+const coinMarketcapApiKey = process.env.COINMARKETCAP_API_KEY;
+const gasReportEnabled = process.env.GAS_REPORT_ENABLED;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -20,6 +22,10 @@ module.exports = {
     localhost: {
       allowUnlimitedContractSize: true,
     },
+    // mainnet: {
+    //   url: `https://infura.io/v3/${infuraKey}`,
+    //   accounts: [privateKey],
+    // },
     // sepolia: {
     //   url: `https://sepolia.infura.io/v3/${infuraKey}`,
     //   accounts: [privateKey],
@@ -49,13 +55,13 @@ module.exports = {
     },
   },
   gasReporter: {
-    enabled: true,
-    currencyDisplayPrecision: 5,
-    outputJSONFile: "gas_reporter.json",
-    darkMode: true,
-    L1: "ethereum",
-    currency: "EUR",
-    offline: true
+    enabled: !!gasReportEnabled,
+    currency: "USD",
+    L1Etherscan: etherscanApiKey,
+    currencyDisplayPrecision: 2,
+    outputFile: "gas_reporter.txt",
+    noColors: true,
+    coinmarketcap: coinMarketcapApiKey,
   },
   paths: {
     sources: "./contracts",
