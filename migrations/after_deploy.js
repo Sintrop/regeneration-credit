@@ -291,10 +291,7 @@ async function addCategories() {
     },
   ])    
 
-  var isaDescription = await categoryContract.getCategoryIsaDescription(1);
   console.log("After categories OK");
-  console.log(isaDescription);
-
 }
 
 module.exports = afterDeploy;
