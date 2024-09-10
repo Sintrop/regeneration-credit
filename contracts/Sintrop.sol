@@ -4,14 +4,14 @@ pragma solidity >=0.7.0 <=0.9.0;
 import { ProducerContract } from "./ProducerContract.sol";
 import { InspectorContract } from "./InspectorContract.sol";
 import { CategoryContract } from "./CategoryContract.sol";
+import { ValidatorContract } from "./ValidatorContract.sol";
+import { CategoryContract } from "./CategoryContract.sol";
+import { ActivistContract } from "./ActivistContract.sol";
+import { UserContract } from "./UserContract.sol";
 import { InspectionStatus, IsaInspection, Inspection } from "./types/InspectionTypes.sol";
 import { Producer } from "./types/ProducerTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
-import { UserContract } from "./UserContract.sol";
-import { UserType, Invitation } from "./types/UserTypes.sol";
-import { ValidatorContract } from "./ValidatorContract.sol";
-import { ActivistContract } from "./ActivistContract.sol";
-import { CategoryContract } from "./CategoryContract.sol";
+import { UserType } from "./types/UserTypes.sol";
 import { ContractsDependency } from "./types/SintropTypes.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Callable } from "./Callable.sol";
@@ -28,19 +28,19 @@ contract Sintrop is Callable {
   mapping(uint256 => Inspection) internal inspections;
   mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
-  InspectorContract public inspectorContract;
-  ProducerContract public producerContract;
-  UserContract public userContract;
-  ValidatorContract public validatorContract;
-  ActivistContract public activistContract;
-  CategoryContract public categoryContract;
+  InspectorContract private inspectorContract;
+  ProducerContract private producerContract;
+  UserContract private userContract;
+  ValidatorContract private validatorContract;
+  ActivistContract private activistContract;
+  CategoryContract private categoryContract;
 
   uint256 public inspectionsCount;
-  uint256 internal immutable timeBetweenInspections;
-  uint256 internal blocksToExpireAcceptedInspection;
-  uint256 internal immutable allowedInitialRequests;
-  uint256 internal acceptInspectionDelayBlocks;
-  uint256 internal immutable securityBlocksToValidatorAnalysis;
+  uint256 public immutable timeBetweenInspections;
+  uint256 public blocksToExpireAcceptedInspection;
+  uint256 public immutable allowedInitialRequests;
+  uint256 public acceptInspectionDelayBlocks;
+  uint256 public immutable securityBlocksToValidatorAnalysis;
 
   constructor(
     uint256 timeBetweenInspections_,
@@ -130,7 +130,7 @@ contract Sintrop is Callable {
     inspection.acceptedBy = msg.sender;
     inspections[inspectionId] = inspection;
 
-    producerContract.pendingInspection(inspection.createdBy, false); // Talvez não precise, pois estamos usando a expiração da inspeção pra checar se o produtor pode solicitar uma nova inspeção
+    producerContract.pendingInspection(inspection.createdBy, false);
     inspectorContract.incrementGiveUps(msg.sender);
 
     inspectorContract.markLastInspection(msg.sender, block.number, inspectionId);
@@ -146,9 +146,9 @@ contract Sintrop is Callable {
 
     require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspectionExists(inspectionId), "This inspection do not exist");
-    require(isAccepted(inspectionId), "Accept this inspection before");
-    require(isInspectorOwner(inspectionId), "You not accepted this inspection");
-    require(!expiredInspection(inspectionId), "Inspection Expired");
+    require(inspections[inspectionId].status == InspectionStatus.ACCEPTED, "Accept this inspection before");
+    require(inspections[inspectionId].acceptedBy == msg.sender, "You not accepted this inspection");
+    require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
 
     markAsRealized(inspection, report, _isaInspection);
 
@@ -245,14 +245,6 @@ contract Sintrop is Callable {
     return inspections[id].id >= 1;
   }
 
-  function isInspectorOwner(uint256 inspectionId) internal view returns (bool) {
-    return inspections[inspectionId].acceptedBy == msg.sender;
-  }
-
-  function isAccepted(uint256 inspectionId) internal view returns (bool) {
-    return inspections[inspectionId].status == InspectionStatus.ACCEPTED;
-  }
-
   function canRequestInspection() public view returns (bool) {
     Producer memory producer = producerContract.getProducer(msg.sender);
 
@@ -261,17 +253,8 @@ contract Sintrop is Callable {
     return block.number > producer.lastRequestAt + timeBetweenInspections;
   }
 
-  function expiredInspection(uint256 inspectionId) internal view returns (bool) {
-    Inspection memory inspection = inspections[inspectionId];
-    uint256 expireInspectionAt = inspection.acceptedAt + blocksToExpireAcceptedInspection;
-
-    return block.number > expireInspectionAt;
-  }
-
   function calculateBlocksToExpire(uint256 inspectionId) public view returns (uint256) {
-    Inspection memory inspection = inspections[inspectionId];
-
-    return inspection.acceptedAt + blocksToExpireAcceptedInspection - block.number;
+    return inspections[inspectionId].acceptedAt + blocksToExpireAcceptedInspection - block.number;
   }
 
   function canAcceptInspection(uint256 inspectionId) internal view returns (bool) {

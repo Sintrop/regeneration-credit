@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { PoolInterface } from "./PoolInterface.sol";
 import { RegenerationCreditInterface } from "./RegenerationCreditInterface.sol";
-import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Blockable } from "./Blockable.sol";
 import { Callable } from "./Callable.sol";
 import { Poolable } from "./Poolable.sol";
@@ -14,9 +11,7 @@ import { Poolable } from "./Poolable.sol";
  * @title ValidatorPool
  * @dev ValidatorPool is a contract to reward validators
  */
-contract ValidatorPool is Poolable, Ownable, Blockable, Callable {
-  using SafeMath for uint256;
-
+contract ValidatorPool is Poolable, Blockable, Callable {
   RegenerationCreditInterface internal regenerationCredit;
 
   uint256[8] private tokensPerEpochs = [
@@ -60,9 +55,7 @@ contract ValidatorPool is Poolable, Ownable, Blockable, Callable {
   }
 
   function addLevel(address addr, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
-    uint256 era = currentContractEra();
-
-    addPoolLevel(addr, currentLevel, addLevels, era);
+    addPoolLevel(addr, currentLevel, addLevels, currentContractEra());
   }
 
   function removePoolLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
