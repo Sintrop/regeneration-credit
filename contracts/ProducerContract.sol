@@ -180,6 +180,17 @@ contract ProducerContract is Callable {
     producers[addr].totalInspections--;
   }
 
+  function afterRequestInspection(address addr) public mustBeAllowedCaller {
+    pendingInspection(addr, true);
+    lastRequestAt(addr, block.number);
+  }
+
+  function afterRealizeInspection(address addr, int256 score) public mustBeAllowedCaller returns (uint256) {
+    setIsaScore(addr, score);
+
+    return incrementInspections(addr);
+  }
+
   function lastRequestAt(address addr, uint256 blocksNumber) public mustBeAllowedCaller {
     producers[addr].lastRequestAt = blocksNumber;
   }

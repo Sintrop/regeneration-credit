@@ -94,6 +94,12 @@ contract InspectorContract is Callable {
     return bytes(inspectors[addr].name).length > 0;
   }
 
+  function afterRealizeInspection(address addr) public mustBeAllowedCaller returns (uint256) {
+    decreaseGiveUps(addr);
+
+    return incrementInspections(addr);
+  }
+
   function incrementInspections(address addr) public mustBeAllowedCaller returns (uint256) {
     inspectors[addr].totalInspections++;
 
