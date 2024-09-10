@@ -150,28 +150,6 @@ describe("ActivistContract", () => {
     });
   });
 
-  describe("#activistExists", () => {
-    context("when activist is registered", () => {
-      beforeEach(async () => {
-        await addActivist("Activist A", activ1Address);
-      });
-
-      it("should return a activist", async () => {
-        const activistExists = await instance.activistExists(activ1Address);
-
-        expect(activistExists).to.equal(true);
-      });
-    });
-
-    context("when activist is not registered", () => {
-      it("should return a activist", async () => {
-        const activistExists = await instance.activistExists(activ1Address);
-
-        expect(activistExists).to.equal(false);
-      });
-    });
-  });
-
   describe("#addLevel", () => {
     context("with allowed caller", () => {
       context("when activist is registered", () => {

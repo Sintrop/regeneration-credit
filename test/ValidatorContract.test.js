@@ -1134,7 +1134,7 @@ describe("ValidatorContract", () => {
     });
   });
 
-  describe("#addDeveloperContributionValidation", () => {
+  describe("#addResearcherWorkValidation", () => {
     context("with allowed caller", () => {
       beforeEach(async () => {
         await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
@@ -1320,28 +1320,6 @@ describe("ValidatorContract", () => {
         const validators = await instance.getValidators();
 
         expect(validators.length).to.equal(0);
-      });
-    });
-  });
-
-  describe("#validatorExists", () => {
-    context("when validator exists", () => {
-      beforeEach(async () => {
-        await addValidator(validator1Address);
-      });
-
-      it("returns true", async () => {
-        const validatorExists = await instance.validatorExists(validator1Address);
-
-        expect(validatorExists).to.equal(true);
-      });
-    });
-
-    context("when validator don't exists", () => {
-      it("returns false", async () => {
-        const validatorExists = await instance.validatorExists(validator2Address);
-
-        expect(validatorExists).to.equal(false);
       });
     });
   });

@@ -113,28 +113,6 @@ describe("SupporterContract", () => {
     });
   });
 
-  context("#supporterExists", () => {
-    context("when supporter exists", () => {
-      beforeEach(async () => {
-        await addSupporter("Supporter A", inv1Address);
-      });
-
-      it("return true", async () => {
-        const supporterExists = await instance.supporterExists(inv1Address);
-
-        expect(supporterExists).to.equal(true);
-      });
-    });
-
-    context("when supporter dont exists", () => {
-      it("return false", async () => {
-        const supporterExists = await instance.supporterExists(inv1Address);
-
-        expect(supporterExists).to.equal(false);
-      });
-    });
-  });
-
   describe("#burnTokens", () => {
     context("when msg.sender is SUPPORTER", () => {
       beforeEach(async () => {

@@ -67,12 +67,4 @@ contract SupporterContract {
   function getSupporter(address addr) public view returns (Supporter memory) {
     return supporters[addr];
   }
-
-  /**
-   * @dev Check if a specific supporter exists
-   * @return a bool that represent if a supporter exists or not
-   */
-  function supporterExists(address addr) public view returns (bool) {
-    return bytes(supporters[addr].name).length > 0;
-  }
 }

@@ -6,11 +6,11 @@ import { RegenerationCredit } from "./RegenerationCredit.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract SupporterPool is Callable {
+  using SafeMath for uint256;
+
   RegenerationCredit internal regenerationCredit;
 
   uint256 public constant INVITER_PERCENTAGE = 1;
-
-  using SafeMath for uint256;
 
   constructor(address regenerationCreditAddress) {
     regenerationCredit = RegenerationCredit(regenerationCreditAddress);
@@ -36,7 +36,7 @@ contract SupporterPool is Callable {
 
     emit PoolBurnTokensEvent(tokenOwner, amount, amountBurn, inviter, inviterTotalTokens);
 
-    if (!isInvited || inviterTotalTokens == 0) return;
+    if (!isInvited) return;
 
     regenerationCredit.transferWith(tokenOwner, inviter, inviterTotalTokens);
   }

@@ -17,27 +17,28 @@ import { Contribution } from "./types/DeveloperTypes.sol";
 import { Work } from "./types/ResearcherTypes.sol";
 
 contract ValidatorContract is Callable {
-  mapping(address => Validator) internal validators;
+  mapping(address => Validator) private validators;
   mapping(address => UserValidation[]) private userValidations;
   mapping(uint256 => ResourceValidation[]) public inspectionValidations;
   mapping(uint256 => ResourceValidation[]) public contributionValidations;
-  mapping(address => mapping(uint256 => bool)) internal validatorContributionsValidations;
-  mapping(address => mapping(uint256 => bool)) internal validatorInspectionsValidations;
-  mapping(address => mapping(uint256 => bool)) internal validatorWorksValidations;
+  mapping(uint256 => ResourceValidation[]) public workValidations;
+  mapping(address => mapping(uint256 => bool)) private validatorContributionsValidations;
+  mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
+  mapping(address => mapping(uint256 => bool)) private validatorWorksValidations;
 
-  UserContract internal userContract;
-  ProducerContract internal producerContract;
-  ValidatorPool internal validatorPool;
-  InspectorContract internal inspectorContract;
-  DeveloperContract internal developerContract;
-  ResearcherContract internal researcherContract;
-  ContributorContract internal contributorContract;
-  ActivistContract internal activistContract;
+  UserContract private userContract;
+  ProducerContract private producerContract;
+  ValidatorPool private validatorPool;
+  InspectorContract private inspectorContract;
+  DeveloperContract private developerContract;
+  ResearcherContract private researcherContract;
+  ContributorContract private contributorContract;
+  ActivistContract private activistContract;
 
-  address[] internal validatorsAddress;
+  address[] private validatorsAddress;
   UserType private constant USER_TYPE = UserType.VALIDATOR;
-  uint256 internal firstValidatorLimit;
-  uint256 internal secondValidatorLimit;
+  uint256 private immutable firstValidatorLimit;
+  uint256 private immutable secondValidatorLimit;
 
   constructor(uint256 firstValidatorLimit_, uint256 secondValidatorLimit_) {
     firstValidatorLimit = firstValidatorLimit_;
@@ -143,7 +144,7 @@ contract ValidatorContract is Callable {
 
     bool addPenalty = work.validationsCount >= majorityValidatorsCount_;
 
-    contributionValidations[work.id].push(
+    workValidations[work.id].push(
       ResourceValidation(validatorAddress, work.id, justification, majorityValidatorsCount_, block.number)
     );
 
@@ -175,7 +176,7 @@ contract ValidatorContract is Callable {
     removeLevelsFromPool(inspection.createdBy, uint256(inspection.isaScore));
   }
 
-  function externalDenieUser(address userAddress) internal {
+  function externalDenieUser(address userAddress) private {
     denieUser(userAddress);
   }
 
@@ -188,8 +189,8 @@ contract ValidatorContract is Callable {
   function removeLevelsFromPool(address userAddress, uint256 levels) internal {
     UserType oldUserType = userContract.getUser(userAddress);
 
-    if (oldUserType == UserType.PRODUCER) return producerContract.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.INSPECTOR) return inspectorContract.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.PRODUCER) return producerContract.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.DEVELOPER) return developerContract.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.RESEARCHER) return researcherContract.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.CONTRIBUTOR) return contributorContract.removePoolLevels(userAddress, levels);
@@ -219,10 +220,6 @@ contract ValidatorContract is Callable {
 
   function getValidator(address addr) public view returns (Validator memory) {
     return validators[addr];
-  }
-
-  function validatorExists(address addr) public view returns (bool) {
-    return validators[addr].id > 0;
   }
 
   function majorityValidatorsCount() public view returns (uint256) {
@@ -268,7 +265,7 @@ contract ValidatorContract is Callable {
     validatorPool.removePoolLevels(addr, validatorPoolEra(), removeSomeLevels);
   }
 
-  function validatorPoolEra() internal view returns (uint256) {
+  function validatorPoolEra() private view returns (uint256) {
     return validatorPool.currentContractEra();
   }
 }

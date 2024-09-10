@@ -103,9 +103,10 @@ contract ActivistContract is Callable {
   }
 
   function setActivistLevel(address activistAddress) private {
-    if (!activistExists(activistAddress)) return;
-
     Activist memory activist = activists[activistAddress];
+
+    if (activist.id == 0) return;
+
     activist.pool.level++;
     activists[activistAddress] = activist;
 
@@ -130,14 +131,6 @@ contract ActivistContract is Callable {
 
     activists[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : activist.pool.level;
     activistPool.removePoolLevels(addr, activistPoolEra(), removeSomeLevels);
-  }
-
-  /**
-   * @dev Check if a specific activist exists
-   * @return a bool that represent if a activist exists or not
-   */
-  function activistExists(address addr) public view returns (bool) {
-    return bytes(activists[addr].name).length > 0;
   }
 
   function activistPoolEra() internal view returns (uint256) {
