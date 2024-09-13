@@ -128,10 +128,8 @@ contract Sintrop is Callable {
     inspection.acceptedBy = msg.sender;
     inspections[inspectionId] = inspection;
 
-    producerContract.pendingInspection(inspection.createdBy, false);
-    inspectorContract.incrementGiveUps(msg.sender);
-
-    inspectorContract.markLastInspection(msg.sender, block.number, inspectionId);
+    producerContract.afterAcceptInspection(inspection.createdBy);
+    inspectorContract.afterAcceptInspection(msg.sender, inspectionId);
   }
 
   /**
