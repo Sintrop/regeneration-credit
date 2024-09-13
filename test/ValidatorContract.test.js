@@ -488,9 +488,13 @@ describe("ValidatorContract", () => {
             beforeEach(async () => {
               await addInspector("Inspector A", inspector1Address);
 
-              await inspectorContract.incrementInspections(inspector1Address);
-              await inspectorContract.incrementInspections(inspector1Address);
-              await inspectorContract.incrementInspections(inspector1Address);
+              await inspectorContract.afterAcceptInspection(inspector1Address, 1);
+              await inspectorContract.afterAcceptInspection(inspector1Address, 1);
+              await inspectorContract.afterAcceptInspection(inspector1Address, 1);
+
+              await inspectorContract.afterRealizeInspection(inspector1Address);
+              await inspectorContract.afterRealizeInspection(inspector1Address);
+              await inspectorContract.afterRealizeInspection(inspector1Address);
 
               await instance.connect(validator1Address).addUserValidation(inspector1Address, "my justification");
               await instance.connect(validator3Address).addUserValidation(inspector1Address, "my justification");
@@ -800,15 +804,15 @@ describe("ValidatorContract", () => {
               await addProducer("Producer A", producer1Address);
               await addInspector("Inspector A", inspector1Address);
 
-              await inspectorContract.incrementInspections(inspectionMock.acceptedBy);
-              await inspectorContract.incrementInspections(inspectionMock.acceptedBy);
+              await inspectorContract.afterAcceptInspection(inspectionMock.acceptedBy, 1);
+              await inspectorContract.afterAcceptInspection(inspectionMock.acceptedBy, 1);
 
-              await producerContract.incrementInspections(inspectionMock.createdBy);
-              await producerContract.incrementInspections(inspectionMock.createdBy);
-              await producerContract.incrementInspections(inspectionMock.createdBy);
+              await inspectorContract.afterRealizeInspection(inspectionMock.acceptedBy);
+              await inspectorContract.afterRealizeInspection(inspectionMock.acceptedBy);
 
-              await producerContract.setIsaScore(inspectionMock.createdBy, 20);
-              await producerContract.setIsaScore(inspectionMock.createdBy, 30);
+              await producerContract.afterRealizeInspection(inspectionMock.createdBy, 10);
+              await producerContract.afterRealizeInspection(inspectionMock.createdBy, 10);
+              await producerContract.afterRealizeInspection(inspectionMock.createdBy, 30);
 
               await inspectorContract.addPenalty(inspectionMock.acceptedBy, 2);
               await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", validator1Address);
@@ -873,15 +877,15 @@ describe("ValidatorContract", () => {
               await addProducer("Producer A", producer1Address);
               await addInspector("Inspector A", inspector1Address);
 
-              await inspectorContract.incrementInspections(inspectionMock.acceptedBy);
-              await inspectorContract.incrementInspections(inspectionMock.acceptedBy);
+              await inspectorContract.afterAcceptInspection(inspectionMock.acceptedBy, 1);
+              await inspectorContract.afterAcceptInspection(inspectionMock.acceptedBy, 1);
 
-              await producerContract.incrementInspections(inspectionMock.createdBy);
-              await producerContract.incrementInspections(inspectionMock.createdBy);
-              await producerContract.incrementInspections(inspectionMock.createdBy);
+              await inspectorContract.afterRealizeInspection(inspectionMock.acceptedBy);
+              await inspectorContract.afterRealizeInspection(inspectionMock.acceptedBy);
 
-              await producerContract.setIsaScore(inspectionMock.createdBy, 20);
-              await producerContract.setIsaScore(inspectionMock.createdBy, 30);
+              await producerContract.afterRealizeInspection(inspectionMock.createdBy, 10);
+              await producerContract.afterRealizeInspection(inspectionMock.createdBy, 10);
+              await producerContract.afterRealizeInspection(inspectionMock.createdBy, 30);
 
               await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", validator1Address);
             });
