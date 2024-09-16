@@ -10,7 +10,7 @@ contract SupporterPool is Callable {
 
   RegenerationCredit internal regenerationCredit;
 
-  uint256 public constant INVITER_PERCENTAGE = 1;
+  uint256 public constant INVITER_PERCENTAGE = 5;
 
   constructor(address regenerationCreditAddress) {
     regenerationCredit = RegenerationCredit(regenerationCreditAddress);
