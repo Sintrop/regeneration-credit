@@ -32,7 +32,7 @@ contract RegenerationCreditIco is Ownable {
   receive() external payable {
     require(icoStart(), "ICO: sales is not open yet");
     require(icoEnd(), "ICO: sales is not open anymore");
-    
+
     uint256 regenerationCredits = regenerationCreditAmount(msg.value);
 
     bool response = regenerationCredit.transfer(msg.sender, regenerationCredits);
