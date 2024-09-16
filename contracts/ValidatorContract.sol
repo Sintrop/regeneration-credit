@@ -69,6 +69,7 @@ contract ValidatorContract is Callable {
 
   function addUserValidation(address userAddress, string memory justification) public {
     require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
+    require(!userContract.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
     require(!userContract.userTypeIs(UserType.DENIED, userAddress), "User already denied");
 
     uint256 majorityValidatorsCount_ = majorityValidatorsCount();
