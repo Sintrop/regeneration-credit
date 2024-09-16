@@ -16,6 +16,12 @@ contract RegenerationCreditIco is Ownable {
 
   RegenerationCredit internal regenerationCredit;
 
+  uint256 internal immutable DEPLOYED_AT = block.number;
+
+  // ATTENTION: Update before deploy
+  uint256 internal immutable ICO_STARTS_AT = 100;
+  uint256 internal immutable ICO_ENDS_AT = 10000;
+
   event BuyTokensEvent(
     address indexed _buyer,
     uint256 _totalWei,
@@ -24,8 +30,9 @@ contract RegenerationCreditIco is Ownable {
   );
 
   receive() external payable {
-    require(salesOpen, "ICO: sales not open");
-
+    require(icoStart(), "ICO: sales is not open yet");
+    require(icoEnd(), "ICO: sales is not open anymore");
+    
     uint256 regenerationCredits = regenerationCreditAmount(msg.value);
 
     bool response = regenerationCredit.transfer(msg.sender, regenerationCredits);
@@ -37,9 +44,16 @@ contract RegenerationCreditIco is Ownable {
     return address(this).balance;
   }
 
-  function changeSalesOpen() public onlyOwner returns (bool success) {
-    salesOpen = !salesOpen;
-    return true;
+  function icoStart() internal view returns (bool) {
+    uint256 startsAt = DEPLOYED_AT + ICO_STARTS_AT;
+
+    return block.number > startsAt;
+  }
+
+  function icoEnd() internal view returns (bool) {
+    uint256 expiresAt = DEPLOYED_AT + ICO_ENDS_AT;
+
+    return expiresAt > block.number;
   }
 
   function withdraw(uint256 weiAmount) public onlyOwner returns (bool success) {
