@@ -94,7 +94,19 @@ contract InspectorContract is Callable {
     return bytes(inspectors[addr].name).length > 0;
   }
 
-  function incrementInspections(address addr) public mustBeAllowedCaller returns (uint256) {
+  function afterAcceptInspection(address addr, uint256 lastInspectionId) public mustBeAllowedCaller {
+    markLastInspection(addr, lastInspectionId);
+
+    incrementGiveUps(addr);
+  }
+
+  function afterRealizeInspection(address addr) public mustBeAllowedCaller returns (uint256) {
+    decreaseGiveUps(addr);
+
+    return incrementInspections(addr);
+  }
+
+  function incrementInspections(address addr) private returns (uint256) {
     inspectors[addr].totalInspections++;
 
     addLevel(addr);
@@ -127,16 +139,16 @@ contract InspectorContract is Callable {
     inspectors[addr].totalInspections--;
   }
 
-  function incrementGiveUps(address addr) public mustBeAllowedCaller {
+  function incrementGiveUps(address addr) private {
     inspectors[addr].giveUps++;
   }
 
-  function decreaseGiveUps(address addr) public mustBeAllowedCaller {
+  function decreaseGiveUps(address addr) private {
     inspectors[addr].giveUps--;
   }
 
-  function markLastInspection(address addr, uint256 blocksNumber, uint256 lastInspectionId) public mustBeAllowedCaller {
-    inspectors[addr].lastAcceptedAt = blocksNumber;
+  function markLastInspection(address addr, uint256 lastInspectionId) private {
+    inspectors[addr].lastAcceptedAt = block.number;
     inspectors[addr].lastInspection = lastInspectionId;
   }
 

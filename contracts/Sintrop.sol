@@ -24,7 +24,7 @@ contract Sintrop is Callable {
   using SafeMath for uint256;
 
   mapping(address => mapping(address => bool)) internal inspectorInspected;
-  mapping(address => Inspection[]) internal userInspections;
+  mapping(address => uint256[]) internal userInspections;
   mapping(uint256 => Inspection) internal inspections;
   mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
@@ -37,9 +37,9 @@ contract Sintrop is Callable {
 
   uint256 public inspectionsCount;
   uint256 public immutable timeBetweenInspections;
-  uint256 public blocksToExpireAcceptedInspection;
+  uint256 public immutable blocksToExpireAcceptedInspection;
   uint256 public immutable allowedInitialRequests;
-  uint256 public acceptInspectionDelayBlocks;
+  uint256 public immutable acceptInspectionDelayBlocks;
   uint256 public immutable securityBlocksToValidatorAnalysis;
 
   constructor(
@@ -65,11 +65,10 @@ contract Sintrop is Callable {
     activistContract = ActivistContract(contractDependency.activistContractAddress);
   }
 
-  // TODO: Refact this mapping to not duplicate inspections
   /**
    * @dev Allows the current user producer/inspector get all yours inspections with status INSPECTED
    */
-  function getInspectionsHistory() public view returns (Inspection[] memory) {
+  function getInspectionsHistory() public view returns (uint256[] memory) {
     return userInspections[msg.sender];
   }
 
@@ -105,8 +104,7 @@ contract Sintrop is Callable {
   }
 
   function afterRequestInspection() internal {
-    producerContract.pendingInspection(msg.sender, true);
-    producerContract.lastRequestAt(msg.sender, block.number);
+    producerContract.afterRequestInspection(msg.sender);
   }
 
   /**
@@ -130,10 +128,8 @@ contract Sintrop is Callable {
     inspection.acceptedBy = msg.sender;
     inspections[inspectionId] = inspection;
 
-    producerContract.pendingInspection(inspection.createdBy, false);
-    inspectorContract.incrementGiveUps(msg.sender);
-
-    inspectorContract.markLastInspection(msg.sender, block.number, inspectionId);
+    producerContract.afterAcceptInspection(inspection.createdBy);
+    inspectorContract.afterAcceptInspection(msg.sender, inspectionId);
   }
 
   /**
@@ -144,10 +140,10 @@ contract Sintrop is Callable {
   function realizeInspection(uint256 inspectionId, string memory report, IsaInspection[] memory _isaInspection) public {
     Inspection memory inspection = inspections[inspectionId];
 
-    require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspectionExists(inspectionId), "This inspection do not exist");
-    require(inspections[inspectionId].status == InspectionStatus.ACCEPTED, "Accept this inspection before");
-    require(inspections[inspectionId].acceptedBy == msg.sender, "You not accepted this inspection");
+    require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
+    require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
+    require(inspection.acceptedBy == msg.sender, "You not accepted this inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
 
     markAsRealized(inspection, report, _isaInspection);
@@ -171,25 +167,23 @@ contract Sintrop is Callable {
     inspections[inspection.id] = inspection;
   }
 
-  // TODO: Refact this function
   /**
    * @dev Inscrement producer and inspector request actions
    * @param inspection the inspected inspection
    */
   function afterRealizeInspection(Inspection memory inspection) internal {
-    address createdBy = inspection.createdBy;
-    address acceptedBy = inspection.acceptedBy;
+    address producerAddress = inspection.createdBy;
+    address inspectorAddress = inspection.acceptedBy;
 
-    uint256 inspectorTotalInspections = inspectorContract.incrementInspections(acceptedBy);
-    inspectorContract.decreaseGiveUps(acceptedBy);
+    activistContract.addLevel(
+      producerAddress,
+      producerContract.afterRealizeInspection(producerAddress, inspection.isaScore),
+      inspectorAddress,
+      inspectorContract.afterRealizeInspection(inspectorAddress)
+    );
 
-    uint256 producerTotalInspections = producerContract.incrementInspections(createdBy);
-
-    activistContract.addLevel(createdBy, producerTotalInspections, acceptedBy, inspectorTotalInspections);
-    producerContract.setIsaScore(inspection.createdBy, inspection.isaScore);
-
-    userInspections[createdBy].push(inspection);
-    userInspections[acceptedBy].push(inspection);
+    userInspections[producerAddress].push(inspection.id);
+    userInspections[inspectorAddress].push(inspection.id);
   }
 
   function addInspectionValidation(uint256 id, string memory justification) public {

@@ -106,7 +106,7 @@ contract ProducerContract is Callable {
     return producers[addr].id > 0;
   }
 
-  function pendingInspection(address addr, bool state) public mustBeAllowedCaller {
+  function pendingInspection(address addr, bool state) private {
     producers[addr].pendingInspection = state;
   }
 
@@ -114,7 +114,7 @@ contract ProducerContract is Callable {
     return producers[addr].isa.sustainable;
   }
 
-  function setIsaScore(address addr, int256 isaScore) public mustBeAllowedCaller {
+  function setIsaScore(address addr, int256 isaScore) private {
     Producer memory producer = producers[addr];
 
     int256 beforeIsaScore = producer.isa.isaScore;
@@ -127,7 +127,7 @@ contract ProducerContract is Callable {
     if (isaScore < 0) removeIsaScore(producer, isaScore);
   }
 
-  function addIsaScore(Producer memory producer, int256 beforeIsaScore, int256 isaScore) internal {
+  function addIsaScore(Producer memory producer, int256 beforeIsaScore, int256 isaScore) private {
     if (producer.isa.isaScore <= 0) return;
     uint256 levels;
 
@@ -168,7 +168,7 @@ contract ProducerContract is Callable {
     producers[producer.producerWallet].isa.sustainable = true;
   }
 
-  function incrementInspections(address addr) public mustBeAllowedCaller returns (uint256) {
+  function incrementInspections(address addr) private returns (uint256) {
     producers[addr].totalInspections++;
 
     return producers[addr].totalInspections;
@@ -180,7 +180,24 @@ contract ProducerContract is Callable {
     producers[addr].totalInspections--;
   }
 
-  function lastRequestAt(address addr, uint256 blocksNumber) public mustBeAllowedCaller {
+  function afterRequestInspection(address addr) public mustBeAllowedCaller {
+    pendingInspection(addr, true);
+    lastRequestAt(addr, block.number);
+  }
+
+  function afterAcceptInspection(address addr) public mustBeAllowedCaller {
+    pendingInspection(addr, false);
+  }
+
+  function afterRealizeInspection(address addr, int256 score) public mustBeAllowedCaller returns (uint256) {
+    uint256 totalInspections = incrementInspections(addr);
+
+    setIsaScore(addr, score);
+
+    return totalInspections;
+  }
+
+  function lastRequestAt(address addr, uint256 blocksNumber) private {
     producers[addr].lastRequestAt = blocksNumber;
   }
 

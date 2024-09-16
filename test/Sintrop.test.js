@@ -405,7 +405,7 @@ describe("Sintrop", () => {
       context("when is sustainable", () => {
         beforeEach(async () => {
           await addProducer("Producer B", producer2Address);
-          await producerContract.setIsaScore(producer2Address, 1000);
+          await producerContract.afterRealizeInspection(producer2Address, 1000);
         });
 
         it("should return error", async () => {
@@ -822,8 +822,8 @@ describe("Sintrop", () => {
 
                 context("when producer win minimum inspection", () => {
                   beforeEach(async () => {
-                    await producerContract.connect(owner).incrementInspections(producerAddress);
-                    await producerContract.connect(owner).incrementInspections(producerAddress);
+                    await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
+                    await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
                     await realizeInspection(1, report, isas(), inspectorAddress);
                   });
 
@@ -842,8 +842,12 @@ describe("Sintrop", () => {
 
                 context("when inspector win minimum inspection", () => {
                   beforeEach(async () => {
-                    await inspectorContract.connect(owner).incrementInspections(inspectorAddress);
-                    await inspectorContract.connect(owner).incrementInspections(inspectorAddress);
+                    await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
+                    await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
+
+                    await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
+                    await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
+
                     await realizeInspection(1, report, isas(), inspectorAddress);
                   });
 
@@ -854,7 +858,7 @@ describe("Sintrop", () => {
                   });
 
                   it("Activist pool win 1 level to activist", async () => {
-                    const levels = await activistPool.eraLevels(4, activist1Address);
+                    const levels = await activistPool.eraLevels(5, activist1Address);
 
                     expect(levels).to.equal(1);
                   });
@@ -862,10 +866,14 @@ describe("Sintrop", () => {
 
                 context("when producer and inspector win minimum inspection", () => {
                   beforeEach(async () => {
-                    await producerContract.connect(owner).incrementInspections(producerAddress);
-                    await producerContract.connect(owner).incrementInspections(producerAddress);
-                    await inspectorContract.connect(owner).incrementInspections(inspectorAddress);
-                    await inspectorContract.connect(owner).incrementInspections(inspectorAddress);
+                    await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
+                    await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
+
+                    await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
+                    await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
+
+                    await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
+                    await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
                     await realizeInspection(1, report, isas(), inspectorAddress);
                   });
 
