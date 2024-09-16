@@ -193,6 +193,7 @@ describe("ValidatorContract", () => {
       dev2Address,
       resea1Address,
       activist1Address,
+      undefinedAddress,
     ] = await ethers.getSigners();
 
     regenerationCredit = await regenerationCreditDeployed();
@@ -735,6 +736,16 @@ describe("ValidatorContract", () => {
       it("should return error", async () => {
         expect(instance.connect(otherAddress).addUserValidation(validator1Address, "justification")).to.be.revertedWith(
           "User must be a validator"
+        );
+      });
+    });
+
+    context("when is not a registered user", () => {
+      it("should return error", async () => {
+        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
+        await addValidator(validator1Address);
+        expect(instance.connect(otherAddress).addUserValidation(undefinedAddress, "justification")).to.be.revertedWith(
+          "User not registered"
         );
       });
     });
