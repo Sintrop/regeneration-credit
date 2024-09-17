@@ -117,7 +117,6 @@ contract InspectorContract is Callable {
   function addLevel(address addr) internal {
     Inspector memory inspector = inspectors[addr];
     inspector.pool.level++;
-    inspectors[addr] = inspector;
 
     if (!minimumInspections(inspector.totalInspections)) return;
 
