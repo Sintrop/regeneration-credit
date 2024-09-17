@@ -96,8 +96,8 @@ contract Sintrop is Callable {
 
     inspection.id = id;
     inspection.status = InspectionStatus.OPEN;
-    inspection.createdBy = msg.sender;
-    inspection.acceptedBy = address(0);
+    inspection.producer = msg.sender;
+    inspection.inspector = address(0);
     inspection.createdAt = block.number;
     inspections[inspection.id] = inspection;
     inspectionsCount++;
@@ -118,17 +118,17 @@ contract Sintrop is Callable {
     Inspection memory inspection = inspections[inspectionId];
 
     require(inspectionExists(inspectionId), "This inspection do not exist");
-    require(!inspectorInspected[msg.sender][inspection.createdBy], "Already inspected this producer");
+    require(!inspectorInspected[msg.sender][inspection.producer], "Already inspected this producer");
 
     require(canAcceptInspection(inspectionId), "Can't accept yet");
     require(inspection.status == InspectionStatus.OPEN, "This inspection is not OPEN");
 
     inspection.status = InspectionStatus.ACCEPTED;
     inspection.acceptedAt = block.number;
-    inspection.acceptedBy = msg.sender;
+    inspection.inspector = msg.sender;
     inspections[inspectionId] = inspection;
 
-    producerContract.afterAcceptInspection(inspection.createdBy);
+    producerContract.afterAcceptInspection(inspection.producer);
     inspectorContract.afterAcceptInspection(msg.sender, inspectionId);
   }
 
@@ -143,14 +143,14 @@ contract Sintrop is Callable {
     require(inspectionExists(inspectionId), "This inspection do not exist");
     require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
-    require(inspection.acceptedBy == msg.sender, "You not accepted this inspection");
+    require(inspection.inspector == msg.sender, "You not accepted this inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
 
     markAsRealized(inspection, report, _isaInspection);
 
     afterRealizeInspection(inspection);
 
-    inspectorInspected[msg.sender][inspection.createdBy] = true;
+    inspectorInspected[msg.sender][inspection.producer] = true;
   }
 
   function markAsRealized(
@@ -172,8 +172,8 @@ contract Sintrop is Callable {
    * @param inspection the inspected inspection
    */
   function afterRealizeInspection(Inspection memory inspection) internal {
-    address producerAddress = inspection.createdBy;
-    address inspectorAddress = inspection.acceptedBy;
+    address producerAddress = inspection.producer;
+    address inspectorAddress = inspection.inspector;
 
     activistContract.addLevel(
       producerAddress,

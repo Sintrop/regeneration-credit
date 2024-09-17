@@ -419,7 +419,7 @@ describe("Sintrop", () => {
         it("should request inspection", async () => {
           const inspection = await instance.getInspection(1);
 
-          expect(inspection.createdBy).to.equal(producerAddress.address);
+          expect(inspection.producer).to.equal(producerAddress.address);
         });
       });
 
@@ -458,7 +458,7 @@ describe("Sintrop", () => {
               await requestInspection(producerAddress);
               const inspection = await instance.getInspection(2);
 
-              expect(inspection.createdBy).to.equal(producerAddress.address);
+              expect(inspection.producer).to.equal(producerAddress.address);
             });
           });
         });
@@ -474,13 +474,13 @@ describe("Sintrop", () => {
         it("must set createdBy as producer address", async () => {
           const inspection = await instance.getInspection(1);
 
-          expect(inspection.createdBy).to.equal(producerAddress.address);
+          expect(inspection.producer).to.equal(producerAddress.address);
         });
 
         it("must set acceptedBy as zero address", async () => {
           const inspection = await instance.getInspection(1);
 
-          expect(inspection.acceptedBy).to.equal(ZERO_ADDRESS);
+          expect(inspection.inspector).to.equal(ZERO_ADDRESS);
         });
 
         it("initial isaScore should be equal zero", async () => {
@@ -628,7 +628,7 @@ describe("Sintrop", () => {
             it("acceptedBy must be inspectorAddress", async () => {
               const inspection = await instance.getInspection(1);
 
-              expect(inspection.acceptedBy).to.equal(inspectorAddress.address);
+              expect(inspection.inspector).to.equal(inspectorAddress.address);
             });
 
             it("should increment inspector giveUps by 1", async () => {

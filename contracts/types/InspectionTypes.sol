@@ -18,8 +18,8 @@ struct IsaInspection {
 struct Inspection {
   uint256 id;
   InspectionStatus status;
-  address createdBy;
-  address acceptedBy;
+  address producer;
+  address inspector;
   int256 isaScore;
   string report;
   uint256 validationsCount;
