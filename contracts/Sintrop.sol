@@ -137,7 +137,12 @@ contract Sintrop is Callable {
    * @param inspectionId The id of the inspection to be realized
    * @param _isaInspection The IsaIsaInspection[] of the inspection to be realized
    */
-  function realizeInspection(uint256 inspectionId, string memory report, IsaInspection[] memory _isaInspection) public {
+  function realizeInspection(
+    uint256 inspectionId,
+    string memory proofPhoto,
+    string memory report,
+    IsaInspection[] memory _isaInspection
+  ) public {
     Inspection memory inspection = inspections[inspectionId];
 
     require(inspectionExists(inspectionId), "This inspection do not exist");
@@ -146,7 +151,7 @@ contract Sintrop is Callable {
     require(inspection.acceptedBy == msg.sender, "You not accepted this inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
 
-    markAsRealized(inspection, report, _isaInspection);
+    markAsRealized(inspection, proofPhoto, report, _isaInspection);
 
     afterRealizeInspection(inspection);
 
@@ -155,11 +160,13 @@ contract Sintrop is Callable {
 
   function markAsRealized(
     Inspection memory inspection,
+    string memory proofPhoto,
     string memory report,
     IsaInspection[] memory _isaInspection
   ) internal {
     inspection.status = InspectionStatus.INSPECTED;
     inspection.isaScore = categoryContract.calculateIsa(inspection.id, _isaInspection);
+    inspection.proofPhoto = proofPhoto;
     inspection.report = report;
     inspection.inspectedAt = block.number;
     inspection.inspectedAtEra = producerContract.producerPoolEra();

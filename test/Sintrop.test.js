@@ -155,6 +155,7 @@ describe("Sintrop", () => {
     ];
   };
 
+  const proofPhoto = "Hash";
   const report = "Hash";
 
   const requestInspection = async (from) => {
@@ -165,8 +166,8 @@ describe("Sintrop", () => {
     await instance.connect(from).acceptInspection(inspectionId);
   };
 
-  const realizeInspection = async (id, report, isas_, from) => {
-    await instance.connect(from).realizeInspection(id, report, isas_);
+  const realizeInspection = async (id, proofPhoto, report, isas_, from) => {
+    await instance.connect(from).realizeInspection(id, proofPhoto, report, isas_);
   };
 
   const firstValidatorLimit = 8;
@@ -442,7 +443,7 @@ describe("Sintrop", () => {
                 indicator: 10,
               },
             ];
-            await realizeInspection(1, report, isas, inspectorAddress);
+            await realizeInspection(1, proofPhoto, report, isas, inspectorAddress);
           });
 
           context("when last request is recent", () => {
@@ -688,7 +689,7 @@ describe("Sintrop", () => {
             context("when have finished last inspection", () => {
               beforeEach(async () => {
                 await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-                await realizeInspection(1, "", [], inspectorAddress);
+                await realizeInspection(1, "proofPhoto", "", [], inspectorAddress);
                 await acceptInspection(2, inspectorAddress);
               });
 
@@ -711,7 +712,7 @@ describe("Sintrop", () => {
           beforeEach(async () => {
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
             await acceptInspection(1, inspectorAddress);
-            await realizeInspection(1, report, [], inspectorAddress);
+            await realizeInspection(1, proofPhoto, report, [], inspectorAddress);
 
             await advanceBlock(20);
 
@@ -770,7 +771,7 @@ describe("Sintrop", () => {
               });
 
               it("should return error message", async () => {
-                await expect(realizeInspection(1, report, [], inspectorAddress)).to.be.revertedWith(
+                await expect(realizeInspection(1, proofPhoto, report, [], inspectorAddress)).to.be.revertedWith(
                   "Inspection Expired"
                 );
               });
@@ -786,7 +787,7 @@ describe("Sintrop", () => {
               describe(".setActivistLevel", () => {
                 context("when producer do not win minimum inspection", () => {
                   beforeEach(async () => {
-                    await realizeInspection(1, report, isas(), inspectorAddress);
+                    await realizeInspection(1, proofPhoto, report, isas(), inspectorAddress);
                   });
 
                   it("Activist must do not win levels", async () => {
@@ -804,7 +805,7 @@ describe("Sintrop", () => {
 
                 context("when inspector do not win minimum inspection", () => {
                   beforeEach(async () => {
-                    await realizeInspection(1, report, isas(), inspectorAddress);
+                    await realizeInspection(1, proofPhoto, report, isas(), inspectorAddress);
                   });
 
                   it("Activist must do not win levels", async () => {
@@ -824,7 +825,7 @@ describe("Sintrop", () => {
                   beforeEach(async () => {
                     await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
                     await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
-                    await realizeInspection(1, report, isas(), inspectorAddress);
+                    await realizeInspection(1, proofPhoto, report, isas(), inspectorAddress);
                   });
 
                   it("Activist must win 1 level", async () => {
@@ -848,7 +849,7 @@ describe("Sintrop", () => {
                     await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
                     await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
 
-                    await realizeInspection(1, report, isas(), inspectorAddress);
+                    await realizeInspection(1, proofPhoto, report, isas(), inspectorAddress);
                   });
 
                   it("Activist must win 1 level", async () => {
@@ -874,7 +875,7 @@ describe("Sintrop", () => {
 
                     await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
                     await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
-                    await realizeInspection(1, report, isas(), inspectorAddress);
+                    await realizeInspection(1, proofPhoto, report, isas(), inspectorAddress);
                   });
 
                   it("Activist must win 1 level", async () => {
@@ -893,7 +894,7 @@ describe("Sintrop", () => {
 
               context("when check inspection", () => {
                 beforeEach(async () => {
-                  await realizeInspection(1, report, isas(), inspectorAddress);
+                  await realizeInspection(1, proofPhoto, report, isas(), inspectorAddress);
                 });
 
                 it("should change inspection status to INSPECTED", async () => {
@@ -980,7 +981,7 @@ describe("Sintrop", () => {
                       },
                     ];
 
-                    await realizeInspection(1, report, isas, inspectorAddress);
+                    await realizeInspection(1, proofPhoto, report, isas, inspectorAddress);
                   });
 
                   it("should add 25 isaScore to inspection", async () => {
@@ -1000,7 +1001,7 @@ describe("Sintrop", () => {
                       },
                     ];
 
-                    await realizeInspection(1, report, isas, inspectorAddress);
+                    await realizeInspection(1, proofPhoto, report, isas, inspectorAddress);
                   });
 
                   it("should add 16 isaScore to inspection", async () => {
@@ -1021,7 +1022,7 @@ describe("Sintrop", () => {
                       },
                     ];
 
-                    await realizeInspection(1, report, isas, inspectorAddress);
+                    await realizeInspection(1, proofPhoto, report, isas, inspectorAddress);
                   });
 
                   it("should add 8 isaScore to inspection", async () => {
@@ -1041,7 +1042,7 @@ describe("Sintrop", () => {
                       },
                     ];
 
-                    await realizeInspection(1, report, isas, inspectorAddress);
+                    await realizeInspection(1, proofPhoto, report, isas, inspectorAddress);
                   });
 
                   it("should add 4 isaScore to inspection", async () => {
@@ -1061,7 +1062,7 @@ describe("Sintrop", () => {
                       },
                     ];
 
-                    await realizeInspection(1, report, isas, inspectorAddress);
+                    await realizeInspection(1, proofPhoto, report, isas, inspectorAddress);
                   });
 
                   it("should add 2 isaScore to inspection", async () => {
@@ -1082,7 +1083,7 @@ describe("Sintrop", () => {
                       },
                     ];
 
-                    await realizeInspection(1, report, isas, inspectorAddress);
+                    await realizeInspection(1, proofPhoto, report, isas, inspectorAddress);
                   });
 
                   it("should add 1 isaScore to inspection", async () => {
@@ -1102,7 +1103,7 @@ describe("Sintrop", () => {
                       },
                     ];
 
-                    await realizeInspection(1, report, isas, inspectorAddress);
+                    await realizeInspection(1, proofPhoto, report, isas, inspectorAddress);
                   });
 
                   it("should add 0 isaScore to inspection", async () => {
@@ -1122,7 +1123,7 @@ describe("Sintrop", () => {
                       },
                     ];
 
-                    await realizeInspection(1, report, isas, inspectorAddress);
+                    await realizeInspection(1, proofPhoto, report, isas, inspectorAddress);
                   });
 
                   it("should add -1 isaScore to inspection", async () => {
@@ -1142,7 +1143,7 @@ describe("Sintrop", () => {
                       },
                     ];
 
-                    await realizeInspection(1, report, isas, inspectorAddress);
+                    await realizeInspection(1, proofPhoto, report, isas, inspectorAddress);
                   });
 
                   it("should add -2 isaScore to inspection", async () => {
@@ -1162,7 +1163,7 @@ describe("Sintrop", () => {
                       },
                     ];
 
-                    await realizeInspection(1, report, isas, inspectorAddress);
+                    await realizeInspection(1, proofPhoto, report, isas, inspectorAddress);
                   });
 
                   it("should add -4 isaScore to inspection", async () => {
@@ -1182,7 +1183,7 @@ describe("Sintrop", () => {
                       },
                     ];
 
-                    await realizeInspection(1, report, isas, inspectorAddress);
+                    await realizeInspection(1, proofPhoto, report, isas, inspectorAddress);
                   });
 
                   it("should add -8 isaScore to inspection", async () => {
@@ -1202,7 +1203,7 @@ describe("Sintrop", () => {
                       },
                     ];
 
-                    await realizeInspection(1, report, isas, inspectorAddress);
+                    await realizeInspection(1, proofPhoto, report, isas, inspectorAddress);
                   });
 
                   it("should add -16 isaScore to inspection", async () => {
@@ -1222,7 +1223,7 @@ describe("Sintrop", () => {
                       },
                     ];
 
-                    await realizeInspection(1, report, isas, inspectorAddress);
+                    await realizeInspection(1, proofPhoto, report, isas, inspectorAddress);
                   });
 
                   it("should add -25 isaScore to inspection", async () => {
@@ -1242,7 +1243,7 @@ describe("Sintrop", () => {
             });
 
             it("should return error message", async () => {
-              await expect(realizeInspection(1, report, [], inspector2Address)).to.be.revertedWith(
+              await expect(realizeInspection(1, proofPhoto, report, [], inspector2Address)).to.be.revertedWith(
                 "You not accepted this inspection"
               );
             });
@@ -1251,7 +1252,7 @@ describe("Sintrop", () => {
 
         context("when inspection is not accepted", () => {
           it("should return error message", async () => {
-            await expect(realizeInspection(1, report, [], inspectorAddress)).to.be.revertedWith(
+            await expect(realizeInspection(1, proofPhoto, report, [], inspectorAddress)).to.be.revertedWith(
               "Accept this inspection before"
             );
           });
@@ -1260,7 +1261,7 @@ describe("Sintrop", () => {
 
       context("when inspection dont exists", () => {
         it("should return error message", async () => {
-          await expect(realizeInspection(1, report, [], inspectorAddress)).to.be.revertedWith(
+          await expect(realizeInspection(1, proofPhoto, report, [], inspectorAddress)).to.be.revertedWith(
             "This inspection do not exist"
           );
         });
@@ -1273,7 +1274,7 @@ describe("Sintrop", () => {
         await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
         await acceptInspection(1, inspectorAddress);
 
-        await expect(realizeInspection(1, report, [], producerAddress)).to.be.revertedWith(
+        await expect(realizeInspection(1, proofPhoto, report, [], producerAddress)).to.be.revertedWith(
           "Please register as inspector"
         );
       });
@@ -1311,7 +1312,7 @@ describe("Sintrop", () => {
           await requestInspection(producerAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(1, inspectorAddress);
-          await realizeInspection(1, report, isas(), inspectorAddress);
+          await realizeInspection(1, proofPhoto, report, isas(), inspectorAddress);
         });
 
         context("when receive 1 validation", () => {
@@ -1343,13 +1344,13 @@ describe("Sintrop", () => {
               await requestInspection(producerAddress);
               await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
               await acceptInspection(2, inspector2Address);
-              await realizeInspection(2, report, negativeScore(), inspector2Address);
+              await realizeInspection(2, proofPhoto, report, negativeScore(), inspector2Address);
 
               await advanceBlock(sintropArgs.timeBetweenInspections);
               await requestInspection(producerAddress);
               await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
               await acceptInspection(3, inspector3Address);
-              await realizeInspection(3, report, isas(), inspector3Address);
+              await realizeInspection(3, proofPhoto, report, isas(), inspector3Address);
 
               await instance.connect(validator1Address).addInspectionValidation(2, "justification");
               await instance.connect(validator2Address).addInspectionValidation(2, "justification");
@@ -1529,7 +1530,7 @@ describe("Sintrop", () => {
           await requestInspection(producerAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(1, inspectorAddress);
-          await realizeInspection(1, report, isas(), inspectorAddress);
+          await realizeInspection(1, proofPhoto, report, isas(), inspectorAddress);
 
           await advanceBlock(producerPoolArgs.blocksPerEra);
         });
