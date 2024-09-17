@@ -19,8 +19,13 @@ contract RegenerationCreditIco is Ownable {
   uint256 internal immutable DEPLOYED_AT = block.number;
 
   // ATTENTION: Update before deploy
-  uint256 internal immutable ICO_STARTS_AT = 100;
-  uint256 internal immutable ICO_ENDS_AT = 10000;
+  uint256 internal immutable ICO_STARTS_AT;
+  uint256 internal immutable ICO_ENDS_AT;
+
+  constructor(uint256 icoStartsAt_, uint256 icoEndsAt_) {
+    ICO_STARTS_AT = icoStartsAt_;
+    ICO_ENDS_AT = icoEndsAt_;
+  }
 
   event BuyTokensEvent(
     address indexed _buyer,
@@ -45,15 +50,11 @@ contract RegenerationCreditIco is Ownable {
   }
 
   function icoStart() internal view returns (bool) {
-    uint256 startsAt = DEPLOYED_AT + ICO_STARTS_AT;
-
-    return block.number > startsAt;
+    return block.number > DEPLOYED_AT + ICO_STARTS_AT;
   }
 
   function icoEnd() internal view returns (bool) {
-    uint256 expiresAt = DEPLOYED_AT + ICO_ENDS_AT;
-
-    return expiresAt > block.number;
+    return DEPLOYED_AT + ICO_ENDS_AT > block.number;
   }
 
   function withdraw(uint256 weiAmount) public onlyOwner returns (bool success) {

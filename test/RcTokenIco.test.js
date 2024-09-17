@@ -9,6 +9,8 @@ describe("RegenerationCreditIco", () => {
 
   let args = {
     totalRegenerationCredits: "1500000000000000000000000000",
+    icoStartsAt: "100",
+    icoEndsAt: "1000",
   };
 
   const sendTransation = async (from, to, tokensEthers) => {
@@ -22,7 +24,7 @@ describe("RegenerationCreditIco", () => {
     [ownerAddress, user1Address] = await ethers.getSigners();
 
     const instanceFactory = await ethers.getContractFactory("RegenerationCreditIco");
-    instance = await instanceFactory.deploy();
+    instance = await instanceFactory.deploy(args.icoStartsAt, args.icoEndsAt);
 
     const regenerationCreditFactory = await ethers.getContractFactory("RegenerationCredit");
     regenerationCredit = await regenerationCreditFactory.deploy(args.totalRegenerationCredits, instance.target);
