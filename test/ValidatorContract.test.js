@@ -769,8 +769,8 @@ describe("ValidatorContract", () => {
           inspectionMock = {
             id: 1,
             status: 3,
-            createdBy: producer1Address,
-            acceptedBy: inspector1Address,
+            producer: producer1Address,
+            inspector: inspector1Address,
             isaScore: 10,
             report: "",
             validationsCount: 0,
@@ -798,8 +798,8 @@ describe("ValidatorContract", () => {
               inspectionMock = {
                 id: 1,
                 status: 3,
-                createdBy: producer1Address,
-                acceptedBy: inspector1Address,
+                producer: producer1Address,
+                inspector: inspector1Address,
                 isaScore: 20,
                 report: "",
                 validationsCount: 2,
@@ -815,22 +815,22 @@ describe("ValidatorContract", () => {
               await addProducer("Producer A", producer1Address);
               await addInspector("Inspector A", inspector1Address);
 
-              await inspectorContract.afterAcceptInspection(inspectionMock.acceptedBy, 1);
-              await inspectorContract.afterAcceptInspection(inspectionMock.acceptedBy, 1);
+              await inspectorContract.afterAcceptInspection(inspectionMock.inspector, 1);
+              await inspectorContract.afterAcceptInspection(inspectionMock.inspector, 1);
 
-              await inspectorContract.afterRealizeInspection(inspectionMock.acceptedBy);
-              await inspectorContract.afterRealizeInspection(inspectionMock.acceptedBy);
+              await inspectorContract.afterRealizeInspection(inspectionMock.inspector);
+              await inspectorContract.afterRealizeInspection(inspectionMock.inspector);
 
-              await producerContract.afterRealizeInspection(inspectionMock.createdBy, 10);
-              await producerContract.afterRealizeInspection(inspectionMock.createdBy, 10);
-              await producerContract.afterRealizeInspection(inspectionMock.createdBy, 30);
+              await producerContract.afterRealizeInspection(inspectionMock.producer, 10);
+              await producerContract.afterRealizeInspection(inspectionMock.producer, 10);
+              await producerContract.afterRealizeInspection(inspectionMock.producer, 30);
 
-              await inspectorContract.addPenalty(inspectionMock.acceptedBy, 2);
+              await inspectorContract.addPenalty(inspectionMock.inspector, 2);
               await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", validator1Address);
             });
 
             it("deny inspector", async () => {
-              const newInspectorType = await userContract.getUser(inspectionMock.acceptedBy);
+              const newInspectorType = await userContract.getUser(inspectionMock.inspector);
 
               expect(newInspectorType).to.equal(9);
             });
@@ -871,8 +871,8 @@ describe("ValidatorContract", () => {
               inspectionMock = {
                 id: 1,
                 status: 3,
-                createdBy: producer1Address,
-                acceptedBy: inspector1Address,
+                producer: producer1Address,
+                inspector: inspector1Address,
                 isaScore: 20,
                 report: "",
                 validationsCount: 2,
@@ -888,21 +888,21 @@ describe("ValidatorContract", () => {
               await addProducer("Producer A", producer1Address);
               await addInspector("Inspector A", inspector1Address);
 
-              await inspectorContract.afterAcceptInspection(inspectionMock.acceptedBy, 1);
-              await inspectorContract.afterAcceptInspection(inspectionMock.acceptedBy, 1);
+              await inspectorContract.afterAcceptInspection(inspectionMock.inspector, 1);
+              await inspectorContract.afterAcceptInspection(inspectionMock.inspector, 1);
 
-              await inspectorContract.afterRealizeInspection(inspectionMock.acceptedBy);
-              await inspectorContract.afterRealizeInspection(inspectionMock.acceptedBy);
+              await inspectorContract.afterRealizeInspection(inspectionMock.inspector);
+              await inspectorContract.afterRealizeInspection(inspectionMock.inspector);
 
-              await producerContract.afterRealizeInspection(inspectionMock.createdBy, 10);
-              await producerContract.afterRealizeInspection(inspectionMock.createdBy, 10);
-              await producerContract.afterRealizeInspection(inspectionMock.createdBy, 30);
+              await producerContract.afterRealizeInspection(inspectionMock.producer, 10);
+              await producerContract.afterRealizeInspection(inspectionMock.producer, 10);
+              await producerContract.afterRealizeInspection(inspectionMock.producer, 30);
 
               await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", validator1Address);
             });
 
             it("inspector is the same", async () => {
-              const newInspectorType = await userContract.getUser(inspectionMock.acceptedBy);
+              const newInspectorType = await userContract.getUser(inspectionMock.inspector);
 
               expect(newInspectorType).to.equal(2);
             });
@@ -944,8 +944,8 @@ describe("ValidatorContract", () => {
             inspectionMock = {
               id: 1,
               status: 3,
-              createdBy: producer1Address,
-              acceptedBy: inspector1Address,
+              producer: producer1Address,
+              inspector: inspector1Address,
               isaScore: 20,
               report: "",
               validationsCount: 1,
