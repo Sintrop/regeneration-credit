@@ -146,7 +146,7 @@ contract Sintrop is Callable {
     Inspection memory inspection = inspections[inspectionId];
 
     require(inspectionExists(inspectionId), "This inspection do not exist");
-    // require(_isaInspections.length == 4, "Invalid isas length");
+    require(_isaInspections.length == 4, "Invalid isas length");
     require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
     require(inspection.acceptedBy == msg.sender, "You not accepted this inspection");

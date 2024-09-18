@@ -812,648 +812,676 @@ describe("Sintrop", () => {
                 await addCategory("Soil D", owner);
               });
 
-              describe(".setActivistLevel", () => {
-                context("when producer do not win minimum inspection", () => {
-                  beforeEach(async () => {
-                    await realizeInspection(1, report, isas(), inspectorAddress);
+              context("when pass isasInspection equal 4 isas size", () => {
+                describe(".setActivistLevel", () => {
+                  context("when producer do not win minimum inspection", () => {
+                    beforeEach(async () => {
+                      await realizeInspection(1, report, isas(), inspectorAddress);
+                    });
+
+                    it("Activist must do not win levels", async () => {
+                      const activist = await activistContract.getActivist(activistContract);
+
+                      expect(activist.pool.level).to.equal(0);
+                    });
+
+                    it("Activist pool win 0 level to activist", async () => {
+                      const levels = await activistPool.eraLevels(4, activist1Address);
+
+                      expect(levels).to.equal(0);
+                    });
                   });
 
-                  it("Activist must do not win levels", async () => {
-                    const activist = await activistContract.getActivist(activistContract);
+                  context("when inspector do not win minimum inspection", () => {
+                    beforeEach(async () => {
+                      await realizeInspection(1, report, isas(), inspectorAddress);
+                    });
 
-                    expect(activist.pool.level).to.equal(0);
+                    it("Activist must do not win levels", async () => {
+                      const activist = await activistContract.getActivist(activistContract);
+
+                      expect(activist.pool.level).to.equal(0);
+                    });
+
+                    it("Activist pool win 0 level to activist", async () => {
+                      const levels = await activistPool.eraLevels(4, activist1Address);
+
+                      expect(levels).to.equal(0);
+                    });
                   });
 
-                  it("Activist pool win 0 level to activist", async () => {
-                    const levels = await activistPool.eraLevels(4, activist1Address);
+                  context("when producer win minimum inspection", () => {
+                    beforeEach(async () => {
+                      await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
+                      await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
+                      await realizeInspection(1, report, isas(), inspectorAddress);
+                    });
 
-                    expect(levels).to.equal(0);
+                    it("Activist must win 1 level", async () => {
+                      const activist = await activistContract.getActivist(activist1Address);
+
+                      expect(activist.pool.level).to.equal(1);
+                    });
+
+                    it("Activist pool win 1 level to activist", async () => {
+                      const levels = await activistPool.eraLevels(4, activist1Address);
+
+                      expect(levels).to.equal(1);
+                    });
+                  });
+
+                  context("when inspector win minimum inspection", () => {
+                    beforeEach(async () => {
+                      await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
+                      await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
+
+                      await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
+                      await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
+
+                      await realizeInspection(1, report, isas(), inspectorAddress);
+                    });
+
+                    it("Activist must win 1 level", async () => {
+                      const activist = await activistContract.getActivist(activist1Address);
+
+                      expect(activist.pool.level).to.equal(1);
+                    });
+
+                    it("Activist pool win 1 level to activist", async () => {
+                      const levels = await activistPool.eraLevels(5, activist1Address);
+
+                      expect(levels).to.equal(1);
+                    });
+                  });
+
+                  context("when producer and inspector win minimum inspection", () => {
+                    beforeEach(async () => {
+                      await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
+                      await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
+
+                      await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
+                      await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
+
+                      await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
+                      await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
+                      await realizeInspection(1, report, isas(), inspectorAddress);
+                    });
+
+                    it("Activist must win 1 level", async () => {
+                      const activist = await activistContract.getActivist(activist1Address);
+
+                      expect(activist.pool.level).to.equal(2);
+                    });
+
+                    it("Activist pool win 1 level to activist", async () => {
+                      const levels = await activistPool.eraLevels(5, activist1Address);
+
+                      expect(levels).to.equal(2);
+                    });
                   });
                 });
 
-                context("when inspector do not win minimum inspection", () => {
+                context("when check inspection", () => {
                   beforeEach(async () => {
                     await realizeInspection(1, report, isas(), inspectorAddress);
                   });
 
-                  it("Activist must do not win levels", async () => {
-                    const activist = await activistContract.getActivist(activistContract);
+                  it("should change inspection status to INSPECTED", async () => {
+                    const inspection = await instance.getInspection(1);
 
-                    expect(activist.pool.level).to.equal(0);
+                    expect(inspection.status).to.equal(STATUS.inspected);
                   });
 
-                  it("Activist pool win 0 level to activist", async () => {
-                    const levels = await activistPool.eraLevels(4, activist1Address);
+                  it("populate inspection inspectedAt", async () => {
+                    const inspection = await instance.getInspection(1);
 
-                    expect(levels).to.equal(0);
+                    expect(inspection.inspectedAtEra).to.equal(1);
+                  });
+
+                  it("should decrease inspector giveUps by 1", async () => {
+                    const inspector = await inspectorContract.getInspector(inspectorAddress);
+
+                    expect(inspector.giveUps).to.equal("0");
+                  });
+
+                  it("should update inspectionList", async () => {
+                    const inspections = await instance.getInspections();
+
+                    expect(inspections[0].status).to.equal(STATUS.inspected);
+                  });
+
+                  it("should update inspection isas", async () => {
+                    const isasResponse = await instance.getIsa(1);
+
+                    const isas_ = [
+                      [1n, 1n, 10n],
+                      [2n, 1n, 10n],
+                      [3n, 2n, 10n],
+                      [4n, 7n, 0n],
+                    ];
+
+                    expect(isasResponse.join("")).to.equals(isas_.join(""));
+                  });
+
+                  it("should add isaScore in producer", async () => {
+                    const inspection = await instance.getInspection(1);
+                    const producer = await producerContract.getProducer(producerAddress);
+
+                    expect(inspection.isaScore).to.equal(producer.isa.isaScore);
+                  });
+
+                  it("should set producer pendingInspection to false", async () => {
+                    const producer = await producerContract.getProducer(producerAddress);
+
+                    expect(producer.pendingInspection).to.equal(false);
+                  });
+
+                  it("should increment producer totalInspections", async () => {
+                    const producer = await producerContract.getProducer(producerAddress);
+
+                    expect(producer.totalInspections).to.equal(1);
+                  });
+
+                  it("should increment inspector totalInspections", async () => {
+                    const inspector = await inspectorContract.getInspector(inspectorAddress);
+
+                    expect(inspector.totalInspections).to.equal(1);
+                  });
+
+                  it("should add inspection to inspector in userInspections", async () => {
+                    const userInspections = await instance.connect(inspectorAddress).getInspectionsHistory();
+
+                    expect(userInspections.length).to.equal(1);
+                  });
+
+                  it("should add inspection to producer in userInspections", async () => {
+                    const userInspections = await instance.connect(producerAddress).getInspectionsHistory();
+
+                    expect(userInspections.length).to.equal(1);
                   });
                 });
 
-                context("when producer win minimum inspection", () => {
-                  beforeEach(async () => {
-                    await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
-                    await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
-                    await realizeInspection(1, report, isas(), inspectorAddress);
+                context("when check inspection isas", () => {
+                  context("when select REGENERATIVE_6", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 1,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 1,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 1,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 1,
+                          indicator: 25,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add 100 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(100);
+                    });
                   });
 
-                  it("Activist must win 1 level", async () => {
-                    const activist = await activistContract.getActivist(activist1Address);
+                  context("when select REGENERATIVE_5", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 2,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 2,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 2,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 2,
+                          indicator: 25,
+                        },
+                      ];
 
-                    expect(activist.pool.level).to.equal(1);
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add 64 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(64);
+                    });
                   });
 
-                  it("Activist pool win 1 level to activist", async () => {
-                    const levels = await activistPool.eraLevels(4, activist1Address);
+                  context("when select REGENERATIVE_4", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 3,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 3,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 3,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 3,
+                          indicator: 25,
+                        },
+                      ];
 
-                    expect(levels).to.equal(1);
-                  });
-                });
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
 
-                context("when inspector win minimum inspection", () => {
-                  beforeEach(async () => {
-                    await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
-                    await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
+                    it("should add 32 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
 
-                    await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
-                    await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
-
-                    await realizeInspection(1, report, isas(), inspectorAddress);
-                  });
-
-                  it("Activist must win 1 level", async () => {
-                    const activist = await activistContract.getActivist(activist1Address);
-
-                    expect(activist.pool.level).to.equal(1);
-                  });
-
-                  it("Activist pool win 1 level to activist", async () => {
-                    const levels = await activistPool.eraLevels(5, activist1Address);
-
-                    expect(levels).to.equal(1);
-                  });
-                });
-
-                context("when producer and inspector win minimum inspection", () => {
-                  beforeEach(async () => {
-                    await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
-                    await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
-
-                    await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
-                    await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
-
-                    await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
-                    await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
-                    await realizeInspection(1, report, isas(), inspectorAddress);
+                      expect(inspection.isaScore).to.equal(32);
+                    });
                   });
 
-                  it("Activist must win 1 level", async () => {
-                    const activist = await activistContract.getActivist(activist1Address);
+                  context("when select REGENERATIVE_3", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 4,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 4,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 4,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 4,
+                          indicator: 25,
+                        },
+                      ];
 
-                    expect(activist.pool.level).to.equal(2);
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add 16 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(16);
+                    });
                   });
 
-                  it("Activist pool win 1 level to activist", async () => {
-                    const levels = await activistPool.eraLevels(5, activist1Address);
+                  context("when select REGENERATIVE_2", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 5,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 5,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 5,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 5,
+                          indicator: 25,
+                        },
+                      ];
 
-                    expect(levels).to.equal(2);
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add 8 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(8);
+                    });
+                  });
+
+                  context("when select REGENERATIVE_1", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 6,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 6,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 6,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 6,
+                          indicator: 25,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add 1 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(4);
+                    });
+                  });
+
+                  context("when select NEUTRO", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 7,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 7,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 7,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 7,
+                          indicator: 25,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add 0 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(0);
+                    });
+                  });
+
+                  context("when select NOT_REGENERATIVE_1", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 8,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 8,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 8,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 8,
+                          indicator: -1,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add -4 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(-4);
+                    });
+                  });
+
+                  context("when select NOT_REGENERATIVE_2", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 9,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 9,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 9,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 9,
+                          indicator: -1,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add -8 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(-8);
+                    });
+                  });
+
+                  context("when select NOT_REGENERATIVE_3", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 10,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 10,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 10,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 10,
+                          indicator: -1,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add -16 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(-16);
+                    });
+                  });
+
+                  context("when select NOT_REGENERATIVE_4", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 11,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 11,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 11,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 11,
+                          indicator: -1,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add -32 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(-32);
+                    });
+                  });
+
+                  context("when select NOT_REGENERATIVE_5", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 12,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 12,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 12,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 12,
+                          indicator: -1,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add -64 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(-64);
+                    });
+                  });
+
+                  context("when select NOT_REGENERATIVE_6", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 13,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 13,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 13,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 13,
+                          indicator: -1,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add -100 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(-100);
+                    });
                   });
                 });
               });
 
-              context("when check inspection", () => {
-                beforeEach(async () => {
-                  await realizeInspection(1, report, isas(), inspectorAddress);
-                });
-
-                it("should change inspection status to INSPECTED", async () => {
-                  const inspection = await instance.getInspection(1);
-
-                  expect(inspection.status).to.equal(STATUS.inspected);
-                });
-
-                it("populate inspection inspectedAt", async () => {
-                  const inspection = await instance.getInspection(1);
-
-                  expect(inspection.inspectedAtEra).to.equal(1);
-                });
-
-                it("should decrease inspector giveUps by 1", async () => {
-                  const inspector = await inspectorContract.getInspector(inspectorAddress);
-
-                  expect(inspector.giveUps).to.equal("0");
-                });
-
-                it("should update inspectionList", async () => {
-                  const inspections = await instance.getInspections();
-
-                  expect(inspections[0].status).to.equal(STATUS.inspected);
-                });
-
-                it("should update inspection isas", async () => {
-                  const isasResponse = await instance.getIsa(1);
-
-                  const isas_ = [
-                    [1n, 1n, 10n],
-                    [2n, 1n, 10n],
-                    [3n, 2n, 10n],
-                    [4n, 7n, 0n],
-                  ];
-
-                  expect(isasResponse.join("")).to.equals(isas_.join(""));
-                });
-
-                it("should add isaScore in producer", async () => {
-                  const inspection = await instance.getInspection(1);
-                  const producer = await producerContract.getProducer(producerAddress);
-
-                  expect(inspection.isaScore).to.equal(producer.isa.isaScore);
-                });
-
-                it("should set producer pendingInspection to false", async () => {
-                  const producer = await producerContract.getProducer(producerAddress);
-
-                  expect(producer.pendingInspection).to.equal(false);
-                });
-
-                it("should increment producer totalInspections", async () => {
-                  const producer = await producerContract.getProducer(producerAddress);
-
-                  expect(producer.totalInspections).to.equal(1);
-                });
-
-                it("should increment inspector totalInspections", async () => {
-                  const inspector = await inspectorContract.getInspector(inspectorAddress);
-
-                  expect(inspector.totalInspections).to.equal(1);
-                });
-
-                it("should add inspection to inspector in userInspections", async () => {
-                  const userInspections = await instance.connect(inspectorAddress).getInspectionsHistory();
-
-                  expect(userInspections.length).to.equal(1);
-                });
-
-                it("should add inspection to producer in userInspections", async () => {
-                  const userInspections = await instance.connect(producerAddress).getInspectionsHistory();
-
-                  expect(userInspections.length).to.equal(1);
-                });
-              });
-
-              context("when check inspection isas", () => {
-                context("when select REGENERATIVE_6", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaId: 1,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 2,
-                        isaId: 1,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 3,
-                        isaId: 1,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 4,
-                        isaId: 1,
-                        indicator: 25,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add 100 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(100);
-                  });
-                });
-
-                context("when select REGENERATIVE_5", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaId: 2,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 2,
-                        isaId: 2,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 3,
-                        isaId: 2,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 4,
-                        isaId: 2,
-                        indicator: 25,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add 64 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(64);
-                  });
-                });
-
-                context("when select REGENERATIVE_4", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaId: 3,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 2,
-                        isaId: 3,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 3,
-                        isaId: 3,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 4,
-                        isaId: 3,
-                        indicator: 25,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add 32 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(32);
-                  });
-                });
-
-                context("when select REGENERATIVE_3", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaId: 4,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 2,
-                        isaId: 4,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 3,
-                        isaId: 4,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 4,
-                        isaId: 4,
-                        indicator: 25,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add 16 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(16);
-                  });
-                });
-
-                context("when select REGENERATIVE_2", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaId: 5,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 2,
-                        isaId: 5,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 3,
-                        isaId: 5,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 4,
-                        isaId: 5,
-                        indicator: 25,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add 8 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(8);
-                  });
-                });
-
-                context("when select REGENERATIVE_1", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaId: 6,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 2,
-                        isaId: 6,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 3,
-                        isaId: 6,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 4,
-                        isaId: 6,
-                        indicator: 25,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add 1 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(4);
-                  });
-                });
-
-                context("when select NEUTRO", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaId: 7,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 2,
-                        isaId: 7,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 3,
-                        isaId: 7,
-                        indicator: 25,
-                      },
-                      {
-                        categoryId: 4,
-                        isaId: 7,
-                        indicator: 25,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add 0 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(0);
-                  });
-                });
-
-                context("when select NOT_REGENERATIVE_1", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaId: 8,
-                        indicator: -1,
-                      },
-                      {
-                        categoryId: 2,
-                        isaId: 8,
-                        indicator: -1,
-                      },
-                      {
-                        categoryId: 3,
-                        isaId: 8,
-                        indicator: -1,
-                      },
-                      {
-                        categoryId: 4,
-                        isaId: 8,
-                        indicator: -1,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add -4 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(-4);
-                  });
-                });
-
-                context("when select NOT_REGENERATIVE_2", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaId: 9,
-                        indicator: -1,
-                      },
-                      {
-                        categoryId: 2,
-                        isaId: 9,
-                        indicator: -1,
-                      },
-                      {
-                        categoryId: 3,
-                        isaId: 9,
-                        indicator: -1,
-                      },
-                      {
-                        categoryId: 4,
-                        isaId: 9,
-                        indicator: -1,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add -8 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(-8);
-                  });
-                });
-
-                context("when select NOT_REGENERATIVE_3", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaId: 10,
-                        indicator: -1,
-                      },
-                      {
-                        categoryId: 2,
-                        isaId: 10,
-                        indicator: -1,
-                      },
-                      {
-                        categoryId: 3,
-                        isaId: 10,
-                        indicator: -1,
-                      },
-                      {
-                        categoryId: 4,
-                        isaId: 10,
-                        indicator: -1,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add -16 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(-16);
-                  });
-                });
-
-                context("when select NOT_REGENERATIVE_4", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaId: 11,
-                        indicator: -1,
-                      },
-                      {
-                        categoryId: 2,
-                        isaId: 11,
-                        indicator: -1,
-                      },
-                      {
-                        categoryId: 3,
-                        isaId: 11,
-                        indicator: -1,
-                      },
-                      {
-                        categoryId: 4,
-                        isaId: 11,
-                        indicator: -1,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add -32 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(-32);
-                  });
-                });
-
-                context("when select NOT_REGENERATIVE_5", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaId: 12,
-                        indicator: -1,
-                      },
-                      {
-                        categoryId: 2,
-                        isaId: 12,
-                        indicator: -1,
-                      },
-                      {
-                        categoryId: 3,
-                        isaId: 12,
-                        indicator: -1,
-                      },
-                      {
-                        categoryId: 4,
-                        isaId: 12,
-                        indicator: -1,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add -64 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(-64);
-                  });
-                });
-
-                context("when select NOT_REGENERATIVE_6", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaId: 13,
-                        indicator: -1,
-                      },
-                      {
-                        categoryId: 2,
-                        isaId: 13,
-                        indicator: -1,
-                      },
-                      {
-                        categoryId: 3,
-                        isaId: 13,
-                        indicator: -1,
-                      },
-                      {
-                        categoryId: 4,
-                        isaId: 13,
-                        indicator: -1,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add -100 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(-100);
-                  });
+              context("when pass isasInspection different 4 isas size", () => {
+                const isas = [
+                  {
+                    categoryId: 1,
+                    isaId: 1,
+                    indicator: 25,
+                  },
+                  {
+                    categoryId: 2,
+                    isaId: 1,
+                    indicator: 25,
+                  },
+                  {
+                    categoryId: 3,
+                    isaId: 1,
+                    indicator: 25,
+                  },
+                ];
+
+                it("should return error message", async () => {
+                  await expect(realizeInspection(1, report, isas, inspectorAddress)).to.be.revertedWith(
+                    "Invalid isas length"
+                  );
                 });
               });
             });
