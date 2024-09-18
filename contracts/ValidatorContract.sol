@@ -207,6 +207,14 @@ contract ValidatorContract is Callable {
     return inspectionValidations[inspectionId];
   }
 
+  function getWorkValidations(uint256 workId) public view returns (ResourceValidation[] memory) {
+    return workValidations[workId];
+  }
+
+  function getContributionValidations(uint256 contributionId) public view returns (ResourceValidation[] memory) {
+    return contributionValidations[contributionId];
+  }
+
   function getValidators() public view returns (Validator[] memory) {
     uint256 usersCount = userContract.userTypesCount(USER_TYPE);
     Validator[] memory validatorList = new Validator[](usersCount);

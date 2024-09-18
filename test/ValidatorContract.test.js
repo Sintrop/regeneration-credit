@@ -1069,10 +1069,21 @@ describe("ValidatorContract", () => {
                 .addDeveloperContributionValidation(contribution3, "justification", validator2Address);
             });
 
-            it("deny developer", async () => {
-              const newInspectorType = await userContract.getUser(dev1Address);
+            it("should add work validation", async () => {
+              const validations = await instance.getContributionValidations(1);
+              const validation = validations[0];
 
-              expect(newInspectorType).to.equal(9);
+              expect(validations.length).to.equal(2);
+              expect(validation.validator).to.equal(validator1Address.address);
+              expect(validation.resourceId).to.equal(1);
+              expect(validation.justification).to.equal("justification");
+              expect(validation.majorityValidatorsCount).to.equal(2);
+            });
+
+            it("deny developer", async () => {
+              const newDeveloperType = await userContract.getUser(dev1Address);
+
+              expect(newDeveloperType).to.equal(9);
             });
 
             it("remove contribution isa level from developer pool", async () => {
@@ -1102,9 +1113,9 @@ describe("ValidatorContract", () => {
             });
 
             it("developer is the same", async () => {
-              const newInspectorType = await userContract.getUser(dev1Address);
+              const newDeveloperType = await userContract.getUser(dev1Address);
 
-              expect(newInspectorType).to.equal(4);
+              expect(newDeveloperType).to.equal(4);
             });
 
             it("remove contribution isa level from developer pool", async () => {
@@ -1174,6 +1185,17 @@ describe("ValidatorContract", () => {
           await instance.connect(owner).addResearcheWorkValidation(work, "justification", validator1Address);
         });
 
+        it("should add work validation", async () => {
+          const validations = await instance.getWorkValidations(1);
+          const validation = validations[0];
+
+          expect(validations.length).to.equal(1);
+          expect(validation.validator).to.equal(validator1Address.address);
+          expect(validation.resourceId).to.equal(1);
+          expect(validation.justification).to.equal("justification");
+          expect(validation.majorityValidatorsCount).to.equal(2);
+        });
+
         it("should return error", async () => {
           let work = await researcherContract.works(1);
           work = generateWorkObject(work);
@@ -1222,14 +1244,14 @@ describe("ValidatorContract", () => {
               await instance.connect(owner).addResearcheWorkValidation(work3, "justification", validator2Address);
             });
 
-            it("deny developer", async () => {
-              const newInspectorType = await userContract.getUser(resea1Address);
+            it("deny researcher", async () => {
+              const newResearcherType = await userContract.getUser(resea1Address);
 
-              expect(newInspectorType).to.equal(9);
+              expect(newResearcherType).to.equal(9);
             });
 
             it("remove work isa level from researcher pool", async () => {
-              const levels = await developerPool.eraLevels(4, resea1Address);
+              const levels = await researcherPool.eraLevels(4, resea1Address);
 
               expect(levels).to.equal(0);
             });
@@ -1256,9 +1278,9 @@ describe("ValidatorContract", () => {
               expect(userType).to.equal(3);
             });
 
-            it("remove contribution isa level from developer pool", async () => {
+            it("remove contribution isa level from researcher pool", async () => {
               let work = await researcherContract.works(1);
-              const levels = await developerPool.eraLevels(work.era, resea1Address);
+              const levels = await researcherPool.eraLevels(work.era, resea1Address);
 
               expect(levels).to.equal(0);
             });
