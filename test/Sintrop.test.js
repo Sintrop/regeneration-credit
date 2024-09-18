@@ -152,6 +152,11 @@ describe("Sintrop", () => {
         isaId: 2,
         indicator: 10,
       },
+      {
+        categoryId: 4,
+        isaId: 7,
+        indicator: 0,
+      },
     ];
   };
 
@@ -434,12 +439,30 @@ describe("Sintrop", () => {
           beforeEach(async () => {
             await acceptInspection(1, inspectorAddress);
             await addCategory("Soil A", owner);
+            await addCategory("Soil B", owner);
+            await addCategory("Soil C", owner);
+            await addCategory("Soil D", owner);
 
             const isas = [
               {
                 categoryId: 1,
                 isaId: 1,
                 indicator: 10,
+              },
+              {
+                categoryId: 2,
+                isaId: 1,
+                indicator: 25,
+              },
+              {
+                categoryId: 3,
+                isaId: 1,
+                indicator: 25,
+              },
+              {
+                categoryId: 4,
+                isaId: 1,
+                indicator: 25,
               },
             ];
             await realizeInspection(1, report, isas, inspectorAddress);
@@ -514,6 +537,11 @@ describe("Sintrop", () => {
 
   describe("#acceptInspection", () => {
     beforeEach(async () => {
+      await addCategory("Soil A", owner);
+      await addCategory("Soil B", owner);
+      await addCategory("Soil C", owner);
+      await addCategory("Soil D", owner);
+
       await addInvitation(owner, producerAddress, userTypes.Producer, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
@@ -688,7 +716,7 @@ describe("Sintrop", () => {
             context("when have finished last inspection", () => {
               beforeEach(async () => {
                 await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-                await realizeInspection(1, "", [], inspectorAddress);
+                await realizeInspection(1, "", isas(), inspectorAddress);
                 await acceptInspection(2, inspectorAddress);
               });
 
@@ -711,7 +739,7 @@ describe("Sintrop", () => {
           beforeEach(async () => {
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
             await acceptInspection(1, inspectorAddress);
-            await realizeInspection(1, report, [], inspectorAddress);
+            await realizeInspection(1, report, isas(), inspectorAddress);
 
             await advanceBlock(20);
 
@@ -770,7 +798,7 @@ describe("Sintrop", () => {
               });
 
               it("should return error message", async () => {
-                await expect(realizeInspection(1, report, [], inspectorAddress)).to.be.revertedWith(
+                await expect(realizeInspection(1, report, isas(), inspectorAddress)).to.be.revertedWith(
                   "Inspection Expired"
                 );
               });
@@ -781,6 +809,7 @@ describe("Sintrop", () => {
                 await addCategory("Soil A", owner);
                 await addCategory("Soil B", owner);
                 await addCategory("Soil C", owner);
+                await addCategory("Soil D", owner);
               });
 
               describe(".setActivistLevel", () => {
@@ -921,11 +950,13 @@ describe("Sintrop", () => {
                 });
 
                 it("should update inspection isas", async () => {
-                  const isasResponse = await categoryContract.getIsa(1);
+                  const isasResponse = await instance.getIsa(1);
+
                   const isas_ = [
                     [1n, 1n, 10n],
                     [2n, 1n, 10n],
                     [3n, 2n, 10n],
+                    [4n, 7n, 0n],
                   ];
 
                   expect(isasResponse.join("")).to.equals(isas_.join(""));
@@ -978,15 +1009,30 @@ describe("Sintrop", () => {
                         isaId: 1,
                         indicator: 25,
                       },
+                      {
+                        categoryId: 2,
+                        isaId: 1,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 3,
+                        isaId: 1,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 4,
+                        isaId: 1,
+                        indicator: 25,
+                      },
                     ];
 
                     await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
-                  it("should add 25 isaScore to inspection", async () => {
+                  it("should add 100 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    expect(inspection.isaScore).to.equal(25);
+                    expect(inspection.isaScore).to.equal(100);
                   });
                 });
 
@@ -996,7 +1042,92 @@ describe("Sintrop", () => {
                       {
                         categoryId: 1,
                         isaId: 2,
-                        indicator: 10,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 2,
+                        isaId: 2,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 3,
+                        isaId: 2,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 4,
+                        isaId: 2,
+                        indicator: 25,
+                      },
+                    ];
+
+                    await realizeInspection(1, report, isas, inspectorAddress);
+                  });
+
+                  it("should add 64 isaScore to inspection", async () => {
+                    const inspection = await instance.getInspection(1);
+
+                    expect(inspection.isaScore).to.equal(64);
+                  });
+                });
+
+                context("when select REGENERATIVE_4", () => {
+                  beforeEach(async () => {
+                    const isas = [
+                      {
+                        categoryId: 1,
+                        isaId: 3,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 2,
+                        isaId: 3,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 3,
+                        isaId: 3,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 4,
+                        isaId: 3,
+                        indicator: 25,
+                      },
+                    ];
+
+                    await realizeInspection(1, report, isas, inspectorAddress);
+                  });
+
+                  it("should add 32 isaScore to inspection", async () => {
+                    const inspection = await instance.getInspection(1);
+
+                    expect(inspection.isaScore).to.equal(32);
+                  });
+                });
+
+                context("when select REGENERATIVE_3", () => {
+                  beforeEach(async () => {
+                    const isas = [
+                      {
+                        categoryId: 1,
+                        isaId: 4,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 2,
+                        isaId: 4,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 3,
+                        isaId: 4,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 4,
+                        isaId: 4,
+                        indicator: 25,
                       },
                     ];
 
@@ -1010,14 +1141,28 @@ describe("Sintrop", () => {
                   });
                 });
 
-                context("when select REGENERATIVE_4", () => {
+                context("when select REGENERATIVE_2", () => {
                   beforeEach(async () => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaId: 3,
-                        report: "REGENERATIVE_1",
-                        indicator: 1,
+                        isaId: 5,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 2,
+                        isaId: 5,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 3,
+                        isaId: 5,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 4,
+                        isaId: 5,
+                        indicator: 25,
                       },
                     ];
 
@@ -1031,54 +1176,28 @@ describe("Sintrop", () => {
                   });
                 });
 
-                context("when select REGENERATIVE_3", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaId: 4,
-                        indicator: 25,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add 4 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(4);
-                  });
-                });
-
-                context("when select REGENERATIVE_2", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaId: 5,
-                        indicator: 10,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add 2 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(2);
-                  });
-                });
-
                 context("when select REGENERATIVE_1", () => {
                   beforeEach(async () => {
                     const isas = [
                       {
                         categoryId: 1,
                         isaId: 6,
-                        report: "REGENERATIVE_1",
-                        indicator: 1,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 2,
+                        isaId: 6,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 3,
+                        isaId: 6,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 4,
+                        isaId: 6,
+                        indicator: 25,
                       },
                     ];
 
@@ -1088,7 +1207,7 @@ describe("Sintrop", () => {
                   it("should add 1 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    expect(inspection.isaScore).to.equal(1);
+                    expect(inspection.isaScore).to.equal(4);
                   });
                 });
 
@@ -1098,7 +1217,22 @@ describe("Sintrop", () => {
                       {
                         categoryId: 1,
                         isaId: 7,
-                        indicator: 0,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 2,
+                        isaId: 7,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 3,
+                        isaId: 7,
+                        indicator: 25,
+                      },
+                      {
+                        categoryId: 4,
+                        isaId: 7,
+                        indicator: 25,
                       },
                     ];
 
@@ -1120,45 +1254,20 @@ describe("Sintrop", () => {
                         isaId: 8,
                         indicator: -1,
                       },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add -1 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(-1);
-                  });
-                });
-
-                context("when select NOT_REGENERATIVE_2", () => {
-                  beforeEach(async () => {
-                    const isas = [
                       {
-                        categoryId: 1,
-                        isaId: 9,
-                        indicator: -10,
+                        categoryId: 2,
+                        isaId: 8,
+                        indicator: -1,
                       },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add -2 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(-2);
-                  });
-                });
-
-                context("when select NOT_REGENERATIVE_3", () => {
-                  beforeEach(async () => {
-                    const isas = [
                       {
-                        categoryId: 1,
-                        isaId: 10,
-                        indicator: -25,
+                        categoryId: 3,
+                        isaId: 8,
+                        indicator: -1,
+                      },
+                      {
+                        categoryId: 4,
+                        isaId: 8,
+                        indicator: -1,
                       },
                     ];
 
@@ -1172,13 +1281,28 @@ describe("Sintrop", () => {
                   });
                 });
 
-                context("when select NOT_REGENERATIVE_4", () => {
+                context("when select NOT_REGENERATIVE_2", () => {
                   beforeEach(async () => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaId: 11,
-                        indicator: -25,
+                        isaId: 9,
+                        indicator: -1,
+                      },
+                      {
+                        categoryId: 2,
+                        isaId: 9,
+                        indicator: -1,
+                      },
+                      {
+                        categoryId: 3,
+                        isaId: 9,
+                        indicator: -1,
+                      },
+                      {
+                        categoryId: 4,
+                        isaId: 9,
+                        indicator: -1,
                       },
                     ];
 
@@ -1192,13 +1316,28 @@ describe("Sintrop", () => {
                   });
                 });
 
-                context("when select NOT_REGENERATIVE_5", () => {
+                context("when select NOT_REGENERATIVE_3", () => {
                   beforeEach(async () => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaId: 12,
-                        indicator: -25,
+                        isaId: 10,
+                        indicator: -1,
+                      },
+                      {
+                        categoryId: 2,
+                        isaId: 10,
+                        indicator: -1,
+                      },
+                      {
+                        categoryId: 3,
+                        isaId: 10,
+                        indicator: -1,
+                      },
+                      {
+                        categoryId: 4,
+                        isaId: 10,
+                        indicator: -1,
                       },
                     ];
 
@@ -1212,23 +1351,108 @@ describe("Sintrop", () => {
                   });
                 });
 
-                context("when select NOT_REGENERATIVE_6", () => {
+                context("when select NOT_REGENERATIVE_4", () => {
                   beforeEach(async () => {
                     const isas = [
                       {
                         categoryId: 1,
-                        isaId: 13,
-                        indicator: -25,
+                        isaId: 11,
+                        indicator: -1,
+                      },
+                      {
+                        categoryId: 2,
+                        isaId: 11,
+                        indicator: -1,
+                      },
+                      {
+                        categoryId: 3,
+                        isaId: 11,
+                        indicator: -1,
+                      },
+                      {
+                        categoryId: 4,
+                        isaId: 11,
+                        indicator: -1,
                       },
                     ];
 
                     await realizeInspection(1, report, isas, inspectorAddress);
                   });
 
-                  it("should add -25 isaScore to inspection", async () => {
+                  it("should add -32 isaScore to inspection", async () => {
                     const inspection = await instance.getInspection(1);
 
-                    expect(inspection.isaScore).to.equal(-25);
+                    expect(inspection.isaScore).to.equal(-32);
+                  });
+                });
+
+                context("when select NOT_REGENERATIVE_5", () => {
+                  beforeEach(async () => {
+                    const isas = [
+                      {
+                        categoryId: 1,
+                        isaId: 12,
+                        indicator: -1,
+                      },
+                      {
+                        categoryId: 2,
+                        isaId: 12,
+                        indicator: -1,
+                      },
+                      {
+                        categoryId: 3,
+                        isaId: 12,
+                        indicator: -1,
+                      },
+                      {
+                        categoryId: 4,
+                        isaId: 12,
+                        indicator: -1,
+                      },
+                    ];
+
+                    await realizeInspection(1, report, isas, inspectorAddress);
+                  });
+
+                  it("should add -64 isaScore to inspection", async () => {
+                    const inspection = await instance.getInspection(1);
+
+                    expect(inspection.isaScore).to.equal(-64);
+                  });
+                });
+
+                context("when select NOT_REGENERATIVE_6", () => {
+                  beforeEach(async () => {
+                    const isas = [
+                      {
+                        categoryId: 1,
+                        isaId: 13,
+                        indicator: -1,
+                      },
+                      {
+                        categoryId: 2,
+                        isaId: 13,
+                        indicator: -1,
+                      },
+                      {
+                        categoryId: 3,
+                        isaId: 13,
+                        indicator: -1,
+                      },
+                      {
+                        categoryId: 4,
+                        isaId: 13,
+                        indicator: -1,
+                      },
+                    ];
+
+                    await realizeInspection(1, report, isas, inspectorAddress);
+                  });
+
+                  it("should add -100 isaScore to inspection", async () => {
+                    const inspection = await instance.getInspection(1);
+
+                    expect(inspection.isaScore).to.equal(-100);
                   });
                 });
               });
@@ -1242,7 +1466,7 @@ describe("Sintrop", () => {
             });
 
             it("should return error message", async () => {
-              await expect(realizeInspection(1, report, [], inspector2Address)).to.be.revertedWith(
+              await expect(realizeInspection(1, report, isas(), inspector2Address)).to.be.revertedWith(
                 "You not accepted this inspection"
               );
             });
@@ -1251,7 +1475,7 @@ describe("Sintrop", () => {
 
         context("when inspection is not accepted", () => {
           it("should return error message", async () => {
-            await expect(realizeInspection(1, report, [], inspectorAddress)).to.be.revertedWith(
+            await expect(realizeInspection(1, report, isas(), inspectorAddress)).to.be.revertedWith(
               "Accept this inspection before"
             );
           });
@@ -1260,7 +1484,7 @@ describe("Sintrop", () => {
 
       context("when inspection dont exists", () => {
         it("should return error message", async () => {
-          await expect(realizeInspection(1, report, [], inspectorAddress)).to.be.revertedWith(
+          await expect(realizeInspection(1, report, isas(), inspectorAddress)).to.be.revertedWith(
             "This inspection do not exist"
           );
         });
@@ -1273,7 +1497,7 @@ describe("Sintrop", () => {
         await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
         await acceptInspection(1, inspectorAddress);
 
-        await expect(realizeInspection(1, report, [], producerAddress)).to.be.revertedWith(
+        await expect(realizeInspection(1, report, isas(), producerAddress)).to.be.revertedWith(
           "Please register as inspector"
         );
       });
@@ -1282,6 +1506,11 @@ describe("Sintrop", () => {
 
   describe("#addInspectionValidation", () => {
     beforeEach(async () => {
+      await addCategory("Soil A", owner);
+      await addCategory("Soil B", owner);
+      await addCategory("Soil C", owner);
+      await addCategory("Soil D", owner);
+
       await addInvitation(owner, producerAddress, userTypes.Producer, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
@@ -1372,6 +1601,11 @@ describe("Sintrop", () => {
                   isaId: 8,
                   indicator: 10,
                 },
+                {
+                  categoryId: 4,
+                  isaId: 7,
+                  indicator: 0,
+                },
               ];
             };
 
@@ -1391,6 +1625,11 @@ describe("Sintrop", () => {
                   categoryId: 3,
                   isaId: 2,
                   indicator: 10,
+                },
+                {
+                  categoryId: 4,
+                  isaId: 7,
+                  indicator: 0,
                 },
               ];
             };

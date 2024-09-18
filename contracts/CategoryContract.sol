@@ -14,10 +14,8 @@ import { Callable } from "./Callable.sol";
 contract CategoryContract is Ownable, Callable {
   mapping(uint256 => Category) public categories;
   mapping(uint256 => IsasDescription[]) public categoryIsaDescriptions;
-  mapping(uint256 => IsaInspection[]) public isaInspections;
   mapping(uint256 => Isa) public isas;
 
-  Category public category;
   uint256 public categoryCounts;
 
   constructor() {
@@ -48,7 +46,7 @@ contract CategoryContract is Ownable, Callable {
     string memory description,
     IsasDescription[] memory isasDescriptions
   ) public onlyOwner returns (bool) {
-    category = Category(categoryCounts + 1, name, description);
+    Category memory category = Category(categoryCounts + 1, name, description);
 
     categories[category.id] = category;
     categoryCounts++;
@@ -83,30 +81,25 @@ contract CategoryContract is Ownable, Callable {
     return categoryIsaDescriptions[categoryId];
   }
 
-  /**
-   * @dev List IsaInspection from inspection
-   * @param inspectionId The id of the inspection to get IsaInspection
-   */
-  function getIsa(uint256 inspectionId) public view returns (IsaInspection[] memory) {
-    return isaInspections[inspectionId];
-  }
-
-  function calculateIsa(
-    uint256 inspectionId,
-    IsaInspection[] memory _isaInspections
-  ) external mustBeAllowedCaller returns (int256) {
+  function calculateScore(IsaInspection[] memory _isaInspections) public view returns (int256) {
     int256 isaScore;
+    Isa memory isa;
+    Category memory category;
+    bool valid = true;
 
     for (uint8 i = 0; i < _isaInspections.length; i++) {
-      Isa memory isa = isas[_isaInspections[i].isaId];
-      Category memory currentCategory = categories[_isaInspections[i].categoryId];
+      isa = isas[_isaInspections[i].isaId];
+      category = categories[_isaInspections[i].categoryId];
 
-      require(currentCategory.id > 0 && bytes(isa.isaName).length > 0, "Category or Isa do not exists");
-
-      isaInspections[inspectionId].push(_isaInspections[i]);
+      if (category.id != i + 1 || bytes(isa.isaName).length <= 0) {
+        valid = false;
+        break;
+      }
 
       isaScore += isa.isaValue;
     }
+
+    require(valid, "Category or Isa do not exists");
 
     return isaScore;
   }
