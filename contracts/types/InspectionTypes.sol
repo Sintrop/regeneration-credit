@@ -21,6 +21,7 @@ struct Inspection {
   address producer;
   address inspector;
   int256 isaScore;
+  string proofPhoto;
   string report;
   uint256 validationsCount;
   uint256 createdAt;
