@@ -26,6 +26,7 @@ contract Sintrop is Callable {
   mapping(address => mapping(address => bool)) internal inspectorInspected;
   mapping(address => uint256[]) internal userInspections;
   mapping(uint256 => Inspection) internal inspections;
+  mapping(uint256 => IsaInspection[]) public isaInspections;
   mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
   InspectorContract private inspectorContract;
@@ -135,23 +136,24 @@ contract Sintrop is Callable {
   /**
    * @dev Allow a inspector realize a inspection and mark as INSPECTED
    * @param inspectionId The id of the inspection to be realized
-   * @param _isaInspection The IsaIsaInspection[] of the inspection to be realized
+   * @param _isaInspections The IsaIsaInspection[] of the inspection to be realized
    */
   function realizeInspection(
     uint256 inspectionId,
     string memory proofPhoto,
     string memory report,
-    IsaInspection[] memory _isaInspection
+    IsaInspection[] memory _isaInspections
   ) public {
     Inspection memory inspection = inspections[inspectionId];
 
     require(inspectionExists(inspectionId), "This inspection do not exist");
+    require(_isaInspections.length == 4, "Invalid isas length");
     require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
     require(inspection.inspector == msg.sender, "You not accepted this inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
 
-    markAsRealized(inspection, proofPhoto, report, _isaInspection);
+    markAsRealized(inspection, proofPhoto, report, _isaInspections);
 
     afterRealizeInspection(inspection);
 
@@ -162,16 +164,21 @@ contract Sintrop is Callable {
     Inspection memory inspection,
     string memory proofPhoto,
     string memory report,
-    IsaInspection[] memory _isaInspection
+    IsaInspection[] memory _isaInspections
   ) internal {
     inspection.status = InspectionStatus.INSPECTED;
-    inspection.isaScore = categoryContract.calculateIsa(inspection.id, _isaInspection);
+    inspection.isaScore = categoryContract.calculateScore(_isaInspections);
     inspection.proofPhoto = proofPhoto;
     inspection.report = report;
     inspection.inspectedAt = block.number;
     inspection.inspectedAtEra = producerContract.producerPoolEra();
 
     inspections[inspection.id] = inspection;
+
+    isaInspections[inspection.id].push(_isaInspections[0]);
+    isaInspections[inspection.id].push(_isaInspections[1]);
+    isaInspections[inspection.id].push(_isaInspections[2]);
+    isaInspections[inspection.id].push(_isaInspections[3]);
   }
 
   /**
@@ -222,6 +229,14 @@ contract Sintrop is Callable {
    */
   function getInspection(uint256 id) public view returns (Inspection memory) {
     return inspections[id];
+  }
+
+  /**
+   * @dev List IsaInspection from inspection
+   * @param inspectionId The id of the inspection to get IsaInspection
+   */
+  function getIsa(uint256 inspectionId) public view returns (IsaInspection[] memory) {
+    return isaInspections[inspectionId];
   }
 
   /**

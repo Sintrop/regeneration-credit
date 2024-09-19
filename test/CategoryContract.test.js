@@ -26,6 +26,11 @@ describe("CategoryContract", () => {
 
     const instanceContractFactory = await ethers.getContractFactory("CategoryContract");
     instance = await instanceContractFactory.deploy();
+
+    await addCategory("Soil A", owner);
+    await addCategory("Soil B", owner);
+    await addCategory("Soil C", owner);
+    await addCategory("Soil D", owner);
   });
 
   describe("#addCategory", () => {
@@ -38,11 +43,9 @@ describe("CategoryContract", () => {
 
     context("When is the owner", () => {
       it("should create category", async () => {
-        const name = "Soil";
-        await addCategory(name, owner);
         const categories = await instance.getCategories();
 
-        expect(categories[0].name).to.equal("Soil");
+        expect(categories[0].name).to.equal("Soil A");
       });
 
       it("should increment id of category when created", async () => {
@@ -55,11 +58,9 @@ describe("CategoryContract", () => {
       });
 
       it("should increment total of categories", async () => {
-        await addCategory("Soil", owner);
-        await addCategory("Soil 2", owner);
         const categoryCounts = await instance.categoryCounts();
 
-        expect(categoryCounts).to.equal(2);
+        expect(categoryCounts).to.equal(4);
       });
 
       it("should insert isa descriptions", async () => {
@@ -78,45 +79,29 @@ describe("CategoryContract", () => {
 
   describe("#categories", () => {
     it("should have fields", async () => {
-      const name = "Soil";
-      await addCategory(name, owner);
       const category = await instance.categories(1);
 
       expect(category.id).to.equal(1);
-      expect(category.name).to.equal("Soil");
-      expect(category.description).to.equal(`The description of ${name}`);
+      expect(category.name).to.equal("Soil A");
+      expect(category.description).to.equal(`The description of Soil A`);
     });
   });
 
   describe("#getCategories", () => {
     it("should return category list", async () => {
-      await addCategory("Soil", owner);
-      await addCategory("Soil2", owner);
       const categories = await instance.getCategories();
 
-      expect(categories.length).to.equal(2);
+      expect(categories.length).to.equal(4);
     });
   });
 
-  describe("#getIsa", () => {
-    it("returns isas to inspection of id 1", async () => {
-      const isas = await instance.getIsa(1);
-
-      expect(isas.length).to.equal([].length);
-    });
-  });
-
-  describe("#calculateIsa", () => {
+  describe("#calculateScore", () => {
     context("with allowed caller", () => {
       beforeEach(async () => {
         await instance.newAllowedCaller(owner);
       });
 
       context("when category and isa exists", () => {
-        beforeEach(async () => {
-          await addCategory("Soil", owner);
-        });
-
         const isasPayload = [
           {
             categoryId: 1,
@@ -126,34 +111,27 @@ describe("CategoryContract", () => {
         ];
 
         it("calculate isaScore", async () => {
-          await instance.calculateIsa(1, isasPayload);
-          const isas = await instance.getIsa(1);
+          const score = await instance.calculateScore(isasPayload);
 
-          const expectedIsas = [[1n, 1n, 1n]];
-
-          expect(isas.join("")).to.equal(expectedIsas.join(""));
+          expect(score).to.equal(25);
         });
       });
 
       context("when category do not exists", () => {
         const isasPayload = [
           {
-            categoryId: 1,
+            categoryId: 100,
             isaId: 1,
             indicator: 1,
           },
         ];
 
         it("returns error message", async () => {
-          await expect(instance.calculateIsa(1, isasPayload)).to.be.revertedWith("Category or Isa do not exists");
+          await expect(instance.calculateScore(isasPayload)).to.be.revertedWith("Category or Isa do not exists");
         });
       });
 
       context("when isa do not exists", () => {
-        beforeEach(async () => {
-          await addCategory("Soil", owner);
-        });
-
         const isasPayload = [
           {
             categoryId: 1,
@@ -163,14 +141,8 @@ describe("CategoryContract", () => {
         ];
 
         it("returns error message", async () => {
-          await expect(instance.calculateIsa(1, isasPayload)).to.be.revertedWith("Category or Isa do not exists");
+          await expect(instance.calculateScore(isasPayload)).to.be.revertedWith("Category or Isa do not exists");
         });
-      });
-    });
-
-    context("without allowed caller", () => {
-      it("returns error message", async () => {
-        await expect(instance.calculateIsa(1, [])).to.be.revertedWith("Not allowed caller");
       });
     });
   });
