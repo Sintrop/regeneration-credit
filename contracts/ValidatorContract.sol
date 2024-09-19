@@ -101,10 +101,10 @@ contract ValidatorContract is Callable {
 
     if (!addPenalty) return;
 
-    uint256 inspectorTotalPenalties = inspectorContract.addPenalty(inspection.acceptedBy, inspection.id);
+    uint256 inspectorTotalPenalties = inspectorContract.addPenalty(inspection.inspector, inspection.id);
     removeUserInspection(inspection);
 
-    if (inspectorTotalPenalties >= inspectorContract.maxPenalties()) externalDenieUser(inspection.acceptedBy);
+    if (inspectorTotalPenalties >= inspectorContract.maxPenalties()) externalDenieUser(inspection.inspector);
   }
 
   function addDeveloperContributionValidation(
@@ -166,15 +166,15 @@ contract ValidatorContract is Callable {
   }
 
   function removeUserInspection(Inspection memory inspection) internal {
-    inspectorContract.decrementInspections(inspection.acceptedBy);
-    producerContract.decrementInspections(inspection.createdBy);
+    inspectorContract.decrementInspections(inspection.inspector);
+    producerContract.decrementInspections(inspection.producer);
 
-    removeLevelsFromPool(inspection.acceptedBy, 1);
+    removeLevelsFromPool(inspection.inspector, 1);
 
     if (inspection.isaScore < 0)
-      return producerContract.removeNegativeScore(inspection.createdBy, -(inspection.isaScore));
+      return producerContract.removeNegativeScore(inspection.producer, -(inspection.isaScore));
 
-    removeLevelsFromPool(inspection.createdBy, uint256(inspection.isaScore));
+    removeLevelsFromPool(inspection.producer, uint256(inspection.isaScore));
   }
 
   function externalDenieUser(address userAddress) private {
@@ -205,6 +205,14 @@ contract ValidatorContract is Callable {
 
   function getInspectionValidations(uint256 inspectionId) public view returns (ResourceValidation[] memory) {
     return inspectionValidations[inspectionId];
+  }
+
+  function getWorkValidations(uint256 workId) public view returns (ResourceValidation[] memory) {
+    return workValidations[workId];
+  }
+
+  function getContributionValidations(uint256 contributionId) public view returns (ResourceValidation[] memory) {
+    return contributionValidations[contributionId];
   }
 
   function getValidators() public view returns (Validator[] memory) {

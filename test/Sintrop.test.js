@@ -171,7 +171,9 @@ describe("Sintrop", () => {
   };
 
   const realizeInspection = async (id, report, isas_, from) => {
-    await instance.connect(from).realizeInspection(id, report, isas_);
+    const proofPhoto = "proofPhoto"
+
+    await instance.connect(from).realizeInspection(id, proofPhoto, report, isas_);
   };
 
   const firstValidatorLimit = 8;
@@ -424,7 +426,7 @@ describe("Sintrop", () => {
         it("should request inspection", async () => {
           const inspection = await instance.getInspection(1);
 
-          expect(inspection.createdBy).to.equal(producerAddress.address);
+          expect(inspection.producer).to.equal(producerAddress.address);
         });
       });
 
@@ -481,7 +483,7 @@ describe("Sintrop", () => {
               await requestInspection(producerAddress);
               const inspection = await instance.getInspection(2);
 
-              expect(inspection.createdBy).to.equal(producerAddress.address);
+              expect(inspection.producer).to.equal(producerAddress.address);
             });
           });
         });
@@ -494,16 +496,16 @@ describe("Sintrop", () => {
           expect(inspection.status).to.equal(STATUS.open);
         });
 
-        it("must set createdBy as producer address", async () => {
+        it("must set producer as producer address", async () => {
           const inspection = await instance.getInspection(1);
 
-          expect(inspection.createdBy).to.equal(producerAddress.address);
+          expect(inspection.producer).to.equal(producerAddress.address);
         });
 
-        it("must set acceptedBy as zero address", async () => {
+        it("must set inspector as zero address", async () => {
           const inspection = await instance.getInspection(1);
 
-          expect(inspection.acceptedBy).to.equal(ZERO_ADDRESS);
+          expect(inspection.inspector).to.equal(ZERO_ADDRESS);
         });
 
         it("initial isaScore should be equal zero", async () => {
@@ -653,10 +655,10 @@ describe("Sintrop", () => {
               expect(inspection.status).to.equal(STATUS.accepted);
             });
 
-            it("acceptedBy must be inspectorAddress", async () => {
+            it("inspector must be inspectorAddress", async () => {
               const inspection = await instance.getInspection(1);
 
-              expect(inspection.acceptedBy).to.equal(inspectorAddress.address);
+              expect(inspection.inspector).to.equal(inspectorAddress.address);
             });
 
             it("should increment inspector giveUps by 1", async () => {

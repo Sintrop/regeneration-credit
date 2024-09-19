@@ -38,14 +38,14 @@ describe("SupporterPool", () => {
         expect(balance).to.equal(99000000000000000000n);
       });
 
-      it("user2Address balance must be 10000000000000000", async () => {
+      it("user2Address balance must be 50000000000000000", async () => {
         const balance = await instance.balanceOf(user2Address);
-        expect(balance).to.equal(10000000000000000n);
+        expect(balance).to.equal(50000000000000000n);
       });
 
-      it("totalCertified must be 990000000000000000", async () => {
+      it("totalCertified must be 950000000000000000", async () => {
         const totalCertified = await regenerationCredit.totalCertified();
-        expect(totalCertified).to.equal(990000000000000000n);
+        expect(totalCertified).to.equal(950000000000000000n);
       });
 
       it("send PoolBurnTokensEvent", async () => {
@@ -54,9 +54,9 @@ describe("SupporterPool", () => {
           .withArgs(
             user1Address.address,
             1000000000000000000n,
-            990000000000000000n,
+            950000000000000000n,
             user2Address.address,
-            10000000000000000n
+            50000000000000000n
           );
       });
     });

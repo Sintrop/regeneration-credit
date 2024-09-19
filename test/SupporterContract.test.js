@@ -137,14 +137,14 @@ describe("SupporterContract", () => {
               expect(balance).to.equal(99000000000000000000n);
             });
 
-            it("Supporter inviter balance must be 10000000000000000", async () => {
+            it("Supporter inviter balance must be 50000000000000000", async () => {
               const balance = await supporterPool.balanceOf(inv1Address);
-              expect(balance).to.equal(10000000000000000n);
+              expect(balance).to.equal(50000000000000000n);
             });
 
-            it("totalCertified must be 990000000000000000", async () => {
+            it("totalCertified must be 950000000000000000", async () => {
               const totalCertified = await regenerationCredit.totalCertified();
-              expect(totalCertified).to.equal(990000000000000000n);
+              expect(totalCertified).to.equal(950000000000000000n);
             });
           });
 
@@ -158,14 +158,14 @@ describe("SupporterContract", () => {
               expect(balance).to.equal(99500000000000000000n);
             });
 
-            it("Supporter inviter balance must be 5000000000000000", async () => {
+            it("Supporter inviter balance must be 25000000000000000", async () => {
               const balance = await supporterPool.balanceOf(inv1Address);
-              expect(balance).to.equal(5000000000000000n);
+              expect(balance).to.equal(25000000000000000n);
             });
 
-            it("totalCertified must be 495000000000000000", async () => {
+            it("totalCertified must be 475000000000000000", async () => {
               const totalCertified = await regenerationCredit.totalCertified();
-              expect(totalCertified).to.equal(495000000000000000n);
+              expect(totalCertified).to.equal(475000000000000000n);
             });
           });
         });
