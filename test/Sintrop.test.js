@@ -171,7 +171,7 @@ describe("Sintrop", () => {
   };
 
   const realizeInspection = async (id, report, isas_, from) => {
-    const proofPhoto = "proofPhoto"
+    const proofPhoto = "proofPhoto";
 
     await instance.connect(from).realizeInspection(id, proofPhoto, report, isas_);
   };
