@@ -1,7 +1,7 @@
 const saveContractAddress = require("../scripts/shared/saveContractAddress");
 
 async function regenerationCreditDeploy() {
-  const regenerationCreditsTotalTokens = process.env["RCT_TOKENS_TOTAL_TOKENS"];
+  const regenerationCreditsTotalTokens = process.env["RC_TOKENS_TOTAL_TOKENS"];
   const icoStartsAt = process.env["ICO_STARTS_AT"];
   const icoEndsAt = process.env["ICO_ENDS_AT"];
 

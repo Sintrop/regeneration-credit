@@ -17,8 +17,6 @@ contract RegenerationCreditIco is Ownable {
   RegenerationCredit internal regenerationCredit;
 
   uint256 internal immutable DEPLOYED_AT = block.number;
-
-  // ATTENTION: Update before deploy
   uint256 internal immutable ICO_STARTS_AT;
   uint256 internal immutable ICO_ENDS_AT;
 
