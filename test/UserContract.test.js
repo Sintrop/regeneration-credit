@@ -502,7 +502,7 @@ describe("UserContract", function () {
       it("", async () => {
         const settings = await instance.getUserTypeSettings(userTypes.Producer);
 
-        expect(settings).deep.to.equal([0n, false, true, 100n]);
+        expect(settings).deep.to.equal([0n, false, true, 0]);
       });
     });
 
@@ -510,7 +510,7 @@ describe("UserContract", function () {
       it("returns settings", async () => {
         const settings = await instance.getUserTypeSettings(userTypes.Contributor);
 
-        expect(settings).deep.to.equal([1n, false, true, 1000n]);
+        expect(settings).deep.to.equal([1n, false, true, 100000n]);
       });
     });
 
@@ -518,7 +518,7 @@ describe("UserContract", function () {
       it("returns settings", async () => {
         const settings = await instance.getUserTypeSettings(userTypes.Inspector);
 
-        expect(settings).deep.to.equal([2n, true, true, 100n]);
+        expect(settings).deep.to.equal([2n, true, true, 0]);
       });
     });
 
@@ -526,7 +526,7 @@ describe("UserContract", function () {
       it("returns settings", async () => {
         const settings = await instance.getUserTypeSettings(userTypes.Activist);
 
-        expect(settings).deep.to.equal([1n, false, true, 1000n]);
+        expect(settings).deep.to.equal([1n, false, true, 100000n]);
       });
     });
 
@@ -534,7 +534,7 @@ describe("UserContract", function () {
       it("returns settings", async () => {
         const settings = await instance.getUserTypeSettings(userTypes.Researcher);
 
-        expect(settings).deep.to.equal([1n, false, true, 1000n]);
+        expect(settings).deep.to.equal([1n, false, true, 200000n]);
       });
     });
 
@@ -542,15 +542,15 @@ describe("UserContract", function () {
       it("returns settings", async () => {
         const settings = await instance.getUserTypeSettings(userTypes.Developer);
 
-        expect(settings).deep.to.equal([1n, false, true, 1000n]);
+        expect(settings).deep.to.equal([1n, false, true, 200000n]);
       });
     });
 
     context("when get to validator", () => {
       it("", async () => {
-        const settings = await instance.getUserTypeSettings(userTypes.Developer);
+        const settings = await instance.getUserTypeSettings(userTypes.Validator);
 
-        expect(settings).deep.to.equal([1n, false, true, 1000n]);
+        expect(settings).deep.to.equal([1n, false, true, 1000000n]);
       });
     });
   });
