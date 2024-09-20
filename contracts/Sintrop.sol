@@ -73,29 +73,26 @@ contract Sintrop is Callable {
     return userInspections[msg.sender];
   }
 
-  // TODO: Remove not reutilized modifiers and use require direct in the function
   /**
    * @dev Allows the current user (producer) request a inspection.
    */
   function requestInspection() public {
-    require(userContract.userTypeIs(UserType.PRODUCER, msg.sender), "Please register as producer");
-    require(!producerContract.getProducer(msg.sender).pendingInspection, "Request already OPEN");
-    require(canRequestInspection(), "Wait to request");
-    require(
-      !producerContract.isSustainable(msg.sender),
-      "You can't request inspections anymore, you have completed your mission"
-    );
+    Producer memory producer = producerContract.getProducer(msg.sender);
 
-    addRequest();
+    require(userContract.userTypeIs(UserType.PRODUCER, msg.sender), "Please register as producer");
+    require(!producer.pendingInspection, "Request already OPEN");
+    require(waitToRequest(producer), "Wait to request");
+    require(!producer.isa.sustainable, "You can't request inspections anymore, you have completed your mission");
+
+    createInspection();
 
     afterRequestInspection();
   }
 
-  function addRequest() internal {
-    uint256 id = inspectionsCount + 1;
-    Inspection memory inspection = inspections[id];
+  function createInspection() internal {
+    Inspection memory inspection;
 
-    inspection.id = id;
+    inspection.id = inspectionsCount + 1;
     inspection.status = InspectionStatus.OPEN;
     inspection.producer = msg.sender;
     inspection.inspector = address(0);
@@ -119,10 +116,12 @@ contract Sintrop is Callable {
     Inspection memory inspection = inspections[inspectionId];
 
     require(inspectionExists(inspectionId), "This inspection do not exist");
+    require(alreadyHaveInspectionAccepted(), "You already have an inspection Accepted");
     require(!inspectorInspected[msg.sender][inspection.producer], "Already inspected this producer");
-
-    require(canAcceptInspection(inspectionId), "Can't accept yet");
+    require(!inspectorInspected[msg.sender][inspection.producer], "Already inspected this producer");
     require(inspection.status == InspectionStatus.OPEN, "This inspection is not OPEN");
+    require(acceptInspectionDelayBlocksPassed(inspection), "Wait inspection delay blocks");
+    require(beforeAcceptHaveSecurityBlocksToVote(), "Wait until next era to accept");
 
     inspection.status = InspectionStatus.ACCEPTED;
     inspection.acceptedAt = block.number;
@@ -146,11 +145,10 @@ contract Sintrop is Callable {
   ) public {
     Inspection memory inspection = inspections[inspectionId];
 
-    require(inspectionExists(inspectionId), "This inspection do not exist");
     require(_isaInspections.length == 4, "Invalid isas length");
     require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
-    require(inspection.inspector == msg.sender, "You not accepted this inspection");
+    require(inspection.inspector == msg.sender, "You have not accepted this inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
 
     markAsRealized(inspection, proofPhoto, report, _isaInspections);
@@ -261,9 +259,7 @@ contract Sintrop is Callable {
     return inspections[id].id >= 1;
   }
 
-  function canRequestInspection() public view returns (bool) {
-    Producer memory producer = producerContract.getProducer(msg.sender);
-
+  function waitToRequest(Producer memory producer) public view returns (bool) {
     if (producer.totalInspections < allowedInitialRequests) return true;
 
     return block.number > producer.lastRequestAt + timeBetweenInspections;
@@ -273,27 +269,25 @@ contract Sintrop is Callable {
     return inspections[inspectionId].acceptedAt + blocksToExpireAcceptedInspection - block.number;
   }
 
-  function canAcceptInspection(uint256 inspectionId) internal view returns (bool) {
-    Inspection memory inspection = inspections[inspectionId];
+  function alreadyHaveInspectionAccepted() private view returns (bool) {
     Inspector memory inspector = inspectorContract.getInspector(msg.sender);
     Inspection memory lastInspection = inspections[inspector.lastInspection];
-
-    bool waitedInspectionDelay = block.number > inspection.createdAt + acceptInspectionDelayBlocks;
 
     bool acceptedInspectionExpired = block.number > lastInspection.acceptedAt + blocksToExpireAcceptedInspection;
 
     bool finishedLastInspection = lastInspection.status == InspectionStatus.INSPECTED ||
       lastInspection.status == InspectionStatus.INVALIDATED;
 
+    return finishedLastInspection || acceptedInspectionExpired || inspector.lastInspection == 0;
+  }
+
+  function acceptInspectionDelayBlocksPassed(Inspection memory inspection) private view returns (bool) {
+    return block.number > inspection.createdAt + acceptInspectionDelayBlocks;
+  }
+
+  function beforeAcceptHaveSecurityBlocksToVote() private view returns (bool) {
     if (producerContract.nextEraIn() < blocksToExpireAcceptedInspection) return false;
 
-    bool haveSecurityBlocksToVote = (producerContract.nextEraIn().sub(blocksToExpireAcceptedInspection)) >
-      securityBlocksToValidatorAnalysis;
-
-    if (!haveSecurityBlocksToVote) return false;
-
-    if (!waitedInspectionDelay) return false;
-
-    return finishedLastInspection || acceptedInspectionExpired || inspector.lastInspection == 0;
+    return producerContract.nextEraIn().sub(blocksToExpireAcceptedInspection) > securityBlocksToValidatorAnalysis;
   }
 }

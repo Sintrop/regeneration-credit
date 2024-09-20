@@ -559,7 +559,7 @@ describe("Sintrop", () => {
 
         context("when have not waited inspection delay time", () => {
           it("should return error message", async () => {
-            await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Can't accept yet");
+            await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Wait inspection delay blocks");
           });
         });
 
@@ -573,7 +573,7 @@ describe("Sintrop", () => {
             });
 
             it("should return error message", async () => {
-              await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Can't accept yet");
+              await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Wait until next era to accept");
             });
           });
 
@@ -586,7 +586,7 @@ describe("Sintrop", () => {
             });
 
             it("should return error message", async () => {
-              await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Can't accept yet");
+              await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Wait until next era to accept");
             });
           });
         });
@@ -698,7 +698,9 @@ describe("Sintrop", () => {
 
             context("when last inspection is not expired", () => {
               it("should return error message", async () => {
-                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Can't accept yet");
+                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith(
+                  "You already have an inspection Accepted"
+                );
               });
             });
 
@@ -731,7 +733,9 @@ describe("Sintrop", () => {
 
             context("when dont finished last inspection", () => {
               it("should return error message", async () => {
-                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Can't accept yet");
+                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith(
+                  "You already have an inspection Accepted"
+                );
               });
             });
           });
@@ -1497,7 +1501,7 @@ describe("Sintrop", () => {
 
             it("should return error message", async () => {
               await expect(realizeInspection(1, report, isas(), inspector2Address)).to.be.revertedWith(
-                "You not accepted this inspection"
+                "You have not accepted this inspection"
               );
             });
           });
@@ -1515,7 +1519,7 @@ describe("Sintrop", () => {
       context("when inspection dont exists", () => {
         it("should return error message", async () => {
           await expect(realizeInspection(1, report, isas(), inspectorAddress)).to.be.revertedWith(
-            "This inspection do not exist"
+            "Accept this inspection before"
           );
         });
       });
