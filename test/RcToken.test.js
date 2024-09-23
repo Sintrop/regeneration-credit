@@ -10,6 +10,8 @@ describe("RegenerationCredit", (accounts) => {
 
   let args = {
     totalRegenerationCredits: "1500000000000000000000000000",
+    icoStartsAt: "100",
+    icoEndsAt: "1000",
   };
 
   const argsProducerPool = {
@@ -23,7 +25,7 @@ describe("RegenerationCredit", (accounts) => {
     [ownerAddress, user1Address, user2Address] = await ethers.getSigners();
 
     const regenerationCreditIcoFactory = await ethers.getContractFactory("RegenerationCreditIco");
-    regenerationCreditIco = await regenerationCreditIcoFactory.deploy();
+    regenerationCreditIco = await regenerationCreditIcoFactory.deploy(args.icoStartsAt, args.icoEndsAt);
 
     const instanceFactory = await ethers.getContractFactory("RegenerationCredit");
     instance = await instanceFactory.deploy(args.totalRegenerationCredits, regenerationCreditIco.target);
