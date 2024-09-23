@@ -72,5 +72,4 @@ contract RegenerationCreditIco is Ownable {
   function icoEnd() internal view returns (bool) {
     return DEPLOYED_AT + ICO_ENDS_AT > block.number;
   }
-  
 }
