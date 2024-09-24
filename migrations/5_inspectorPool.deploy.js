@@ -1,5 +1,6 @@
 const saveContractAddress = require("../scripts/shared/saveContractAddress");
 const getDeployedContract = require("../scripts/shared/getDeployedContract");
+const verifyContract = require("../scripts/shared/verifyContract");
 
 async function inspectorPoolDeploy() {
   const pool_halving = process.env["INSPECTOR_POOL_HALVING"];
@@ -11,13 +12,17 @@ async function inspectorPoolDeploy() {
 
   const InspectorPool = await ethers.getContractFactory("InspectorPool");
 
-  const inspectorPool = await InspectorPool.deploy(regenerationCredit.target, pool_halving, pool_total_eras, pool_blocks_per_era);
+  const args = [regenerationCredit.target, pool_halving, pool_total_eras, pool_blocks_per_era];
+
+  const inspectorPool = await InspectorPool.deploy(...args);
 
   saveContractAddress("InspectorPool", inspectorPool.target);
 
   await regenerationCredit.addContractPool(inspectorPool.target, inspectorPoolFunds);
 
-  console.log(`InspectorPool address ${inspectorPool.target}`)
+  console.log(`InspectorPool address ${inspectorPool.target}`);
+
+  await verifyContract(inspectorPool.target, args);
 
   return inspectorPool;
 }

@@ -1,5 +1,6 @@
 const saveContractAddress = require("../scripts/shared/saveContractAddress");
 const getDeployedContract = require("../scripts/shared/getDeployedContract");
+const verifyContract = require("../scripts/shared/verifyContract");
 
 async function validatorContractDeploy() {
   const userContract = await getDeployedContract("UserContract");
@@ -8,13 +9,17 @@ async function validatorContractDeploy() {
 
   const ValidatorContract = await ethers.getContractFactory("ValidatorContract");
 
-  const validatorContract = await ValidatorContract.deploy(firstValidatorLimit, secondValidatorLimit);
+  const args = [firstValidatorLimit, secondValidatorLimit];
+
+  const validatorContract = await ValidatorContract.deploy(...args);
 
   saveContractAddress("ValidatorContract", validatorContract.target);
 
   await userContract.newAllowedCaller(validatorContract.target);
 
   console.log(`ValidatorContract address ${validatorContract.target}`);
+
+  await verifyContract(validatorContract.target, args);
 
   return validatorContract;
 }
