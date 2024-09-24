@@ -11,7 +11,7 @@ const gasReportEnabled = process.env.GAS_REPORT_ENABLED;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: "0.8.2",
+  solidity: "0.8.27",
   networks: {
     hardhat: {
       allowUnlimitedContractSize: true,
