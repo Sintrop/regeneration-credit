@@ -1,6 +1,8 @@
 const { run } = require("hardhat");
 
 const verifyContract = async function verify(contractAdress, args) {
+  if (hre.network.name == "localhost") return;
+
   console.log("verifying contract !!!!!!!");
 
   const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
