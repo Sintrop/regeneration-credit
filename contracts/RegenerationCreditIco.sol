@@ -12,9 +12,16 @@ contract RegenerationCreditIco is Ownable {
   uint256 public constant RATE = 240000;
   uint256 public constant MAXIMUM_EXCHANGE = 240000 * 100;
 
-  bool public salesOpen = false;
-
   RegenerationCredit internal regenerationCredit;
+
+  uint256 internal immutable DEPLOYED_AT = block.number;
+  uint256 internal immutable ICO_STARTS_AT;
+  uint256 internal immutable ICO_ENDS_AT;
+
+  constructor(uint256 icoStartsAt_, uint256 icoEndsAt_) {
+    ICO_STARTS_AT = icoStartsAt_;
+    ICO_ENDS_AT = icoEndsAt_;
+  }
 
   event BuyTokensEvent(
     address indexed _buyer,
@@ -24,7 +31,8 @@ contract RegenerationCreditIco is Ownable {
   );
 
   receive() external payable {
-    require(salesOpen, "ICO: sales not open");
+    require(icoStart(), "ICO: sales is not open yet");
+    require(icoEnd(), "ICO: sales is not open anymore");
 
     uint256 regenerationCredits = regenerationCreditAmount(msg.value);
 
@@ -35,11 +43,6 @@ contract RegenerationCreditIco is Ownable {
 
   function balance() public view returns (uint256) {
     return address(this).balance;
-  }
-
-  function changeSalesOpen() public onlyOwner returns (bool success) {
-    salesOpen = !salesOpen;
-    return true;
   }
 
   function withdraw(uint256 weiAmount) public onlyOwner returns (bool success) {
@@ -60,5 +63,13 @@ contract RegenerationCreditIco is Ownable {
 
   function setRegenerationCredit(address _tokenAddr) public onlyOwner {
     regenerationCredit = RegenerationCredit(_tokenAddr);
+  }
+
+  function icoStart() internal view returns (bool) {
+    return block.number > DEPLOYED_AT + ICO_STARTS_AT;
+  }
+
+  function icoEnd() internal view returns (bool) {
+    return DEPLOYED_AT + ICO_ENDS_AT > block.number;
   }
 }

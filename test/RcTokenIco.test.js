@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const { advanceBlock } = require("./shared/advance_block");
 
 describe("RegenerationCreditIco", () => {
   let instance;
@@ -8,6 +9,8 @@ describe("RegenerationCreditIco", () => {
 
   let args = {
     totalRegenerationCredits: "1500000000000000000000000000",
+    icoStartsAt: "100",
+    icoEndsAt: "1000",
   };
 
   const sendTransation = async (from, to, tokensEthers) => {
@@ -21,7 +24,7 @@ describe("RegenerationCreditIco", () => {
     [ownerAddress, user1Address] = await ethers.getSigners();
 
     const instanceFactory = await ethers.getContractFactory("RegenerationCreditIco");
-    instance = await instanceFactory.deploy();
+    instance = await instanceFactory.deploy(args.icoStartsAt, args.icoEndsAt);
 
     const regenerationCreditFactory = await ethers.getContractFactory("RegenerationCredit");
     regenerationCredit = await regenerationCreditFactory.deploy(args.totalRegenerationCredits, instance.target);
@@ -32,7 +35,7 @@ describe("RegenerationCreditIco", () => {
   describe("#receive", () => {
     context("when the sales is open", () => {
       beforeEach(async () => {
-        await instance.changeSalesOpen({ from: ownerAddress });
+        await advanceBlock(100);
       });
 
       context("when user send 0.5 ether", () => {
@@ -126,9 +129,18 @@ describe("RegenerationCreditIco", () => {
       });
     });
 
-    context("when the sales is not open", () => {
+    context("when the sales is not open yet", () => {
       it("it return erro message", async () => {
-        await expect(sendTransation(user1Address, instance.target, 1)).to.be.revertedWith("ICO: sales not open");
+        await expect(sendTransation(user1Address, instance.target, 1)).to.be.revertedWith("ICO: sales is not open yet");
+      });
+    });
+
+    context("when the sales is not open anymore", () => {
+      it("it return erro message", async () => {
+        await advanceBlock(10000);
+        await expect(sendTransation(user1Address, instance.target, 1)).to.be.revertedWith(
+          "ICO: sales is not open anymore"
+        );
       });
     });
   });
@@ -141,38 +153,11 @@ describe("RegenerationCreditIco", () => {
     });
   });
 
-  describe("#changeSalesOpen", () => {
-    context("when the sales is open", () => {
-      beforeEach(async () => {
-        await instance.changeSalesOpen({ from: ownerAddress });
-      });
-
-      it("should change the sales status to false", async () => {
-        await instance.changeSalesOpen({ from: ownerAddress });
-        const salesOpen = await instance.salesOpen();
-
-        expect(salesOpen).to.equal(false);
-      });
-    });
-
-    context("when the sales is not open", () => {
-      beforeEach(async () => {
-        await instance.changeSalesOpen({ from: ownerAddress });
-      });
-
-      it("should change the sales status to true", async () => {
-        const salesOpen = await instance.salesOpen();
-
-        expect(salesOpen).to.equal(true);
-      });
-    });
-  });
-
   describe("#withdraw", () => {
     context("when is the owner", () => {
       context("when sold 1 ether", () => {
         beforeEach(async () => {
-          await instance.changeSalesOpen({ from: ownerAddress });
+          await advanceBlock(100);
           sendTransation(user1Address, instance.target, 1);
         });
 
@@ -232,7 +217,7 @@ describe("RegenerationCreditIco", () => {
 
       context("when sold 1 ether", () => {
         beforeEach(async () => {
-          await instance.changeSalesOpen({ from: ownerAddress });
+          await advanceBlock(100);
           sendTransation(user1Address, instance.target, 1);
         });
 

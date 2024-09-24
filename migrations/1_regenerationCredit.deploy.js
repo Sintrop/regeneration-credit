@@ -2,12 +2,15 @@ const saveContractAddress = require("../scripts/shared/saveContractAddress");
 const verifyContract = require("../scripts/shared/verifyContract");
 
 async function regenerationCreditDeploy() {
-  const regenerationCreditsTotalTokens = process.env["RCT_TOKENS_TOTAL_TOKENS"];
+  const regenerationCreditsTotalTokens = process.env["RC_TOKENS_TOTAL_TOKENS"];
+  const icoStartsAt = process.env["ICO_STARTS_AT"];
+  const icoEndsAt = process.env["ICO_ENDS_AT"];
 
   const RegenerationCreditIco = await ethers.getContractFactory("RegenerationCreditIco");
   const RegenerationCredit = await ethers.getContractFactory("RegenerationCredit");
 
-  const regenerationCreditIco = await RegenerationCreditIco.deploy();
+  const regenerationCreditIcoArgs = [icoStartsAt, icoEndsAt];
+  const regenerationCreditIco = await RegenerationCreditIco.deploy(...regenerationCreditIcoArgs);
 
   const regenerationCreditArgs = [regenerationCreditsTotalTokens, regenerationCreditIco.target];
   const regenerationCredit = await RegenerationCredit.deploy(...regenerationCreditArgs);
@@ -18,7 +21,7 @@ async function regenerationCreditDeploy() {
   console.log(`RegenerationCredit address ${regenerationCredit.target}`);
   console.log(`RegenerationCreditIco address ${regenerationCreditIco.target}`);
 
-  await verifyContract(regenerationCreditIco.target);
+  await verifyContract(regenerationCreditIco.target, regenerationCreditIcoArgs);
   await verifyContract(regenerationCredit.target, regenerationCreditArgs);
 
   return { regenerationCreditIco, regenerationCredit };
