@@ -1,18 +1,21 @@
 const { run } = require("hardhat");
 
-const verifyContract = async function verify(contractAdress, args) {
+const verifyContract = async function verify(contract, contractName, args) {
   if (hre.network.name == "localhost") return;
 
+  console.log("====================================================================");
   console.log("verifying contract !!!!!!!");
 
   const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  console.log(`Esperando 10 segundos para verificar ${contractAdress}`);
-  await sleep(1000 * 10);
+  const timeSeconds = 60;
+  console.log(`Esperando ${timeSeconds} segundos para verificar ${contract.target}`);
+  await sleep(1000 * timeSeconds);
 
   try {
     await run("verify:verify", {
-      address: contractAdress,
+      address: contract.target,
+      contract: `contracts/${contractName}.sol:${contractName}`,
       constructorArguments: args,
     });
   } catch (e) {

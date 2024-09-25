@@ -19,7 +19,7 @@ async function validatorContractDeploy() {
 
   console.log(`ValidatorContract address ${validatorContract.target}`);
 
-  await verifyContract(validatorContract.target, args);
+  await verifyContract(validatorContract, "ValidatorContract", args);
 
   return validatorContract;
 }

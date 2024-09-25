@@ -22,7 +22,7 @@ async function researcherPoolDeploy() {
 
   console.log(`ReseacherPool address ${researcherPool.target}`);
 
-  await verifyContract(researcherPool.target, args);
+  await verifyContract(researcherPool, "ResearcherPool", args);
 
   return researcherPool;
 }

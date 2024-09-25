@@ -19,7 +19,7 @@ async function producerContractDeploy() {
 
   console.log(`ProducerContract address ${producerContract.target}`);
 
-  await verifyContract(producerContract.target, args);
+  await verifyContract(producerContract, "ProducerContract", args);
 
   return producerContract;
 }

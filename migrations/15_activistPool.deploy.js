@@ -22,7 +22,7 @@ async function activistPoolDeploy() {
 
   console.log(`ActivistPool address ${activistPool.target}`);
 
-  await verifyContract(activistPool.target, args);
+  await verifyContract(activistPool, "ActivistPool", args);
 
   return activistPool;
 }

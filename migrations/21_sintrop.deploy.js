@@ -28,7 +28,7 @@ async function sintropDeploy() {
 
   console.log(`Sintrop address ${sintrop.target}`);
 
-  await verifyContract(sintrop.target, args);
+  await verifyContract(sintrop, "Sintrop", args);
 
   return sintrop;
 }

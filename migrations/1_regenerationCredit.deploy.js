@@ -21,8 +21,8 @@ async function regenerationCreditDeploy() {
   console.log(`RegenerationCredit address ${regenerationCredit.target}`);
   console.log(`RegenerationCreditIco address ${regenerationCreditIco.target}`);
 
-  await verifyContract(regenerationCreditIco.target, regenerationCreditIcoArgs);
-  await verifyContract(regenerationCredit.target, regenerationCreditArgs);
+  await verifyContract(regenerationCreditIco, "RegenerationCreditIco", regenerationCreditIcoArgs);
+  await verifyContract(regenerationCredit, "RegenerationCredit", regenerationCreditArgs);
 
   return { regenerationCreditIco, regenerationCredit };
 }

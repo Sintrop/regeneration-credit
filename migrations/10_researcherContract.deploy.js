@@ -30,7 +30,7 @@ async function researcherContractDeploy() {
 
   console.log(`ReseacherContract address ${researcherContract.target}`);
 
-  await verifyContract(researcherContract.target, args);
+  await verifyContract(researcherContract, "ResearcherContract", args);
 
   return researcherContract;
 }

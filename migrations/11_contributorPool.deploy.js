@@ -16,13 +16,13 @@ async function contributorPoolDeploy() {
 
   const contributorPool = await ContributorPool.deploy(...args);
 
-  saveContractAddress("contributorPool", contributorPool.target);
+  saveContractAddress("ContributorPool", contributorPool.target);
 
   await regenerationCredit.addContractPool(contributorPool.target, poolFunds);
 
   console.log(`ContributorPool address ${contributorPool.target}`);
 
-  await verifyContract(contributorPool.target, args);
+  await verifyContract(contributorPool, "ContributorPool", args);
 
   return contributorPool;
 }

@@ -10,7 +10,7 @@ async function categoryContractDeploy() {
 
   console.log(`CategoryContract address ${categoryContract.target}`);
 
-  await verifyContract(categoryContract.target);
+  await verifyContract(categoryContract, "CategoryContract");
 
   return categoryContract;
 }

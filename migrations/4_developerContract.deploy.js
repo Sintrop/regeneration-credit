@@ -23,7 +23,7 @@ async function developerContractDeploy() {
 
   console.log(`DeveloperContract address ${developerContract.target}`);
 
-  await verifyContract(developerContract.target, args);
+  await verifyContract(developerContract, "DeveloperContract", args);
 
   return developerContract;
 }

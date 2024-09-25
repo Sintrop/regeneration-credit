@@ -22,7 +22,7 @@ async function producerPoolDeploy() {
 
   console.log(`ProducerPool address ${producerPool.target}`);
 
-  await verifyContract(producerPool.target, args);
+  await verifyContract(producerPool, "ProducerPool", args);
 
   return producerPool;
 }

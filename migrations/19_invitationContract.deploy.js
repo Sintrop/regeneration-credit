@@ -15,7 +15,7 @@ async function invitationContractDeploy() {
 
   console.log(`InvitationContract address ${invitationContract.target}`);
 
-  await verifyContract(invitationContract.target, args);
+  await verifyContract(invitationContract, "InvitationContract", args);
 
   return invitationContract;
 }

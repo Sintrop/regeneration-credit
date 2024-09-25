@@ -12,14 +12,14 @@ async function contributorContractDeploy() {
 
   const contributorContract = await ContributorContract.deploy(...args);
 
-  saveContractAddress("contributorContract", contributorContract.target);
+  saveContractAddress("ContributorContract", contributorContract.target);
 
   await userContract.newAllowedCaller(contributorContract.target);
   await contributorContract.newAllowedCaller(contributorPool.target);
 
   console.log(`ContributorContract address ${contributorContract.target}`);
 
-  await verifyContract(contributorContract.target, args);
+  await verifyContract(contributorContract, "ContributorContract", args);
 
   return contributorContract;
 }

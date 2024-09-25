@@ -21,7 +21,7 @@ async function inspectorContractDeploy() {
 
   console.log(`InspectorContract address ${inspectorContract.target}`);
 
-  await verifyContract(inspectorContract.target, args);
+  await verifyContract(inspectorContract, "InspectorContract", args);
 
   return inspectorContract;
 }

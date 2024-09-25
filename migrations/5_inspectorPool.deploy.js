@@ -22,7 +22,7 @@ async function inspectorPoolDeploy() {
 
   console.log(`InspectorPool address ${inspectorPool.target}`);
 
-  await verifyContract(inspectorPool.target, args);
+  await verifyContract(inspectorPool, "InspectorPool", args);
 
   return inspectorPool;
 }

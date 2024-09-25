@@ -19,7 +19,7 @@ async function supporterPoolDeploy() {
 
   console.log(`SupporterPool address ${supporterPool.target}`);
 
-  await verifyContract(supporterPool.target, args);
+  await verifyContract(supporterPool, "SupporterPool", args);
 
   return supporterPool;
 }

@@ -19,7 +19,7 @@ async function activistContractDeploy() {
 
   console.log(`ActivistContract address ${activistContract.target}`);
 
-  await verifyContract(activistContract.target, args);
+  await verifyContract(activistContract, "ActivistContract", args);
 
   return activistContract;
 }

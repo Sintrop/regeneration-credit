@@ -17,16 +17,16 @@ async function userContractDeploy() {
     researcherProportionality,
     developerProportionality,
     validatorProportionality,
-    contributorProportionality
-  ]
+    contributorProportionality,
+  ];
 
   var userContract = await UserContract.deploy(...args);
 
   saveContractAddress("UserContract", userContract.target);
 
-  console.log(`UserContract address ${userContract.target}`)
-  
-  await verifyContract(userContract.target, args);
+  console.log(`UserContract address ${userContract.target}`);
+
+  await verifyContract(userContract, "UserContract", args);
 
   return userContract;
 }

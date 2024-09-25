@@ -19,7 +19,7 @@ async function supporterContractDeploy() {
 
   console.log(`SupporterContract address ${supporterContract.target}`);
 
-  await verifyContract(supporterContract.target, args);
+  await verifyContract(supporterContract, "SupporterContract", args);
 
   return supporterContract;
 }

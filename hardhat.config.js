@@ -34,6 +34,10 @@ module.exports = {
     //   url: `https://rpc.public.zkevm-test.net`,
     //   accounts: [privateKey],
     // },
+    // holesky: {
+    //   url: `https://rpc.holesky.ethpandaops.io`,
+    //   accounts: [privateKey],
+    // },
   },
   etherscan: {
     apiKey: etherscanApiKey,

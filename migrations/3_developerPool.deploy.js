@@ -22,7 +22,7 @@ async function developerPoolDeploy() {
 
   console.log(`DeveloperPool address ${developerPool.target}`);
 
-  await verifyContract(developerPool.target, args);
+  await verifyContract(developerPool, "DeveloperPool", args);
 
   return developerPool;
 }

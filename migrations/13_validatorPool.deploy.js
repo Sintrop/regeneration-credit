@@ -22,7 +22,7 @@ async function validatorPoolDeploy() {
 
   console.log(`ValidatorPool address ${validatorPool.target}`);
 
-  await verifyContract(validatorPool.target, args);
+  await verifyContract(validatorPool, "ValidatorPool", args);
 
   return validatorPool;
 }
