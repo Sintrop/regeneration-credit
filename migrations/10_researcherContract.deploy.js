@@ -1,5 +1,6 @@
 const saveContractAddress = require("../scripts/shared/saveContractAddress");
 const getDeployedContract = require("../scripts/shared/getDeployedContract");
+const verifyContract = require("../scripts/shared/verifyContract");
 
 async function researcherContractDeploy() {
   const userContract = await getDeployedContract("UserContract");
@@ -11,13 +12,15 @@ async function researcherContractDeploy() {
   const timeBetweenWorks = process.env["RESEARCHER_TIME_BETWEEN_WORKS"];
   const researcherMaxPenalties = process.env["DEVELOPER_MAX_PENALTIES"];
 
-  const researcherContract = await ResearcherContract.deploy(
+  const args = [
     userContract.target,
     researcherPool.target,
     validatorContract.target,
     timeBetweenWorks,
-    researcherMaxPenalties
-  );
+    researcherMaxPenalties,
+  ];
+
+  const researcherContract = await ResearcherContract.deploy(...args);
 
   saveContractAddress("ResearcherContract", researcherContract.target);
 
@@ -26,6 +29,8 @@ async function researcherContractDeploy() {
   await researcherContract.newAllowedCaller(validatorContract.target);
 
   console.log(`ReseacherContract address ${researcherContract.target}`);
+
+  await verifyContract(researcherContract, "ResearcherContract", args);
 
   return researcherContract;
 }

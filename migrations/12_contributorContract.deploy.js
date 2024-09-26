@@ -1,5 +1,6 @@
 const saveContractAddress = require("../scripts/shared/saveContractAddress");
 const getDeployedContract = require("../scripts/shared/getDeployedContract");
+const verifyContract = require("../scripts/shared/verifyContract");
 
 async function contributorContractDeploy() {
   const userContract = await getDeployedContract("UserContract");
@@ -7,17 +8,18 @@ async function contributorContractDeploy() {
 
   const ContributorContract = await ethers.getContractFactory("ContributorContract");
 
-  const contributorContract = await ContributorContract.deploy(
-    userContract.target,
-    contributorPool.target
-  );
+  const args = [userContract.target, contributorPool.target];
 
-  saveContractAddress("contributorContract", contributorContract.target);
+  const contributorContract = await ContributorContract.deploy(...args);
+
+  saveContractAddress("ContributorContract", contributorContract.target);
 
   await userContract.newAllowedCaller(contributorContract.target);
   await contributorContract.newAllowedCaller(contributorPool.target);
 
   console.log(`ContributorContract address ${contributorContract.target}`);
+
+  await verifyContract(contributorContract, "ContributorContract", args);
 
   return contributorContract;
 }

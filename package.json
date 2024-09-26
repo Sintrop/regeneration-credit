@@ -8,6 +8,7 @@
     "deploy:localhost": "npx hardhat run --network localhost scripts/deploy.js",
     "deploy:sepolia": "npx hardhat run --network sepolia scripts/deploy.js",
     "deploy:zkevm": "npx hardhat run --network zkevm scripts/deploy.js",
+    "deploy:holesky": "npx hardhat run --network holesky scripts/deploy.js",
     "coverage": "npx hardhat coverage",
     "ganache:start": "ganache-cli -d -m 'sintrop' -a 10 -e 200 -h 0.0.0.0",
     "solhint": "./node_modules/.bin/solhint -f table contracts/**/**/*.sol",

@@ -1,5 +1,6 @@
 const saveContractAddress = require("../scripts/shared/saveContractAddress");
 const getDeployedContract = require("../scripts/shared/getDeployedContract");
+const verifyContract = require("../scripts/shared/verifyContract");
 
 async function developerContractDeploy() {
   const userContract = await getDeployedContract("UserContract");
@@ -10,12 +11,9 @@ async function developerContractDeploy() {
 
   const developerMaxPenalties = process.env["DEVELOPER_MAX_PENALTIES"];
 
-  const developerContract = await DeveloperContract.deploy(
-    userContract.target,
-    developerPool.target,
-    validatorContract.target,
-    developerMaxPenalties
-  );
+  const args = [userContract.target, developerPool.target, validatorContract.target, developerMaxPenalties];
+
+  const developerContract = await DeveloperContract.deploy(...args);
 
   saveContractAddress("DeveloperContract", developerContract.target);
 
@@ -24,6 +22,8 @@ async function developerContractDeploy() {
   await developerContract.newAllowedCaller(validatorContract.target);
 
   console.log(`DeveloperContract address ${developerContract.target}`);
+
+  await verifyContract(developerContract, "DeveloperContract", args);
 
   return developerContract;
 }

@@ -1,5 +1,5 @@
 const saveContractAddress = require("../scripts/shared/saveContractAddress");
-const getDeployedContract = require("../scripts/shared/getDeployedContract");
+const verifyContract = require("../scripts/shared/verifyContract");
 
 async function categoryContractDeploy() {
   const CategoryContract = await ethers.getContractFactory("CategoryContract");
@@ -8,7 +8,9 @@ async function categoryContractDeploy() {
 
   saveContractAddress("CategoryContract", categoryContract.target);
 
-  console.log(`CategoryContract address ${categoryContract.target}`)
+  console.log(`CategoryContract address ${categoryContract.target}`);
+
+  await verifyContract(categoryContract, "CategoryContract");
 
   return categoryContract;
 }

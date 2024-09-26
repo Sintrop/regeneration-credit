@@ -1,5 +1,5 @@
 const saveContractAddress = require("../scripts/shared/saveContractAddress");
-const getDeployedContract = require("../scripts/shared/getDeployedContract");
+const verifyContract = require("../scripts/shared/verifyContract");
 
 async function sintropDeploy() {
   const sintropTimeBetweenProducerInspections = process.env["SINTROP_TIME_BETWEEN_PRODUCER_INSPECTIONS"];
@@ -14,17 +14,21 @@ async function sintropDeploy() {
 
   const Sintrop = await ethers.getContractFactory("Sintrop");
 
-  const sintrop = await Sintrop.deploy(
+  const args = [
     sintropTimeBetweenProducerInspections,
     sintropBlocksToExpireAceeptedInspection,
     allowedInitialRequests,
     acceptInspectionDelayBlocks,
-    securityBlocksToValidatorAnalysis
-  );
+    securityBlocksToValidatorAnalysis,
+  ];
+
+  const sintrop = await Sintrop.deploy(...args);
 
   saveContractAddress("Sintrop", sintrop.target);
 
   console.log(`Sintrop address ${sintrop.target}`);
+
+  await verifyContract(sintrop, "Sintrop", args);
 
   return sintrop;
 }

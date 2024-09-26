@@ -1,4 +1,5 @@
 const saveContractAddress = require("../scripts/shared/saveContractAddress");
+const verifyContract = require("../scripts/shared/verifyContract");
 
 async function userContractDeploy() {
   const inspectorProportionality = process.env["INSPECTOR_PROPORTIONALITY"];
@@ -10,18 +11,22 @@ async function userContractDeploy() {
 
   const UserContract = await ethers.getContractFactory("UserContract");
 
-  var userContract = await UserContract.deploy(
+  const args = [
     inspectorProportionality,
     activistProportionality,
     researcherProportionality,
     developerProportionality,
     validatorProportionality,
-    contributorProportionality
-  );
+    contributorProportionality,
+  ];
+
+  var userContract = await UserContract.deploy(...args);
 
   saveContractAddress("UserContract", userContract.target);
 
-  console.log(`UserContract address ${userContract.target}`)
+  console.log(`UserContract address ${userContract.target}`);
+
+  await verifyContract(userContract, "UserContract", args);
 
   return userContract;
 }

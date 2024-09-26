@@ -1,5 +1,6 @@
 const saveContractAddress = require("../scripts/shared/saveContractAddress");
 const getDeployedContract = require("../scripts/shared/getDeployedContract");
+const verifyContract = require("../scripts/shared/verifyContract");
 
 async function researcherPoolDeploy() {
   const pool_halving = process.env["RESEARCHER_POOL_HALVING"];
@@ -11,13 +12,17 @@ async function researcherPoolDeploy() {
 
   const ResearcherPool = await ethers.getContractFactory("ResearcherPool");
 
-  const researcherPool = await ResearcherPool.deploy(regenerationCredit.target, pool_halving, pool_total_eras, pool_blocks_per_era);
+  const args = [regenerationCredit.target, pool_halving, pool_total_eras, pool_blocks_per_era];
+
+  const researcherPool = await ResearcherPool.deploy(...args);
 
   saveContractAddress("ResearcherPool", researcherPool.target);
 
   await regenerationCredit.addContractPool(researcherPool.target, researcherPoolFunds);
 
-  console.log(`ReseacherPool address ${researcherPool.target}`)
+  console.log(`ReseacherPool address ${researcherPool.target}`);
+
+  await verifyContract(researcherPool, "ResearcherPool", args);
 
   return researcherPool;
 }
