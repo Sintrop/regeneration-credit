@@ -1,7 +1,9 @@
 const { run } = require("hardhat");
 
 const verifyContract = async function verify(contract, contractName, args) {
-  if (hre.network.name == "localhost") return;
+  const etherscanVerificationEnabled = process.env["ETHERSCAN_VERIFICATION_ENABLED"];
+
+  if (etherscanVerificationEnabled == "false" || hre.network.name == "localhost") return;
 
   console.log("====================================================================");
   console.log("verifying contract !!!!!!!");
