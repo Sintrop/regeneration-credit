@@ -115,7 +115,7 @@ contract Sintrop is Callable {
 
     Inspection memory inspection = inspections[inspectionId];
 
-    require(inspectionExists(inspectionId), "This inspection do not exist");
+    require(inspection.id >= 1, "This inspection do not exist");
     require(alreadyHaveInspectionAccepted(), "You already have an inspection Accepted");
     require(!inspectorInspected[msg.sender][inspection.producer], "Already inspected this producer");
     require(!inspectorInspected[msg.sender][inspection.producer], "Already inspected this producer");
@@ -235,28 +235,6 @@ contract Sintrop is Callable {
    */
   function getIsa(uint256 inspectionId) public view returns (IsaInspection[] memory) {
     return isaInspections[inspectionId];
-  }
-
-  /**
-   * @dev Returns all requested inspections.
-   */
-  function getInspections() public view returns (Inspection[] memory) {
-    Inspection[] memory inspectionsList = new Inspection[](inspectionsCount);
-
-    for (uint256 i = 0; i < inspectionsCount; i++) {
-      inspectionsList[i] = inspections[i + 1];
-    }
-
-    return inspectionsList;
-  }
-
-  // TODO: Add specs to this function
-  /**
-   * @dev Check if an inspection exists in mapping.
-   * @param id The id of the inspection that the inspector want accept.
-   */
-  function inspectionExists(uint256 id) public view returns (bool) {
-    return inspections[id].id >= 1;
   }
 
   function waitToRequest(Producer memory producer) public view returns (bool) {

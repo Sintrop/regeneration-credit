@@ -32,9 +32,14 @@ const afterDeploy = require("../migrations/after_deploy.js");
 const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function startDeployAlert() {
+  const etherscanVerificationEnabled = process.env["ETHERSCAN_VERIFICATION_ENABLED"];
+  const etherscanVerifyEnabledText = etherscanVerificationEnabled == 'true' ? "HABILITADA" : 'DESABILITADA'
   const deployStartSeconds = process.env["DEPLOY_START_SECONDS"] || 1;
 
   console.log(`-------------------  REDE ${hre.network.name} (CTRL + C para cancelar) -------------------`);
+
+  console.log(`VERIFICAÇÃO DOS CONTRATOS ESTÁ ${etherscanVerifyEnabledText}`);
+  
 
   for (let i = deployStartSeconds; i > 0; i--) {
     await sleep(1000);

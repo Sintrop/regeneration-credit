@@ -355,44 +355,6 @@ describe("Sintrop", () => {
     });
   });
 
-  describe("#getInspections", () => {
-    beforeEach(async () => {
-      await addInvitation(owner, producerAddress, userTypes.Producer, owner);
-      await addInvitation(owner, producer2Address, userTypes.Producer, owner);
-      await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
-
-      await addProducer("Producer A", producerAddress);
-      await addInspector("Inspector A", inspectorAddress);
-    });
-
-    context("when have inspections", () => {
-      beforeEach(async () => {
-        addProducer("Producer B", producer2Address);
-
-        await requestInspection(producerAddress);
-        await requestInspection(producer2Address);
-      });
-
-      it("should return inspections", async () => {
-        const inspections = await instance.getInspections();
-
-        const inspection1 = await instance.getInspection(1);
-        const inspection2 = await instance.getInspection(2);
-
-        expect(inspections[0].id).to.equal(inspection1.id);
-        expect(inspections[1].id).to.equal(inspection2.id);
-      });
-    });
-
-    context("when dont have inspections", () => {
-      it("should return zero inspections", async () => {
-        const inspections = await instance.getInspections();
-
-        expect(inspections.length).to.equal(0);
-      });
-    });
-  });
-
   describe("#requestInspection", () => {
     beforeEach(async () => {
       await addInvitation(owner, producerAddress, userTypes.Producer, owner);
@@ -948,12 +910,6 @@ describe("Sintrop", () => {
                     const inspector = await inspectorContract.getInspector(inspectorAddress);
 
                     expect(inspector.giveUps).to.equal("0");
-                  });
-
-                  it("should update inspectionList", async () => {
-                    const inspections = await instance.getInspections();
-
-                    expect(inspections[0].status).to.equal(STATUS.inspected);
                   });
 
                   it("should update inspection isas", async () => {
