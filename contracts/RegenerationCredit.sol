@@ -5,23 +5,22 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract RcToken is ERC20, Ownable {
+contract RegenerationCredit is ERC20, Ownable {
   string public constant NAME = "REGENERATION CREDIT";
   string public constant SYMBOL = "RC";
   uint8 public constant DECIMALS = 18;
-  uint256 public constant FUND_ICO = 135000000 * (10 ** DECIMALS);
+  uint256 public constant FUND_ICO = 124500000 * (10 ** DECIMALS);
 
   mapping(address => uint256) internal balances;
   mapping(address => mapping(address => uint256)) internal allowed;
   mapping(address => uint256) public certificate;
+  mapping(address => bool) internal contractsPools;
 
   uint256 internal totalSupply_;
   uint256 internal totalCertified_;
   uint256 internal totalLocked_;
 
   using SafeMath for uint256;
-
-  mapping(address => bool) internal contractsPools;
 
   constructor(uint256 total, address _icoAddr) ERC20(NAME, SYMBOL) {
     totalSupply_ = total;
@@ -37,22 +36,11 @@ contract RcToken is ERC20, Ownable {
     return true;
   }
 
-  function removeContractPool(address _fundAddress) public onlyOwner returns (bool) {
-    contractsPools[_fundAddress] = false;
-    return true;
-  }
-
-  function approveWith(address delegate, uint256 numTokens) public mustBeContractPool returns (uint256) {
-    allowed[msg.sender][delegate] = numTokens + allowance(msg.sender, delegate);
-    emit Approval(msg.sender, delegate, numTokens);
-    return numTokens;
-  }
-
   function transferWith(
     address tokenOwner,
     address receiver,
     uint256 numTokens
-  ) public mustBeContractPool mustHaveRcTokens(tokenOwner, numTokens) returns (bool) {
+  ) public mustBeContractPool mustHaveRegenerationCredits(tokenOwner, numTokens) returns (bool) {
     balances[tokenOwner] = balances[tokenOwner].sub(numTokens);
     balances[receiver] = balances[receiver].add(numTokens);
     emit Transfer(tokenOwner, receiver, numTokens);
@@ -149,7 +137,7 @@ contract RcToken is ERC20, Ownable {
     _;
   }
 
-  modifier mustHaveRcTokens(address tokenOwner, uint256 numTokens) {
+  modifier mustHaveRegenerationCredits(address tokenOwner, uint256 numTokens) {
     require(numTokens <= balances[tokenOwner], "You don't have RCT Tokens");
     _;
   }

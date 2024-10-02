@@ -1,26 +1,26 @@
-const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("SupporterPool", () => {
-  let instance, rcToken;
+  let instance, regenerationCredit;
   let owner, user1Address, user2Address;
 
   const transferTokensTo = async (userAddress, tokens) => {
-    await rcToken.transfer(userAddress, tokens);
+    await regenerationCredit.transfer(userAddress, tokens);
   };
 
   beforeEach(async () => {
     [owner, user1Address, user2Address] = await ethers.getSigners();
 
-    rcToken = await rcTokenDeployed();
+    regenerationCredit = await regenerationCreditDeployed();
 
     const instanceFactory = await ethers.getContractFactory("SupporterPool");
-    instance = await instanceFactory.deploy(rcToken.target);
+    instance = await instanceFactory.deploy(regenerationCredit.target);
 
     await instance.newAllowedCaller(owner);
 
-    await rcToken.addContractPool(instance.target, 0);
+    await regenerationCredit.addContractPool(instance.target, 0);
   });
 
   describe("#burnTokens", () => {
@@ -38,14 +38,14 @@ describe("SupporterPool", () => {
         expect(balance).to.equal(99000000000000000000n);
       });
 
-      it("user2Address balance must be 10000000000000000", async () => {
+      it("user2Address balance must be 50000000000000000", async () => {
         const balance = await instance.balanceOf(user2Address);
-        expect(balance).to.equal(10000000000000000n);
+        expect(balance).to.equal(50000000000000000n);
       });
 
-      it("totalCertified must be 990000000000000000", async () => {
-        const totalCertified = await rcToken.totalCertified();
-        expect(totalCertified).to.equal(990000000000000000n);
+      it("totalCertified must be 950000000000000000", async () => {
+        const totalCertified = await regenerationCredit.totalCertified();
+        expect(totalCertified).to.equal(950000000000000000n);
       });
 
       it("send PoolBurnTokensEvent", async () => {
@@ -54,9 +54,9 @@ describe("SupporterPool", () => {
           .withArgs(
             user1Address.address,
             1000000000000000000n,
-            990000000000000000n,
+            950000000000000000n,
             user2Address.address,
-            10000000000000000n
+            50000000000000000n
           );
       });
     });
@@ -77,7 +77,7 @@ describe("SupporterPool", () => {
       });
 
       it("totalCertified must be 1000000000000000000", async () => {
-        const totalCertified = await rcToken.totalCertified();
+        const totalCertified = await regenerationCredit.totalCertified();
         expect(totalCertified).to.equal(1000000000000000000n);
       });
 

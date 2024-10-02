@@ -7,7 +7,7 @@ import { Callable } from "./Callable.sol";
 
 /**
  * @title UserContract
- * @dev This contract work as a centralized user's system, where all users has your userType here
+ * @dev This contract works as a centralized user's registration system
  */
 contract UserContract is Ownable, Callable {
   mapping(address => UserType) internal users;
@@ -24,14 +24,16 @@ contract UserContract is Ownable, Callable {
     uint256 activistProportionality,
     uint256 researcherProportionality,
     uint256 developerProportionality,
-    uint256 validatorProportionality
+    uint256 validatorProportionality,
+    uint256 contributorProportionality
   ) {
-    userTypeSettings[UserType.ADVISOR] = UserTypeSetting(0, false, true);
-    userTypeSettings[UserType.INSPECTOR] = UserTypeSetting(inspectorProportionality, true, true);
-    userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(activistProportionality, false, true);
-    userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(researcherProportionality, false, true);
-    userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(developerProportionality, false, true);
-    userTypeSettings[UserType.VALIDATOR] = UserTypeSetting(validatorProportionality, false, true);
+    userTypeSettings[UserType.PRODUCER] = UserTypeSetting(0, false, true, 0);
+    userTypeSettings[UserType.INSPECTOR] = UserTypeSetting(inspectorProportionality, true, true, 0);
+    userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(activistProportionality, false, true, 100000);
+    userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(researcherProportionality, false, true, 200000);
+    userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(developerProportionality, false, true, 200000);
+    userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(contributorProportionality, false, true, 100000);
+    userTypeSettings[UserType.VALIDATOR] = UserTypeSetting(validatorProportionality, false, true, 1000000);
   }
 
   /**
@@ -59,10 +61,7 @@ contract UserContract is Ownable, Callable {
   }
 
   function registrationProportionalityAllowed(UserType userType) internal view returns (bool) {
-    UserType producerType = UserType.PRODUCER;
-    if (userType == producerType) return true;
-
-    uint256 producersCount = userTypesCount[producerType];
+    uint256 producersCount = userTypesCount[UserType.PRODUCER];
     uint256 registeredUserTypeCount = userTypesCount[userType];
     UserTypeSetting memory setting = userTypeSettings[userType];
     uint256 proportionality = setting.proportionalityOnRegister;
@@ -77,34 +76,8 @@ contract UserContract is Ownable, Callable {
     return users[addr];
   }
 
-  function userTypes()
-    public
-    pure
-    returns (
-      string memory,
-      string memory,
-      string memory,
-      string memory,
-      string memory,
-      string memory,
-      string memory,
-      string memory,
-      string memory,
-      string memory
-    )
-  {
-    return (
-      "UNDEFINED",
-      "PRODUCER",
-      "INSPECTOR",
-      "RESEARCHER",
-      "DEVELOPER",
-      "ADVISOR",
-      "ACTIVIST",
-      "SUPPORTER",
-      "VALIDATOR",
-      "DENIED"
-    );
+  function getUserTypeSettings(UserType userType) public view returns (UserTypeSetting memory) {
+    return userTypeSettings[userType];
   }
 
   /**
@@ -112,16 +85,12 @@ contract UserContract is Ownable, Callable {
    * @param addr The address of the user
    * @param title Title the delation
    * @param testimony Content the delation
-   * @param proofPhoto Photo proof the delation
    */
-  function addDelation(address addr, string memory title, string memory testimony, string memory proofPhoto) public {
+  function addDelation(address addr, string memory title, string memory testimony) public {
     require(users[msg.sender] != UserType.UNDEFINED, "Caller must be registered");
     require(users[addr] != UserType.UNDEFINED, "User must be registered");
-    uint256 id = delationsCount + 1;
 
-    Delation memory delation = Delation(id, msg.sender, addr, title, testimony, proofPhoto);
-
-    delations[addr].push(delation);
+    delations[addr].push(Delation(delationsCount + 1, msg.sender, addr, title, testimony));
     delationsCount++;
   }
 
@@ -129,9 +98,7 @@ contract UserContract is Ownable, Callable {
     require(invitations[invited].invited == address(0), "Already invited");
     require(users[invited] == UserType.UNDEFINED, "Already registered");
 
-    Invitation memory invitation = Invitation(invited, inviter, userType, block.number);
-
-    invitations[invited] = invitation;
+    invitations[invited] = Invitation(invited, inviter, userType, block.number);
   }
 
   function setDeniedType(address userAddress) public mustBeAllowedCaller {
@@ -151,9 +118,5 @@ contract UserContract is Ownable, Callable {
 
   function getInvitation(address addr) public view returns (Invitation memory) {
     return invitations[addr];
-  }
-
-  function exists(address addr) public view returns (bool) {
-    return users[addr] != UserType.UNDEFINED;
   }
 }

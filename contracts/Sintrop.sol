@@ -4,108 +4,105 @@ pragma solidity >=0.7.0 <=0.9.0;
 import { ProducerContract } from "./ProducerContract.sol";
 import { InspectorContract } from "./InspectorContract.sol";
 import { CategoryContract } from "./CategoryContract.sol";
+import { ValidatorContract } from "./ValidatorContract.sol";
+import { CategoryContract } from "./CategoryContract.sol";
+import { ActivistContract } from "./ActivistContract.sol";
+import { UserContract } from "./UserContract.sol";
 import { InspectionStatus, IsaInspection, Inspection } from "./types/InspectionTypes.sol";
 import { Producer } from "./types/ProducerTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
-import { UserContract } from "./UserContract.sol";
-import { UserType, Invitation } from "./types/UserTypes.sol";
-import { ValidatorContract } from "./ValidatorContract.sol";
-import { Validation } from "./types/ValidatorTypes.sol";
-import { ActivistContract } from "./ActivistContract.sol";
+import { UserType } from "./types/UserTypes.sol";
+import { ContractsDependency } from "./types/SintropTypes.sol";
+import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import { Callable } from "./Callable.sol";
 
 /**
  * @title SintropContract
  * @dev Sintrop application to certificate a rural producer
  */
-contract Sintrop {
-  mapping(address => mapping(address => bool)) internal inspectorInspected;
-  mapping(address => Inspection[]) internal userInspections;
-  mapping(uint256 => Inspection) internal inspections;
-  mapping(uint256 => IsaInspection[]) public isas;
-  mapping(uint256 => Validation[]) public validations;
-  mapping(address => mapping(uint256 => bool)) internal validatorValidations;
-  mapping(address => mapping(address => bool)) internal activistWonLevel;
+contract Sintrop is Callable {
+  using SafeMath for uint256;
 
-  InspectorContract public inspectorContract;
-  ProducerContract public producerContract;
-  UserContract public userContract;
-  ValidatorContract public validatorContract;
-  ActivistContract public activistContract;
+  mapping(address => mapping(address => bool)) internal inspectorInspected;
+  mapping(address => uint256[]) internal userInspections;
+  mapping(uint256 => Inspection) internal inspections;
+  mapping(uint256 => IsaInspection[]) public isaInspections;
+  mapping(address => mapping(uint256 => bool)) internal validatorValidations;
+
+  InspectorContract private inspectorContract;
+  ProducerContract private producerContract;
+  UserContract private userContract;
+  ValidatorContract private validatorContract;
+  ActivistContract private activistContract;
+  CategoryContract private categoryContract;
 
   uint256 public inspectionsCount;
-  uint256 internal immutable timeBetweenInspections;
-  uint256 internal blocksToExpireAcceptedInspection;
-  uint256 internal immutable allowedInitialRequests;
-  uint256 internal acceptInspectionDelayBlocks;
+  uint256 public immutable timeBetweenInspections;
+  uint256 public immutable blocksToExpireAcceptedInspection;
+  uint256 public immutable allowedInitialRequests;
+  uint256 public immutable acceptInspectionDelayBlocks;
+  uint256 public immutable securityBlocksToValidatorAnalysis;
 
   constructor(
-    address inspectorContractAddress,
-    address producerContractAddress,
-    address userContractAddress,
-    address validatorContractAddress,
-    address activistContractAddress,
     uint256 timeBetweenInspections_,
     uint256 blocksToExpireAcceptedInspection_,
     uint256 allowedInitialRequests_,
-    uint256 acceptInspectionDelayBlocks_
+    uint256 acceptInspectionDelayBlocks_,
+    uint256 securityBlocksToValidatorAnalysis_
   ) {
-    inspectorContract = InspectorContract(inspectorContractAddress);
-    producerContract = ProducerContract(producerContractAddress);
-    userContract = UserContract(userContractAddress);
-    validatorContract = ValidatorContract(validatorContractAddress);
-    activistContract = ActivistContract(activistContractAddress);
     timeBetweenInspections = timeBetweenInspections_;
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
     allowedInitialRequests = allowedInitialRequests_;
     acceptInspectionDelayBlocks = acceptInspectionDelayBlocks_;
+    securityBlocksToValidatorAnalysis = securityBlocksToValidatorAnalysis_;
   }
 
-  // TODO: Refact this mapping to not duplicate inspections
+  function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+    userContract = UserContract(contractDependency.userContractAddress);
+    producerContract = ProducerContract(contractDependency.producerContractAddress);
+    validatorContract = ValidatorContract(contractDependency.validatorContractAddress);
+    inspectorContract = InspectorContract(contractDependency.inspectorContractAddress);
+    categoryContract = CategoryContract(contractDependency.categoryContractAddress);
+    activistContract = ActivistContract(contractDependency.activistContractAddress);
+  }
+
   /**
    * @dev Allows the current user producer/inspector get all yours inspections with status INSPECTED
    */
-  function getInspectionsHistory() public view returns (Inspection[] memory) {
+  function getInspectionsHistory() public view returns (uint256[] memory) {
     return userInspections[msg.sender];
   }
 
   /**
-   * @dev List IsaInspection from inspection
-   * @param inspectionId The id of the inspection to get IsaInspection
-   */
-  function getIsa(uint256 inspectionId) public view returns (IsaInspection[] memory) {
-    return isas[inspectionId];
-  }
-
-  // TODO: Remove not reutilized modifiers and use require direct in the function
-  /**
    * @dev Allows the current user (producer) request a inspection.
    */
   function requestInspection() public {
-    require(userContract.userTypeIs(UserType.PRODUCER, msg.sender), "Please register as producer");
-    require(!producerContract.getProducer(msg.sender).recentInspection, "Request OPEN or ACCEPTED");
-    require(canRequestInspection(), "Recent inspection");
+    Producer memory producer = producerContract.getProducer(msg.sender);
 
-    addRequest();
+    require(userContract.userTypeIs(UserType.PRODUCER, msg.sender), "Please register as producer");
+    require(!producer.pendingInspection, "Request already OPEN");
+    require(waitToRequest(producer), "Wait to request");
+    require(!producer.isa.sustainable, "You can't request inspections anymore, you have completed your mission");
+
+    createInspection();
 
     afterRequestInspection();
   }
 
-  function addRequest() internal {
-    uint256 id = inspectionsCount + 1;
-    Inspection memory inspection = inspections[id];
+  function createInspection() internal {
+    Inspection memory inspection;
 
-    inspection.id = id;
+    inspection.id = inspectionsCount + 1;
     inspection.status = InspectionStatus.OPEN;
-    inspection.createdBy = msg.sender;
-    inspection.acceptedBy = address(0);
+    inspection.producer = msg.sender;
+    inspection.inspector = address(0);
     inspection.createdAt = block.number;
     inspections[inspection.id] = inspection;
     inspectionsCount++;
   }
 
   function afterRequestInspection() internal {
-    producerContract.recentInspection(msg.sender, true);
-    producerContract.lastRequestAt(msg.sender, block.number);
+    producerContract.afterRequestInspection(msg.sender);
   }
 
   /**
@@ -114,170 +111,114 @@ contract Sintrop {
    */
   function acceptInspection(uint256 inspectionId) public {
     require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
+    require(inspectorContract.isInspectorValid(msg.sender), "No more than 3 giveUps allowed");
 
     Inspection memory inspection = inspections[inspectionId];
 
-    require(inspectionExists(inspectionId), "This inspection don't exists");
-    require(!inspectorInspected[msg.sender][inspection.createdBy], "Already inspected this producer");
-
-    require(canAcceptInspection(inspectionId), "Can't accept yet");
+    require(inspection.id >= 1, "This inspection do not exist");
+    require(alreadyHaveInspectionAccepted(), "You already have an inspection Accepted");
+    require(!inspectorInspected[msg.sender][inspection.producer], "Already inspected this producer");
+    require(!inspectorInspected[msg.sender][inspection.producer], "Already inspected this producer");
     require(inspection.status == InspectionStatus.OPEN, "This inspection is not OPEN");
+    require(acceptInspectionDelayBlocksPassed(inspection), "Wait inspection delay blocks");
+    require(beforeAcceptHaveSecurityBlocksToVote(), "Wait until next era to accept");
 
     inspection.status = InspectionStatus.ACCEPTED;
     inspection.acceptedAt = block.number;
-    inspection.acceptedBy = msg.sender;
+    inspection.inspector = msg.sender;
     inspections[inspectionId] = inspection;
 
-    producerContract.recentInspection(inspection.createdBy, false); // Talvez não precise, pois estamos usando a expiração da inspeção pra checar se o produtor pode solicitar uma nova inspeção
-    inspectorContract.incrementGiveUps(msg.sender);
-
-    inspectorContract.lastAcceptedAt(msg.sender, block.number);
-    inspectorContract.lastInspection(msg.sender, inspectionId);
+    producerContract.afterAcceptInspection(inspection.producer);
+    inspectorContract.afterAcceptInspection(msg.sender, inspectionId);
   }
 
   /**
    * @dev Allow a inspector realize a inspection and mark as INSPECTED
    * @param inspectionId The id of the inspection to be realized
-   * @param _isas The IsaIsaInspection[] of the inspection to be realized
+   * @param _isaInspections The IsaIsaInspection[] of the inspection to be realized
    */
-  function realizeInspection(uint256 inspectionId, string memory report, IsaInspection[] memory _isas) public {
+  function realizeInspection(
+    uint256 inspectionId,
+    string memory proofPhoto,
+    string memory report,
+    IsaInspection[] memory _isaInspections
+  ) public {
     Inspection memory inspection = inspections[inspectionId];
 
+    require(_isaInspections.length == 4, "Invalid isas length");
     require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
-    require(inspectionExists(inspectionId), "This inspection don't exists");
-    require(isAccepted(inspectionId), "Accept this inspection before");
-    require(isInspectorOwner(inspectionId), "You not accepted this inspection");
+    require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
+    require(inspection.inspector == msg.sender, "You have not accepted this inspection");
+    require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
 
-    require(!expiredInspection(inspectionId), "Inspection Expired");
-
-    markAsRealized(inspection, report, _isas);
+    markAsRealized(inspection, proofPhoto, report, _isaInspections);
 
     afterRealizeInspection(inspection);
 
-    producerContract.setIsaScore(inspection.createdBy, inspection.isaScore);
-
-    inspectorInspected[msg.sender][inspection.createdBy] = true;
+    inspectorInspected[msg.sender][inspection.producer] = true;
   }
 
-  function markAsRealized(Inspection memory inspection, string memory report, IsaInspection[] memory _isas) internal {
+  function markAsRealized(
+    Inspection memory inspection,
+    string memory proofPhoto,
+    string memory report,
+    IsaInspection[] memory _isaInspections
+  ) internal {
     inspection.status = InspectionStatus.INSPECTED;
-    inspection.isaScore = calculateIsa(inspection, _isas);
+    inspection.isaScore = categoryContract.calculateScore(_isaInspections);
+    inspection.proofPhoto = proofPhoto;
     inspection.report = report;
+    inspection.inspectedAt = block.number;
+    inspection.inspectedAtEra = producerContract.producerPoolEra();
 
     inspections[inspection.id] = inspection;
+
+    isaInspections[inspection.id].push(_isaInspections[0]);
+    isaInspections[inspection.id].push(_isaInspections[1]);
+    isaInspections[inspection.id].push(_isaInspections[2]);
+    isaInspections[inspection.id].push(_isaInspections[3]);
   }
 
-  function calculateIsa(Inspection memory inspection, IsaInspection[] memory _isas) internal returns (int256) {
-    int256[7] memory points = [int256(25), 10, 1, 0, -1, -10, -25];
-    int256 isaScore;
-
-    for (uint8 i = 0; i < _isas.length; i++) {
-      isas[inspection.id].push(_isas[i]);
-      uint256 isaIndex = _isas[i].isaIndex;
-      isaScore += points[isaIndex];
-    }
-
-    return isaScore;
-  }
-
-  // TODO: Refact this function
   /**
    * @dev Inscrement producer and inspector request actions
    * @param inspection the inspected inspection
    */
   function afterRealizeInspection(Inspection memory inspection) internal {
-    address createdBy = inspection.createdBy;
-    address acceptedBy = inspection.acceptedBy;
+    address producerAddress = inspection.producer;
+    address inspectorAddress = inspection.inspector;
 
-    inspectorContract.incrementInspections(acceptedBy);
-    inspectorContract.decreaseGiveUps(acceptedBy);
+    activistContract.addLevel(
+      producerAddress,
+      producerContract.afterRealizeInspection(producerAddress, inspection.isaScore),
+      inspectorAddress,
+      inspectorContract.afterRealizeInspection(inspectorAddress)
+    );
 
-    producerContract.incrementInspections(createdBy);
-
-    setActivistLevel(createdBy, acceptedBy);
-
-    userInspections[createdBy].push(inspection);
-    userInspections[acceptedBy].push(inspection);
-  }
-
-  function setActivistLevel(address producerAddress, address inspectorAddress) internal {
-    Invitation memory producerInvitation = userContract.getInvitation(producerAddress);
-    Invitation memory inspectorInvitation = userContract.getInvitation(inspectorAddress);
-
-    Producer memory producer = producerContract.getProducer(producerAddress);
-    Inspector memory inspector = inspectorContract.getInspector(inspectorAddress);
-
-    uint256 minimumInspectionWonLevel = 3;
-
-    if (
-      producerInvitation.createdAtBlock > 0 &&
-      producer.totalInspections == minimumInspectionWonLevel &&
-      !activistWonLevel[producerInvitation.inviter][producerAddress]
-    ) {
-      activistWonLevel[producerInvitation.inviter][producerAddress] = true;
-      activistContract.addLevel(producerInvitation.inviter);
-    }
-
-    if (
-      inspectorInvitation.createdAtBlock > 0 &&
-      inspector.totalInspections == minimumInspectionWonLevel &&
-      !activistWonLevel[inspectorInvitation.inviter][inspectorAddress]
-    ) {
-      activistWonLevel[inspectorInvitation.inviter][inspectorAddress] = true;
-      activistContract.addLevel(inspectorInvitation.inviter);
-    }
+    userInspections[producerAddress].push(inspection.id);
+    userInspections[inspectorAddress].push(inspection.id);
   }
 
   function addInspectionValidation(uint256 id, string memory justification) public {
     require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
     Inspection memory inspection = inspections[id];
-    require(inspection.status == InspectionStatus.INSPECTED, "This inspection is not INSPECTED");
-    require(!validatorValidations[msg.sender][id], "Already voted");
 
-    validatorValidations[msg.sender][id] = true;
+    require(inspection.inspectedAtEra == producerContract.producerPoolEra(), "Can not add validation anymore");
 
     inspection.validationsCount += 1;
-    inspections[id] = inspection;
+    inspections[inspection.id] = inspection;
 
-    uint256 majorityValidatorsCount_ = validatorContract.majorityValidatorsCount();
-    uint256 validationsCount = inspections[id].validationsCount;
-    bool addPenalty = validationsCount >= majorityValidatorsCount_;
+    bool mustInvalidateInspection = inspection.validationsCount >= validatorContract.majorityValidatorsCount();
 
-    validations[id].push(
-      Validation(
-        msg.sender,
-        inspection.acceptedBy,
-        inspection.id,
-        justification,
-        majorityValidatorsCount_,
-        block.number
-      )
-    );
+    if (mustInvalidateInspection) invalidateInspection(inspection);
 
-    if (!addPenalty) return;
-
-    uint256 inspectorTotalPenalties = inspectorContract.addPenalty(inspection.acceptedBy, inspection.id);
-    invalidateInspection(inspection);
-
-    if (inspectorTotalPenalties >= inspectorContract.maxPenalties())
-      validatorContract.externalDenieUser(inspection.acceptedBy);
+    validatorContract.addInspectionValidation(inspection, justification, msg.sender);
   }
 
   function invalidateInspection(Inspection memory inspection) internal {
     inspection.status = InspectionStatus.INVALIDATED;
     inspection.invalidatedAt = block.number;
     inspections[inspection.id] = inspection;
-
-    inspectorContract.decrementInspections(inspection.acceptedBy);
-    producerContract.decrementInspections(inspection.createdBy);
-
-    if (inspection.isaScore <= 0) return;
-
-    uint256 levels = uint256(inspection.isaScore);
-
-    validatorContract.externalRemoveLevels(inspection.createdBy, levels);
-    validatorContract.externalRemoveLevels(inspection.acceptedBy, levels);
   }
 
   /**
@@ -289,80 +230,42 @@ contract Sintrop {
   }
 
   /**
-   * @dev Returns all requested inspections.
+   * @dev List IsaInspection from inspection
+   * @param inspectionId The id of the inspection to get IsaInspection
    */
-  function getInspections() public view returns (Inspection[] memory) {
-    Inspection[] memory inspectionsList = new Inspection[](inspectionsCount);
-
-    for (uint256 i = 0; i < inspectionsCount; i++) {
-      inspectionsList[i] = inspections[i + 1];
-    }
-
-    return inspectionsList;
+  function getIsa(uint256 inspectionId) public view returns (IsaInspection[] memory) {
+    return isaInspections[inspectionId];
   }
 
-  // TODO: Have a better way to return this?
-  // TODO: Is this function necessary?
-  /**
-   * @dev Returns all inpections status string.
-   */
-  function getInspectionsStatus() public pure returns (string memory, string memory, string memory, string memory) {
-    return ("OPEN", "ACCEPTED", "INSPECTED", "EXPIRED");
-  }
-
-  // TODO: Add specs to this function
-  /**
-   * @dev Check if an inspection exists in mapping.
-   * @param id The id of the inspection that the inspector want accept.
-   */
-  function inspectionExists(uint256 id) public view returns (bool) {
-    return inspections[id].id >= 1;
-  }
-
-  function isInspectorOwner(uint256 inspectionId) internal view returns (bool) {
-    return inspections[inspectionId].acceptedBy == msg.sender;
-  }
-
-  function isAccepted(uint256 inspectionId) internal view returns (bool) {
-    return inspections[inspectionId].status == InspectionStatus.ACCEPTED;
-  }
-
-  // TODO: Add specs to this function
-  function canRequestInspection() public view returns (bool) {
-    Producer memory producer = producerContract.getProducer(msg.sender);
-
+  function waitToRequest(Producer memory producer) public view returns (bool) {
     if (producer.totalInspections < allowedInitialRequests) return true;
 
     return block.number > producer.lastRequestAt + timeBetweenInspections;
   }
 
-  function expiredInspection(uint256 inspectionId) internal view returns (bool) {
-    Inspection memory inspection = inspections[inspectionId];
-    uint256 expireInspectionAt = inspection.acceptedAt + blocksToExpireAcceptedInspection;
-
-    return block.number > expireInspectionAt;
-  }
-
   function calculateBlocksToExpire(uint256 inspectionId) public view returns (uint256) {
-    Inspection memory inspection = inspections[inspectionId];
-
-    return inspection.acceptedAt + blocksToExpireAcceptedInspection - block.number;
+    return inspections[inspectionId].acceptedAt + blocksToExpireAcceptedInspection - block.number;
   }
 
-  function canAcceptInspection(uint256 inspectionId) internal view returns (bool) {
-    Inspection memory inspection = inspections[inspectionId];
+  function alreadyHaveInspectionAccepted() private view returns (bool) {
     Inspector memory inspector = inspectorContract.getInspector(msg.sender);
     Inspection memory lastInspection = inspections[inspector.lastInspection];
-
-    bool waitedInspectionDelay = block.number > inspection.createdAt + acceptInspectionDelayBlocks;
 
     bool acceptedInspectionExpired = block.number > lastInspection.acceptedAt + blocksToExpireAcceptedInspection;
 
     bool finishedLastInspection = lastInspection.status == InspectionStatus.INSPECTED ||
       lastInspection.status == InspectionStatus.INVALIDATED;
 
-    if (!waitedInspectionDelay) return false;
-
     return finishedLastInspection || acceptedInspectionExpired || inspector.lastInspection == 0;
+  }
+
+  function acceptInspectionDelayBlocksPassed(Inspection memory inspection) private view returns (bool) {
+    return block.number > inspection.createdAt + acceptInspectionDelayBlocks;
+  }
+
+  function beforeAcceptHaveSecurityBlocksToVote() private view returns (bool) {
+    if (producerContract.nextEraIn() < blocksToExpireAcceptedInspection) return false;
+
+    return producerContract.nextEraIn().sub(blocksToExpireAcceptedInspection) > securityBlocksToValidatorAnalysis;
   }
 }

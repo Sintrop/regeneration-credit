@@ -2,6 +2,7 @@ node_modules
 abis
 .env
 
+deployed_contracts
 node_modules
 .env
 

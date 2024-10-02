@@ -12,7 +12,7 @@ contract SupporterContract {
   UserContract internal userContract;
   SupporterPool internal supporterPool;
   address[] internal supportersAddress;
-  uint256 public supportersCount;
+  UserType private constant USER_TYPE = UserType.SUPPORTER;
 
   constructor(address userContractAddress, address supporterPoolAddress) {
     userContract = UserContract(userContractAddress);
@@ -20,20 +20,16 @@ contract SupporterContract {
   }
 
   /**
-   * @dev Allow a new register of supporter
+   * @dev Allow new register of supporter
    * @param name the name of the supporter
    * @return a supporter
    */
-  function addSupporter(string memory name) public uniqueSupporter returns (Supporter memory) {
-    uint256 id = supportersCount + 1;
-    UserType userType = UserType.SUPPORTER;
-
-    Supporter memory supporter = Supporter(id, msg.sender, userType, name);
+  function addSupporter(string memory name) public returns (Supporter memory) {
+    Supporter memory supporter = Supporter(userContract.userTypesCount(USER_TYPE) + 1, msg.sender, name);
 
     supporters[msg.sender] = supporter;
     supportersAddress.push(msg.sender);
-    supportersCount++;
-    userContract.addUser(msg.sender, userType);
+    userContract.addUser(msg.sender, USER_TYPE);
 
     return supporter;
   }
@@ -53,9 +49,10 @@ contract SupporterContract {
    * @return Supporter struct array
    */
   function getSupporters() public view returns (Supporter[] memory) {
-    Supporter[] memory supporterList = new Supporter[](supportersCount);
+    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    Supporter[] memory supporterList = new Supporter[](usersCount);
 
-    for (uint256 i = 0; i < supportersCount; i++) {
+    for (uint256 i = 0; i < usersCount; i++) {
       address acAddress = supportersAddress[i];
       supporterList[i] = supporters[acAddress];
     }
@@ -69,20 +66,5 @@ contract SupporterContract {
    */
   function getSupporter(address addr) public view returns (Supporter memory) {
     return supporters[addr];
-  }
-
-  /**
-   * @dev Check if a specific supporter exists
-   * @return a bool that represent if a supporter exists or not
-   */
-  function supporterExists(address addr) public view returns (bool) {
-    return bytes(supporters[addr].name).length > 0;
-  }
-
-  //MODIFIERS
-
-  modifier uniqueSupporter() {
-    require(!supporterExists(msg.sender), "This supporter already exist");
-    _;
   }
 }

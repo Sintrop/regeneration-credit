@@ -6,7 +6,6 @@ import { UserType } from "./UserTypes.sol";
 struct Inspector {
   uint256 id;
   address inspectorWallet;
-  UserType userType;
   string name;
   string proofPhoto;
   uint256 totalInspections;

@@ -6,19 +6,18 @@ import "./UserTypes.sol";
 struct Producer {
   uint256 id;
   address producerWallet;
-  UserType userType;
-  uint256 certifiedArea;
   string name;
   string proofPhoto;
-  bool recentInspection;
+  bool pendingInspection;
   uint256 totalInspections;
   uint256 lastRequestAt;
   Isa isa;
-  PropertyAddress propertyAddress;
+  AreaInformation areaInformation;
   Pool pool;
 }
 
 struct Pool {
+  bool onContractPool;
   uint256 currentEra;
 }
 
@@ -28,6 +27,7 @@ struct Isa {
   bool sustainable;
 }
 
-struct PropertyAddress {
-  string coordinate;
+struct AreaInformation {
+  string coordinates;
+  uint256 totalArea;
 }

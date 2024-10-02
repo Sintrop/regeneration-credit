@@ -1,7 +1,7 @@
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 
-const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
@@ -23,24 +23,29 @@ describe("InspectorContract", () => {
     totalTokens: "180000000000000000000000000",
     halving: 12,
     totalEras: 96,
-    blocksPerEra: 20,
+    blocksPerEra: 24,
   };
 
   beforeEach(async () => {
     [owner, inspe1Address, inspe2Address] = await ethers.getSigners();
 
-    rcToken = await rcTokenDeployed();
+    regenerationCredit = await regenerationCreditDeployed();
     userContract = await userContractDeployed();
     const maxPenalties = 2;
 
     const inspectorPoolFactory = await ethers.getContractFactory("InspectorPool");
-    inspectorPool = await inspectorPoolFactory.deploy(rcToken.target, args.halving, args.totalEras, args.blocksPerEra);
+    inspectorPool = await inspectorPoolFactory.deploy(
+      regenerationCredit.target,
+      args.halving,
+      args.totalEras,
+      args.blocksPerEra
+    );
 
     const instanceFactory = await ethers.getContractFactory("InspectorContract");
     instance = await instanceFactory.deploy(userContract.target, inspectorPool.target, maxPenalties);
 
     await inspectorPool.newAllowedCaller(instance.target);
-    await rcToken.addContractPool(inspectorPool.target, args.totalTokens);
+    await regenerationCredit.addContractPool(inspectorPool.target, args.totalTokens);
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
     await instance.newAllowedCaller(owner);
@@ -56,7 +61,6 @@ describe("InspectorContract", () => {
 
       expect(inspector.id).to.equal("1");
       expect(inspector.inspectorWallet).to.equal(inspe1Address.address);
-      expect(inspector.userType).to.equal("2");
       expect(inspector.name).to.equal("Inspector A");
       expect(inspector.proofPhoto).to.equal("photoURL");
       expect(inspector.totalInspections).to.equal("0");
@@ -71,7 +75,7 @@ describe("InspectorContract", () => {
       context("when inspector exists", () => {
         it("should return error", async () => {
           await addInspector("Inspector A", inspe1Address);
-          await expect(addInspector("Inspector A", inspe1Address)).to.be.revertedWith("This inspector already exist");
+          await expect(addInspector("Inspector A", inspe1Address)).to.be.revertedWith("User already exists");
         });
       });
 
@@ -103,7 +107,7 @@ describe("InspectorContract", () => {
         it("should increment inspectorsCount after create inspector", async () => {
           await addInspector("Inspector A", inspe1Address);
           await addInspector("Inspector B", inspe2Address);
-          const inspectorsCount = await instance.inspectorsCount();
+          const inspectorsCount = await userContract.userTypesCount(userTypes.Inspector);
 
           expect(inspectorsCount).to.equal(2);
         });
@@ -167,51 +171,122 @@ describe("InspectorContract", () => {
     // Todo Add when not exists
   });
 
-  describe("#incrementInspections", () => {
+  describe("#afterRealizeInspection", () => {
     context("with allowed caller", () => {
-      beforeEach(async () => {
-        await addInspector("Inspector A", inspe1Address);
-        await instance.incrementInspections(inspe1Address);
-      });
-
-      context("when do not reached minimum inspections", () => {
-        it("should increment", async () => {
-          const inspector = await instance.getInspector(inspe1Address);
-
-          expect(inspector.totalInspections).to.equal(1);
+      describe(".decreaseGiveUps", () => {
+        beforeEach(async () => {
+          await addInspector("Inspector A", inspe1Address);
+          await instance.afterAcceptInspection(inspe1Address, 1);
+          await instance.afterAcceptInspection(inspe1Address, 1);
+          await instance.afterRealizeInspection(inspe1Address);
         });
 
-        it("should do not add level to pool", async () => {
-          const eraLevels = await inspectorPool.eraLevels(1, inspe1Address);
-
-          expect(eraLevels).to.equal(0);
-        });
-
-        context("when reached minimum inspections", () => {
-          beforeEach(async () => {
-            await instance.incrementInspections(inspe1Address);
-            await instance.incrementInspections(inspe1Address);
-          });
-
-          it("should add 1 level to pool", async () => {
-            const eraLevels = await inspectorPool.eraLevels(1, inspe1Address);
-
-            expect(eraLevels).to.equal(1);
-          });
-
+        context("must decreaseGiveUps", () => {
           it("should increment", async () => {
             const inspector = await instance.getInspector(inspe1Address);
 
-            expect(inspector.totalInspections).to.equal(3);
+            expect(inspector.giveUps).to.equal(1);
+          });
+        });
+      });
+
+      describe(".incrementInspections", () => {
+        beforeEach(async () => {
+          await addInspector("Inspector A", inspe1Address);
+          await instance.afterAcceptInspection(inspe1Address, 1);
+          await instance.afterRealizeInspection(inspe1Address);
+        });
+
+        context("when do not reached minimum inspections", () => {
+          it("should increment", async () => {
+            const inspector = await instance.getInspector(inspe1Address);
+
+            expect(inspector.totalInspections).to.equal(1);
+          });
+
+          it("should do not add level to pool", async () => {
+            const eraLevels = await inspectorPool.eraLevels(1, inspe1Address);
+
+            expect(eraLevels).to.equal(0);
+          });
+
+          context("when reached minimum inspections", () => {
+            beforeEach(async () => {
+              await instance.afterAcceptInspection(inspe1Address, 1);
+              await instance.afterAcceptInspection(inspe1Address, 1);
+
+              await instance.afterRealizeInspection(inspe1Address);
+              await instance.afterRealizeInspection(inspe1Address);
+            });
+
+            it("should add 1 level to pool", async () => {
+              const eraLevels = await inspectorPool.eraLevels(1, inspe1Address);
+
+              expect(eraLevels).to.equal(1);
+            });
+
+            it("should increment", async () => {
+              const inspector = await instance.getInspector(inspe1Address);
+
+              expect(inspector.totalInspections).to.equal(3);
+            });
           });
         });
       });
     });
 
     context("without allowed caller", async () => {
-      it("should return error when is not allowed caller", async () => {
+      it("should return error when", async () => {
         await addInspector("Inspector A", inspe1Address);
-        await expect(instance.connect(inspe1Address).incrementInspections(inspe1Address)).to.be.revertedWith(
+        await expect(instance.connect(inspe1Address).afterRealizeInspection(inspe1Address)).to.be.revertedWith(
+          "Not allowed caller"
+        );
+      });
+    });
+  });
+
+  describe("#afterAcceptInspection", () => {
+    context("with allowed caller", () => {
+      describe(".incrementGiveUps", () => {
+        beforeEach(async () => {
+          await addInspector("Inspector A", inspe1Address);
+          await instance.afterAcceptInspection(inspe1Address, 1);
+          await instance.afterAcceptInspection(inspe1Address, 1);
+        });
+
+        context("must decreaseGiveUps", () => {
+          it("should increment", async () => {
+            const inspector = await instance.getInspector(inspe1Address);
+
+            expect(inspector.giveUps).to.equal(2);
+          });
+        });
+      });
+
+      describe(".markLastInspection", () => {
+        beforeEach(async () => {
+          await addInspector("Inspector A", inspe1Address);
+          await instance.afterAcceptInspection(inspe1Address, 100);
+        });
+
+        it("must set lastAcceptedAt", async () => {
+          const inspector = await instance.getInspector(inspe1Address);
+
+          expect(inspector.lastAcceptedAt).to.above(1);
+        });
+
+        it("must set lastInspection", async () => {
+          const inspector = await instance.getInspector(inspe1Address);
+
+          expect(inspector.lastInspection).to.equal(100);
+        });
+      });
+    });
+
+    context("without allowed caller", async () => {
+      it("should return error when", async () => {
+        await addInspector("Inspector A", inspe1Address);
+        await expect(instance.connect(inspe1Address).afterAcceptInspection(inspe1Address, 1)).to.be.revertedWith(
           "Not allowed caller"
         );
       });
@@ -223,8 +298,11 @@ describe("InspectorContract", () => {
       beforeEach(async () => {
         await addInspector("Inspector A", inspe1Address);
 
-        await instance.incrementInspections(inspe1Address);
-        await instance.incrementInspections(inspe1Address);
+        await instance.afterAcceptInspection(inspe1Address, 1);
+        await instance.afterAcceptInspection(inspe1Address, 1);
+
+        await instance.afterRealizeInspection(inspe1Address);
+        await instance.afterRealizeInspection(inspe1Address);
       });
 
       context("when have less then 3 inspections", () => {
@@ -235,7 +313,9 @@ describe("InspectorContract", () => {
 
       context("when inspector is in era 1 and current era is 1", () => {
         it("should return error", async () => {
-          await instance.incrementInspections(inspe1Address);
+          await instance.afterAcceptInspection(inspe1Address, 1);
+          await instance.afterRealizeInspection(inspe1Address);
+
           await expect(instance.connect(inspe1Address).withdraw()).to.be.revertedWith("Can't approve withdraw");
         });
       });
@@ -243,7 +323,8 @@ describe("InspectorContract", () => {
       context("when inspector is in era 1 and current era is 2", () => {
         context("with one inspection", () => {
           beforeEach(async () => {
-            await instance.incrementInspections(inspe1Address);
+            await instance.afterAcceptInspection(inspe1Address, 1);
+            await instance.afterRealizeInspection(inspe1Address);
 
             await advanceBlock(args.blocksPerEra);
 
@@ -251,7 +332,7 @@ describe("InspectorContract", () => {
           });
 
           it("withdraw 7200000000000000000000000 tokens", async () => {
-            const balanceOf = await inspectorPool.balanceOf(inspe1Address);
+            const balanceOf = await regenerationCredit.balanceOf(inspe1Address);
             const expectedBalance = 7200000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
@@ -261,11 +342,16 @@ describe("InspectorContract", () => {
         context("with two inspection", () => {
           beforeEach(async () => {
             await addInspector("Inspector B", inspe2Address);
-            await instance.incrementInspections(inspe1Address);
+            await instance.afterAcceptInspection(inspe1Address, 1);
+            await instance.afterRealizeInspection(inspe1Address);
 
-            await instance.incrementInspections(inspe2Address);
-            await instance.incrementInspections(inspe2Address);
-            await instance.incrementInspections(inspe2Address);
+            await instance.afterAcceptInspection(inspe2Address, 1);
+            await instance.afterAcceptInspection(inspe2Address, 1);
+            await instance.afterAcceptInspection(inspe2Address, 1);
+
+            await instance.afterRealizeInspection(inspe2Address);
+            await instance.afterRealizeInspection(inspe2Address);
+            await instance.afterRealizeInspection(inspe2Address);
 
             await advanceBlock(args.blocksPerEra);
 
@@ -273,7 +359,7 @@ describe("InspectorContract", () => {
           });
 
           it("withdraw 3600000000000000000000000n tokens", async () => {
-            const balanceOf = await inspectorPool.balanceOf(inspe1Address);
+            const balanceOf = await regenerationCredit.balanceOf(inspe1Address);
             const expectedBalance = 3600000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);

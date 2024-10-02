@@ -1,6 +1,6 @@
 const { userTypes } = require("./shared/user_types");
 const { userContractDeployed } = require("./shared/user_contract_deployed");
-const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
@@ -24,8 +24,11 @@ describe("Sintrop", () => {
   let owner,
     producerAddress,
     producer2Address,
+    producer3Address,
+    producer4Address,
     inspectorAddress,
     inspector2Address,
+    inspector3Address,
     resea1Address,
     validator1Address,
     validator2Address,
@@ -46,19 +49,21 @@ describe("Sintrop", () => {
   };
 
   const timeBetweenWorks = 6;
+  const researcherMaxPenalties = 3;
 
   const producerPoolArgs = {
     totalTokens: "750000000000000000000000000",
     halving: 50,
     totalEras: 50,
-    blocksPerEra: 50,
+    blocksPerEra: 500,
   };
 
   const sintropArgs = {
     timeBetweenInspections: 20,
-    blocksToExpireAcceptedInspection: 15,
+    blocksToExpireAcceptedInspection: 50,
     allowedInitialRequests: 1,
     acceptInspectionDelayBlocks: 5,
+    securityBlocksToValidatorAnalysis: 100,
   };
 
   const researcherPoolargs = {
@@ -86,7 +91,7 @@ describe("Sintrop", () => {
     totalTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
-    blocksPerEra: 12,
+    blocksPerEra: 13,
   };
 
   const addProducer = async (name, from) => {
@@ -114,37 +119,43 @@ describe("Sintrop", () => {
   };
 
   const addCategory = async (name, from) => {
-    const params = {
-      name: name,
-      description: `The description of ${name}`,
-      regenerative3: `${name} regenerative 3`,
-      regenerative2: `${name} regenerative 2`,
-      regenerative1: `${name} regenerative 1`,
-      neutro: `${name} neutro`,
-      notRegenerative1: `${name} notRegenerative 1`,
-      notRegenerative2: `${name} notRegenerative 2`,
-      notRegenerative3: `${name} notRegenerative 3`,
-    };
+    const description = `The description of ${name}`;
 
-    await categoryContract.connect(from).addCategory(params);
+    const isaDescriptions = [
+      {
+        isaId: 1,
+        description: "Description for isaId 1 to category",
+      },
+      {
+        isaId: 2,
+        description: "Description for isaId 2 to category",
+      },
+    ];
+
+    await categoryContract.connect(from).addCategory(name, description, isaDescriptions);
   };
 
   const isas = () => {
     return [
       {
         categoryId: 1,
-        isaIndex: 0,
+        isaId: 1,
         indicator: 10,
       },
       {
         categoryId: 2,
-        isaIndex: 0,
+        isaId: 1,
         indicator: 10,
       },
       {
         categoryId: 3,
-        isaIndex: 1,
+        isaId: 2,
         indicator: 10,
+      },
+      {
+        categoryId: 4,
+        isaId: 7,
+        indicator: 0,
       },
     ];
   };
@@ -160,16 +171,24 @@ describe("Sintrop", () => {
   };
 
   const realizeInspection = async (id, report, isas_, from) => {
-    await instance.connect(from).realizeInspection(id, report, isas_);
+    const proofPhoto = "proofPhoto";
+
+    await instance.connect(from).realizeInspection(id, proofPhoto, report, isas_);
   };
+
+  const firstValidatorLimit = 8;
+  const secondValidatorLimit = 14;
 
   beforeEach(async () => {
     [
       owner,
       producerAddress,
       producer2Address,
+      producer3Address,
+      producer4Address,
       inspectorAddress,
       inspector2Address,
+      inspector3Address,
       resea1Address,
       validator1Address,
       validator2Address,
@@ -178,12 +197,12 @@ describe("Sintrop", () => {
       activist1Address,
     ] = await ethers.getSigners();
 
-    rcToken = await rcTokenDeployed();
+    regenerationCredit = await regenerationCreditDeployed();
     userContract = await userContractDeployed();
 
     const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
     researcherPool = await researcherPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       researcherPoolargs.halving,
       researcherPoolargs.totalEras,
       researcherPoolargs.blocksPerEra
@@ -191,7 +210,7 @@ describe("Sintrop", () => {
 
     const inspectorPoolFactory = await ethers.getContractFactory("InspectorPool");
     inspectorPool = await inspectorPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       inspectorPoolargs.halving,
       inspectorPoolargs.totalEras,
       inspectorPoolargs.blocksPerEra
@@ -199,7 +218,7 @@ describe("Sintrop", () => {
 
     const producerPoolFactory = await ethers.getContractFactory("ProducerPool");
     producerPool = await producerPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       producerPoolArgs.halving,
       producerPoolArgs.totalEras,
       producerPoolArgs.blocksPerEra
@@ -207,7 +226,7 @@ describe("Sintrop", () => {
 
     const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
     validatorPool = await validatorPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       validatorPoolargs.halving,
       validatorPoolargs.totalEras,
       validatorPoolargs.blocksPerEra
@@ -215,7 +234,7 @@ describe("Sintrop", () => {
 
     const activistPoolFactory = await ethers.getContractFactory("ActivistPool");
     activistPool = await activistPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       activistPoolArgs.halving,
       activistPoolArgs.totalEras,
       activistPoolArgs.blocksPerEra
@@ -226,6 +245,9 @@ describe("Sintrop", () => {
     const producerContractFactory = await ethers.getContractFactory("ProducerContract");
     const activistContractFactory = await ethers.getContractFactory("ActivistContract");
 
+    const validatorContractFactory = await ethers.getContractFactory("ValidatorContract");
+    validatorContract = await validatorContractFactory.deploy(firstValidatorLimit, secondValidatorLimit);
+
     inspectorContract = await inspectorContractFactory.deploy(
       userContract.target,
       inspectorPool.target,
@@ -235,7 +257,9 @@ describe("Sintrop", () => {
     researcherContract = await researcherContractFactory.deploy(
       userContract.target,
       researcherPool.target,
-      timeBetweenWorks
+      validatorContract.target,
+      timeBetweenWorks,
+      researcherMaxPenalties
     );
 
     producerContract = await producerContractFactory.deploy(userContract.target, producerPool.target);
@@ -244,26 +268,38 @@ describe("Sintrop", () => {
     const categoryContractFactory = await ethers.getContractFactory("CategoryContract");
     categoryContract = await categoryContractFactory.deploy();
 
-    const validatorContractFactory = await ethers.getContractFactory("ValidatorContract");
-    validatorContract = await validatorContractFactory.deploy(
-      userContract.target,
-      producerContract.target,
-      validatorPool.target
-    );
+    const validatorContractDependencies = {
+      userContractAddress: userContract.target,
+      producerContractAddress: producerContract.target,
+      validatorPoolAddress: validatorPool.target,
+      inspectorContractAddress: inspectorContract.target,
+      developerContractAddress: ZERO_ADDRESS,
+      researcherContractAddress: researcherContract.target,
+      contributorContractAddress: ZERO_ADDRESS,
+      activistContractAddress: activistContract.target,
+    };
+
+    const sintropDependencies = {
+      userContractAddress: userContract.target,
+      producerContractAddress: producerContract.target,
+      validatorContractAddress: validatorContract.target,
+      inspectorContractAddress: inspectorContract.target,
+      activistContractAddress: activistContract.target,
+      categoryContractAddress: categoryContract.target,
+    };
 
     const instanceFactory = await ethers.getContractFactory("Sintrop");
     instance = await instanceFactory.deploy(
-      inspectorContract.target,
-      producerContract.target,
-      userContract.target,
-      validatorContract.target,
-      activistContract.target,
       sintropArgs.timeBetweenInspections,
       sintropArgs.blocksToExpireAcceptedInspection,
       sintropArgs.allowedInitialRequests,
-      sintropArgs.acceptInspectionDelayBlocks
+      sintropArgs.acceptInspectionDelayBlocks,
+      sintropArgs.securityBlocksToValidatorAnalysis
     );
 
+    await instance.setContractAddressDependencies(sintropDependencies);
+
+    await validatorContract.setContractAddressDependencies(validatorContractDependencies);
     await userContract.newAllowedCaller(inspectorContract.target);
     await userContract.newAllowedCaller(producerContract.target);
     await userContract.newAllowedCaller(researcherContract.target);
@@ -272,6 +308,7 @@ describe("Sintrop", () => {
     await userContract.newAllowedCaller(owner);
     await inspectorContract.newAllowedCaller(instance.target);
     await inspectorContract.newAllowedCaller(owner);
+    await inspectorContract.newAllowedCaller(validatorContract.target);
     await validatorContract.newAllowedCaller(instance.target);
     await activistContract.newAllowedCaller(instance.target);
     await activistPool.newAllowedCaller(activistContract.target);
@@ -281,7 +318,7 @@ describe("Sintrop", () => {
     await producerPool.newAllowedCaller(producerContract.target);
     await inspectorPool.newAllowedCaller(inspectorContract.target);
     await validatorPool.newAllowedCaller(validatorContract.target);
-    await validatorPool.newAllowedCaller(validatorContract.target);
+    await categoryContract.newAllowedCaller(instance.target);
 
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
 
@@ -290,6 +327,7 @@ describe("Sintrop", () => {
 
   describe("#getInspection", () => {
     beforeEach(async () => {
+      await addInvitation(owner, producerAddress, userTypes.Producer, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
       await addProducer("Producer A", producerAddress);
@@ -317,44 +355,10 @@ describe("Sintrop", () => {
     });
   });
 
-  describe("#getInspections", () => {
-    beforeEach(async () => {
-      await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
-
-      await addProducer("Producer A", producerAddress);
-      await addInspector("Inspector A", inspectorAddress);
-    });
-
-    context("when have inspections", () => {
-      beforeEach(async () => {
-        addProducer("Producer B", producer2Address);
-
-        await requestInspection(producerAddress);
-        await requestInspection(producer2Address);
-      });
-
-      it("should return inspections", async () => {
-        const inspections = await instance.getInspections();
-
-        const inspection1 = await instance.getInspection(1);
-        const inspection2 = await instance.getInspection(2);
-
-        expect(inspections[0].id).to.equal(inspection1.id);
-        expect(inspections[1].id).to.equal(inspection2.id);
-      });
-    });
-
-    context("when dont have inspections", () => {
-      it("should return zero inspections", async () => {
-        const inspections = await instance.getInspections();
-
-        expect(inspections.length).to.equal(0);
-      });
-    });
-  });
-
   describe("#requestInspection", () => {
     beforeEach(async () => {
+      await addInvitation(owner, producerAddress, userTypes.Producer, owner);
+      await addInvitation(owner, producer2Address, userTypes.Producer, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
       await addProducer("Producer A", producerAddress);
@@ -367,18 +371,31 @@ describe("Sintrop", () => {
         await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
       });
 
+      context("when is sustainable", () => {
+        beforeEach(async () => {
+          await addProducer("Producer B", producer2Address);
+          await producerContract.afterRealizeInspection(producer2Address, 1000);
+        });
+
+        it("should return error", async () => {
+          await expect(requestInspection(producer2Address)).to.be.revertedWith(
+            "You can't request inspections anymore, you have completed your mission"
+          );
+        });
+      });
+
       context("when have less than ALLOWED_INITIAL_REQUESTS", () => {
         it("should request inspection", async () => {
           const inspection = await instance.getInspection(1);
 
-          expect(inspection.createdBy).to.equal(producerAddress.address);
+          expect(inspection.producer).to.equal(producerAddress.address);
         });
       });
 
       context("when have more than ALLOWED_INITIAL_REQUESTS", () => {
         context("when has request OPEN or ACCEPTED", () => {
           it("should return error message", async () => {
-            await expect(requestInspection(producerAddress)).to.be.revertedWith("Request OPEN or ACCEPTED");
+            await expect(requestInspection(producerAddress)).to.be.revertedWith("Request already OPEN");
           });
         });
 
@@ -386,12 +403,30 @@ describe("Sintrop", () => {
           beforeEach(async () => {
             await acceptInspection(1, inspectorAddress);
             await addCategory("Soil A", owner);
+            await addCategory("Soil B", owner);
+            await addCategory("Soil C", owner);
+            await addCategory("Soil D", owner);
 
             const isas = [
               {
                 categoryId: 1,
-                isaIndex: 0,
+                isaId: 1,
                 indicator: 10,
+              },
+              {
+                categoryId: 2,
+                isaId: 1,
+                indicator: 25,
+              },
+              {
+                categoryId: 3,
+                isaId: 1,
+                indicator: 25,
+              },
+              {
+                categoryId: 4,
+                isaId: 1,
+                indicator: 25,
               },
             ];
             await realizeInspection(1, report, isas, inspectorAddress);
@@ -399,7 +434,7 @@ describe("Sintrop", () => {
 
           context("when last request is recent", () => {
             it("should return error message", async () => {
-              await expect(requestInspection(producerAddress)).to.be.revertedWith("Recent inspection");
+              await expect(requestInspection(producerAddress)).to.be.revertedWith("Wait to request");
             });
           });
 
@@ -410,7 +445,7 @@ describe("Sintrop", () => {
               await requestInspection(producerAddress);
               const inspection = await instance.getInspection(2);
 
-              expect(inspection.createdBy).to.equal(producerAddress.address);
+              expect(inspection.producer).to.equal(producerAddress.address);
             });
           });
         });
@@ -423,16 +458,16 @@ describe("Sintrop", () => {
           expect(inspection.status).to.equal(STATUS.open);
         });
 
-        it("must set createdBy as producer address", async () => {
+        it("must set producer as producer address", async () => {
           const inspection = await instance.getInspection(1);
 
-          expect(inspection.createdBy).to.equal(producerAddress.address);
+          expect(inspection.producer).to.equal(producerAddress.address);
         });
 
-        it("must set acceptedBy as zero address", async () => {
+        it("must set inspector as zero address", async () => {
           const inspection = await instance.getInspection(1);
 
-          expect(inspection.acceptedBy).to.equal(ZERO_ADDRESS);
+          expect(inspection.inspector).to.equal(ZERO_ADDRESS);
         });
 
         it("initial isaScore should be equal zero", async () => {
@@ -441,22 +476,16 @@ describe("Sintrop", () => {
           expect(inspection.isaScore).to.equal(0);
         });
 
-        it("initial isas should be equal empty array", async () => {
-          const isas = await instance.getIsa(1);
-
-          expect(isas.length).to.equal(0);
-        });
-
         it("should increment total of inspections", async () => {
           const inspectionsCount = await instance.inspectionsCount();
 
           expect(inspectionsCount).to.equal(1);
         });
 
-        it("should set to true producer recentInspection", async () => {
+        it("should set to true producer pendingInspection", async () => {
           const producer = await producerContract.getProducer(producerAddress);
 
-          expect(producer.recentInspection).to.equal(true);
+          expect(producer.pendingInspection).to.equal(true);
         });
       });
     });
@@ -472,6 +501,12 @@ describe("Sintrop", () => {
 
   describe("#acceptInspection", () => {
     beforeEach(async () => {
+      await addCategory("Soil A", owner);
+      await addCategory("Soil B", owner);
+      await addCategory("Soil C", owner);
+      await addCategory("Soil D", owner);
+
+      await addInvitation(owner, producerAddress, userTypes.Producer, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
       await addProducer("Producer A", producerAddress);
@@ -486,16 +521,86 @@ describe("Sintrop", () => {
 
         context("when have not waited inspection delay time", () => {
           it("should return error message", async () => {
-            await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Can't accept yet");
+            await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Wait inspection delay blocks");
+          });
+        });
+
+        context("when do not have security blocks to validator analysis", () => {
+          context("when nextEraIn is less than blocksToExpireAcceptedInspection", () => {
+            beforeEach(async () => {
+              const nextEraIn = await producerContract.nextEraIn();
+              const blocks = parseInt(nextEraIn) - sintropArgs.blocksToExpireAcceptedInspection;
+
+              await advanceBlock(blocks);
+            });
+
+            it("should return error message", async () => {
+              await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Wait until next era to accept");
+            });
+          });
+
+          context("when nextEraIn is bigger than blocksToExpireAcceptedInspection", () => {
+            beforeEach(async () => {
+              const nextEraIn = await producerContract.nextEraIn();
+
+              const blocks = parseInt(nextEraIn) - sintropArgs.blocksToExpireAcceptedInspection - 20;
+              await advanceBlock(blocks);
+            });
+
+            it("should return error message", async () => {
+              await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Wait until next era to accept");
+            });
           });
         });
 
         context("when have waited inspection delay time", () => {
-          it("", async () => {
+          it("should accept with success", async () => {
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
             await acceptInspection(1, inspectorAddress);
             const inspection = await instance.getInspection(1);
             expect(inspection.status).to.equal(STATUS.accepted);
+          });
+        });
+
+        context("when inspector has less than 3 giveups", () => {
+          it("should accept with success", async () => {
+            await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+            await acceptInspection(1, inspectorAddress);
+            const inspection = await instance.getInspection(1);
+            expect(inspection.status).to.equal(STATUS.accepted);
+          });
+        });
+
+        context("when inspector has more than 3 giveups", () => {
+          beforeEach(async () => {
+            await addInvitation(owner, producer2Address, userTypes.Producer, owner);
+            await addInvitation(owner, producer3Address, userTypes.Producer, owner);
+            await addInvitation(owner, producer4Address, userTypes.Producer, owner);
+
+            await addProducer("Producer B", producer2Address);
+            await addProducer("Producer C", producer3Address);
+            await addProducer("Producer D", producer4Address);
+
+            await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+            await acceptInspection(1, inspectorAddress);
+            await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
+
+            await requestInspection(producer2Address);
+            await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+            await acceptInspection(2, inspectorAddress);
+            await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
+
+            await requestInspection(producer3Address);
+            await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+            await acceptInspection(3, inspectorAddress);
+            await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
+
+            await requestInspection(producer4Address);
+            await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          });
+
+          it("should return error message", async () => {
+            await expect(acceptInspection(4, inspectorAddress)).to.be.revertedWith("No more than 3 giveUps allowed");
           });
         });
 
@@ -512,10 +617,10 @@ describe("Sintrop", () => {
               expect(inspection.status).to.equal(STATUS.accepted);
             });
 
-            it("acceptedBy must be inspectorAddress", async () => {
+            it("inspector must be inspectorAddress", async () => {
               const inspection = await instance.getInspection(1);
 
-              expect(inspection.acceptedBy).to.equal(inspectorAddress.address);
+              expect(inspection.inspector).to.equal(inspectorAddress.address);
             });
 
             it("should increment inspector giveUps by 1", async () => {
@@ -546,6 +651,7 @@ describe("Sintrop", () => {
 
           context("when have accepted other inspection", () => {
             beforeEach(async () => {
+              await addInvitation(owner, producer2Address, userTypes.Producer, owner);
               await addProducer("Producer B", producer2Address);
               await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
               await acceptInspection(1, inspectorAddress);
@@ -554,13 +660,15 @@ describe("Sintrop", () => {
 
             context("when last inspection is not expired", () => {
               it("should return error message", async () => {
-                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Can't accept yet");
+                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith(
+                  "You already have an inspection Accepted"
+                );
               });
             });
 
             context("when last inspection is expired", () => {
               beforeEach(async () => {
-                await advanceBlock(sintropArgs.timeBetweenInspections);
+                await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
                 await acceptInspection(2, inspectorAddress);
               });
 
@@ -574,7 +682,7 @@ describe("Sintrop", () => {
             context("when have finished last inspection", () => {
               beforeEach(async () => {
                 await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-                await realizeInspection(1, "", [], inspectorAddress);
+                await realizeInspection(1, "", isas(), inspectorAddress);
                 await acceptInspection(2, inspectorAddress);
               });
 
@@ -587,7 +695,9 @@ describe("Sintrop", () => {
 
             context("when dont finished last inspection", () => {
               it("should return error message", async () => {
-                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Can't accept yet");
+                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith(
+                  "You already have an inspection Accepted"
+                );
               });
             });
           });
@@ -597,7 +707,7 @@ describe("Sintrop", () => {
           beforeEach(async () => {
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
             await acceptInspection(1, inspectorAddress);
-            await realizeInspection(1, report, [], inspectorAddress);
+            await realizeInspection(1, report, isas(), inspectorAddress);
 
             await advanceBlock(20);
 
@@ -612,7 +722,7 @@ describe("Sintrop", () => {
 
       context("when inspection dont exists", () => {
         it("should return error message", async () => {
-          await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("This inspection don't exists");
+          await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("This inspection do not exist");
         });
       });
     });
@@ -652,11 +762,11 @@ describe("Sintrop", () => {
           context("when is accepted by inspector", () => {
             context("when inspection is expired", () => {
               beforeEach(async () => {
-                await advanceBlock(20);
+                await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
               });
 
               it("should return error message", async () => {
-                await expect(realizeInspection(1, report, [], inspectorAddress)).to.be.revertedWith(
+                await expect(realizeInspection(1, report, isas(), inspectorAddress)).to.be.revertedWith(
                   "Inspection Expired"
                 );
               });
@@ -667,326 +777,673 @@ describe("Sintrop", () => {
                 await addCategory("Soil A", owner);
                 await addCategory("Soil B", owner);
                 await addCategory("Soil C", owner);
+                await addCategory("Soil D", owner);
               });
 
-              describe(".setActivistLevel", () => {
-                context("when producer do not wins minimum inspection", () => {
-                  beforeEach(async () => {
-                    await realizeInspection(1, report, isas(), inspectorAddress);
+              context("when pass isasInspection equal 4 isas size", () => {
+                describe(".setActivistLevel", () => {
+                  context("when producer do not win minimum inspection", () => {
+                    beforeEach(async () => {
+                      await realizeInspection(1, report, isas(), inspectorAddress);
+                    });
+
+                    it("Activist must do not win levels", async () => {
+                      const activist = await activistContract.getActivist(activistContract);
+
+                      expect(activist.pool.level).to.equal(0);
+                    });
+
+                    it("Activist pool win 0 level to activist", async () => {
+                      const levels = await activistPool.eraLevels(4, activist1Address);
+
+                      expect(levels).to.equal(0);
+                    });
                   });
 
-                  it("Activist must do not wins levels", async () => {
-                    const activist = await activistContract.getActivist(activistContract);
+                  context("when inspector do not win minimum inspection", () => {
+                    beforeEach(async () => {
+                      await realizeInspection(1, report, isas(), inspectorAddress);
+                    });
 
-                    expect(activist.pool.level).to.equal(0);
+                    it("Activist must do not win levels", async () => {
+                      const activist = await activistContract.getActivist(activistContract);
+
+                      expect(activist.pool.level).to.equal(0);
+                    });
+
+                    it("Activist pool win 0 level to activist", async () => {
+                      const levels = await activistPool.eraLevels(4, activist1Address);
+
+                      expect(levels).to.equal(0);
+                    });
                   });
 
-                  it("Activist pool wins 1 level to activist", async () => {
-                    const levels = await activistPool.eraLevels(4, activist1Address);
+                  context("when producer win minimum inspection", () => {
+                    beforeEach(async () => {
+                      await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
+                      await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
+                      await realizeInspection(1, report, isas(), inspectorAddress);
+                    });
 
-                    expect(levels).to.equal(0);
+                    it("Activist must win 1 level", async () => {
+                      const activist = await activistContract.getActivist(activist1Address);
+
+                      expect(activist.pool.level).to.equal(1);
+                    });
+
+                    it("Activist pool win 1 level to activist", async () => {
+                      const levels = await activistPool.eraLevels(4, activist1Address);
+
+                      expect(levels).to.equal(1);
+                    });
+                  });
+
+                  context("when inspector win minimum inspection", () => {
+                    beforeEach(async () => {
+                      await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
+                      await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
+
+                      await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
+                      await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
+
+                      await realizeInspection(1, report, isas(), inspectorAddress);
+                    });
+
+                    it("Activist must win 1 level", async () => {
+                      const activist = await activistContract.getActivist(activist1Address);
+
+                      expect(activist.pool.level).to.equal(1);
+                    });
+
+                    it("Activist pool win 1 level to activist", async () => {
+                      const levels = await activistPool.eraLevels(5, activist1Address);
+
+                      expect(levels).to.equal(1);
+                    });
+                  });
+
+                  context("when producer and inspector win minimum inspection", () => {
+                    beforeEach(async () => {
+                      await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
+                      await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
+
+                      await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
+                      await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
+
+                      await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
+                      await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
+                      await realizeInspection(1, report, isas(), inspectorAddress);
+                    });
+
+                    it("Activist must win 1 level", async () => {
+                      const activist = await activistContract.getActivist(activist1Address);
+
+                      expect(activist.pool.level).to.equal(2);
+                    });
+
+                    it("Activist pool win 1 level to activist", async () => {
+                      const levels = await activistPool.eraLevels(5, activist1Address);
+
+                      expect(levels).to.equal(2);
+                    });
                   });
                 });
 
-                context("when inspector do not wins minimum inspection", () => {
+                context("when check inspection", () => {
                   beforeEach(async () => {
                     await realizeInspection(1, report, isas(), inspectorAddress);
                   });
 
-                  it("Activist must do not wins levels", async () => {
-                    const activist = await activistContract.getActivist(activistContract);
+                  it("should change inspection status to INSPECTED", async () => {
+                    const inspection = await instance.getInspection(1);
 
-                    expect(activist.pool.level).to.equal(0);
+                    expect(inspection.status).to.equal(STATUS.inspected);
                   });
 
-                  it("Activist pool wins 1 level to activist", async () => {
-                    const levels = await activistPool.eraLevels(4, activist1Address);
+                  it("populate inspection inspectedAt", async () => {
+                    const inspection = await instance.getInspection(1);
 
-                    expect(levels).to.equal(0);
+                    expect(inspection.inspectedAtEra).to.equal(1);
+                  });
+
+                  it("should decrease inspector giveUps by 1", async () => {
+                    const inspector = await inspectorContract.getInspector(inspectorAddress);
+
+                    expect(inspector.giveUps).to.equal("0");
+                  });
+
+                  it("should update inspection isas", async () => {
+                    const isasResponse = await instance.getIsa(1);
+
+                    const isas_ = [
+                      [1n, 1n, 10n],
+                      [2n, 1n, 10n],
+                      [3n, 2n, 10n],
+                      [4n, 7n, 0n],
+                    ];
+
+                    expect(isasResponse.join("")).to.equals(isas_.join(""));
+                  });
+
+                  it("should add isaScore in producer", async () => {
+                    const inspection = await instance.getInspection(1);
+                    const producer = await producerContract.getProducer(producerAddress);
+
+                    expect(inspection.isaScore).to.equal(producer.isa.isaScore);
+                  });
+
+                  it("should set producer pendingInspection to false", async () => {
+                    const producer = await producerContract.getProducer(producerAddress);
+
+                    expect(producer.pendingInspection).to.equal(false);
+                  });
+
+                  it("should increment producer totalInspections", async () => {
+                    const producer = await producerContract.getProducer(producerAddress);
+
+                    expect(producer.totalInspections).to.equal(1);
+                  });
+
+                  it("should increment inspector totalInspections", async () => {
+                    const inspector = await inspectorContract.getInspector(inspectorAddress);
+
+                    expect(inspector.totalInspections).to.equal(1);
+                  });
+
+                  it("should add inspection to inspector in userInspections", async () => {
+                    const userInspections = await instance.connect(inspectorAddress).getInspectionsHistory();
+
+                    expect(userInspections.length).to.equal(1);
+                  });
+
+                  it("should add inspection to producer in userInspections", async () => {
+                    const userInspections = await instance.connect(producerAddress).getInspectionsHistory();
+
+                    expect(userInspections.length).to.equal(1);
                   });
                 });
 
-                context("when producer wins minimum inspection", () => {
-                  beforeEach(async () => {
-                    await producerContract.connect(owner).incrementInspections(producerAddress);
-                    await producerContract.connect(owner).incrementInspections(producerAddress);
-                    await realizeInspection(1, report, isas(), inspectorAddress);
+                context("when check inspection isas", () => {
+                  context("when select REGENERATIVE_6", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 1,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 1,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 1,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 1,
+                          indicator: 25,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add 100 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(100);
+                    });
                   });
 
-                  it("Activist must wins 1 level", async () => {
-                    const activist = await activistContract.getActivist(activist1Address);
+                  context("when select REGENERATIVE_5", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 2,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 2,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 2,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 2,
+                          indicator: 25,
+                        },
+                      ];
 
-                    expect(activist.pool.level).to.equal(1);
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add 64 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(64);
+                    });
                   });
 
-                  it("Activist pool wins 1 level to activist", async () => {
-                    const levels = await activistPool.eraLevels(4, activist1Address);
+                  context("when select REGENERATIVE_4", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 3,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 3,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 3,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 3,
+                          indicator: 25,
+                        },
+                      ];
 
-                    expect(levels).to.equal(1);
-                  });
-                });
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
 
-                context("when inspector wins minimum inspection", () => {
-                  beforeEach(async () => {
-                    await inspectorContract.connect(owner).incrementInspections(inspectorAddress);
-                    await inspectorContract.connect(owner).incrementInspections(inspectorAddress);
-                    await realizeInspection(1, report, isas(), inspectorAddress);
-                  });
+                    it("should add 32 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
 
-                  it("Activist must wins 1 level", async () => {
-                    const activist = await activistContract.getActivist(activist1Address);
-
-                    expect(activist.pool.level).to.equal(1);
-                  });
-
-                  it("Activist pool wins 1 level to activist", async () => {
-                    const levels = await activistPool.eraLevels(4, activist1Address);
-
-                    expect(levels).to.equal(1);
-                  });
-                });
-
-                context("when producer and inspector wins minimum inspection", () => {
-                  beforeEach(async () => {
-                    await producerContract.connect(owner).incrementInspections(producerAddress);
-                    await producerContract.connect(owner).incrementInspections(producerAddress);
-                    await inspectorContract.connect(owner).incrementInspections(inspectorAddress);
-                    await inspectorContract.connect(owner).incrementInspections(inspectorAddress);
-                    await realizeInspection(1, report, isas(), inspectorAddress);
-                  });
-
-                  it("Activist must wins 1 level", async () => {
-                    const activist = await activistContract.getActivist(activist1Address);
-
-                    expect(activist.pool.level).to.equal(2);
+                      expect(inspection.isaScore).to.equal(32);
+                    });
                   });
 
-                  it("Activist pool wins 1 level to activist", async () => {
-                    const levels = await activistPool.eraLevels(5, activist1Address);
+                  context("when select REGENERATIVE_3", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 4,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 4,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 4,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 4,
+                          indicator: 25,
+                        },
+                      ];
 
-                    expect(levels).to.equal(2);
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add 16 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(16);
+                    });
+                  });
+
+                  context("when select REGENERATIVE_2", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 5,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 5,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 5,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 5,
+                          indicator: 25,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add 8 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(8);
+                    });
+                  });
+
+                  context("when select REGENERATIVE_1", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 6,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 6,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 6,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 6,
+                          indicator: 25,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add 1 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(4);
+                    });
+                  });
+
+                  context("when select NEUTRO", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 7,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 7,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 7,
+                          indicator: 25,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 7,
+                          indicator: 25,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add 0 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(0);
+                    });
+                  });
+
+                  context("when select NOT_REGENERATIVE_1", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 8,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 8,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 8,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 8,
+                          indicator: -1,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add -4 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(-4);
+                    });
+                  });
+
+                  context("when select NOT_REGENERATIVE_2", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 9,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 9,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 9,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 9,
+                          indicator: -1,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add -8 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(-8);
+                    });
+                  });
+
+                  context("when select NOT_REGENERATIVE_3", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 10,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 10,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 10,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 10,
+                          indicator: -1,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add -16 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(-16);
+                    });
+                  });
+
+                  context("when select NOT_REGENERATIVE_4", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 11,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 11,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 11,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 11,
+                          indicator: -1,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add -32 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(-32);
+                    });
+                  });
+
+                  context("when select NOT_REGENERATIVE_5", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 12,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 12,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 12,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 12,
+                          indicator: -1,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add -64 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(-64);
+                    });
+                  });
+
+                  context("when select NOT_REGENERATIVE_6", () => {
+                    beforeEach(async () => {
+                      const isas = [
+                        {
+                          categoryId: 1,
+                          isaId: 13,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 2,
+                          isaId: 13,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 3,
+                          isaId: 13,
+                          indicator: -1,
+                        },
+                        {
+                          categoryId: 4,
+                          isaId: 13,
+                          indicator: -1,
+                        },
+                      ];
+
+                      await realizeInspection(1, report, isas, inspectorAddress);
+                    });
+
+                    it("should add -100 isaScore to inspection", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.isaScore).to.equal(-100);
+                    });
                   });
                 });
               });
 
-              context("when check inspection", () => {
-                beforeEach(async () => {
-                  await realizeInspection(1, report, isas(), inspectorAddress);
-                });
+              context("when pass isasInspection different 4 isas size", () => {
+                const isas = [
+                  {
+                    categoryId: 1,
+                    isaId: 1,
+                    indicator: 25,
+                  },
+                  {
+                    categoryId: 2,
+                    isaId: 1,
+                    indicator: 25,
+                  },
+                  {
+                    categoryId: 3,
+                    isaId: 1,
+                    indicator: 25,
+                  },
+                ];
 
-                it("should change inspection status to INSPECTED", async () => {
-                  const inspection = await instance.getInspection(1);
-
-                  expect(inspection.status).to.equal(STATUS.inspected);
-                });
-
-                it("should decrease inspector giveUps by 1", async () => {
-                  const inspector = await inspectorContract.getInspector(inspectorAddress);
-
-                  expect(inspector.giveUps).to.equal("0");
-                });
-
-                it("should update inspectionList", async () => {
-                  const inspections = await instance.getInspections();
-
-                  expect(inspections[0].status).to.equal(STATUS.inspected);
-                });
-
-                it("should update inspection isas", async () => {
-                  const isasResponse = await instance.getIsa(1);
-                  const isas_ = [
-                    [1n, 0n, 10n],
-                    [2n, 0n, 10n],
-                    [3n, 1n, 10n],
-                  ];
-
-                  expect(isasResponse.join("")).to.equals(isas_.join(""));
-                });
-
-                it("should add isaScore in producer", async () => {
-                  const inspection = await instance.getInspection(1);
-                  const producer = await producerContract.getProducer(producerAddress);
-
-                  expect(inspection.isaScore).to.equal(producer.isa.isaScore);
-                });
-
-                it("should set producer recentInspection to false", async () => {
-                  const producer = await producerContract.getProducer(producerAddress);
-
-                  expect(producer.recentInspection).to.equal(false);
-                });
-
-                it("should increment producer totalInspections", async () => {
-                  const producer = await producerContract.getProducer(producerAddress);
-
-                  expect(producer.totalInspections).to.equal(1);
-                });
-
-                it("should increment inspector totalInspections", async () => {
-                  const inspector = await inspectorContract.getInspector(inspectorAddress);
-
-                  expect(inspector.totalInspections).to.equal(1);
-                });
-
-                it("should add inspection to inspector in userInspections", async () => {
-                  const userInspections = await instance.connect(inspectorAddress).getInspectionsHistory();
-
-                  expect(userInspections.length).to.equal(1);
-                });
-
-                it("should add inspection to producer in userInspections", async () => {
-                  const userInspections = await instance.connect(producerAddress).getInspectionsHistory();
-
-                  expect(userInspections.length).to.equal(1);
-                });
-              });
-
-              context("when check inspection isas", () => {
-                context("when select REGENERATIVE_3", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaIndex: 0,
-                        report: "REGENERATIVE_3",
-                        indicator: 25,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add 25 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(25);
-                  });
-                });
-
-                context("when select REGENERATIVE_2", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaIndex: 1,
-                        report: "REGENERATIVE_2",
-                        indicator: 10,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add 10 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(10);
-                  });
-                });
-
-                context("when select REGENERATIVE_1", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaIndex: 2,
-                        report: "REGENERATIVE_1",
-                        indicator: 1,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add 1 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(1);
-                  });
-                });
-
-                context("when select NEUTRO", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaIndex: 3,
-                        report: "NEUTRO",
-                        indicator: 0,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add 0 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(0);
-                  });
-                });
-
-                context("when select NOT_REGENERATIVE1", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaIndex: 4,
-                        report: "NOT_REGENERATIVE1",
-                        indicator: -1,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add -1 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(-1);
-                  });
-                });
-
-                context("when select NOT_REGENERATIVE2", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaIndex: 5,
-                        report: "NOT_REGENERATIVE2",
-                        indicator: -10,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add -10 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(-10);
-                  });
-                });
-
-                context("when select NOT_REGENERATIVE3", () => {
-                  beforeEach(async () => {
-                    const isas = [
-                      {
-                        categoryId: 1,
-                        isaIndex: 6,
-                        report: "NOT_REGENERATIVE3",
-                        indicator: -25,
-                      },
-                    ];
-
-                    await realizeInspection(1, report, isas, inspectorAddress);
-                  });
-
-                  it("should add -25 isaScore to inspection", async () => {
-                    const inspection = await instance.getInspection(1);
-
-                    expect(inspection.isaScore).to.equal(-25);
-                  });
+                it("should return error message", async () => {
+                  await expect(realizeInspection(1, report, isas, inspectorAddress)).to.be.revertedWith(
+                    "Invalid isas length"
+                  );
                 });
               });
             });
@@ -999,8 +1456,8 @@ describe("Sintrop", () => {
             });
 
             it("should return error message", async () => {
-              await expect(realizeInspection(1, report, [], inspector2Address)).to.be.revertedWith(
-                "You not accepted this inspection"
+              await expect(realizeInspection(1, report, isas(), inspector2Address)).to.be.revertedWith(
+                "You have not accepted this inspection"
               );
             });
           });
@@ -1008,7 +1465,7 @@ describe("Sintrop", () => {
 
         context("when inspection is not accepted", () => {
           it("should return error message", async () => {
-            await expect(realizeInspection(1, report, [], inspectorAddress)).to.be.revertedWith(
+            await expect(realizeInspection(1, report, isas(), inspectorAddress)).to.be.revertedWith(
               "Accept this inspection before"
             );
           });
@@ -1017,8 +1474,8 @@ describe("Sintrop", () => {
 
       context("when inspection dont exists", () => {
         it("should return error message", async () => {
-          await expect(realizeInspection(1, report, [], inspectorAddress)).to.be.revertedWith(
-            "This inspection don't exists"
+          await expect(realizeInspection(1, report, isas(), inspectorAddress)).to.be.revertedWith(
+            "Accept this inspection before"
           );
         });
       });
@@ -1030,7 +1487,7 @@ describe("Sintrop", () => {
         await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
         await acceptInspection(1, inspectorAddress);
 
-        await expect(realizeInspection(1, report, [], producerAddress)).to.be.revertedWith(
+        await expect(realizeInspection(1, report, isas(), producerAddress)).to.be.revertedWith(
           "Please register as inspector"
         );
       });
@@ -1039,6 +1496,12 @@ describe("Sintrop", () => {
 
   describe("#addInspectionValidation", () => {
     beforeEach(async () => {
+      await addCategory("Soil A", owner);
+      await addCategory("Soil B", owner);
+      await addCategory("Soil C", owner);
+      await addCategory("Soil D", owner);
+
+      await addInvitation(owner, producerAddress, userTypes.Producer, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
       await addProducer("Producer A", producerAddress);
@@ -1060,6 +1523,10 @@ describe("Sintrop", () => {
 
       context("with valid inspection", () => {
         beforeEach(async () => {
+          await addCategory("Soil A", owner);
+          await addCategory("Soil B", owner);
+          await addCategory("Soil C", owner);
+
           await requestInspection(producerAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(1, inspectorAddress);
@@ -1072,10 +1539,10 @@ describe("Sintrop", () => {
           });
 
           it("add validation", async () => {
-            const validation = await instance.validations(1, 0);
+            const validations = await validatorContract.getInspectionValidations(1);
+            const validation = validations[0];
 
             expect(validation.validator).to.equal(validator1Address.address);
-            expect(validation.user).to.equal(inspectorAddress.address);
             expect(validation.resourceId).to.equal(1);
             expect(validation.justification).to.equal("justification");
             expect(validation.majorityValidatorsCount).to.equal(2);
@@ -1083,53 +1550,174 @@ describe("Sintrop", () => {
         });
 
         context("when have 2 validations (half of the validators)", () => {
-          beforeEach(async () => {
-            await instance.connect(validator1Address).addInspectionValidation(1, "justification");
-            await instance.connect(validator2Address).addInspectionValidation(1, "justification");
+          context("when inspection score is negative", () => {
+            beforeEach(async () => {
+              await addInvitation(owner, inspector2Address, userTypes.Inspector, owner);
+              await addInspector("Inspector B", inspector2Address);
+
+              await addInvitation(owner, inspector3Address, userTypes.Inspector, owner);
+              await addInspector("Inspector C", inspector3Address);
+
+              await advanceBlock(sintropArgs.timeBetweenInspections);
+              await requestInspection(producerAddress);
+              await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+              await acceptInspection(2, inspector2Address);
+              await realizeInspection(2, report, negativeScore(), inspector2Address);
+
+              await advanceBlock(sintropArgs.timeBetweenInspections);
+              await requestInspection(producerAddress);
+              await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+              await acceptInspection(3, inspector3Address);
+              await realizeInspection(3, report, isas(), inspector3Address);
+
+              await instance.connect(validator1Address).addInspectionValidation(2, "justification");
+              await instance.connect(validator2Address).addInspectionValidation(2, "justification");
+            });
+
+            const negativeScore = () => {
+              return [
+                {
+                  categoryId: 1,
+                  isaId: 8,
+                  indicator: 10,
+                },
+                {
+                  categoryId: 2,
+                  isaId: 8,
+                  indicator: 10,
+                },
+                {
+                  categoryId: 3,
+                  isaId: 8,
+                  indicator: 10,
+                },
+                {
+                  categoryId: 4,
+                  isaId: 7,
+                  indicator: 0,
+                },
+              ];
+            };
+
+            const isas = () => {
+              return [
+                {
+                  categoryId: 1,
+                  isaId: 1,
+                  indicator: 10,
+                },
+                {
+                  categoryId: 2,
+                  isaId: 1,
+                  indicator: 10,
+                },
+                {
+                  categoryId: 3,
+                  isaId: 2,
+                  indicator: 10,
+                },
+                {
+                  categoryId: 4,
+                  isaId: 7,
+                  indicator: 0,
+                },
+              ];
+            };
+
+            it("add validations", async () => {
+              const validation1 = await validatorContract.inspectionValidations(2, 0);
+              const validation2 = await validatorContract.inspectionValidations(2, 1);
+
+              expect(validation1.validator).to.equal(validator1Address.address);
+              expect(validation2.validator).to.equal(validator2Address.address);
+            });
+
+            it("inspection status INVALIDATED", async () => {
+              const inspection = await instance.getInspection(2);
+
+              expect(inspection.status).to.equal(STATUS.invalidated);
+            });
+
+            it("inspector receive 1 penalty", async () => {
+              const totalPenalties = await inspectorContract.totalPenalties(inspector2Address);
+
+              expect(totalPenalties).to.equal(1);
+            });
+
+            it("remove  negative producer isaScore", async () => {
+              const producer = await producerContract.getProducer(producerAddress);
+
+              expect(producer.isa.isaScore).to.equal(132);
+            });
+
+            it("decrement producer totalInspections", async () => {
+              const producer = await producerContract.getProducer(producerAddress);
+
+              expect(producer.totalInspections).to.equal(2);
+            });
+
+            it("decrement inspector totalInspections", async () => {
+              const inspector = await inspectorContract.getInspector(inspector2Address);
+
+              expect(inspector.totalInspections).to.equal(0);
+            });
+
+            it("remove negative producerPool era level score", async () => {
+              const levels = await producerPool.eraLevels(1, producerAddress);
+
+              expect(levels).to.equal(132);
+            });
           });
 
-          it("add validations", async () => {
-            const validation1 = await instance.validations(1, 0);
-            const validation2 = await instance.validations(1, 1);
+          context("when inspection score is positive", () => {
+            beforeEach(async () => {
+              await instance.connect(validator1Address).addInspectionValidation(1, "justification");
+              await instance.connect(validator2Address).addInspectionValidation(1, "justification");
+            });
 
-            expect(validation1.validator).to.equal(validator1Address.address);
-            expect(validation2.validator).to.equal(validator2Address.address);
-          });
+            it("add validations", async () => {
+              const validation1 = await validatorContract.inspectionValidations(1, 0);
+              const validation2 = await validatorContract.inspectionValidations(1, 1);
 
-          it("inspection status INVALIDATED", async () => {
-            const inspection = await instance.getInspection(1);
+              expect(validation1.validator).to.equal(validator1Address.address);
+              expect(validation2.validator).to.equal(validator2Address.address);
+            });
 
-            expect(inspection.status).to.equal(STATUS.invalidated);
-          });
+            it("inspection status INVALIDATED", async () => {
+              const inspection = await instance.getInspection(1);
 
-          it("inspector receive 1 penalty", async () => {
-            const totalPenalties = await inspectorContract.totalPenalties(inspectorAddress);
+              expect(inspection.status).to.equal(STATUS.invalidated);
+            });
 
-            expect(totalPenalties).to.equal(1);
-          });
+            it("inspector receive 1 penalty", async () => {
+              const totalPenalties = await inspectorContract.totalPenalties(inspectorAddress);
 
-          it("remove producer isaScore", async () => {
-            const producer = await producerContract.getProducer(producerAddress);
+              expect(totalPenalties).to.equal(1);
+            });
 
-            expect(producer.isa.isaScore).to.equal(0);
-          });
+            it("remove producer isaScore", async () => {
+              const producer = await producerContract.getProducer(producerAddress);
 
-          it("decrement producer totalInspections", async () => {
-            const producer = await producerContract.getProducer(producerAddress);
+              expect(producer.isa.isaScore).to.equal(0);
+            });
 
-            expect(producer.totalInspections).to.equal(0);
-          });
+            it("decrement producer totalInspections", async () => {
+              const producer = await producerContract.getProducer(producerAddress);
 
-          it("decrement inspector totalInspections", async () => {
-            const inspector = await inspectorContract.getInspector(inspectorAddress);
+              expect(producer.totalInspections).to.equal(0);
+            });
 
-            expect(inspector.totalInspections).to.equal(0);
-          });
+            it("decrement inspector totalInspections", async () => {
+              const inspector = await inspectorContract.getInspector(inspectorAddress);
 
-          it("zero producerPool era level score", async () => {
-            const levels = await producerPool.eraLevels(1, producerAddress);
+              expect(inspector.totalInspections).to.equal(0);
+            });
 
-            expect(levels).to.equal(0);
+            it("zero producerPool era level score", async () => {
+              const levels = await producerPool.eraLevels(1, producerAddress);
+
+              expect(levels).to.equal(0);
+            });
           });
         });
 
@@ -1161,22 +1749,38 @@ describe("Sintrop", () => {
         });
       });
 
-      context("with invalid inspection", () => {
+      context("when inspection inspectedAtEra is passed", () => {
+        beforeEach(async () => {
+          await addCategory("Soil A", owner);
+          await addCategory("Soil B", owner);
+          await addCategory("Soil C", owner);
+
+          await requestInspection(producerAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await acceptInspection(1, inspectorAddress);
+          await realizeInspection(1, report, isas(), inspectorAddress);
+
+          await advanceBlock(producerPoolArgs.blocksPerEra);
+        });
+
         it("should return error message", async () => {
           await expect(
             instance.connect(validator1Address).addInspectionValidation(1, "justification")
-          ).to.be.revertedWith("This inspection is not INSPECTED");
+          ).to.be.revertedWith("Can not add validation anymore");
+        });
+      });
+
+      context("when inspection is not inspected", () => {
+        it("should return error message", async () => {
+          await expect(
+            instance.connect(validator1Address).addInspectionValidation(1, "justification")
+          ).to.be.revertedWith("Can not add validation anymore");
         });
       });
     });
 
     context("with non validator", () => {
       it("should return error message", async () => {
-        await requestInspection(producerAddress);
-        await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-        await acceptInspection(1, inspectorAddress);
-        await realizeInspection(1, report, isas(), inspectorAddress);
-
         await expect(instance.connect(producerAddress).addInspectionValidation(1, "justification")).to.be.revertedWith(
           "Please register as validator"
         );

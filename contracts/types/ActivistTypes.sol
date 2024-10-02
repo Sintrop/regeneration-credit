@@ -6,7 +6,6 @@ import "./UserTypes.sol";
 struct Activist {
   uint256 id;
   address activistWallet;
-  UserType userType;
   string name;
   string proofPhoto;
   Pool pool;

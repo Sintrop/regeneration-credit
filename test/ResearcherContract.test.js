@@ -1,20 +1,32 @@
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
-const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
 describe("ResearcherContract", () => {
   let instance;
-  let rcToken;
+  let regenerationCredit;
   let researcherPool;
   let userContract;
-  let owner, resea1Address, resea2Address;
+  let validatorContract;
+  let owner, resea1Address, resea2Address, validator1Address, validator2Address, validator3Address, validator4Address;
 
   const timeBetweenWorks = 10;
+  const maxPenalties = 3;
+  const firstValidatorLimit = 8;
+  const secondValidatorLimit = 14;
 
   const args = {
+    totalTokens: "30000000000000000000000000",
+    halving: 12,
+    totalEras: 96,
+    blocksPerEra: 36,
+  };
+
+  const validatorPoolargs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
@@ -29,29 +41,68 @@ describe("ResearcherContract", () => {
     await userContract.connect(from).addInvitation(inviter, invited, userType);
   };
 
+  const addValidator = async (from) => {
+    await validatorContract.connect(from).addValidator();
+  };
+
   const addWork = async (from) => {
     await instance.connect(from).addWork("title", "thesis", "fileURL");
   };
 
   beforeEach(async () => {
-    [owner, resea1Address, resea2Address] = await ethers.getSigners();
+    [owner, resea1Address, resea2Address, validator1Address, validator2Address, validator3Address, validator4Address] =
+      await ethers.getSigners();
 
-    rcToken = await rcTokenDeployed();
+    regenerationCredit = await regenerationCreditDeployed();
     userContract = await userContractDeployed();
 
     const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
     researcherPool = await researcherPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       args.halving,
       args.totalEras,
       args.blocksPerEra
     );
 
-    const instanceFactory = await ethers.getContractFactory("ResearcherContract");
-    instance = await instanceFactory.deploy(userContract.target, researcherPool.target, timeBetweenWorks);
+    const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
+    validatorPool = await validatorPoolFactory.deploy(
+      regenerationCredit.target,
+      validatorPoolargs.halving,
+      validatorPoolargs.totalEras,
+      validatorPoolargs.blocksPerEra
+    );
 
+    const validatorContractFactory = await ethers.getContractFactory("ValidatorContract");
+    validatorContract = await validatorContractFactory.deploy(firstValidatorLimit, secondValidatorLimit);
+
+    const instanceFactory = await ethers.getContractFactory("ResearcherContract");
+    instance = await instanceFactory.deploy(
+      userContract.target,
+      researcherPool.target,
+      validatorContract.target,
+      timeBetweenWorks,
+      maxPenalties
+    );
+
+    const validatorContractDependencies = {
+      userContractAddress: userContract.target,
+      producerContractAddress: ZERO_ADDRESS,
+      validatorPoolAddress: validatorPool.target,
+      inspectorContractAddress: ZERO_ADDRESS,
+      developerContractAddress: ZERO_ADDRESS,
+      researcherContractAddress: instance.target,
+      contributorContractAddress: ZERO_ADDRESS,
+      activistContractAddress: ZERO_ADDRESS,
+    };
+
+    await validatorContract.setContractAddressDependencies(validatorContractDependencies);
+
+    await userContract.newAllowedCaller(validatorContract.target);
     await researcherPool.newAllowedCaller(instance.target);
-    await rcToken.addContractPool(researcherPool.target, args.totalTokens);
+    await validatorContract.newAllowedCaller(instance.target);
+    await instance.newAllowedCaller(validatorContract.target);
+    await instance.newAllowedCaller(owner);
+    await regenerationCredit.addContractPool(researcherPool.target, args.totalTokens);
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
 
@@ -69,9 +120,7 @@ describe("ResearcherContract", () => {
       context("when researcher already exists", () => {
         it("should return error", async () => {
           await addResearcher("Researcher A", resea1Address);
-          await expect(addResearcher("Researcher A", resea1Address)).to.be.revertedWith(
-            "This researcher already exist"
-          );
+          await expect(addResearcher("Researcher A", resea1Address)).to.be.revertedWith("User already exists");
         });
       });
 
@@ -87,7 +136,7 @@ describe("ResearcherContract", () => {
         });
 
         it("increment researcherCount after create researcher", async () => {
-          const researchersCount = await instance.researchersCount();
+          const researchersCount = await userContract.userTypesCount(userTypes.Researcher);
 
           expect(researchersCount).to.equal(1);
         });
@@ -193,7 +242,7 @@ describe("ResearcherContract", () => {
           });
 
           it("withdraw 1200000000000000000000000 tokens", async () => {
-            const balanceOf = await researcherPool.balanceOf(resea1Address);
+            const balanceOf = await regenerationCredit.balanceOf(resea1Address);
             const expectedBalance = 1200000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
@@ -213,7 +262,7 @@ describe("ResearcherContract", () => {
           });
 
           it("withdraw 600000000000000000000000n tokens", async () => {
-            const balanceOf = await researcherPool.balanceOf(resea1Address);
+            const balanceOf = await regenerationCredit.balanceOf(resea1Address);
             const expectedBalance = 600000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
@@ -308,6 +357,180 @@ describe("ResearcherContract", () => {
     });
   });
 
+  describe("addWorkValidation", () => {
+    context("with validator", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, validator1Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator3Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator4Address, userTypes.Validator, owner);
+
+        await addValidator(validator1Address);
+        await addResearcher("Researcher A", resea1Address);
+      });
+
+      context("with valid contribution", () => {
+        context("when work must be invalidated", () => {
+          beforeEach(async () => {
+            await addWork(resea1Address);
+
+            await addValidator(validator2Address);
+            await addValidator(validator3Address);
+            await addValidator(validator4Address);
+            await instance.connect(validator1Address).addWorkValidation(1, "justification");
+            await instance.connect(validator2Address).addWorkValidation(1, "justification");
+          });
+
+          it("set valid field to false", async () => {
+            const work = await instance.works(1);
+
+            expect(work.valid).to.eq(false);
+          });
+
+          it("populate invalidatedAt field", async () => {
+            const work = await instance.works(1);
+
+            expect(work.invalidatedAt).to.above(0);
+          });
+
+          it("set maxPenalties to reseacher", async () => {
+            const totalPenalties = await instance.totalPenalties(resea1Address);
+
+            expect(totalPenalties).to.eq(1);
+          });
+
+          it("user type must be RESEARCHER yet", async () => {
+            const userType = await userContract.getUser(resea1Address);
+
+            expect(userType).to.eq(userTypes.Researcher);
+          });
+
+          it("must remove one pool level from current era", async () => {
+            const work = await instance.works(1);
+
+            const eraLevels = await researcherPool.eraLevels(work.era, resea1Address);
+
+            expect(eraLevels).to.eq(0);
+          });
+        });
+
+        context("when work must not be invalidated", () => {
+          beforeEach(async () => {
+            await addWork(resea1Address);
+
+            await addValidator(validator2Address);
+            await addValidator(validator3Address);
+            await addValidator(validator4Address);
+
+            await instance.connect(validator1Address).addWorkValidation(1, "justification");
+          });
+
+          it("valid field is true", async () => {
+            const work = await instance.works(1);
+
+            expect(work.valid).to.eq(true);
+          });
+
+          it("invalidatedAt is equal 0", async () => {
+            const work = await instance.works(1);
+
+            expect(work.invalidatedAt).to.eq(0);
+          });
+
+          it("researcher totalPenalties is 0", async () => {
+            const totalPenalties = await instance.totalPenalties(resea1Address);
+
+            expect(totalPenalties).to.eq(0);
+          });
+
+          it("reseacher pool level is 1", async () => {
+            const work = await instance.works(1);
+
+            const eraLevels = await researcherPool.eraLevels(work.era, resea1Address);
+
+            expect(eraLevels).to.eq(1);
+          });
+        });
+      });
+
+      context("when researcher reach max maxPenalties", () => {
+        beforeEach(async () => {
+          await addValidator(validator2Address);
+
+          await addWork(resea1Address);
+          await instance.connect(validator1Address).addWorkValidation(1, "justification");
+
+          await advanceBlock(args.blocksPerEra);
+
+          await addWork(resea1Address);
+          await instance.connect(validator1Address).addWorkValidation(2, "justification");
+
+          await advanceBlock(args.blocksPerEra);
+
+          await addWork(resea1Address);
+          await instance.connect(validator1Address).addWorkValidation(3, "justification");
+        });
+
+        it("user type must be DENIED", async () => {
+          const userType = await userContract.getUser(resea1Address);
+
+          expect(userType).to.eq(userTypes.Denied);
+        });
+      });
+
+      context("with invalid work", () => {
+        context("when current era is different from contribution created era", () => {
+          beforeEach(async () => {
+            await addWork(resea1Address);
+
+            await advanceBlock(args.blocksPerEra + 1);
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(validator1Address).addWorkValidation(1, "justification")).to.be.revertedWith(
+              "This work is not VALID"
+            );
+          });
+        });
+
+        context("when contribution is invalidated", () => {
+          beforeEach(async () => {
+            await addWork(resea1Address);
+
+            await addValidator(validator2Address);
+            await addValidator(validator3Address);
+            await addValidator(validator4Address);
+
+            await instance.connect(validator1Address).addWorkValidation(1, "justification");
+            await instance.connect(validator2Address).addWorkValidation(1, "justification");
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(validator3Address).addWorkValidation(1, "justification")).to.be.revertedWith(
+              "This work is not VALID"
+            );
+          });
+        });
+
+        context("when contribution do not exists", () => {
+          it("should return error message", async () => {
+            await expect(instance.connect(validator1Address).addWorkValidation(0, "justification")).to.be.revertedWith(
+              "This work is not VALID"
+            );
+          });
+        });
+      });
+    });
+
+    context("without validator", () => {
+      it("should return error message", async () => {
+        await expect(instance.connect(owner).addWorkValidation(1, "justification")).to.be.revertedWith(
+          "Please register as validator"
+        );
+      });
+    });
+  });
+
   describe("#getWorks", () => {
     beforeEach(async () => {
       await addResearcher("Researcher A", resea1Address);
@@ -318,6 +541,32 @@ describe("ResearcherContract", () => {
       const works = await instance.getWorks();
 
       expect(works.length).to.equal(1);
+    });
+  });
+
+  describe("#removePoolLevels", () => {
+    beforeEach(async () => {
+      await addResearcher("Researcher  A", resea1Address);
+
+      await addWork(resea1Address);
+
+      await advanceBlock(timeBetweenWorks);
+
+      await addWork(resea1Address);
+
+      await instance.removePoolLevels(resea1Address, 1);
+    });
+
+    it("remove user levels from pool", async () => {
+      const levelsEra1 = await researcherPool.eraLevels(1, resea1Address);
+
+      expect(levelsEra1).to.equal(1);
+    });
+
+    it("remove user levels from researcher", async () => {
+      const reseacher = await instance.getResearcher(resea1Address);
+
+      expect(reseacher.pool.level).to.equal(1);
     });
   });
 });

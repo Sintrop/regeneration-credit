@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { PoolInterface } from "./PoolInterface.sol";
-import { RcTokenInterface } from "./RcTokenInterface.sol";
+import { RegenerationCreditInterface } from "./RegenerationCreditInterface.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Blockable } from "./Blockable.sol";
@@ -17,59 +17,46 @@ import { Poolable } from "./Poolable.sol";
 contract ProducerPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;
 
-  uint256 internal immutable halving;
-  uint256 internal immutable totalEras;
-
-  RcTokenInterface internal rcToken;
+  RegenerationCreditInterface internal regenerationCredit;
 
   uint256[8] internal tokensPerEpochs = [
-    360000000000000000000000000,
-    180000000000000000000000000,
-    90000000000000000000000000,
-    45000000000000000000000000,
-    22500000000000000000000000,
-    11250000000000000000000000,
-    5625000000000000000000000,
-    2812500000000000000000000
+    360 * 10 ** 24,
+    180 * 10 ** 24,
+    90 * 10 ** 24,
+    45 * 10 ** 24,
+    225 * 10 ** 23,
+    1125 * 10 ** 22,
+    5625 * 10 ** 21,
+    28125 * 10 ** 20
   ];
 
-  uint256 internal constant LIMIT_EPOCHS_SIZE = 8;
-
   constructor(
-    address rcTokenAddress,
+    address regenerationCreditAddress,
     uint256 _halving,
     uint256 _totalEras,
     uint256 _blocksPerEra
-  ) Blockable(_blocksPerEra, _totalEras) {
-    rcToken = RcTokenInterface(rcTokenAddress);
-    halving = _halving;
-    totalEras = _totalEras;
+  ) Blockable(_blocksPerEra, _totalEras, _halving) Poolable(tokensPerEpochs) {
+    regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
   }
 
   /**
    * @dev Returns how much tokens the contract has
    */
   function balance() public view returns (uint256) {
-    return balanceOf(address(this));
+    return regenerationCredit.balanceOf(address(this));
   }
 
-  /**
-   * @dev Returns how much tokensa user has
-   * @param addr The address of the developer
-   */
-  function balanceOf(address addr) public view returns (uint256) {
-    return rcToken.balanceOf(addr);
-  }
+  function withdraw(
+    address delegate,
+    uint256 era
+  ) public mustBeAllowedCaller canWithdrawModifier(era) isAValidEpochModifier {
+    uint256 numTokens = tokens(era, delegate, tokensPerEra(currentEpoch(), HALVING));
 
-  function withdraw(address delegate, uint256 era) public mustBeAllowedCaller {
-    require(canApprove(era), "You can't approve yet");
-    require(currentEpoch() <= LIMIT_EPOCHS_SIZE, "You can't approve anymore");
-
-    uint256 numTokens = tokens(era, delegate, tokensPerEra());
+    updateEraAfterWithdraw(era, delegate, numTokens);
 
     if (numTokens == 0) return;
 
-    rcToken.transferWith(address(this), delegate, numTokens);
+    regenerationCredit.transferWith(address(this), delegate, numTokens);
   }
 
   function addLevel(address producer, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
@@ -78,26 +65,13 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
     addPoolLevel(producer, currentLevel, addLevels, era);
   }
 
-  function removeLevel(address producer) public mustBeAllowedCaller {
+  function removeLevel(address producer, uint256 levels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
-    uint256 levels = 1;
 
-    removePoolLevel(producer, era, levels);
+    removeLevelsFromEra(producer, era, levels);
   }
 
-  function resetLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
-    resetLevelsFromEra(addr, era, removeSomeLevels);
-  }
-
-  function tokensPerEra() public view returns (uint256) {
-    return tokensPerEpoch().div(halving);
-  }
-
-  function tokensPerEpoch() public view returns (uint256) {
-    return tokensPerEpochs[currentEpoch().sub(1)];
-  }
-
-  function currentEpoch() public view returns (uint256) {
-    return currentContractEra().div(halving).add(1);
+  function removePoolLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
+    removeLevelsFromEra(addr, era, removeSomeLevels);
   }
 }

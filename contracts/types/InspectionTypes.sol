@@ -11,20 +11,22 @@ enum InspectionStatus {
 
 struct IsaInspection {
   uint256 categoryId;
-  uint256 isaIndex;
+  uint256 isaId;
   int256 indicator;
 }
 
 struct Inspection {
   uint256 id;
   InspectionStatus status;
-  address createdBy;
-  address acceptedBy;
+  address producer;
+  address inspector;
   int256 isaScore;
+  string proofPhoto;
   string report;
   uint256 validationsCount;
   uint256 createdAt;
   uint256 acceptedAt;
+  uint256 inspectedAt;
   uint256 inspectedAtEra;
   uint256 invalidatedAt;
 }

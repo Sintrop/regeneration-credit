@@ -9,11 +9,11 @@ interface ProducerInterface {
     string name;
     string document;
     string documentType;
-    bool recentInspection;
+    bool pendingInspection;
     uint256 totalRequests;
     int256 isaScore;
     TokenApprove tokenApprove;
-    PropertyAddress propertyAddress;
+    AreaInformation areaInformation;
   }
 
   enum UserType {
@@ -31,7 +31,7 @@ interface ProducerInterface {
     bool withdrewToken;
   }
 
-  struct PropertyAddress {
+  struct AreaInformation {
     string country;
     string state;
     string city;

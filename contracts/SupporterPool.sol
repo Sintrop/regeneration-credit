@@ -2,18 +2,18 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { Callable } from "./Callable.sol";
-import { RcToken } from "./RcToken.sol";
+import { RegenerationCredit } from "./RegenerationCredit.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract SupporterPool is Callable {
-  RcToken internal rcToken;
-
-  uint256 public constant INVITER_PERCENTAGE = 1;
-
   using SafeMath for uint256;
 
-  constructor(address rcTokenAddress) {
-    rcToken = RcToken(rcTokenAddress);
+  RegenerationCredit internal regenerationCredit;
+
+  uint256 public constant INVITER_PERCENTAGE = 5;
+
+  constructor(address regenerationCreditAddress) {
+    regenerationCredit = RegenerationCredit(regenerationCreditAddress);
   }
 
   event PoolBurnTokensEvent(
@@ -25,19 +25,19 @@ contract SupporterPool is Callable {
   );
 
   function balanceOf(address addr) public view returns (uint256) {
-    return rcToken.balanceOf(addr);
+    return regenerationCredit.balanceOf(addr);
   }
 
   function burnTokens(address tokenOwner, address inviter, uint256 amount, bool isInvited) public mustBeAllowedCaller {
     uint256 inviterTotalTokens = isInvited ? amount.mul(INVITER_PERCENTAGE).div(100) : 0;
     uint256 amountBurn = amount.sub(inviterTotalTokens);
 
-    rcToken.burnTokensWith(tokenOwner, amountBurn);
+    regenerationCredit.burnTokensWith(tokenOwner, amountBurn);
 
     emit PoolBurnTokensEvent(tokenOwner, amount, amountBurn, inviter, inviterTotalTokens);
 
-    if (!isInvited || inviterTotalTokens == 0) return;
+    if (!isInvited) return;
 
-    rcToken.transferWith(tokenOwner, inviter, inviterTotalTokens);
+    regenerationCredit.transferWith(tokenOwner, inviter, inviterTotalTokens);
   }
 }

@@ -4,7 +4,7 @@ const userTypes = {
   Inspector: 2,
   Researcher: 3,
   Developer: 4,
-  Advisor: 5,
+  Contributor: 5,
   Activist: 6,
   Supporter: 7,
   Validator: 8,

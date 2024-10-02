@@ -1,11 +1,11 @@
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
-const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("SupporterContract", () => {
-  let instance, userContract, rcToken, supporterPool;
+  let instance, userContract, regenerationCredit, supporterPool;
   let ownerAddress, inv1Address, inv2Address;
 
   const addSupporter = async (name, from) => {
@@ -13,7 +13,7 @@ describe("SupporterContract", () => {
   };
 
   const transferTokensTo = async (userAddress, tokens) => {
-    await rcToken.transfer(userAddress, tokens);
+    await regenerationCredit.transfer(userAddress, tokens);
   };
 
   beforeEach(async () => {
@@ -21,10 +21,10 @@ describe("SupporterContract", () => {
 
     userContract = await userContractDeployed();
 
-    rcToken = await rcTokenDeployed();
+    regenerationCredit = await regenerationCreditDeployed();
 
     const supporterPoolFactory = await ethers.getContractFactory("SupporterPool");
-    supporterPool = await supporterPoolFactory.deploy(rcToken.target);
+    supporterPool = await supporterPoolFactory.deploy(regenerationCredit.target);
 
     const instanceFactory = await ethers.getContractFactory("SupporterContract");
     instance = await instanceFactory.deploy(userContract.target, supporterPool.target);
@@ -32,14 +32,14 @@ describe("SupporterContract", () => {
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(ownerAddress);
     await supporterPool.newAllowedCaller(instance.target);
-    await rcToken.addContractPool(supporterPool.target, 0);
+    await regenerationCredit.addContractPool(supporterPool.target, 0);
   });
 
   describe("#addSupporter", () => {
     context("when supporter exists", () => {
       it("should return error", async () => {
         await addSupporter("Supporter A", inv1Address);
-        await expect(addSupporter("Supporter A", inv1Address)).to.be.revertedWith("This supporter already exist");
+        await expect(addSupporter("Supporter A", inv1Address)).to.be.revertedWith("User already exists");
       });
     });
 
@@ -55,7 +55,7 @@ describe("SupporterContract", () => {
       it("increment supporterCount", async () => {
         await addSupporter("Supporter A", inv1Address);
         await addSupporter("Supporter B", inv2Address);
-        const supportersCount = await instance.supportersCount();
+        const supportersCount = await userContract.userTypesCount(userTypes.Supporter);
 
         expect(supportersCount).to.equal(2);
       });
@@ -113,28 +113,6 @@ describe("SupporterContract", () => {
     });
   });
 
-  context("#supporterExists", () => {
-    context("when supporter exists", () => {
-      beforeEach(async () => {
-        await addSupporter("Supporter A", inv1Address);
-      });
-
-      it("return true", async () => {
-        const supporterExists = await instance.supporterExists(inv1Address);
-
-        expect(supporterExists).to.equal(true);
-      });
-    });
-
-    context("when supporter dont exists", () => {
-      it("return false", async () => {
-        const supporterExists = await instance.supporterExists(inv1Address);
-
-        expect(supporterExists).to.equal(false);
-      });
-    });
-  });
-
   describe("#burnTokens", () => {
     context("when msg.sender is SUPPORTER", () => {
       beforeEach(async () => {
@@ -159,14 +137,14 @@ describe("SupporterContract", () => {
               expect(balance).to.equal(99000000000000000000n);
             });
 
-            it("Supporter inviter balance must be 10000000000000000", async () => {
+            it("Supporter inviter balance must be 50000000000000000", async () => {
               const balance = await supporterPool.balanceOf(inv1Address);
-              expect(balance).to.equal(10000000000000000n);
+              expect(balance).to.equal(50000000000000000n);
             });
 
-            it("totalCertified must be 990000000000000000", async () => {
-              const totalCertified = await rcToken.totalCertified();
-              expect(totalCertified).to.equal(990000000000000000n);
+            it("totalCertified must be 950000000000000000", async () => {
+              const totalCertified = await regenerationCredit.totalCertified();
+              expect(totalCertified).to.equal(950000000000000000n);
             });
           });
 
@@ -180,14 +158,14 @@ describe("SupporterContract", () => {
               expect(balance).to.equal(99500000000000000000n);
             });
 
-            it("Supporter inviter balance must be 5000000000000000", async () => {
+            it("Supporter inviter balance must be 25000000000000000", async () => {
               const balance = await supporterPool.balanceOf(inv1Address);
-              expect(balance).to.equal(5000000000000000n);
+              expect(balance).to.equal(25000000000000000n);
             });
 
-            it("totalCertified must be 495000000000000000", async () => {
-              const totalCertified = await rcToken.totalCertified();
-              expect(totalCertified).to.equal(495000000000000000n);
+            it("totalCertified must be 475000000000000000", async () => {
+              const totalCertified = await regenerationCredit.totalCertified();
+              expect(totalCertified).to.equal(475000000000000000n);
             });
           });
         });
@@ -209,7 +187,7 @@ describe("SupporterContract", () => {
             });
 
             it("totalCertified must be 1000000000000000000", async () => {
-              const totalCertified = await rcToken.totalCertified();
+              const totalCertified = await regenerationCredit.totalCertified();
 
               expect(totalCertified).to.equal(1000000000000000000n);
             });
@@ -227,7 +205,7 @@ describe("SupporterContract", () => {
             });
 
             it("totalCertified must be 500000000000000000", async () => {
-              const totalCertified = await rcToken.totalCertified();
+              const totalCertified = await regenerationCredit.totalCertified();
 
               expect(totalCertified).to.equal(500000000000000000n);
             });

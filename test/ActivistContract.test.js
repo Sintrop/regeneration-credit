@@ -1,12 +1,12 @@
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
-const { rcTokenDeployed } = require("./shared/rc_token_deployed");
+const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { expect } = require("chai");
 const { advanceBlock } = require("./shared/advance_block");
 
 describe("ActivistContract", () => {
-  let instance, userContract, activistPool, rcToken;
-  let owner, activ1Address, activ2Address, activ3Address;
+  let instance, userContract, activistPool, regenerationCredit;
+  let owner, activ1Address, activ2Address, activ3Address, producer1Address, inspector1Address, inspector2Address;
 
   const activistPoolArgs = {
     totalTokens: "30000000000000000000000000",
@@ -24,14 +24,15 @@ describe("ActivistContract", () => {
   };
 
   beforeEach(async () => {
-    [owner, activ1Address, activ2Address, activ3Address] = await ethers.getSigners();
+    [owner, activ1Address, activ2Address, activ3Address, producer1Address, inspector1Address, inspector2Address] =
+      await ethers.getSigners();
 
-    rcToken = await rcTokenDeployed();
+    regenerationCredit = await regenerationCreditDeployed();
     userContract = await userContractDeployed();
 
     const activistPoolFactory = await ethers.getContractFactory("ActivistPool");
     activistPool = await activistPoolFactory.deploy(
-      rcToken.target,
+      regenerationCredit.target,
       activistPoolArgs.halving,
       activistPoolArgs.totalEras,
       activistPoolArgs.blocksPerEra
@@ -40,12 +41,13 @@ describe("ActivistContract", () => {
     const instanceContractFactory = await ethers.getContractFactory("ActivistContract");
     instance = await instanceContractFactory.deploy(userContract.target, activistPool.target);
 
+    await userContract.newAllowedCaller(activ1Address);
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
 
     await activistPool.newAllowedCaller(instance.target);
     await instance.newAllowedCaller(owner);
-    await rcToken.addContractPool(activistPool.target, activistPoolArgs.totalTokens);
+    await regenerationCredit.addContractPool(activistPool.target, activistPoolArgs.totalTokens);
     await addInvitation(owner, activ1Address, userTypes.Activist, owner);
     await addInvitation(owner, activ3Address, userTypes.Activist, owner);
   });
@@ -61,7 +63,7 @@ describe("ActivistContract", () => {
       context("when activist exists", () => {
         it("should return error", async () => {
           await addActivist("Activist A", activ1Address);
-          await expect(addActivist("Activist A", activ1Address)).to.be.revertedWith("This activist already exist");
+          await expect(addActivist("Activist A", activ1Address)).to.be.revertedWith("User already exists");
         });
       });
 
@@ -77,7 +79,7 @@ describe("ActivistContract", () => {
         it("should increment activistCount", async () => {
           await addActivist("Activist A", activ1Address);
           await addActivist("Activist C", activ3Address);
-          const activistsCount = await instance.activistsCount();
+          const activistsCount = await userContract.userTypesCount(userTypes.Activist);
 
           expect(activistsCount).to.equal(2);
         });
@@ -148,55 +150,39 @@ describe("ActivistContract", () => {
     });
   });
 
-  describe("#activistExists", () => {
-    context("when activist is registered", () => {
-      beforeEach(async () => {
-        await addActivist("Activist A", activ1Address);
-      });
-
-      it("should return a activist", async () => {
-        const activistExists = await instance.activistExists(activ1Address);
-
-        expect(activistExists).to.equal(true);
-      });
-    });
-
-    context("when activist is not registered", () => {
-      it("should return a activist", async () => {
-        const activistExists = await instance.activistExists(activ1Address);
-
-        expect(activistExists).to.equal(false);
-      });
-    });
-  });
-
   describe("#addLevel", () => {
     context("with allowed caller", () => {
       context("when activist is registered", () => {
         beforeEach(async () => {
           await addActivist("Activist A", activ1Address);
-          await instance.addLevel(activ1Address);
+
+          await addInvitation(activ1Address, producer1Address, userTypes.Producer, activ1Address);
+          await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
+
+          await instance.addLevel(producer1Address, 3, inspector1Address, 3);
         });
 
         context("when current era of pool is 1", () => {
           it("add level to activist.pool.level ", async () => {
             const activist = await instance.getActivist(activ1Address);
 
-            expect(activist.pool.level).to.equal(1);
+            expect(activist.pool.level).to.equal(2);
           });
 
           it("add level to activisPool", async () => {
             const eraLevels = await activistPool.eraLevels(1, activ1Address);
 
-            expect(eraLevels).to.equal(1);
+            expect(eraLevels).to.equal(2);
           });
         });
 
         context("when current era of pool is 2", () => {
           beforeEach(async () => {
             await advanceBlock(activistPoolArgs.blocksPerEra);
-            await instance.addLevel(activ1Address);
-            await instance.addLevel(activ1Address);
+
+            await addInvitation(activ1Address, inspector2Address, userTypes.Inspector, activ1Address);
+
+            await instance.addLevel(producer1Address, 3, inspector2Address, 3);
           });
 
           it("add level to activist.pool.level ", async () => {
@@ -208,23 +194,26 @@ describe("ActivistContract", () => {
           it("add level to era 2 activisPool", async () => {
             const eraLevels = await activistPool.eraLevels(2, activ1Address);
 
-            expect(eraLevels).to.equal(2);
+            expect(eraLevels).to.equal(1);
           });
         });
       });
 
       context("when activist is not registered", () => {
         beforeEach(async () => {
-          await instance.addLevel(activ1Address);
+          await addInvitation(activ1Address, producer1Address, userTypes.Producer, activ1Address);
+          await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
+
+          await instance.addLevel(producer1Address, 3, inspector1Address, 3);
         });
 
-        it("add level to activist.pool.level ", async () => {
+        it("do not add level to activist.pool.level ", async () => {
           const activist = await instance.getActivist(activ1Address);
 
           expect(activist.pool.level).to.equal(0);
         });
 
-        it("add level to activisPool", async () => {
+        it("do not add level to activisPool", async () => {
           const eraLevels = await activistPool.eraLevels(1, activ1Address);
 
           expect(eraLevels).to.equal(0);
@@ -234,7 +223,9 @@ describe("ActivistContract", () => {
 
     context("without allowed caller", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(activ1Address).addLevel(activ1Address)).to.be.revertedWith("Not allowed caller");
+        await expect(
+          instance.connect(activ1Address).addLevel(producer1Address, 1, activ1Address, 1)
+        ).to.be.revertedWith("Not allowed caller");
       });
     });
   });
@@ -248,7 +239,9 @@ describe("ActivistContract", () => {
       context("when is era 1", () => {
         context("when activist have levels", () => {
           beforeEach(async () => {
-            await instance.addLevel(activ1Address);
+            await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
+
+            await instance.addLevel(producer1Address, 0, inspector1Address, 3);
           });
 
           it("should return error message", async () => {
@@ -260,7 +253,9 @@ describe("ActivistContract", () => {
       context("when is era 2", () => {
         context("when activist have levels", () => {
           beforeEach(async () => {
-            await instance.addLevel(activ1Address);
+            await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
+
+            await instance.addLevel(producer1Address, 0, inspector1Address, 3);
           });
 
           context("when have one activist", () => {
@@ -277,7 +272,7 @@ describe("ActivistContract", () => {
             });
 
             it("activist balance must be", async () => {
-              const balance = await activistPool.balanceOf(activ1Address);
+              const balance = await regenerationCredit.balanceOf(activ1Address);
 
               expect(balance).to.equal(1200000000000000000000000n);
             });
@@ -286,7 +281,12 @@ describe("ActivistContract", () => {
           context("when have two activist", () => {
             beforeEach(async () => {
               await addActivist("Activist B", activ3Address);
-              await instance.addLevel(activ3Address);
+
+              await userContract.newAllowedCaller(activ3Address);
+              await addInvitation(activ3Address, inspector2Address, userTypes.Inspector, activ3Address);
+
+              await instance.addLevel(producer1Address, 0, inspector2Address, 3);
+
               await advanceBlock(activistPoolArgs.blocksPerEra);
 
               await instance.connect(activ1Address).withdraw();
@@ -300,7 +300,7 @@ describe("ActivistContract", () => {
             });
 
             it("activist1 balance must be", async () => {
-              const balance = await activistPool.balanceOf(activ1Address);
+              const balance = await regenerationCredit.balanceOf(activ1Address);
 
               expect(balance).to.equal(600000000000000000000000n);
             });
@@ -312,7 +312,7 @@ describe("ActivistContract", () => {
             });
 
             it("activist3 balance must be", async () => {
-              const balance = await activistPool.balanceOf(activ3Address);
+              const balance = await regenerationCredit.balanceOf(activ3Address);
 
               expect(balance).to.equal(600000000000000000000000n);
             });
@@ -334,7 +334,7 @@ describe("ActivistContract", () => {
             });
 
             it("activist balance must be", async () => {
-              const balance = await activistPool.balanceOf(activ1Address);
+              const balance = await regenerationCredit.balanceOf(activ1Address);
 
               expect(balance).to.equal(0n);
             });
@@ -347,6 +347,31 @@ describe("ActivistContract", () => {
       it("should return error message", async () => {
         await expect(instance.withdraw()).to.be.revertedWith("Pool only to activist");
       });
+    });
+  });
+
+  describe("#removePoolLevels", () => {
+    beforeEach(async () => {
+      await addActivist("Activist  A", activ1Address);
+
+      await addInvitation(activ1Address, producer1Address, userTypes.Producer, owner);
+      await addInvitation(activ1Address, inspector2Address, userTypes.Inspector, owner);
+
+      await instance.addLevel(producer1Address, 3, inspector2Address, 3);
+
+      await instance.removePoolLevels(activ1Address, 1);
+    });
+
+    it("remove user levels from pool", async () => {
+      const levelsEra1 = await activistPool.eraLevels(1, activ1Address);
+
+      expect(levelsEra1).to.equal(1);
+    });
+
+    it("remove user levels from activist", async () => {
+      const activist = await instance.getActivist(activ1Address);
+
+      expect(activist.pool.level).to.equal(1);
     });
   });
 });

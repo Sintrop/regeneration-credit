@@ -1,29 +1,54 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("@nomicfoundation/hardhat-verify");
 require("solidity-coverage");
 require("dotenv").config({ path: __dirname + "/.env" });
 
 const infuraKey = process.env.INFURA_API_KEY;
 const privateKey = process.env.PRIVATE_KEY_ACCOUNT_TO_DEPLOY || "set private key";
 const etherscanApiKey = process.env.ETHERSCAN_API_KEY;
+const coinMarketcapApiKey = process.env.COINMARKETCAP_API_KEY;
+const gasReportEnabled = process.env.GAS_REPORT_ENABLED;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: "0.8.2",
+  solidity: "0.8.27",
   networks: {
     hardhat: {
       allowUnlimitedContractSize: true,
+      accounts: {
+        count: 30,
+      },
     },
+    localhost: {
+      allowUnlimitedContractSize: true,
+    },
+    // mainnet: {
+    //   url: `https://infura.io/v3/${infuraKey}`,
+    //   accounts: [privateKey],
+    // },
     // sepolia: {
     //   url: `https://sepolia.infura.io/v3/${infuraKey}`,
+    //   accounts: [privateKey],
+    // },
+    // zkevm: {
+    //   url: `https://rpc.public.zkevm-test.net`,
+    //   accounts: [privateKey],
+    // },
+    // holesky: {
+    //   url: `https://rpc.holesky.ethpandaops.io`,
     //   accounts: [privateKey],
     // },
   },
   etherscan: {
     apiKey: etherscanApiKey,
   },
+  sourcify: {
+    enabled: false,
+  },
   settings: {
     optimizer: {
       enabled: true,
+      runs: 200,
       details: {
         yul: true,
         yulDetails: {
@@ -33,6 +58,15 @@ module.exports = {
       },
     },
   },
+  gasReporter: {
+    enabled: !!gasReportEnabled,
+    currency: "USD",
+    L1Etherscan: etherscanApiKey,
+    currencyDisplayPrecision: 2,
+    outputFile: "gas_reporter.txt",
+    noColors: true,
+    coinmarketcap: coinMarketcapApiKey,
+  },
   paths: {
     sources: "./contracts",
     tests: "./test",
@@ -40,9 +74,9 @@ module.exports = {
     artifacts: "./artifacts",
   },
   mocha: {
-    bail: true,
+    bail: false,
     parallel: false,
-    jobs: 0,
+    jobs: 3,
     color: true,
     checkLeaks: false,
     reporter: "spec",

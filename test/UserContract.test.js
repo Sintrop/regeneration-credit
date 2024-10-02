@@ -12,6 +12,7 @@ describe("UserContract", function () {
     researcherProportionality: 1,
     developerProportionality: 1,
     validatorProportionality: 1,
+    contributorProportionality: 1,
   };
 
   const definedTypes = [
@@ -20,7 +21,7 @@ describe("UserContract", function () {
     "INSPECTOR",
     "RESEARCHER",
     "DEVELOPER",
-    "ADVISOR",
+    "CONTRIBUTOR",
     "ACTIVIST",
     "SUPPORTER",
     "VALIDATOR",
@@ -36,7 +37,7 @@ describe("UserContract", function () {
   };
 
   const addDelation = async (denouncedAddress, from) => {
-    await instance.connect(from).addDelation(denouncedAddress, "title", "testimony", "proofPhoto");
+    await instance.connect(from).addDelation(denouncedAddress, "title", "testimony");
   };
 
   beforeEach(async function () {
@@ -51,6 +52,7 @@ describe("UserContract", function () {
     context("with allowed caller", () => {
       context("when the user don't exist", () => {
         beforeEach(async () => {
+          await addInvitation(owner, user1Address, userTypes.Producer, owner);
           await addUser(user1Address, userTypes.Producer, owner);
         });
 
@@ -75,6 +77,7 @@ describe("UserContract", function () {
 
       context("when the user exists", () => {
         it("should return error message", async () => {
+          await addInvitation(owner, user1Address, userTypes.Producer, owner);
           await addUser(user1Address, userTypes.Producer, owner);
 
           expect(addUser(user1Address, userTypes.Producer, owner)).to.be.revertedWith("User already exists");
@@ -89,11 +92,14 @@ describe("UserContract", function () {
 
       context("when enum correctly", () => {
         beforeEach(async () => {
-          await addUser(owner, userTypes.Producer, owner);
+          await addInvitation(owner, user2Address, userTypes.Producer, owner);
+
+          await addUser(user2Address, userTypes.Producer, owner);
         });
 
         context("to Producer", () => {
           it("should add correct enum to producer", async () => {
+            await addInvitation(owner, user1Address, userTypes.Producer, owner);
             await addUser(user1Address, userTypes.Producer, owner);
 
             const user = await instance.getUser(user1Address);
@@ -135,14 +141,14 @@ describe("UserContract", function () {
           });
         });
 
-        context("to advisor", () => {
-          it("should add correct enum to advisor", async () => {
-            await addInvitation(owner, user1Address, userTypes.Advisor, owner);
-            await addUser(user1Address, userTypes.Advisor, owner);
+        context("to contributor", () => {
+          it("should add correct enum to contributor", async () => {
+            await addInvitation(owner, user1Address, userTypes.Contributor, owner);
+            await addUser(user1Address, userTypes.Contributor, owner);
 
             const user = await instance.getUser(user1Address);
 
-            expect(user).to.equal(userTypes.Advisor);
+            expect(user).to.equal(userTypes.Contributor);
           });
         });
 
@@ -191,6 +197,7 @@ describe("UserContract", function () {
 
       context("with proportionality invalid", () => {
         beforeEach(async () => {
+          await addInvitation(owner, user1Address, userTypes.Producer, owner);
           await addUser(user1Address, userTypes.Producer, owner);
         });
 
@@ -248,6 +255,19 @@ describe("UserContract", function () {
           });
         });
 
+        context("to contributor with proportionality 1", () => {
+          beforeEach(async () => {
+            await addInvitation(owner, user2Address, userTypes.Contributor, owner);
+            await addInvitation(owner, user3Address, userTypes.Contributor, owner);
+
+            await addUser(user2Address, userTypes.Contributor, owner);
+          });
+
+          it("should return error message", async () => {
+            expect(addUser(user3Address, userTypes.Contributor, owner)).to.be.revertedWith("Proportionality invalid");
+          });
+        });
+
         context("to validator with proportionality 1", () => {
           beforeEach(async () => {
             await addInvitation(owner, user2Address, userTypes.Validator, owner);
@@ -264,6 +284,7 @@ describe("UserContract", function () {
 
       context("when user was invited", () => {
         beforeEach(async () => {
+          await addInvitation(owner, user2Address, userTypes.Producer, owner);
           await addUser(user2Address, userTypes.Producer, owner);
           await addInvitation(owner, user1Address, userTypes.Inspector, owner);
         });
@@ -287,6 +308,7 @@ describe("UserContract", function () {
 
       context("when user was not invited", () => {
         beforeEach(async () => {
+          await addInvitation(owner, user1Address, userTypes.Producer, owner);
           await addUser(user1Address, userTypes.Producer, owner);
         });
 
@@ -360,20 +382,13 @@ describe("UserContract", function () {
 
     context("with 1 user", () => {
       it("should usersCount be one", async () => {
+        await addInvitation(owner, user1Address, userTypes.Producer, owner);
         await addUser(user1Address, userTypes.Producer, owner);
 
         const usersCount = await instance.usersCount();
 
         expect(usersCount).to.equal(1);
       });
-    });
-  });
-
-  describe("#userTypes", () => {
-    it("should have enums", async () => {
-      const types = await instance.userTypes();
-
-      expect(JSON.stringify(types)).to.equal(JSON.stringify(definedTypes));
     });
   });
 
@@ -397,6 +412,9 @@ describe("UserContract", function () {
     context("when user1 and user2 is registed on system", () => {
       context("when user1 receive delation", () => {
         beforeEach(async () => {
+          await addInvitation(owner, user1Address, userTypes.Producer, owner);
+          await addInvitation(owner, user2Address, userTypes.Producer, owner);
+
           await addUser(user1Address, userTypes.Producer, owner);
           await addUser(user2Address, userTypes.Producer, owner);
 
@@ -423,18 +441,17 @@ describe("UserContract", function () {
           const id = delations[0].id;
           const title = delations[0].title;
           const testimony = delations[0].testimony;
-          const proofPhoto = delations[0].proofPhoto;
 
           expect(id).to.equal(1);
           expect(title).to.equal("title");
           expect(testimony).to.equal("testimony");
-          expect(proofPhoto).to.equal("proofPhoto");
         });
       });
     });
 
     context("when user1 (reported) is not registed on system", () => {
       it("should return error message", async () => {
+        await addInvitation(owner, user2Address, userTypes.Producer, owner);
         await addUser(user2Address, userTypes.Producer, owner);
 
         await expect(addDelation(user1Address, user2Address)).to.be.revertedWith("User must be registered");
@@ -443,6 +460,7 @@ describe("UserContract", function () {
 
     context("when user2 (informer) is not registed on system", () => {
       it("should return error message", async () => {
+        await addInvitation(owner, user1Address, userTypes.Producer, owner);
         await addUser(user1Address, userTypes.Producer, owner);
 
         await expect(addDelation(user1Address, user2Address)).to.be.revertedWith("Caller must be registered");
@@ -453,6 +471,9 @@ describe("UserContract", function () {
   describe("#getUserDelations", () => {
     context("when user1 have 2 delations", () => {
       beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Producer, owner);
+        await addInvitation(owner, user2Address, userTypes.Producer, owner);
+
         await addUser(user1Address, userTypes.Producer, owner);
         await addUser(user2Address, userTypes.Producer, owner);
 
@@ -472,6 +493,64 @@ describe("UserContract", function () {
         const delations = await instance.getUserDelations(user1Address);
 
         expect(delations.length).to.equal(0);
+      });
+    });
+  });
+
+  describe("#getUserTypeSettings", () => {
+    context("when get to producer", () => {
+      it("", async () => {
+        const settings = await instance.getUserTypeSettings(userTypes.Producer);
+
+        expect(settings).deep.to.equal([0n, false, true, 0]);
+      });
+    });
+
+    context("when get to contributor", () => {
+      it("returns settings", async () => {
+        const settings = await instance.getUserTypeSettings(userTypes.Contributor);
+
+        expect(settings).deep.to.equal([1n, false, true, 100000n]);
+      });
+    });
+
+    context("when get to inspector", () => {
+      it("returns settings", async () => {
+        const settings = await instance.getUserTypeSettings(userTypes.Inspector);
+
+        expect(settings).deep.to.equal([2n, true, true, 0]);
+      });
+    });
+
+    context("when get to activist", () => {
+      it("returns settings", async () => {
+        const settings = await instance.getUserTypeSettings(userTypes.Activist);
+
+        expect(settings).deep.to.equal([1n, false, true, 100000n]);
+      });
+    });
+
+    context("when get to reseacher", () => {
+      it("returns settings", async () => {
+        const settings = await instance.getUserTypeSettings(userTypes.Researcher);
+
+        expect(settings).deep.to.equal([1n, false, true, 200000n]);
+      });
+    });
+
+    context("when get to developer", () => {
+      it("returns settings", async () => {
+        const settings = await instance.getUserTypeSettings(userTypes.Developer);
+
+        expect(settings).deep.to.equal([1n, false, true, 200000n]);
+      });
+    });
+
+    context("when get to validator", () => {
+      it("", async () => {
+        const settings = await instance.getUserTypeSettings(userTypes.Validator);
+
+        expect(settings).deep.to.equal([1n, false, true, 1000000n]);
       });
     });
   });

@@ -7,7 +7,7 @@ enum UserType {
   INSPECTOR,
   RESEARCHER,
   DEVELOPER,
-  ADVISOR,
+  CONTRIBUTOR,
   ACTIVIST,
   SUPPORTER,
   VALIDATOR,
@@ -20,7 +20,6 @@ struct Delation {
   address reported;
   string title;
   string testimony;
-  string proofPhoto;
 }
 
 struct Invitation {
@@ -34,4 +33,5 @@ struct UserTypeSetting {
   uint256 proportionalityOnRegister;
   bool directProportionalityRegistration;
   bool needInvitationOnRegister;
+  uint256 invitationDelayBlocks;
 }

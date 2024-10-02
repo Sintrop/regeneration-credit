@@ -5,9 +5,15 @@
   "main": "index.js",
   "scripts": {
     "test": "npx hardhat test --bail",
+    "deploy:localhost": "npx hardhat run --network localhost scripts/deploy.js",
+    "deploy:sepolia": "npx hardhat run --network sepolia scripts/deploy.js",
+    "deploy:zkevm": "npx hardhat run --network zkevm scripts/deploy.js",
+    "deploy:holesky": "npx hardhat run --network holesky scripts/deploy.js",
     "coverage": "npx hardhat coverage",
+    "ganache:start": "ganache-cli -d -m 'sintrop' -a 10 -e 200 -h 0.0.0.0",
     "solhint": "./node_modules/.bin/solhint -f table contracts/**/**/*.sol",
     "prettier:solidity": "./node_modules/.bin/prettier --write contracts/**/**/*.sol",
+    "prettier:sol": "./node_modules/.bin/prettier --write contracts/**/**/*.sol",
     "prettier:js": "./node_modules/.bin/prettier --write test/**/**/*.js",
     "ipfs:start": "ipfs init || ipfs config Addresses.Gateway /ip4/0.0.0.0/tcp/8080 && ipfs config Addresses.API /ip4/0.0.0.0/tcp/5001 && ipfs daemon"
   },
@@ -18,10 +24,12 @@
     "@nomicfoundation/hardhat-network-helpers": "^1.0.10",
     "@openzeppelin/contracts": "^4.8.3",
     "dotenv": "^16.0.3",
+    "eth-scribble": "^0.6.5",
     "solidity-coverage": "^0.8.5"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.4",
     "hardhat": "^2.19.2",
     "husky": "^8.0.1",
     "prettier": "^2.8.7",
