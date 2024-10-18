@@ -9,7 +9,9 @@ import { UserType } from "./types/UserTypes.sol";
 
 /**
  * @title ProducerContract
- * @dev Contract with the producer user logic. Producers must be projects that are restoring nature ecosystems.
+ * @author Sintrop  
+ * @dev Manage producer user logic. 
+ * @notice A producer must be a person or a grouple of peolpe that are restoring nature ecosystems.
  */
 contract ProducerContract is Callable {
   uint256 internal constant MINIMUM_INSPECTION_TO_POOL = 3;

@@ -10,7 +10,8 @@ import { Callable } from "./Callable.sol";
 
 /**
  * @title ContributorContract
- * @dev Contributor resource that represent dev
+ * @author Sintrop
+ * @dev Manage contributors rules and data
  */
 contract ContributorContract is Ownable, Callable {
   mapping(address => Contributor) public contributors;

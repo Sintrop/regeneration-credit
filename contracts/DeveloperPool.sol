@@ -12,7 +12,7 @@ import { Poolable } from "./Poolable.sol";
 /**
  * @author Sintrop
  * @title DeveloperPool
- * @dev DeveloperPool is a contract to reward developers
+ * @dev Manage rewards to developers
  */
 contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;

@@ -7,7 +7,8 @@ import { UserType } from "./types/UserTypes.sol";
 
 /**
  * @title InvitationContract
- * @dev Invited resource that allow invite users
+ * @author Sintrop 
+ * @dev Manage logic to allow users invite others
  */
 contract InvitationContract is Ownable {
   mapping(address => uint256) public lastInviteBlocks;
