@@ -4,6 +4,7 @@ async function afterDeploy() {
   await configureValidatorContract();
   await configureSintrop();
   await addCategories();
+  await renounceOwnership();
 
   console.log("After Deploy OK");
 }
@@ -289,9 +290,49 @@ async function addCategories() {
       isaId: 13, 
       description: "Balance < -1.000"
     },
-  ])    
+  ])
 
   console.log("After categories OK");
+}
+
+async function renounceOwnership() {
+  const regenerationCredit = await getDeployedContract("RegenerationCredit");
+  const sintrop = await getDeployedContract("Sintrop");
+  const categoryContract = await getDeployedContract("CategoryContract");
+  const userContract = await getDeployedContract("UserContract");
+  const inspectorContract = await getDeployedContract("InspectorContract");
+  const activistContract = await getDeployedContract("ActivistContract");
+  const producerContract = await getDeployedContract("ProducerContract");
+  const validatorContract = await getDeployedContract("ValidatorContract");
+  const developerContract = await getDeployedContract("DeveloperContract");
+  const researcherContract = await getDeployedContract("ResearcherContract");
+  const contributorContract = await getDeployedContract("ContributorContract");
+  const producerPool = await getDeployedContract("ProducerPool");
+  const inspectorPool = await getDeployedContract("InspectorPool");
+  const researcherPool = await getDeployedContract("ResearcherPool");
+  const developerPool = await getDeployedContract("DeveloperPool");
+  const contributorPool = await getDeployedContract("ContributorPool");
+  const activistPool = await getDeployedContract("ActivistPool");
+  const validatorPool = await getDeployedContract("ValidatorPool");
+
+  await regenerationCredit.renounceOwnership();
+  await sintrop.renounceOwnership();
+  await categoryContract.renounceOwnership();
+  await userContract.renounceOwnership();
+  await inspectorContract.renounceOwnership();
+  await activistContract.renounceOwnership();
+  await producerContract.renounceOwnership();
+  await validatorContract.renounceOwnership();
+  await developerContract.renounceOwnership();
+  await researcherContract.renounceOwnership();
+  await contributorContract.renounceOwnership();
+  await producerPool.renounceOwnership();
+  await inspectorPool.renounceOwnership();
+  await researcherPool.renounceOwnership();
+  await developerPool.renounceOwnership();
+  await contributorPool.renounceOwnership();
+  await activistPool.renounceOwnership();
+  await validatorPool.renounceOwnership();
 }
 
 module.exports = afterDeploy;
