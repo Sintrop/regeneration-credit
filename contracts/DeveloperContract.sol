@@ -13,6 +13,7 @@ import { Developer, Pool, Contribution, Penalty } from "./types/DeveloperTypes.s
  * @title DeveloperContract
  * @author Sintrop
  * @dev Manage developers rules and data
+ * @notice Responsible for the development of the project
  */
 contract DeveloperContract is Ownable, Callable {
   mapping(address => Developer) public developers;

@@ -11,6 +11,7 @@ import { InspectorPool } from "./InspectorPool.sol";
  * @title InspectorContract
  * @author Sintrop
  * @dev Manage inspectors rules and data
+ * @notice Responsible for collecting producers data
  */
 contract InspectorContract is Callable {
   uint256 internal constant MINIMUM_INSPECTIONS_TO_POOL = 3;

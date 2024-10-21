@@ -11,6 +11,7 @@ import { Callable } from "./Callable.sol";
  * @author Sintrop
  * @title ActivistContract
  * @dev Manage activists rules and data
+ * @notice User responsible for inviting new producers and inspectors
  */
 
 contract ActivistContract is Callable {

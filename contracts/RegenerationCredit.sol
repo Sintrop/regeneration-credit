@@ -5,6 +5,12 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
+/**
+ * @title Regeneration Credit
+ * @author Sintrop  
+ * @dev Create and manage the token 
+ * @notice Token backed by the regeneration impact of the community
+ */
 contract RegenerationCredit is ERC20, Ownable {
   string public constant NAME = "REGENERATION CREDIT";
   string public constant SYMBOL = "RC";
