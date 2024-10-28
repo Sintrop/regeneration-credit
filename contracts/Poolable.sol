@@ -5,7 +5,7 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
  * @title Poolable
- * @author Sintrop 
+ * @author Sintrop
  * @dev Manage tokens distribution logic
  */
 contract Poolable {

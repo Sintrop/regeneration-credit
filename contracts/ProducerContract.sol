@@ -9,8 +9,8 @@ import { UserType } from "./types/UserTypes.sol";
 
 /**
  * @title ProducerContract
- * @author Sintrop  
- * @dev Manage producer user logic. 
+ * @author Sintrop
+ * @dev Manage producer user logic.
  * @notice Person, family or a group of peolpe that are restoring nature
  */
 contract ProducerContract is Callable {
@@ -113,7 +113,7 @@ contract ProducerContract is Callable {
   }
 
   /**
-   * @dev Check if a specific producer reached the maximum score 
+   * @dev Check if a specific producer reached the maximum score
    * @return a bool that represent if a producer is sustainable or not
    */
   function isSustainable(address addr) public view returns (bool) {

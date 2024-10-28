@@ -7,8 +7,8 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
  * @title Regeneration Credit
- * @author Sintrop  
- * @dev Create and manage the token 
+ * @author Sintrop
+ * @dev Create and manage the token
  * @notice Token backed by the regeneration impact of the community
  */
 contract RegenerationCredit is ERC20, Ownable {

@@ -10,7 +10,7 @@ import { Poolable } from "./Poolable.sol";
  * @author Sintrop
  * @title ValidatorPool
  * @dev ValidatorPool is a contract to reward validators
- * @notice Receive tokens for validation service provided 
+ * @notice Receive tokens for validation service provided
  */
 contract ValidatorPool is Poolable, Blockable, Callable {
   RegenerationCreditInterface internal regenerationCredit;

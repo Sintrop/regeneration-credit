@@ -11,7 +11,7 @@ import { Poolable } from "./Poolable.sol";
 
 /**
  * @title InspectorPool
- * @author Sintrop 
+ * @author Sintrop
  * @dev InspectorPool is a contract to reward inspectors
  * @notice Receive tokens for inspection service provided
  */
