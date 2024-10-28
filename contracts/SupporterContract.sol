@@ -6,6 +6,12 @@ import { Supporter } from "./types/SupporterTypes.sol";
 import { UserType, Invitation } from "./types/UserTypes.sol";
 import { SupporterPool } from "./SupporterPool.sol";
 
+/**
+* @title SupporterContract
+* @author Sintrop
+* @dev Manage supporters rules and data
+* @notice Burn tokens to compensate your degradation
+*/
 contract SupporterContract {
   mapping(address => Supporter) internal supporters;
 

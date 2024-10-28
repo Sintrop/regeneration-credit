@@ -18,7 +18,9 @@ import { Callable } from "./Callable.sol";
 
 /**
  * @title SintropContract
- * @dev Sintrop application to certificate a rural producer
+ * @author Sintrop
+ * @dev Manage inspections rules and data
+ * @notice Allow producer to request inspection, and inspectors to accept and realize it
  */
 contract Sintrop is Callable {
   using SafeMath for uint256;

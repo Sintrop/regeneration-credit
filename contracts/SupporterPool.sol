@@ -5,6 +5,12 @@ import { Callable } from "./Callable.sol";
 import { RegenerationCredit } from "./RegenerationCredit.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
+/**
+* @author Sintrop
+* @title SupporterPool
+* @dev SupporterPool is a contract to reward supporters
+* @notice Receive tokens for inviting others to burn tokens
+*/
 contract SupporterPool is Callable {
   using SafeMath for uint256;
 

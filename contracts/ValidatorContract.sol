@@ -16,6 +16,12 @@ import { Inspection } from "./types/InspectionTypes.sol";
 import { Contribution } from "./types/DeveloperTypes.sol";
 import { Work } from "./types/ResearcherTypes.sol";
 
+/**
+ * @title ValidatorContract
+ * @author Sintrop
+ * @dev Manage validators rules and data
+ * @notice Responsible for reviewing and voting to invalidate wrong or corrupted actions
+ */
 contract ValidatorContract is Callable {
   mapping(address => Validator) private validators;
   mapping(address => UserValidation[]) private userValidations;

@@ -7,6 +7,7 @@ import { Callable } from "./Callable.sol";
 
 /**
  * @title UserContract
+ * @author Sintrop
  * @dev This contract works as a centralized user's registration system
  */
 contract UserContract is Ownable, Callable {
