@@ -10,8 +10,15 @@ async function developerContractDeploy() {
   const DeveloperContract = await ethers.getContractFactory("DeveloperContract");
 
   const developerMaxPenalties = process.env["DEVELOPER_MAX_PENALTIES"];
+  const securityBlocksToValidatorAnalysis = process.env["DEVELOPER_SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS"];
 
-  const args = [userContract.target, developerPool.target, validatorContract.target, developerMaxPenalties];
+  const args = [
+    userContract.target,
+    developerPool.target,
+    validatorContract.target,
+    developerMaxPenalties,
+    securityBlocksToValidatorAnalysis,
+  ];
 
   const developerContract = await DeveloperContract.deploy(...args);
 

@@ -16,6 +16,7 @@ describe("ResearcherContract", () => {
 
   const timeBetweenWorks = 10;
   const maxPenalties = 3;
+  const securityBlocksToValidatorAnalysis = 10;
   const firstValidatorLimit = 8;
   const secondValidatorLimit = 14;
 
@@ -23,7 +24,7 @@ describe("ResearcherContract", () => {
     totalTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
-    blocksPerEra: 36,
+    blocksPerEra: 40,
   };
 
   const validatorPoolargs = {
@@ -81,7 +82,8 @@ describe("ResearcherContract", () => {
       researcherPool.target,
       validatorContract.target,
       timeBetweenWorks,
-      maxPenalties
+      maxPenalties,
+      securityBlocksToValidatorAnalysis
     );
 
     const validatorContractDependencies = {
@@ -288,70 +290,85 @@ describe("ResearcherContract", () => {
     context("when is a researcher", () => {
       beforeEach(async () => {
         await addResearcher("Researcher A", resea1Address);
-        await addWork(resea1Address);
       });
 
-      context("when have waited time between works", () => {
-        it("add a work", async () => {
-          const firstWork = await instance.worksCount();
-
-          expect(firstWork).to.equal(1);
+      context("when have time to validator analysis", () => {
+        beforeEach(async () => {
+          await addWork(resea1Address);
         });
 
-        it("add 1 to researcher publishedWorks", async () => {
-          const researcher = await instance.getResearcher(resea1Address);
+        context("when have waited time between works", () => {
+          it("add a work", async () => {
+            const firstWork = await instance.worksCount();
 
-          expect(researcher.publishedWorks).to.equal(1);
-        });
-
-        it("add 1 to researcher pool level", async () => {
-          const researcher = await instance.getResearcher(resea1Address);
-
-          expect(researcher.pool.level).to.equal(1);
-        });
-
-        it("add 1 to researcher pool eraLeves", async () => {
-          const eraLevel = await researcherPool.eraLevels(1, resea1Address);
-
-          expect(eraLevel).to.equal(1);
-        });
-
-        it("dont add to researcher pool eraLeves of other era", async () => {
-          const eraLevel = await researcherPool.eraLevels(2, resea1Address);
-
-          expect(eraLevel).to.equal(0);
-        });
-
-        context("when is next era", () => {
-          beforeEach(async () => {
-            await advanceBlock(args.blocksPerEra);
-
-            await addWork(resea1Address);
+            expect(firstWork).to.equal(1);
           });
 
-          it("add +1 to researcher pool eraLeves of era 2", async () => {
-            const eraLevel = await researcherPool.eraLevels(2, resea1Address);
+          it("add 1 to researcher publishedWorks", async () => {
+            const researcher = await instance.getResearcher(resea1Address);
+
+            expect(researcher.publishedWorks).to.equal(1);
+          });
+
+          it("add 1 to researcher pool level", async () => {
+            const researcher = await instance.getResearcher(resea1Address);
+
+            expect(researcher.pool.level).to.equal(1);
+          });
+
+          it("add 1 to researcher pool eraLeves", async () => {
+            const eraLevel = await researcherPool.eraLevels(1, resea1Address);
 
             expect(eraLevel).to.equal(1);
           });
 
-          it("add +1 to researcher pool level", async () => {
-            const researcher = await instance.getResearcher(resea1Address);
-
-            expect(researcher.pool.level).to.equal(2);
-          });
-
           it("dont add to researcher pool eraLeves of other era", async () => {
-            const eraLevel = await researcherPool.eraLevels(3, resea1Address);
+            const eraLevel = await researcherPool.eraLevels(2, resea1Address);
 
             expect(eraLevel).to.equal(0);
+          });
+
+          context("when is next era", () => {
+            beforeEach(async () => {
+              await advanceBlock(args.blocksPerEra);
+
+              await addWork(resea1Address);
+            });
+
+            it("add +1 to researcher pool eraLeves of era 2", async () => {
+              const eraLevel = await researcherPool.eraLevels(2, resea1Address);
+
+              expect(eraLevel).to.equal(1);
+            });
+
+            it("add +1 to researcher pool level", async () => {
+              const researcher = await instance.getResearcher(resea1Address);
+
+              expect(researcher.pool.level).to.equal(2);
+            });
+
+            it("dont add to researcher pool eraLeves of other era", async () => {
+              const eraLevel = await researcherPool.eraLevels(3, resea1Address);
+
+              expect(eraLevel).to.equal(0);
+            });
+          });
+        });
+
+        context("when have not waited time between works", () => {
+          it("should return error message", async () => {
+            await expect(addWork(resea1Address)).to.be.revertedWith("Can't publish yet");
           });
         });
       });
 
-      context("when have not waited time between works", () => {
+      context("when do not have time to validator analysis", () => {
+        beforeEach(async () => {
+          await advanceBlock(20);
+        });
+
         it("should return error message", async () => {
-          await expect(addWork(resea1Address)).to.be.revertedWith("Can't publish yet");
+          await expect(addWork(resea1Address)).to.be.revertedWith("Wait until next era to add work");
         });
       });
     });
