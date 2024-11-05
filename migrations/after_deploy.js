@@ -335,4 +335,60 @@ async function renounceOwnership() {
   await validatorPool.renounceOwnership();
 }
 
+async function inviteUsers() {
+  const invitationContract = await getDeployedContract("InvitationContract");
+
+  //testnet
+  await invitationContract.onlyOwnerInvite(0x9D89B8562B00713a034DEb7A867D5d3Bc45e19E6, 1);  
+  await invitationContract.onlyOwnerInvite(0x, 1);
+  await invitationContract.onlyOwnerInvite(0x, 1);
+  await invitationContract.onlyOwnerInvite(0x, 1);
+  await invitationContract.onlyOwnerInvite(0x, 1);
+  await invitationContract.onlyOwnerInvite(0x, 1);
+  
+  //producers
+  await invitationContract.onlyOwnerInvite(0x7BeF1D59d946023eEb4c222F7d3a446D21f76bb1, 1);
+  await invitationContract.onlyOwnerInvite(0x798829c56E9Bf2AFabe1e8c109EA156B81175281, 1);
+  await invitationContract.onlyOwnerInvite(0xd270F60ac7821F0A5419108E87A13efeeBa0469A, 1);
+  await invitationContract.onlyOwnerInvite(0xE8282Fc7340E6767F4f5d8039dB963D86D79ca6C, 1);
+  await invitationContract.onlyOwnerInvite(0x2025e555a6cA6C969B1900c80172d2C95FA0fd3B, 1);
+  await invitationContract.onlyOwnerInvite(0x941844A79f03BaF34fB0e17f8aa75bcDa1CdAb3E, 1);
+  await invitationContract.onlyOwnerInvite(0x6b17D7E1371f0E7D32DA953BEbA1897e12D5Fa43, 1);
+  await invitationContract.onlyOwnerInvite(0x9D89B8562B00713a034DEb7A867D5d3Bc45e19E6, 1);
+  
+
+  //inspectors
+  await invitationContract.onlyOwnerInvite(0x, 1);
+  await invitationContract.onlyOwnerInvite(0x, 1);  
+  await invitationContract.onlyOwnerInvite(0x, 1);  
+  await invitationContract.onlyOwnerInvite(0x, 1);  
+  await invitationContract.onlyOwnerInvite(0x, 1);
+
+  //activits
+
+  await invitationContract.onlyOwnerInvite(0x, 1);
+  await invitationContract.onlyOwnerInvite(0x, 1);  
+
+  //developers
+
+  await invitationContract.onlyOwnerInvite(0x, 1);  
+  await invitationContract.onlyOwnerInvite(0x, 1);  
+  await invitationContract.onlyOwnerInvite(0x, 1);  
+  await invitationContract.onlyOwnerInvite(0x, 1);  
+
+  //researchers
+
+  await invitationContract.onlyOwnerInvite(0x, 1);  
+  await invitationContract.onlyOwnerInvite(0x, 1);
+  await invitationContract.onlyOwnerInvite(0x, 1);
+    
+  // await invitationContract.renounceOwnership();
+} 
+
+async function transferTokens() {
+  const regenerationCredit = await getDeployedContract("RegenerationCredit");
+
+  await regenerationCredit.transfer(0x000000000000000, amount);
+}
+
 module.exports = afterDeploy;
