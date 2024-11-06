@@ -358,29 +358,29 @@ async function inviteUsers() {
   
 
   //inspectors
-  await invitationContract.onlyOwnerInvite(0x, 1);
-  await invitationContract.onlyOwnerInvite(0x, 1);  
-  await invitationContract.onlyOwnerInvite(0x, 1);  
-  await invitationContract.onlyOwnerInvite(0x, 1);  
-  await invitationContract.onlyOwnerInvite(0x, 1);
+  await invitationContract.onlyOwnerInvite(0x000000000000, 1);
+  await invitationContract.onlyOwnerInvite(0x000000000000, 1);  
+  await invitationContract.onlyOwnerInvite(0x000000000000, 1);  
+  await invitationContract.onlyOwnerInvite(0x000000000000, 1);  
+  await invitationContract.onlyOwnerInvite(0x000000000000, 1);
 
   //activits
 
-  await invitationContract.onlyOwnerInvite(0x, 1);
-  await invitationContract.onlyOwnerInvite(0x, 1);  
+  await invitationContract.onlyOwnerInvite(0x000000000000, 1);
+  await invitationContract.onlyOwnerInvite(0x000000000000, 1);  
 
   //developers
 
-  await invitationContract.onlyOwnerInvite(0x, 1);  
-  await invitationContract.onlyOwnerInvite(0x, 1);  
-  await invitationContract.onlyOwnerInvite(0x, 1);  
-  await invitationContract.onlyOwnerInvite(0x, 1);  
+  await invitationContract.onlyOwnerInvite(0x000000000000, 1);  
+  await invitationContract.onlyOwnerInvite(0x000000000000, 1);  
+  await invitationContract.onlyOwnerInvite(0x000000000000, 1);  
+  await invitationContract.onlyOwnerInvite(0x000000000000, 1);  
 
   //researchers
 
-  await invitationContract.onlyOwnerInvite(0x, 1);  
-  await invitationContract.onlyOwnerInvite(0x, 1);
-  await invitationContract.onlyOwnerInvite(0x, 1);
+  await invitationContract.onlyOwnerInvite(0x000000000000, 1);  
+  await invitationContract.onlyOwnerInvite(0x000000000000, 1);
+  await invitationContract.onlyOwnerInvite(0x000000000000, 1);
     
   // await invitationContract.renounceOwnership();
 } 
@@ -388,7 +388,29 @@ async function inviteUsers() {
 async function transferTokens() {
   const regenerationCredit = await getDeployedContract("RegenerationCredit");
 
-  await regenerationCredit.transfer(0x000000000000000, amount);
+  //pre-sale investors
+  await regenerationCredit.transfer(0x3350933c9063c68Af77c82568Da6E551A70C038d, 1560000);
+  await regenerationCredit.transfer(0x10deA15bA7B214Df3Cf019a263b897cA8c2fe8CB, 14184);
+  await regenerationCredit.transfer(0x45B4f45225F5c839Db779970627153ab69B9E453, 1063830);
+  await regenerationCredit.transfer(0xe2F72B078254E83cE94CC711C3E672E267E2dA69, 70922);
+  await regenerationCredit.transfer(0x9E78167097d77cbFBDcF18E89E55A660eE977Dbf, 53191);
+  await regenerationCredit.transfer(0x10584a75402fBbB9D2b9239078f8C94fFDed5E1e, 70922);
+  await regenerationCredit.transfer(0xc38eF1d3b5915c22CFe9Ec3FC11F953EE4751768, 1773050);
+  await regenerationCredit.transfer(0x835dbFd7ac5Db0C556A4416b62B6B67Cb05FDf88, 531915);
+  await regenerationCredit.transfer(0x05A6129c3f77db419bD85A6315b95691b212456D, 354610);
+  await regenerationCredit.transfer(0x6202401216350f2266c090AA0d1Ca58bAA57fA8E, 354610);
+  await regenerationCredit.transfer(0x8b92474120e7D586C8F570902E0e4F5967368597, 354610);
+  await regenerationCredit.transfer(0x3e49Ee483A2289946D4992b3A8eEe7aa03e2615B, 177305);
+  await regenerationCredit.transfer(0xa16c1B21487281AaFe1Ee64A8385f92afE91bfe6, 354610);
+  await regenerationCredit.transfer(0x64b15d21c04acd6b9febded3117829f13e475331, 177305);
+  await regenerationCredit.transfer(0x95c4F371055F2c5a130Da0e78B3DF54e7028331e, 106383);
+  await regenerationCredit.transfer(0x68CD2862072381F62cfa25701c450B6842690ccB, 100000);
+  await regenerationCredit.transfer(0xcDeCe2eEFe17dDb09aD3664b8910e66A17b907F4, 90426);
+  await regenerationCredit.transfer(0x1f9B196DA7B2813b3D0C7442E5Ba4C36a7a8E736, 35461);
+  await regenerationCredit.transfer(0x25822ca8524Fcd0D7446b167413CE71880A69f43, 17730);
+  await regenerationCredit.transfer(0xd672Bbff8726AAD5Df56DDB5f9f8719022DE50cA, 35461);
+  await regenerationCredit.transfer(0xaD611ba99d45aF2aA7868FC7DFB346f062a1Dac3, 35461);
+  await regenerationCredit.transfer(0xFbF12d63D54b9a9cC68ff2aBFc71EE3567C57B70, 10638);
 }
 
 module.exports = afterDeploy;
