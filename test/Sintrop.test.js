@@ -254,12 +254,14 @@ describe("Sintrop", () => {
       inspectorMaxPenalties
     );
 
+    const researcherSecuryBlocksToAnalysis = 10;
     researcherContract = await researcherContractFactory.deploy(
       userContract.target,
       researcherPool.target,
       validatorContract.target,
       timeBetweenWorks,
-      researcherMaxPenalties
+      researcherMaxPenalties,
+      researcherSecuryBlocksToAnalysis
     );
 
     producerContract = await producerContractFactory.deploy(userContract.target, producerPool.target);

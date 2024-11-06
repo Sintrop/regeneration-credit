@@ -17,8 +17,10 @@ describe("ContributorContract", (accounts) => {
     totalTokens: "7500000000000000000000000",
     halving: 12,
     totalEras: 96,
-    blocksPerEra: 20,
+    blocksPerEra: 30,
   };
+
+  const securityBlocksToValidatorAnalysis = 10;
 
   const addContributor = async (name, from) => {
     await instance.connect(from).addContributor(name, "photoURL");
@@ -43,7 +45,11 @@ describe("ContributorContract", (accounts) => {
     );
 
     contributorContractFactory = await ethers.getContractFactory("ContributorContract");
-    instance = await contributorContractFactory.deploy(userContract.target, contributorPool.target);
+    instance = await contributorContractFactory.deploy(
+      userContract.target,
+      contributorPool.target,
+      securityBlocksToValidatorAnalysis
+    );
 
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
@@ -141,57 +147,71 @@ describe("ContributorContract", (accounts) => {
     });
 
     context("with contributor", () => {
-      context("when already has contribution", () => {
+      context("when have time to validator analysis", () => {
+        context("when already has contribution", () => {
+          beforeEach(async () => {
+            await instance.connect(contr1Address).addContribution("report");
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(contr1Address).addContribution("report")).to.be.revertedWith(
+              "Already has contribution"
+            );
+          });
+        });
+
+        context("when don't have contribution", () => {
+          beforeEach(async () => {
+            await instance.connect(contr1Address).addContribution("report");
+          });
+
+          it("add contribution id", async () => {
+            const construbution = await instance.contributions(1, contr1Address);
+
+            expect(construbution.id).to.equal(1);
+          });
+
+          it("add contribution", async () => {
+            const construbution = await instance.contributions(1, contr1Address);
+
+            expect(construbution.report).to.equal("report");
+          });
+
+          it("add level to contributor", async () => {
+            const contributor = await instance.getContributor(contr1Address);
+
+            expect(contributor.pool.level).to.equal(1);
+          });
+
+          it("add level to era", async () => {
+            const eraLevels = await contributorPool.eraLevels(1, contr1Address);
+
+            expect(eraLevels).to.equal(1);
+          });
+
+          it("add user to contribution", async () => {
+            const construbution = await instance.contributions(1, contr1Address);
+
+            expect(construbution.user).to.equal(contr1Address.address);
+          });
+
+          it("increment contributiosCount", async () => {
+            const contributionsCount = await instance.contributionsCount();
+
+            expect(contributionsCount).to.equal(1);
+          });
+        });
+      });
+
+      context("when do not have time to validator analysis", () => {
         beforeEach(async () => {
-          await instance.connect(contr1Address).addContribution("report");
+          await advanceBlock(20);
         });
 
         it("should return error message", async () => {
           await expect(instance.connect(contr1Address).addContribution("report")).to.be.revertedWith(
-            "Already has contribution"
+            "Wait until next era to add contribution"
           );
-        });
-      });
-
-      context("when don't have contribution", () => {
-        beforeEach(async () => {
-          await instance.connect(contr1Address).addContribution("report");
-        });
-
-        it("add contribution id", async () => {
-          const construbution = await instance.contributions(1, contr1Address);
-
-          expect(construbution.id).to.equal(1);
-        });
-
-        it("add contribution", async () => {
-          const construbution = await instance.contributions(1, contr1Address);
-
-          expect(construbution.report).to.equal("report");
-        });
-
-        it("add level to contributor", async () => {
-          const contributor = await instance.getContributor(contr1Address);
-
-          expect(contributor.pool.level).to.equal(1);
-        });
-
-        it("add level to era", async () => {
-          const eraLevels = await contributorPool.eraLevels(1, contr1Address);
-
-          expect(eraLevels).to.equal(1);
-        });
-
-        it("add user to contribution", async () => {
-          const construbution = await instance.contributions(1, contr1Address);
-
-          expect(construbution.user).to.equal(contr1Address.address);
-        });
-
-        it("increment contributiosCount", async () => {
-          const contributionsCount = await instance.contributionsCount();
-
-          expect(contributionsCount).to.equal(1);
         });
       });
     });
