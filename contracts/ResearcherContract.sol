@@ -9,8 +9,8 @@ import { ResearcherPool } from "./ResearcherPool.sol";
 import { ValidatorContract } from "./ValidatorContract.sol";
 
 /**
- * @title ResearcherContract
  * @author Sintrop
+ * @title ResearcherContract
  * @dev Manage researchers rules and data
  * @notice Responsible for developing evaluation methodologies
  */

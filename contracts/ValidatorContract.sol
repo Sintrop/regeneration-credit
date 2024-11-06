@@ -17,8 +17,8 @@ import { Contribution } from "./types/DeveloperTypes.sol";
 import { Work } from "./types/ResearcherTypes.sol";
 
 /**
- * @title ValidatorContract
  * @author Sintrop
+ * @title ValidatorContract
  * @dev Manage validators rules and data
  * @notice Responsible for reviewing and voting to invalidate wrong or corrupted actions
  */

@@ -6,8 +6,8 @@ import { UserContract } from "./UserContract.sol";
 import { UserType } from "./types/UserTypes.sol";
 
 /**
- * @title InvitationContract
  * @author Sintrop
+ * @title InvitationContract
  * @dev Manage logic to allow users invite others
  */
 contract InvitationContract is Ownable {

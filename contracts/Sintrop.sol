@@ -17,8 +17,8 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Callable } from "./Callable.sol";
 
 /**
- * @title SintropContract
  * @author Sintrop
+ * @title SintropContract
  * @dev Manage inspections rules and data
  * @notice Allow producer to request inspection, and inspectors to accept and realize it
  */

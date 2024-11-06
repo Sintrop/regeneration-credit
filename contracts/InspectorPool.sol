@@ -10,8 +10,8 @@ import { Callable } from "./Callable.sol";
 import { Poolable } from "./Poolable.sol";
 
 /**
- * @title InspectorPool
  * @author Sintrop
+ * @title InspectorPool
  * @dev InspectorPool is a contract to reward inspectors
  * @notice Receive tokens for inspection service provided
  */

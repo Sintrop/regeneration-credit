@@ -8,8 +8,8 @@ import { UserType } from "./types/UserTypes.sol";
 import { InspectorPool } from "./InspectorPool.sol";
 
 /**
- * @title InspectorContract
  * @author Sintrop
+ * @title InspectorContract
  * @dev Manage inspectors rules and data
  * @notice Responsible for collecting producers data
  */

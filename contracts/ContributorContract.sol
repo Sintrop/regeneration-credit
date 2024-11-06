@@ -9,8 +9,8 @@ import { Contributor, Pool, Contribution } from "./types/ContributorTypes.sol";
 import { Callable } from "./Callable.sol";
 
 /**
- * @title ContributorContract
  * @author Sintrop
+ * @title ContributorContract
  * @dev Manage contributors rules and data
  * @notice User type to perform generic contributions to the project
  */

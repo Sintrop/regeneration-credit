@@ -10,8 +10,8 @@ import { ValidatorContract } from "./ValidatorContract.sol";
 import { Developer, Pool, Contribution, Penalty } from "./types/DeveloperTypes.sol";
 
 /**
- * @title DeveloperContract
  * @author Sintrop
+ * @title DeveloperContract
  * @dev Manage developers rules and data
  * @notice Responsible for the development of the project
  */
