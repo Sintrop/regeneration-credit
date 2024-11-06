@@ -84,7 +84,7 @@ describe("ValidatorContract", () => {
     totalTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
-    blocksPerEra: 30,
+    blocksPerEra: 40,
   };
 
   const activistPoolArgs = {
@@ -268,8 +268,13 @@ describe("ValidatorContract", () => {
       developerSecuryBlocksToAnalysis
     );
 
+    const contributorSecuryBlocksToAnalysis = 10;
     contributorContractFactory = await ethers.getContractFactory("ContributorContract");
-    contributorContract = await contributorContractFactory.deploy(userContract.target, contributorPool.target);
+    contributorContract = await contributorContractFactory.deploy(
+      userContract.target,
+      contributorPool.target,
+      contributorSecuryBlocksToAnalysis
+    );
 
     const reseacherMaxPenalties = 3;
     const reseacherTimeBetweenWorks = 10;
