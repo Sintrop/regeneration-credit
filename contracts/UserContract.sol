@@ -6,8 +6,8 @@ import { UserType, Delation, Invitation, UserTypeSetting } from "./types/UserTyp
 import { Callable } from "./Callable.sol";
 
 /**
- * @title UserContract
  * @author Sintrop
+ * @title UserContract
  * @dev Users registration system
  */
 contract UserContract is Ownable, Callable {

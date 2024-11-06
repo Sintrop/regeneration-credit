@@ -8,8 +8,8 @@ import { ProducerPool } from "./ProducerPool.sol";
 import { UserType } from "./types/UserTypes.sol";
 
 /**
- * @title ProducerContract
  * @author Sintrop
+ * @title ProducerContract
  * @dev Manage producer user logic.
  * @notice Person, family or a group of peolpe that are restoring nature
  */
