@@ -749,6 +749,25 @@ describe("ValidatorContract", () => {
       });
     });
 
+    context("when validator already voted to inspection", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator3Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator4Address, userTypes.Validator, owner);
+        await addValidator(validator1Address);
+        await addValidator(validator2Address);
+        await addValidator(validator3Address);
+        await addValidator(validator4Address);
+        await instance.connect(validator1Address).addUserValidation(validator4Address, "justification");
+      });
+
+      it("should return error", async () => {
+        await expect(
+          instance.connect(validator1Address).addUserValidation(validator4Address, "justification")
+        ).to.be.revertedWith("Already voted");
+      });
+    });
+
     context("when is not a registered user", () => {
       it("should return error", async () => {
         await addInvitation(owner, validator2Address, userTypes.Validator, owner);
