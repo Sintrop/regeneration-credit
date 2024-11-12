@@ -171,64 +171,132 @@ describe("ProducerPool", () => {
       });
 
       context("when can approve", () => {
-        context("when totalScores is 0", () => {
-          beforeEach(async () => {
-            await advanceBlock(args.blocksPerEra);
-          });
-
-          it("balanceOf must be 0", async () => {
-            await instance.withdraw(producer1Address, 1);
-            const balanceOf = await regenerationCredit.balanceOf(producer1Address);
-
-            expect(balanceOf).to.equal(0);
-          });
-        });
-
-        context("when totalScores is 80", () => {
-          context("when producer1 have 80 isaScore", () => {
+        context("when is epoch 1", () => {
+          context("when totalScores is 0", () => {
             beforeEach(async () => {
-              await instance.addLevel(producer1Address, 80, 80);
               await advanceBlock(args.blocksPerEra);
             });
 
-            it("must withdraw 30000000000000000000000000 of tokens", async () => {
+            it("balanceOf must be 0", async () => {
               await instance.withdraw(producer1Address, 1);
               const balanceOf = await regenerationCredit.balanceOf(producer1Address);
 
-              expect(balanceOf).to.equal(30000000000000000000000000n);
+              expect(balanceOf).to.equal(0);
+            });
+          });
+
+          context("when totalScores is 80", () => {
+            context("when producer1 have 80 isaScore", () => {
+              beforeEach(async () => {
+                await instance.addLevel(producer1Address, 80, 80);
+                await advanceBlock(args.blocksPerEra);
+              });
+
+              it("must withdraw 30000000000000000000000000 of tokens", async () => {
+                await instance.withdraw(producer1Address, 1);
+                const balanceOf = await regenerationCredit.balanceOf(producer1Address);
+
+                expect(balanceOf).to.equal(30000000000000000000000000n);
+              });
+
+              it("total locked must be 750000000000000000000000000 - 30000000000000000000000000 = ", async () => {
+                await instance.withdraw(producer1Address, 1);
+                const totalLocked = await regenerationCredit.totalLocked();
+
+                expect(totalLocked).to.equal(720000000000000000000000000n);
+              });
+            });
+          });
+
+          context("when totalScores is 125", () => {
+            beforeEach(async () => {
+              await instance.addLevel(producer1Address, 80, 80);
+              await instance.addLevel(producer2Address, 45, 45);
+              await advanceBlock(args.blocksPerEra);
             });
 
-            it("total locked must be 750000000000000000000000000 - 30000000000000000000000000 = ", async () => {
-              await instance.withdraw(producer1Address, 1);
-              const totalLocked = await regenerationCredit.totalLocked();
+            context("when producer1 have 80 isaScore", () => {
+              it("must withdraw 19200000000000000000000000 of tokens", async () => {
+                await instance.withdraw(producer1Address, 1);
+                const balanceOf = await regenerationCredit.balanceOf(producer1Address);
 
-              expect(totalLocked).to.equal(720000000000000000000000000n);
+                expect(balanceOf).to.equal(19200000000000000000000000n);
+              });
+            });
+
+            context("when producer2 have 45 isaScore", () => {
+              it("must withdraw 10800000000000000000000000 tokens", async () => {
+                await instance.withdraw(producer2Address, 1);
+                const balanceOf = await regenerationCredit.balanceOf(producer2Address);
+
+                expect(balanceOf).to.equal(10800000000000000000000000n);
+              });
             });
           });
         });
 
-        context("when totalScores is 125", () => {
-          beforeEach(async () => {
-            await instance.addLevel(producer1Address, 80, 80);
-            await instance.addLevel(producer2Address, 45, 45);
-            await advanceBlock(args.blocksPerEra);
-          });
+        context("when is epoch 2", () => {
+          context("when producer is in era 1 yet", () => {
+            context("when totalScores is 0", () => {
+              beforeEach(async () => {
+                await advanceBlock(args.blocksPerEra);
+              });
 
-          context("when producer1 have 80 isaScore", () => {
-            it("must withdraw 19200000000000000000000000 of tokens", async () => {
-              await instance.withdraw(producer1Address, 1);
-              const balanceOf = await regenerationCredit.balanceOf(producer1Address);
+              it("balanceOf must be 0", async () => {
+                await instance.withdraw(producer1Address, 1);
+                const balanceOf = await regenerationCredit.balanceOf(producer1Address);
 
-              expect(balanceOf).to.equal(19200000000000000000000000n);
+                expect(balanceOf).to.equal(0);
+              });
             });
-          });
 
-          context("when producer2 have 45 isaScore", () => {
-            it("must withdraw 10800000000000000000000000 tokens", async () => {
-              await instance.withdraw(producer2Address, 1);
-              const balanceOf = await regenerationCredit.balanceOf(producer2Address);
+            context("when totalScores is 80", () => {
+              context("when producer1 have 80 isaScore", () => {
+                beforeEach(async () => {
+                  await instance.addLevel(producer1Address, 80, 80);
+                  await advanceBlock(args.blocksPerEra * args.halving);
+                });
 
-              expect(balanceOf).to.equal(10800000000000000000000000n);
+                it("must withdraw 30000000000000000000000000 of tokens", async () => {
+                  await instance.withdraw(producer1Address, 1);
+                  const balanceOf = await regenerationCredit.balanceOf(producer1Address);
+
+                  expect(balanceOf).to.equal(30000000000000000000000000n);
+                });
+
+                it("total locked must be 750000000000000000000000000 - 30000000000000000000000000 = ", async () => {
+                  await instance.withdraw(producer1Address, 1);
+                  const totalLocked = await regenerationCredit.totalLocked();
+
+                  expect(totalLocked).to.equal(720000000000000000000000000n);
+                });
+              });
+            });
+
+            context("when totalScores is 125", () => {
+              beforeEach(async () => {
+                await instance.addLevel(producer1Address, 80, 80);
+                await instance.addLevel(producer2Address, 45, 45);
+                await advanceBlock(args.blocksPerEra * args.halving);
+              });
+
+              context("when producer1 have 80 isaScore", () => {
+                it("must withdraw 19200000000000000000000000 of tokens", async () => {
+                  await instance.withdraw(producer1Address, 1);
+                  const balanceOf = await regenerationCredit.balanceOf(producer1Address);
+
+                  expect(balanceOf).to.equal(19200000000000000000000000n);
+                });
+              });
+
+              context("when producer2 have 45 isaScore", () => {
+                it("must withdraw 10800000000000000000000000 tokens", async () => {
+                  await instance.withdraw(producer2Address, 1);
+                  const balanceOf = await regenerationCredit.balanceOf(producer2Address);
+
+                  expect(balanceOf).to.equal(10800000000000000000000000n);
+                });
+              });
             });
           });
         });
