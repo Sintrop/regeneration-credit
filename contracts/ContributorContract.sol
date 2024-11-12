@@ -9,8 +9,10 @@ import { Contributor, Pool, Contribution } from "./types/ContributorTypes.sol";
 import { Callable } from "./Callable.sol";
 
 /**
+ * @author Sintrop
  * @title ContributorContract
- * @dev Contributor resource that represent dev
+ * @dev Manage contributors rules and data
+ * @notice User type to perform generic contributions to the project
  */
 contract ContributorContract is Ownable, Callable {
   mapping(address => Contributor) public contributors;

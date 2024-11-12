@@ -8,6 +8,12 @@ import { UserType } from "./types/UserTypes.sol";
 import { ResearcherPool } from "./ResearcherPool.sol";
 import { ValidatorContract } from "./ValidatorContract.sol";
 
+/**
+ * @author Sintrop
+ * @title ResearcherContract
+ * @dev Manage researchers rules and data
+ * @notice Responsible for developing evaluation methodologies
+ */
 contract ResearcherContract is Callable {
   mapping(address => Researcher) internal researchers;
   mapping(uint256 => Work) public works;

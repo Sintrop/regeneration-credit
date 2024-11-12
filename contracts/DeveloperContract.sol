@@ -10,8 +10,10 @@ import { ValidatorContract } from "./ValidatorContract.sol";
 import { Developer, Pool, Contribution, Penalty } from "./types/DeveloperTypes.sol";
 
 /**
+ * @author Sintrop
  * @title DeveloperContract
- * @dev Developer resource that represent dev
+ * @dev Manage developers rules and data
+ * @notice Responsible for the development of the project
  */
 contract DeveloperContract is Ownable, Callable {
   mapping(address => Developer) public developers;

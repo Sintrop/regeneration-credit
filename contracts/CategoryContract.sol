@@ -9,7 +9,7 @@ import { Callable } from "./Callable.sol";
 /**
  * @author Sintrop
  * @title CategoryContract
- * @dev Category resource that is a part of Sintrop logic
+ * @dev Manage index categories and score
  */
 contract CategoryContract is Ownable, Callable {
   mapping(uint256 => Category) public categories;
