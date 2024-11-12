@@ -8,6 +8,12 @@ import { UserType } from "./types/UserTypes.sol";
 import { ResearcherPool } from "./ResearcherPool.sol";
 import { ValidatorContract } from "./ValidatorContract.sol";
 
+/**
+ * @author Sintrop
+ * @title ResearcherContract
+ * @dev Manage researchers rules and data
+ * @notice Responsible for developing evaluation methodologies
+ */
 contract ResearcherContract is Callable {
   mapping(address => Researcher) internal researchers;
   mapping(uint256 => Work) public works;
@@ -23,19 +29,22 @@ contract ResearcherContract is Callable {
   uint256 internal immutable timeBetweenWorks;
 
   uint256 public immutable MAX_PENALTIES;
+  uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
   constructor(
     address userContractAddress,
     address researcherPoolAddress,
     address validatorContractAddress,
     uint256 timeBetweenWorks_,
-    uint256 maxPenalties_
+    uint256 maxPenalties_,
+    uint256 securityBlocksToValidatorAnalysis
   ) {
     userContract = UserContract(userContractAddress);
     researcherPool = ResearcherPool(researcherPoolAddress);
     validatorContract = ValidatorContract(validatorContractAddress);
     timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
+    SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
 
   /**
@@ -95,6 +104,7 @@ contract ResearcherContract is Callable {
 
   function addWork(string memory title, string memory thesis, string memory file) public {
     require(userContract.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
+    require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add work");
     require(canPublishWork(msg.sender), "Can't publish yet");
 
     Researcher storage researcher = researchers[msg.sender];
@@ -186,5 +196,9 @@ contract ResearcherContract is Callable {
 
     bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
     return canPublish || lastPublishedAt == 0;
+  }
+
+  function nextEraIn() public view returns (uint256) {
+    return uint256(researcherPool.nextEraIn(researcherPoolEra()));
   }
 }

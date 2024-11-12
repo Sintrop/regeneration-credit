@@ -70,21 +70,21 @@ describe("ValidatorContract", () => {
     totalTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
-    blocksPerEra: 36,
+    blocksPerEra: 45,
   };
 
   let researcherPoolParams = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
-    blocksPerEra: 30,
+    blocksPerEra: 40,
   };
 
   let contributorPoolParams = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
-    blocksPerEra: 30,
+    blocksPerEra: 40,
   };
 
   const activistPoolArgs = {
@@ -258,26 +258,35 @@ describe("ValidatorContract", () => {
     instance = await validatorContractFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
     const developerMaxPenalties = 3;
+    const developerSecuryBlocksToAnalysis = 10;
     developerContractFactory = await ethers.getContractFactory("DeveloperContract");
     developerContract = await developerContractFactory.deploy(
       userContract.target,
       developerPool.target,
       instance.target,
-      developerMaxPenalties
+      developerMaxPenalties,
+      developerSecuryBlocksToAnalysis
     );
 
+    const contributorSecuryBlocksToAnalysis = 10;
     contributorContractFactory = await ethers.getContractFactory("ContributorContract");
-    contributorContract = await contributorContractFactory.deploy(userContract.target, contributorPool.target);
+    contributorContract = await contributorContractFactory.deploy(
+      userContract.target,
+      contributorPool.target,
+      contributorSecuryBlocksToAnalysis
+    );
 
     const reseacherMaxPenalties = 3;
     const reseacherTimeBetweenWorks = 10;
+    const researcherSecuryBlocksToAnalysis = 10;
     researcherContractFactory = await ethers.getContractFactory("ResearcherContract");
     researcherContract = await researcherContractFactory.deploy(
       userContract.target,
       researcherPool.target,
       instance.target,
       reseacherTimeBetweenWorks,
-      reseacherMaxPenalties
+      reseacherMaxPenalties,
+      researcherSecuryBlocksToAnalysis
     );
 
     const activistPoolFactory = await ethers.getContractFactory("ActivistPool");

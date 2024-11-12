@@ -6,7 +6,7 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 /**
  * @author Sintrop
  * @title Blockable
- * @dev Blockable is a contract to manage blocks eras
+ * @dev Contract to manage time, blocks and eras
  */
 contract Blockable {
   using SafeMath for uint256;

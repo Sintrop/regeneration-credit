@@ -8,8 +8,10 @@ import { ProducerPool } from "./ProducerPool.sol";
 import { UserType } from "./types/UserTypes.sol";
 
 /**
+ * @author Sintrop
  * @title ProducerContract
- * @dev Contract with the producer user logic. Producers must be projects that are restoring nature ecosystems.
+ * @dev Manage producer user logic.
+ * @notice Person, family or a group of peolpe that are restoring nature
  */
 contract ProducerContract is Callable {
   uint256 internal constant MINIMUM_INSPECTION_TO_POOL = 3;
@@ -31,8 +33,8 @@ contract ProducerContract is Callable {
 
   /**
    * @dev New producers registration
-   * @param name the name of the person or institution
-   * @param coordinates the coordinates of the producer
+   * @param name the name of the person or group
+   * @param coordinates the coordinates of the area
    * @param totalArea in hectares = 1 he = 10.000 m2
    */
   function addProducer(
@@ -110,6 +112,10 @@ contract ProducerContract is Callable {
     producers[addr].pendingInspection = state;
   }
 
+  /**
+   * @dev Check if a specific producer reached the maximum score
+   * @return a bool that represent if a producer is sustainable or not
+   */
   function isSustainable(address addr) public view returns (bool) {
     return producers[addr].isa.sustainable;
   }

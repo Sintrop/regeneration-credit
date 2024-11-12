@@ -10,8 +10,10 @@ import { ValidatorContract } from "./ValidatorContract.sol";
 import { Developer, Pool, Contribution, Penalty } from "./types/DeveloperTypes.sol";
 
 /**
+ * @author Sintrop
  * @title DeveloperContract
- * @dev Developer resource that represent dev
+ * @dev Manage developers rules and data
+ * @notice Responsible for the development of the project
  */
 contract DeveloperContract is Ownable, Callable {
   mapping(address => Developer) public developers;
@@ -28,17 +30,20 @@ contract DeveloperContract is Ownable, Callable {
   uint256 public contributionsCount;
 
   uint256 public immutable MAX_PENALTIES;
+  uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
   constructor(
     address userContractAddress,
     address developerPoolAddress,
     address validatorContractAddress,
-    uint256 maxPenalties_
+    uint256 maxPenalties_,
+    uint256 securityBlocksToValidatorAnalysis
   ) {
     userContract = UserContract(userContractAddress);
     developerPool = DeveloperPool(developerPoolAddress);
     validatorContract = ValidatorContract(validatorContractAddress);
     MAX_PENALTIES = maxPenalties_;
+    SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
 
   /**
@@ -64,6 +69,7 @@ contract DeveloperContract is Ownable, Callable {
 
   function addContribution(string memory report) public {
     require(userContract.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
+    require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add contribution");
 
     uint256 currentEra = developerPoolEra();
     bool contributionEra = developerContributionsEra[currentEra][msg.sender];
@@ -201,5 +207,9 @@ contract DeveloperContract is Ownable, Callable {
    */
   function developerPoolEra() internal view returns (uint256) {
     return developerPool.currentContractEra();
+  }
+
+  function nextEraIn() public view returns (uint256) {
+    return uint256(developerPool.nextEraIn(developerPoolEra()));
   }
 }

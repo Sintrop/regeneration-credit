@@ -12,7 +12,8 @@ import { Poolable } from "./Poolable.sol";
 /**
  * @author Sintrop
  * @title ActivistPool
- * @dev ActivistPool is a contract to reward activists
+ * @dev Manage reward to activists
+ * @notice Receive tokens for invitation service provided
  */
 contract ActivistPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;

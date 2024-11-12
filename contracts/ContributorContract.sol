@@ -9,8 +9,10 @@ import { Contributor, Pool, Contribution } from "./types/ContributorTypes.sol";
 import { Callable } from "./Callable.sol";
 
 /**
+ * @author Sintrop
  * @title ContributorContract
- * @dev Contributor resource that represent dev
+ * @dev Manage contributors rules and data
+ * @notice User type to perform generic contributions to the project
  */
 contract ContributorContract is Ownable, Callable {
   mapping(address => Contributor) public contributors;
@@ -23,10 +25,12 @@ contract ContributorContract is Ownable, Callable {
   address[] internal contributorsAddress;
   UserType private constant USER_TYPE = UserType.CONTRIBUTOR;
   uint256 public contributionsCount;
+  uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
-  constructor(address userContractAddress, address contributorPoolAddress) {
+  constructor(address userContractAddress, address contributorPoolAddress, uint256 securityBlocksToValidatorAnalysis) {
     userContract = UserContract(userContractAddress);
     contributorPool = ContributorPool(contributorPoolAddress);
+    SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
 
   /**
@@ -52,6 +56,7 @@ contract ContributorContract is Ownable, Callable {
 
   function addContribution(string memory report) public {
     require(userContract.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Only Contributor");
+    require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add contribution");
 
     uint256 currentEra = contributorPoolEra();
 
@@ -149,5 +154,9 @@ contract ContributorContract is Ownable, Callable {
    */
   function contributorPoolEra() internal view returns (uint256) {
     return contributorPool.currentContractEra();
+  }
+
+  function nextEraIn() public view returns (uint256) {
+    return uint256(contributorPool.nextEraIn(contributorPoolEra()));
   }
 }

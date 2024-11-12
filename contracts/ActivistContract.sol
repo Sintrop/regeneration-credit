@@ -7,6 +7,13 @@ import { UserType, Invitation } from "./types/UserTypes.sol";
 import { ActivistPool } from "./ActivistPool.sol";
 import { Callable } from "./Callable.sol";
 
+/**
+ * @author Sintrop
+ * @title ActivistContract
+ * @dev Manage activists rules and data
+ * @notice User responsible for inviting new producers and inspectors
+ */
+
 contract ActivistContract is Callable {
   mapping(address => Activist) internal activists;
   mapping(address => mapping(address => bool)) internal activistWonLevel;

@@ -12,7 +12,8 @@ import { Poolable } from "./Poolable.sol";
 /**
  * @author Sintrop
  * @title ContributorPool
- * @dev ContributorPool is a contract to reward contributors
+ * @dev Manage rewards to contributors
+ * @notice Receive tokens for generic service provided
  */
 contract ContributorPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;

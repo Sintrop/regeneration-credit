@@ -10,7 +10,8 @@ async function researcherContractDeploy() {
   const ResearcherContract = await ethers.getContractFactory("ResearcherContract");
 
   const timeBetweenWorks = process.env["RESEARCHER_TIME_BETWEEN_WORKS"];
-  const researcherMaxPenalties = process.env["DEVELOPER_MAX_PENALTIES"];
+  const researcherMaxPenalties = process.env["RESEARCHER_MAX_PENALTIES"];
+  const securityBlocksToValidatorAnalysis = process.env["RESEARCHER_SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS"];
 
   const args = [
     userContract.target,
@@ -18,6 +19,7 @@ async function researcherContractDeploy() {
     validatorContract.target,
     timeBetweenWorks,
     researcherMaxPenalties,
+    securityBlocksToValidatorAnalysis,
   ];
 
   const researcherContract = await ResearcherContract.deploy(...args);

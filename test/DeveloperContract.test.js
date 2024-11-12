@@ -26,7 +26,7 @@ describe("DeveloperContract", (accounts) => {
     totalTokens: "30000000000000000000000000",
     halving: 12,
     totalEras: 96,
-    blocksPerEra: 30,
+    blocksPerEra: 50,
   };
 
   const validatorPoolargs = {
@@ -49,6 +49,7 @@ describe("DeveloperContract", (accounts) => {
   };
 
   const maxPenalties = 3;
+  const securityBlocksToValidatorAnalysis = 10;
   const firstValidatorLimit = 8;
   const secondValidatorLimit = 14;
 
@@ -91,7 +92,8 @@ describe("DeveloperContract", (accounts) => {
       userContract.target,
       developerPool.target,
       validatorContract.target,
-      maxPenalties
+      maxPenalties,
+      securityBlocksToValidatorAnalysis
     );
 
     const validatorContractDependencies = {
@@ -250,6 +252,18 @@ describe("DeveloperContract", (accounts) => {
           const eraLevels = await developerPool.eraLevels(1, dev1Address);
 
           expect(eraLevels).to.equal(1);
+        });
+      });
+
+      context("when do not have security blocks to validator analysis", () => {
+        beforeEach(async () => {
+          await advanceBlock(25);
+        });
+
+        it("should return error message", async () => {
+          await expect(instance.connect(dev1Address).addContribution("report")).to.be.revertedWith(
+            "Wait until next era to add contribution"
+          );
         });
       });
     });
