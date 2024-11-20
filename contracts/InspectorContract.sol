@@ -34,11 +34,11 @@ contract InspectorContract is Callable {
   }
 
   /**
-   * @dev Allow a new registration of inspector
-   * @param name the name of the inspector
-   * @return a Inspector
+   * @dev Allows a user to attempt to register as an inspector
+   * @param name The name of the inspector
+   * @param proofPhoto Identity photo
    */
-  function addInspector(string memory name, string memory proofPhoto) public returns (Inspector memory) {
+  function addInspector(string memory name, string memory proofPhoto) public {
     Inspector memory inspector = Inspector(
       userContract.userTypesCount(USER_TYPE) + 1,
       msg.sender,
@@ -54,8 +54,6 @@ contract InspectorContract is Callable {
     inspectors[msg.sender] = inspector;
     inspectorsAddress.push(msg.sender);
     userContract.addUser(msg.sender, USER_TYPE);
-
-    return inspector;
   }
 
   function addPenalty(address addr, uint256 inspectionId) public mustBeAllowedCaller returns (uint256) {
@@ -120,6 +118,10 @@ contract InspectorContract is Callable {
     return inspectors[addr].totalInspections;
   }
 
+  /**
+   * @dev Adds a level to an inspector
+   * @param addr Inspector wallet
+   */
   function addLevel(address addr) internal {
     Inspector memory inspector = inspectors[addr];
     inspector.pool.level++;
@@ -130,6 +132,10 @@ contract InspectorContract is Callable {
     inspectorPool.addLevel(addr, 1, 1);
   }
 
+  /**
+   * @dev Remove pool levels from inspector
+   * @param addr Inspector wallet
+   */
   function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Inspector memory inspector = inspectors[addr];
 
@@ -158,10 +164,18 @@ contract InspectorContract is Callable {
     inspectors[addr].lastInspection = lastInspectionId;
   }
 
+  /**
+   * @dev Current inspectorPool era
+   * @return uint256 Return the current contract pool era
+   */
   function inspectorPoolEra() internal view returns (uint256) {
     return inspectorPool.currentContractEra();
   }
 
+  /**
+   * @dev Call withdraw function from inspectorPool to try to claim tokens
+   * @notice Withdraw regeneration credit from inspection service provided
+   */
   function withdraw() public {
     require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Pool only to inspectors");
 

@@ -42,6 +42,11 @@ contract ValidatorPool is Poolable, Blockable, Callable {
     return regenerationCredit.balanceOf(address(this));
   }
 
+/**
+ * @dev Called by the validator contract, this function calls the token contract to transfer the rewards
+ * @param delegate User address
+ * @param era User current era
+ */
   function withdraw(
     address delegate,
     uint256 era
@@ -55,6 +60,12 @@ contract ValidatorPool is Poolable, Blockable, Callable {
     regenerationCredit.transferWith(address(this), delegate, numTokens);
   }
 
+  /**
+   * @dev Called by the validator contract, function to increase validator level
+   * @param addr Validator wallet
+   * @param currentLevel Validator current level
+   * @param addLevels Levels to increase
+   */
   function addLevel(address addr, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
     addPoolLevel(addr, currentLevel, addLevels, currentContractEra());
   }

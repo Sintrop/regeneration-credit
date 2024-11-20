@@ -48,11 +48,11 @@ contract ResearcherContract is Callable {
   }
 
   /**
-   * @dev Allow a new register of researcher
-   * @param name the name of the researcher
-   * @return a Researcher
+   * @dev Allows a user to attempt to register as a researcher
+   * @param name The name of the researcher
+   * @param proofPhoto Identity photo
    */
-  function addResearcher(string memory name, string memory proofPhoto) public returns (Researcher memory) {
+  function addResearcher(string memory name, string memory proofPhoto) public {
     Researcher memory researcher = Researcher(
       userContract.userTypesCount(USER_TYPE) + 1,
       msg.sender,
@@ -66,8 +66,6 @@ contract ResearcherContract is Callable {
     researchers[msg.sender] = researcher;
     researchersAddress.push(msg.sender);
     userContract.addUser(msg.sender, USER_TYPE);
-
-    return researcher;
   }
 
   /**
@@ -102,6 +100,13 @@ contract ResearcherContract is Callable {
     return bytes(researchers[addr].name).length > 0;
   }
 
+  /**
+   * @dev Allows a contributor to attempt to publish a research report
+   * @notice Publish research before security blocks
+   * @param title Paper title
+   * @param thesis Short thesis description
+   * @param file Hash of the report file
+   */
   function addWork(string memory title, string memory thesis, string memory file) public {
     require(userContract.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add work");
@@ -145,6 +150,10 @@ contract ResearcherContract is Callable {
     works[work.id] = work;
   }
 
+  /**
+   * @dev Remove pool levels from researcher
+   * @param addr Researcher wallet
+   */
   function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Researcher memory researcher = researchers[addr];
 
@@ -173,6 +182,10 @@ contract ResearcherContract is Callable {
     return worksList;
   }
 
+  /**
+   * @dev Call withdraw function from researcherPool to try to claim tokens
+   * @notice Withdraw regeneration credit from research service provided
+   */
   function withdraw() public {
     require(userContract.userTypeIs(UserType.RESEARCHER, msg.sender), "Pool only to researchers");
 
@@ -186,6 +199,10 @@ contract ResearcherContract is Callable {
     researcherPool.withdraw(msg.sender, currentEra);
   }
 
+  /**
+   * @dev Current researcherPool era
+   * @return uint256 Return the current contract pool era
+   */
   function researcherPoolEra() internal view returns (uint256) {
     return researcherPool.currentContractEra();
   }

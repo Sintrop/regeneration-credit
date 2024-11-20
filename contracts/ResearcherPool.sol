@@ -46,6 +46,11 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
     return regenerationCredit.balanceOf(address(this));
   }
 
+/**
+ * @dev Called by the researcher contract, this function calls the token contract to transfer the rewards
+ * @param delegate User address
+ * @param era User current era
+ */
   function withdraw(
     address delegate,
     uint256 era
@@ -59,6 +64,12 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
     regenerationCredit.transferWith(address(this), delegate, numTokens);
   }
 
+  /**
+   * @dev Called by the researcher contract, function to increase researcher level
+   * @param addr Researcher wallet
+   * @param currentLevel Researcher current level
+   * @param addLevels Levels to increase
+   */
   function addLevel(address addr, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 

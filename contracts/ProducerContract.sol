@@ -32,10 +32,11 @@ contract ProducerContract is Callable {
   }
 
   /**
-   * @dev New producers registration
-   * @param name the name of the person or group
-   * @param coordinates the coordinates of the area
+   * @dev Allows a user to attempt to register as a producer
+   * @param name The name of the producer
+   * @param proofPhoto Identity photo
    * @param totalArea in hectares = 1 he = 10.000 m2
+   * @param coordinates the coordinates of the producer area
    */
   function addProducer(
     uint256 totalArea,
@@ -81,6 +82,10 @@ contract ProducerContract is Callable {
     return producers[addr];
   }
 
+  /**
+   * @dev Call withdraw function from producerPool to try to claim tokens
+   * @notice Withdraw regeneration credit from regeneration service provided
+   */
   function withdraw() public {
     require(userContract.userTypeIs(UserType.PRODUCER, msg.sender), "Only producers pool");
 
@@ -155,6 +160,10 @@ contract ProducerContract is Callable {
     producerPool.removeLevel(producer.producerWallet, uint256(-(isaScore)));
   }
 
+  /**
+   * @dev Remove pool levels from producer
+   * @param addr Producer wallet
+   */
   function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Producer memory producer = producers[addr];
 
@@ -207,6 +216,10 @@ contract ProducerContract is Callable {
     producers[addr].lastRequestAt = blocksNumber;
   }
 
+  /**
+   * @dev Current producerPool era
+   * @return uint256 Return the current contract pool era
+   */
   function producerPoolEra() public view returns (uint256) {
     return producerPool.currentContractEra();
   }
