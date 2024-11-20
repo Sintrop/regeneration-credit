@@ -324,57 +324,82 @@ describe("DeveloperPool", () => {
   describe("#withdraw", () => {
     context("with allowed caller", () => {
       context("when can withdraw", () => {
-        context("when is era 1", () => {
-          context("when total of levels in era is 6", () => {
-            context("when dev1 have 3 levels in era 1", () => {
-              beforeEach(async () => {
-                await instance.addLevel(dev1Address, 1, 1);
-                await instance.addLevel(dev1Address, 1, 1);
-                await instance.addLevel(dev1Address, 1, 1);
+        context("when is epoch 1", () => {
+          context("when is era 1", () => {
+            context("when total of levels in era is 6", () => {
+              context("when dev1 have 3 levels in era 1", () => {
+                beforeEach(async () => {
+                  await instance.addLevel(dev1Address, 1, 1);
+                  await instance.addLevel(dev1Address, 1, 1);
+                  await instance.addLevel(dev1Address, 1, 1);
 
-                await instance.addLevel(dev2Address, 1, 1);
-                await instance.addLevel(dev2Address, 1, 1);
-                await instance.addLevel(dev2Address, 1, 1);
+                  await instance.addLevel(dev2Address, 1, 1);
+                  await instance.addLevel(dev2Address, 1, 1);
+                  await instance.addLevel(dev2Address, 1, 1);
 
-                await advanceBlock(args.blocksPerEra);
+                  await advanceBlock(args.blocksPerEra);
+                });
+
+                it("must withdraw 600000000000000000000000 tokens", async () => {
+                  await instance.withdraw(dev1Address, 1);
+                  const balanceOf = await regenerationCredit.balanceOf(dev1Address);
+
+                  expect(balanceOf).to.equal(600000000000000000000000n);
+                });
               });
 
-              it("must withdraw 600000000000000000000000 tokens", async () => {
-                await instance.withdraw(dev1Address, 1);
-                const balanceOf = await regenerationCredit.balanceOf(dev1Address);
+              context("when dev1 have 6 levels in era 1", () => {
+                beforeEach(async () => {
+                  await instance.addLevel(dev1Address, 1, 1);
+                  await instance.addLevel(dev1Address, 1, 1);
+                  await instance.addLevel(dev1Address, 1, 1);
+                  await instance.addLevel(dev1Address, 1, 1);
+                  await instance.addLevel(dev1Address, 1, 1);
+                  await instance.addLevel(dev1Address, 1, 1);
 
-                expect(balanceOf).to.equal(600000000000000000000000n);
+                  await advanceBlock(args.blocksPerEra);
+                });
+
+                it("shoud withdraw 1200000000000000000000000 tokens", async () => {
+                  await instance.withdraw(dev1Address, 1);
+                  const balanceOf = await regenerationCredit.balanceOf(dev1Address);
+
+                  expect(balanceOf).to.equal(1200000000000000000000000n);
+                });
+
+                it("shoud withdraw 0 tokens to dev2", async () => {
+                  await instance.withdraw(dev2Address, 1);
+                  const balanceOf = await regenerationCredit.balanceOf(dev2Address);
+
+                  expect(balanceOf).to.equal("0");
+                });
+              });
+
+              context("when dev2 have 3 levels in era 1", () => {
+                beforeEach(async () => {
+                  await instance.addLevel(dev1Address, 1, 1);
+                  await instance.addLevel(dev1Address, 1, 1);
+                  await instance.addLevel(dev1Address, 1, 1);
+
+                  await instance.addLevel(dev2Address, 1, 1);
+                  await instance.addLevel(dev2Address, 1, 1);
+                  await instance.addLevel(dev2Address, 1, 1);
+
+                  await advanceBlock(args.blocksPerEra);
+                });
+
+                it("shoud withdraw 600000000000000000000000 tokens", async () => {
+                  await instance.withdraw(dev2Address, 1);
+                  const balanceOf = await regenerationCredit.balanceOf(dev2Address);
+
+                  expect(balanceOf).to.equal(600000000000000000000000n);
+                });
               });
             });
+          });
 
-            context("when dev1 have 6 levels in era 1", () => {
-              beforeEach(async () => {
-                await instance.addLevel(dev1Address, 1, 1);
-                await instance.addLevel(dev1Address, 1, 1);
-                await instance.addLevel(dev1Address, 1, 1);
-                await instance.addLevel(dev1Address, 1, 1);
-                await instance.addLevel(dev1Address, 1, 1);
-                await instance.addLevel(dev1Address, 1, 1);
-
-                await advanceBlock(args.blocksPerEra);
-              });
-
-              it("shoud withdraw 1200000000000000000000000 tokens", async () => {
-                await instance.withdraw(dev1Address, 1);
-                const balanceOf = await regenerationCredit.balanceOf(dev1Address);
-
-                expect(balanceOf).to.equal(1200000000000000000000000n);
-              });
-
-              it("shoud withdraw 0 tokens to dev2", async () => {
-                await instance.withdraw(dev2Address, 1);
-                const balanceOf = await regenerationCredit.balanceOf(dev2Address);
-
-                expect(balanceOf).to.equal("0");
-              });
-            });
-
-            context("when dev2 have 3 levels in era 1", () => {
+          context("when is era 2", () => {
+            context("when dont have withdraw from era 1", () => {
               beforeEach(async () => {
                 await instance.addLevel(dev1Address, 1, 1);
                 await instance.addLevel(dev1Address, 1, 1);
@@ -384,100 +409,240 @@ describe("DeveloperPool", () => {
                 await instance.addLevel(dev2Address, 1, 1);
                 await instance.addLevel(dev2Address, 1, 1);
 
-                await advanceBlock(args.blocksPerEra);
+                await advanceBlock(8);
+
+                await instance.addLevel(dev1Address, 1, 1);
+                await instance.addLevel(dev1Address, 1, 1);
+                await instance.addLevel(dev1Address, 1, 1);
+
+                await instance.addLevel(dev2Address, 1, 1);
+                await instance.addLevel(dev2Address, 1, 1);
+                await instance.addLevel(dev2Address, 1, 1);
               });
 
-              it("shoud withdraw 600000000000000000000000 tokens", async () => {
-                await instance.withdraw(dev2Address, 1);
-                const balanceOf = await regenerationCredit.balanceOf(dev2Address);
+              context("when dev1 withdraw from era 1 and era 2", () => {
+                beforeEach(async () => {
+                  await instance.withdraw(dev1Address, 1);
+                  await instance.withdraw(dev1Address, 2);
 
-                expect(balanceOf).to.equal(600000000000000000000000n);
+                  await instance.withdraw(dev2Address, 1);
+                  await instance.withdraw(dev2Address, 2);
+                });
+
+                it("dev pool balance must be 27600000000000000000000000", async () => {
+                  const balance = await instance.balance();
+
+                  expect(balance).to.equal(27600000000000000000000000n);
+                });
+
+                it("dev1 balance must be 1200000000000000000000000", async () => {
+                  const balanceOf = await regenerationCredit.balanceOf(dev1Address);
+
+                  expect(balanceOf).to.equal(1200000000000000000000000n);
+                });
+
+                it("dev1 balance in era 1 must be 600000000000000000000000", async () => {
+                  const balanceOf = await instance.eraTokens(1, dev1Address);
+
+                  expect(balanceOf).to.equal(600000000000000000000000n);
+                });
+
+                it("dev1 balance in era 2 must be 600000000000000000000000", async () => {
+                  const balanceOf = await instance.eraTokens(2, dev1Address);
+
+                  expect(balanceOf).to.equal(600000000000000000000000n);
+                });
+              });
+
+              context("when dev2 withdraw from era 1 and era 2", () => {
+                beforeEach(async () => {
+                  await instance.withdraw(dev1Address, 1);
+                  await instance.withdraw(dev1Address, 2);
+
+                  await instance.withdraw(dev2Address, 1);
+                  await instance.withdraw(dev2Address, 2);
+                });
+
+                it("dev2 balance must be 1200000000000000000000000", async () => {
+                  const balanceOf = await regenerationCredit.balanceOf(dev2Address);
+
+                  expect(balanceOf).to.equal(1200000000000000000000000n);
+                });
+
+                it("dev2 balance in era 1 must be 600000000000000000000000", async () => {
+                  const balanceOf = await instance.eraTokens(1, dev2Address);
+
+                  expect(balanceOf).to.equal(600000000000000000000000n);
+                });
+
+                it("dev2 balance in era 2 must be 600000000000000000000000", async () => {
+                  const balanceOf = await instance.eraTokens(2, dev2Address);
+
+                  expect(balanceOf).to.equal(600000000000000000000000n);
+                });
               });
             });
           });
         });
 
-        context("when is era 2", () => {
-          context("when dont have withdraw from era 1", () => {
-            beforeEach(async () => {
-              await instance.addLevel(dev1Address, 1, 1);
-              await instance.addLevel(dev1Address, 1, 1);
-              await instance.addLevel(dev1Address, 1, 1);
+        context("when is epoch 1", () => {
+          context("when is era 1", () => {
+            context("when total of levels in era is 6", () => {
+              context("when dev1 have 3 levels in era 1", () => {
+                beforeEach(async () => {
+                  await instance.addLevel(dev1Address, 1, 1);
+                  await instance.addLevel(dev1Address, 1, 1);
+                  await instance.addLevel(dev1Address, 1, 1);
 
-              await instance.addLevel(dev2Address, 1, 1);
-              await instance.addLevel(dev2Address, 1, 1);
-              await instance.addLevel(dev2Address, 1, 1);
+                  await instance.addLevel(dev2Address, 1, 1);
+                  await instance.addLevel(dev2Address, 1, 1);
+                  await instance.addLevel(dev2Address, 1, 1);
 
-              await advanceBlock(8);
+                  await advanceBlock(args.blocksPerEra * args.halving);
+                });
 
-              await instance.addLevel(dev1Address, 1, 1);
-              await instance.addLevel(dev1Address, 1, 1);
-              await instance.addLevel(dev1Address, 1, 1);
+                it("must withdraw 600000000000000000000000 tokens", async () => {
+                  await instance.withdraw(dev1Address, 1);
+                  const balanceOf = await regenerationCredit.balanceOf(dev1Address);
 
-              await instance.addLevel(dev2Address, 1, 1);
-              await instance.addLevel(dev2Address, 1, 1);
-              await instance.addLevel(dev2Address, 1, 1);
+                  expect(balanceOf).to.equal(600000000000000000000000n);
+                });
+              });
+
+              context("when dev1 have 6 levels in era 1", () => {
+                beforeEach(async () => {
+                  await instance.addLevel(dev1Address, 1, 1);
+                  await instance.addLevel(dev1Address, 1, 1);
+                  await instance.addLevel(dev1Address, 1, 1);
+                  await instance.addLevel(dev1Address, 1, 1);
+                  await instance.addLevel(dev1Address, 1, 1);
+                  await instance.addLevel(dev1Address, 1, 1);
+
+                  await advanceBlock(args.blocksPerEra * args.halving);
+                });
+
+                it("shoud withdraw 1200000000000000000000000 tokens", async () => {
+                  await instance.withdraw(dev1Address, 1);
+                  const balanceOf = await regenerationCredit.balanceOf(dev1Address);
+
+                  expect(balanceOf).to.equal(1200000000000000000000000n);
+                });
+
+                it("shoud withdraw 0 tokens to dev2", async () => {
+                  await instance.withdraw(dev2Address, 1);
+                  const balanceOf = await regenerationCredit.balanceOf(dev2Address);
+
+                  expect(balanceOf).to.equal("0");
+                });
+              });
+
+              context("when dev2 have 3 levels in era 1", () => {
+                beforeEach(async () => {
+                  await instance.addLevel(dev1Address, 1, 1);
+                  await instance.addLevel(dev1Address, 1, 1);
+                  await instance.addLevel(dev1Address, 1, 1);
+
+                  await instance.addLevel(dev2Address, 1, 1);
+                  await instance.addLevel(dev2Address, 1, 1);
+                  await instance.addLevel(dev2Address, 1, 1);
+
+                  await advanceBlock(args.blocksPerEra * args.halving);
+                });
+
+                it("shoud withdraw 600000000000000000000000 tokens", async () => {
+                  await instance.withdraw(dev2Address, 1);
+                  const balanceOf = await regenerationCredit.balanceOf(dev2Address);
+
+                  expect(balanceOf).to.equal(600000000000000000000000n);
+                });
+              });
             });
+          });
 
-            context("when dev1 withdraw from era 1 and era 2", () => {
+          context("when is era 2", () => {
+            context("when dont have withdraw from era 1", () => {
               beforeEach(async () => {
-                await instance.withdraw(dev1Address, 1);
-                await instance.withdraw(dev1Address, 2);
+                await instance.addLevel(dev1Address, 1, 1);
+                await instance.addLevel(dev1Address, 1, 1);
+                await instance.addLevel(dev1Address, 1, 1);
 
-                await instance.withdraw(dev2Address, 1);
-                await instance.withdraw(dev2Address, 2);
+                await instance.addLevel(dev2Address, 1, 1);
+                await instance.addLevel(dev2Address, 1, 1);
+                await instance.addLevel(dev2Address, 1, 1);
+
+                await advanceBlock(8);
+
+                await instance.addLevel(dev1Address, 1, 1);
+                await instance.addLevel(dev1Address, 1, 1);
+                await instance.addLevel(dev1Address, 1, 1);
+
+                await instance.addLevel(dev2Address, 1, 1);
+                await instance.addLevel(dev2Address, 1, 1);
+                await instance.addLevel(dev2Address, 1, 1);
+
+                await advanceBlock(args.blocksPerEra * args.halving);
               });
 
-              it("dev pool balance must be 27600000000000000000000000", async () => {
-                const balance = await instance.balance();
+              context("when dev1 withdraw from era 1 and era 2", () => {
+                beforeEach(async () => {
+                  await instance.withdraw(dev1Address, 1);
+                  await instance.withdraw(dev1Address, 2);
 
-                expect(balance).to.equal(27600000000000000000000000n);
+                  await instance.withdraw(dev2Address, 1);
+                  await instance.withdraw(dev2Address, 2);
+                });
+
+                it("dev pool balance must be 27600000000000000000000000", async () => {
+                  const balance = await instance.balance();
+
+                  expect(balance).to.equal(27600000000000000000000000n);
+                });
+
+                it("dev1 balance must be 1200000000000000000000000", async () => {
+                  const balanceOf = await regenerationCredit.balanceOf(dev1Address);
+
+                  expect(balanceOf).to.equal(1200000000000000000000000n);
+                });
+
+                it("dev1 balance in era 1 must be 600000000000000000000000", async () => {
+                  const balanceOf = await instance.eraTokens(1, dev1Address);
+
+                  expect(balanceOf).to.equal(600000000000000000000000n);
+                });
+
+                it("dev1 balance in era 2 must be 600000000000000000000000", async () => {
+                  const balanceOf = await instance.eraTokens(2, dev1Address);
+
+                  expect(balanceOf).to.equal(600000000000000000000000n);
+                });
               });
 
-              it("dev1 balance must be 1200000000000000000000000", async () => {
-                const balanceOf = await regenerationCredit.balanceOf(dev1Address);
+              context("when dev2 withdraw from era 1 and era 2", () => {
+                beforeEach(async () => {
+                  await instance.withdraw(dev1Address, 1);
+                  await instance.withdraw(dev1Address, 2);
 
-                expect(balanceOf).to.equal(1200000000000000000000000n);
-              });
+                  await instance.withdraw(dev2Address, 1);
+                  await instance.withdraw(dev2Address, 2);
+                });
 
-              it("dev1 balance in era 1 must be 600000000000000000000000", async () => {
-                const balanceOf = await instance.eraTokens(1, dev1Address);
+                it("dev2 balance must be 1200000000000000000000000", async () => {
+                  const balanceOf = await regenerationCredit.balanceOf(dev2Address);
 
-                expect(balanceOf).to.equal(600000000000000000000000n);
-              });
+                  expect(balanceOf).to.equal(1200000000000000000000000n);
+                });
 
-              it("dev1 balance in era 2 must be 600000000000000000000000", async () => {
-                const balanceOf = await instance.eraTokens(2, dev1Address);
+                it("dev2 balance in era 1 must be 600000000000000000000000", async () => {
+                  const balanceOf = await instance.eraTokens(1, dev2Address);
 
-                expect(balanceOf).to.equal(600000000000000000000000n);
-              });
-            });
+                  expect(balanceOf).to.equal(600000000000000000000000n);
+                });
 
-            context("when dev2 withdraw from era 1 and era 2", () => {
-              beforeEach(async () => {
-                await instance.withdraw(dev1Address, 1);
-                await instance.withdraw(dev1Address, 2);
+                it("dev2 balance in era 2 must be 600000000000000000000000", async () => {
+                  const balanceOf = await instance.eraTokens(2, dev2Address);
 
-                await instance.withdraw(dev2Address, 1);
-                await instance.withdraw(dev2Address, 2);
-              });
-
-              it("dev2 balance must be 1200000000000000000000000", async () => {
-                const balanceOf = await regenerationCredit.balanceOf(dev2Address);
-
-                expect(balanceOf).to.equal(1200000000000000000000000n);
-              });
-
-              it("dev2 balance in era 1 must be 600000000000000000000000", async () => {
-                const balanceOf = await instance.eraTokens(1, dev2Address);
-
-                expect(balanceOf).to.equal(600000000000000000000000n);
-              });
-
-              it("dev2 balance in era 2 must be 600000000000000000000000", async () => {
-                const balanceOf = await instance.eraTokens(2, dev2Address);
-
-                expect(balanceOf).to.equal(600000000000000000000000n);
+                  expect(balanceOf).to.equal(600000000000000000000000n);
+                });
               });
             });
           });

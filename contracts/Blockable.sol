@@ -37,6 +37,10 @@ contract Blockable {
     return currentContractEra().div(HALVING).add(1);
   }
 
+  function currentUserEpoch(uint256 era) public view returns (uint256) {
+    return era.div(HALVING).add(1);
+  }
+
   function nextEraIn(uint256 currentUserEra) public view returns (int256) {
     return int256(DEPLOYED_AT) + (int256(BLOCKS_PER_ERA) * int256(currentUserEra)) - int256(currentBlockNumber());
   }
