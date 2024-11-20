@@ -46,7 +46,7 @@ contract ValidatorPool is Poolable, Blockable, Callable {
     address delegate,
     uint256 era
   ) public mustBeAllowedCaller canWithdrawModifier(era) isAValidEpochModifier {
-    uint256 numTokens = tokens(era, delegate, tokensPerEra(currentEpoch(), HALVING));
+    uint256 numTokens = tokens(era, delegate, tokensPerEra(currentUserEpoch(era), HALVING));
 
     updateEraAfterWithdraw(era, delegate, numTokens);
 

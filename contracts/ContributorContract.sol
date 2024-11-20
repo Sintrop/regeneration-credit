@@ -16,7 +16,7 @@ import { Callable } from "./Callable.sol";
  */
 contract ContributorContract is Ownable, Callable {
   mapping(address => Contributor) public contributors;
-  mapping(uint256 => mapping(address => bool)) public researcherContributionsEra;
+  mapping(uint256 => mapping(address => bool)) public contributorContributionsEra;
   mapping(uint256 => Contribution) public contributions;
 
   UserContract internal userContract;
@@ -60,10 +60,10 @@ contract ContributorContract is Ownable, Callable {
 
     uint256 currentEra = contributorPoolEra();
 
-    bool contributionEra = researcherContributionsEra[currentEra][msg.sender];
+    bool contributionEra = contributorContributionsEra[currentEra][msg.sender];
     require(!contributionEra, "Already has contribution");
 
-    researcherContributionsEra[currentEra][msg.sender] = true;
+    contributorContributionsEra[currentEra][msg.sender] = true;
 
     contributionsCount++;
     uint256 id = contributionsCount;
