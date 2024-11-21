@@ -58,7 +58,6 @@ module.exports = {
       },
     },
   },
-  docgen: {},
   gasReporter: {
     enabled: !!gasReportEnabled,
     currency: "USD",
