@@ -66,7 +66,7 @@ contract InspectorPool is Poolable, Ownable, Blockable, Callable {
   }
 
   /**
-   * @dev Called by the inspector contract, function to increase inspector level
+   * @dev Called by the inspector contract, function to increase inspector pool level
    * @param addr Inspector wallet
    * @param currentLevel Inspector current level
    * @param addLevels Levels to increase
@@ -77,6 +77,12 @@ contract InspectorPool is Poolable, Ownable, Blockable, Callable {
     addPoolLevel(addr, currentLevel, addLevels, era);
   }
 
+  /**
+   * @dev Called by the inspector contract, function to decrease inspector pool level
+   * @param addr Inspector wallet
+   * @param era Current pool era
+   * @param removeSomeLevels Levels to decrease
+   */
   function removePoolLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
     removeLevelsFromEra(addr, era, removeSomeLevels);
   }

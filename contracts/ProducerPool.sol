@@ -77,12 +77,23 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
     addPoolLevel(producer, currentLevel, addLevels, era);
   }
 
+  /**
+   * @dev Called by the producer contract, function to decrease producer regeneration level
+   * @param producer Producer wallet
+   * @param levels Levels to decrease
+   */
   function removeLevel(address producer, uint256 levels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 
     removeLevelsFromEra(producer, era, levels);
   }
 
+  /**
+   * @dev Called by the producer contract, function to decrease producer pool level
+   * @param addr Producer wallet
+   * @param era Current pool era
+   * @param removeSomeLevels Levels to decrease
+   */
   function removePoolLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
     removeLevelsFromEra(addr, era, removeSomeLevels);
   }

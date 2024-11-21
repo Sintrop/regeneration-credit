@@ -70,6 +70,12 @@ contract ValidatorPool is Poolable, Blockable, Callable {
     addPoolLevel(addr, currentLevel, addLevels, currentContractEra());
   }
 
+  /**
+   * @dev Called by the validator contract, function to decrease validator pool level
+   * @param addr Validator wallet
+   * @param era Current pool era
+   * @param removeSomeLevels Levels to decrease
+   */
   function removePoolLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
     removeLevelsFromEra(addr, era, removeSomeLevels);
   }

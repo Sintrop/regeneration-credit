@@ -35,7 +35,7 @@ contract CategoryContract is Ownable, Callable {
   }
 
   /**
-   * @dev add a new category
+   * @dev add a new index category
    * @param name Category name
    * @param description Category description
    * @param isasDescriptions IsasDescription[]
@@ -81,6 +81,11 @@ contract CategoryContract is Ownable, Callable {
     return categoryIsaDescriptions[categoryId];
   }
 
+  /**
+   * @dev Function to calculate the inspection score
+   * @param _isaInspections Inspection result provided by inspector
+   * @return inst256 Inspection score
+   */
   function calculateScore(IsaInspection[] memory _isaInspections) public view returns (int256) {
     int256 isaScore;
     Isa memory isa;
