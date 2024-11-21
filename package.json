@@ -10,6 +10,7 @@
     "deploy:zkevm": "npx hardhat run --network zkevm scripts/deploy.js",
     "deploy:holesky": "npx hardhat run --network holesky scripts/deploy.js",
     "coverage": "npx hardhat coverage",
+    "generate:docs": "npx solidity-docgen --solc-module solc",
     "ganache:start": "ganache-cli -d -m 'sintrop' -a 10 -e 200 -h 0.0.0.0",
     "solhint": "./node_modules/.bin/solhint -f table contracts/**/**/*.sol",
     "prettier:solidity": "./node_modules/.bin/prettier --write contracts/**/**/*.sol",
@@ -25,7 +26,8 @@
     "@openzeppelin/contracts": "^4.8.3",
     "dotenv": "^16.0.3",
     "eth-scribble": "^0.6.5",
-    "solidity-coverage": "^0.8.5"
+    "solidity-coverage": "^0.8.5",
+    "solidity-docgen": "^0.5.17"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
