@@ -15,7 +15,7 @@ contract Callable is Ownable {
   }
 
   modifier mustBeAllowedCaller() {
-    require(allowedCallers[msg.sender], "Not allowed caller");
+    require(allowedCallers[_msgSender()], "Not allowed caller");
     _;
   }
 }
