@@ -11,7 +11,7 @@ interface ProducerInterface {
     string documentType;
     bool pendingInspection;
     uint256 totalRequests;
-    int256 isaScore;
+    int256 regenerationScore;
     TokenApprove tokenApprove;
     AreaInformation areaInformation;
   }

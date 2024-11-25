@@ -487,10 +487,10 @@ describe("ValidatorContract", () => {
               expect(levels).to.equal(0);
             });
 
-            it("remove user isaScore from producer", async () => {
+            it("remove user regenerationScore from producer", async () => {
               const producer = await producerContract.getProducer(producer1Address);
 
-              expect(producer.isa.isaScore).to.equal(0);
+              expect(producer.regenerationScore.score).to.equal(0);
             });
           });
 
@@ -799,7 +799,7 @@ describe("ValidatorContract", () => {
             status: 3,
             producer: producer1Address,
             inspector: inspector1Address,
-            isaScore: 10,
+            regenerationScore: 10,
             proofPhoto: "",
             report: "",
             validationsCount: 0,
@@ -829,7 +829,7 @@ describe("ValidatorContract", () => {
                 status: 3,
                 producer: producer1Address,
                 inspector: inspector1Address,
-                isaScore: 20,
+                regenerationScore: 20,
                 proofPhoto: "",
                 report: "",
                 validationsCount: 2,
@@ -883,13 +883,13 @@ describe("ValidatorContract", () => {
               expect(producer.totalInspections).to.equal(2);
             });
 
-            it("remove inspection isa level from producer isaScore", async () => {
+            it("remove inspection regeneration score level from producer regenerationScore", async () => {
               const producer = await producerContract.getProducer(producer1Address);
 
-              expect(producer.isa.isaScore).to.equal(30);
+              expect(producer.regenerationScore.score).to.equal(30);
             });
 
-            it("remove inspection isa level from producer pool", async () => {
+            it("remove inspection regeneration score level from producer pool", async () => {
               const levels = await producerPool.eraLevels(3, producer1Address);
 
               expect(levels).to.equal(0);
@@ -903,7 +903,7 @@ describe("ValidatorContract", () => {
                 status: 3,
                 producer: producer1Address,
                 inspector: inspector1Address,
-                isaScore: 20,
+                regenerationScore: 20,
                 proofPhoto: "",
                 report: "",
                 validationsCount: 2,
@@ -956,13 +956,13 @@ describe("ValidatorContract", () => {
               expect(producer.totalInspections).to.equal(2);
             });
 
-            it("remove inspection isa level from producer isaScore", async () => {
+            it("remove inspection regeneration score level from producer regenerationScore", async () => {
               const producer = await producerContract.getProducer(producer1Address);
 
-              expect(producer.isa.isaScore).to.equal(30);
+              expect(producer.regenerationScore.score).to.equal(30);
             });
 
-            it("remove inspection isa level from producer pool", async () => {
+            it("remove inspection regeneration score level from producer pool", async () => {
               const levels = await producerPool.eraLevels(3, producer1Address);
 
               expect(levels).to.equal(0);
@@ -977,7 +977,7 @@ describe("ValidatorContract", () => {
               status: 3,
               producer: producer1Address,
               inspector: inspector1Address,
-              isaScore: 20,
+              regenerationScore: 20,
               proofPhoto: "",
               report: "",
               validationsCount: 1,
@@ -1118,7 +1118,7 @@ describe("ValidatorContract", () => {
               expect(newDeveloperType).to.equal(9);
             });
 
-            it("remove contribution isa level from developer pool", async () => {
+            it("remove contribution regeneration score level from developer pool", async () => {
               const levels = await developerPool.eraLevels(4, dev1Address);
 
               expect(levels).to.equal(0);
@@ -1150,7 +1150,7 @@ describe("ValidatorContract", () => {
               expect(newDeveloperType).to.equal(4);
             });
 
-            it("remove contribution isa level from developer pool", async () => {
+            it("remove contribution regeneration score level from developer pool", async () => {
               const levels = await developerPool.eraLevels(2, dev1Address);
 
               expect(levels).to.equal(0);
@@ -1282,7 +1282,7 @@ describe("ValidatorContract", () => {
               expect(newResearcherType).to.equal(9);
             });
 
-            it("remove work isa level from researcher pool", async () => {
+            it("remove work regeneration score level from researcher pool", async () => {
               const levels = await researcherPool.eraLevels(4, resea1Address);
 
               expect(levels).to.equal(0);
@@ -1310,7 +1310,7 @@ describe("ValidatorContract", () => {
               expect(userType).to.equal(3);
             });
 
-            it("remove contribution isa level from researcher pool", async () => {
+            it("remove contribution regeneration score level from researcher pool", async () => {
               let work = await researcherContract.works(1);
               const levels = await researcherPool.eraLevels(work.era, resea1Address);
 

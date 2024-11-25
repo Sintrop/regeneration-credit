@@ -7,12 +7,12 @@ struct Category {
   string description;
 }
 
-struct IsasDescription {
-  uint256 isaId;
+struct RegenerationIndexDescription {
+  uint256 regenerationIndexId;
   string description;
 }
 
-struct Isa {
-  string isaName;
-  int256 isaValue;
+struct RegenerationIndex {
+  string name;
+  int256 value;
 }

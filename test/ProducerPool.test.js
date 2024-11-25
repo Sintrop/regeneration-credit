@@ -186,7 +186,7 @@ describe("ProducerPool", () => {
           });
 
           context("when totalScores is 80", () => {
-            context("when producer1 have 80 isaScore", () => {
+            context("when producer1 have 80 regenerationScore", () => {
               beforeEach(async () => {
                 await instance.addLevel(producer1Address, 80, 80);
                 await advanceBlock(args.blocksPerEra);
@@ -215,7 +215,7 @@ describe("ProducerPool", () => {
               await advanceBlock(args.blocksPerEra);
             });
 
-            context("when producer1 have 80 isaScore", () => {
+            context("when producer1 have 80 regenerationScore", () => {
               it("must withdraw 19200000000000000000000000 of tokens", async () => {
                 await instance.withdraw(producer1Address, 1);
                 const balanceOf = await regenerationCredit.balanceOf(producer1Address);
@@ -224,7 +224,7 @@ describe("ProducerPool", () => {
               });
             });
 
-            context("when producer2 have 45 isaScore", () => {
+            context("when producer2 have 45 regenerationScore", () => {
               it("must withdraw 10800000000000000000000000 tokens", async () => {
                 await instance.withdraw(producer2Address, 1);
                 const balanceOf = await regenerationCredit.balanceOf(producer2Address);
@@ -251,7 +251,7 @@ describe("ProducerPool", () => {
             });
 
             context("when totalScores is 80", () => {
-              context("when producer1 have 80 isaScore", () => {
+              context("when producer1 have 80 regenerationScore", () => {
                 beforeEach(async () => {
                   await instance.addLevel(producer1Address, 80, 80);
                   await advanceBlock(args.blocksPerEra * args.halving);
@@ -280,7 +280,7 @@ describe("ProducerPool", () => {
                 await advanceBlock(args.blocksPerEra * args.halving);
               });
 
-              context("when producer1 have 80 isaScore", () => {
+              context("when producer1 have 80 regenerationScore", () => {
                 it("must withdraw 19200000000000000000000000 of tokens", async () => {
                   await instance.withdraw(producer1Address, 1);
                   const balanceOf = await regenerationCredit.balanceOf(producer1Address);
@@ -289,7 +289,7 @@ describe("ProducerPool", () => {
                 });
               });
 
-              context("when producer2 have 45 isaScore", () => {
+              context("when producer2 have 45 regenerationScore", () => {
                 it("must withdraw 10800000000000000000000000 tokens", async () => {
                   await instance.withdraw(producer2Address, 1);
                   const balanceOf = await regenerationCredit.balanceOf(producer2Address);
