@@ -10,7 +10,7 @@ import { ActivistContract } from "./ActivistContract.sol";
 import { UserContract } from "./UserContract.sol";
 import { InspectionStatus, RegenerationInspection, Inspection } from "./types/InspectionTypes.sol";
 import { Producer } from "./types/ProducerTypes.sol";
-import { Inspector } from "./types/InspectorTypes.sol"; 
+import { Inspector } from "./types/InspectorTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { ContractsDependency } from "./types/SintropTypes.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -84,7 +84,10 @@ contract Sintrop is Callable {
     require(userContract.userTypeIs(UserType.PRODUCER, msg.sender), "Please register as producer");
     require(!producer.pendingInspection, "Request already OPEN");
     require(waitToRequest(producer), "Wait to request");
-    require(!producer.regenerationScore.sustainable, "You can't request inspections anymore, you have completed your mission");
+    require(
+      !producer.regenerationScore.sustainable,
+      "You can't request inspections anymore, you have completed your mission"
+    );
 
     createInspection();
 

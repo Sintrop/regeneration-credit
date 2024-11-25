@@ -133,7 +133,11 @@ contract ProducerContract is Callable {
     if (regenerationScore < 0) removeRegenerationScore(producer, regenerationScore);
   }
 
-  function addRegenerationScore(Producer memory producer, int256 beforeRegenerationScore, int256 regenerationScore) private {
+  function addRegenerationScore(
+    Producer memory producer,
+    int256 beforeRegenerationScore,
+    int256 regenerationScore
+  ) private {
     if (producer.regenerationScore.score <= 0) return;
     uint256 levels;
 

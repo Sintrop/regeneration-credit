@@ -127,7 +127,9 @@ describe("CategoryContract", () => {
         ];
 
         it("returns error message", async () => {
-          await expect(instance.calculateScore(regenerationIndexPayload)).to.be.revertedWith("Category or Regeneration Index do not exists");
+          await expect(instance.calculateScore(regenerationIndexPayload)).to.be.revertedWith(
+            "Category or Regeneration Index do not exists"
+          );
         });
       });
 
@@ -141,7 +143,9 @@ describe("CategoryContract", () => {
         ];
 
         it("returns error message", async () => {
-          await expect(instance.calculateScore(regenerationIndexPayload)).to.be.revertedWith("Category or Regeneration Index do not exists");
+          await expect(instance.calculateScore(regenerationIndexPayload)).to.be.revertedWith(
+            "Category or Regeneration Index do not exists"
+          );
         });
       });
     });

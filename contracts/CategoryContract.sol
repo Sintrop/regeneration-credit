@@ -77,7 +77,9 @@ contract CategoryContract is Ownable, Callable {
    * @dev Returns all added category regeneration index description
    * @return RegenerationIndexDescription struct array
    */
-  function getCategoryRegenerationIndexDescription(uint256 categoryId) public view returns (RegenerationIndexDescription[] memory) {
+  function getCategoryRegenerationIndexDescription(
+    uint256 categoryId
+  ) public view returns (RegenerationIndexDescription[] memory) {
     return categoryRegenerationIndexDescriptions[categoryId];
   }
 
