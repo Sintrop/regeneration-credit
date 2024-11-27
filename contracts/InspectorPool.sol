@@ -20,23 +20,14 @@ contract InspectorPool is Poolable, Ownable, Blockable, Callable {
 
   RegenerationCreditInterface internal regenerationCredit;
 
-  uint256[8] private tokensPerEpochs = [
-    864 * 10 ** 23,
-    432 * 10 ** 23,
-    216 * 10 ** 23,
-    108 * 10 ** 23,
-    54 * 10 ** 23,
-    27 * 10 ** 23,
-    135 * 10 ** 22,
-    675 * 10 ** 21
-  ];
+  uint256 internal constant TOTAL_TOKENS_POOL = 180000000000000000000000000;
 
   constructor(
     address regenerationCreditAddress,
     uint256 _halving,
     uint256 _totalEras,
     uint256 _blocksPerEra
-  ) Blockable(_blocksPerEra, _totalEras, _halving) Poolable(tokensPerEpochs) {
+  ) Blockable(_blocksPerEra, _totalEras, _halving) Poolable(TOTAL_TOKENS_POOL) {
     regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
   }
 

@@ -20,23 +20,14 @@ contract ContributorPool is Poolable, Ownable, Blockable, Callable {
 
   RegenerationCreditInterface internal regenerationCredit;
 
-  uint256[8] private tokensPerEpochs = [
-    36 * 10 ** 23,
-    18 * 10 ** 23,
-    9 * 10 ** 23,
-    45 * 10 ** 22,
-    225 * 10 ** 21,
-    1125 * 10 ** 20,
-    28125 * 10 ** 18,
-    703125 * 10 ** 16
-  ];
+  uint256 internal constant TOTAL_TOKENS_POOL = 30000000000000000000000000;
 
   constructor(
     address regenerationCreditAddress,
     uint256 _halving,
     uint256 _totalEras,
     uint256 _blocksPerEra
-  ) Blockable(_blocksPerEra, _totalEras, _halving) Poolable(tokensPerEpochs) {
+  ) Blockable(_blocksPerEra, _totalEras, _halving) Poolable(TOTAL_TOKENS_POOL) {
     regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
   }
 

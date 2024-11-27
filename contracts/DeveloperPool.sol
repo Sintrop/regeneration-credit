@@ -19,24 +19,14 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;
 
   RegenerationCreditInterface internal regenerationCredit;
-
-  uint256[8] private tokensPerEpochs = [
-    144 * 10 ** 23,
-    72 * 10 ** 23,
-    36 * 10 ** 23,
-    18 * 10 ** 23,
-    9 * 10 ** 23,
-    45 * 10 ** 22,
-    225 * 10 ** 21,
-    1125 * 10 ** 20
-  ];
+  uint256 internal constant TOTAL_TOKENS_POOL = 30000000000000000000000000;
 
   constructor(
     address regenerationCreditAddress,
     uint256 _halving,
     uint256 _totalEras,
     uint256 _blocksPerEra
-  ) Blockable(_blocksPerEra, _totalEras, _halving) Poolable(tokensPerEpochs) {
+  ) Blockable(_blocksPerEra, _totalEras, _halving) Poolable(TOTAL_TOKENS_POOL) {
     regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
   }
 
