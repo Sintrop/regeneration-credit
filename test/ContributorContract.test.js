@@ -310,7 +310,7 @@ describe("ContributorContract", (accounts) => {
             it("should withdraw all tokens from era", async () => {
               let balanceOf = await regenerationCredit.balanceOf(contr1Address);
 
-              let tokensBalance = 300000000000000000000000n;
+              let tokensBalance = 1250000000000000000000000n;
 
               expect(balanceOf).to.equal(tokensBalance);
             });
@@ -346,18 +346,18 @@ describe("ContributorContract", (accounts) => {
                 expect(contributor.pool.currentEra).to.equal(2);
               });
 
-              it("contributor1 balance must be 150000000000000000000000", async () => {
+              it("contributor1 balance must be 625000000000000000000000", async () => {
                 let balanceOf = await regenerationCredit.balanceOf(contr1Address);
 
-                let tokensPerEra = 150000000000000000000000n;
+                let tokensPerEra = 625000000000000000000000n;
 
                 expect(balanceOf).to.equal(tokensPerEra);
               });
 
-              it("contributor2 balance must be 150000000000000000000000", async () => {
+              it("contributor2 balance must be 625000000000000000000000", async () => {
                 let balanceOf = await regenerationCredit.balanceOf(contr2Address);
 
-                let tokensPerEra = 150000000000000000000000n;
+                let tokensPerEra = 625000000000000000000000n;
 
                 expect(balanceOf).to.equal(tokensPerEra);
               });
@@ -391,7 +391,7 @@ describe("ContributorContract", (accounts) => {
 
           it("should can withdraw in two eras", async () => {
             let balanceOf = await regenerationCredit.balanceOf(contr1Address);
-            let tokensPerEra = 600000000000000000000000n;
+            let tokensPerEra = 2500000000000000000000000n;
 
             expect(balanceOf).to.equal(tokensPerEra);
           });
