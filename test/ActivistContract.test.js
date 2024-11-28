@@ -274,7 +274,7 @@ describe("ActivistContract", () => {
             it("activist balance must be", async () => {
               const balance = await regenerationCredit.balanceOf(activ1Address);
 
-              expect(balance).to.equal(1200000000000000000000000n);
+              expect(balance).to.equal(1250000000000000000000000n);
             });
           });
 
@@ -302,7 +302,7 @@ describe("ActivistContract", () => {
             it("activist1 balance must be", async () => {
               const balance = await regenerationCredit.balanceOf(activ1Address);
 
-              expect(balance).to.equal(600000000000000000000000n);
+              expect(balance).to.equal(625000000000000000000000n);
             });
 
             it("activist3 to era 2", async () => {
@@ -314,7 +314,7 @@ describe("ActivistContract", () => {
             it("activist3 balance must be", async () => {
               const balance = await regenerationCredit.balanceOf(activ3Address);
 
-              expect(balance).to.equal(600000000000000000000000n);
+              expect(balance).to.equal(625000000000000000000000n);
             });
           });
         });
