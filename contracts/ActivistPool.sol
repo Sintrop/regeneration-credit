@@ -38,10 +38,7 @@ contract ActivistPool is Poolable, Ownable, Blockable, Callable {
     return regenerationCredit.balanceOf(address(this));
   }
 
-  function withdraw(
-    address delegate,
-    uint256 era
-  ) public mustBeAllowedCaller canWithdrawModifier(era) isAValidEpochModifier {
+  function withdraw(address delegate, uint256 era) public mustBeAllowedCaller canWithdrawModifier(era) {
     uint256 numTokens = tokens(era, delegate, tokensPerEra(currentUserEpoch(era), HALVING));
 
     updateEraAfterWithdraw(era, delegate, numTokens);

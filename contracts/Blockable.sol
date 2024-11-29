@@ -26,7 +26,7 @@ contract Blockable {
   }
 
   function canWithdraw(uint256 currentUserEra) public view returns (bool) {
-    return currentUserEra < currentContractEra() && isAValidEra(currentUserEra);
+    return currentUserEra < currentContractEra();
   }
 
   function currentContractEra() public view returns (uint256) {
@@ -59,10 +59,6 @@ contract Blockable {
     return currentEra <= LIMIT_ERAS_SIZE;
   }
 
-  function isAValidEpoch() internal view returns (bool) {
-    return currentEpoch() <= LIMIT_EPOCHS_SIZE;
-  }
-
   function currentUserBlockNumber(uint256 currentUserEra) internal view returns (uint256) {
     return DEPLOYED_AT.add(BLOCKS_PER_ERA.mul(currentUserEra));
   }
@@ -75,11 +71,6 @@ contract Blockable {
 
   modifier canWithdrawModifier(uint256 era) {
     require(canWithdraw(era), "You can't approve yet");
-    _;
-  }
-
-  modifier isAValidEpochModifier() {
-    require(isAValidEpoch(), "You can't approve anymore");
     _;
   }
 }

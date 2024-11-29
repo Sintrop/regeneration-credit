@@ -235,19 +235,6 @@ describe("Blockable", () => {
       });
     });
 
-    context("when currentUserEra is less than currentContractEra and currentUserEra have passed eraMax", () => {
-      beforeEach(async () => {
-        await advanceBlock(20 * params.blocksPerEra);
-      });
-
-      const currentUserEra = params.eraMax + 1;
-
-      it("should return false", async () => {
-        const canWithdraw = await instance.canWithdraw(currentUserEra);
-        expect(canWithdraw).to.equal(false);
-      });
-    });
-
     context("when currentUserEra is equal currentContractEra", () => {
       const currentUserEra = 1;
 
