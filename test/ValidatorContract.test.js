@@ -1624,9 +1624,9 @@ describe("ValidatorContract", () => {
             await instance.connect(validator1Address).withdraw();
           });
 
-          it("withdraw 1200000000000000000000000 tokens", async () => {
+          it("withdraw 1250000000000000000000000 tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(validator1Address);
-            const expectedBalance = 1200000000000000000000000n;
+            const expectedBalance = 1250000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
           });
@@ -1643,9 +1643,9 @@ describe("ValidatorContract", () => {
             await instance.connect(validator1Address).withdraw();
           });
 
-          it("withdraw 600000000000000000000000n tokens", async () => {
+          it("withdraw 625000000000000000000000 tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(validator1Address);
-            const expectedBalance = 600000000000000000000000n;
+            const expectedBalance = 625000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
           });
