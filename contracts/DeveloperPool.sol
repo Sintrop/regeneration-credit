@@ -12,7 +12,8 @@ import { Poolable } from "./Poolable.sol";
 /**
  * @author Sintrop
  * @title DeveloperPool
- * @dev DeveloperPool is a contract to reward developers
+ * @dev Manage rewards to developers
+ * @notice Receive tokens for development service provided
  */
 contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;
@@ -50,7 +51,7 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
     address delegate,
     uint256 era
   ) public mustBeAllowedCaller canWithdrawModifier(era) isAValidEpochModifier {
-    uint256 numTokens = tokens(era, delegate, tokensPerEra(currentEpoch(), HALVING));
+    uint256 numTokens = tokens(era, delegate, tokensPerEra(currentUserEpoch(era), HALVING));
 
     updateEraAfterWithdraw(era, delegate, numTokens);
 

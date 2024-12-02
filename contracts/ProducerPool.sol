@@ -13,6 +13,7 @@ import { Poolable } from "./Poolable.sol";
  * @author Sintrop
  * @title ProducerPool
  * @dev ProducerPool is a contract to reward producers
+ * @notice Receive tokens for Nature regeneration service provided
  */
 contract ProducerPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;
@@ -50,7 +51,7 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
     address delegate,
     uint256 era
   ) public mustBeAllowedCaller canWithdrawModifier(era) isAValidEpochModifier {
-    uint256 numTokens = tokens(era, delegate, tokensPerEra(currentEpoch(), HALVING));
+    uint256 numTokens = tokens(era, delegate, tokensPerEra(currentUserEpoch(era), HALVING));
 
     updateEraAfterWithdraw(era, delegate, numTokens);
 

@@ -10,6 +10,7 @@ import { Poolable } from "./Poolable.sol";
  * @author Sintrop
  * @title ValidatorPool
  * @dev ValidatorPool is a contract to reward validators
+ * @notice Receive tokens for validation service provided
  */
 contract ValidatorPool is Poolable, Blockable, Callable {
   RegenerationCreditInterface internal regenerationCredit;
@@ -45,7 +46,7 @@ contract ValidatorPool is Poolable, Blockable, Callable {
     address delegate,
     uint256 era
   ) public mustBeAllowedCaller canWithdrawModifier(era) isAValidEpochModifier {
-    uint256 numTokens = tokens(era, delegate, tokensPerEra(currentEpoch(), HALVING));
+    uint256 numTokens = tokens(era, delegate, tokensPerEra(currentUserEpoch(era), HALVING));
 
     updateEraAfterWithdraw(era, delegate, numTokens);
 

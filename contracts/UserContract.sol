@@ -6,8 +6,9 @@ import { UserType, Delation, Invitation, UserTypeSetting } from "./types/UserTyp
 import { Callable } from "./Callable.sol";
 
 /**
+ * @author Sintrop
  * @title UserContract
- * @dev This contract works as a centralized user's registration system
+ * @dev Users registration system
  */
 contract UserContract is Ownable, Callable {
   mapping(address => UserType) internal users;

@@ -6,7 +6,7 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 /**
  * @author Sintrop
  * @title Blockable
- * @dev Blockable is a contract to manage blocks eras
+ * @dev Contract to manage time, blocks and eras
  */
 contract Blockable {
   using SafeMath for uint256;
@@ -35,6 +35,10 @@ contract Blockable {
 
   function currentEpoch() public view returns (uint256) {
     return currentContractEra().div(HALVING).add(1);
+  }
+
+  function currentUserEpoch(uint256 era) public view returns (uint256) {
+    return era.div(HALVING).add(1);
   }
 
   function nextEraIn(uint256 currentUserEra) public view returns (int256) {

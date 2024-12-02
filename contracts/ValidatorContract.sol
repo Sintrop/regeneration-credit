@@ -16,6 +16,12 @@ import { Inspection } from "./types/InspectionTypes.sol";
 import { Contribution } from "./types/DeveloperTypes.sol";
 import { Work } from "./types/ResearcherTypes.sol";
 
+/**
+ * @author Sintrop
+ * @title ValidatorContract
+ * @dev Manage validators rules and data
+ * @notice Responsible for reviewing and voting to invalidate wrong or corrupted actions
+ */
 contract ValidatorContract is Callable {
   mapping(address => Validator) private validators;
   mapping(address => UserValidation[]) private userValidations;
@@ -25,6 +31,7 @@ contract ValidatorContract is Callable {
   mapping(address => mapping(uint256 => bool)) private validatorContributionsValidations;
   mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
   mapping(address => mapping(uint256 => bool)) private validatorWorksValidations;
+  mapping(address => mapping(address => bool)) private validatorUsersValidations;
 
   UserContract private userContract;
   ProducerContract private producerContract;
@@ -71,6 +78,9 @@ contract ValidatorContract is Callable {
     require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
     require(!userContract.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
     require(!userContract.userTypeIs(UserType.DENIED, userAddress), "User already denied");
+    require(!validatorUsersValidations[msg.sender][userAddress], "Already voted");
+
+    validatorUsersValidations[msg.sender][userAddress] = true;
 
     uint256 majorityValidatorsCount_ = majorityValidatorsCount();
     uint256 validationsCount = userValidations[userAddress].length + 1;

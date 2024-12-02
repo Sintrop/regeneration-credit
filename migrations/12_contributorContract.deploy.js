@@ -8,7 +8,9 @@ async function contributorContractDeploy() {
 
   const ContributorContract = await ethers.getContractFactory("ContributorContract");
 
-  const args = [userContract.target, contributorPool.target];
+  const securityBlocksToValidatorAnalysis = process.env["CONTRIBUTOR_SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS"];
+
+  const args = [userContract.target, contributorPool.target, securityBlocksToValidatorAnalysis];
 
   const contributorContract = await ContributorContract.deploy(...args);
 
