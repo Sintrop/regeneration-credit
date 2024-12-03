@@ -338,7 +338,7 @@ async function renounceOwnership() {
 async function inviteUsers() {
   const invitationContract = await getDeployedContract("InvitationContract");
 
-  //testnet-v8
+  //testnet - v8 users
   await invitationContract.onlyOwnerInvite(0x9D89B8562B00713a034DEb7A867D5d3Bc45e19E6, 1);  
   await invitationContract.onlyOwnerInvite(0x49B85E2D9F48252BF32BA35221B361DA77AAC683, 4);
   await invitationContract.onlyOwnerInvite(0x219ADF489CF316EA2392827097C5196C437D2C2B, 4);
@@ -370,7 +370,7 @@ async function inviteUsers() {
   await invitationContract.onlyOwnerInvite(0x44730EE06B2C7A56378F57A93D35136FA610BB91, 8);
   await invitationContract.onlyOwnerInvite(0x900BD2ED98BE55299928AD1DA36B50021EC1856D, 4);
   
-  //v6 users
+  //mainnet - v6 users
   await invitationContract.onlyOwnerInvite(0xAA863C3B4A0AAF54F42ABE0F627A6F73133003B3, 2);
   await invitationContract.onlyOwnerInvite(0x8D95EB224D5D136726EDFB7C40EA1AD9D03C9FE1, 2);
   await invitationContract.onlyOwnerInvite(0x6C3C648667BCB087D4F5E804D38359A73C28E532, 1);
@@ -465,7 +465,7 @@ async function inviteUsers() {
   await invitationContract.onlyOwnerInvite(0x4A56DDECE357EB131DF8D3A59BECA0B7CD643893, 1);
   await invitationContract.onlyOwnerInvite(0xE9CB014CEEEDCD55FAB7C42202D393CCDE93E41B, 1);
 
-  //v5 users
+  //mainnet - v5 users
   await invitationContract.onlyOwnerInvite(0x7BeF1D59d946023eEb4c222F7d3a446D21f76bb1, 1);
   await invitationContract.onlyOwnerInvite(0x798829c56E9Bf2AFabe1e8c109EA156B81175281, 1);
   await invitationContract.onlyOwnerInvite(0xd270F60ac7821F0A5419108E87A13efeeBa0469A, 1);
@@ -482,29 +482,29 @@ async function inviteUsers() {
 async function transferTokens() {
   const regenerationCredit = await getDeployedContract("RegenerationCredit");
 
-  //pre-sale investors
-  await regenerationCredit.transfer(0x3350933c9063c68Af77c82568Da6E551A70C038d, 1560000);
-  await regenerationCredit.transfer(0x10deA15bA7B214Df3Cf019a263b897cA8c2fe8CB, 14184);
-  await regenerationCredit.transfer(0x45B4f45225F5c839Db779970627153ab69B9E453, 1063830);
-  await regenerationCredit.transfer(0xe2F72B078254E83cE94CC711C3E672E267E2dA69, 70922);
-  await regenerationCredit.transfer(0x9E78167097d77cbFBDcF18E89E55A660eE977Dbf, 53191);
-  await regenerationCredit.transfer(0x10584a75402fBbB9D2b9239078f8C94fFDed5E1e, 70922);
-  await regenerationCredit.transfer(0xc38eF1d3b5915c22CFe9Ec3FC11F953EE4751768, 1773050);
-  await regenerationCredit.transfer(0x835dbFd7ac5Db0C556A4416b62B6B67Cb05FDf88, 531915);
-  await regenerationCredit.transfer(0x05A6129c3f77db419bD85A6315b95691b212456D, 354610);
-  await regenerationCredit.transfer(0x6202401216350f2266c090AA0d1Ca58bAA57fA8E, 354610);
-  await regenerationCredit.transfer(0x8b92474120e7D586C8F570902E0e4F5967368597, 354610);
-  await regenerationCredit.transfer(0x3e49Ee483A2289946D4992b3A8eEe7aa03e2615B, 177305);
-  await regenerationCredit.transfer(0xa16c1B21487281AaFe1Ee64A8385f92afE91bfe6, 354610);
-  await regenerationCredit.transfer(0x64b15d21c04acd6b9febded3117829f13e475331, 177305);
-  await regenerationCredit.transfer(0x95c4F371055F2c5a130Da0e78B3DF54e7028331e, 106383);
-  await regenerationCredit.transfer(0x68CD2862072381F62cfa25701c450B6842690ccB, 100000);
-  await regenerationCredit.transfer(0xcDeCe2eEFe17dDb09aD3664b8910e66A17b907F4, 90426);
-  await regenerationCredit.transfer(0x1f9B196DA7B2813b3D0C7442E5Ba4C36a7a8E736, 35461);
-  await regenerationCredit.transfer(0x25822ca8524Fcd0D7446b167413CE71880A69f43, 17730);
-  await regenerationCredit.transfer(0xd672Bbff8726AAD5Df56DDB5f9f8719022DE50cA, 35461);
-  await regenerationCredit.transfer(0xaD611ba99d45aF2aA7868FC7DFB346f062a1Dac3, 35461);
-  await regenerationCredit.transfer(0xFbF12d63D54b9a9cC68ff2aBFc71EE3567C57B70, 10638);
+  //mainnet - pre-sale investors
+  await regenerationCredit.transfer(0x3350933c9063c68Af77c82568Da6E551A70C038d, 1560000000000000000000000);
+  await regenerationCredit.transfer(0x10deA15bA7B214Df3Cf019a263b897cA8c2fe8CB, 14184000000000000000000);
+  await regenerationCredit.transfer(0x45B4f45225F5c839Db779970627153ab69B9E453, 1063830000000000000000000);
+  await regenerationCredit.transfer(0xe2F72B078254E83cE94CC711C3E672E267E2dA69, 70922000000000000000000);
+  await regenerationCredit.transfer(0x9E78167097d77cbFBDcF18E89E55A660eE977Dbf, 53191000000000000000000);
+  await regenerationCredit.transfer(0x10584a75402fBbB9D2b9239078f8C94fFDed5E1e, 70922000000000000000000);
+  await regenerationCredit.transfer(0xc38eF1d3b5915c22CFe9Ec3FC11F953EE4751768, 1773050000000000000000000);
+  await regenerationCredit.transfer(0x835dbFd7ac5Db0C556A4416b62B6B67Cb05FDf88, 531915000000000000000000);
+  await regenerationCredit.transfer(0x05A6129c3f77db419bD85A6315b95691b212456D, 354610000000000000000000);
+  await regenerationCredit.transfer(0x6202401216350f2266c090AA0d1Ca58bAA57fA8E, 354610000000000000000000);
+  await regenerationCredit.transfer(0x8b92474120e7D586C8F570902E0e4F5967368597, 354610000000000000000000);
+  await regenerationCredit.transfer(0x3e49Ee483A2289946D4992b3A8eEe7aa03e2615B, 177305000000000000000000);
+  await regenerationCredit.transfer(0xa16c1B21487281AaFe1Ee64A8385f92afE91bfe6, 354610000000000000000000);
+  await regenerationCredit.transfer(0x64b15d21c04acd6b9febded3117829f13e475331, 177305000000000000000000);
+  await regenerationCredit.transfer(0x95c4F371055F2c5a130Da0e78B3DF54e7028331e, 106383000000000000000000);
+  await regenerationCredit.transfer(0x68CD2862072381F62cfa25701c450B6842690ccB, 100000000000000000000000);
+  await regenerationCredit.transfer(0xcDeCe2eEFe17dDb09aD3664b8910e66A17b907F4, 90426000000000000000000);
+  await regenerationCredit.transfer(0x1f9B196DA7B2813b3D0C7442E5Ba4C36a7a8E736, 35461000000000000000000);
+  await regenerationCredit.transfer(0x25822ca8524Fcd0D7446b167413CE71880A69f43, 17730000000000000000000);
+  await regenerationCredit.transfer(0xd672Bbff8726AAD5Df56DDB5f9f8719022DE50cA, 35461000000000000000000);
+  await regenerationCredit.transfer(0xaD611ba99d45aF2aA7868FC7DFB346f062a1Dac3, 35461000000000000000000);
+  await regenerationCredit.transfer(0xFbF12d63D54b9a9cC68ff2aBFc71EE3567C57B70, 10638000000000000000000);
 }
 
 module.exports = afterDeploy;
