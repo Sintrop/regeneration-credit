@@ -54,7 +54,6 @@ describe("Sintrop", () => {
   const producerPoolArgs = {
     totalTokens: "750000000000000000000000000",
     halving: 50,
-    totalEras: 50,
     blocksPerEra: 500,
   };
 
@@ -69,28 +68,24 @@ describe("Sintrop", () => {
   const researcherPoolargs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 12,
   };
 
   const inspectorPoolargs = {
     totalTokens: "180000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 12,
   };
 
   const validatorPoolargs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 12,
   };
 
   const activistPoolArgs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 13,
   };
 
@@ -204,7 +199,6 @@ describe("Sintrop", () => {
     researcherPool = await researcherPoolFactory.deploy(
       regenerationCredit.target,
       researcherPoolargs.halving,
-      researcherPoolargs.totalEras,
       researcherPoolargs.blocksPerEra
     );
 
@@ -212,7 +206,6 @@ describe("Sintrop", () => {
     inspectorPool = await inspectorPoolFactory.deploy(
       regenerationCredit.target,
       inspectorPoolargs.halving,
-      inspectorPoolargs.totalEras,
       inspectorPoolargs.blocksPerEra
     );
 
@@ -220,7 +213,6 @@ describe("Sintrop", () => {
     producerPool = await producerPoolFactory.deploy(
       regenerationCredit.target,
       producerPoolArgs.halving,
-      producerPoolArgs.totalEras,
       producerPoolArgs.blocksPerEra
     );
 
@@ -228,7 +220,6 @@ describe("Sintrop", () => {
     validatorPool = await validatorPoolFactory.deploy(
       regenerationCredit.target,
       validatorPoolargs.halving,
-      validatorPoolargs.totalEras,
       validatorPoolargs.blocksPerEra
     );
 
@@ -236,7 +227,6 @@ describe("Sintrop", () => {
     activistPool = await activistPoolFactory.deploy(
       regenerationCredit.target,
       activistPoolArgs.halving,
-      activistPoolArgs.totalEras,
       activistPoolArgs.blocksPerEra
     );
 

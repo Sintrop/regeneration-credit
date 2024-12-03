@@ -145,14 +145,6 @@ describe("RegenerationCreditIco", () => {
     });
   });
 
-  describe("#balance", () => {
-    it("should return the contract balance", async () => {
-      const balance = await instance.balance();
-
-      expect(balance).to.equal(0);
-    });
-  });
-
   describe("#withdraw", () => {
     context("when is the owner", () => {
       context("when sold 1 ether", () => {

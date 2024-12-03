@@ -24,17 +24,9 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
   constructor(
     address regenerationCreditAddress,
     uint256 _halving,
-    uint256 _totalEras,
     uint256 _blocksPerEra
-  ) Blockable(_blocksPerEra, _totalEras, _halving) Poolable(TOTAL_TOKENS_POOL) {
+  ) Blockable(_blocksPerEra, _halving) Poolable(TOTAL_TOKENS_POOL) {
     regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
-  }
-
-  /**
-   * @dev Returns how much tokens the contract has
-   */
-  function balance() public view returns (uint256) {
-    return regenerationCredit.balanceOf(address(this));
   }
 
   function withdraw(address delegate, uint256 era) public mustBeAllowedCaller canWithdrawModifier(era) {

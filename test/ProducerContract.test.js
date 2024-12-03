@@ -22,7 +22,6 @@ describe("ProducerContract", () => {
   const producerPoolArgs = {
     totalTokens: "750000000000000000000000000",
     halving: 50,
-    totalEras: 50,
     blocksPerEra: 50,
   };
 
@@ -38,7 +37,6 @@ describe("ProducerContract", () => {
     producerPool = await producerPoolFactory.deploy(
       regenerationCredit.target,
       producerPoolArgs.halving,
-      producerPoolArgs.totalEras,
       producerPoolArgs.blocksPerEra
     );
 

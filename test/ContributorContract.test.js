@@ -16,7 +16,6 @@ describe("ContributorContract", (accounts) => {
   let contributorPoolParams = {
     totalTokens: "7500000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 30,
   };
 
@@ -40,7 +39,6 @@ describe("ContributorContract", (accounts) => {
     contributorPool = await contributorPoolFactory.deploy(
       regenerationCredit.target,
       contributorPoolParams.halving,
-      contributorPoolParams.totalEras,
       contributorPoolParams.blocksPerEra
     );
 

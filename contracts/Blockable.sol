@@ -15,12 +15,10 @@ contract Blockable {
   uint256 internal constant LIMIT_EPOCHS_SIZE = 8;
   uint256 private immutable BLOCKS_PER_ERA;
   uint256 private immutable DEPLOYED_AT;
-  uint256 private immutable LIMIT_ERAS_SIZE;
   uint256 internal immutable HALVING;
 
-  constructor(uint256 blocksPerEra, uint256 _limitErasSize, uint256 _halving) {
+  constructor(uint256 blocksPerEra, uint256 _halving) {
     BLOCKS_PER_ERA = blocksPerEra;
-    LIMIT_ERAS_SIZE = _limitErasSize;
     DEPLOYED_AT = currentBlockNumber();
     HALVING = _halving;
   }
@@ -54,10 +52,6 @@ contract Blockable {
   }
 
   // PRIVATE FUNCTIONS
-
-  function isAValidEra(uint256 currentEra) internal view returns (bool) {
-    return currentEra <= LIMIT_ERAS_SIZE;
-  }
 
   function currentUserBlockNumber(uint256 currentUserEra) internal view returns (uint256) {
     return DEPLOYED_AT.add(BLOCKS_PER_ERA.mul(currentUserEra));

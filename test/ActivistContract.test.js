@@ -11,7 +11,6 @@ describe("ActivistContract", () => {
   const activistPoolArgs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 20,
   };
 
@@ -34,7 +33,6 @@ describe("ActivistContract", () => {
     activistPool = await activistPoolFactory.deploy(
       regenerationCredit.target,
       activistPoolArgs.halving,
-      activistPoolArgs.totalEras,
       activistPoolArgs.blocksPerEra
     );
 

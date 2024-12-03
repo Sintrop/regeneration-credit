@@ -10,7 +10,6 @@ describe("ActivistPool", () => {
   const args = {
     totalActivistPoolTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 12,
   };
 
@@ -20,12 +19,7 @@ describe("ActivistPool", () => {
     regenerationCredit = await regenerationCreditDeployed();
 
     const activistPoolFactory = await ethers.getContractFactory("ActivistPool");
-    instance = await activistPoolFactory.deploy(
-      regenerationCredit.target,
-      args.halving,
-      args.totalEras,
-      args.blocksPerEra
-    );
+    instance = await activistPoolFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra);
 
     await instance.newAllowedCaller(owner);
 
@@ -70,14 +64,6 @@ describe("ActivistPool", () => {
 
         expect(parseInt(nextEraIn)).to.lessThan(1);
       });
-    });
-  });
-
-  describe("#balance", () => {
-    it("must return balance of ActivistPool", async () => {
-      const balance = await instance.balance();
-
-      expect(balance).to.equal(args.totalActivistPoolTokens);
     });
   });
 
@@ -468,7 +454,7 @@ describe("ActivistPool", () => {
                 });
 
                 it("activist pool balance must be 27500000000000000000000000", async () => {
-                  const balance = await instance.balance();
+                  const balance = await regenerationCredit.balanceOf(instance.target);
 
                   expect(balance).to.equal(27500000000000000000000000n);
                 });
@@ -631,7 +617,7 @@ describe("ActivistPool", () => {
                 });
 
                 it("activist pool balance must be 27500000000000000000000000", async () => {
-                  const balance = await instance.balance();
+                  const balance = await regenerationCredit.balanceOf(instance.target);
 
                   expect(balance).to.equal(27500000000000000000000000n);
                 });

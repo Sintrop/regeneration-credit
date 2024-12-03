@@ -23,14 +23,12 @@ describe("ResearcherContract", () => {
   const args = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 40,
   };
 
   const validatorPoolargs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 12,
   };
 
@@ -58,18 +56,12 @@ describe("ResearcherContract", () => {
     userContract = await userContractDeployed();
 
     const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
-    researcherPool = await researcherPoolFactory.deploy(
-      regenerationCredit.target,
-      args.halving,
-      args.totalEras,
-      args.blocksPerEra
-    );
+    researcherPool = await researcherPoolFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra);
 
     const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
-    validatorPool = await validatorPoolFactory.deploy(
+    const validatorPool = await validatorPoolFactory.deploy(
       regenerationCredit.target,
       validatorPoolargs.halving,
-      validatorPoolargs.totalEras,
       validatorPoolargs.blocksPerEra
     );
 

@@ -8,7 +8,6 @@ describe("Blockable", () => {
 
   const params = {
     blocksPerEra: 10,
-    eraMax: 12,
     halving: 12,
   };
 
@@ -17,7 +16,7 @@ describe("Blockable", () => {
 
     const blockableContractFactory = await ethers.getContractFactory("Blockable");
 
-    instance = await blockableContractFactory.deploy(params.blocksPerEra, params.eraMax, params.halving);
+    instance = await blockableContractFactory.deploy(params.blocksPerEra, params.halving);
   });
 
   describe("#currentContractEra", () => {

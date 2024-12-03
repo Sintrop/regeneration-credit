@@ -25,14 +25,12 @@ describe("DeveloperContract", (accounts) => {
   let developerPoolParams = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 50,
   };
 
   const validatorPoolargs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 12,
   };
 
@@ -72,7 +70,6 @@ describe("DeveloperContract", (accounts) => {
     developerPool = await developerPoolFactory.deploy(
       regenerationCredit.target,
       developerPoolParams.halving,
-      developerPoolParams.totalEras,
       developerPoolParams.blocksPerEra
     );
 
@@ -80,7 +77,6 @@ describe("DeveloperContract", (accounts) => {
     validatorPool = await validatorPoolFactory.deploy(
       regenerationCredit.target,
       validatorPoolargs.halving,
-      validatorPoolargs.totalEras,
       validatorPoolargs.blocksPerEra
     );
 

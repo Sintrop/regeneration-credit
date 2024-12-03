@@ -11,7 +11,6 @@ describe("ProducerPool", () => {
   const args = {
     totalTokens: "750000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 12,
   };
 
@@ -25,7 +24,7 @@ describe("ProducerPool", () => {
     regenerationCredit = await regenerationCreditDeployed();
 
     const instanceFactory = await ethers.getContractFactory("ProducerPool");
-    instance = await instanceFactory.deploy(regenerationCredit.target, args.halving, args.totalEras, args.blocksPerEra);
+    instance = await instanceFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra);
 
     await instance.newAllowedCaller(owner);
 

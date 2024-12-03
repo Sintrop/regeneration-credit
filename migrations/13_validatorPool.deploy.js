@@ -3,16 +3,15 @@ const getDeployedContract = require("../scripts/shared/getDeployedContract");
 const verifyContract = require("../scripts/shared/verifyContract");
 
 async function validatorPoolDeploy() {
-  const pool_halving = process.env["VALIDATOR_POOL_HALVING"];
-  const pool_total_eras = process.env["VALIDATOR_POOL_TOTAL_ERAS"];
-  const pool_blocks_per_era = process.env["VALIDATOR_POOL_BLOCKS_PER_ERA"];
+  const poolHalving = process.env["VALIDATOR_POOL_HALVING"];
+  const poolBlocksPerEra = process.env["VALIDATOR_POOL_BLOCKS_PER_ERA"];
   const validatorPoolFunds = process.env["VALIDATOR_POOL_FUNDS"];
 
   const regenerationCredit = await getDeployedContract("RegenerationCredit");
 
   const ValidatorPool = await ethers.getContractFactory("ValidatorPool");
 
-  const args = [regenerationCredit.target, pool_halving, pool_total_eras, pool_blocks_per_era];
+  const args = [regenerationCredit.target, poolHalving, poolBlocksPerEra];
 
   const validatorPool = await ValidatorPool.deploy(...args);
 

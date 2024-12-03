@@ -17,7 +17,6 @@ describe("RegenerationCredit", (accounts) => {
   const argsProducerPool = {
     totalTokens: "750000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 12,
   };
 
@@ -35,7 +34,6 @@ describe("RegenerationCredit", (accounts) => {
     producerPool = await producerPoolFactory.deploy(
       instance.target,
       argsProducerPool.halving,
-      argsProducerPool.totalEras,
       argsProducerPool.blocksPerEra
     );
 
