@@ -193,6 +193,22 @@ describe("ProducerPool", () => {
         expect(tokensPerEra).to.equal("61035156250000000000000");
       });
     });
+
+    context("when is epoch 15", () => {
+      it("must return 22888183593750000000000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(15);
+
+        expect(tokensPerEpoch).to.equal("22888183593750000000000");
+      });
+    });
+
+    context("when is epoch 20", () => {
+      it("must return 715255737304687500000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(20);
+
+        expect(tokensPerEpoch).to.equal("715255737304687500000");
+      });
+    });
   });
 
   describe("#withdraw", () => {

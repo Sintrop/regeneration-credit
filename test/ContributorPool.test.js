@@ -260,6 +260,22 @@ describe("ContributorPool", () => {
         expect(tokensPerEpoch).to.equal("29296875000000000000000");
       });
     });
+
+    context("when is epoch 15", () => {
+      it("must return 915527343750000000000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(15);
+
+        expect(tokensPerEpoch).to.equal("915527343750000000000");
+      });
+    });
+
+    context("when is epoch 20", () => {
+      it("must return 29296875000000000000000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(20);
+
+        expect(tokensPerEpoch).to.equal("28610229492187500000");
+      });
+    });
   });
 
   describe("#tokensPerEra", () => {

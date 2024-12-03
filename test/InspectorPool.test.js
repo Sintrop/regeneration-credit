@@ -261,6 +261,22 @@ describe("InspectorPool", (accounts) => {
         expect(tokensPerEpoch).to.equal("175781250000000000000000");
       });
     });
+
+    context("when is epoch 15", () => {
+      it("must return 5493164062500000000000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(15);
+
+        expect(tokensPerEpoch).to.equal("5493164062500000000000");
+      });
+    });
+
+    context("when is epoch 20", () => {
+      it("must return 171661376953125000000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(20);
+
+        expect(tokensPerEpoch).to.equal("171661376953125000000");
+      });
+    });
   });
 
   describe("#tokensPerEra", () => {
