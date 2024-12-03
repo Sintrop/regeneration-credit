@@ -181,10 +181,10 @@ contract ValidatorContract is Callable {
 
     removeLevelsFromPool(inspection.inspector, 1);
 
-    if (inspection.isaScore < 0)
-      return producerContract.removeNegativeScore(inspection.producer, -(inspection.isaScore));
+    if (inspection.regenerationScore < 0)
+      return producerContract.removeNegativeScore(inspection.producer, -(inspection.regenerationScore));
 
-    removeLevelsFromPool(inspection.producer, uint256(inspection.isaScore));
+    removeLevelsFromPool(inspection.producer, uint256(inspection.regenerationScore));
   }
 
   function externalDenieUser(address userAddress) private {
