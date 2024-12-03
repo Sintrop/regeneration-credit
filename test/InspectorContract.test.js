@@ -22,7 +22,6 @@ describe("InspectorContract", () => {
   const args = {
     totalTokens: "180000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 24,
   };
 
@@ -34,12 +33,7 @@ describe("InspectorContract", () => {
     const maxPenalties = 2;
 
     const inspectorPoolFactory = await ethers.getContractFactory("InspectorPool");
-    inspectorPool = await inspectorPoolFactory.deploy(
-      regenerationCredit.target,
-      args.halving,
-      args.totalEras,
-      args.blocksPerEra
-    );
+    inspectorPool = await inspectorPoolFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra);
 
     const instanceFactory = await ethers.getContractFactory("InspectorContract");
     instance = await instanceFactory.deploy(userContract.target, inspectorPool.target, maxPenalties);
@@ -333,7 +327,7 @@ describe("InspectorContract", () => {
 
           it("withdraw 7200000000000000000000000 tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(inspe1Address);
-            const expectedBalance = 7200000000000000000000000n;
+            const expectedBalance = 7500000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
           });
@@ -360,7 +354,7 @@ describe("InspectorContract", () => {
 
           it("withdraw 3600000000000000000000000n tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(inspe1Address);
-            const expectedBalance = 3600000000000000000000000n;
+            const expectedBalance = 3750000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
           });

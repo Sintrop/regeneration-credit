@@ -23,14 +23,12 @@ describe("ResearcherContract", () => {
   const args = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 40,
   };
 
   const validatorPoolargs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 12,
   };
 
@@ -58,18 +56,12 @@ describe("ResearcherContract", () => {
     userContract = await userContractDeployed();
 
     const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
-    researcherPool = await researcherPoolFactory.deploy(
-      regenerationCredit.target,
-      args.halving,
-      args.totalEras,
-      args.blocksPerEra
-    );
+    researcherPool = await researcherPoolFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra);
 
     const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
-    validatorPool = await validatorPoolFactory.deploy(
+    const validatorPool = await validatorPoolFactory.deploy(
       regenerationCredit.target,
       validatorPoolargs.halving,
-      validatorPoolargs.totalEras,
       validatorPoolargs.blocksPerEra
     );
 
@@ -243,9 +235,9 @@ describe("ResearcherContract", () => {
             await instance.connect(resea1Address).withdraw();
           });
 
-          it("withdraw 1200000000000000000000000 tokens", async () => {
+          it("withdraw 1250000000000000000000000 tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(resea1Address);
-            const expectedBalance = 1200000000000000000000000n;
+            const expectedBalance = 1250000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
           });
@@ -263,9 +255,9 @@ describe("ResearcherContract", () => {
             await instance.connect(resea1Address).withdraw();
           });
 
-          it("withdraw 600000000000000000000000n tokens", async () => {
+          it("withdraw 625000000000000000000000 tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(resea1Address);
-            const expectedBalance = 600000000000000000000000n;
+            const expectedBalance = 625000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
           });

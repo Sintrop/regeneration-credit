@@ -48,49 +48,42 @@ describe("ValidatorContract", () => {
   const producerPoolArgs = {
     totalTokens: "750000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 12,
   };
 
   const validatorPoolArgs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 36,
   };
 
   const inspectorPoolArgs = {
     totalTokens: "180000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 20,
   };
 
   let developerPoolParams = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 45,
   };
 
   let researcherPoolParams = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 40,
   };
 
   let contributorPoolParams = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 40,
   };
 
   const activistPoolArgs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 20,
   };
 
@@ -203,7 +196,6 @@ describe("ValidatorContract", () => {
     producerPool = await producerPoolFactory.deploy(
       regenerationCredit.target,
       producerPoolArgs.halving,
-      producerPoolArgs.totalEras,
       producerPoolArgs.blocksPerEra
     );
 
@@ -211,7 +203,6 @@ describe("ValidatorContract", () => {
     validatorPool = await validatorPoolFactory.deploy(
       regenerationCredit.target,
       validatorPoolArgs.halving,
-      validatorPoolArgs.totalEras,
       validatorPoolArgs.blocksPerEra
     );
 
@@ -222,7 +213,6 @@ describe("ValidatorContract", () => {
     inspectorPool = await inspectorPoolFactory.deploy(
       regenerationCredit.target,
       inspectorPoolArgs.halving,
-      inspectorPoolArgs.totalEras,
       inspectorPoolArgs.blocksPerEra
     );
 
@@ -230,7 +220,6 @@ describe("ValidatorContract", () => {
     developerPool = await developerPoolFactory.deploy(
       regenerationCredit.target,
       developerPoolParams.halving,
-      developerPoolParams.totalEras,
       developerPoolParams.blocksPerEra
     );
 
@@ -238,7 +227,6 @@ describe("ValidatorContract", () => {
     researcherPool = await reseacherPoolFactory.deploy(
       regenerationCredit.target,
       researcherPoolParams.halving,
-      researcherPoolParams.totalEras,
       researcherPoolParams.blocksPerEra
     );
 
@@ -246,7 +234,6 @@ describe("ValidatorContract", () => {
     contributorPool = await contributorPoolFactory.deploy(
       regenerationCredit.target,
       contributorPoolParams.halving,
-      contributorPoolParams.totalEras,
       contributorPoolParams.blocksPerEra
     );
 
@@ -259,7 +246,7 @@ describe("ValidatorContract", () => {
 
     const developerMaxPenalties = 3;
     const developerSecuryBlocksToAnalysis = 10;
-    developerContractFactory = await ethers.getContractFactory("DeveloperContract");
+    const developerContractFactory = await ethers.getContractFactory("DeveloperContract");
     developerContract = await developerContractFactory.deploy(
       userContract.target,
       developerPool.target,
@@ -269,7 +256,7 @@ describe("ValidatorContract", () => {
     );
 
     const contributorSecuryBlocksToAnalysis = 10;
-    contributorContractFactory = await ethers.getContractFactory("ContributorContract");
+    const contributorContractFactory = await ethers.getContractFactory("ContributorContract");
     contributorContract = await contributorContractFactory.deploy(
       userContract.target,
       contributorPool.target,
@@ -279,7 +266,7 @@ describe("ValidatorContract", () => {
     const reseacherMaxPenalties = 3;
     const reseacherTimeBetweenWorks = 10;
     const researcherSecuryBlocksToAnalysis = 10;
-    researcherContractFactory = await ethers.getContractFactory("ResearcherContract");
+    const researcherContractFactory = await ethers.getContractFactory("ResearcherContract");
     researcherContract = await researcherContractFactory.deploy(
       userContract.target,
       researcherPool.target,
@@ -293,7 +280,6 @@ describe("ValidatorContract", () => {
     activistPool = await activistPoolFactory.deploy(
       regenerationCredit.target,
       activistPoolArgs.halving,
-      activistPoolArgs.totalEras,
       activistPoolArgs.blocksPerEra
     );
 
@@ -1624,9 +1610,9 @@ describe("ValidatorContract", () => {
             await instance.connect(validator1Address).withdraw();
           });
 
-          it("withdraw 1200000000000000000000000 tokens", async () => {
+          it("withdraw 1250000000000000000000000 tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(validator1Address);
-            const expectedBalance = 1200000000000000000000000n;
+            const expectedBalance = 1250000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
           });
@@ -1643,9 +1629,9 @@ describe("ValidatorContract", () => {
             await instance.connect(validator1Address).withdraw();
           });
 
-          it("withdraw 600000000000000000000000n tokens", async () => {
+          it("withdraw 625000000000000000000000 tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(validator1Address);
-            const expectedBalance = 600000000000000000000000n;
+            const expectedBalance = 625000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
           });

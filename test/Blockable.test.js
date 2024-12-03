@@ -8,7 +8,6 @@ describe("Blockable", () => {
 
   const params = {
     blocksPerEra: 10,
-    eraMax: 12,
     halving: 12,
   };
 
@@ -17,7 +16,7 @@ describe("Blockable", () => {
 
     const blockableContractFactory = await ethers.getContractFactory("Blockable");
 
-    instance = await blockableContractFactory.deploy(params.blocksPerEra, params.eraMax, params.halving);
+    instance = await blockableContractFactory.deploy(params.blocksPerEra, params.halving);
   });
 
   describe("#currentContractEra", () => {
@@ -232,19 +231,6 @@ describe("Blockable", () => {
       it("should return true", async () => {
         const canWithdraw = await instance.canWithdraw(currentUserEra);
         expect(canWithdraw).to.equal(true);
-      });
-    });
-
-    context("when currentUserEra is less than currentContractEra and currentUserEra have passed eraMax", () => {
-      beforeEach(async () => {
-        await advanceBlock(20 * params.blocksPerEra);
-      });
-
-      const currentUserEra = params.eraMax + 1;
-
-      it("should return false", async () => {
-        const canWithdraw = await instance.canWithdraw(currentUserEra);
-        expect(canWithdraw).to.equal(false);
       });
     });
 

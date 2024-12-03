@@ -22,7 +22,6 @@ describe("ProducerContract", () => {
   const producerPoolArgs = {
     totalTokens: "750000000000000000000000000",
     halving: 50,
-    totalEras: 50,
     blocksPerEra: 50,
   };
 
@@ -38,7 +37,6 @@ describe("ProducerContract", () => {
     producerPool = await producerPoolFactory.deploy(
       regenerationCredit.target,
       producerPoolArgs.halving,
-      producerPoolArgs.totalEras,
       producerPoolArgs.blocksPerEra
     );
 
@@ -630,16 +628,16 @@ describe("ProducerContract", () => {
                 await instance.connect(prod2Address).withdraw();
               });
 
-              it("producer A must withdraw 3600000000000000000000000n tokens", async () => {
+              it("producer A must withdraw 3750000000000000000000000n tokens", async () => {
                 const balanceOf = await regenerationCredit.balanceOf(prod1Address);
 
-                expect(balanceOf).to.equal(3600000000000000000000000n);
+                expect(balanceOf).to.equal(3750000000000000000000000n);
               });
 
-              it("producer B must withdraw 3600000000000000000000000n tokens", async () => {
+              it("producer B must withdraw 3750000000000000000000000n tokens", async () => {
                 const balanceOf = await regenerationCredit.balanceOf(prod2Address);
 
-                expect(balanceOf).to.equal(3600000000000000000000000n);
+                expect(balanceOf).to.equal(3750000000000000000000000n);
               });
 
               it("producer A current era must be incremented", async () => {
@@ -662,10 +660,10 @@ describe("ProducerContract", () => {
                 await instance.connect(prod1Address).withdraw();
               });
 
-              it("must withdraw 7200000000000000000000000n tokens", async () => {
+              it("must withdraw 7500000000000000000000000n tokens", async () => {
                 const balanceOf = await regenerationCredit.balanceOf(prod1Address);
 
-                expect(balanceOf).to.equal(7200000000000000000000000n);
+                expect(balanceOf).to.equal(7500000000000000000000000n);
               });
 
               it("producer current era must be increment", async () => {
