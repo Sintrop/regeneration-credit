@@ -4,14 +4,11 @@ const { expect } = require("chai");
 
 describe("RegenerationCredit", (accounts) => {
   let instance;
-  let regenerationCreditIco;
   let ownerAddress, user1Address, user2Address, anyContractAddress;
   let producerPool;
 
   let args = {
     totalRegenerationCredits: "1500000000000000000000000000",
-    icoStartsAt: "100",
-    icoEndsAt: "1000",
   };
 
   const argsProducerPool = {
@@ -23,11 +20,8 @@ describe("RegenerationCredit", (accounts) => {
   beforeEach(async () => {
     [ownerAddress, user1Address, user2Address, anyContractAddress] = await ethers.getSigners();
 
-    const regenerationCreditIcoFactory = await ethers.getContractFactory("RegenerationCreditIco");
-    regenerationCreditIco = await regenerationCreditIcoFactory.deploy(args.icoStartsAt, args.icoEndsAt);
-
     const instanceFactory = await ethers.getContractFactory("RegenerationCredit");
-    instance = await instanceFactory.deploy(args.totalRegenerationCredits, regenerationCreditIco.target);
+    instance = await instanceFactory.deploy(args.totalRegenerationCredits);
     userContract = await userContractDeployed();
 
     const producerPoolFactory = await ethers.getContractFactory("ProducerPool");
@@ -36,8 +30,6 @@ describe("RegenerationCredit", (accounts) => {
       argsProducerPool.halving,
       argsProducerPool.blocksPerEra
     );
-
-    await regenerationCreditIco.setRegenerationCredit(instance.target);
   });
 
   describe(".afterDeploy", () => {
@@ -56,14 +48,9 @@ describe("RegenerationCredit", (accounts) => {
       expect(totalLocked).to.equal(0);
     });
 
-    it("balance of contract owner should be equal to 1375500000000000000000000000", async () => {
+    it("balance of contract owner should be equal to 1500000000000000000000000000", async () => {
       const ownerBalance = await instance.balanceOf(ownerAddress);
-      expect(ownerBalance).to.equal(1375500000000000000000000000n);
-    });
-
-    it("balance of regenerationCreditIco should be 135000000000000000000000000", async () => {
-      const balance = await instance.balanceOf(regenerationCreditIco.target);
-      expect(balance).to.equal(124500000000000000000000000n);
+      expect(ownerBalance).to.equal(1500000000000000000000000000n);
     });
   });
 
@@ -238,17 +225,17 @@ describe("RegenerationCredit", (accounts) => {
         await instance.connect(user1Address).transferFrom(ownerAddress, user2Address, "1000000000000000000");
       });
 
-      context("when tokenOwner is sufficiente to transfer", () => {
+      context("when tokenOwner is sufficient to transfer", () => {
         it("user2Address must receive 1000000000000000000 tokens", async () => {
           const balanceOf = await instance.balanceOf(user2Address);
 
           expect(balanceOf).to.equal("1000000000000000000");
         });
 
-        it("owner tokens must be decremented to 1375499999000000000000000000", async () => {
+        it("owner tokens must be decremented to 1499999999000000000000000000", async () => {
           const balanceOf = await instance.balanceOf(ownerAddress);
 
-          expect(balanceOf).to.equal("1375499999000000000000000000");
+          expect(balanceOf).to.equal("1499999999000000000000000000");
         });
       });
 
