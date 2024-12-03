@@ -15,7 +15,6 @@ contract RegenerationCredit is ERC20, Ownable {
   string public constant NAME = "REGENERATION CREDIT";
   string public constant SYMBOL = "RC";
   uint8 public constant DECIMALS = 18;
-  uint256 public constant FUND_ICO = 124500000 * (10 ** DECIMALS);
 
   mapping(address => uint256) internal balances;
   mapping(address => mapping(address => uint256)) internal allowed;
@@ -28,10 +27,9 @@ contract RegenerationCredit is ERC20, Ownable {
 
   using SafeMath for uint256;
 
-  constructor(uint256 total, address _icoAddr) ERC20(NAME, SYMBOL) {
+  constructor(uint256 total) ERC20(NAME, SYMBOL) {
     totalSupply_ = total;
     balances[msg.sender] = totalSupply_;
-    transfer(_icoAddr, FUND_ICO);
   }
 
   function addContractPool(address _fundAddress, uint256 _numTokens) public onlyOwner returns (bool) {

@@ -5,6 +5,10 @@ async function afterDeploy() {
   await configureSintrop();
   await addCategories();
   await renounceOwnership();
+  await inviteUsers();
+  await transferTokens();
+  await offsetEnergy();
+
 
   console.log("After Deploy OK");
 }
@@ -333,6 +337,38 @@ async function renounceOwnership() {
   await contributorPool.renounceOwnership();
   await activistPool.renounceOwnership();
   await validatorPool.renounceOwnership();
+
+  console.log("After renounce ownership is OK");
+}
+
+async function transferTokens() {
+  const regenerationCredit = await getDeployedContract("RegenerationCredit");
+
+  //mainnet - pre-sale investors
+  await regenerationCredit.transfer(0x3350933c9063c68Af77c82568Da6E551A70C038d, "1560000000000000000000000");
+  await regenerationCredit.transfer(0x10deA15bA7B214Df3Cf019a263b897cA8c2fe8CB, "14184000000000000000000");
+  await regenerationCredit.transfer(0x45B4f45225F5c839Db779970627153ab69B9E453, "1063830000000000000000000");
+  await regenerationCredit.transfer(0xe2F72B078254E83cE94CC711C3E672E267E2dA69, "70922000000000000000000");
+  await regenerationCredit.transfer(0x9E78167097d77cbFBDcF18E89E55A660eE977Dbf, "53191000000000000000000");
+  await regenerationCredit.transfer(0x10584a75402fBbB9D2b9239078f8C94fFDed5E1e, "70922000000000000000000");
+  await regenerationCredit.transfer(0xc38eF1d3b5915c22CFe9Ec3FC11F953EE4751768, "1773050000000000000000000");
+  await regenerationCredit.transfer(0x835dbFd7ac5Db0C556A4416b62B6B67Cb05FDf88, "531915000000000000000000");
+  await regenerationCredit.transfer(0x05A6129c3f77db419bD85A6315b95691b212456D, "354610000000000000000000");
+  await regenerationCredit.transfer(0x6202401216350f2266c090AA0d1Ca58bAA57fA8E, "354610000000000000000000");
+  await regenerationCredit.transfer(0x8b92474120e7D586C8F570902E0e4F5967368597, "354610000000000000000000");
+  await regenerationCredit.transfer(0x3e49Ee483A2289946D4992b3A8eEe7aa03e2615B, "177305000000000000000000");
+  await regenerationCredit.transfer(0xa16c1B21487281AaFe1Ee64A8385f92afE91bfe6, "354610000000000000000000");
+  await regenerationCredit.transfer(0x64b15d21c04acd6b9febded3117829f13e475331, "177305000000000000000000");
+  await regenerationCredit.transfer(0x95c4F371055F2c5a130Da0e78B3DF54e7028331e, "106383000000000000000000");
+  await regenerationCredit.transfer(0x68CD2862072381F62cfa25701c450B6842690ccB, "100000000000000000000000");
+  await regenerationCredit.transfer(0xcDeCe2eEFe17dDb09aD3664b8910e66A17b907F4, "90426000000000000000000");
+  await regenerationCredit.transfer(0x1f9B196DA7B2813b3D0C7442E5Ba4C36a7a8E736, "35461000000000000000000");
+  await regenerationCredit.transfer(0x25822ca8524Fcd0D7446b167413CE71880A69f43, "17730000000000000000000");
+  await regenerationCredit.transfer(0xd672Bbff8726AAD5Df56DDB5f9f8719022DE50cA, "35461000000000000000000");
+  await regenerationCredit.transfer(0xaD611ba99d45aF2aA7868FC7DFB346f062a1Dac3, "35461000000000000000000");
+  await regenerationCredit.transfer(0xFbF12d63D54b9a9cC68ff2aBFc71EE3567C57B70, "10638000000000000000000");
+
+  console.log("After token transfer is OK");
 }
 
 async function inviteUsers() {
@@ -434,7 +470,6 @@ async function inviteUsers() {
   await invitationContract.onlyOwnerInvite(0xC200BF12AC0F823751C31FF7ED5534BE4F40FB2A, 4);
   await invitationContract.onlyOwnerInvite(0xC3B0482975E802EF2896ACA0D6B99E11FC26AAAA, 1);
   await invitationContract.onlyOwnerInvite(0xF5275C2E4896F23472F4414AF21EE2BA91EBE16F, 1);
-  await invitationContract.onlyOwnerInvite(0xE23079C8FCD146A782283BB3CC1577CE9AA825D, 1);
   await invitationContract.onlyOwnerInvite(0xA2E046F3A5E55078944FC2BD9F03C51414055A39, 3);
   await invitationContract.onlyOwnerInvite(0xE85C393B185D9A57D68A3129E311FDA8EB0622DB, 2);
   await invitationContract.onlyOwnerInvite(0xA05F72A230F1E3CC748DEBDCAE5B51EB5FA1A421, 1);
@@ -479,32 +514,12 @@ async function inviteUsers() {
   // await invitationContract.renounceOwnership();
 } 
 
-async function transferTokens() {
+async function offsetEnergy() {
   const regenerationCredit = await getDeployedContract("RegenerationCredit");
 
-  //mainnet - pre-sale investors
-  await regenerationCredit.transfer(0x3350933c9063c68Af77c82568Da6E551A70C038d, 1560000000000000000000000);
-  await regenerationCredit.transfer(0x10deA15bA7B214Df3Cf019a263b897cA8c2fe8CB, 14184000000000000000000);
-  await regenerationCredit.transfer(0x45B4f45225F5c839Db779970627153ab69B9E453, 1063830000000000000000000);
-  await regenerationCredit.transfer(0xe2F72B078254E83cE94CC711C3E672E267E2dA69, 70922000000000000000000);
-  await regenerationCredit.transfer(0x9E78167097d77cbFBDcF18E89E55A660eE977Dbf, 53191000000000000000000);
-  await regenerationCredit.transfer(0x10584a75402fBbB9D2b9239078f8C94fFDed5E1e, 70922000000000000000000);
-  await regenerationCredit.transfer(0xc38eF1d3b5915c22CFe9Ec3FC11F953EE4751768, 1773050000000000000000000);
-  await regenerationCredit.transfer(0x835dbFd7ac5Db0C556A4416b62B6B67Cb05FDf88, 531915000000000000000000);
-  await regenerationCredit.transfer(0x05A6129c3f77db419bD85A6315b95691b212456D, 354610000000000000000000);
-  await regenerationCredit.transfer(0x6202401216350f2266c090AA0d1Ca58bAA57fA8E, 354610000000000000000000);
-  await regenerationCredit.transfer(0x8b92474120e7D586C8F570902E0e4F5967368597, 354610000000000000000000);
-  await regenerationCredit.transfer(0x3e49Ee483A2289946D4992b3A8eEe7aa03e2615B, 177305000000000000000000);
-  await regenerationCredit.transfer(0xa16c1B21487281AaFe1Ee64A8385f92afE91bfe6, 354610000000000000000000);
-  await regenerationCredit.transfer(0x64b15d21c04acd6b9febded3117829f13e475331, 177305000000000000000000);
-  await regenerationCredit.transfer(0x95c4F371055F2c5a130Da0e78B3DF54e7028331e, 106383000000000000000000);
-  await regenerationCredit.transfer(0x68CD2862072381F62cfa25701c450B6842690ccB, 100000000000000000000000);
-  await regenerationCredit.transfer(0xcDeCe2eEFe17dDb09aD3664b8910e66A17b907F4, 90426000000000000000000);
-  await regenerationCredit.transfer(0x1f9B196DA7B2813b3D0C7442E5Ba4C36a7a8E736, 35461000000000000000000);
-  await regenerationCredit.transfer(0x25822ca8524Fcd0D7446b167413CE71880A69f43, 17730000000000000000000);
-  await regenerationCredit.transfer(0xd672Bbff8726AAD5Df56DDB5f9f8719022DE50cA, 35461000000000000000000);
-  await regenerationCredit.transfer(0xaD611ba99d45aF2aA7868FC7DFB346f062a1Dac3, 35461000000000000000000);
-  await regenerationCredit.transfer(0xFbF12d63D54b9a9cC68ff2aBFc71EE3567C57B70, 10638000000000000000000);
+  await regenerationCredit.burnTokens(124500000000000000000000000);
+
+  console.log("After offset is OK");
 }
 
 module.exports = afterDeploy;
