@@ -7,18 +7,18 @@ describe("CategoryContract", () => {
   const addCategory = async (name, from) => {
     const description = `The description of ${name}`;
 
-    const isaDescriptions = [
+    const regenerationIndexDescriptions = [
       {
-        isaId: 1,
-        description: "Description for isaId 1 to category",
+        regenerationIndexId: 1,
+        description: "Description for regenerationIndexId 1 to category",
       },
       {
-        isaId: 2,
-        description: "Description for isaId 2 to category",
+        regenerationIndexId: 2,
+        description: "Description for regenerationIndexId 2 to category",
       },
     ];
 
-    await instance.connect(from).addCategory(name, description, isaDescriptions);
+    await instance.connect(from).addCategory(name, description, regenerationIndexDescriptions);
   };
 
   beforeEach(async () => {
@@ -63,16 +63,16 @@ describe("CategoryContract", () => {
         expect(categoryCounts).to.equal(4);
       });
 
-      it("should insert isa descriptions", async () => {
+      it("should insert regeneration index descriptions", async () => {
         await addCategory("Soil", owner);
-        const isaDescriptions = await instance.getCategoryIsaDescription(1);
+        const regenerationIndexDescriptions = await instance.getCategoryRegenerationIndexDescription(1);
 
         const expected = [
-          [1n, "Description for isaId 1 to category"],
-          [2n, "Description for isaId 2 to category"],
+          [1n, "Description for regenerationIndexId 1 to category"],
+          [2n, "Description for regenerationIndexId 2 to category"],
         ];
 
-        expect(isaDescriptions).deep.to.equal(expected);
+        expect(regenerationIndexDescriptions).deep.to.equal(expected);
       });
     });
   });
@@ -101,47 +101,51 @@ describe("CategoryContract", () => {
         await instance.newAllowedCaller(owner);
       });
 
-      context("when category and isa exists", () => {
-        const isasPayload = [
+      context("when category and regeneration index exists", () => {
+        const regenerationIndexPayload = [
           {
             categoryId: 1,
-            isaId: 1,
+            regenerationIndexId: 1,
             indicator: 1,
           },
         ];
 
-        it("calculate isaScore", async () => {
-          const score = await instance.calculateScore(isasPayload);
+        it("calculate regenerationScore", async () => {
+          const score = await instance.calculateScore(regenerationIndexPayload);
 
           expect(score).to.equal(25);
         });
       });
 
       context("when category do not exists", () => {
-        const isasPayload = [
+        const regenerationIndexPayload = [
           {
             categoryId: 100,
-            isaId: 1,
+            regenerationIndexId: 1,
             indicator: 1,
           },
         ];
 
         it("returns error message", async () => {
-          await expect(instance.calculateScore(isasPayload)).to.be.revertedWith("Category or Isa do not exists");
+          await expect(instance.calculateScore(regenerationIndexPayload)).to.be.revertedWith(
+            "Category or Regeneration Index do not exists"
+          );
         });
       });
 
-      context("when isa do not exists", () => {
-        const isasPayload = [
+      context("when Regeneration Index do not exists", () => {
+        const regenerationIndexPayload = [
           {
             categoryId: 1,
-            isaId: 100,
+            regenerationIndexId: 100,
             indicator: 1,
           },
         ];
 
         it("returns error message", async () => {
-          await expect(instance.calculateScore(isasPayload)).to.be.revertedWith("Category or Isa do not exists");
+          await expect(instance.calculateScore(regenerationIndexPayload)).to.be.revertedWith(
+            "Category or Regeneration Index do not exists"
+          );
         });
       });
     });

@@ -15,7 +15,7 @@ import { UserType } from "./types/UserTypes.sol";
  */
 contract ProducerContract is Callable {
   uint256 internal constant MINIMUM_INSPECTION_TO_POOL = 3;
-  int256 internal constant LIMIT_ISA_SCORE_TO_POOL = 1000;
+  int256 internal constant LIMIT_REGENERATION_SCORE_TO_POOL = 1000;
 
   mapping(address => Producer) public producers;
 
@@ -96,8 +96,8 @@ contract ProducerContract is Callable {
     return totalInspections >= MINIMUM_INSPECTION_TO_POOL;
   }
 
-  function limitIsaScore(Producer memory producer) private pure returns (bool) {
-    return producer.isa.isaScore >= LIMIT_ISA_SCORE_TO_POOL;
+  function limitRegenerationScore(Producer memory producer) private pure returns (bool) {
+    return producer.regenerationScore.score >= LIMIT_REGENERATION_SCORE_TO_POOL;
   }
 
   /**
@@ -117,61 +117,65 @@ contract ProducerContract is Callable {
    * @return a bool that represent if a producer is sustainable or not
    */
   function isSustainable(address addr) public view returns (bool) {
-    return producers[addr].isa.sustainable;
+    return producers[addr].regenerationScore.sustainable;
   }
 
-  function setIsaScore(address addr, int256 isaScore) private {
+  function setRegenerationScore(address addr, int256 regenerationScore) private {
     Producer memory producer = producers[addr];
 
-    int256 beforeIsaScore = producer.isa.isaScore;
-    producer.isa.isaScore += isaScore;
+    int256 beforeRegenerationScore = producer.regenerationScore.score;
+    producer.regenerationScore.score += regenerationScore;
     producers[addr] = producer;
 
-    if (limitIsaScore(producer)) changeProducerToSustainable(producer);
+    if (limitRegenerationScore(producer)) changeProducerToSustainable(producer);
     if (!minimumInspections(producer.totalInspections)) return;
-    if (isaScore > 0) addIsaScore(producer, beforeIsaScore, isaScore);
-    if (isaScore < 0) removeIsaScore(producer, isaScore);
+    if (regenerationScore > 0) addRegenerationScore(producer, beforeRegenerationScore, regenerationScore);
+    if (regenerationScore < 0) removeRegenerationScore(producer, regenerationScore);
   }
 
-  function addIsaScore(Producer memory producer, int256 beforeIsaScore, int256 isaScore) private {
-    if (producer.isa.isaScore <= 0) return;
+  function addRegenerationScore(
+    Producer memory producer,
+    int256 beforeRegenerationScore,
+    int256 regenerationScore
+  ) private {
+    if (producer.regenerationScore.score <= 0) return;
     uint256 levels;
 
-    bool newScoreMakeProducerPositive = beforeIsaScore < 0;
+    bool newScoreMakeProducerPositive = beforeRegenerationScore < 0;
 
     if (newScoreMakeProducerPositive) {
-      levels = uint256(producer.isa.isaScore);
+      levels = uint256(producer.regenerationScore.score);
     } else {
-      levels = producer.pool.onContractPool ? uint256(isaScore) : uint256(producer.isa.isaScore);
+      levels = producer.pool.onContractPool ? uint256(regenerationScore) : uint256(producer.regenerationScore.score);
     }
 
     if (!producer.pool.onContractPool) producers[producer.producerWallet].pool.onContractPool = true;
     producerPool.addLevel(producer.producerWallet, levels, levels);
   }
 
-  function removeIsaScore(Producer memory producer, int256 isaScore) internal {
+  function removeRegenerationScore(Producer memory producer, int256 regenerationScore) internal {
     if (!producer.pool.onContractPool) return;
 
-    producerPool.removeLevel(producer.producerWallet, uint256(-(isaScore)));
+    producerPool.removeLevel(producer.producerWallet, uint256(-(regenerationScore)));
   }
 
   function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Producer memory producer = producers[addr];
 
-    if (removeSomeLevels == 0) producers[addr].isa.isaScore = 0;
-    if (removeSomeLevels > 0) producers[addr].isa.isaScore -= int256(removeSomeLevels);
+    if (removeSomeLevels == 0) producers[addr].regenerationScore.score = 0;
+    if (removeSomeLevels > 0) producers[addr].regenerationScore.score -= int256(removeSomeLevels);
 
     producerPool.removePoolLevels(addr, producer.pool.currentEra, removeSomeLevels);
   }
 
   function removeNegativeScore(address addr, int256 levels) public mustBeAllowedCaller {
-    producers[addr].isa.isaScore += levels;
+    producers[addr].regenerationScore.score += levels;
     producerPool.addLevel(addr, uint256(levels), uint256(levels));
   }
 
   function changeProducerToSustainable(Producer memory producer) internal {
     producersSustainable++;
-    producers[producer.producerWallet].isa.sustainable = true;
+    producers[producer.producerWallet].regenerationScore.sustainable = true;
   }
 
   function incrementInspections(address addr) private returns (uint256) {
@@ -198,7 +202,7 @@ contract ProducerContract is Callable {
   function afterRealizeInspection(address addr, int256 score) public mustBeAllowedCaller returns (uint256) {
     uint256 totalInspections = incrementInspections(addr);
 
-    setIsaScore(addr, score);
+    setRegenerationScore(addr, score);
 
     return totalInspections;
   }

@@ -11,7 +11,7 @@ struct Producer {
   bool pendingInspection;
   uint256 totalInspections;
   uint256 lastRequestAt;
-  Isa isa;
+  RegenerationScore regenerationScore;
   AreaInformation areaInformation;
   Pool pool;
 }
@@ -21,9 +21,9 @@ struct Pool {
   uint256 currentEra;
 }
 
-struct Isa {
-  int256 isaScore;
-  int256 isaAverage;
+struct RegenerationScore {
+  int256 score;
+  int256 average;
   bool sustainable;
 }
 

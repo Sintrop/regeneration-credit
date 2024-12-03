@@ -218,7 +218,7 @@ describe("ProducerPool", () => {
           });
 
           context("when totalScores is 80", () => {
-            context("when producer1 have 80 isaScore", () => {
+            context("when producer1 have 80 regenerationScore", () => {
               beforeEach(async () => {
                 await instance.addLevel(producer1Address, 80, 80);
                 await advanceBlock(args.blocksPerEra);
@@ -283,7 +283,7 @@ describe("ProducerPool", () => {
             });
 
             context("when totalScores is 80", () => {
-              context("when producer1 have 80 isaScore", () => {
+              context("when producer1 have 80 regenerationScore", () => {
                 beforeEach(async () => {
                   await instance.addLevel(producer1Address, 80, 80);
                   await advanceBlock(args.blocksPerEra * args.halving);
