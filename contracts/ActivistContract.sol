@@ -31,9 +31,9 @@ contract ActivistContract is Callable {
   }
 
   /**
-   * @dev Allow a new register of activist
-   * @param name the name of the activist
-   * @return a Activist
+   * @dev Allows a user to attempt to register as an activist
+   * @param name The name of the activist
+   * @param proofPhoto Identity photo
    */
   function addActivist(string memory name, string memory proofPhoto) public returns (Activist memory) {
     Activist memory activist = Activist(
@@ -53,7 +53,7 @@ contract ActivistContract is Callable {
 
   /**
    * @dev Returns all registered activists
-   * @return Activist struct array
+   * @return Activist[]
    */
   function getActivists() public view returns (Activist[] memory) {
     uint256 usersCount = userContract.userTypesCount(USER_TYPE);
@@ -69,12 +69,21 @@ contract ActivistContract is Callable {
 
   /**
    * @dev Return a specific activist
-   * @param addr the address of the activist.
+   * @param addr The address of the activist
+   * @return Activist
    */
   function getActivist(address addr) public view returns (Activist memory) {
     return activists[addr];
   }
 
+  /**
+   * @dev Allow an activist to receive pool levels
+   * @notice Receive level when invited users complete three inspections
+   * @param producerAddress Invited producer wallet
+   * @param producerTotalInspections Invited producer total inspections
+   * @param inspectorAddress Invited inspector wallet
+   * @param inspectorTotalInspections Invited inspector total inspections
+   */
   function addLevel(
     address producerAddress,
     uint256 producerTotalInspections,
@@ -85,6 +94,11 @@ contract ActivistContract is Callable {
     addLevelFromInspector(inspectorAddress, inspectorTotalInspections);
   }
 
+  /**
+   * @dev Add level to activist when invited producer reaches minimum inspections
+   * @param producerAddress Invited producer wallet
+   * @param producerTotalInspections Invited producer total inspections
+   */
   function addLevelFromProducer(address producerAddress, uint256 producerTotalInspections) private {
     Invitation memory producerInvitation = userContract.getInvitation(producerAddress);
 
@@ -97,6 +111,11 @@ contract ActivistContract is Callable {
     }
   }
 
+  /**
+   * @dev Add level to activist when invited inspector reaches minimum inspections
+   * @param inspectorAddress Invited inspector wallet
+   * @param inspectorTotalInspections Invited inspector total inspections
+   */
   function addLevelFromInspector(address inspectorAddress, uint256 inspectorTotalInspections) private {
     Invitation memory inspectorInvitation = userContract.getInvitation(inspectorAddress);
 
@@ -109,6 +128,10 @@ contract ActivistContract is Callable {
     }
   }
 
+  /**
+   * @dev Increases activist level
+   * @param activistAddress Activist wallet
+   */
   function setActivistLevel(address activistAddress) private {
     Activist memory activist = activists[activistAddress];
 
@@ -120,6 +143,10 @@ contract ActivistContract is Callable {
     activistPool.addLevel(activistAddress, 1, 1);
   }
 
+  /**
+   * @dev Call withdraw function from activistPool to try to claim tokens
+   * @notice Withdraw regeneration credit from activism service provided
+   */
   function withdraw() public {
     require(userContract.userTypeIs(UserType.ACTIVIST, msg.sender), "Pool only to activist");
 
@@ -133,6 +160,10 @@ contract ActivistContract is Callable {
     activistPool.withdraw(msg.sender, currentEra);
   }
 
+  /**
+   * @dev Remove pool levels from activist
+   * @param addr Activist wallet
+   */
   function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Activist memory activist = activists[addr];
 
@@ -140,6 +171,10 @@ contract ActivistContract is Callable {
     activistPool.removePoolLevels(addr, activistPoolEra(), removeSomeLevels);
   }
 
+  /**
+   * @dev Current actvistPool era
+   * @return uint256 Return the current contract pool era
+   */
   function activistPoolEra() internal view returns (uint256) {
     return activistPool.currentContractEra();
   }

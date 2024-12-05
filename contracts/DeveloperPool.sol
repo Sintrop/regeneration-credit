@@ -29,6 +29,11 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
     regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
   }
 
+  /**
+   * @dev Called by the developer contract, this function calls the token contract to transfer the rewards
+   * @param delegate User address
+   * @param era User current era
+   */
   function withdraw(address delegate, uint256 era) public mustBeAllowedCaller canWithdrawModifier(era) {
     uint256 numTokens = tokens(era, delegate, tokensPerEra(currentUserEpoch(era), HALVING));
 
@@ -39,12 +44,24 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
     regenerationCredit.transferWith(address(this), delegate, numTokens);
   }
 
+ /**
+   * @dev Called by the developer contract, function to increase developer pool level
+   * @param addr Developer wallet
+   * @param currentLevel Developer current level
+   * @param addLevels Levels to increase
+   */
   function addLevel(address addr, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 
     addPoolLevel(addr, currentLevel, addLevels, era);
   }
 
+  /**
+   * @dev Called by the developer contract, function to decrease developer pool level
+   * @param addr Developer wallet
+   * @param era Current pool era
+   * @param removeSomeLevels Levels to decrease
+   */
   function removePoolLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
     removeLevelsFromEra(addr, era, removeSomeLevels);
   }

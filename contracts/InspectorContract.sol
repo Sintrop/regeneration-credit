@@ -34,9 +34,9 @@ contract InspectorContract is Callable {
   }
 
   /**
-   * @dev Allow a new registration of inspector
-   * @param name the name of the inspector
-   * @return a Inspector
+   * @dev Allows a user to attempt to register as an inspector
+   * @param name The name of the inspector
+   * @param proofPhoto Identity photo
    */
   function addInspector(string memory name, string memory proofPhoto) public returns (Inspector memory) {
     Inspector memory inspector = Inspector(
@@ -100,18 +100,27 @@ contract InspectorContract is Callable {
     return bytes(inspectors[addr].name).length > 0;
   }
 
+  /**
+   * @dev Actions after accepting an inspection
+   */
   function afterAcceptInspection(address addr, uint256 lastInspectionId) public mustBeAllowedCaller {
     markLastInspection(addr, lastInspectionId);
 
     incrementGiveUps(addr);
   }
 
+  /**
+   * @dev Actions after realizing an inspection
+   */
   function afterRealizeInspection(address addr) public mustBeAllowedCaller returns (uint256) {
     decreaseGiveUps(addr);
 
     return incrementInspections(addr);
   }
 
+  /**
+   * @dev Increase inspector level and total inspections
+   */
   function incrementInspections(address addr) private returns (uint256) {
     inspectors[addr].totalInspections++;
 
@@ -120,6 +129,10 @@ contract InspectorContract is Callable {
     return inspectors[addr].totalInspections;
   }
 
+  /**
+   * @dev Adds a level to an inspector
+   * @param addr Inspector wallet
+   */
   function addLevel(address addr) internal {
     Inspector memory inspector = inspectors[addr];
     inspector.pool.level++;
@@ -130,6 +143,10 @@ contract InspectorContract is Callable {
     inspectorPool.addLevel(addr, 1, 1);
   }
 
+  /**
+   * @dev Remove pool levels from inspector
+   * @param addr Inspector wallet
+   */
   function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Inspector memory inspector = inspectors[addr];
 
@@ -139,29 +156,54 @@ contract InspectorContract is Callable {
     inspectorPool.removePoolLevels(addr, inspector.pool.currentEra, removeSomeLevels);
   }
 
+  /**
+   * @dev Decrement inspections after invalidation
+   * @param addr Inspector wallet
+   */
   function decrementInspections(address addr) public mustBeAllowedCaller {
     require(inspectors[addr].totalInspections > 0, "totalInspections invalid");
 
     inspectors[addr].totalInspections--;
   }
 
+  /**
+   * @dev Increase inspector give ups
+   * @param addr Inspector wallet
+   */
   function incrementGiveUps(address addr) private {
     inspectors[addr].giveUps++;
   }
 
+  /**
+   * @dev Decrease inspector give ups
+   * @param addr Inspector wallet
+   */
   function decreaseGiveUps(address addr) private {
     inspectors[addr].giveUps--;
   }
 
+  /**
+   * @dev Registers a finished inspection
+   * @param addr Inspector wallet
+   * @param lastInspectionId Last inspection id
+   */
   function markLastInspection(address addr, uint256 lastInspectionId) private {
     inspectors[addr].lastAcceptedAt = block.number;
     inspectors[addr].lastInspection = lastInspectionId;
   }
 
+  /**
+   * @dev Current inspectorPool era
+   * @return uint256 Return the current contract pool era
+   */
   function inspectorPoolEra() internal view returns (uint256) {
     return inspectorPool.currentContractEra();
   }
 
+  /**
+   * @dev Call withdraw function to try to claim tokens
+   * @notice Withdraw regeneration credit from inspection service provided
+   */
   function withdraw() public {
     require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Pool only to inspectors");
 
@@ -177,10 +219,18 @@ contract InspectorContract is Callable {
     inspectorPool.withdraw(msg.sender, currentEra);
   }
 
+  /**
+   * @dev Checks if inspector reached minimum inspections
+   * @return bool True if reached
+   */
   function minimumInspections(uint256 totalInspections) internal pure returns (bool) {
     return totalInspections >= MINIMUM_INSPECTIONS_TO_POOL;
   }
 
+  /**
+   * @dev Checkks if an inspector has less than maximum give ups 
+   * @param addr Inspector wallet
+   */
   function isInspectorValid(address addr) public view returns (bool) {
     return inspectors[addr].giveUps < MAX_GIVEUPS;
   }

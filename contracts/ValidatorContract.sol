@@ -63,6 +63,9 @@ contract ValidatorContract is Callable {
     activistContract = ActivistContract(contractDependency.activistContractAddress);
   }
 
+  /**
+   * @dev Allows a user to attempt to register as a validator
+   */
   function addValidator() public {
     validators[msg.sender] = Validator(
       userContract.userTypesCount(USER_TYPE) + 1,
@@ -264,6 +267,10 @@ contract ValidatorContract is Callable {
     validatorPool.addLevel(addr, validator.pool.level, 1);
   }
 
+  /**
+   * @dev Call withdraw function from validatorPool to try to claim tokens
+   * @notice Withdraw regeneration credit from validation service provided
+   */
   function withdraw() public {
     require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Pool only to validators");
 
@@ -277,6 +284,11 @@ contract ValidatorContract is Callable {
     validatorPool.withdraw(msg.sender, currentEra);
   }
 
+  /**
+   * @dev Remove pool levels from validator
+   * @param addr Validator wallet
+   * @param returnSomeLevels Levels to remove   
+   */
   function validatorRemovePoolLevels(address addr, uint256 removeSomeLevels) private {
     Validator memory validator = validators[addr];
 
@@ -284,6 +296,10 @@ contract ValidatorContract is Callable {
     validatorPool.removePoolLevels(addr, validatorPoolEra(), removeSomeLevels);
   }
 
+  /**
+   * @dev Current validatorPool era
+   * @return uint256 Return the current contract pool era
+   */
   function validatorPoolEra() private view returns (uint256) {
     return validatorPool.currentContractEra();
   }
