@@ -44,7 +44,7 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
     regenerationCredit.transferWith(address(this), delegate, numTokens);
   }
 
- /**
+  /**
    * @dev Called by the developer contract, function to increase developer pool level
    * @param addr Developer wallet
    * @param currentLevel Developer current level

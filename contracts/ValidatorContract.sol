@@ -287,7 +287,7 @@ contract ValidatorContract is Callable {
   /**
    * @dev Remove pool levels from validator
    * @param addr Validator wallet
-   * @param returnSomeLevels Levels to remove   
+   * @param removeSomeLevels Levels to remove
    */
   function validatorRemovePoolLevels(address addr, uint256 removeSomeLevels) private {
     Validator memory validator = validators[addr];

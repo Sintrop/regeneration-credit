@@ -228,7 +228,7 @@ contract InspectorContract is Callable {
   }
 
   /**
-   * @dev Checkks if an inspector has less than maximum give ups 
+   * @dev Checkks if an inspector has less than maximum give ups
    * @param addr Inspector wallet
    */
   function isInspectorValid(address addr) public view returns (bool) {

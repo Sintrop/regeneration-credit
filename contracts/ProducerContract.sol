@@ -133,7 +133,7 @@ contract ProducerContract is Callable {
 
   /**
    * @dev Check if a specific producer reached the maximum score
-   * @param addr Producer address   
+   * @param addr Producer address
    * @return a bool that represent if a producer is sustainable or not
    */
   function isSustainable(address addr) public view returns (bool) {
@@ -142,8 +142,8 @@ contract ProducerContract is Callable {
 
   /**
    * @dev Set the new regeneration score
-   * @param addr Producer address  
-   * @param regenerationScore New score 
+   * @param addr Producer address
+   * @param regenerationScore New score
    */
   function setRegenerationScore(address addr, int256 regenerationScore) private {
     Producer memory producer = producers[addr];
