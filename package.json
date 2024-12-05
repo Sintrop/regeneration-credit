@@ -9,6 +9,7 @@
     "deploy:sepolia": "npx hardhat run --network sepolia scripts/deploy.js",
     "deploy:zkevm": "npx hardhat run --network zkevm scripts/deploy.js",
     "deploy:holesky": "npx hardhat run --network holesky scripts/deploy.js",
+    "deploy:sequoia:testnet": "npx hardhat run --network sequoiaTestnet scripts/deploy.js",
     "coverage": "npx hardhat coverage",
     "generate:docs": "npx solidity-docgen --solc-module solc",
     "ganache:start": "ganache-cli -d -m 'sintrop' -a 10 -e 200 -h 0.0.0.0",
