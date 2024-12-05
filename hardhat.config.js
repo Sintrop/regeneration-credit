@@ -38,9 +38,25 @@ module.exports = {
     //   url: `https://rpc.holesky.ethpandaops.io`,
     //   accounts: [privateKey],
     // },
+    // sequoiaTestnet: {
+    //   url: "https://rpcsequoia01.edevapps.com.br",
+    //   accounts: [privateKey],
+    // }
   },
   etherscan: {
-    apiKey: etherscanApiKey,
+    apiKey: {
+      "sequoiaTestnet": "empty"
+    },
+    customChains: [
+      {
+        network: "sequoiaTestnet",
+        chainId: 1500,
+        urls: {
+          apiURL: "https://sequoiaapi.edevapps.com.br/api",
+          browserURL: "https://sequoiaapi.edevapps.com.br:5000"
+        }
+      }
+    ]
   },
   sourcify: {
     enabled: false,
