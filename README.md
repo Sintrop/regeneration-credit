@@ -36,7 +36,6 @@ To run the project and start contributing please follow the tutorial:
 
 ### Pre-requisites
 
-Hardhat installed
 Docker installed
 
 ### Run with the docker
@@ -55,7 +54,7 @@ docker exec -it SINTROP-APP bash
 
 ### Deploy on localhost
 
-1) Set up local node locally
+1) Set up local node
 
 ```
 npx hardhat node
