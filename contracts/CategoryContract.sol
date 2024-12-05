@@ -35,7 +35,7 @@ contract CategoryContract is Ownable, Callable {
   }
 
   /**
-   * @dev add a new category
+   * @dev add a new index category
    * @param name Category name
    * @param description Category description
    * @param regenerationIndexDescriptions RegenerationIndexDescription[]
@@ -83,6 +83,11 @@ contract CategoryContract is Ownable, Callable {
     return categoryRegenerationIndexDescriptions[categoryId];
   }
 
+  /**
+   * @dev Function to calculate the inspection score
+   * @param _regenerationInspection Inspection result provided by inspector
+   * @return int256 Inspection score
+   */
   function calculateScore(RegenerationInspection[] memory _regenerationInspection) public view returns (int256) {
     int256 regenerationScore;
     RegenerationIndex memory regeneration;

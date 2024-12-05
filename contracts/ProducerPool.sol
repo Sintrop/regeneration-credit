@@ -30,6 +30,11 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
     regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
   }
 
+  /**
+   * @dev Called by the producer contract, this function calls the token contract to transfer the rewards
+   * @param delegate User address
+   * @param era User current era
+   */
   function withdraw(address delegate, uint256 era) public mustBeAllowedCaller canWithdrawModifier(era) {
     uint256 numTokens = tokens(era, delegate, tokensPerEra(currentUserEpoch(era), HALVING));
 
@@ -40,18 +45,35 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
     regenerationCredit.transferWith(address(this), delegate, numTokens);
   }
 
+  /**
+   * @dev Called by the producer contract, function to increase producer level
+   * @param producer Producer wallet
+   * @param currentLevel Producer current level
+   * @param addLevels Levels to increase
+   */
   function addLevel(address producer, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 
     addPoolLevel(producer, currentLevel, addLevels, era);
   }
 
+  /**
+   * @dev Called by the producer contract, function to decrease producer regeneration level
+   * @param producer Producer wallet
+   * @param levels Levels to decrease
+   */
   function removeLevel(address producer, uint256 levels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 
     removeLevelsFromEra(producer, era, levels);
   }
 
+  /**
+   * @dev Called by the producer contract, function to decrease producer pool level
+   * @param addr Producer wallet
+   * @param era Current pool era
+   * @param removeSomeLevels Levels to decrease
+   */
   function removePoolLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
     removeLevelsFromEra(addr, era, removeSomeLevels);
   }

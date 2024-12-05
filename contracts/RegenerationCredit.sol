@@ -32,6 +32,11 @@ contract RegenerationCredit is ERC20, Ownable {
     balances[msg.sender] = totalSupply_;
   }
 
+  /**
+   * @dev Allows owner to create a token distribution pool
+   * @param _fundAddress Contract address
+   * @param _numTokens Contract total tokens
+   */
   function addContractPool(address _fundAddress, uint256 _numTokens) public onlyOwner returns (bool) {
     contractsPools[_fundAddress] = true;
     transfer(_fundAddress, _numTokens);
@@ -40,6 +45,12 @@ contract RegenerationCredit is ERC20, Ownable {
     return true;
   }
 
+  /**
+   * @dev Allows contract pools to transfer tokens to user as service for environmental service
+   * @param tokenOwner Contract address
+   * @param receiver Address to receive the tokens
+   * @param numTokens Amount of tokens
+   */
   function transferWith(
     address tokenOwner,
     address receiver,

@@ -34,8 +34,9 @@ contract ContributorContract is Ownable, Callable {
   }
 
   /**
-   * @dev Allow a new register of contributor
-   * @param name the name of the contributor
+   * @dev Allows a user to attempt to register as a contributor
+   * @param name The name of the contributor
+   * @param proofPhoto Identity photo
    */
   function addContributor(string memory name, string memory proofPhoto) public {
     uint256 level = 0;
@@ -54,6 +55,11 @@ contract ContributorContract is Ownable, Callable {
     userContract.addUser(msg.sender, USER_TYPE);
   }
 
+  /**
+   * @dev Allows a contributor to attempt to publish a contribution report
+   * @notice Publish one contribution per era before security blocks
+   * @param report Hash of the report file
+   */
   function addContribution(string memory report) public {
     require(userContract.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Only Contributor");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add contribution");
@@ -121,6 +127,7 @@ contract ContributorContract is Ownable, Callable {
 
   /**
    * @dev Call withdraw function from contributorPool to try to claim tokens
+   * @notice Withdraw regeneration credit from contribution service provided
    */
   function withdraw() public {
     require(userContract.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Pool only to contributor");
@@ -135,6 +142,10 @@ contract ContributorContract is Ownable, Callable {
     contributorPool.withdraw(msg.sender, currentEra);
   }
 
+  /**
+   * @dev Adds a level to a contributor
+   * @param addr Contributor wallet
+   */
   function addPoolLevel(address addr) internal {
     Contributor memory contributor = contributors[addr];
     contributor.pool.level++;
@@ -143,6 +154,10 @@ contract ContributorContract is Ownable, Callable {
     contributorPool.addLevel(addr, contributor.pool.level, 1);
   }
 
+  /**
+   * @dev Remove pool levels from contributor
+   * @param addr Contributor wallet
+   */
   function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Contributor memory contributor = contributors[addr];
 
@@ -150,12 +165,17 @@ contract ContributorContract is Ownable, Callable {
   }
 
   /**
-   * @dev Returns the current era of pool
+   * @dev Current contributorPool era
+   * @return uint256 Return the current contract pool era
    */
   function contributorPoolEra() internal view returns (uint256) {
     return contributorPool.currentContractEra();
   }
 
+  /**
+   * @dev Calculate blocks to next era
+   * @return uint256 Return the amount of blocks to next era
+   */
   function nextEraIn() public view returns (uint256) {
     return uint256(contributorPool.nextEraIn(contributorPoolEra()));
   }

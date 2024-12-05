@@ -53,6 +53,11 @@ contract UserContract is Ownable, Callable {
     userTypesCount[userType]++;
   }
 
+  /**
+   * @dev Add new user in the system
+   * @param addr The address of the user
+   * @param userType The type of the user - enum UserType
+   */
   function invitedTypeOnRegister(address addr, UserType userType) internal view returns (bool) {
     if (!userTypeSettings[userType].needInvitationOnRegister) return true;
 
@@ -61,6 +66,10 @@ contract UserContract is Ownable, Callable {
     return invitation.createdAtBlock > 0 && invitation.userType == userType;
   }
 
+  /**
+   * @dev Check if proportionality is allowed
+   * @param userType The type of the user - enum UserType
+   */
   function registrationProportionalityAllowed(UserType userType) internal view returns (bool) {
     uint256 producersCount = userTypesCount[UserType.PRODUCER];
     uint256 registeredUserTypeCount = userTypesCount[userType];
@@ -73,10 +82,18 @@ contract UserContract is Ownable, Callable {
     return registeredUserTypeCount < producersCount / proportionality;
   }
 
+  /**
+   * @dev Get the type of a user
+   * @param addr Checked address
+   */
   function getUser(address addr) public view returns (UserType) {
     return users[addr];
   }
 
+  /**
+   * @dev Get the userType settings of a userType
+   * @param userType Checked userType
+   */
   function getUserTypeSettings(UserType userType) public view returns (UserTypeSetting memory) {
     return userTypeSettings[userType];
   }
