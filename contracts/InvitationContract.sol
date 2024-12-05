@@ -6,8 +6,9 @@ import { UserContract } from "./UserContract.sol";
 import { UserType } from "./types/UserTypes.sol";
 
 /**
+ * @author Sintrop
  * @title InvitationContract
- * @dev Invited resource that allow invite users
+ * @dev Manage logic to allow users invite others
  */
 contract InvitationContract is Ownable {
   mapping(address => uint256) public lastInviteBlocks;
@@ -28,6 +29,11 @@ contract InvitationContract is Ownable {
     canBeInviteds[UserType.VALIDATOR] = UserType.VALIDATOR;
   }
 
+  /**
+   * @dev Allows a user to attempt to invite another wallet to the community
+   * @param invited Invited address
+   * @param userType Invited type
+   */
   function invite(address invited, UserType userType) public {
     UserType msgSenderUserType = userContract.getUser(msg.sender);
 
@@ -39,10 +45,20 @@ contract InvitationContract is Ownable {
     userContract.addInvitation(msg.sender, invited, userType);
   }
 
+  /**
+   * @dev Allows owner to invite another wallet to the community
+   * @param invited Invited address
+   * @param userType Invited type
+   */
   function onlyOwnerInvite(address invited, UserType userType) public onlyOwner {
     userContract.addInvitation(msg.sender, invited, userType);
   }
 
+  /**
+   * @dev Calculate if user reached invitation delay
+   * @param userType Invited type
+   * @return bool True if user waited delay blocks
+   */
   function invitationDelayReached(UserType userType) internal view returns (bool) {
     uint256 delayBlocks = userContract.getUserTypeSettings(userType).invitationDelayBlocks;
 

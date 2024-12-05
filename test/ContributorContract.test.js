@@ -16,9 +16,10 @@ describe("ContributorContract", (accounts) => {
   let contributorPoolParams = {
     totalTokens: "7500000000000000000000000",
     halving: 12,
-    totalEras: 96,
-    blocksPerEra: 20,
+    blocksPerEra: 30,
   };
+
+  const securityBlocksToValidatorAnalysis = 10;
 
   const addContributor = async (name, from) => {
     await instance.connect(from).addContributor(name, "photoURL");
@@ -38,12 +39,15 @@ describe("ContributorContract", (accounts) => {
     contributorPool = await contributorPoolFactory.deploy(
       regenerationCredit.target,
       contributorPoolParams.halving,
-      contributorPoolParams.totalEras,
       contributorPoolParams.blocksPerEra
     );
 
     contributorContractFactory = await ethers.getContractFactory("ContributorContract");
-    instance = await contributorContractFactory.deploy(userContract.target, contributorPool.target);
+    instance = await contributorContractFactory.deploy(
+      userContract.target,
+      contributorPool.target,
+      securityBlocksToValidatorAnalysis
+    );
 
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
@@ -141,57 +145,71 @@ describe("ContributorContract", (accounts) => {
     });
 
     context("with contributor", () => {
-      context("when already has contribution", () => {
+      context("when have time to validator analysis", () => {
+        context("when already has contribution", () => {
+          beforeEach(async () => {
+            await instance.connect(contr1Address).addContribution("report");
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(contr1Address).addContribution("report")).to.be.revertedWith(
+              "Already has contribution"
+            );
+          });
+        });
+
+        context("when don't have contribution", () => {
+          beforeEach(async () => {
+            await instance.connect(contr1Address).addContribution("report");
+          });
+
+          it("add contribution id", async () => {
+            const construbution = await instance.contributions(1, contr1Address);
+
+            expect(construbution.id).to.equal(1);
+          });
+
+          it("add contribution", async () => {
+            const construbution = await instance.contributions(1, contr1Address);
+
+            expect(construbution.report).to.equal("report");
+          });
+
+          it("add level to contributor", async () => {
+            const contributor = await instance.getContributor(contr1Address);
+
+            expect(contributor.pool.level).to.equal(1);
+          });
+
+          it("add level to era", async () => {
+            const eraLevels = await contributorPool.eraLevels(1, contr1Address);
+
+            expect(eraLevels).to.equal(1);
+          });
+
+          it("add user to contribution", async () => {
+            const construbution = await instance.contributions(1, contr1Address);
+
+            expect(construbution.user).to.equal(contr1Address.address);
+          });
+
+          it("increment contributiosCount", async () => {
+            const contributionsCount = await instance.contributionsCount();
+
+            expect(contributionsCount).to.equal(1);
+          });
+        });
+      });
+
+      context("when do not have time to validator analysis", () => {
         beforeEach(async () => {
-          await instance.connect(contr1Address).addContribution("report");
+          await advanceBlock(20);
         });
 
         it("should return error message", async () => {
           await expect(instance.connect(contr1Address).addContribution("report")).to.be.revertedWith(
-            "Already has contribution"
+            "Wait until next era to add contribution"
           );
-        });
-      });
-
-      context("when don't have contribution", () => {
-        beforeEach(async () => {
-          await instance.connect(contr1Address).addContribution("report");
-        });
-
-        it("add contribution id", async () => {
-          const construbution = await instance.contributions(1, contr1Address);
-
-          expect(construbution.id).to.equal(1);
-        });
-
-        it("add contribution", async () => {
-          const construbution = await instance.contributions(1, contr1Address);
-
-          expect(construbution.report).to.equal("report");
-        });
-
-        it("add level to contributor", async () => {
-          const contributor = await instance.getContributor(contr1Address);
-
-          expect(contributor.pool.level).to.equal(1);
-        });
-
-        it("add level to era", async () => {
-          const eraLevels = await contributorPool.eraLevels(1, contr1Address);
-
-          expect(eraLevels).to.equal(1);
-        });
-
-        it("add user to contribution", async () => {
-          const construbution = await instance.contributions(1, contr1Address);
-
-          expect(construbution.user).to.equal(contr1Address.address);
-        });
-
-        it("increment contributiosCount", async () => {
-          const contributionsCount = await instance.contributionsCount();
-
-          expect(contributionsCount).to.equal(1);
         });
       });
     });
@@ -290,7 +308,7 @@ describe("ContributorContract", (accounts) => {
             it("should withdraw all tokens from era", async () => {
               let balanceOf = await regenerationCredit.balanceOf(contr1Address);
 
-              let tokensBalance = 300000000000000000000000n;
+              let tokensBalance = 1250000000000000000000000n;
 
               expect(balanceOf).to.equal(tokensBalance);
             });
@@ -326,18 +344,18 @@ describe("ContributorContract", (accounts) => {
                 expect(contributor.pool.currentEra).to.equal(2);
               });
 
-              it("contributor1 balance must be 150000000000000000000000", async () => {
+              it("contributor1 balance must be 625000000000000000000000", async () => {
                 let balanceOf = await regenerationCredit.balanceOf(contr1Address);
 
-                let tokensPerEra = 150000000000000000000000n;
+                let tokensPerEra = 625000000000000000000000n;
 
                 expect(balanceOf).to.equal(tokensPerEra);
               });
 
-              it("contributor2 balance must be 150000000000000000000000", async () => {
+              it("contributor2 balance must be 625000000000000000000000", async () => {
                 let balanceOf = await regenerationCredit.balanceOf(contr2Address);
 
-                let tokensPerEra = 150000000000000000000000n;
+                let tokensPerEra = 625000000000000000000000n;
 
                 expect(balanceOf).to.equal(tokensPerEra);
               });
@@ -371,7 +389,7 @@ describe("ContributorContract", (accounts) => {
 
           it("should can withdraw in two eras", async () => {
             let balanceOf = await regenerationCredit.balanceOf(contr1Address);
-            let tokensPerEra = 600000000000000000000000n;
+            let tokensPerEra = 2500000000000000000000000n;
 
             expect(balanceOf).to.equal(tokensPerEra);
           });

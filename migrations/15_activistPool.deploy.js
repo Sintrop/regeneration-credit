@@ -4,7 +4,6 @@ const verifyContract = require("../scripts/shared/verifyContract");
 
 async function activistPoolDeploy() {
   const poolHalving = process.env["ACTIVIST_POOL_HALVING"];
-  const poolTotalEras = process.env["ACTIVIST_POOL_TOTAL_ERAS"];
   const poolBlocksPerEra = process.env["ACTIVIST_POOL_BLOCKS_PER_ERA"];
   const activistPoolFunds = process.env["ACTIVIST_POOL_FUNDS"];
 
@@ -12,7 +11,7 @@ async function activistPoolDeploy() {
 
   const ActivistPool = await ethers.getContractFactory("ActivistPool");
 
-  const args = [regenerationCredit.target, poolHalving, poolTotalEras, poolBlocksPerEra];
+  const args = [regenerationCredit.target, poolHalving, poolBlocksPerEra];
 
   const activistPool = await ActivistPool.deploy(...args);
 

@@ -48,49 +48,42 @@ describe("ValidatorContract", () => {
   const producerPoolArgs = {
     totalTokens: "750000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 12,
   };
 
   const validatorPoolArgs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 36,
   };
 
   const inspectorPoolArgs = {
     totalTokens: "180000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 20,
   };
 
   let developerPoolParams = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
-    blocksPerEra: 36,
+    blocksPerEra: 45,
   };
 
   let researcherPoolParams = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
-    blocksPerEra: 30,
+    blocksPerEra: 40,
   };
 
   let contributorPoolParams = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
-    blocksPerEra: 30,
+    blocksPerEra: 40,
   };
 
   const activistPoolArgs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 20,
   };
 
@@ -203,7 +196,6 @@ describe("ValidatorContract", () => {
     producerPool = await producerPoolFactory.deploy(
       regenerationCredit.target,
       producerPoolArgs.halving,
-      producerPoolArgs.totalEras,
       producerPoolArgs.blocksPerEra
     );
 
@@ -211,7 +203,6 @@ describe("ValidatorContract", () => {
     validatorPool = await validatorPoolFactory.deploy(
       regenerationCredit.target,
       validatorPoolArgs.halving,
-      validatorPoolArgs.totalEras,
       validatorPoolArgs.blocksPerEra
     );
 
@@ -222,7 +213,6 @@ describe("ValidatorContract", () => {
     inspectorPool = await inspectorPoolFactory.deploy(
       regenerationCredit.target,
       inspectorPoolArgs.halving,
-      inspectorPoolArgs.totalEras,
       inspectorPoolArgs.blocksPerEra
     );
 
@@ -230,7 +220,6 @@ describe("ValidatorContract", () => {
     developerPool = await developerPoolFactory.deploy(
       regenerationCredit.target,
       developerPoolParams.halving,
-      developerPoolParams.totalEras,
       developerPoolParams.blocksPerEra
     );
 
@@ -238,7 +227,6 @@ describe("ValidatorContract", () => {
     researcherPool = await reseacherPoolFactory.deploy(
       regenerationCredit.target,
       researcherPoolParams.halving,
-      researcherPoolParams.totalEras,
       researcherPoolParams.blocksPerEra
     );
 
@@ -246,7 +234,6 @@ describe("ValidatorContract", () => {
     contributorPool = await contributorPoolFactory.deploy(
       regenerationCredit.target,
       contributorPoolParams.halving,
-      contributorPoolParams.totalEras,
       contributorPoolParams.blocksPerEra
     );
 
@@ -258,33 +245,41 @@ describe("ValidatorContract", () => {
     instance = await validatorContractFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
     const developerMaxPenalties = 3;
-    developerContractFactory = await ethers.getContractFactory("DeveloperContract");
+    const developerSecuryBlocksToAnalysis = 10;
+    const developerContractFactory = await ethers.getContractFactory("DeveloperContract");
     developerContract = await developerContractFactory.deploy(
       userContract.target,
       developerPool.target,
       instance.target,
-      developerMaxPenalties
+      developerMaxPenalties,
+      developerSecuryBlocksToAnalysis
     );
 
-    contributorContractFactory = await ethers.getContractFactory("ContributorContract");
-    contributorContract = await contributorContractFactory.deploy(userContract.target, contributorPool.target);
+    const contributorSecuryBlocksToAnalysis = 10;
+    const contributorContractFactory = await ethers.getContractFactory("ContributorContract");
+    contributorContract = await contributorContractFactory.deploy(
+      userContract.target,
+      contributorPool.target,
+      contributorSecuryBlocksToAnalysis
+    );
 
     const reseacherMaxPenalties = 3;
     const reseacherTimeBetweenWorks = 10;
-    researcherContractFactory = await ethers.getContractFactory("ResearcherContract");
+    const researcherSecuryBlocksToAnalysis = 10;
+    const researcherContractFactory = await ethers.getContractFactory("ResearcherContract");
     researcherContract = await researcherContractFactory.deploy(
       userContract.target,
       researcherPool.target,
       instance.target,
       reseacherTimeBetweenWorks,
-      reseacherMaxPenalties
+      reseacherMaxPenalties,
+      researcherSecuryBlocksToAnalysis
     );
 
     const activistPoolFactory = await ethers.getContractFactory("ActivistPool");
     activistPool = await activistPoolFactory.deploy(
       regenerationCredit.target,
       activistPoolArgs.halving,
-      activistPoolArgs.totalEras,
       activistPoolArgs.blocksPerEra
     );
 
@@ -478,10 +473,10 @@ describe("ValidatorContract", () => {
               expect(levels).to.equal(0);
             });
 
-            it("remove user isaScore from producer", async () => {
+            it("remove user regenerationScore from producer", async () => {
               const producer = await producerContract.getProducer(producer1Address);
 
-              expect(producer.isa.isaScore).to.equal(0);
+              expect(producer.regenerationScore.score).to.equal(0);
             });
           });
 
@@ -740,6 +735,25 @@ describe("ValidatorContract", () => {
       });
     });
 
+    context("when validator already voted to inspection", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator3Address, userTypes.Validator, owner);
+        await addInvitation(owner, validator4Address, userTypes.Validator, owner);
+        await addValidator(validator1Address);
+        await addValidator(validator2Address);
+        await addValidator(validator3Address);
+        await addValidator(validator4Address);
+        await instance.connect(validator1Address).addUserValidation(validator4Address, "justification");
+      });
+
+      it("should return error", async () => {
+        await expect(
+          instance.connect(validator1Address).addUserValidation(validator4Address, "justification")
+        ).to.be.revertedWith("Already voted");
+      });
+    });
+
     context("when is not a registered user", () => {
       it("should return error", async () => {
         await addInvitation(owner, validator2Address, userTypes.Validator, owner);
@@ -771,7 +785,7 @@ describe("ValidatorContract", () => {
             status: 3,
             producer: producer1Address,
             inspector: inspector1Address,
-            isaScore: 10,
+            regenerationScore: 10,
             proofPhoto: "",
             report: "",
             validationsCount: 0,
@@ -801,7 +815,7 @@ describe("ValidatorContract", () => {
                 status: 3,
                 producer: producer1Address,
                 inspector: inspector1Address,
-                isaScore: 20,
+                regenerationScore: 20,
                 proofPhoto: "",
                 report: "",
                 validationsCount: 2,
@@ -855,13 +869,13 @@ describe("ValidatorContract", () => {
               expect(producer.totalInspections).to.equal(2);
             });
 
-            it("remove inspection isa level from producer isaScore", async () => {
+            it("remove inspection regeneration score level from producer regenerationScore", async () => {
               const producer = await producerContract.getProducer(producer1Address);
 
-              expect(producer.isa.isaScore).to.equal(30);
+              expect(producer.regenerationScore.score).to.equal(30);
             });
 
-            it("remove inspection isa level from producer pool", async () => {
+            it("remove inspection regeneration score level from producer pool", async () => {
               const levels = await producerPool.eraLevels(3, producer1Address);
 
               expect(levels).to.equal(0);
@@ -875,7 +889,7 @@ describe("ValidatorContract", () => {
                 status: 3,
                 producer: producer1Address,
                 inspector: inspector1Address,
-                isaScore: 20,
+                regenerationScore: 20,
                 proofPhoto: "",
                 report: "",
                 validationsCount: 2,
@@ -928,13 +942,13 @@ describe("ValidatorContract", () => {
               expect(producer.totalInspections).to.equal(2);
             });
 
-            it("remove inspection isa level from producer isaScore", async () => {
+            it("remove inspection regeneration score level from producer regenerationScore", async () => {
               const producer = await producerContract.getProducer(producer1Address);
 
-              expect(producer.isa.isaScore).to.equal(30);
+              expect(producer.regenerationScore.score).to.equal(30);
             });
 
-            it("remove inspection isa level from producer pool", async () => {
+            it("remove inspection regeneration score level from producer pool", async () => {
               const levels = await producerPool.eraLevels(3, producer1Address);
 
               expect(levels).to.equal(0);
@@ -949,7 +963,7 @@ describe("ValidatorContract", () => {
               status: 3,
               producer: producer1Address,
               inspector: inspector1Address,
-              isaScore: 20,
+              regenerationScore: 20,
               proofPhoto: "",
               report: "",
               validationsCount: 1,
@@ -1090,7 +1104,7 @@ describe("ValidatorContract", () => {
               expect(newDeveloperType).to.equal(9);
             });
 
-            it("remove contribution isa level from developer pool", async () => {
+            it("remove contribution regeneration score level from developer pool", async () => {
               const levels = await developerPool.eraLevels(4, dev1Address);
 
               expect(levels).to.equal(0);
@@ -1122,7 +1136,7 @@ describe("ValidatorContract", () => {
               expect(newDeveloperType).to.equal(4);
             });
 
-            it("remove contribution isa level from developer pool", async () => {
+            it("remove contribution regeneration score level from developer pool", async () => {
               const levels = await developerPool.eraLevels(2, dev1Address);
 
               expect(levels).to.equal(0);
@@ -1254,7 +1268,7 @@ describe("ValidatorContract", () => {
               expect(newResearcherType).to.equal(9);
             });
 
-            it("remove work isa level from researcher pool", async () => {
+            it("remove work regeneration score level from researcher pool", async () => {
               const levels = await researcherPool.eraLevels(4, resea1Address);
 
               expect(levels).to.equal(0);
@@ -1282,7 +1296,7 @@ describe("ValidatorContract", () => {
               expect(userType).to.equal(3);
             });
 
-            it("remove contribution isa level from researcher pool", async () => {
+            it("remove contribution regeneration score level from researcher pool", async () => {
               let work = await researcherContract.works(1);
               const levels = await researcherPool.eraLevels(work.era, resea1Address);
 
@@ -1596,9 +1610,9 @@ describe("ValidatorContract", () => {
             await instance.connect(validator1Address).withdraw();
           });
 
-          it("withdraw 1200000000000000000000000 tokens", async () => {
+          it("withdraw 1250000000000000000000000 tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(validator1Address);
-            const expectedBalance = 1200000000000000000000000n;
+            const expectedBalance = 1250000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
           });
@@ -1615,9 +1629,9 @@ describe("ValidatorContract", () => {
             await instance.connect(validator1Address).withdraw();
           });
 
-          it("withdraw 600000000000000000000000n tokens", async () => {
+          it("withdraw 625000000000000000000000 tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(validator1Address);
-            const expectedBalance = 600000000000000000000000n;
+            const expectedBalance = 625000000000000000000000n;
 
             expect(balanceOf).to.equal(expectedBalance);
           });

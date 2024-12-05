@@ -8,7 +8,7 @@ import { ValidatorContract } from "./ValidatorContract.sol";
 import { CategoryContract } from "./CategoryContract.sol";
 import { ActivistContract } from "./ActivistContract.sol";
 import { UserContract } from "./UserContract.sol";
-import { InspectionStatus, IsaInspection, Inspection } from "./types/InspectionTypes.sol";
+import { InspectionStatus, RegenerationInspection, Inspection } from "./types/InspectionTypes.sol";
 import { Producer } from "./types/ProducerTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
@@ -17,8 +17,10 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Callable } from "./Callable.sol";
 
 /**
+ * @author Sintrop
  * @title SintropContract
- * @dev Sintrop application to certificate a rural producer
+ * @dev Manage inspections rules and data
+ * @notice Allow producer to request inspection, and inspectors to accept and realize it
  */
 contract Sintrop is Callable {
   using SafeMath for uint256;
@@ -26,7 +28,7 @@ contract Sintrop is Callable {
   mapping(address => mapping(address => bool)) internal inspectorInspected;
   mapping(address => uint256[]) internal userInspections;
   mapping(uint256 => Inspection) internal inspections;
-  mapping(uint256 => IsaInspection[]) public isaInspections;
+  mapping(uint256 => RegenerationInspection[]) public regenerationInspection;
   mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
   InspectorContract private inspectorContract;
@@ -82,7 +84,10 @@ contract Sintrop is Callable {
     require(userContract.userTypeIs(UserType.PRODUCER, msg.sender), "Please register as producer");
     require(!producer.pendingInspection, "Request already OPEN");
     require(waitToRequest(producer), "Wait to request");
-    require(!producer.isa.sustainable, "You can't request inspections anymore, you have completed your mission");
+    require(
+      !producer.regenerationScore.sustainable,
+      "You can't request inspections anymore, you have completed your mission"
+    );
 
     createInspection();
 
@@ -135,23 +140,23 @@ contract Sintrop is Callable {
   /**
    * @dev Allow a inspector realize a inspection and mark as INSPECTED
    * @param inspectionId The id of the inspection to be realized
-   * @param _isaInspections The IsaIsaInspection[] of the inspection to be realized
+   * @param _regenerationInspection The RegenerationInspection[] of the inspection to be realized
    */
   function realizeInspection(
     uint256 inspectionId,
     string memory proofPhoto,
     string memory report,
-    IsaInspection[] memory _isaInspections
+    RegenerationInspection[] memory _regenerationInspection
   ) public {
     Inspection memory inspection = inspections[inspectionId];
 
-    require(_isaInspections.length == 4, "Invalid isas length");
+    require(_regenerationInspection.length == 4, "Invalid regenerationIndex length");
     require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
     require(inspection.inspector == msg.sender, "You have not accepted this inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
 
-    markAsRealized(inspection, proofPhoto, report, _isaInspections);
+    markAsRealized(inspection, proofPhoto, report, _regenerationInspection);
 
     afterRealizeInspection(inspection);
 
@@ -162,10 +167,10 @@ contract Sintrop is Callable {
     Inspection memory inspection,
     string memory proofPhoto,
     string memory report,
-    IsaInspection[] memory _isaInspections
+    RegenerationInspection[] memory _regenerationInspection
   ) internal {
     inspection.status = InspectionStatus.INSPECTED;
-    inspection.isaScore = categoryContract.calculateScore(_isaInspections);
+    inspection.regenerationScore = categoryContract.calculateScore(_regenerationInspection);
     inspection.proofPhoto = proofPhoto;
     inspection.report = report;
     inspection.inspectedAt = block.number;
@@ -173,10 +178,10 @@ contract Sintrop is Callable {
 
     inspections[inspection.id] = inspection;
 
-    isaInspections[inspection.id].push(_isaInspections[0]);
-    isaInspections[inspection.id].push(_isaInspections[1]);
-    isaInspections[inspection.id].push(_isaInspections[2]);
-    isaInspections[inspection.id].push(_isaInspections[3]);
+    regenerationInspection[inspection.id].push(_regenerationInspection[0]);
+    regenerationInspection[inspection.id].push(_regenerationInspection[1]);
+    regenerationInspection[inspection.id].push(_regenerationInspection[2]);
+    regenerationInspection[inspection.id].push(_regenerationInspection[3]);
   }
 
   /**
@@ -189,7 +194,7 @@ contract Sintrop is Callable {
 
     activistContract.addLevel(
       producerAddress,
-      producerContract.afterRealizeInspection(producerAddress, inspection.isaScore),
+      producerContract.afterRealizeInspection(producerAddress, inspection.regenerationScore),
       inspectorAddress,
       inspectorContract.afterRealizeInspection(inspectorAddress)
     );
@@ -230,11 +235,11 @@ contract Sintrop is Callable {
   }
 
   /**
-   * @dev List IsaInspection from inspection
-   * @param inspectionId The id of the inspection to get IsaInspection
+   * @dev List RegenerationInspection from inspection
+   * @param inspectionId The id of the inspection to get RegenerationInspection
    */
-  function getIsa(uint256 inspectionId) public view returns (IsaInspection[] memory) {
-    return isaInspections[inspectionId];
+  function getRegenerationInspection(uint256 inspectionId) public view returns (RegenerationInspection[] memory) {
+    return regenerationInspection[inspectionId];
   }
 
   function waitToRequest(Producer memory producer) public view returns (bool) {

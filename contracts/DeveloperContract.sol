@@ -10,8 +10,10 @@ import { ValidatorContract } from "./ValidatorContract.sol";
 import { Developer, Pool, Contribution, Penalty } from "./types/DeveloperTypes.sol";
 
 /**
+ * @author Sintrop
  * @title DeveloperContract
- * @dev Developer resource that represent dev
+ * @dev Manage developers rules and data
+ * @notice Responsible for the development of the project
  */
 contract DeveloperContract is Ownable, Callable {
   mapping(address => Developer) public developers;
@@ -28,22 +30,26 @@ contract DeveloperContract is Ownable, Callable {
   uint256 public contributionsCount;
 
   uint256 public immutable MAX_PENALTIES;
+  uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
   constructor(
     address userContractAddress,
     address developerPoolAddress,
     address validatorContractAddress,
-    uint256 maxPenalties_
+    uint256 maxPenalties_,
+    uint256 securityBlocksToValidatorAnalysis
   ) {
     userContract = UserContract(userContractAddress);
     developerPool = DeveloperPool(developerPoolAddress);
     validatorContract = ValidatorContract(validatorContractAddress);
     MAX_PENALTIES = maxPenalties_;
+    SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
 
   /**
-   * @dev Allow a new register of developer
-   * @param name the name of the developer
+   * @dev Allows a user to attempt to register as a developer
+   * @param name The name of the developer
+   * @param proofPhoto Identity photo
    */
   function addDeveloper(string memory name, string memory proofPhoto) public {
     uint256 level = 0;
@@ -62,8 +68,14 @@ contract DeveloperContract is Ownable, Callable {
     userContract.addUser(msg.sender, USER_TYPE);
   }
 
+  /**
+   * @dev Allows a developer to attempt to publish a development report report
+   * @notice Publish one development report per era before security blocks
+   * @param report Hash of the report file
+   */
   function addContribution(string memory report) public {
     require(userContract.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
+    require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add contribution");
 
     uint256 currentEra = developerPoolEra();
     bool contributionEra = developerContributionsEra[currentEra][msg.sender];
@@ -93,6 +105,12 @@ contract DeveloperContract is Ownable, Callable {
     updateLevel(msg.sender);
   }
 
+  /**
+   * @dev Allows a validator to vote to invalidate a development contribution
+   * @notice Publish one development report per era before security blocks
+   * @param id Contribution id
+   * @param justification String with invalidation explanation
+   */
   function addContributionValidation(uint256 id, string memory justification) public {
     require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
@@ -110,12 +128,20 @@ contract DeveloperContract is Ownable, Callable {
     validatorContract.addDeveloperContributionValidation(contribution, justification, msg.sender);
   }
 
+  /**
+   * @dev Executes invalidation
+   * @param contribution Contribution id
+   */
   function invalidateContribution(Contribution memory contribution) internal {
     contribution.valid = false;
     contribution.invalidatedAt = block.number;
     contributions[contribution.id] = contribution;
   }
 
+  /**
+   * @dev Remove pool levels from developer
+   * @param addr Developer wallet
+   */
   function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Developer memory developer = developers[addr];
 
@@ -164,6 +190,7 @@ contract DeveloperContract is Ownable, Callable {
 
   /**
    * @dev Call withdraw function from developerPool to try to claim tokens
+   * @notice Withdraw regeneration credit from development service provided
    */
   function withdraw() public {
     require(userContract.userTypeIs(UserType.DEVELOPER, msg.sender), "Pool only to developer");
@@ -178,6 +205,10 @@ contract DeveloperContract is Ownable, Callable {
     developerPool.withdraw(msg.sender, currentEra);
   }
 
+  /**
+   * @dev Adds a level to a developer
+   * @param addr Developer wallet
+   */
   function updateLevel(address addr) internal {
     Developer memory developer = developers[addr];
     developer.pool.level++;
@@ -197,9 +228,18 @@ contract DeveloperContract is Ownable, Callable {
   }
 
   /**
-   * @dev Returns the current era of pool
+   * @dev Current developerPool era
+   * @return uint256 Return the current contract pool era
    */
   function developerPoolEra() internal view returns (uint256) {
     return developerPool.currentContractEra();
+  }
+
+  /**
+   * @dev Calculate blocks to next era
+   * @return uint256 Return the amount of blocks to next era
+   */
+  function nextEraIn() public view returns (uint256) {
+    return uint256(developerPool.nextEraIn(developerPoolEra()));
   }
 }

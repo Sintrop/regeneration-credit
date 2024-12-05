@@ -5,11 +5,16 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
+/**
+ * @author Sintrop
+ * @title Regeneration Credit
+ * @dev Create and manage the token
+ * @notice Token backed by the regeneration impact of the community
+ */
 contract RegenerationCredit is ERC20, Ownable {
   string public constant NAME = "REGENERATION CREDIT";
   string public constant SYMBOL = "RC";
   uint8 public constant DECIMALS = 18;
-  uint256 public constant FUND_ICO = 124500000 * (10 ** DECIMALS);
 
   mapping(address => uint256) internal balances;
   mapping(address => mapping(address => uint256)) internal allowed;
@@ -22,12 +27,16 @@ contract RegenerationCredit is ERC20, Ownable {
 
   using SafeMath for uint256;
 
-  constructor(uint256 total, address _icoAddr) ERC20(NAME, SYMBOL) {
+  constructor(uint256 total) ERC20(NAME, SYMBOL) {
     totalSupply_ = total;
     balances[msg.sender] = totalSupply_;
-    transfer(_icoAddr, FUND_ICO);
   }
 
+  /**
+   * @dev Allows owner to create a token distribution pool
+   * @param _fundAddress Contract address
+   * @param _numTokens Contract total tokens
+   */
   function addContractPool(address _fundAddress, uint256 _numTokens) public onlyOwner returns (bool) {
     contractsPools[_fundAddress] = true;
     transfer(_fundAddress, _numTokens);
@@ -36,11 +45,19 @@ contract RegenerationCredit is ERC20, Ownable {
     return true;
   }
 
+  /**
+   * @dev Allows contract pools to transfer tokens to user as service for environmental service
+   * @param tokenOwner Contract address
+   * @param receiver Address to receive the tokens
+   * @param numTokens Amount of tokens
+   */
   function transferWith(
     address tokenOwner,
     address receiver,
     uint256 numTokens
-  ) public mustBeContractPool mustHaveRegenerationCredits(tokenOwner, numTokens) returns (bool) {
+  ) public mustBeContractPool returns (bool) {
+    require(numTokens <= balances[tokenOwner], "You don't have RC Tokens");
+
     balances[tokenOwner] = balances[tokenOwner].sub(numTokens);
     balances[receiver] = balances[receiver].add(numTokens);
     emit Transfer(tokenOwner, receiver, numTokens);
@@ -52,7 +69,7 @@ contract RegenerationCredit is ERC20, Ownable {
     return true;
   }
 
-  function contractPool(address contractFundsAddress) internal view returns (bool) {
+  function contractPool(address contractFundsAddress) public view returns (bool) {
     return contractsPools[contractFundsAddress];
   }
 
@@ -134,11 +151,6 @@ contract RegenerationCredit is ERC20, Ownable {
 
   modifier mustBeContractPool() {
     require(contractPool(msg.sender), "Not a contract pool");
-    _;
-  }
-
-  modifier mustHaveRegenerationCredits(address tokenOwner, uint256 numTokens) {
-    require(numTokens <= balances[tokenOwner], "You don't have RCT Tokens");
     _;
   }
 }

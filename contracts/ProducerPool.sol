@@ -13,44 +13,30 @@ import { Poolable } from "./Poolable.sol";
  * @author Sintrop
  * @title ProducerPool
  * @dev ProducerPool is a contract to reward producers
+ * @notice Receive tokens for Nature regeneration service provided
  */
 contract ProducerPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;
 
   RegenerationCreditInterface internal regenerationCredit;
 
-  uint256[8] internal tokensPerEpochs = [
-    360 * 10 ** 24,
-    180 * 10 ** 24,
-    90 * 10 ** 24,
-    45 * 10 ** 24,
-    225 * 10 ** 23,
-    1125 * 10 ** 22,
-    5625 * 10 ** 21,
-    28125 * 10 ** 20
-  ];
+  uint256 internal constant TOTAL_TOKENS_POOL = 750000000000000000000000000;
 
   constructor(
     address regenerationCreditAddress,
     uint256 _halving,
-    uint256 _totalEras,
     uint256 _blocksPerEra
-  ) Blockable(_blocksPerEra, _totalEras, _halving) Poolable(tokensPerEpochs) {
+  ) Blockable(_blocksPerEra, _halving) Poolable(TOTAL_TOKENS_POOL) {
     regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
   }
 
   /**
-   * @dev Returns how much tokens the contract has
+   * @dev Called by the producer contract, this function calls the token contract to transfer the rewards
+   * @param delegate User address
+   * @param era User current era
    */
-  function balance() public view returns (uint256) {
-    return regenerationCredit.balanceOf(address(this));
-  }
-
-  function withdraw(
-    address delegate,
-    uint256 era
-  ) public mustBeAllowedCaller canWithdrawModifier(era) isAValidEpochModifier {
-    uint256 numTokens = tokens(era, delegate, tokensPerEra(currentEpoch(), HALVING));
+  function withdraw(address delegate, uint256 era) public mustBeAllowedCaller canWithdrawModifier(era) {
+    uint256 numTokens = tokens(era, delegate, tokensPerEra(currentUserEpoch(era), HALVING));
 
     updateEraAfterWithdraw(era, delegate, numTokens);
 
@@ -59,18 +45,35 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
     regenerationCredit.transferWith(address(this), delegate, numTokens);
   }
 
+  /**
+   * @dev Called by the producer contract, function to increase producer level
+   * @param producer Producer wallet
+   * @param currentLevel Producer current level
+   * @param addLevels Levels to increase
+   */
   function addLevel(address producer, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 
     addPoolLevel(producer, currentLevel, addLevels, era);
   }
 
+  /**
+   * @dev Called by the producer contract, function to decrease producer regeneration level
+   * @param producer Producer wallet
+   * @param levels Levels to decrease
+   */
   function removeLevel(address producer, uint256 levels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 
     removeLevelsFromEra(producer, era, levels);
   }
 
+  /**
+   * @dev Called by the producer contract, function to decrease producer pool level
+   * @param addr Producer wallet
+   * @param era Current pool era
+   * @param removeSomeLevels Levels to decrease
+   */
   function removePoolLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
     removeLevelsFromEra(addr, era, removeSomeLevels);
   }

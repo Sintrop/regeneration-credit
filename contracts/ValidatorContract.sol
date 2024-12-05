@@ -16,6 +16,12 @@ import { Inspection } from "./types/InspectionTypes.sol";
 import { Contribution } from "./types/DeveloperTypes.sol";
 import { Work } from "./types/ResearcherTypes.sol";
 
+/**
+ * @author Sintrop
+ * @title ValidatorContract
+ * @dev Manage validators rules and data
+ * @notice Responsible for reviewing and voting to invalidate wrong or corrupted actions
+ */
 contract ValidatorContract is Callable {
   mapping(address => Validator) private validators;
   mapping(address => UserValidation[]) private userValidations;
@@ -25,6 +31,7 @@ contract ValidatorContract is Callable {
   mapping(address => mapping(uint256 => bool)) private validatorContributionsValidations;
   mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
   mapping(address => mapping(uint256 => bool)) private validatorWorksValidations;
+  mapping(address => mapping(address => bool)) private validatorUsersValidations;
 
   UserContract private userContract;
   ProducerContract private producerContract;
@@ -56,6 +63,9 @@ contract ValidatorContract is Callable {
     activistContract = ActivistContract(contractDependency.activistContractAddress);
   }
 
+  /**
+   * @dev Allows a user to attempt to register as a validator
+   */
   function addValidator() public {
     validators[msg.sender] = Validator(
       userContract.userTypesCount(USER_TYPE) + 1,
@@ -71,6 +81,9 @@ contract ValidatorContract is Callable {
     require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
     require(!userContract.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
     require(!userContract.userTypeIs(UserType.DENIED, userAddress), "User already denied");
+    require(!validatorUsersValidations[msg.sender][userAddress], "Already voted");
+
+    validatorUsersValidations[msg.sender][userAddress] = true;
 
     uint256 majorityValidatorsCount_ = majorityValidatorsCount();
     uint256 validationsCount = userValidations[userAddress].length + 1;
@@ -171,10 +184,10 @@ contract ValidatorContract is Callable {
 
     removeLevelsFromPool(inspection.inspector, 1);
 
-    if (inspection.isaScore < 0)
-      return producerContract.removeNegativeScore(inspection.producer, -(inspection.isaScore));
+    if (inspection.regenerationScore < 0)
+      return producerContract.removeNegativeScore(inspection.producer, -(inspection.regenerationScore));
 
-    removeLevelsFromPool(inspection.producer, uint256(inspection.isaScore));
+    removeLevelsFromPool(inspection.producer, uint256(inspection.regenerationScore));
   }
 
   function externalDenieUser(address userAddress) private {
@@ -254,6 +267,10 @@ contract ValidatorContract is Callable {
     validatorPool.addLevel(addr, validator.pool.level, 1);
   }
 
+  /**
+   * @dev Call withdraw function from validatorPool to try to claim tokens
+   * @notice Withdraw regeneration credit from validation service provided
+   */
   function withdraw() public {
     require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Pool only to validators");
 
@@ -267,6 +284,11 @@ contract ValidatorContract is Callable {
     validatorPool.withdraw(msg.sender, currentEra);
   }
 
+  /**
+   * @dev Remove pool levels from validator
+   * @param addr Validator wallet
+   * @param removeSomeLevels Levels to remove
+   */
   function validatorRemovePoolLevels(address addr, uint256 removeSomeLevels) private {
     Validator memory validator = validators[addr];
 
@@ -274,6 +296,10 @@ contract ValidatorContract is Callable {
     validatorPool.removePoolLevels(addr, validatorPoolEra(), removeSomeLevels);
   }
 
+  /**
+   * @dev Current validatorPool era
+   * @return uint256 Return the current contract pool era
+   */
   function validatorPoolEra() private view returns (uint256) {
     return validatorPool.currentContractEra();
   }

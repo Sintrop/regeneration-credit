@@ -22,7 +22,6 @@ describe("ProducerContract", () => {
   const producerPoolArgs = {
     totalTokens: "750000000000000000000000000",
     halving: 50,
-    totalEras: 50,
     blocksPerEra: 50,
   };
 
@@ -38,7 +37,6 @@ describe("ProducerContract", () => {
     producerPool = await producerPoolFactory.deploy(
       regenerationCredit.target,
       producerPoolArgs.halving,
-      producerPoolArgs.totalEras,
       producerPoolArgs.blocksPerEra
     );
 
@@ -67,8 +65,8 @@ describe("ProducerContract", () => {
       expect(producer.proofPhoto).to.equal("photoURL");
       expect(producer.totalInspections).to.equal(0);
       expect(producer.pendingInspection).to.equal(false);
-      expect(producer.isa.isaAverage).to.equal("0");
-      expect(producer.isa.isaScore).to.equal("0");
+      expect(producer.regenerationScore.average).to.equal("0");
+      expect(producer.regenerationScore.score).to.equal("0");
 
       expect(producer.pool.currentEra).to.equal(1);
 
@@ -94,19 +92,19 @@ describe("ProducerContract", () => {
       expect(producer.totalInspections).to.equal(0);
     });
 
-    it("should be created with isaAvarage equal zero", async () => {
+    it("should be created with avarage equal zero", async () => {
       await addProducer("Producer A", prod1Address);
       const producer = await instance.getProducer(prod1Address);
 
-      expect(producer.isa.isaAverage).to.equal("0");
+      expect(producer.regenerationScore.average).to.equal("0");
     });
 
-    it("should be created with isaScore equal zero", async () => {
+    it("should be created with regenerationScore equal zero", async () => {
       await addProducer("Producer A", prod1Address);
 
       const producer = await instance.getProducer(prod1Address);
 
-      expect(producer.isa.isaScore).to.equal(0);
+      expect(producer.regenerationScore.score).to.equal(0);
     });
 
     it("should be created with lastRequestAt equal zero", async () => {
@@ -233,7 +231,7 @@ describe("ProducerContract", () => {
     });
 
     context("with allowed user", () => {
-      describe(".setIsaScore", () => {
+      describe(".setRegenerationScore", () => {
         context("when dont have producers sustainable", () => {
           context("when have 1 producer", () => {
             beforeEach(async () => {
@@ -245,16 +243,16 @@ describe("ProducerContract", () => {
                 await instance.afterRealizeInspection(prod1Address, 70);
               });
 
-              it("producer isa score must be 670", async () => {
+              it("producer regeneration score must be 670", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                expect(producer.isa.isaScore).to.equal(670);
+                expect(producer.regenerationScore.score).to.equal(670);
               });
 
               it("producer must not be sustainable", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                expect(producer.isa.sustainable).to.equal(false);
+                expect(producer.regenerationScore.sustainable).to.equal(false);
               });
             });
 
@@ -263,16 +261,16 @@ describe("ProducerContract", () => {
                 await instance.afterRealizeInspection(prod1Address, -70);
               });
 
-              it("producer isa score must be 530", async () => {
+              it("producer regeneration score must be 530", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                expect(producer.isa.isaScore).to.equal(530);
+                expect(producer.regenerationScore.score).to.equal(530);
               });
 
               it("producer must not be sustainable", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                expect(producer.isa.sustainable).to.equal(false);
+                expect(producer.regenerationScore.sustainable).to.equal(false);
               });
             });
 
@@ -281,16 +279,16 @@ describe("ProducerContract", () => {
                 await instance.afterRealizeInspection(prod1Address, -610);
               });
 
-              it("producer isa score must be -10", async () => {
+              it("producer regeneration score must be -10", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                expect(producer.isa.isaScore).to.equal(-10);
+                expect(producer.regenerationScore.score).to.equal(-10);
               });
 
               it("producer must not be sustainable", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                expect(producer.isa.sustainable).to.equal(false);
+                expect(producer.regenerationScore.sustainable).to.equal(false);
               });
             });
 
@@ -299,16 +297,16 @@ describe("ProducerContract", () => {
                 await instance.afterRealizeInspection(prod1Address, 400);
               });
 
-              it("producer isa score must be 1000", async () => {
+              it("producer regeneration score must be 1000", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                expect(producer.isa.isaScore).to.equal(1000);
+                expect(producer.regenerationScore.score).to.equal(1000);
               });
 
               it("producer must be sustainable", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                expect(producer.isa.sustainable).to.equal(true);
+                expect(producer.regenerationScore.sustainable).to.equal(true);
               });
 
               it("producers sustainable must increment", async () => {
@@ -331,16 +329,16 @@ describe("ProducerContract", () => {
                 await instance.afterRealizeInspection(prod1Address, 70);
               });
 
-              it("producer isa score must be 670", async () => {
+              it("producer regeneration score must be 670", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                expect(producer.isa.isaScore).to.equal(670);
+                expect(producer.regenerationScore.score).to.equal(670);
               });
 
               it("producer must not be sustainable", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                expect(producer.isa.sustainable).to.equal(false);
+                expect(producer.regenerationScore.sustainable).to.equal(false);
               });
             });
 
@@ -349,16 +347,16 @@ describe("ProducerContract", () => {
                 await instance.afterRealizeInspection(prod1Address, 400);
               });
 
-              it("producer A isa score must be 1000", async () => {
+              it("producer A regeneration score must be 1000", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                expect(producer.isa.isaScore).to.equal(1000);
+                expect(producer.regenerationScore.score).to.equal(1000);
               });
 
               it("producer A must be sustainable", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                expect(producer.isa.sustainable).to.equal(true);
+                expect(producer.regenerationScore.sustainable).to.equal(true);
               });
 
               it("producers sustainable must increment", async () => {
@@ -373,16 +371,16 @@ describe("ProducerContract", () => {
                 await instance.afterRealizeInspection(prod1Address, -610);
               });
 
-              it("producer isa score must be -10", async () => {
+              it("producer regeneration score must be -10", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                expect(producer.isa.isaScore).to.equal(-10);
+                expect(producer.regenerationScore.score).to.equal(-10);
               });
 
               it("producer must not be sustainable", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                expect(producer.isa.sustainable).to.equal(false);
+                expect(producer.regenerationScore.sustainable).to.equal(false);
               });
             });
           });
@@ -394,21 +392,21 @@ describe("ProducerContract", () => {
               await instance.afterRealizeInspection(prod1Address, 1000);
             });
 
-            context("when producer receive more 100 isa score", () => {
+            context("when producer receive more 100 regeneration score", () => {
               beforeEach(async () => {
                 await instance.afterRealizeInspection(prod1Address, 100);
               });
 
-              it("producer isa score must be 1100", async () => {
+              it("producer regeneration score must be 1100", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                expect(producer.isa.isaScore).to.equal(1100);
+                expect(producer.regenerationScore.score).to.equal(1100);
               });
 
               it("producer must be sustainable", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                expect(producer.isa.sustainable).to.equal(true);
+                expect(producer.regenerationScore.sustainable).to.equal(true);
               });
             });
           });
@@ -420,27 +418,27 @@ describe("ProducerContract", () => {
               await instance.afterRealizeInspection(prod2Address, 800);
             });
 
-            context("when producer A receive more 100 isa score", () => {
+            context("when producer A receive more 100 regeneration score", () => {
               beforeEach(async () => {
                 await instance.afterRealizeInspection(prod1Address, 100);
               });
 
-              it("producer A isa score must be 1100", async () => {
+              it("producer A regeneration score must be 1100", async () => {
                 const producer = await instance.getProducer(prod1Address);
 
-                expect(producer.isa.isaScore).to.equal(1100);
+                expect(producer.regenerationScore.score).to.equal(1100);
               });
             });
 
-            context("when producer B receive more 100 isa score", () => {
+            context("when producer B receive more 100 regeneration score", () => {
               beforeEach(async () => {
                 await instance.afterRealizeInspection(prod2Address, 100);
               });
 
-              it("producer B isa score must be 900", async () => {
+              it("producer B regeneration score must be 900", async () => {
                 const producer = await instance.getProducer(prod2Address);
 
-                expect(producer.isa.isaScore).to.equal(900);
+                expect(producer.regenerationScore.score).to.equal(900);
               });
             });
           });
@@ -466,10 +464,10 @@ describe("ProducerContract", () => {
                     expect(eraLevels).to.equal(75);
                   });
 
-                  it("producer isaScore must be 75", async () => {
+                  it("producer regenerationScore must be 75", async () => {
                     const producer = await instance.getProducer(prod1Address);
 
-                    expect(producer.isa.isaScore).to.equal(75);
+                    expect(producer.regenerationScore.score).to.equal(75);
                   });
                 });
 
@@ -484,10 +482,10 @@ describe("ProducerContract", () => {
                     expect(eraLevels).to.equal(100);
                   });
 
-                  it("producer isaScore must be 100", async () => {
+                  it("producer regenerationScore must be 100", async () => {
                     const producer = await instance.getProducer(prod1Address);
 
-                    expect(producer.isa.isaScore).to.equal(100);
+                    expect(producer.regenerationScore.score).to.equal(100);
                   });
                 });
               });
@@ -504,10 +502,10 @@ describe("ProducerContract", () => {
                     expect(eraLevels).to.equal(0);
                   });
 
-                  it("producer isaScore must be 25", async () => {
+                  it("producer regenerationScore must be 25", async () => {
                     const producer = await instance.getProducer(prod1Address);
 
-                    expect(producer.isa.isaScore).to.equal(25);
+                    expect(producer.regenerationScore.score).to.equal(25);
                   });
                 });
 
@@ -523,10 +521,10 @@ describe("ProducerContract", () => {
                     expect(eraLevels).to.equal(50);
                   });
 
-                  it("producer isaScore must be 50", async () => {
+                  it("producer regenerationScore must be 50", async () => {
                     const producer = await instance.getProducer(prod1Address);
 
-                    expect(producer.isa.isaScore).to.equal(50);
+                    expect(producer.regenerationScore.score).to.equal(50);
                   });
                 });
 
@@ -542,10 +540,10 @@ describe("ProducerContract", () => {
                     expect(eraLevels).to.equal(5);
                   });
 
-                  it("producer isaScore must be 5", async () => {
+                  it("producer regenerationScore must be 5", async () => {
                     const producer = await instance.getProducer(prod1Address);
 
-                    expect(producer.isa.isaScore).to.equal(5);
+                    expect(producer.regenerationScore.score).to.equal(5);
                   });
                 });
               });
@@ -566,10 +564,10 @@ describe("ProducerContract", () => {
                   expect(eraLevels).to.equal(100);
                 });
 
-                it("producer isaScore must be 100", async () => {
+                it("producer regenerationScore must be 100", async () => {
                   const producer = await instance.getProducer(prod1Address);
 
-                  expect(producer.isa.isaScore).to.equal(100);
+                  expect(producer.regenerationScore.score).to.equal(100);
                 });
               });
             });
@@ -615,7 +613,7 @@ describe("ProducerContract", () => {
               await instance.afterRealizeInspection(prod1Address, 0);
             });
 
-            context("when producer have isaScore 50", () => {
+            context("when producer have regenerationScore 50", () => {
               beforeEach(async () => {
                 await instance.afterRealizeInspection(prod2Address, 0);
                 await instance.afterRealizeInspection(prod2Address, 0);
@@ -630,16 +628,16 @@ describe("ProducerContract", () => {
                 await instance.connect(prod2Address).withdraw();
               });
 
-              it("producer A must withdraw 3600000000000000000000000n tokens", async () => {
+              it("producer A must withdraw 3750000000000000000000000n tokens", async () => {
                 const balanceOf = await regenerationCredit.balanceOf(prod1Address);
 
-                expect(balanceOf).to.equal(3600000000000000000000000n);
+                expect(balanceOf).to.equal(3750000000000000000000000n);
               });
 
-              it("producer B must withdraw 3600000000000000000000000n tokens", async () => {
+              it("producer B must withdraw 3750000000000000000000000n tokens", async () => {
                 const balanceOf = await regenerationCredit.balanceOf(prod2Address);
 
-                expect(balanceOf).to.equal(3600000000000000000000000n);
+                expect(balanceOf).to.equal(3750000000000000000000000n);
               });
 
               it("producer A current era must be incremented", async () => {
@@ -655,17 +653,17 @@ describe("ProducerContract", () => {
               });
             });
 
-            context("when producer have isaScore 100", () => {
+            context("when producer have regenerationScore 100", () => {
               beforeEach(async () => {
                 await instance.afterRealizeInspection(prod1Address, 100);
                 await advanceBlock(producerPoolArgs.blocksPerEra);
                 await instance.connect(prod1Address).withdraw();
               });
 
-              it("must withdraw 7200000000000000000000000n tokens", async () => {
+              it("must withdraw 7500000000000000000000000n tokens", async () => {
                 const balanceOf = await regenerationCredit.balanceOf(prod1Address);
 
-                expect(balanceOf).to.equal(7200000000000000000000000n);
+                expect(balanceOf).to.equal(7500000000000000000000000n);
               });
 
               it("producer current era must be increment", async () => {

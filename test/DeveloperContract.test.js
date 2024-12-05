@@ -25,14 +25,12 @@ describe("DeveloperContract", (accounts) => {
   let developerPoolParams = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
-    blocksPerEra: 30,
+    blocksPerEra: 50,
   };
 
   const validatorPoolargs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 12,
   };
 
@@ -49,6 +47,7 @@ describe("DeveloperContract", (accounts) => {
   };
 
   const maxPenalties = 3;
+  const securityBlocksToValidatorAnalysis = 10;
   const firstValidatorLimit = 8;
   const secondValidatorLimit = 14;
 
@@ -71,7 +70,6 @@ describe("DeveloperContract", (accounts) => {
     developerPool = await developerPoolFactory.deploy(
       regenerationCredit.target,
       developerPoolParams.halving,
-      developerPoolParams.totalEras,
       developerPoolParams.blocksPerEra
     );
 
@@ -79,7 +77,6 @@ describe("DeveloperContract", (accounts) => {
     validatorPool = await validatorPoolFactory.deploy(
       regenerationCredit.target,
       validatorPoolargs.halving,
-      validatorPoolargs.totalEras,
       validatorPoolargs.blocksPerEra
     );
 
@@ -91,7 +88,8 @@ describe("DeveloperContract", (accounts) => {
       userContract.target,
       developerPool.target,
       validatorContract.target,
-      maxPenalties
+      maxPenalties,
+      securityBlocksToValidatorAnalysis
     );
 
     const validatorContractDependencies = {
@@ -250,6 +248,18 @@ describe("DeveloperContract", (accounts) => {
           const eraLevels = await developerPool.eraLevels(1, dev1Address);
 
           expect(eraLevels).to.equal(1);
+        });
+      });
+
+      context("when do not have security blocks to validator analysis", () => {
+        beforeEach(async () => {
+          await advanceBlock(25);
+        });
+
+        it("should return error message", async () => {
+          await expect(instance.connect(dev1Address).addContribution("report")).to.be.revertedWith(
+            "Wait until next era to add contribution"
+          );
         });
       });
     });
@@ -525,7 +535,7 @@ describe("DeveloperContract", (accounts) => {
             it("should withdraw all tokens from era", async () => {
               let balanceOf = await regenerationCredit.balanceOf(dev1Address);
 
-              let tokensBalance = 1200000000000000000000000n;
+              let tokensBalance = 1250000000000000000000000n;
 
               expect(balanceOf).to.equal(tokensBalance);
             });
@@ -561,18 +571,18 @@ describe("DeveloperContract", (accounts) => {
                 expect(developer.pool.currentEra).to.equal(2);
               });
 
-              it("developer1 balance must be 600000000000000000000000", async () => {
+              it("developer1 balance must be 625000000000000000000000", async () => {
                 let balanceOf = await regenerationCredit.balanceOf(dev1Address);
 
-                let tokensPerEra = 600000000000000000000000n;
+                let tokensPerEra = 625000000000000000000000n;
 
                 expect(balanceOf).to.equal(tokensPerEra);
               });
 
-              it("developer2 balance must be 600000000000000000000000", async () => {
+              it("developer2 balance must be 625000000000000000000000", async () => {
                 let balanceOf = await regenerationCredit.balanceOf(dev2Address);
 
-                let tokensPerEra = 600000000000000000000000n;
+                let tokensPerEra = 625000000000000000000000n;
 
                 expect(balanceOf).to.equal(tokensPerEra);
               });
@@ -606,9 +616,9 @@ describe("DeveloperContract", (accounts) => {
 
           it("should can withdraw in two eras", async () => {
             let balanceOf = await regenerationCredit.balanceOf(dev1Address);
-            let tokensPerEra = 2400000000000000000000000n;
+            let balance = 2500000000000000000000000n;
 
-            expect(balanceOf).to.equal(tokensPerEra);
+            expect(balanceOf).to.equal(balance);
           });
         });
       });

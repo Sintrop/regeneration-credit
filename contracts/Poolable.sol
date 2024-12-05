@@ -3,11 +3,15 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
+/**
+ * @author Sintrop
+ * @title Poolable
+ * @dev Manage tokens distribution logic
+ */
 contract Poolable {
   using SafeMath for uint256;
 
-  uint256 private constant EPOCH_MAX = 8;
-  uint256[EPOCH_MAX] private tokensPerEpochs;
+  uint256 internal immutable TOTAL_TOKENS;
 
   struct Era {
     uint256 users;
@@ -19,8 +23,8 @@ contract Poolable {
   mapping(uint256 => mapping(address => uint256)) public eraLevels;
   mapping(uint256 => mapping(address => uint256)) public eraTokens;
 
-  constructor(uint256[8] memory _tokensPerEpochs) {
-    tokensPerEpochs = _tokensPerEpochs;
+  constructor(uint256 _totalTokens) {
+    TOTAL_TOKENS = _totalTokens;
   }
 
   function getEra(uint256 era) external view returns (Era memory) {
@@ -71,8 +75,6 @@ contract Poolable {
   }
 
   function tokensPerEpoch(uint256 currentEpoch) public view returns (uint256) {
-    if (currentEpoch > EPOCH_MAX) return 0;
-
-    return tokensPerEpochs[currentEpoch.sub(1)];
+    return TOTAL_TOKENS.div((2 ** currentEpoch));
   }
 }

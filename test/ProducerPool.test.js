@@ -11,7 +11,6 @@ describe("ProducerPool", () => {
   const args = {
     totalTokens: "750000000000000000000000000",
     halving: 12,
-    totalEras: 96,
     blocksPerEra: 12,
   };
 
@@ -25,7 +24,7 @@ describe("ProducerPool", () => {
     regenerationCredit = await regenerationCreditDeployed();
 
     const instanceFactory = await ethers.getContractFactory("ProducerPool");
-    instance = await instanceFactory.deploy(regenerationCredit.target, args.halving, args.totalEras, args.blocksPerEra);
+    instance = await instanceFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra);
 
     await instance.newAllowedCaller(owner);
 
@@ -34,132 +33,180 @@ describe("ProducerPool", () => {
 
   describe("#tokensPerEpoch", () => {
     context("when is epoch 1", () => {
-      it("must return 360000000000000000000000000", async () => {
+      it("must return 375000000000000000000000000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch(1);
 
-        expect(tokensPerEpoch).to.equal("360000000000000000000000000");
+        expect(tokensPerEpoch).to.equal("375000000000000000000000000");
       });
     });
 
     context("when is epoch 2", () => {
-      it("must return 180000000000000000000000000", async () => {
+      it("must return 187500000000000000000000000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch(2);
 
-        expect(tokensPerEpoch).to.equal("180000000000000000000000000");
+        expect(tokensPerEpoch).to.equal("187500000000000000000000000");
       });
     });
 
     context("when is epoch 3", () => {
-      it("must return 90000000000000000000000000", async () => {
+      it("must return 93750000000000000000000000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch(3);
 
-        expect(tokensPerEpoch).to.equal("90000000000000000000000000");
+        expect(tokensPerEpoch).to.equal("93750000000000000000000000");
       });
     });
 
     context("when is epoch 4", () => {
-      it("must return 45000000000000000000000000", async () => {
+      it("must return 46875000000000000000000000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch(4);
 
-        expect(tokensPerEpoch).to.equal("45000000000000000000000000");
+        expect(tokensPerEpoch).to.equal("46875000000000000000000000");
       });
     });
 
     context("when is epoch 5", () => {
-      it("must return 22500000000000000000000000", async () => {
+      it("must return 23437500000000000000000000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch(5);
 
-        expect(tokensPerEpoch).to.equal("22500000000000000000000000");
+        expect(tokensPerEpoch).to.equal("23437500000000000000000000");
       });
     });
 
     context("when is epoch 6", () => {
-      it("must return 11250000000000000000000000", async () => {
+      it("must return 11718750000000000000000000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch(6);
 
-        expect(tokensPerEpoch).to.equal("11250000000000000000000000");
+        expect(tokensPerEpoch).to.equal("11718750000000000000000000");
       });
     });
 
     context("when is epoch 7", () => {
-      it("must return 5625000000000000000000000", async () => {
+      it("must return 5859375000000000000000000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch(7);
 
-        expect(tokensPerEpoch).to.equal("5625000000000000000000000");
+        expect(tokensPerEpoch).to.equal("5859375000000000000000000");
       });
     });
 
     context("when is epoch 8", () => {
-      it("must return 2812500000000000000000000", async () => {
+      it("must return 2929687500000000000000000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch(8);
 
-        expect(tokensPerEpoch).to.equal("2812500000000000000000000");
+        expect(tokensPerEpoch).to.equal("2929687500000000000000000");
+      });
+    });
+
+    context("when is epoch 9", () => {
+      it("must return 1464843750000000000000000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(9);
+
+        expect(tokensPerEpoch).to.equal("1464843750000000000000000");
+      });
+    });
+
+    context("when is epoch 10", () => {
+      it("must return 732421875000000000000000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(10);
+
+        expect(tokensPerEpoch).to.equal("732421875000000000000000");
       });
     });
   });
 
   describe("#tokensPerEra", () => {
     context("when is epoch 1", () => {
-      it("must return 30000000000000000000000000", async () => {
+      it("must return 31250000000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra(1, args.halving);
 
-        expect(tokensPerEra).to.equal("30000000000000000000000000");
+        expect(tokensPerEra).to.equal("31250000000000000000000000");
       });
     });
 
     context("when is epoch 2", () => {
-      it("must return 15000000000000000000000000", async () => {
+      it("must return 15625000000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra(2, args.halving);
 
-        expect(tokensPerEra).to.equal("15000000000000000000000000");
+        expect(tokensPerEra).to.equal("15625000000000000000000000");
       });
     });
 
     context("when is epoch 3", () => {
-      it("must return 7500000000000000000000000", async () => {
+      it("must return 7812500000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra(3, args.halving);
 
-        expect(tokensPerEra).to.equal("7500000000000000000000000");
+        expect(tokensPerEra).to.equal("7812500000000000000000000");
       });
     });
 
     context("when is epoch 4", () => {
-      it("must return 3750000000000000000000000", async () => {
+      it("must return 3906250000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra(4, args.halving);
 
-        expect(tokensPerEra).to.equal("3750000000000000000000000");
+        expect(tokensPerEra).to.equal("3906250000000000000000000");
       });
     });
 
     context("when is epoch 5", () => {
-      it("must return 1875000000000000000000000", async () => {
+      it("must return 1953125000000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra(5, args.halving);
 
-        expect(tokensPerEra).to.equal("1875000000000000000000000");
+        expect(tokensPerEra).to.equal("1953125000000000000000000");
       });
     });
 
     context("when is epoch 6", () => {
-      it("must return 937500000000000000000000", async () => {
+      it("must return 976562500000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra(6, args.halving);
 
-        expect(tokensPerEra).to.equal("937500000000000000000000");
+        expect(tokensPerEra).to.equal("976562500000000000000000");
       });
     });
 
     context("when is epoch 7", () => {
-      it("must return 468750000000000000000000", async () => {
+      it("must return 488281250000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra(7, args.halving);
 
-        expect(tokensPerEra).to.equal("468750000000000000000000");
+        expect(tokensPerEra).to.equal("488281250000000000000000");
       });
     });
 
     context("when is epoch 8", () => {
-      it("must return 234375000000000000000000", async () => {
+      it("must return 244140625000000000000000", async () => {
         const tokensPerEra = await instance.tokensPerEra(8, args.halving);
 
-        expect(tokensPerEra).to.equal("234375000000000000000000");
+        expect(tokensPerEra).to.equal("244140625000000000000000");
+      });
+    });
+
+    context("when is epoch 9", () => {
+      it("must return 122070312500000000000000", async () => {
+        const tokensPerEra = await instance.tokensPerEra(9, args.halving);
+
+        expect(tokensPerEra).to.equal("122070312500000000000000");
+      });
+    });
+
+    context("when is epoch 10", () => {
+      it("must return 61035156250000000000000", async () => {
+        const tokensPerEra = await instance.tokensPerEra(10, args.halving);
+
+        expect(tokensPerEra).to.equal("61035156250000000000000");
+      });
+    });
+
+    context("when is epoch 15", () => {
+      it("must return 22888183593750000000000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(15);
+
+        expect(tokensPerEpoch).to.equal("22888183593750000000000");
+      });
+    });
+
+    context("when is epoch 20", () => {
+      it("must return 715255737304687500000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(20);
+
+        expect(tokensPerEpoch).to.equal("715255737304687500000");
       });
     });
   });
@@ -171,64 +218,132 @@ describe("ProducerPool", () => {
       });
 
       context("when can approve", () => {
-        context("when totalScores is 0", () => {
-          beforeEach(async () => {
-            await advanceBlock(args.blocksPerEra);
-          });
-
-          it("balanceOf must be 0", async () => {
-            await instance.withdraw(producer1Address, 1);
-            const balanceOf = await regenerationCredit.balanceOf(producer1Address);
-
-            expect(balanceOf).to.equal(0);
-          });
-        });
-
-        context("when totalScores is 80", () => {
-          context("when producer1 have 80 isaScore", () => {
+        context("when is epoch 1", () => {
+          context("when totalScores is 0", () => {
             beforeEach(async () => {
-              await instance.addLevel(producer1Address, 80, 80);
               await advanceBlock(args.blocksPerEra);
             });
 
-            it("must withdraw 30000000000000000000000000 of tokens", async () => {
+            it("balanceOf must be 0", async () => {
               await instance.withdraw(producer1Address, 1);
               const balanceOf = await regenerationCredit.balanceOf(producer1Address);
 
-              expect(balanceOf).to.equal(30000000000000000000000000n);
+              expect(balanceOf).to.equal(0);
+            });
+          });
+
+          context("when totalScores is 80", () => {
+            context("when producer1 have 80 regenerationScore", () => {
+              beforeEach(async () => {
+                await instance.addLevel(producer1Address, 80, 80);
+                await advanceBlock(args.blocksPerEra);
+              });
+
+              it("must withdraw 31250000000000000000000000 of tokens", async () => {
+                await instance.withdraw(producer1Address, 1);
+                const balanceOf = await regenerationCredit.balanceOf(producer1Address);
+
+                expect(balanceOf).to.equal(31250000000000000000000000n);
+              });
+
+              it("total locked must be 750000000000000000000000000 - 31250000000000000000000000 = ", async () => {
+                await instance.withdraw(producer1Address, 1);
+                const totalLocked = await regenerationCredit.totalLocked();
+
+                expect(totalLocked).to.equal(718750000000000000000000000n);
+              });
+            });
+          });
+
+          context("when totalScores is 125", () => {
+            beforeEach(async () => {
+              await instance.addLevel(producer1Address, 80, 80);
+              await instance.addLevel(producer2Address, 45, 45);
+              await advanceBlock(args.blocksPerEra);
             });
 
-            it("total locked must be 750000000000000000000000000 - 30000000000000000000000000 = ", async () => {
-              await instance.withdraw(producer1Address, 1);
-              const totalLocked = await regenerationCredit.totalLocked();
+            context("when producer1 have 80 isaScore", () => {
+              it("must withdraw 20000000000000000000000000 of tokens", async () => {
+                await instance.withdraw(producer1Address, 1);
+                const balanceOf = await regenerationCredit.balanceOf(producer1Address);
 
-              expect(totalLocked).to.equal(720000000000000000000000000n);
+                expect(balanceOf).to.equal(20000000000000000000000000n);
+              });
+            });
+
+            context("when producer2 have 45 isaScore", () => {
+              it("must withdraw 11250000000000000000000000 tokens", async () => {
+                await instance.withdraw(producer2Address, 1);
+                const balanceOf = await regenerationCredit.balanceOf(producer2Address);
+
+                expect(balanceOf).to.equal(11250000000000000000000000n);
+              });
             });
           });
         });
 
-        context("when totalScores is 125", () => {
-          beforeEach(async () => {
-            await instance.addLevel(producer1Address, 80, 80);
-            await instance.addLevel(producer2Address, 45, 45);
-            await advanceBlock(args.blocksPerEra);
-          });
+        context("when is epoch 2", () => {
+          context("when producer is in era 1 yet", () => {
+            context("when totalScores is 0", () => {
+              beforeEach(async () => {
+                await advanceBlock(args.blocksPerEra);
+              });
 
-          context("when producer1 have 80 isaScore", () => {
-            it("must withdraw 19200000000000000000000000 of tokens", async () => {
-              await instance.withdraw(producer1Address, 1);
-              const balanceOf = await regenerationCredit.balanceOf(producer1Address);
+              it("balanceOf must be 0", async () => {
+                await instance.withdraw(producer1Address, 1);
+                const balanceOf = await regenerationCredit.balanceOf(producer1Address);
 
-              expect(balanceOf).to.equal(19200000000000000000000000n);
+                expect(balanceOf).to.equal(0);
+              });
             });
-          });
 
-          context("when producer2 have 45 isaScore", () => {
-            it("must withdraw 10800000000000000000000000 tokens", async () => {
-              await instance.withdraw(producer2Address, 1);
-              const balanceOf = await regenerationCredit.balanceOf(producer2Address);
+            context("when totalScores is 80", () => {
+              context("when producer1 have 80 regenerationScore", () => {
+                beforeEach(async () => {
+                  await instance.addLevel(producer1Address, 80, 80);
+                  await advanceBlock(args.blocksPerEra * args.halving);
+                });
 
-              expect(balanceOf).to.equal(10800000000000000000000000n);
+                it("must withdraw 31250000000000000000000000 of tokens", async () => {
+                  await instance.withdraw(producer1Address, 1);
+                  const balanceOf = await regenerationCredit.balanceOf(producer1Address);
+
+                  expect(balanceOf).to.equal(31250000000000000000000000n);
+                });
+
+                it("total locked must be 750000000000000000000000000 - 31250000000000000000000000", async () => {
+                  await instance.withdraw(producer1Address, 1);
+                  const totalLocked = await regenerationCredit.totalLocked();
+
+                  expect(totalLocked).to.equal(718750000000000000000000000n);
+                });
+              });
+            });
+
+            context("when totalScores is 125", () => {
+              beforeEach(async () => {
+                await instance.addLevel(producer1Address, 80, 80);
+                await instance.addLevel(producer2Address, 45, 45);
+                await advanceBlock(args.blocksPerEra * args.halving);
+              });
+
+              context("when producer1 have 80 isaScore", () => {
+                it("must withdraw 20000000000000000000000000 of tokens", async () => {
+                  await instance.withdraw(producer1Address, 1);
+                  const balanceOf = await regenerationCredit.balanceOf(producer1Address);
+
+                  expect(balanceOf).to.equal(20000000000000000000000000n);
+                });
+              });
+
+              context("when producer2 have 45 isaScore", () => {
+                it("must withdraw 11250000000000000000000000 tokens", async () => {
+                  await instance.withdraw(producer2Address, 1);
+                  const balanceOf = await regenerationCredit.balanceOf(producer2Address);
+
+                  expect(balanceOf).to.equal(11250000000000000000000000n);
+                });
+              });
             });
           });
         });

@@ -9,9 +9,9 @@ enum InspectionStatus {
   INVALIDATED
 }
 
-struct IsaInspection {
+struct RegenerationInspection {
   uint256 categoryId;
-  uint256 isaId;
+  uint256 regenerationIndexId;
   int256 indicator;
 }
 
@@ -20,7 +20,7 @@ struct Inspection {
   InspectionStatus status;
   address producer;
   address inspector;
-  int256 isaScore;
+  int256 regenerationScore;
   string proofPhoto;
   string report;
   uint256 validationsCount;

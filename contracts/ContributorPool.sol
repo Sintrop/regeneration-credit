@@ -12,45 +12,31 @@ import { Poolable } from "./Poolable.sol";
 /**
  * @author Sintrop
  * @title ContributorPool
- * @dev ContributorPool is a contract to reward contributors
+ * @dev Manage rewards to contributors
+ * @notice Receive tokens for generic service provided
  */
 contract ContributorPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;
 
   RegenerationCreditInterface internal regenerationCredit;
 
-  uint256[8] private tokensPerEpochs = [
-    36 * 10 ** 23,
-    18 * 10 ** 23,
-    9 * 10 ** 23,
-    45 * 10 ** 22,
-    225 * 10 ** 21,
-    1125 * 10 ** 20,
-    28125 * 10 ** 18,
-    703125 * 10 ** 16
-  ];
+  uint256 internal constant TOTAL_TOKENS_POOL = 30000000000000000000000000;
 
   constructor(
     address regenerationCreditAddress,
     uint256 _halving,
-    uint256 _totalEras,
     uint256 _blocksPerEra
-  ) Blockable(_blocksPerEra, _totalEras, _halving) Poolable(tokensPerEpochs) {
+  ) Blockable(_blocksPerEra, _halving) Poolable(TOTAL_TOKENS_POOL) {
     regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
   }
 
   /**
-   * @dev Returns how much tokens the contract has
+   * @dev Called by the contributor contract, this function calls the token contract to transfer the rewards
+   * @param delegate User address
+   * @param era User current era
    */
-  function balance() public view returns (uint256) {
-    return regenerationCredit.balanceOf(address(this));
-  }
-
-  function withdraw(
-    address delegate,
-    uint256 era
-  ) public mustBeAllowedCaller canWithdrawModifier(era) isAValidEpochModifier {
-    uint256 numTokens = tokens(era, delegate, tokensPerEra(currentEpoch(), HALVING));
+  function withdraw(address delegate, uint256 era) public mustBeAllowedCaller canWithdrawModifier(era) {
+    uint256 numTokens = tokens(era, delegate, tokensPerEra(currentUserEpoch(era), HALVING));
 
     updateEraAfterWithdraw(era, delegate, numTokens);
 
@@ -59,12 +45,24 @@ contract ContributorPool is Poolable, Ownable, Blockable, Callable {
     regenerationCredit.transferWith(address(this), delegate, numTokens);
   }
 
+  /**
+   * @dev Called by the contributor contract, function to increase contributor pool level
+   * @param addr Contributor wallet
+   * @param currentLevel Contributor current level
+   * @param addLevels Levels to increase
+   */
   function addLevel(address addr, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 
     addPoolLevel(addr, currentLevel, addLevels, era);
   }
 
+  /**
+   * @dev Called by the contributor contract, function to decrease contributor pool level
+   * @param addr Contributor wallet
+   * @param era Current pool era
+   * @param removeSomeLevels Levels to decrease
+   */
   function removePoolLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
     removeLevelsFromEra(addr, era, removeSomeLevels);
   }
