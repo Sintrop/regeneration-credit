@@ -109,7 +109,7 @@ contract DeveloperContract is Ownable, Callable {
    * @dev Allows a validator to vote to invalidate a development contribution
    * @notice Publish one development report per era before security blocks
    * @param id Contribution id
-   * @param justificatin String with invalidation explanation
+   * @param justification String with invalidation explanation
    */
   function addContributionValidation(uint256 id, string memory justification) public {
     require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
