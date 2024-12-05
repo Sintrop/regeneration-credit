@@ -68,7 +68,7 @@ contract ActivistContract is Callable {
   /**
    * @dev Return a specific activist
    * @param addr The address of the activist
-   * @return Activist   
+   * @return Activist
    */
   function getActivist(address addr) public view returns (Activist memory) {
     return activists[addr];

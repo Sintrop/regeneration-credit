@@ -34,11 +34,11 @@ contract RegenerationCredit is ERC20, Ownable {
     transfer(_icoAddr, FUND_ICO);
   }
 
-/**
- * @dev Allows owner to create a token distribution pool
- * @param _fundAddress Contract address
- * @param _numTokens Contract total tokens 
- */
+  /**
+   * @dev Allows owner to create a token distribution pool
+   * @param _fundAddress Contract address
+   * @param _numTokens Contract total tokens
+   */
   function addContractPool(address _fundAddress, uint256 _numTokens) public onlyOwner returns (bool) {
     contractsPools[_fundAddress] = true;
     transfer(_fundAddress, _numTokens);
