@@ -120,6 +120,8 @@ contract UserContract is Ownable, Callable {
   }
 
   function setDeniedType(address userAddress) public mustBeAllowedCaller {
+    userTypesCount[users[userAddress]]--;
+
     users[userAddress] = UserType.DENIED;
   }
 

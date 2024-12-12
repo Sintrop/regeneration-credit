@@ -22,6 +22,7 @@ describe("ValidatorContract", () => {
 
   let owner,
     producer1Address,
+    producer2Address,
     inspector1Address,
     inspector2Address,
     validator1Address,
@@ -40,10 +41,14 @@ describe("ValidatorContract", () => {
     validator14Address,
     validator15Address,
     contributor1Address,
+    contributor2Address,
     dev1Address,
+    dev2Address,
     otherAddress,
     resea1Address,
-    activist1Address;
+    resea2Address,
+    activist1Address,
+    activist2Address;
 
   const producerPoolArgs = {
     totalTokens: "750000000000000000000000000",
@@ -164,6 +169,7 @@ describe("ValidatorContract", () => {
     [
       owner,
       producer1Address,
+      producer2Address,
       inspector1Address,
       inspector2Address,
       validator1Address,
@@ -182,10 +188,14 @@ describe("ValidatorContract", () => {
       validator14Address,
       validator15Address,
       contributor1Address,
+      contributor2Address,
       dev1Address,
       dev2Address,
+      otherAddress,
       resea1Address,
+      resea2Address,
       activist1Address,
+      activist2Address,
       undefinedAddress,
     ] = await ethers.getSigners();
 
@@ -447,7 +457,9 @@ describe("ValidatorContract", () => {
           context("with producer", () => {
             beforeEach(async () => {
               await addInvitation(owner, producer1Address, userTypes.Producer, owner);
+              await addInvitation(owner, producer2Address, userTypes.Producer, owner);
               await addProducer("Producer A", producer1Address);
+              await addProducer("Producer B", producer2Address);
 
               await instance.connect(validator1Address).addUserValidation(producer1Address, "my justification");
               await instance.connect(validator3Address).addUserValidation(producer1Address, "my justification");
@@ -478,11 +490,19 @@ describe("ValidatorContract", () => {
 
               expect(producer.regenerationScore.score).to.equal(0);
             });
+
+            it("userTypesCount must be decremented", async () => {
+              const userTypesCount = await userContract.userTypesCount(userTypes.Producer);
+
+              expect(userTypesCount).to.equal(1);
+            });
           });
 
           context("with inspector", () => {
             beforeEach(async () => {
+              await addInvitation(owner, inspector2Address, userTypes.Inspector, owner);
               await addInspector("Inspector A", inspector1Address);
+              await addInspector("Inspector B", inspector2Address);
 
               await inspectorContract.afterAcceptInspection(inspector1Address, 1);
               await inspectorContract.afterAcceptInspection(inspector1Address, 1);
@@ -523,12 +543,20 @@ describe("ValidatorContract", () => {
 
               expect(inspector.pool.level).to.equal(0);
             });
+
+            it("userTypesCount must be decremented", async () => {
+              const userTypesCount = await userContract.userTypesCount(userTypes.Inspector);
+
+              expect(userTypesCount).to.equal(1);
+            });
           });
 
           context("with contributor", () => {
             beforeEach(async () => {
               await addInvitation(owner, contributor1Address, userTypes.Contributor, owner);
+              await addInvitation(owner, contributor2Address, userTypes.Contributor, owner);
               await addContributor("Contributor  A", contributor1Address);
+              await addContributor("Contributor  B", contributor2Address);
 
               await contributorContract.connect(contributor1Address).addContribution("report");
 
@@ -563,12 +591,20 @@ describe("ValidatorContract", () => {
 
               expect(contributor.pool.level).to.equal(1);
             });
+
+            it("userTypesCount must be decremented", async () => {
+              const userTypesCount = await userContract.userTypesCount(userTypes.Contributor);
+
+              expect(userTypesCount).to.equal(1);
+            });
           });
 
           context("with developer", () => {
             beforeEach(async () => {
               await addInvitation(owner, dev1Address, userTypes.Developer, owner);
+              await addInvitation(owner, dev2Address, userTypes.Developer, owner);
               await addDeveloper("Developer  A", dev1Address);
+              await addDeveloper("Developer  A", dev2Address);
 
               await developerContract.connect(dev1Address).addContribution("contribution");
 
@@ -603,12 +639,20 @@ describe("ValidatorContract", () => {
 
               expect(developer.pool.level).to.equal(0);
             });
+
+            it("userTypesCount must be decremented", async () => {
+              const userTypesCount = await userContract.userTypesCount(userTypes.Developer);
+
+              expect(userTypesCount).to.equal(1);
+            });
           });
 
           context("with researcher", () => {
             beforeEach(async () => {
               await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
+              await addInvitation(owner, resea2Address, userTypes.Researcher, owner);
               await addResearcher("Researcher  A", resea1Address);
+              await addResearcher("Researcher  B", resea2Address);
 
               await addWork(resea1Address);
 
@@ -643,12 +687,20 @@ describe("ValidatorContract", () => {
 
               expect(reseacher.pool.level).to.equal(0);
             });
+
+            it("userTypesCount must be decremented", async () => {
+              const userTypesCount = await userContract.userTypesCount(userTypes.Researcher);
+
+              expect(userTypesCount).to.equal(1);
+            });
           });
 
           context("with activist", () => {
             beforeEach(async () => {
               await addInvitation(owner, activist1Address, userTypes.Activist, owner);
+              await addInvitation(owner, activist2Address, userTypes.Activist, owner);
               await addActivist("Activist  A", activist1Address);
+              await addActivist("Activist  B", activist2Address);
 
               await addInvitation(activist1Address, inspector2Address, userTypes.Inspector, owner);
 
@@ -685,6 +737,12 @@ describe("ValidatorContract", () => {
 
               expect(activist.pool.level).to.equal(0);
             });
+
+            it("userTypesCount must be decremented", async () => {
+              const userTypesCount = await userContract.userTypesCount(userTypes.Activist);
+
+              expect(userTypesCount).to.equal(1);
+            });
           });
 
           context("with validator", () => {
@@ -717,10 +775,16 @@ describe("ValidatorContract", () => {
               expect(levelsEra2).to.equal(0);
             });
 
-            it("remove user levels from activist", async () => {
+            it("remove user levels from validator", async () => {
               const validator = await instance.getValidator(validator1Address);
 
               expect(validator.pool.level).to.equal(0);
+            });
+
+            it("userTypesCount must be decremented", async () => {
+              const userTypesCount = await userContract.userTypesCount(userTypes.Validator);
+
+              expect(userTypesCount).to.equal(3);
             });
           });
         });
