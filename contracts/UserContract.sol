@@ -37,6 +37,11 @@ contract UserContract is Ownable, Callable {
     userTypeSettings[UserType.VALIDATOR] = UserTypeSetting(validatorProportionality, false, true, 1000000);
   }
 
+  event AddUserEvent(address addr, UserType userType);
+  event DeniedUserEevent(address addr);
+  event AddDelelationEvent(address informer, address reported);
+  event AddInvitationEvent(address inviter, address invited, UserType userTypeTo);
+
   /**
    * @dev Add new user in the system
    * @param addr The address of the user
@@ -51,6 +56,8 @@ contract UserContract is Ownable, Callable {
     users[addr] = userType;
     usersCount++;
     userTypesCount[userType]++;
+
+    emit AddUserEvent(addr, userType);
   }
 
   /**
@@ -110,6 +117,8 @@ contract UserContract is Ownable, Callable {
 
     delations[addr].push(Delation(delationsCount + 1, msg.sender, addr, title, testimony));
     delationsCount++;
+
+    emit AddDelelationEvent(msg.sender, addr);
   }
 
   function addInvitation(address inviter, address invited, UserType userType) public mustBeAllowedCaller {
@@ -117,12 +126,16 @@ contract UserContract is Ownable, Callable {
     require(users[invited] == UserType.UNDEFINED, "Already registered");
 
     invitations[invited] = Invitation(invited, inviter, userType, block.number);
+
+    emit AddInvitationEvent(inviter, invited, userType);
   }
 
   function setDeniedType(address userAddress) public mustBeAllowedCaller {
     userTypesCount[users[userAddress]]--;
 
     users[userAddress] = UserType.DENIED;
+
+    emit DeniedUserEevent(userAddress);
   }
 
   function userTypeIs(UserType userType, address userAddress) public view returns (bool) {

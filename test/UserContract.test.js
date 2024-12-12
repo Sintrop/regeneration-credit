@@ -29,15 +29,15 @@ describe("UserContract", function () {
   ];
 
   const addUser = async (address, userType, caller) => {
-    await instance.addUser(address, userType, { from: caller });
+    return await instance.addUser(address, userType, { from: caller });
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await instance.connect(from).addInvitation(inviter, invited, userType);
+    return await instance.connect(from).addInvitation(inviter, invited, userType);
   };
 
   const addDelation = async (denouncedAddress, from) => {
-    await instance.connect(from).addDelation(denouncedAddress, "title", "testimony");
+    return await instance.connect(from).addDelation(denouncedAddress, "title", "testimony");
   };
 
   beforeEach(async function () {
@@ -53,7 +53,7 @@ describe("UserContract", function () {
       context("when the user don't exist", () => {
         beforeEach(async () => {
           await addInvitation(owner, user1Address, userTypes.Producer, owner);
-          await addUser(user1Address, userTypes.Producer, owner);
+          receipt = await addUser(user1Address, userTypes.Producer, owner);
         });
 
         it("should add a user", async () => {
@@ -72,6 +72,10 @@ describe("UserContract", function () {
           const usersCount = await instance.userTypesCount(userTypes.Producer);
 
           expect(usersCount).to.equal(1);
+        });
+
+        it("must emit AddUserEvent", async () => {
+          await expect(receipt).to.emit(instance, "AddUserEvent").withArgs(user1Address, userTypes.Producer);
         });
       });
 
@@ -341,7 +345,7 @@ describe("UserContract", function () {
 
       context("when dont invited yet", () => {
         beforeEach(async () => {
-          await addInvitation(owner, user1Address, userTypes.Producer, owner);
+          receipt = await addInvitation(owner, user1Address, userTypes.Producer, owner);
         });
 
         it("should invite", async () => {
@@ -350,6 +354,12 @@ describe("UserContract", function () {
           expect(invitation.inviter).to.equal(owner.address);
           expect(invitation.userType).to.equal(userTypes.Producer);
           expect(invitation.invited).to.equal(user1Address.address);
+        });
+
+        it("must emit AddInvitationEvent", async () => {
+          await expect(receipt)
+            .to.emit(instance, "AddInvitationEvent")
+            .withArgs(owner, user1Address, userTypes.Producer);
         });
       });
     });
@@ -418,7 +428,7 @@ describe("UserContract", function () {
           await addUser(user1Address, userTypes.Producer, owner);
           await addUser(user2Address, userTypes.Producer, owner);
 
-          await addDelation(user1Address, user2Address);
+          receipt = await addDelation(user1Address, user2Address);
         });
 
         it("should add delation to user1", async () => {
@@ -445,6 +455,10 @@ describe("UserContract", function () {
           expect(id).to.equal(1);
           expect(title).to.equal("title");
           expect(testimony).to.equal("testimony");
+        });
+
+        it("must emit AddDelelationEvent", async () => {
+          await expect(receipt).to.emit(instance, "AddDelelationEvent").withArgs(user2Address, user1Address);
         });
       });
     });

@@ -462,7 +462,9 @@ describe("ValidatorContract", () => {
               await addProducer("Producer B", producer2Address);
 
               await instance.connect(validator1Address).addUserValidation(producer1Address, "my justification");
-              await instance.connect(validator3Address).addUserValidation(producer1Address, "my justification");
+              receipt = await instance
+                .connect(validator3Address)
+                .addUserValidation(producer1Address, "my justification");
             });
 
             it("should add validation", async () => {
@@ -495,6 +497,10 @@ describe("ValidatorContract", () => {
               const userTypesCount = await userContract.userTypesCount(userTypes.Producer);
 
               expect(userTypesCount).to.equal(1);
+            });
+
+            it("must emit DeniedUserEevent", async () => {
+              await expect(receipt).to.emit(userContract, "DeniedUserEevent").withArgs(producer1Address);
             });
           });
 
