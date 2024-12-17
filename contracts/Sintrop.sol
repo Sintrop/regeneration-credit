@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { ProducerContract } from "./ProducerContract.sol";
+import { RegeneratorContract } from "./RegeneratorContract.sol";
 import { InspectorContract } from "./InspectorContract.sol";
 import { CategoryContract } from "./CategoryContract.sol";
 import { ValidatorContract } from "./ValidatorContract.sol";
@@ -9,7 +9,7 @@ import { CategoryContract } from "./CategoryContract.sol";
 import { ActivistContract } from "./ActivistContract.sol";
 import { UserContract } from "./UserContract.sol";
 import { InspectionStatus, RegenerationInspection, Inspection } from "./types/InspectionTypes.sol";
-import { Producer } from "./types/ProducerTypes.sol";
+import { Regenerator } from "./types/RegeneratorTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { ContractsDependency } from "./types/SintropTypes.sol";
@@ -20,7 +20,7 @@ import { Callable } from "./Callable.sol";
  * @author Sintrop
  * @title SintropContract
  * @dev Manage inspections rules and data
- * @notice Allow producer to request inspection, and inspectors to accept and realize it
+ * @notice Allow regenerator to request inspection, and inspectors to accept and realize it
  */
 contract Sintrop is Callable {
   using SafeMath for uint256;
@@ -32,7 +32,7 @@ contract Sintrop is Callable {
   mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
   InspectorContract private inspectorContract;
-  ProducerContract private producerContract;
+  RegeneratorContract private regeneratorContract;
   UserContract private userContract;
   ValidatorContract private validatorContract;
   ActivistContract private activistContract;
@@ -61,7 +61,7 @@ contract Sintrop is Callable {
 
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
     userContract = UserContract(contractDependency.userContractAddress);
-    producerContract = ProducerContract(contractDependency.producerContractAddress);
+    regeneratorContract = RegeneratorContract(contractDependency.regeneratorContractAddress);
     validatorContract = ValidatorContract(contractDependency.validatorContractAddress);
     inspectorContract = InspectorContract(contractDependency.inspectorContractAddress);
     categoryContract = CategoryContract(contractDependency.categoryContractAddress);
@@ -69,23 +69,23 @@ contract Sintrop is Callable {
   }
 
   /**
-   * @dev Allows the current user producer/inspector get all yours inspections with status INSPECTED
+   * @dev Allows the current user regenerator/inspector get all yours inspections with status INSPECTED
    */
   function getInspectionsHistory() public view returns (uint256[] memory) {
     return userInspections[msg.sender];
   }
 
   /**
-   * @dev Allows the current user (producer) request a inspection.
+   * @dev Allows the current user (regenerator) request a inspection.
    */
   function requestInspection() public {
-    Producer memory producer = producerContract.getProducer(msg.sender);
+    Regenerator memory regenerator = regeneratorContract.getRegenerator(msg.sender);
 
-    require(userContract.userTypeIs(UserType.PRODUCER, msg.sender), "Please register as producer");
-    require(!producer.pendingInspection, "Request already OPEN");
-    require(waitToRequest(producer), "Wait to request");
+    require(userContract.userTypeIs(UserType.REGENERATOR, msg.sender), "Please register as regenerator");
+    require(!regenerator.pendingInspection, "Request already OPEN");
+    require(waitToRequest(regenerator), "Wait to request");
     require(
-      !producer.regenerationScore.sustainable,
+      !regenerator.regenerationScore.sustainable,
       "You can't request inspections anymore, you have completed your mission"
     );
 
@@ -99,7 +99,7 @@ contract Sintrop is Callable {
 
     inspection.id = inspectionsCount + 1;
     inspection.status = InspectionStatus.OPEN;
-    inspection.producer = msg.sender;
+    inspection.regenerator = msg.sender;
     inspection.inspector = address(0);
     inspection.createdAt = block.number;
     inspections[inspection.id] = inspection;
@@ -107,7 +107,7 @@ contract Sintrop is Callable {
   }
 
   function afterRequestInspection() internal {
-    producerContract.afterRequestInspection(msg.sender);
+    regeneratorContract.afterRequestInspection(msg.sender);
   }
 
   /**
@@ -122,8 +122,8 @@ contract Sintrop is Callable {
 
     require(inspection.id >= 1, "This inspection do not exist");
     require(alreadyHaveInspectionAccepted(), "You already have an inspection Accepted");
-    require(!inspectorInspected[msg.sender][inspection.producer], "Already inspected this producer");
-    require(!inspectorInspected[msg.sender][inspection.producer], "Already inspected this producer");
+    require(!inspectorInspected[msg.sender][inspection.regenerator], "Already inspected this regenerator");
+    require(!inspectorInspected[msg.sender][inspection.regenerator], "Already inspected this regenerator");
     require(inspection.status == InspectionStatus.OPEN, "This inspection is not OPEN");
     require(acceptInspectionDelayBlocksPassed(inspection), "Wait inspection delay blocks");
     require(beforeAcceptHaveSecurityBlocksToVote(), "Wait until next era to accept");
@@ -133,7 +133,7 @@ contract Sintrop is Callable {
     inspection.inspector = msg.sender;
     inspections[inspectionId] = inspection;
 
-    producerContract.afterAcceptInspection(inspection.producer);
+    regeneratorContract.afterAcceptInspection(inspection.regenerator);
     inspectorContract.afterAcceptInspection(msg.sender, inspectionId);
   }
 
@@ -160,7 +160,7 @@ contract Sintrop is Callable {
 
     afterRealizeInspection(inspection);
 
-    inspectorInspected[msg.sender][inspection.producer] = true;
+    inspectorInspected[msg.sender][inspection.regenerator] = true;
   }
 
   function markAsRealized(
@@ -174,7 +174,7 @@ contract Sintrop is Callable {
     inspection.proofPhoto = proofPhoto;
     inspection.report = report;
     inspection.inspectedAt = block.number;
-    inspection.inspectedAtEra = producerContract.producerPoolEra();
+    inspection.inspectedAtEra = regeneratorContract.regeneratorPoolEra();
 
     inspections[inspection.id] = inspection;
 
@@ -185,21 +185,21 @@ contract Sintrop is Callable {
   }
 
   /**
-   * @dev Inscrement producer and inspector request actions
+   * @dev Inscrement regenerator and inspector request actions
    * @param inspection the inspected inspection
    */
   function afterRealizeInspection(Inspection memory inspection) internal {
-    address producerAddress = inspection.producer;
+    address regeneratorAddress = inspection.regenerator;
     address inspectorAddress = inspection.inspector;
 
     activistContract.addLevel(
-      producerAddress,
-      producerContract.afterRealizeInspection(producerAddress, inspection.regenerationScore),
+      regeneratorAddress,
+      regeneratorContract.afterRealizeInspection(regeneratorAddress, inspection.regenerationScore),
       inspectorAddress,
       inspectorContract.afterRealizeInspection(inspectorAddress)
     );
 
-    userInspections[producerAddress].push(inspection.id);
+    userInspections[regeneratorAddress].push(inspection.id);
     userInspections[inspectorAddress].push(inspection.id);
   }
 
@@ -208,7 +208,7 @@ contract Sintrop is Callable {
 
     Inspection memory inspection = inspections[id];
 
-    require(inspection.inspectedAtEra == producerContract.producerPoolEra(), "Can not add validation anymore");
+    require(inspection.inspectedAtEra == regeneratorContract.regeneratorPoolEra(), "Can not add validation anymore");
 
     inspection.validationsCount += 1;
     inspections[inspection.id] = inspection;
@@ -242,10 +242,10 @@ contract Sintrop is Callable {
     return regenerationInspection[inspectionId];
   }
 
-  function waitToRequest(Producer memory producer) public view returns (bool) {
-    if (producer.totalInspections < allowedInitialRequests) return true;
+  function waitToRequest(Regenerator memory regenerator) public view returns (bool) {
+    if (regenerator.totalInspections < allowedInitialRequests) return true;
 
-    return block.number > producer.lastRequestAt + timeBetweenInspections;
+    return block.number > regenerator.lastRequestAt + timeBetweenInspections;
   }
 
   function calculateBlocksToExpire(uint256 inspectionId) public view returns (uint256) {
@@ -269,8 +269,8 @@ contract Sintrop is Callable {
   }
 
   function beforeAcceptHaveSecurityBlocksToVote() private view returns (bool) {
-    if (producerContract.nextEraIn() < blocksToExpireAcceptedInspection) return false;
+    if (regeneratorContract.nextEraIn() < blocksToExpireAcceptedInspection) return false;
 
-    return producerContract.nextEraIn().sub(blocksToExpireAcceptedInspection) > securityBlocksToValidatorAnalysis;
+    return regeneratorContract.nextEraIn().sub(blocksToExpireAcceptedInspection) > securityBlocksToValidatorAnalysis;
   }
 }

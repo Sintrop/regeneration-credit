@@ -94,7 +94,7 @@ describe("DeveloperContract", (accounts) => {
 
     const validatorContractDependencies = {
       userContractAddress: userContract.target,
-      producerContractAddress: ZERO_ADDRESS,
+      regeneratorContractAddress: ZERO_ADDRESS,
       validatorPoolAddress: validatorPool.target,
       inspectorContractAddress: userContract.target,
       developerContractAddress: instance.target,

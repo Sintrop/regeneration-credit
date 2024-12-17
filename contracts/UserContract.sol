@@ -28,7 +28,7 @@ contract UserContract is Ownable, Callable {
     uint256 validatorProportionality,
     uint256 contributorProportionality
   ) {
-    userTypeSettings[UserType.PRODUCER] = UserTypeSetting(0, false, true, 0);
+    userTypeSettings[UserType.REGENERATOR] = UserTypeSetting(0, false, true, 0);
     userTypeSettings[UserType.INSPECTOR] = UserTypeSetting(inspectorProportionality, true, true, 0);
     userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(activistProportionality, false, true, 100000);
     userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(researcherProportionality, false, true, 200000);
@@ -71,15 +71,15 @@ contract UserContract is Ownable, Callable {
    * @param userType The type of the user - enum UserType
    */
   function registrationProportionalityAllowed(UserType userType) internal view returns (bool) {
-    uint256 producersCount = userTypesCount[UserType.PRODUCER];
+    uint256 regeneratorsCount = userTypesCount[UserType.REGENERATOR];
     uint256 registeredUserTypeCount = userTypesCount[userType];
     UserTypeSetting memory setting = userTypeSettings[userType];
     uint256 proportionality = setting.proportionalityOnRegister;
 
     if (proportionality == 0) return true;
 
-    if (setting.directProportionalityRegistration) return registeredUserTypeCount < producersCount * proportionality;
-    return registeredUserTypeCount < producersCount / proportionality;
+    if (setting.directProportionalityRegistration) return registeredUserTypeCount < regeneratorsCount * proportionality;
+    return registeredUserTypeCount < regeneratorsCount / proportionality;
   }
 
   /**

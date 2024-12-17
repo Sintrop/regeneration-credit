@@ -17,7 +17,7 @@ describe("UserContract", function () {
 
   const definedTypes = [
     "UNDEFINED",
-    "PRODUCER",
+    "REGENERATOR",
     "INSPECTOR",
     "RESEARCHER",
     "DEVELOPER",
@@ -52,14 +52,14 @@ describe("UserContract", function () {
     context("with allowed caller", () => {
       context("when the user don't exist", () => {
         beforeEach(async () => {
-          await addInvitation(owner, user1Address, userTypes.Producer, owner);
-          await addUser(user1Address, userTypes.Producer, owner);
+          await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+          await addUser(user1Address, userTypes.Regenerator, owner);
         });
 
         it("should add a user", async () => {
           const user = await instance.getUser(user1Address);
 
-          expect(user).to.equal(userTypes.Producer);
+          expect(user).to.equal(userTypes.Regenerator);
         });
 
         it("should increment usersCount", async () => {
@@ -68,8 +68,8 @@ describe("UserContract", function () {
           expect(usersCount).to.equal(1);
         });
 
-        it("should increment userTypesCount to producer", async () => {
-          const usersCount = await instance.userTypesCount(userTypes.Producer);
+        it("should increment userTypesCount to regenerator", async () => {
+          const usersCount = await instance.userTypesCount(userTypes.Regenerator);
 
           expect(usersCount).to.equal(1);
         });
@@ -77,10 +77,10 @@ describe("UserContract", function () {
 
       context("when the user exists", () => {
         it("should return error message", async () => {
-          await addInvitation(owner, user1Address, userTypes.Producer, owner);
-          await addUser(user1Address, userTypes.Producer, owner);
+          await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+          await addUser(user1Address, userTypes.Regenerator, owner);
 
-          expect(addUser(user1Address, userTypes.Producer, owner)).to.be.revertedWith("User already exists");
+          expect(addUser(user1Address, userTypes.Regenerator, owner)).to.be.revertedWith("User already exists");
         });
       });
 
@@ -92,19 +92,19 @@ describe("UserContract", function () {
 
       context("when enum correctly", () => {
         beforeEach(async () => {
-          await addInvitation(owner, user2Address, userTypes.Producer, owner);
+          await addInvitation(owner, user2Address, userTypes.Regenerator, owner);
 
-          await addUser(user2Address, userTypes.Producer, owner);
+          await addUser(user2Address, userTypes.Regenerator, owner);
         });
 
-        context("to Producer", () => {
-          it("should add correct enum to producer", async () => {
-            await addInvitation(owner, user1Address, userTypes.Producer, owner);
-            await addUser(user1Address, userTypes.Producer, owner);
+        context("to Regenerator", () => {
+          it("should add correct enum to regenerator", async () => {
+            await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+            await addUser(user1Address, userTypes.Regenerator, owner);
 
             const user = await instance.getUser(user1Address);
 
-            expect(user).to.equal(userTypes.Producer);
+            expect(user).to.equal(userTypes.Regenerator);
           });
         });
 
@@ -197,8 +197,8 @@ describe("UserContract", function () {
 
       context("with proportionality invalid", () => {
         beforeEach(async () => {
-          await addInvitation(owner, user1Address, userTypes.Producer, owner);
-          await addUser(user1Address, userTypes.Producer, owner);
+          await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+          await addUser(user1Address, userTypes.Regenerator, owner);
         });
 
         context("to inspector with proportionality 2", () => {
@@ -284,8 +284,8 @@ describe("UserContract", function () {
 
       context("when user was invited", () => {
         beforeEach(async () => {
-          await addInvitation(owner, user2Address, userTypes.Producer, owner);
-          await addUser(user2Address, userTypes.Producer, owner);
+          await addInvitation(owner, user2Address, userTypes.Regenerator, owner);
+          await addUser(user2Address, userTypes.Regenerator, owner);
           await addInvitation(owner, user1Address, userTypes.Inspector, owner);
         });
 
@@ -308,8 +308,8 @@ describe("UserContract", function () {
 
       context("when user was not invited", () => {
         beforeEach(async () => {
-          await addInvitation(owner, user1Address, userTypes.Producer, owner);
-          await addUser(user1Address, userTypes.Producer, owner);
+          await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+          await addUser(user1Address, userTypes.Regenerator, owner);
         });
 
         it("should return error message", async () => {
@@ -320,7 +320,7 @@ describe("UserContract", function () {
 
     context("without allowed caller", () => {
       it("should return error message", async () => {
-        expect(addUser(user1Address, userTypes.Producer, user1Address)).to.be.revertedWith("Not allowed caller");
+        expect(addUser(user1Address, userTypes.Regenerator, user1Address)).to.be.revertedWith("Not allowed caller");
       });
     });
   });
@@ -329,11 +329,11 @@ describe("UserContract", function () {
     context("with allowed caller", () => {
       context("when already invited", () => {
         beforeEach(async () => {
-          await addInvitation(owner, user1Address, userTypes.Producer, owner);
+          await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
         });
 
         it("should return error message", async () => {
-          await expect(addInvitation(owner, user1Address, userTypes.Producer, owner)).to.be.revertedWith(
+          await expect(addInvitation(owner, user1Address, userTypes.Regenerator, owner)).to.be.revertedWith(
             "Already invited"
           );
         });
@@ -341,14 +341,14 @@ describe("UserContract", function () {
 
       context("when dont invited yet", () => {
         beforeEach(async () => {
-          await addInvitation(owner, user1Address, userTypes.Producer, owner);
+          await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
         });
 
         it("should invite", async () => {
           const invitation = await instance.invitations(user1Address);
 
           expect(invitation.inviter).to.equal(owner.address);
-          expect(invitation.userType).to.equal(userTypes.Producer);
+          expect(invitation.userType).to.equal(userTypes.Regenerator);
           expect(invitation.invited).to.equal(user1Address.address);
         });
       });
@@ -359,14 +359,14 @@ describe("UserContract", function () {
 
   describe("#getInvitation", () => {
     beforeEach(async () => {
-      await addInvitation(owner, user1Address, userTypes.Producer, owner);
+      await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
     });
 
     it("returns invitation", async () => {
       const invitation = await instance.getInvitation(user1Address);
 
       expect(invitation.inviter).to.equal(owner.address);
-      expect(invitation.userType).to.equal(userTypes.Producer);
+      expect(invitation.userType).to.equal(userTypes.Regenerator);
       expect(invitation.invited).to.equal(user1Address.address);
     });
   });
@@ -382,8 +382,8 @@ describe("UserContract", function () {
 
     context("with 1 user", () => {
       it("should usersCount be one", async () => {
-        await addInvitation(owner, user1Address, userTypes.Producer, owner);
-        await addUser(user1Address, userTypes.Producer, owner);
+        await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+        await addUser(user1Address, userTypes.Regenerator, owner);
 
         const usersCount = await instance.usersCount();
 
@@ -412,11 +412,11 @@ describe("UserContract", function () {
     context("when user1 and user2 is registed on system", () => {
       context("when user1 receive delation", () => {
         beforeEach(async () => {
-          await addInvitation(owner, user1Address, userTypes.Producer, owner);
-          await addInvitation(owner, user2Address, userTypes.Producer, owner);
+          await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+          await addInvitation(owner, user2Address, userTypes.Regenerator, owner);
 
-          await addUser(user1Address, userTypes.Producer, owner);
-          await addUser(user2Address, userTypes.Producer, owner);
+          await addUser(user1Address, userTypes.Regenerator, owner);
+          await addUser(user2Address, userTypes.Regenerator, owner);
 
           await addDelation(user1Address, user2Address);
         });
@@ -451,8 +451,8 @@ describe("UserContract", function () {
 
     context("when user1 (reported) is not registed on system", () => {
       it("should return error message", async () => {
-        await addInvitation(owner, user2Address, userTypes.Producer, owner);
-        await addUser(user2Address, userTypes.Producer, owner);
+        await addInvitation(owner, user2Address, userTypes.Regenerator, owner);
+        await addUser(user2Address, userTypes.Regenerator, owner);
 
         await expect(addDelation(user1Address, user2Address)).to.be.revertedWith("User must be registered");
       });
@@ -460,8 +460,8 @@ describe("UserContract", function () {
 
     context("when user2 (informer) is not registed on system", () => {
       it("should return error message", async () => {
-        await addInvitation(owner, user1Address, userTypes.Producer, owner);
-        await addUser(user1Address, userTypes.Producer, owner);
+        await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+        await addUser(user1Address, userTypes.Regenerator, owner);
 
         await expect(addDelation(user1Address, user2Address)).to.be.revertedWith("Caller must be registered");
       });
@@ -471,11 +471,11 @@ describe("UserContract", function () {
   describe("#getUserDelations", () => {
     context("when user1 have 2 delations", () => {
       beforeEach(async () => {
-        await addInvitation(owner, user1Address, userTypes.Producer, owner);
-        await addInvitation(owner, user2Address, userTypes.Producer, owner);
+        await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+        await addInvitation(owner, user2Address, userTypes.Regenerator, owner);
 
-        await addUser(user1Address, userTypes.Producer, owner);
-        await addUser(user2Address, userTypes.Producer, owner);
+        await addUser(user1Address, userTypes.Regenerator, owner);
+        await addUser(user2Address, userTypes.Regenerator, owner);
 
         await addDelation(user1Address, user2Address);
         await addDelation(user1Address, user2Address);
@@ -498,9 +498,9 @@ describe("UserContract", function () {
   });
 
   describe("#getUserTypeSettings", () => {
-    context("when get to producer", () => {
+    context("when get to regenerator", () => {
       it("", async () => {
-        const settings = await instance.getUserTypeSettings(userTypes.Producer);
+        const settings = await instance.getUserTypeSettings(userTypes.Regenerator);
 
         expect(settings).deep.to.equal([0n, false, true, 0]);
       });

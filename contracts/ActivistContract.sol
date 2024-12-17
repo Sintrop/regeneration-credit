@@ -11,7 +11,7 @@ import { Callable } from "./Callable.sol";
  * @author Sintrop
  * @title ActivistContract
  * @dev Manage activists rules and data
- * @notice User responsible for inviting new producers and inspectors
+ * @notice User responsible for inviting new regenerators and inspectors
  */
 
 contract ActivistContract is Callable {
@@ -79,35 +79,35 @@ contract ActivistContract is Callable {
   /**
    * @dev Allow an activist to receive pool levels
    * @notice Receive level when invited users complete three inspections
-   * @param producerAddress Invited producer wallet
-   * @param producerTotalInspections Invited producer total inspections
+   * @param regeneratorAddress Invited regenerator wallet
+   * @param regeneratorTotalInspections Invited regenerator total inspections
    * @param inspectorAddress Invited inspector wallet
    * @param inspectorTotalInspections Invited inspector total inspections
    */
   function addLevel(
-    address producerAddress,
-    uint256 producerTotalInspections,
+    address regeneratorAddress,
+    uint256 regeneratorTotalInspections,
     address inspectorAddress,
     uint256 inspectorTotalInspections
   ) external mustBeAllowedCaller {
-    addLevelFromProducer(producerAddress, producerTotalInspections);
+    addLevelFromRegenerator(regeneratorAddress, regeneratorTotalInspections);
     addLevelFromInspector(inspectorAddress, inspectorTotalInspections);
   }
 
   /**
-   * @dev Add level to activist when invited producer reaches minimum inspections
-   * @param producerAddress Invited producer wallet
-   * @param producerTotalInspections Invited producer total inspections
+   * @dev Add level to activist when invited regenerator reaches minimum inspections
+   * @param regeneratorAddress Invited regenerator wallet
+   * @param regeneratorTotalInspections Invited regenerator total inspections
    */
-  function addLevelFromProducer(address producerAddress, uint256 producerTotalInspections) private {
-    Invitation memory producerInvitation = userContract.getInvitation(producerAddress);
+  function addLevelFromRegenerator(address regeneratorAddress, uint256 regeneratorTotalInspections) private {
+    Invitation memory regeneratorInvitation = userContract.getInvitation(regeneratorAddress);
 
     if (
-      !activistWonLevel[producerInvitation.inviter][producerAddress] &&
-      producerTotalInspections >= MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS
+      !activistWonLevel[regeneratorInvitation.inviter][regeneratorAddress] &&
+      regeneratorTotalInspections >= MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS
     ) {
-      activistWonLevel[producerInvitation.inviter][producerAddress] = true;
-      setActivistLevel(producerInvitation.inviter);
+      activistWonLevel[regeneratorInvitation.inviter][regeneratorAddress] = true;
+      setActivistLevel(regeneratorInvitation.inviter);
     }
   }
 

@@ -18,7 +18,7 @@ struct RegenerationInspection {
 struct Inspection {
   uint256 id;
   InspectionStatus status;
-  address producer;
+  address regenerator;
   address inspector;
   int256 regenerationScore;
   string proofPhoto;
