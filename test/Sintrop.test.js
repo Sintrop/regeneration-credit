@@ -80,7 +80,7 @@ describe("Sintrop", () => {
   const validatorPoolargs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    blocksPerEra: 12,
+    blocksPerEra: 100,
   };
 
   const activistPoolArgs = {
@@ -1558,7 +1558,14 @@ describe("Sintrop", () => {
 
               await advanceBlock(sintropArgs.timeBetweenInspections);
               await requestInspection(producerAddress);
+
+              await validatorContract.connect(validator1Address).addLevel();
+              await validatorContract.connect(validator2Address).addLevel();
+              await validatorContract.connect(validator3Address).addLevel();
+              await validatorContract.connect(validator4Address).addLevel();
+
               await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+              await advanceBlock(validatorPoolargs.blocksPerEra);
               await acceptInspection(3, inspector3Address);
               await realizeInspection(3, report, regenerationIndex(), inspector3Address);
 

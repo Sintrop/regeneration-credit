@@ -2,6 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import { Era } from "./types/PoolableTypes.sol";
 
 /**
  * @author Sintrop
@@ -12,12 +13,6 @@ contract Poolable {
   using SafeMath for uint256;
 
   uint256 internal immutable TOTAL_TOKENS;
-
-  struct Era {
-    uint256 users;
-    uint256 tokens;
-    uint256 levels;
-  }
 
   mapping(uint256 => Era) public eras;
   mapping(uint256 => mapping(address => uint256)) public eraLevels;

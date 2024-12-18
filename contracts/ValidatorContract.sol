@@ -15,6 +15,7 @@ import { ActivistContract } from "./ActivistContract.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
 import { Contribution } from "./types/DeveloperTypes.sol";
 import { Work } from "./types/ResearcherTypes.sol";
+import { Era } from "./types/PoolableTypes.sol";
 
 /**
  * @author Sintrop
@@ -77,7 +78,10 @@ contract ValidatorContract is Callable {
     userContract.addUser(msg.sender, USER_TYPE);
   }
 
-  function addUserValidation(address userAddress, string memory justification) public {
+  function addUserValidation(
+    address userAddress,
+    string memory justification
+  ) public canAddValidationModifier(msg.sender) {
     require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
     require(!userContract.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
     require(!userContract.userTypeIs(UserType.DENIED, userAddress), "User already denied");
@@ -99,7 +103,7 @@ contract ValidatorContract is Callable {
     Inspection memory inspection,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller {
+  ) public mustBeAllowedCaller canAddValidationModifier(validatorAddress) {
     require(!validatorInspectionsValidations[validatorAddress][inspection.id], "Already voted");
 
     validatorInspectionsValidations[validatorAddress][inspection.id] = true;
@@ -124,7 +128,7 @@ contract ValidatorContract is Callable {
     Contribution memory contribution,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller {
+  ) public mustBeAllowedCaller canAddValidationModifier(validatorAddress) {
     require(!validatorContributionsValidations[validatorAddress][contribution.id], "Already voted");
 
     validatorContributionsValidations[validatorAddress][contribution.id] = true;
@@ -149,7 +153,7 @@ contract ValidatorContract is Callable {
     Work memory work,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller {
+  ) public mustBeAllowedCaller canAddValidationModifier(validatorAddress) {
     require(!validatorWorksValidations[validatorAddress][work.id], "Already voted");
 
     validatorWorksValidations[validatorAddress][work.id] = true;
@@ -245,12 +249,16 @@ contract ValidatorContract is Callable {
   }
 
   function majorityValidatorsCount() public view returns (uint256) {
-    uint256 _validatorsCount = userContract.userTypesCount(USER_TYPE);
+    uint256 currentEra = validatorPoolEra();
 
-    if (_validatorsCount <= firstValidatorLimit) return _validatorsCount / 2;
-    if (_validatorsCount <= secondValidatorLimit) return _validatorsCount / 4;
+    if (currentEra == 1) {
+      uint256 _validatorsCount = userContract.userTypesCount(USER_TYPE);
+      return _validatorsCount / 2;
+    } else {
+      uint256 levels = validatorPool.getEra(currentEra - 1).levels;
 
-    return _validatorsCount / 8;
+      return levels / 2;
+    }
   }
 
   function addLevel() public {
@@ -302,5 +310,12 @@ contract ValidatorContract is Callable {
    */
   function validatorPoolEra() private view returns (uint256) {
     return validatorPool.currentContractEra();
+  }
+
+  modifier canAddValidationModifier(address validatorAddress) {
+    uint256 validatorAlive = validatorPool.eraLevels(validatorPoolEra() - 1, validatorAddress);
+
+    require(validatorPoolEra() == 1 || validatorAlive >= 1, "You do not contributed in the last era");
+    _;
   }
 }

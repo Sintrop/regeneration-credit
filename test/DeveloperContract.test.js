@@ -13,6 +13,7 @@ describe("DeveloperContract", (accounts) => {
   let developerPool;
   let regenerationCredit;
   let validatorContract;
+  let validatorPool;
   let owner,
     dev1Address,
     dev2Address,
@@ -31,7 +32,7 @@ describe("DeveloperContract", (accounts) => {
   const validatorPoolargs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    blocksPerEra: 12,
+    blocksPerEra: 80,
   };
 
   const addDeveloper = async (name, from) => {
@@ -107,7 +108,9 @@ describe("DeveloperContract", (accounts) => {
     await userContract.newAllowedCaller(owner);
     await userContract.newAllowedCaller(validatorContract.target);
     await developerPool.newAllowedCaller(instance.target);
+    await validatorPool.newAllowedCaller(validatorContract.target);
     await validatorContract.newAllowedCaller(instance.target);
+    await validatorContract.newAllowedCaller(owner);
     await instance.newAllowedCaller(validatorContract.target);
     await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(developerPool.target, "30000000000000000000000000");
@@ -391,6 +394,9 @@ describe("DeveloperContract", (accounts) => {
         beforeEach(async () => {
           await addValidator(validator2Address);
 
+          await validatorContract.connect(validator1Address).addLevel();
+          await validatorContract.connect(validator2Address).addLevel();
+
           await instance.connect(dev1Address).addContribution("report");
           await instance.connect(validator1Address).addContributionValidation(1, "justification");
 
@@ -434,6 +440,9 @@ describe("DeveloperContract", (accounts) => {
             await addValidator(validator2Address);
             await addValidator(validator3Address);
             await addValidator(validator4Address);
+
+            await validatorContract.connect(validator1Address).addLevel();
+            await validatorContract.connect(validator2Address).addLevel();
 
             await instance.connect(validator1Address).addContributionValidation(1, "justification");
             await instance.connect(validator2Address).addContributionValidation(1, "justification");
