@@ -850,7 +850,7 @@ describe("ValidatorContract", () => {
                 it("should return error", async () => {
                   await expect(
                     instance.connect(validator1Address).addUserValidation(producer1Address, "my justification")
-                  ).to.be.revertedWith("You do not contributed in the last era");
+                  ).to.be.revertedWith("You did not contribute in the last era");
                 });
               });
             });
@@ -1188,7 +1188,7 @@ describe("ValidatorContract", () => {
             it("should return error", async () => {
               await expect(
                 instance.connect(owner).addInspectionValidation(inspectionMock, "foo", validator1Address)
-              ).to.be.revertedWith("You do not contributed in the last era");
+              ).to.be.revertedWith("You did not contribute in the last era");
             });
           });
         });
@@ -1380,7 +1380,7 @@ describe("ValidatorContract", () => {
             it("should return error", async () => {
               await expect(
                 instance.connect(owner).addDeveloperContributionValidation(contribution, "foo", validator1Address)
-              ).to.be.revertedWith("You do not contributed in the last era");
+              ).to.be.revertedWith("You did not contribute in the last era");
             });
           });
         });
@@ -1567,7 +1567,7 @@ describe("ValidatorContract", () => {
             it("should return error", async () => {
               await expect(
                 instance.connect(owner).addResearcheWorkValidation(work, "justification", validator1Address)
-              ).to.be.revertedWith("You do not contributed in the last era");
+              ).to.be.revertedWith("You did not contribute in the last era");
             });
           });
         });

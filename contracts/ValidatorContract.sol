@@ -315,7 +315,7 @@ contract ValidatorContract is Callable {
   modifier canAddValidationModifier(address validatorAddress) {
     uint256 validatorAlive = validatorPool.eraLevels(validatorPoolEra() - 1, validatorAddress);
 
-    require(validatorPoolEra() == 1 || validatorAlive >= 1, "You do not contributed in the last era");
+    require(validatorPoolEra() == 1 || validatorAlive >= 1, "You did not contribute in the last era");
     _;
   }
 }
