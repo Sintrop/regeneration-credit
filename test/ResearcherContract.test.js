@@ -12,6 +12,7 @@ describe("ResearcherContract", () => {
   let researcherPool;
   let userContract;
   let validatorContract;
+  let validatorPool;
   let owner, resea1Address, resea2Address, validator1Address, validator2Address, validator3Address, validator4Address;
 
   const timeBetweenWorks = 10;
@@ -23,13 +24,13 @@ describe("ResearcherContract", () => {
   const args = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    blocksPerEra: 40,
+    blocksPerEra: 60,
   };
 
-  const validatorPoolargs = {
+  const validatorPoolArgs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    blocksPerEra: 12,
+    blocksPerEra: 60,
   };
 
   const addResearcher = async (name, from) => {
@@ -59,10 +60,10 @@ describe("ResearcherContract", () => {
     researcherPool = await researcherPoolFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra);
 
     const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
-    const validatorPool = await validatorPoolFactory.deploy(
+    validatorPool = await validatorPoolFactory.deploy(
       regenerationCredit.target,
-      validatorPoolargs.halving,
-      validatorPoolargs.blocksPerEra
+      validatorPoolArgs.halving,
+      validatorPoolArgs.blocksPerEra
     );
 
     const validatorContractFactory = await ethers.getContractFactory("ValidatorContract");
@@ -92,13 +93,15 @@ describe("ResearcherContract", () => {
     await validatorContract.setContractAddressDependencies(validatorContractDependencies);
 
     await userContract.newAllowedCaller(validatorContract.target);
+    await userContract.newAllowedCaller(instance.target);
+    await userContract.newAllowedCaller(owner);
     await researcherPool.newAllowedCaller(instance.target);
+    await validatorPool.newAllowedCaller(validatorContract.target);
     await validatorContract.newAllowedCaller(instance.target);
+    await validatorContract.newAllowedCaller(owner);
     await instance.newAllowedCaller(validatorContract.target);
     await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(researcherPool.target, args.totalTokens);
-    await userContract.newAllowedCaller(instance.target);
-    await userContract.newAllowedCaller(owner);
 
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
   });
@@ -356,7 +359,7 @@ describe("ResearcherContract", () => {
 
       context("when do not have time to validator analysis", () => {
         beforeEach(async () => {
-          await advanceBlock(20);
+          await advanceBlock(40);
         });
 
         it("should return error message", async () => {
@@ -466,17 +469,25 @@ describe("ResearcherContract", () => {
         beforeEach(async () => {
           await addValidator(validator2Address);
 
+          await validatorContract.connect(validator1Address).addLevel();
+          await validatorContract.connect(validator2Address).addLevel();
+
           await addWork(resea1Address);
           await instance.connect(validator1Address).addWorkValidation(1, "justification");
 
           await advanceBlock(args.blocksPerEra);
+
+          await validatorContract.connect(validator1Address).addLevel();
 
           await addWork(resea1Address);
           await instance.connect(validator1Address).addWorkValidation(2, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
+          await validatorContract.connect(validator1Address).addLevel();
+
           await addWork(resea1Address);
+
           await instance.connect(validator1Address).addWorkValidation(3, "justification");
         });
 
@@ -504,14 +515,19 @@ describe("ResearcherContract", () => {
 
         context("when contribution is invalidated", () => {
           beforeEach(async () => {
-            await addWork(resea1Address);
-
             await addValidator(validator2Address);
             await addValidator(validator3Address);
             await addValidator(validator4Address);
 
+            await validatorContract.connect(validator1Address).addLevel();
+            await validatorContract.connect(validator2Address).addLevel();
+            await validatorContract.connect(validator4Address).addLevel();
+
+            await advanceBlock(validatorPoolArgs.blocksPerEra);
+
+            await addWork(resea1Address);
+
             await instance.connect(validator1Address).addWorkValidation(1, "justification");
-            await instance.connect(validator2Address).addWorkValidation(1, "justification");
           });
 
           it("should return error message", async () => {
