@@ -15,7 +15,6 @@ import { ActivistContract } from "./ActivistContract.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
 import { Contribution } from "./types/DeveloperTypes.sol";
 import { Work } from "./types/ResearcherTypes.sol";
-import { Era } from "./types/PoolableTypes.sol";
 
 /**
  * @author Sintrop
@@ -43,7 +42,7 @@ contract ValidatorContract is Callable {
   ContributorContract private contributorContract;
   ActivistContract private activistContract;
 
-  address[] private validatorsAddress;
+  address[] public validatorsAddress;
   UserType private constant USER_TYPE = UserType.VALIDATOR;
   uint256 private immutable firstValidatorLimit;
   uint256 private immutable secondValidatorLimit;
@@ -218,30 +217,6 @@ contract ValidatorContract is Callable {
 
   function getUserValidations(address userAddress) public view returns (UserValidation[] memory) {
     return userValidations[userAddress];
-  }
-
-  function getInspectionValidations(uint256 inspectionId) public view returns (ResourceValidation[] memory) {
-    return inspectionValidations[inspectionId];
-  }
-
-  function getWorkValidations(uint256 workId) public view returns (ResourceValidation[] memory) {
-    return workValidations[workId];
-  }
-
-  function getContributionValidations(uint256 contributionId) public view returns (ResourceValidation[] memory) {
-    return contributionValidations[contributionId];
-  }
-
-  function getValidators() public view returns (Validator[] memory) {
-    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
-    Validator[] memory validatorList = new Validator[](usersCount);
-
-    for (uint256 i = 0; i < usersCount; i++) {
-      address acAddress = validatorsAddress[i];
-      validatorList[i] = validators[acAddress];
-    }
-
-    return validatorList;
   }
 
   function getValidator(address addr) public view returns (Validator memory) {

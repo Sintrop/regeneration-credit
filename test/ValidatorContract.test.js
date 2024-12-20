@@ -376,14 +376,6 @@ describe("ValidatorContract", () => {
           expect(validatorsCount).to.equal(1);
         });
 
-        it("should add created validator in validatorList (array)", async () => {
-          await addValidator(validator1Address);
-
-          const validators = await instance.getValidators();
-
-          expect(validators[0].validatorWallet).to.equal(validator1Address.address);
-        });
-
         it("should add created validator in userType contract as a VALIDATOR", async () => {
           await addValidator(validator1Address);
 
@@ -1111,14 +1103,12 @@ describe("ValidatorContract", () => {
             });
 
             it("add inspection validation", async () => {
-              const validations = await instance.getInspectionValidations(1);
-              const validation = validations[0];
+              const validation = await instance.inspectionValidations(1, 0);
 
-              expect(validations.length).to.equal(1);
-              expect(validation.validator).to.equal(validator1Address.address);
-              expect(validation.resourceId).to.equal(1);
-              expect(validation.justification).to.equal("foo");
-              expect(validation.majorityValidatorsCount).to.equal(2);
+              expect(validation[0]).to.equal(validator1Address.address);
+              expect(validation[1]).to.equal(1);
+              expect(validation[2]).to.equal("foo");
+              expect(validation[3]).to.equal(2);
             });
           });
         });
@@ -1153,14 +1143,12 @@ describe("ValidatorContract", () => {
             });
 
             it("add inspection validation", async () => {
-              const validations = await instance.getInspectionValidations(1);
-              const validation = validations[0];
+              const validation = await instance.inspectionValidations(1, 0);
 
-              expect(validations.length).to.equal(1);
-              expect(validation.validator).to.equal(validator1Address.address);
-              expect(validation.resourceId).to.equal(1);
-              expect(validation.justification).to.equal("foo");
-              expect(validation.majorityValidatorsCount).to.equal(2);
+              expect(validation[0]).to.equal(validator1Address.address);
+              expect(validation[1]).to.equal(1);
+              expect(validation[2]).to.equal("foo");
+              expect(validation[3]).to.equal(2);
             });
           });
 
@@ -1264,14 +1252,12 @@ describe("ValidatorContract", () => {
               });
 
               it("should add work validation", async () => {
-                const validations = await instance.getContributionValidations(1);
-                const validation = validations[0];
+                const validation = await instance.contributionValidations(1, 0);
 
-                expect(validations.length).to.equal(2);
-                expect(validation.validator).to.equal(validator1Address.address);
-                expect(validation.resourceId).to.equal(1);
-                expect(validation.justification).to.equal("justification");
-                expect(validation.majorityValidatorsCount).to.equal(2);
+                expect(validation[0]).to.equal(validator1Address.address);
+                expect(validation[1]).to.equal(1);
+                expect(validation[2]).to.equal("justification");
+                expect(validation[3]).to.equal(2);
               });
 
               it("deny developer", async () => {
@@ -1357,15 +1343,12 @@ describe("ValidatorContract", () => {
             });
 
             it("add inspection validation", async () => {
-              const validations = await instance.getContributionValidations(1);
+              const validation = await instance.contributionValidations(1, 0);
 
-              const validation = validations[0];
-
-              expect(validations.length).to.equal(1);
-              expect(validation.validator).to.equal(validator1Address.address);
-              expect(validation.resourceId).to.equal(1);
-              expect(validation.justification).to.equal("foo");
-              expect(validation.majorityValidatorsCount).to.equal(2);
+              expect(validation[0]).to.equal(validator1Address.address);
+              expect(validation[1]).to.equal(1);
+              expect(validation[2]).to.equal("foo");
+              expect(validation[3]).to.equal(2);
             });
           });
 
@@ -1427,14 +1410,12 @@ describe("ValidatorContract", () => {
         });
 
         it("should add work validation", async () => {
-          const validations = await instance.getWorkValidations(1);
-          const validation = validations[0];
+          const validation = await instance.workValidations(1, 0);
 
-          expect(validations.length).to.equal(1);
-          expect(validation.validator).to.equal(validator1Address.address);
-          expect(validation.resourceId).to.equal(1);
-          expect(validation.justification).to.equal("justification");
-          expect(validation.majorityValidatorsCount).to.equal(2);
+          expect(validation[0]).to.equal(validator1Address.address);
+          expect(validation[1]).to.equal(1);
+          expect(validation[2]).to.equal("justification");
+          expect(validation[3]).to.equal(2);
         });
 
         it("should return error", async () => {
@@ -1544,15 +1525,12 @@ describe("ValidatorContract", () => {
             });
 
             it("add inspection validation", async () => {
-              const validations = await instance.getWorkValidations(1);
+              const validation = await instance.workValidations(1, 0);
 
-              const validation = validations[0];
-
-              expect(validations.length).to.equal(1);
-              expect(validation.validator).to.equal(validator1Address.address);
-              expect(validation.resourceId).to.equal(1);
-              expect(validation.justification).to.equal("foo");
-              expect(validation.majorityValidatorsCount).to.equal(2);
+              expect(validation[0]).to.equal(validator1Address.address);
+              expect(validation[1]).to.equal(1);
+              expect(validation[2]).to.equal("foo");
+              expect(validation[3]).to.equal(2);
             });
           });
 
@@ -1608,27 +1586,27 @@ describe("ValidatorContract", () => {
     });
   });
 
-  describe("#getValidators", () => {
-    context("when has validators", () => {
-      beforeEach(async () => {
-        await addValidator(validator1Address);
-      });
+  // describe("#getValidators", () => {
+  //   context("when has validators", () => {
+  //     beforeEach(async () => {
+  //       await addValidator(validator1Address);
+  //     });
 
-      it("should return validators", async () => {
-        const validators = await instance.getValidators();
+  //     it("should return validators", async () => {
+  //       const validators = await instance.getValidators();
 
-        expect(validators.length).to.equal(1);
-      });
-    });
+  //       expect(validators.length).to.equal(1);
+  //     });
+  //   });
 
-    context("when don't has validators", () => {
-      it("should return validators equal zero", async () => {
-        const validators = await instance.getValidators();
+  //   context("when don't has validators", () => {
+  //     it("should return validators equal zero", async () => {
+  //       const validators = await instance.getValidators();
 
-        expect(validators.length).to.equal(0);
-      });
-    });
-  });
+  //       expect(validators.length).to.equal(0);
+  //     });
+  //   });
+  // });
 
   describe("#majorityValidatorsCount", () => {
     context("when current era is 1", () => {

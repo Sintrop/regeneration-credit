@@ -1531,13 +1531,12 @@ describe("Sintrop", () => {
           });
 
           it("add validation", async () => {
-            const validations = await validatorContract.getInspectionValidations(1);
-            const validation = validations[0];
+            const validation = await validatorContract.inspectionValidations(1, 0);
 
-            expect(validation.validator).to.equal(validator1Address.address);
-            expect(validation.resourceId).to.equal(1);
-            expect(validation.justification).to.equal("justification");
-            expect(validation.majorityValidatorsCount).to.equal(2);
+            expect(validation[0]).to.equal(validator1Address.address);
+            expect(validation[1]).to.equal(1);
+            expect(validation[2]).to.equal("justification");
+            expect(validation[3]).to.equal(2);
           });
         });
 
