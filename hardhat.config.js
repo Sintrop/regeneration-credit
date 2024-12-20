@@ -50,7 +50,7 @@ module.exports = {
     customChains: [
       {
         network: "sequoiaTestnet",
-        chainId: 1500,
+        chainId: 1600,
         urls: {
           apiURL: "https://sequoiaapi.sintrop.com/api",
           browserURL: "https://sequoiaapi.sintrop.com:5000"
