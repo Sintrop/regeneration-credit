@@ -707,7 +707,9 @@ describe("Sintrop", () => {
           });
 
           it("should return error message", async () => {
-            await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Already inspected this regenerator");
+            await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith(
+              "Already inspected this regenerator"
+            );
           });
         });
       });
@@ -1780,9 +1782,9 @@ describe("Sintrop", () => {
 
     context("with non validator", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(regeneratorAddress).addInspectionValidation(1, "justification")).to.be.revertedWith(
-          "Please register as validator"
-        );
+        await expect(
+          instance.connect(regeneratorAddress).addInspectionValidation(1, "justification")
+        ).to.be.revertedWith("Please register as validator");
       });
     });
   });

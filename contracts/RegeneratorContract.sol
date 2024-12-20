@@ -171,7 +171,9 @@ contract RegeneratorContract is Callable {
     if (newScoreMakeRegeneratorPositive) {
       levels = uint256(regenerator.regenerationScore.score);
     } else {
-      levels = regenerator.pool.onContractPool ? uint256(regenerationScore) : uint256(regenerator.regenerationScore.score);
+      levels = regenerator.pool.onContractPool
+        ? uint256(regenerationScore)
+        : uint256(regenerator.regenerationScore.score);
     }
 
     if (!regenerator.pool.onContractPool) regenerators[regenerator.regeneratorWallet].pool.onContractPool = true;
