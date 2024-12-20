@@ -7,8 +7,8 @@ const { userContractDeployed } = require("./shared/user_contract_deployed");
 describe("ValidatorContract", () => {
   let instance;
   let userContract;
-  let producerContract;
-  let producerPool;
+  let regeneratorContract;
+  let regeneratorPool;
   let validatorPool;
   let inspectorPool;
   let researcherPool;
@@ -21,8 +21,8 @@ describe("ValidatorContract", () => {
   let regenerationCredit;
 
   let owner,
-    producer1Address,
-    producer2Address,
+    regenerator1Address,
+    regenerator2Address,
     inspector1Address,
     inspector2Address,
     validator1Address,
@@ -50,7 +50,7 @@ describe("ValidatorContract", () => {
     activist1Address,
     activist2Address;
 
-  const producerPoolArgs = {
+  const regeneratorPoolArgs = {
     totalTokens: "750000000000000000000000000",
     halving: 12,
     blocksPerEra: 12,
@@ -116,8 +116,8 @@ describe("ValidatorContract", () => {
     await userContract.connect(from).addInvitation(inviter, invited, userType);
   };
 
-  const addProducer = async (name, from) => {
-    await producerContract.connect(from).addProducer(10, name, "photoURL", "135465-005");
+  const addRegenerator = async (name, from) => {
+    await regeneratorContract.connect(from).addRegenerator(10, name, "photoURL", "135465-005");
   };
 
   const addInspector = async (name, from) => {
@@ -168,8 +168,8 @@ describe("ValidatorContract", () => {
   beforeEach(async () => {
     [
       owner,
-      producer1Address,
-      producer2Address,
+      regenerator1Address,
+      regenerator2Address,
       inspector1Address,
       inspector2Address,
       validator1Address,
@@ -202,11 +202,11 @@ describe("ValidatorContract", () => {
     regenerationCredit = await regenerationCreditDeployed();
     userContract = await userContractDeployed();
 
-    const producerPoolFactory = await ethers.getContractFactory("ProducerPool");
-    producerPool = await producerPoolFactory.deploy(
+    const regeneratorPoolFactory = await ethers.getContractFactory("RegeneratorPool");
+    regeneratorPool = await regeneratorPoolFactory.deploy(
       regenerationCredit.target,
-      producerPoolArgs.halving,
-      producerPoolArgs.blocksPerEra
+      regeneratorPoolArgs.halving,
+      regeneratorPoolArgs.blocksPerEra
     );
 
     const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
@@ -216,8 +216,8 @@ describe("ValidatorContract", () => {
       validatorPoolArgs.blocksPerEra
     );
 
-    const producerContractFactory = await ethers.getContractFactory("ProducerContract");
-    producerContract = await producerContractFactory.deploy(userContract.target, producerPool.target);
+    const regeneratorContractFactory = await ethers.getContractFactory("RegeneratorContract");
+    regeneratorContract = await regeneratorContractFactory.deploy(userContract.target, regeneratorPool.target);
 
     const inspectorPoolFactory = await ethers.getContractFactory("InspectorPool");
     inspectorPool = await inspectorPoolFactory.deploy(
@@ -298,7 +298,7 @@ describe("ValidatorContract", () => {
 
     const validatorContractDependencies = {
       userContractAddress: userContract.target,
-      producerContractAddress: producerContract.target,
+      regeneratorContractAddress: regeneratorContract.target,
       validatorPoolAddress: validatorPool.target,
       inspectorContractAddress: inspectorContract.target,
       developerContractAddress: developerContract.target,
@@ -308,15 +308,15 @@ describe("ValidatorContract", () => {
     };
 
     await userContract.newAllowedCaller(instance.target);
-    await userContract.newAllowedCaller(producerContract.target);
+    await userContract.newAllowedCaller(regeneratorContract.target);
     await userContract.newAllowedCaller(inspectorContract.target);
     await userContract.newAllowedCaller(developerContract.target);
     await userContract.newAllowedCaller(researcherContract.target);
     await userContract.newAllowedCaller(contributorContract.target);
     await userContract.newAllowedCaller(activistContract.target);
     await userContract.newAllowedCaller(owner);
-    await producerContract.newAllowedCaller(instance.target);
-    await producerContract.newAllowedCaller(owner);
+    await regeneratorContract.newAllowedCaller(instance.target);
+    await regeneratorContract.newAllowedCaller(owner);
     await developerContract.newAllowedCaller(owner);
     await developerContract.newAllowedCaller(instance.target);
     await researcherContract.newAllowedCaller(instance.target);
@@ -324,8 +324,8 @@ describe("ValidatorContract", () => {
     await activistContract.newAllowedCaller(instance.target);
     await activistContract.newAllowedCaller(owner);
     await contributorContract.newAllowedCaller(instance.target);
-    await producerPool.newAllowedCaller(producerContract.target);
-    await producerPool.newAllowedCaller(owner);
+    await regeneratorPool.newAllowedCaller(regeneratorContract.target);
+    await regeneratorPool.newAllowedCaller(owner);
     await validatorPool.newAllowedCaller(instance.target);
     await developerPool.newAllowedCaller(developerContract.target);
     await researcherPool.newAllowedCaller(researcherContract.target);
@@ -340,7 +340,7 @@ describe("ValidatorContract", () => {
     await instance.setContractAddressDependencies(validatorContractDependencies);
 
     await regenerationCredit.addContractPool(validatorPool.target, validatorPoolArgs.totalTokens);
-    await regenerationCredit.addContractPool(producerContract.target, producerPoolArgs.totalTokens);
+    await regenerationCredit.addContractPool(regeneratorContract.target, regeneratorPoolArgs.totalTokens);
 
     await addInvitation(owner, validator1Address, userTypes.Validator, owner);
     await addInvitation(owner, inspector1Address, userTypes.Inspector, owner);
@@ -456,53 +456,53 @@ describe("ValidatorContract", () => {
           });
 
           context("when current era is 1", () => {
-            context("with producer", () => {
+            context("with regenerator", () => {
               beforeEach(async () => {
-                await addInvitation(owner, producer1Address, userTypes.Producer, owner);
-                await addInvitation(owner, producer2Address, userTypes.Producer, owner);
-                await addProducer("Producer A", producer1Address);
-                await addProducer("Producer B", producer2Address);
+                await addInvitation(owner, regenerator1Address, userTypes.Regenerator, owner);
+                await addInvitation(owner, regenerator2Address, userTypes.Regenerator, owner);
+                await addRegenerator("Regenerator A", regenerator1Address);
+                await addRegenerator("Regenerator B", regenerator2Address);
 
-                await instance.connect(validator1Address).addUserValidation(producer1Address, "my justification");
+                await instance.connect(validator1Address).addUserValidation(regenerator1Address, "my justification");
                 receipt = await instance
                   .connect(validator3Address)
-                  .addUserValidation(producer1Address, "my justification");
+                  .addUserValidation(regenerator1Address, "my justification");
               });
 
               it("should add validation", async () => {
-                const validations = await instance.getUserValidations(producer1Address);
+                const validations = await instance.getUserValidations(regenerator1Address);
 
                 expect(validations[0].justification).to.equal("my justification");
                 expect(validations.length).to.equal(2);
               });
 
               it("user type must be denied", async () => {
-                const user = await userContract.getUser(producer1Address);
+                const user = await userContract.getUser(regenerator1Address);
                 const DENIED = 9;
 
                 expect(user).to.equal(DENIED);
               });
 
               it("remove user levels from pool", async () => {
-                const levels = await producerPool.eraLevels(1, producer1Address);
+                const levels = await regeneratorPool.eraLevels(1, regenerator1Address);
 
                 expect(levels).to.equal(0);
               });
 
-              it("remove user regenerationScore from producer", async () => {
-                const producer = await producerContract.getProducer(producer1Address);
+              it("remove user regenerationScore from regenerator", async () => {
+                const regenerator = await regeneratorContract.getRegenerator(regenerator1Address);
 
-                expect(producer.regenerationScore.score).to.equal(0);
+                expect(regenerator.regenerationScore.score).to.equal(0);
               });
 
               it("userTypesCount must be decremented", async () => {
-                const userTypesCount = await userContract.userTypesCount(userTypes.Producer);
+                const userTypesCount = await userContract.userTypesCount(userTypes.Regenerator);
 
                 expect(userTypesCount).to.equal(1);
               });
 
               it("must emit DeniedUserEevent", async () => {
-                await expect(receipt).to.emit(userContract, "DeniedUserEevent").withArgs(producer1Address);
+                await expect(receipt).to.emit(userContract, "DeniedUserEevent").withArgs(regenerator1Address);
               });
             });
 
@@ -712,7 +712,7 @@ describe("ValidatorContract", () => {
 
                 await addInvitation(activist1Address, inspector2Address, userTypes.Inspector, owner);
 
-                await activistContract.addLevel(producer1Address, 0, inspector2Address, 3);
+                await activistContract.addLevel(regenerator1Address, 0, inspector2Address, 3);
 
                 await instance.connect(validator1Address).addUserValidation(activist1Address, "my justification");
                 await instance.connect(validator3Address).addUserValidation(activist1Address, "my justification");
@@ -810,19 +810,19 @@ describe("ValidatorContract", () => {
 
               context("when add validation", () => {
                 beforeEach(async () => {
-                  await addInvitation(owner, producer1Address, userTypes.Producer, owner);
-                  await addInvitation(owner, producer2Address, userTypes.Producer, owner);
-                  await addProducer("Producer A", producer1Address);
-                  await addProducer("Producer B", producer2Address);
+                  await addInvitation(owner, regenerator1Address, userTypes.Regenerator, owner);
+                  await addInvitation(owner, regenerator2Address, userTypes.Regenerator, owner);
+                  await addRegenerator("Regenerator A", regenerator1Address);
+                  await addRegenerator("Regenerator B", regenerator2Address);
 
-                  await instance.connect(validator1Address).addUserValidation(producer1Address, "my justification");
+                  await instance.connect(validator1Address).addUserValidation(regenerator1Address, "my justification");
                   receipt = await instance
                     .connect(validator3Address)
-                    .addUserValidation(producer1Address, "my justification");
+                    .addUserValidation(regenerator1Address, "my justification");
                 });
 
                 it("should add validation", async () => {
-                  const validations = await instance.getUserValidations(producer1Address);
+                  const validations = await instance.getUserValidations(regenerator1Address);
 
                   expect(validations[0].justification).to.equal("my justification");
                   expect(validations.length).to.equal(2);
@@ -841,15 +841,15 @@ describe("ValidatorContract", () => {
 
               context("when add validation", () => {
                 beforeEach(async () => {
-                  await addInvitation(owner, producer1Address, userTypes.Producer, owner);
-                  await addInvitation(owner, producer2Address, userTypes.Producer, owner);
-                  await addProducer("Producer A", producer1Address);
-                  await addProducer("Producer B", producer2Address);
+                  await addInvitation(owner, regenerator1Address, userTypes.Regenerator, owner);
+                  await addInvitation(owner, regenerator2Address, userTypes.Regenerator, owner);
+                  await addRegenerator("Regenerator A", regenerator1Address);
+                  await addRegenerator("Regenerator B", regenerator2Address);
                 });
 
                 it("should return error", async () => {
                   await expect(
-                    instance.connect(validator1Address).addUserValidation(producer1Address, "my justification")
+                    instance.connect(validator1Address).addUserValidation(regenerator1Address, "my justification")
                   ).to.be.revertedWith("You did not contribute in the last era");
                 });
               });
@@ -915,7 +915,7 @@ describe("ValidatorContract", () => {
           inspectionMock = {
             id: 1,
             status: 3,
-            producer: producer1Address,
+            regenerator: regenerator1Address,
             inspector: inspector1Address,
             regenerationScore: 10,
             proofPhoto: "",
@@ -946,7 +946,7 @@ describe("ValidatorContract", () => {
                 inspectionMock = {
                   id: 1,
                   status: 3,
-                  producer: producer1Address,
+                  regenerator: regenerator1Address,
                   inspector: inspector1Address,
                   regenerationScore: 20,
                   proofPhoto: "",
@@ -959,9 +959,9 @@ describe("ValidatorContract", () => {
                   invalidatedAt: 0,
                 };
 
-                await addInvitation(owner, producer1Address, userTypes.Producer, owner);
+                await addInvitation(owner, regenerator1Address, userTypes.Regenerator, owner);
 
-                await addProducer("Producer A", producer1Address);
+                await addRegenerator("Regenerator A", regenerator1Address);
                 await addInspector("Inspector A", inspector1Address);
 
                 await inspectorContract.afterAcceptInspection(inspectionMock.inspector, 1);
@@ -970,9 +970,9 @@ describe("ValidatorContract", () => {
                 await inspectorContract.afterRealizeInspection(inspectionMock.inspector);
                 await inspectorContract.afterRealizeInspection(inspectionMock.inspector);
 
-                await producerContract.afterRealizeInspection(inspectionMock.producer, 10);
-                await producerContract.afterRealizeInspection(inspectionMock.producer, 10);
-                await producerContract.afterRealizeInspection(inspectionMock.producer, 30);
+                await regeneratorContract.afterRealizeInspection(inspectionMock.regenerator, 10);
+                await regeneratorContract.afterRealizeInspection(inspectionMock.regenerator, 10);
+                await regeneratorContract.afterRealizeInspection(inspectionMock.regenerator, 30);
 
                 await inspectorContract.addPenalty(inspectionMock.inspector, 2);
                 await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", validator1Address);
@@ -996,20 +996,20 @@ describe("ValidatorContract", () => {
                 expect(inspector.totalInspections).to.equal(1);
               });
 
-              it("decrement total inspections of producer", async () => {
-                const producer = await producerContract.getProducer(producer1Address);
+              it("decrement total inspections of regenerator", async () => {
+                const regenerator = await regeneratorContract.getRegenerator(regenerator1Address);
 
-                expect(producer.totalInspections).to.equal(2);
+                expect(regenerator.totalInspections).to.equal(2);
               });
 
-              it("remove inspection regeneration score level from producer regenerationScore", async () => {
-                const producer = await producerContract.getProducer(producer1Address);
+              it("remove inspection regeneration score level from regenerator regenerationScore", async () => {
+                const regenerator = await regeneratorContract.getRegenerator(regenerator1Address);
 
-                expect(producer.regenerationScore.score).to.equal(30);
+                expect(regenerator.regenerationScore.score).to.equal(30);
               });
 
-              it("remove inspection regeneration score level from producer pool", async () => {
-                const levels = await producerPool.eraLevels(3, producer1Address);
+              it("remove inspection regeneration score level from regenerator pool", async () => {
+                const levels = await regeneratorPool.eraLevels(3, regenerator1Address);
 
                 expect(levels).to.equal(0);
               });
@@ -1020,7 +1020,7 @@ describe("ValidatorContract", () => {
                 inspectionMock = {
                   id: 1,
                   status: 3,
-                  producer: producer1Address,
+                  regenerator: regenerator1Address,
                   inspector: inspector1Address,
                   regenerationScore: 20,
                   proofPhoto: "",
@@ -1033,9 +1033,9 @@ describe("ValidatorContract", () => {
                   invalidatedAt: 0,
                 };
 
-                await addInvitation(owner, producer1Address, userTypes.Producer, owner);
+                await addInvitation(owner, regenerator1Address, userTypes.Regenerator, owner);
 
-                await addProducer("Producer A", producer1Address);
+                await addRegenerator("Regenerator A", regenerator1Address);
                 await addInspector("Inspector A", inspector1Address);
 
                 await inspectorContract.afterAcceptInspection(inspectionMock.inspector, 1);
@@ -1044,9 +1044,9 @@ describe("ValidatorContract", () => {
                 await inspectorContract.afterRealizeInspection(inspectionMock.inspector);
                 await inspectorContract.afterRealizeInspection(inspectionMock.inspector);
 
-                await producerContract.afterRealizeInspection(inspectionMock.producer, 10);
-                await producerContract.afterRealizeInspection(inspectionMock.producer, 10);
-                await producerContract.afterRealizeInspection(inspectionMock.producer, 30);
+                await regeneratorContract.afterRealizeInspection(inspectionMock.regenerator, 10);
+                await regeneratorContract.afterRealizeInspection(inspectionMock.regenerator, 10);
+                await regeneratorContract.afterRealizeInspection(inspectionMock.regenerator, 30);
 
                 await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", validator1Address);
               });
@@ -1069,20 +1069,20 @@ describe("ValidatorContract", () => {
                 expect(inspector.totalInspections).to.equal(1);
               });
 
-              it("decrement total inspections of producer", async () => {
-                const producer = await producerContract.getProducer(producer1Address);
+              it("decrement total inspections of regenerator", async () => {
+                const regenerator = await regeneratorContract.getRegenerator(regenerator1Address);
 
-                expect(producer.totalInspections).to.equal(2);
+                expect(regenerator.totalInspections).to.equal(2);
               });
 
-              it("remove inspection regeneration score level from producer regenerationScore", async () => {
-                const producer = await producerContract.getProducer(producer1Address);
+              it("remove inspection regeneration score level from regenerator regenerationScore", async () => {
+                const regenerator = await regeneratorContract.getRegenerator(regenerator1Address);
 
-                expect(producer.regenerationScore.score).to.equal(30);
+                expect(regenerator.regenerationScore.score).to.equal(30);
               });
 
-              it("remove inspection regeneration score level from producer pool", async () => {
-                const levels = await producerPool.eraLevels(3, producer1Address);
+              it("remove inspection regeneration score level from regenerator pool", async () => {
+                const levels = await regeneratorPool.eraLevels(3, regenerator1Address);
 
                 expect(levels).to.equal(0);
               });
@@ -1094,7 +1094,7 @@ describe("ValidatorContract", () => {
               inspectionMock = {
                 id: 1,
                 status: 3,
-                producer: producer1Address,
+                regenerator: regenerator1Address,
                 inspector: inspector1Address,
                 regenerationScore: 20,
                 proofPhoto: "",
@@ -1129,7 +1129,7 @@ describe("ValidatorContract", () => {
               inspectionMock = {
                 id: 1,
                 status: 3,
-                producer: producer1Address,
+                regenerator: regenerator1Address,
                 inspector: inspector1Address,
                 regenerationScore: 20,
                 proofPhoto: "",
@@ -1169,7 +1169,7 @@ describe("ValidatorContract", () => {
               inspectionMock = {
                 id: 1,
                 status: 3,
-                producer: producer1Address,
+                regenerator: regenerator1Address,
                 inspector: inspector1Address,
                 regenerationScore: 20,
                 proofPhoto: "",
@@ -1716,7 +1716,7 @@ describe("ValidatorContract", () => {
   describe("#addLevel", () => {
     context("when is not a validator", () => {
       it("should return error", async () => {
-        await expect(instance.connect(producer1Address).addLevel()).to.be.revertedWith("User must be a validator");
+        await expect(instance.connect(regenerator1Address).addLevel()).to.be.revertedWith("User must be a validator");
       });
     });
 
@@ -1797,7 +1797,7 @@ describe("ValidatorContract", () => {
 
     context("when is not a validator", () => {
       it("should return error", async () => {
-        await expect(instance.connect(producer1Address).withdraw()).to.be.revertedWith("Pool only to validators");
+        await expect(instance.connect(regenerator1Address).withdraw()).to.be.revertedWith("Pool only to validators");
       });
     });
   });

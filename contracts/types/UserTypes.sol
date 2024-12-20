@@ -3,7 +3,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 enum UserType {
   UNDEFINED,
-  PRODUCER,
+  REGENERATOR,
   INSPECTOR,
   RESEARCHER,
   DEVELOPER,

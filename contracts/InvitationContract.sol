@@ -21,7 +21,7 @@ contract InvitationContract is Ownable {
 
     canBeInviteds[UserType.ACTIVIST] = UserType.ACTIVIST;
     canBeInviteds[UserType.INSPECTOR] = UserType.ACTIVIST;
-    canBeInviteds[UserType.PRODUCER] = UserType.ACTIVIST;
+    canBeInviteds[UserType.REGENERATOR] = UserType.ACTIVIST;
     canBeInviteds[UserType.DEVELOPER] = UserType.DEVELOPER;
     canBeInviteds[UserType.RESEARCHER] = UserType.RESEARCHER;
     canBeInviteds[UserType.SUPPORTER] = UserType.SUPPORTER;

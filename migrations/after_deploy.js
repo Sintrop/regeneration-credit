@@ -16,7 +16,7 @@ async function configureValidatorContract() {
   const validatorContract = await getDeployedContract("ValidatorContract");
   const userContract = await getDeployedContract("UserContract");
   const validatorPool = await getDeployedContract("ValidatorPool");
-  const producerContract = await getDeployedContract("ProducerContract");
+  const regeneratorContract = await getDeployedContract("RegeneratorContract");
   const inspectorContract = await getDeployedContract("InspectorContract");
   const developerContract = await getDeployedContract("DeveloperContract");
   const researcherContract = await getDeployedContract("ResearcherContract");
@@ -25,7 +25,7 @@ async function configureValidatorContract() {
 
   const contractDependencies = {
     userContractAddress: userContract.target,
-    producerContractAddress: producerContract.target,
+    regeneratorContractAddress: regeneratorContract.target,
     validatorPoolAddress: validatorPool.target,
     inspectorContractAddress: inspectorContract.target,
     developerContractAddress: developerContract.target,
@@ -35,7 +35,7 @@ async function configureValidatorContract() {
   };
 
   await validatorContract.setContractAddressDependencies(contractDependencies);
-  await producerContract.newAllowedCaller(validatorContract.target);
+  await regeneratorContract.newAllowedCaller(validatorContract.target);
   await validatorPool.newAllowedCaller(validatorContract.target);
   await inspectorContract.newAllowedCaller(validatorContract.target);
 
@@ -48,13 +48,13 @@ async function configureSintrop() {
   const inspectorContract = await getDeployedContract("InspectorContract");
   const activistContract = await getDeployedContract("ActivistContract");
   const userContract = await getDeployedContract("UserContract");
-  const producerContract = await getDeployedContract("ProducerContract");
+  const regeneratorContract = await getDeployedContract("RegeneratorContract");
   const validatorContract = await getDeployedContract("ValidatorContract");
   const categoryContract = await getDeployedContract("CategoryContract");
 
   const contractDependencies = {
     userContractAddress: userContract.target,
-    producerContractAddress: producerContract.target,
+    regeneratorContractAddress: regeneratorContract.target,
     validatorContractAddress: validatorContract.target,
     inspectorContractAddress: inspectorContract.target,
     activistContractAddress: activistContract.target,
@@ -65,7 +65,7 @@ async function configureSintrop() {
 
   await activistContract.newAllowedCaller(sintrop.target);
   await inspectorContract.newAllowedCaller(sintrop.target);
-  await producerContract.newAllowedCaller(sintrop.target);
+  await regeneratorContract.newAllowedCaller(sintrop.target);
   await userContract.newAllowedCaller(sintrop.target);
   await validatorContract.newAllowedCaller(sintrop.target);
   await categoryContract.newAllowedCaller(sintrop.target);
@@ -305,12 +305,12 @@ async function renounceOwnership() {
   const userContract = await getDeployedContract("UserContract");
   const inspectorContract = await getDeployedContract("InspectorContract");
   const activistContract = await getDeployedContract("ActivistContract");
-  const producerContract = await getDeployedContract("ProducerContract");
+  const regeneratorContract = await getDeployedContract("RegeneratorContract");
   const validatorContract = await getDeployedContract("ValidatorContract");
   const developerContract = await getDeployedContract("DeveloperContract");
   const researcherContract = await getDeployedContract("ResearcherContract");
   const contributorContract = await getDeployedContract("ContributorContract");
-  const producerPool = await getDeployedContract("ProducerPool");
+  const regeneratorPool = await getDeployedContract("RegeneratorPool");
   const inspectorPool = await getDeployedContract("InspectorPool");
   const researcherPool = await getDeployedContract("ResearcherPool");
   const developerPool = await getDeployedContract("DeveloperPool");
@@ -324,12 +324,12 @@ async function renounceOwnership() {
   await userContract.renounceOwnership();
   await inspectorContract.renounceOwnership();
   await activistContract.renounceOwnership();
-  await producerContract.renounceOwnership();
+  await regeneratorContract.renounceOwnership();
   await validatorContract.renounceOwnership();
   await developerContract.renounceOwnership();
   await researcherContract.renounceOwnership();
   await contributorContract.renounceOwnership();
-  await producerPool.renounceOwnership();
+  await regeneratorPool.renounceOwnership();
   await inspectorPool.renounceOwnership();
   await researcherPool.renounceOwnership();
   await developerPool.renounceOwnership();

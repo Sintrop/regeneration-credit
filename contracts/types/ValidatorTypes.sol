@@ -32,7 +32,7 @@ struct ResourceValidation {
 
 struct ContractsDependency {
   address userContractAddress;
-  address producerContractAddress;
+  address regeneratorContractAddress;
   address validatorPoolAddress;
   address inspectorContractAddress;
   address developerContractAddress;
