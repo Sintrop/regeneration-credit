@@ -3,9 +3,9 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import "./UserTypes.sol";
 
-struct Producer {
+struct Regenerator {
   uint256 id;
-  address producerWallet;
+  address regeneratorWallet;
   string name;
   string proofPhoto;
   bool pendingInspection;

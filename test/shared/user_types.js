@@ -1,6 +1,6 @@
 const userTypes = {
   Undefined: 0,
-  Producer: 1,
+  Regenerator: 1,
   Inspector: 2,
   Researcher: 3,
   Developer: 4,

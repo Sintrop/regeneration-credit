@@ -3,10 +3,10 @@ const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("ProducerPool", () => {
+describe("RegeneratorPool", () => {
   let instance;
   let regenerationCredit;
-  let owner, producer1Address, producer2Address;
+  let owner, regenerator1Address, regenerator2Address;
 
   const args = {
     totalTokens: "750000000000000000000000000",
@@ -19,11 +19,11 @@ describe("ProducerPool", () => {
   };
 
   beforeEach(async () => {
-    [owner, producer1Address, producer2Address] = await ethers.getSigners();
+    [owner, regenerator1Address, regenerator2Address] = await ethers.getSigners();
 
     regenerationCredit = await regenerationCreditDeployed();
 
-    const instanceFactory = await ethers.getContractFactory("ProducerPool");
+    const instanceFactory = await ethers.getContractFactory("RegeneratorPool");
     instance = await instanceFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra);
 
     await instance.newAllowedCaller(owner);
@@ -225,29 +225,29 @@ describe("ProducerPool", () => {
             });
 
             it("balanceOf must be 0", async () => {
-              await instance.withdraw(producer1Address, 1);
-              const balanceOf = await regenerationCredit.balanceOf(producer1Address);
+              await instance.withdraw(regenerator1Address, 1);
+              const balanceOf = await regenerationCredit.balanceOf(regenerator1Address);
 
               expect(balanceOf).to.equal(0);
             });
           });
 
           context("when totalScores is 80", () => {
-            context("when producer1 have 80 regenerationScore", () => {
+            context("when regenerator1 have 80 regenerationScore", () => {
               beforeEach(async () => {
-                await instance.addLevel(producer1Address, 80, 80);
+                await instance.addLevel(regenerator1Address, 80, 80);
                 await advanceBlock(args.blocksPerEra);
               });
 
               it("must withdraw 31250000000000000000000000 of tokens", async () => {
-                await instance.withdraw(producer1Address, 1);
-                const balanceOf = await regenerationCredit.balanceOf(producer1Address);
+                await instance.withdraw(regenerator1Address, 1);
+                const balanceOf = await regenerationCredit.balanceOf(regenerator1Address);
 
                 expect(balanceOf).to.equal(31250000000000000000000000n);
               });
 
               it("total locked must be 750000000000000000000000000 - 31250000000000000000000000 = ", async () => {
-                await instance.withdraw(producer1Address, 1);
+                await instance.withdraw(regenerator1Address, 1);
                 const totalLocked = await regenerationCredit.totalLocked();
 
                 expect(totalLocked).to.equal(718750000000000000000000000n);
@@ -257,24 +257,24 @@ describe("ProducerPool", () => {
 
           context("when totalScores is 125", () => {
             beforeEach(async () => {
-              await instance.addLevel(producer1Address, 80, 80);
-              await instance.addLevel(producer2Address, 45, 45);
+              await instance.addLevel(regenerator1Address, 80, 80);
+              await instance.addLevel(regenerator2Address, 45, 45);
               await advanceBlock(args.blocksPerEra);
             });
 
-            context("when producer1 have 80 isaScore", () => {
+            context("when regenerator1 have 80 isaScore", () => {
               it("must withdraw 20000000000000000000000000 of tokens", async () => {
-                await instance.withdraw(producer1Address, 1);
-                const balanceOf = await regenerationCredit.balanceOf(producer1Address);
+                await instance.withdraw(regenerator1Address, 1);
+                const balanceOf = await regenerationCredit.balanceOf(regenerator1Address);
 
                 expect(balanceOf).to.equal(20000000000000000000000000n);
               });
             });
 
-            context("when producer2 have 45 isaScore", () => {
+            context("when regenerator2 have 45 isaScore", () => {
               it("must withdraw 11250000000000000000000000 tokens", async () => {
-                await instance.withdraw(producer2Address, 1);
-                const balanceOf = await regenerationCredit.balanceOf(producer2Address);
+                await instance.withdraw(regenerator2Address, 1);
+                const balanceOf = await regenerationCredit.balanceOf(regenerator2Address);
 
                 expect(balanceOf).to.equal(11250000000000000000000000n);
               });
@@ -283,36 +283,36 @@ describe("ProducerPool", () => {
         });
 
         context("when is epoch 2", () => {
-          context("when producer is in era 1 yet", () => {
+          context("when regenerator is in era 1 yet", () => {
             context("when totalScores is 0", () => {
               beforeEach(async () => {
                 await advanceBlock(args.blocksPerEra);
               });
 
               it("balanceOf must be 0", async () => {
-                await instance.withdraw(producer1Address, 1);
-                const balanceOf = await regenerationCredit.balanceOf(producer1Address);
+                await instance.withdraw(regenerator1Address, 1);
+                const balanceOf = await regenerationCredit.balanceOf(regenerator1Address);
 
                 expect(balanceOf).to.equal(0);
               });
             });
 
             context("when totalScores is 80", () => {
-              context("when producer1 have 80 regenerationScore", () => {
+              context("when regenerator1 have 80 regenerationScore", () => {
                 beforeEach(async () => {
-                  await instance.addLevel(producer1Address, 80, 80);
+                  await instance.addLevel(regenerator1Address, 80, 80);
                   await advanceBlock(args.blocksPerEra * args.halving);
                 });
 
                 it("must withdraw 31250000000000000000000000 of tokens", async () => {
-                  await instance.withdraw(producer1Address, 1);
-                  const balanceOf = await regenerationCredit.balanceOf(producer1Address);
+                  await instance.withdraw(regenerator1Address, 1);
+                  const balanceOf = await regenerationCredit.balanceOf(regenerator1Address);
 
                   expect(balanceOf).to.equal(31250000000000000000000000n);
                 });
 
                 it("total locked must be 750000000000000000000000000 - 31250000000000000000000000", async () => {
-                  await instance.withdraw(producer1Address, 1);
+                  await instance.withdraw(regenerator1Address, 1);
                   const totalLocked = await regenerationCredit.totalLocked();
 
                   expect(totalLocked).to.equal(718750000000000000000000000n);
@@ -322,24 +322,24 @@ describe("ProducerPool", () => {
 
             context("when totalScores is 125", () => {
               beforeEach(async () => {
-                await instance.addLevel(producer1Address, 80, 80);
-                await instance.addLevel(producer2Address, 45, 45);
+                await instance.addLevel(regenerator1Address, 80, 80);
+                await instance.addLevel(regenerator2Address, 45, 45);
                 await advanceBlock(args.blocksPerEra * args.halving);
               });
 
-              context("when producer1 have 80 isaScore", () => {
+              context("when regenerator1 have 80 isaScore", () => {
                 it("must withdraw 20000000000000000000000000 of tokens", async () => {
-                  await instance.withdraw(producer1Address, 1);
-                  const balanceOf = await regenerationCredit.balanceOf(producer1Address);
+                  await instance.withdraw(regenerator1Address, 1);
+                  const balanceOf = await regenerationCredit.balanceOf(regenerator1Address);
 
                   expect(balanceOf).to.equal(20000000000000000000000000n);
                 });
               });
 
-              context("when producer2 have 45 isaScore", () => {
+              context("when regenerator2 have 45 isaScore", () => {
                 it("must withdraw 11250000000000000000000000 tokens", async () => {
-                  await instance.withdraw(producer2Address, 1);
-                  const balanceOf = await regenerationCredit.balanceOf(producer2Address);
+                  await instance.withdraw(regenerator2Address, 1);
+                  const balanceOf = await regenerationCredit.balanceOf(regenerator2Address);
 
                   expect(balanceOf).to.equal(11250000000000000000000000n);
                 });
@@ -351,14 +351,14 @@ describe("ProducerPool", () => {
 
       context("when can't approve", () => {
         it("must return error message", async () => {
-          await expect(instance.withdraw(producer1Address, 1)).to.be.revertedWith("You can't approve yet");
+          await expect(instance.withdraw(regenerator1Address, 1)).to.be.revertedWith("You can't approve yet");
         });
       });
     });
 
     context("with not allowed caller", () => {
       it("must return error message", async () => {
-        await expect(instance.connect(producer1Address).withdraw(producer1Address, 1)).to.be.revertedWith(
+        await expect(instance.connect(regenerator1Address).withdraw(regenerator1Address, 1)).to.be.revertedWith(
           "Not allowed caller"
         );
       });
@@ -368,11 +368,11 @@ describe("ProducerPool", () => {
   describe("#addLevel", () => {
     context("with allowed caller", () => {
       context("when add level in era 1", () => {
-        context("when producer have 0 levels in era 1", () => {
+        context("when regenerator have 0 levels in era 1", () => {
           context("when add level", () => {
             beforeEach(async () => {
-              await instance.addLevel(producer1Address, 1, 1);
-              await instance.addLevel(producer2Address, 1, 1);
+              await instance.addLevel(regenerator1Address, 1, 1);
+              await instance.addLevel(regenerator2Address, 1, 1);
             });
 
             it("era 1 must have 2 level", async () => {
@@ -387,34 +387,34 @@ describe("ProducerPool", () => {
               expect(era2.levels).to.equal(0);
             });
 
-            it("eraLevels must have 1 level to producer1", async () => {
-              const eraLevels = await instance.eraLevels(1, producer1Address);
+            it("eraLevels must have 1 level to regenerator1", async () => {
+              const eraLevels = await instance.eraLevels(1, regenerator1Address);
 
               expect(eraLevels).to.equal(1);
             });
 
-            it("eraLevels must have 1 level to producer2", async () => {
-              const eraLevels = await instance.eraLevels(1, producer2Address);
+            it("eraLevels must have 1 level to regenerator2", async () => {
+              const eraLevels = await instance.eraLevels(1, regenerator2Address);
 
               expect(eraLevels).to.equal(1);
             });
           });
         });
 
-        context("when producers have levels in era 1", () => {
+        context("when regenerators have levels in era 1", () => {
           beforeEach(async () => {
-            await instance.addLevel(producer1Address, 1, 1);
-            await instance.addLevel(producer1Address, 1, 80);
+            await instance.addLevel(regenerator1Address, 1, 1);
+            await instance.addLevel(regenerator1Address, 1, 80);
 
-            await instance.addLevel(producer2Address, 1, 1);
-            await instance.addLevel(producer2Address, 1, 1);
-            await instance.addLevel(producer2Address, 1, 1);
+            await instance.addLevel(regenerator2Address, 1, 1);
+            await instance.addLevel(regenerator2Address, 1, 1);
+            await instance.addLevel(regenerator2Address, 1, 1);
           });
 
           context("when add level", () => {
             beforeEach(async () => {
-              await instance.addLevel(producer1Address, 1, 1);
-              await instance.addLevel(producer2Address, 1, 1);
+              await instance.addLevel(regenerator1Address, 1, 1);
+              await instance.addLevel(regenerator2Address, 1, 1);
             });
 
             it("era 1 must have 7 level", async () => {
@@ -429,14 +429,14 @@ describe("ProducerPool", () => {
               expect(era2.levels).to.equal(0);
             });
 
-            it("eraLevels must have 82 level to producer1", async () => {
-              const eraLevels = await instance.eraLevels(1, producer1Address);
+            it("eraLevels must have 82 level to regenerator1", async () => {
+              const eraLevels = await instance.eraLevels(1, regenerator1Address);
 
               expect(eraLevels).to.equal(82);
             });
 
-            it("eraLevels must have 4 level to producer2", async () => {
-              const eraLevels = await instance.eraLevels(1, producer2Address);
+            it("eraLevels must have 4 level to regenerator2", async () => {
+              const eraLevels = await instance.eraLevels(1, regenerator2Address);
 
               expect(eraLevels).to.equal(4);
             });
@@ -445,17 +445,17 @@ describe("ProducerPool", () => {
       });
 
       context("when add level in era 2", () => {
-        context("when producers have levels in era 1", () => {
+        context("when regenerators have levels in era 1", () => {
           beforeEach(async () => {
-            await instance.addLevel(producer1Address, 80, 80);
+            await instance.addLevel(regenerator1Address, 80, 80);
           });
 
           context("when add level", () => {
             beforeEach(async () => {
               await advanceBlock(args.blocksPerEra);
 
-              await instance.addLevel(producer1Address, 20, 20);
-              await instance.addLevel(producer1Address, 20, 20);
+              await instance.addLevel(regenerator1Address, 20, 20);
+              await instance.addLevel(regenerator1Address, 20, 20);
             });
 
             it("era 1 must have 80 level", async () => {
@@ -470,14 +470,14 @@ describe("ProducerPool", () => {
               expect(era2.levels).to.equal(40);
             });
 
-            it("eraLevels must have 80 level to producer1", async () => {
-              const eraLevels = await instance.eraLevels(1, producer1Address);
+            it("eraLevels must have 80 level to regenerator1", async () => {
+              const eraLevels = await instance.eraLevels(1, regenerator1Address);
 
               expect(eraLevels).to.equal(80);
             });
 
-            it("eraLevels must have 4 level to producer2", async () => {
-              const eraLevels = await instance.eraLevels(1, producer2Address);
+            it("eraLevels must have 4 level to regenerator2", async () => {
+              const eraLevels = await instance.eraLevels(1, regenerator2Address);
 
               expect(eraLevels).to.equal(0);
             });
@@ -488,7 +488,7 @@ describe("ProducerPool", () => {
 
     context("without allowed caller", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(producer1Address).addLevel(producer1Address, 1, 1)).to.be.revertedWith(
+        await expect(instance.connect(regenerator1Address).addLevel(regenerator1Address, 1, 1)).to.be.revertedWith(
           "Not allowed caller"
         );
       });

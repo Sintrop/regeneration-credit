@@ -11,11 +11,11 @@ import { Poolable } from "./Poolable.sol";
 
 /**
  * @author Sintrop
- * @title ProducerPool
- * @dev ProducerPool is a contract to reward producers
+ * @title RegeneratorPool
+ * @dev RegeneratorPool is a contract to reward regenerators
  * @notice Receive tokens for Nature regeneration service provided
  */
-contract ProducerPool is Poolable, Ownable, Blockable, Callable {
+contract RegeneratorPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;
 
   RegenerationCreditInterface internal regenerationCredit;
@@ -31,7 +31,7 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
   }
 
   /**
-   * @dev Called by the producer contract, this function calls the token contract to transfer the rewards
+   * @dev Called by the regenerator contract, this function calls the token contract to transfer the rewards
    * @param delegate User address
    * @param era User current era
    */
@@ -46,31 +46,31 @@ contract ProducerPool is Poolable, Ownable, Blockable, Callable {
   }
 
   /**
-   * @dev Called by the producer contract, function to increase producer level
-   * @param producer Producer wallet
-   * @param currentLevel Producer current level
+   * @dev Called by the regenerator contract, function to increase regenerator level
+   * @param regenerator Regenerator wallet
+   * @param currentLevel Regenerator current level
    * @param addLevels Levels to increase
    */
-  function addLevel(address producer, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
+  function addLevel(address regenerator, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 
-    addPoolLevel(producer, currentLevel, addLevels, era);
+    addPoolLevel(regenerator, currentLevel, addLevels, era);
   }
 
   /**
-   * @dev Called by the producer contract, function to decrease producer regeneration level
-   * @param producer Producer wallet
+   * @dev Called by the regenerator contract, function to decrease regenerator regeneration level
+   * @param regenerator Regenerator wallet
    * @param levels Levels to decrease
    */
-  function removeLevel(address producer, uint256 levels) public mustBeAllowedCaller {
+  function removeLevel(address regenerator, uint256 levels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 
-    removeLevelsFromEra(producer, era, levels);
+    removeLevelsFromEra(regenerator, era, levels);
   }
 
   /**
-   * @dev Called by the producer contract, function to decrease producer pool level
-   * @param addr Producer wallet
+   * @dev Called by the regenerator contract, function to decrease regenerator pool level
+   * @param addr Regenerator wallet
    * @param era Current pool era
    * @param removeSomeLevels Levels to decrease
    */

@@ -6,7 +6,7 @@ const { advanceBlock } = require("./shared/advance_block");
 
 describe("ActivistContract", () => {
   let instance, userContract, activistPool, regenerationCredit;
-  let owner, activ1Address, activ2Address, activ3Address, producer1Address, inspector1Address, inspector2Address;
+  let owner, activ1Address, activ2Address, activ3Address, regenerator1Address, inspector1Address, inspector2Address;
 
   const activistPoolArgs = {
     totalTokens: "30000000000000000000000000",
@@ -23,7 +23,7 @@ describe("ActivistContract", () => {
   };
 
   beforeEach(async () => {
-    [owner, activ1Address, activ2Address, activ3Address, producer1Address, inspector1Address, inspector2Address] =
+    [owner, activ1Address, activ2Address, activ3Address, regenerator1Address, inspector1Address, inspector2Address] =
       await ethers.getSigners();
 
     regenerationCredit = await regenerationCreditDeployed();
@@ -154,10 +154,10 @@ describe("ActivistContract", () => {
         beforeEach(async () => {
           await addActivist("Activist A", activ1Address);
 
-          await addInvitation(activ1Address, producer1Address, userTypes.Producer, activ1Address);
+          await addInvitation(activ1Address, regenerator1Address, userTypes.Regenerator, activ1Address);
           await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
 
-          await instance.addLevel(producer1Address, 3, inspector1Address, 3);
+          await instance.addLevel(regenerator1Address, 3, inspector1Address, 3);
         });
 
         context("when current era of pool is 1", () => {
@@ -180,7 +180,7 @@ describe("ActivistContract", () => {
 
             await addInvitation(activ1Address, inspector2Address, userTypes.Inspector, activ1Address);
 
-            await instance.addLevel(producer1Address, 3, inspector2Address, 3);
+            await instance.addLevel(regenerator1Address, 3, inspector2Address, 3);
           });
 
           it("add level to activist.pool.level ", async () => {
@@ -199,10 +199,10 @@ describe("ActivistContract", () => {
 
       context("when activist is not registered", () => {
         beforeEach(async () => {
-          await addInvitation(activ1Address, producer1Address, userTypes.Producer, activ1Address);
+          await addInvitation(activ1Address, regenerator1Address, userTypes.Regenerator, activ1Address);
           await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
 
-          await instance.addLevel(producer1Address, 3, inspector1Address, 3);
+          await instance.addLevel(regenerator1Address, 3, inspector1Address, 3);
         });
 
         it("do not add level to activist.pool.level ", async () => {
@@ -222,7 +222,7 @@ describe("ActivistContract", () => {
     context("without allowed caller", () => {
       it("should return error message", async () => {
         await expect(
-          instance.connect(activ1Address).addLevel(producer1Address, 1, activ1Address, 1)
+          instance.connect(activ1Address).addLevel(regenerator1Address, 1, activ1Address, 1)
         ).to.be.revertedWith("Not allowed caller");
       });
     });
@@ -239,7 +239,7 @@ describe("ActivistContract", () => {
           beforeEach(async () => {
             await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
 
-            await instance.addLevel(producer1Address, 0, inspector1Address, 3);
+            await instance.addLevel(regenerator1Address, 0, inspector1Address, 3);
           });
 
           it("should return error message", async () => {
@@ -253,7 +253,7 @@ describe("ActivistContract", () => {
           beforeEach(async () => {
             await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
 
-            await instance.addLevel(producer1Address, 0, inspector1Address, 3);
+            await instance.addLevel(regenerator1Address, 0, inspector1Address, 3);
           });
 
           context("when have one activist", () => {
@@ -283,7 +283,7 @@ describe("ActivistContract", () => {
               await userContract.newAllowedCaller(activ3Address);
               await addInvitation(activ3Address, inspector2Address, userTypes.Inspector, activ3Address);
 
-              await instance.addLevel(producer1Address, 0, inspector2Address, 3);
+              await instance.addLevel(regenerator1Address, 0, inspector2Address, 3);
 
               await advanceBlock(activistPoolArgs.blocksPerEra);
 
@@ -352,10 +352,10 @@ describe("ActivistContract", () => {
     beforeEach(async () => {
       await addActivist("Activist  A", activ1Address);
 
-      await addInvitation(activ1Address, producer1Address, userTypes.Producer, owner);
+      await addInvitation(activ1Address, regenerator1Address, userTypes.Regenerator, owner);
       await addInvitation(activ1Address, inspector2Address, userTypes.Inspector, owner);
 
-      await instance.addLevel(producer1Address, 3, inspector2Address, 3);
+      await instance.addLevel(regenerator1Address, 3, inspector2Address, 3);
 
       await instance.removePoolLevels(activ1Address, 1);
     });

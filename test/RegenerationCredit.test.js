@@ -5,13 +5,13 @@ const { expect } = require("chai");
 describe("RegenerationCredit", (accounts) => {
   let instance;
   let ownerAddress, user1Address, user2Address, anyContractAddress;
-  let producerPool;
+  let regeneratorPool;
 
   let args = {
     totalRegenerationCredits: "1500000000000000000000000000",
   };
 
-  const argsProducerPool = {
+  const argsRegeneratorPool = {
     totalTokens: "750000000000000000000000000",
     halving: 12,
     blocksPerEra: 12,
@@ -24,11 +24,11 @@ describe("RegenerationCredit", (accounts) => {
     instance = await instanceFactory.deploy(args.totalRegenerationCredits);
     userContract = await userContractDeployed();
 
-    const producerPoolFactory = await ethers.getContractFactory("ProducerPool");
-    producerPool = await producerPoolFactory.deploy(
+    const regeneratorPoolFactory = await ethers.getContractFactory("RegeneratorPool");
+    regeneratorPool = await regeneratorPoolFactory.deploy(
       instance.target,
-      argsProducerPool.halving,
-      argsProducerPool.blocksPerEra
+      argsRegeneratorPool.halving,
+      argsRegeneratorPool.blocksPerEra
     );
   });
 
@@ -57,7 +57,7 @@ describe("RegenerationCredit", (accounts) => {
   describe("#addContractPool", () => {
     context("when totalTokens is bigger than tokens contract owner", () => {
       beforeEach(async () => {
-        await instance.addContractPool(producerPool.target, "100000000000000000000000000");
+        await instance.addContractPool(regeneratorPool.target, "100000000000000000000000000");
       });
 
       it("it should add totalLocked tokens", async () => {
@@ -67,13 +67,13 @@ describe("RegenerationCredit", (accounts) => {
       });
 
       it("it should add as a contract pool", async () => {
-        const contractPool = await instance.contractPool(producerPool.target);
+        const contractPool = await instance.contractPool(regeneratorPool.target);
 
         expect(contractPool).to.equal(true);
       });
 
       it("it should have balance", async () => {
-        const balanceOf = await instance.balanceOf(producerPool.target);
+        const balanceOf = await instance.balanceOf(regeneratorPool.target);
 
         expect(balanceOf).to.equal("100000000000000000000000000");
       });
@@ -81,7 +81,7 @@ describe("RegenerationCredit", (accounts) => {
 
     context("when totalTokens is less than tokens contract owner", () => {
       it("must return erro message", async () => {
-        await expect(instance.transfer(producerPool.target, "8000000000000000000000000000")).to.be.revertedWith(
+        await expect(instance.transfer(regeneratorPool.target, "8000000000000000000000000000")).to.be.revertedWith(
           "Insufficient balance."
         );
       });
@@ -345,7 +345,7 @@ describe("RegenerationCredit", (accounts) => {
   describe("#totalLocked", () => {
     context("when add contract pool", () => {
       beforeEach(async () => {
-        await instance.addContractPool(producerPool.target, argsProducerPool.totalTokens);
+        await instance.addContractPool(regeneratorPool.target, argsRegeneratorPool.totalTokens);
       });
 
       it("it should set totalLocked to 750000000000000000000000000", async () => {
