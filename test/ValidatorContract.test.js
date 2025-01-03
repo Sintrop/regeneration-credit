@@ -1586,28 +1586,6 @@ describe("ValidatorContract", () => {
     });
   });
 
-  // describe("#getValidators", () => {
-  //   context("when has validators", () => {
-  //     beforeEach(async () => {
-  //       await addValidator(validator1Address);
-  //     });
-
-  //     it("should return validators", async () => {
-  //       const validators = await instance.getValidators();
-
-  //       expect(validators.length).to.equal(1);
-  //     });
-  //   });
-
-  //   context("when don't has validators", () => {
-  //     it("should return validators equal zero", async () => {
-  //       const validators = await instance.getValidators();
-
-  //       expect(validators.length).to.equal(0);
-  //     });
-  //   });
-  // });
-
   describe("#majorityValidatorsCount", () => {
     context("when current era is 1", () => {
       context("when have 8 validators", () => {
