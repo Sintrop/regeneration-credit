@@ -4,22 +4,22 @@ const { advanceBlock } = require("./shared/advance_block");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 
-describe("ProducerContract", () => {
+describe("RegeneratorContract", () => {
   let instance;
   let regenerationCredit;
   let userContract;
-  let producerPool;
+  let regeneratorPool;
   let owner, prod1Address, prod2Address;
 
-  const addProducer = async (name, from) => {
-    await instance.connect(from).addProducer(10, name, "photoURL", "135465-005");
+  const addRegenerator = async (name, from) => {
+    await instance.connect(from).addRegenerator(10, name, "photoURL", "135465-005");
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
     await userContract.connect(from).addInvitation(inviter, invited, userType);
   };
 
-  const producerPoolArgs = {
+  const regeneratorPoolArgs = {
     totalTokens: "750000000000000000000000000",
     halving: 50,
     blocksPerEra: 50,
@@ -32,187 +32,187 @@ describe("ProducerContract", () => {
 
     userContract = await userContractDeployed();
 
-    const producerPoolFactory = await ethers.getContractFactory("ProducerPool");
+    const regeneratorPoolFactory = await ethers.getContractFactory("RegeneratorPool");
 
-    producerPool = await producerPoolFactory.deploy(
+    regeneratorPool = await regeneratorPoolFactory.deploy(
       regenerationCredit.target,
-      producerPoolArgs.halving,
-      producerPoolArgs.blocksPerEra
+      regeneratorPoolArgs.halving,
+      regeneratorPoolArgs.blocksPerEra
     );
 
-    const instanceFactory = await ethers.getContractFactory("ProducerContract");
+    const instanceFactory = await ethers.getContractFactory("RegeneratorContract");
 
-    instance = await instanceFactory.deploy(userContract.target, producerPool.target);
+    instance = await instanceFactory.deploy(userContract.target, regeneratorPool.target);
 
-    await regenerationCredit.addContractPool(producerPool.target, producerPoolArgs.totalTokens);
+    await regenerationCredit.addContractPool(regeneratorPool.target, regeneratorPoolArgs.totalTokens);
     await userContract.newAllowedCaller(instance.target);
     await userContract.newAllowedCaller(owner);
     await instance.newAllowedCaller(owner);
-    await producerPool.newAllowedCaller(instance.target);
+    await regeneratorPool.newAllowedCaller(instance.target);
 
-    await addInvitation(owner, prod1Address, userTypes.Producer, owner);
-    await addInvitation(owner, prod2Address, userTypes.Producer, owner);
+    await addInvitation(owner, prod1Address, userTypes.Regenerator, owner);
+    await addInvitation(owner, prod2Address, userTypes.Regenerator, owner);
   });
 
-  context("when access producer fields", () => {
+  context("when access regenerator fields", () => {
     it("should have fields", async () => {
-      await addProducer("Producer A", prod1Address);
-      const producer = await instance.getProducer(prod1Address);
+      await addRegenerator("Regenerator A", prod1Address);
+      const regenerator = await instance.getRegenerator(prod1Address);
 
-      expect(producer.id).to.equal("1");
-      expect(producer.producerWallet).to.equal(prod1Address.address);
-      expect(producer.name).to.equal("Producer A");
-      expect(producer.proofPhoto).to.equal("photoURL");
-      expect(producer.totalInspections).to.equal(0);
-      expect(producer.pendingInspection).to.equal(false);
-      expect(producer.regenerationScore.average).to.equal("0");
-      expect(producer.regenerationScore.score).to.equal("0");
+      expect(regenerator.id).to.equal("1");
+      expect(regenerator.regeneratorWallet).to.equal(prod1Address.address);
+      expect(regenerator.name).to.equal("Regenerator A");
+      expect(regenerator.proofPhoto).to.equal("photoURL");
+      expect(regenerator.totalInspections).to.equal(0);
+      expect(regenerator.pendingInspection).to.equal(false);
+      expect(regenerator.regenerationScore.average).to.equal("0");
+      expect(regenerator.regenerationScore.score).to.equal("0");
 
-      expect(producer.pool.currentEra).to.equal(1);
+      expect(regenerator.pool.currentEra).to.equal(1);
 
-      expect(producer.areaInformation.coordinates).to.equal("135465-005");
-      expect(producer.areaInformation.totalArea).to.equal("10");
+      expect(regenerator.areaInformation.coordinates).to.equal("135465-005");
+      expect(regenerator.areaInformation.totalArea).to.equal("10");
     });
   });
 
-  context("when will create a producer (.addProducer)", () => {
-    it("should create producer", async () => {
-      await addProducer("Producer A", prod1Address);
-      await addProducer("Producer B", prod2Address);
-      const producer = await instance.getProducer(prod1Address);
+  context("when will create a regenerator (.addRegenerator)", () => {
+    it("should create regenerator", async () => {
+      await addRegenerator("Regenerator A", prod1Address);
+      await addRegenerator("Regenerator B", prod2Address);
+      const regenerator = await instance.getRegenerator(prod1Address);
 
-      expect(producer.producerWallet).to.equal(prod1Address.address);
+      expect(regenerator.regeneratorWallet).to.equal(prod1Address.address);
     });
 
     it("should be created with totalRequest equal zero", async () => {
-      await addProducer("Producer A", prod1Address);
+      await addRegenerator("Regenerator A", prod1Address);
 
-      const producer = await instance.getProducer(prod1Address);
+      const regenerator = await instance.getRegenerator(prod1Address);
 
-      expect(producer.totalInspections).to.equal(0);
+      expect(regenerator.totalInspections).to.equal(0);
     });
 
     it("should be created with avarage equal zero", async () => {
-      await addProducer("Producer A", prod1Address);
-      const producer = await instance.getProducer(prod1Address);
+      await addRegenerator("Regenerator A", prod1Address);
+      const regenerator = await instance.getRegenerator(prod1Address);
 
-      expect(producer.regenerationScore.average).to.equal("0");
+      expect(regenerator.regenerationScore.average).to.equal("0");
     });
 
     it("should be created with regenerationScore equal zero", async () => {
-      await addProducer("Producer A", prod1Address);
+      await addRegenerator("Regenerator A", prod1Address);
 
-      const producer = await instance.getProducer(prod1Address);
+      const regenerator = await instance.getRegenerator(prod1Address);
 
-      expect(producer.regenerationScore.score).to.equal(0);
+      expect(regenerator.regenerationScore.score).to.equal(0);
     });
 
     it("should be created with lastRequestAt equal zero", async () => {
-      await addProducer("Producer A", prod1Address);
+      await addRegenerator("Regenerator A", prod1Address);
 
-      const producer = await instance.getProducer(prod1Address);
+      const regenerator = await instance.getRegenerator(prod1Address);
 
-      expect(producer.lastRequestAt).to.equal(0);
+      expect(regenerator.lastRequestAt).to.equal(0);
     });
 
-    it("should increment producersCount after create producer", async () => {
-      await addProducer("Producer A", prod1Address);
-      await addProducer("Producer B", prod2Address);
-      const producersCount = await userContract.userTypesCount(userTypes.Producer);
+    it("should increment regeneratorsCount after create regenerator", async () => {
+      await addRegenerator("Regenerator A", prod1Address);
+      await addRegenerator("Regenerator B", prod2Address);
+      const regeneratorsCount = await userContract.userTypesCount(userTypes.Regenerator);
 
-      expect(producersCount).to.equal(2);
+      expect(regeneratorsCount).to.equal(2);
     });
 
-    it("should add created producer in userType contract as a PRODUCER", async () => {
-      await addProducer("Producer A", prod1Address);
+    it("should add created regenerator in userType contract as a REGENERATOR", async () => {
+      await addRegenerator("Regenerator A", prod1Address);
 
       const userType = await userContract.getUser(prod1Address);
-      const PRODUCER = 1;
+      const REGENERATOR = 1;
 
-      expect(userType).to.equal(PRODUCER);
+      expect(userType).to.equal(REGENERATOR);
     });
   });
 
-  context("when producer alredy exists", () => {
-    it("should return error when try create same producer", async () => {
-      await addProducer("Producer A", prod1Address);
+  context("when regenerator alredy exists", () => {
+    it("should return error when try create same regenerator", async () => {
+      await addRegenerator("Regenerator A", prod1Address);
 
-      await expect(addProducer("Producer A", prod1Address)).to.be.revertedWith("User already exists");
+      await expect(addRegenerator("Regenerator A", prod1Address)).to.be.revertedWith("User already exists");
     });
   });
 
-  context("when producer don't exist", () => {
-    it("should return false when producer don't exist", async () => {
-      const producerExists = await instance.producerExists(prod1Address);
+  context("when regenerator don't exist", () => {
+    it("should return false when regenerator don't exist", async () => {
+      const regeneratorExists = await instance.regeneratorExists(prod1Address);
 
-      expect(producerExists).to.equal(false);
+      expect(regeneratorExists).to.equal(false);
     });
   });
 
-  context("when producer exists", () => {
-    it("should return true when producer exists", async () => {
-      await addProducer("Producer A", prod1Address);
+  context("when regenerator exists", () => {
+    it("should return true when regenerator exists", async () => {
+      await addRegenerator("Regenerator A", prod1Address);
 
-      const producerExists = await instance.producerExists(prod1Address);
+      const regeneratorExists = await instance.regeneratorExists(prod1Address);
 
-      expect(producerExists).to.equal(true);
+      expect(regeneratorExists).to.equal(true);
     });
   });
 
-  context("when call getProducer", () => {
-    it("should return a producer", async () => {
-      await addProducer("Producer A", prod1Address);
+  context("when call getRegenerator", () => {
+    it("should return a regenerator", async () => {
+      await addRegenerator("Regenerator A", prod1Address);
 
-      const producer = await instance.getProducer(prod1Address);
+      const regenerator = await instance.getRegenerator(prod1Address);
 
-      expect(producer.producerWallet).to.equal(prod1Address.address);
+      expect(regenerator.regeneratorWallet).to.equal(prod1Address.address);
     });
 
-    it("should return producers when call getProducers and has it", async () => {
-      await addProducer("Producer A", prod1Address);
-      await addProducer("Producer A", prod2Address);
+    it("should return regenerators when call getRegenerators and has it", async () => {
+      await addRegenerator("Regenerator A", prod1Address);
+      await addRegenerator("Regenerator A", prod2Address);
 
-      const producers = await instance.getProducers();
+      const regenerators = await instance.getRegenerators();
 
-      expect(producers.length).to.equal(2);
+      expect(regenerators.length).to.equal(2);
     });
 
-    it("should return producers zero when call getProducers and dont has it", async () => {
-      const producers = await instance.getProducers();
+    it("should return regenerators zero when call getRegenerators and dont has it", async () => {
+      const regenerators = await instance.getRegenerators();
 
-      expect(producers.length).to.equal(0);
+      expect(regenerators.length).to.equal(0);
     });
 
-    it("should return same producer in mapping and array list", async () => {
-      await addProducer("Producer A", prod1Address);
-      await addProducer("Producer A", prod2Address);
+    it("should return same regenerator in mapping and array list", async () => {
+      await addRegenerator("Regenerator A", prod1Address);
+      await addRegenerator("Regenerator A", prod2Address);
 
-      const producers = await instance.getProducers();
-      const producer1 = await instance.getProducer(prod1Address);
-      const producer2 = await instance.getProducer(prod2Address);
+      const regenerators = await instance.getRegenerators();
+      const regenerator1 = await instance.getRegenerator(prod1Address);
+      const regenerator2 = await instance.getRegenerator(prod2Address);
 
-      expect(producers[0].producer_wallet).to.equal(producer1.producer_wallet);
-      expect(producers[1].producer_wallet).to.equal(producer2.producer_wallet);
+      expect(regenerators[0].regenerator_wallet).to.equal(regenerator1.regenerator_wallet);
+      expect(regenerators[1].regenerator_wallet).to.equal(regenerator2.regenerator_wallet);
     });
   });
 
   describe("#afterRequestInspection", () => {
     beforeEach(async () => {
-      await addProducer("Producer A", prod1Address);
+      await addRegenerator("Regenerator A", prod1Address);
       await instance.afterRequestInspection(prod1Address);
     });
 
     context("with allowed caller", () => {
       it("set pendingInspection to true", async () => {
-        const producer = await instance.getProducer(prod1Address);
+        const regenerator = await instance.getRegenerator(prod1Address);
 
-        expect(producer.pendingInspection).to.equal(true);
+        expect(regenerator.pendingInspection).to.equal(true);
       });
 
       it("set lastRequestAt", async () => {
-        const producer = await instance.getProducer(prod1Address);
+        const regenerator = await instance.getRegenerator(prod1Address);
 
-        expect(producer.lastRequestAt).to.above(0);
+        expect(regenerator.lastRequestAt).to.above(0);
       });
     });
 
@@ -227,32 +227,32 @@ describe("ProducerContract", () => {
 
   describe("#afterRealizeInspection", () => {
     beforeEach(async () => {
-      await addProducer("Producer A", prod1Address);
+      await addRegenerator("Regenerator A", prod1Address);
     });
 
     context("with allowed user", () => {
       describe(".setRegenerationScore", () => {
-        context("when dont have producers sustainable", () => {
-          context("when have 1 producer", () => {
+        context("when dont have regenerators sustainable", () => {
+          context("when have 1 regenerator", () => {
             beforeEach(async () => {
               await instance.afterRealizeInspection(prod1Address, 600);
             });
 
-            context("when new score + producer score is smaller than limit score", () => {
+            context("when new score + regenerator score is smaller than limit score", () => {
               beforeEach(async () => {
                 await instance.afterRealizeInspection(prod1Address, 70);
               });
 
-              it("producer regeneration score must be 670", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator regeneration score must be 670", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.regenerationScore.score).to.equal(670);
+                expect(regenerator.regenerationScore.score).to.equal(670);
               });
 
-              it("producer must not be sustainable", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator must not be sustainable", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.regenerationScore.sustainable).to.equal(false);
+                expect(regenerator.regenerationScore.sustainable).to.equal(false);
               });
             });
 
@@ -261,197 +261,197 @@ describe("ProducerContract", () => {
                 await instance.afterRealizeInspection(prod1Address, -70);
               });
 
-              it("producer regeneration score must be 530", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator regeneration score must be 530", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.regenerationScore.score).to.equal(530);
+                expect(regenerator.regenerationScore.score).to.equal(530);
               });
 
-              it("producer must not be sustainable", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator must not be sustainable", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.regenerationScore.sustainable).to.equal(false);
+                expect(regenerator.regenerationScore.sustainable).to.equal(false);
               });
             });
 
-            context("when new score + producer score result in a negative value", () => {
+            context("when new score + regenerator score result in a negative value", () => {
               beforeEach(async () => {
                 await instance.afterRealizeInspection(prod1Address, -610);
               });
 
-              it("producer regeneration score must be -10", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator regeneration score must be -10", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.regenerationScore.score).to.equal(-10);
+                expect(regenerator.regenerationScore.score).to.equal(-10);
               });
 
-              it("producer must not be sustainable", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator must not be sustainable", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.regenerationScore.sustainable).to.equal(false);
+                expect(regenerator.regenerationScore.sustainable).to.equal(false);
               });
             });
 
-            context("when new score + producer score is equal or bigger limit score", () => {
+            context("when new score + regenerator score is equal or bigger limit score", () => {
               beforeEach(async () => {
                 await instance.afterRealizeInspection(prod1Address, 400);
               });
 
-              it("producer regeneration score must be 1000", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator regeneration score must be 1000", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.regenerationScore.score).to.equal(1000);
+                expect(regenerator.regenerationScore.score).to.equal(1000);
               });
 
-              it("producer must be sustainable", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator must be sustainable", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.regenerationScore.sustainable).to.equal(true);
+                expect(regenerator.regenerationScore.sustainable).to.equal(true);
               });
 
-              it("producers sustainable must increment", async () => {
-                const producersSustainable = await instance.producersSustainable();
+              it("regenerators sustainable must increment", async () => {
+                const regeneratorsSustainable = await instance.regeneratorsSustainable();
 
-                expect(producersSustainable).to.equal(1);
+                expect(regeneratorsSustainable).to.equal(1);
               });
             });
           });
 
-          context("when have more tha one producer", () => {
+          context("when have more tha one regenerator", () => {
             beforeEach(async () => {
               await instance.afterRealizeInspection(prod1Address, 600);
-              await addProducer("Producer B", prod2Address);
+              await addRegenerator("Regenerator B", prod2Address);
               await instance.afterRealizeInspection(prod2Address, 800);
             });
 
-            context("when new score + producer A score is smaller than limit score", () => {
+            context("when new score + regenerator A score is smaller than limit score", () => {
               beforeEach(async () => {
                 await instance.afterRealizeInspection(prod1Address, 70);
               });
 
-              it("producer regeneration score must be 670", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator regeneration score must be 670", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.regenerationScore.score).to.equal(670);
+                expect(regenerator.regenerationScore.score).to.equal(670);
               });
 
-              it("producer must not be sustainable", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator must not be sustainable", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.regenerationScore.sustainable).to.equal(false);
+                expect(regenerator.regenerationScore.sustainable).to.equal(false);
               });
             });
 
-            context("when new score + producer A score is equal than limit score", () => {
+            context("when new score + regenerator A score is equal than limit score", () => {
               beforeEach(async () => {
                 await instance.afterRealizeInspection(prod1Address, 400);
               });
 
-              it("producer A regeneration score must be 1000", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator A regeneration score must be 1000", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.regenerationScore.score).to.equal(1000);
+                expect(regenerator.regenerationScore.score).to.equal(1000);
               });
 
-              it("producer A must be sustainable", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator A must be sustainable", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.regenerationScore.sustainable).to.equal(true);
+                expect(regenerator.regenerationScore.sustainable).to.equal(true);
               });
 
-              it("producers sustainable must increment", async () => {
-                const producersSustainable = await instance.producersSustainable();
+              it("regenerators sustainable must increment", async () => {
+                const regeneratorsSustainable = await instance.regeneratorsSustainable();
 
-                expect(producersSustainable).to.equal(1);
+                expect(regeneratorsSustainable).to.equal(1);
               });
             });
 
-            context("when new score + producer score result in a negative value", () => {
+            context("when new score + regenerator score result in a negative value", () => {
               beforeEach(async () => {
                 await instance.afterRealizeInspection(prod1Address, -610);
               });
 
-              it("producer regeneration score must be -10", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator regeneration score must be -10", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.regenerationScore.score).to.equal(-10);
+                expect(regenerator.regenerationScore.score).to.equal(-10);
               });
 
-              it("producer must not be sustainable", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator must not be sustainable", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.regenerationScore.sustainable).to.equal(false);
+                expect(regenerator.regenerationScore.sustainable).to.equal(false);
               });
             });
           });
         });
 
-        context("when have producers sustainable", () => {
-          context("when have 1 producer", () => {
+        context("when have regenerators sustainable", () => {
+          context("when have 1 regenerator", () => {
             beforeEach(async () => {
               await instance.afterRealizeInspection(prod1Address, 1000);
             });
 
-            context("when producer receive more 100 regeneration score", () => {
+            context("when regenerator receive more 100 regeneration score", () => {
               beforeEach(async () => {
                 await instance.afterRealizeInspection(prod1Address, 100);
               });
 
-              it("producer regeneration score must be 1100", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator regeneration score must be 1100", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.regenerationScore.score).to.equal(1100);
+                expect(regenerator.regenerationScore.score).to.equal(1100);
               });
 
-              it("producer must be sustainable", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator must be sustainable", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.regenerationScore.sustainable).to.equal(true);
+                expect(regenerator.regenerationScore.sustainable).to.equal(true);
               });
             });
           });
 
-          context("when have more than one producer", () => {
+          context("when have more than one regenerator", () => {
             beforeEach(async () => {
               await instance.afterRealizeInspection(prod1Address, 1000);
-              await addProducer("Producer B", prod2Address);
+              await addRegenerator("Regenerator B", prod2Address);
               await instance.afterRealizeInspection(prod2Address, 800);
             });
 
-            context("when producer A receive more 100 regeneration score", () => {
+            context("when regenerator A receive more 100 regeneration score", () => {
               beforeEach(async () => {
                 await instance.afterRealizeInspection(prod1Address, 100);
               });
 
-              it("producer A regeneration score must be 1100", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator A regeneration score must be 1100", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.regenerationScore.score).to.equal(1100);
+                expect(regenerator.regenerationScore.score).to.equal(1100);
               });
             });
 
-            context("when producer B receive more 100 regeneration score", () => {
+            context("when regenerator B receive more 100 regeneration score", () => {
               beforeEach(async () => {
                 await instance.afterRealizeInspection(prod2Address, 100);
               });
 
-              it("producer B regeneration score must be 900", async () => {
-                const producer = await instance.getProducer(prod2Address);
+              it("regenerator B regeneration score must be 900", async () => {
+                const regenerator = await instance.getRegenerator(prod2Address);
 
-                expect(producer.regenerationScore.score).to.equal(900);
+                expect(regenerator.regenerationScore.score).to.equal(900);
               });
             });
           });
         });
 
-        context("when producer have reached minimum inspections", () => {
+        context("when regenerator have reached minimum inspections", () => {
           beforeEach(async () => {
             await instance.afterRealizeInspection(prod1Address, 25);
             await instance.afterRealizeInspection(prod1Address, 25);
           });
 
           context("when is era 1", () => {
-            context("when already have 50 levels in producer contract", () => {
+            context("when already have 50 levels in regenerator contract", () => {
               context("when receives more 25 levels", () => {
                 beforeEach(async () => {
                   await instance.afterRealizeInspection(prod1Address, 25);
@@ -459,15 +459,15 @@ describe("ProducerContract", () => {
 
                 context("when is not in the pool yet", () => {
                   it("set 75 levels to era 1 pool", async () => {
-                    const eraLevels = await producerPool.eraLevels(1, prod1Address);
+                    const eraLevels = await regeneratorPool.eraLevels(1, prod1Address);
 
                     expect(eraLevels).to.equal(75);
                   });
 
-                  it("producer regenerationScore must be 75", async () => {
-                    const producer = await instance.getProducer(prod1Address);
+                  it("regenerator regenerationScore must be 75", async () => {
+                    const regenerator = await instance.getRegenerator(prod1Address);
 
-                    expect(producer.regenerationScore.score).to.equal(75);
+                    expect(regenerator.regenerationScore.score).to.equal(75);
                   });
                 });
 
@@ -477,15 +477,15 @@ describe("ProducerContract", () => {
                   });
 
                   it("set 100 levels to era 1 pool", async () => {
-                    const eraLevels = await producerPool.eraLevels(1, prod1Address);
+                    const eraLevels = await regeneratorPool.eraLevels(1, prod1Address);
 
                     expect(eraLevels).to.equal(100);
                   });
 
-                  it("producer regenerationScore must be 100", async () => {
-                    const producer = await instance.getProducer(prod1Address);
+                  it("regenerator regenerationScore must be 100", async () => {
+                    const regenerator = await instance.getRegenerator(prod1Address);
 
-                    expect(producer.regenerationScore.score).to.equal(100);
+                    expect(regenerator.regenerationScore.score).to.equal(100);
                   });
                 });
               });
@@ -497,15 +497,15 @@ describe("ProducerContract", () => {
                   });
 
                   it("set 0 levels to era 1 pool", async () => {
-                    const eraLevels = await producerPool.eraLevels(1, prod1Address);
+                    const eraLevels = await regeneratorPool.eraLevels(1, prod1Address);
 
                     expect(eraLevels).to.equal(0);
                   });
 
-                  it("producer regenerationScore must be 25", async () => {
-                    const producer = await instance.getProducer(prod1Address);
+                  it("regenerator regenerationScore must be 25", async () => {
+                    const regenerator = await instance.getRegenerator(prod1Address);
 
-                    expect(producer.regenerationScore.score).to.equal(25);
+                    expect(regenerator.regenerationScore.score).to.equal(25);
                   });
                 });
 
@@ -516,34 +516,34 @@ describe("ProducerContract", () => {
                   });
 
                   it("set 50 levels to era 1 pool", async () => {
-                    const eraLevels = await producerPool.eraLevels(1, prod1Address);
+                    const eraLevels = await regeneratorPool.eraLevels(1, prod1Address);
 
                     expect(eraLevels).to.equal(50);
                   });
 
-                  it("producer regenerationScore must be 50", async () => {
-                    const producer = await instance.getProducer(prod1Address);
+                  it("regenerator regenerationScore must be 50", async () => {
+                    const regenerator = await instance.getRegenerator(prod1Address);
 
-                    expect(producer.regenerationScore.score).to.equal(50);
+                    expect(regenerator.regenerationScore.score).to.equal(50);
                   });
                 });
 
-                context("when have negative values in producer contract", () => {
+                context("when have negative values in regenerator contract", () => {
                   beforeEach(async () => {
                     await instance.afterRealizeInspection(prod1Address, -75);
                     await instance.afterRealizeInspection(prod1Address, 30);
                   });
 
                   it("set 5 levels to era 1 pool", async () => {
-                    const eraLevels = await producerPool.eraLevels(1, prod1Address);
+                    const eraLevels = await regeneratorPool.eraLevels(1, prod1Address);
 
                     expect(eraLevels).to.equal(5);
                   });
 
-                  it("producer regenerationScore must be 5", async () => {
-                    const producer = await instance.getProducer(prod1Address);
+                  it("regenerator regenerationScore must be 5", async () => {
+                    const regenerator = await instance.getRegenerator(prod1Address);
 
-                    expect(producer.regenerationScore.score).to.equal(5);
+                    expect(regenerator.regenerationScore.score).to.equal(5);
                   });
                 });
               });
@@ -551,23 +551,23 @@ describe("ProducerContract", () => {
           });
 
           context("when is era 2", () => {
-            context("when already have 50 levels in producer contract", () => {
+            context("when already have 50 levels in regenerator contract", () => {
               context("when receives more 50 levels", () => {
                 beforeEach(async () => {
-                  await advanceBlock(producerPoolArgs.blocksPerEra);
+                  await advanceBlock(regeneratorPoolArgs.blocksPerEra);
                   await instance.afterRealizeInspection(prod1Address, 50);
                 });
 
                 it("set 50 levels to era 2 pool", async () => {
-                  const eraLevels = await producerPool.eraLevels(2, prod1Address);
+                  const eraLevels = await regeneratorPool.eraLevels(2, prod1Address);
 
                   expect(eraLevels).to.equal(100);
                 });
 
-                it("producer regenerationScore must be 100", async () => {
-                  const producer = await instance.getProducer(prod1Address);
+                it("regenerator regenerationScore must be 100", async () => {
+                  const regenerator = await instance.getRegenerator(prod1Address);
 
-                  expect(producer.regenerationScore.score).to.equal(100);
+                  expect(regenerator.regenerationScore.score).to.equal(100);
                 });
               });
             });
@@ -581,9 +581,9 @@ describe("ProducerContract", () => {
         });
 
         it("incrementInspections", async () => {
-          const producer = await instance.getProducer(prod1Address);
+          const regenerator = await instance.getRegenerator(prod1Address);
 
-          expect(producer.totalInspections).to.equal(1);
+          expect(regenerator.totalInspections).to.equal(1);
         });
       });
     });
@@ -598,14 +598,14 @@ describe("ProducerContract", () => {
   });
 
   describe("#withdraw", () => {
-    context("with producer", () => {
+    context("with regenerator", () => {
       beforeEach(async () => {
-        await addProducer("Producer A", prod1Address);
-        await addProducer("Producer B", prod2Address);
+        await addRegenerator("Regenerator A", prod1Address);
+        await addRegenerator("Regenerator B", prod2Address);
       });
 
       context("when can approve #blockable", () => {
-        context("when producer have minimum inspections", () => {
+        context("when regenerator have minimum inspections", () => {
           context("when levels in era is 100", () => {
             beforeEach(async () => {
               await instance.afterRealizeInspection(prod1Address, 0);
@@ -613,7 +613,7 @@ describe("ProducerContract", () => {
               await instance.afterRealizeInspection(prod1Address, 0);
             });
 
-            context("when producer have regenerationScore 50", () => {
+            context("when regenerator have regenerationScore 50", () => {
               beforeEach(async () => {
                 await instance.afterRealizeInspection(prod2Address, 0);
                 await instance.afterRealizeInspection(prod2Address, 0);
@@ -622,41 +622,41 @@ describe("ProducerContract", () => {
                 await instance.afterRealizeInspection(prod1Address, 50);
                 await instance.afterRealizeInspection(prod2Address, 50);
 
-                await advanceBlock(producerPoolArgs.blocksPerEra);
+                await advanceBlock(regeneratorPoolArgs.blocksPerEra);
 
                 await instance.connect(prod1Address).withdraw();
                 await instance.connect(prod2Address).withdraw();
               });
 
-              it("producer A must withdraw 3750000000000000000000000n tokens", async () => {
+              it("regenerator A must withdraw 3750000000000000000000000n tokens", async () => {
                 const balanceOf = await regenerationCredit.balanceOf(prod1Address);
 
                 expect(balanceOf).to.equal(3750000000000000000000000n);
               });
 
-              it("producer B must withdraw 3750000000000000000000000n tokens", async () => {
+              it("regenerator B must withdraw 3750000000000000000000000n tokens", async () => {
                 const balanceOf = await regenerationCredit.balanceOf(prod2Address);
 
                 expect(balanceOf).to.equal(3750000000000000000000000n);
               });
 
-              it("producer A current era must be incremented", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator A current era must be incremented", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.pool.currentEra).to.equal(2);
+                expect(regenerator.pool.currentEra).to.equal(2);
               });
 
-              it("producer B current era must be incremented", async () => {
-                const producer = await instance.getProducer(prod2Address);
+              it("regenerator B current era must be incremented", async () => {
+                const regenerator = await instance.getRegenerator(prod2Address);
 
-                expect(producer.pool.currentEra).to.equal(2);
+                expect(regenerator.pool.currentEra).to.equal(2);
               });
             });
 
-            context("when producer have regenerationScore 100", () => {
+            context("when regenerator have regenerationScore 100", () => {
               beforeEach(async () => {
                 await instance.afterRealizeInspection(prod1Address, 100);
-                await advanceBlock(producerPoolArgs.blocksPerEra);
+                await advanceBlock(regeneratorPoolArgs.blocksPerEra);
                 await instance.connect(prod1Address).withdraw();
               });
 
@@ -666,16 +666,16 @@ describe("ProducerContract", () => {
                 expect(balanceOf).to.equal(7500000000000000000000000n);
               });
 
-              it("producer current era must be increment", async () => {
-                const producer = await instance.getProducer(prod1Address);
+              it("regenerator current era must be increment", async () => {
+                const regenerator = await instance.getRegenerator(prod1Address);
 
-                expect(producer.pool.currentEra).to.equal(2);
+                expect(regenerator.pool.currentEra).to.equal(2);
               });
             });
           });
         });
 
-        context("when producer dont have minimum inspections", () => {
+        context("when regenerator dont have minimum inspections", () => {
           it("should return error message", async () => {
             await expect(instance.connect(prod1Address).withdraw()).to.be.revertedWith("Minimum inspections");
           });
@@ -695,17 +695,17 @@ describe("ProducerContract", () => {
       });
     });
 
-    context("with not producer", () => {
+    context("with not regenerator", () => {
       it("should return error message", async () => {
-        await expect(instance.withdraw()).to.be.revertedWith("Only producers pool");
+        await expect(instance.withdraw()).to.be.revertedWith("Only regenerators pool");
       });
     });
   });
 
-  describe("#producerPoolEra", () => {
+  describe("#regeneratorPoolEra", () => {
     context("when pool is in era 1", () => {
       it("return era equal 1", async () => {
-        const currentEra = await instance.producerPoolEra();
+        const currentEra = await instance.regeneratorPoolEra();
 
         expect(currentEra).to.equal(1);
       });
@@ -713,11 +713,11 @@ describe("ProducerContract", () => {
 
     context("when pool is in era 2", () => {
       beforeEach(async () => {
-        await advanceBlock(producerPoolArgs.blocksPerEra);
+        await advanceBlock(regeneratorPoolArgs.blocksPerEra);
       });
 
       it("return era equal 1", async () => {
-        const currentEra = await instance.producerPoolEra();
+        const currentEra = await instance.regeneratorPoolEra();
 
         expect(currentEra).to.equal(2);
       });

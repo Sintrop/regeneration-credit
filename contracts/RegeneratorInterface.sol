@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-interface ProducerInterface {
-  struct Producer {
+interface RegeneratorInterface {
+  struct Regenerator {
     uint256 id;
-    address producerWallet;
+    address regeneratorWallet;
     UserType userType;
     string name;
     string document;
@@ -17,7 +17,7 @@ interface ProducerInterface {
   }
 
   enum UserType {
-    PRODUCER,
+    REGENERATOR,
     INSPECTOR,
     RESEARCHER,
     DEVELOPER,

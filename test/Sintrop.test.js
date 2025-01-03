@@ -10,22 +10,22 @@ describe("Sintrop", () => {
   let instance;
   let userContract;
   let inspectorContract;
-  let producerContract;
+  let regeneratorContract;
   let researcherContract;
   let activistContract;
   let researcherPool;
   let inspectorPool;
-  let producerPool;
+  let regeneratorPool;
   let validatorPool;
   let activistPool;
 
   const inspectorMaxPenalties = 2;
 
   let owner,
-    producerAddress,
-    producer2Address,
-    producer3Address,
-    producer4Address,
+    regeneratorAddress,
+    regenerator2Address,
+    regenerator3Address,
+    regenerator4Address,
     inspectorAddress,
     inspector2Address,
     inspector3Address,
@@ -51,7 +51,7 @@ describe("Sintrop", () => {
   const timeBetweenWorks = 6;
   const researcherMaxPenalties = 3;
 
-  const producerPoolArgs = {
+  const regeneratorPoolArgs = {
     totalTokens: "750000000000000000000000000",
     halving: 50,
     blocksPerEra: 500,
@@ -89,8 +89,8 @@ describe("Sintrop", () => {
     blocksPerEra: 13,
   };
 
-  const addProducer = async (name, from) => {
-    await producerContract.connect(from).addProducer(10, name, "photoURL", "135465-005");
+  const addRegenerator = async (name, from) => {
+    await regeneratorContract.connect(from).addRegenerator(10, name, "photoURL", "135465-005");
   };
 
   const addInspector = async (name, from) => {
@@ -177,10 +177,10 @@ describe("Sintrop", () => {
   beforeEach(async () => {
     [
       owner,
-      producerAddress,
-      producer2Address,
-      producer3Address,
-      producer4Address,
+      regeneratorAddress,
+      regenerator2Address,
+      regenerator3Address,
+      regenerator4Address,
       inspectorAddress,
       inspector2Address,
       inspector3Address,
@@ -209,11 +209,11 @@ describe("Sintrop", () => {
       inspectorPoolargs.blocksPerEra
     );
 
-    const producerPoolFactory = await ethers.getContractFactory("ProducerPool");
-    producerPool = await producerPoolFactory.deploy(
+    const regeneratorPoolFactory = await ethers.getContractFactory("RegeneratorPool");
+    regeneratorPool = await regeneratorPoolFactory.deploy(
       regenerationCredit.target,
-      producerPoolArgs.halving,
-      producerPoolArgs.blocksPerEra
+      regeneratorPoolArgs.halving,
+      regeneratorPoolArgs.blocksPerEra
     );
 
     const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
@@ -232,7 +232,7 @@ describe("Sintrop", () => {
 
     const inspectorContractFactory = await ethers.getContractFactory("InspectorContract");
     const researcherContractFactory = await ethers.getContractFactory("ResearcherContract");
-    const producerContractFactory = await ethers.getContractFactory("ProducerContract");
+    const regeneratorContractFactory = await ethers.getContractFactory("RegeneratorContract");
     const activistContractFactory = await ethers.getContractFactory("ActivistContract");
 
     const validatorContractFactory = await ethers.getContractFactory("ValidatorContract");
@@ -254,7 +254,7 @@ describe("Sintrop", () => {
       researcherSecuryBlocksToAnalysis
     );
 
-    producerContract = await producerContractFactory.deploy(userContract.target, producerPool.target);
+    regeneratorContract = await regeneratorContractFactory.deploy(userContract.target, regeneratorPool.target);
     activistContract = await activistContractFactory.deploy(userContract.target, activistPool.target);
 
     const categoryContractFactory = await ethers.getContractFactory("CategoryContract");
@@ -262,7 +262,7 @@ describe("Sintrop", () => {
 
     const validatorContractDependencies = {
       userContractAddress: userContract.target,
-      producerContractAddress: producerContract.target,
+      regeneratorContractAddress: regeneratorContract.target,
       validatorPoolAddress: validatorPool.target,
       inspectorContractAddress: inspectorContract.target,
       developerContractAddress: ZERO_ADDRESS,
@@ -273,7 +273,7 @@ describe("Sintrop", () => {
 
     const sintropDependencies = {
       userContractAddress: userContract.target,
-      producerContractAddress: producerContract.target,
+      regeneratorContractAddress: regeneratorContract.target,
       validatorContractAddress: validatorContract.target,
       inspectorContractAddress: inspectorContract.target,
       activistContractAddress: activistContract.target,
@@ -293,7 +293,7 @@ describe("Sintrop", () => {
 
     await validatorContract.setContractAddressDependencies(validatorContractDependencies);
     await userContract.newAllowedCaller(inspectorContract.target);
-    await userContract.newAllowedCaller(producerContract.target);
+    await userContract.newAllowedCaller(regeneratorContract.target);
     await userContract.newAllowedCaller(researcherContract.target);
     await userContract.newAllowedCaller(validatorContract.target);
     await userContract.newAllowedCaller(activistContract.target);
@@ -304,10 +304,10 @@ describe("Sintrop", () => {
     await validatorContract.newAllowedCaller(instance.target);
     await activistContract.newAllowedCaller(instance.target);
     await activistPool.newAllowedCaller(activistContract.target);
-    await producerContract.newAllowedCaller(owner);
-    await producerContract.newAllowedCaller(instance.target);
-    await producerContract.newAllowedCaller(validatorContract.target);
-    await producerPool.newAllowedCaller(producerContract.target);
+    await regeneratorContract.newAllowedCaller(owner);
+    await regeneratorContract.newAllowedCaller(instance.target);
+    await regeneratorContract.newAllowedCaller(validatorContract.target);
+    await regeneratorPool.newAllowedCaller(regeneratorContract.target);
     await inspectorPool.newAllowedCaller(inspectorContract.target);
     await validatorPool.newAllowedCaller(validatorContract.target);
     await categoryContract.newAllowedCaller(instance.target);
@@ -319,16 +319,16 @@ describe("Sintrop", () => {
 
   describe("#getInspection", () => {
     beforeEach(async () => {
-      await addInvitation(owner, producerAddress, userTypes.Producer, owner);
+      await addInvitation(owner, regeneratorAddress, userTypes.Regenerator, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
-      await addProducer("Producer A", producerAddress);
+      await addRegenerator("Regenerator A", regeneratorAddress);
       await addInspector("Inspector A", inspectorAddress);
     });
 
     context("when inspection exists", () => {
       beforeEach(async () => {
-        await instance.connect(producerAddress).requestInspection();
+        await instance.connect(regeneratorAddress).requestInspection();
       });
 
       it("should return inspection", async () => {
@@ -349,28 +349,28 @@ describe("Sintrop", () => {
 
   describe("#requestInspection", () => {
     beforeEach(async () => {
-      await addInvitation(owner, producerAddress, userTypes.Producer, owner);
-      await addInvitation(owner, producer2Address, userTypes.Producer, owner);
+      await addInvitation(owner, regeneratorAddress, userTypes.Regenerator, owner);
+      await addInvitation(owner, regenerator2Address, userTypes.Regenerator, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
-      await addProducer("Producer A", producerAddress);
+      await addRegenerator("Regenerator A", regeneratorAddress);
       await addInspector("Inspector A", inspectorAddress);
     });
 
-    context("with producer", () => {
+    context("with regenerator", () => {
       beforeEach(async () => {
-        await requestInspection(producerAddress);
+        await requestInspection(regeneratorAddress);
         await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
       });
 
       context("when is sustainable", () => {
         beforeEach(async () => {
-          await addProducer("Producer B", producer2Address);
-          await producerContract.afterRealizeInspection(producer2Address, 1000);
+          await addRegenerator("Regenerator B", regenerator2Address);
+          await regeneratorContract.afterRealizeInspection(regenerator2Address, 1000);
         });
 
         it("should return error", async () => {
-          await expect(requestInspection(producer2Address)).to.be.revertedWith(
+          await expect(requestInspection(regenerator2Address)).to.be.revertedWith(
             "You can't request inspections anymore, you have completed your mission"
           );
         });
@@ -380,14 +380,14 @@ describe("Sintrop", () => {
         it("should request inspection", async () => {
           const inspection = await instance.getInspection(1);
 
-          expect(inspection.producer).to.equal(producerAddress.address);
+          expect(inspection.regenerator).to.equal(regeneratorAddress.address);
         });
       });
 
       context("when have more than ALLOWED_INITIAL_REQUESTS", () => {
         context("when has request OPEN or ACCEPTED", () => {
           it("should return error message", async () => {
-            await expect(requestInspection(producerAddress)).to.be.revertedWith("Request already OPEN");
+            await expect(requestInspection(regeneratorAddress)).to.be.revertedWith("Request already OPEN");
           });
         });
 
@@ -426,7 +426,7 @@ describe("Sintrop", () => {
 
           context("when last request is recent", () => {
             it("should return error message", async () => {
-              await expect(requestInspection(producerAddress)).to.be.revertedWith("Wait to request");
+              await expect(requestInspection(regeneratorAddress)).to.be.revertedWith("Wait to request");
             });
           });
 
@@ -434,10 +434,10 @@ describe("Sintrop", () => {
             it("should request inspection", async () => {
               await advanceBlock(20);
 
-              await requestInspection(producerAddress);
+              await requestInspection(regeneratorAddress);
               const inspection = await instance.getInspection(2);
 
-              expect(inspection.producer).to.equal(producerAddress.address);
+              expect(inspection.regenerator).to.equal(regeneratorAddress.address);
             });
           });
         });
@@ -450,10 +450,10 @@ describe("Sintrop", () => {
           expect(inspection.status).to.equal(STATUS.open);
         });
 
-        it("must set producer as producer address", async () => {
+        it("must set regenerator as regenerator address", async () => {
           const inspection = await instance.getInspection(1);
 
-          expect(inspection.producer).to.equal(producerAddress.address);
+          expect(inspection.regenerator).to.equal(regeneratorAddress.address);
         });
 
         it("must set inspector as zero address", async () => {
@@ -474,18 +474,18 @@ describe("Sintrop", () => {
           expect(inspectionsCount).to.equal(1);
         });
 
-        it("should set to true producer pendingInspection", async () => {
-          const producer = await producerContract.getProducer(producerAddress);
+        it("should set to true regenerator pendingInspection", async () => {
+          const regenerator = await regeneratorContract.getRegenerator(regeneratorAddress);
 
-          expect(producer.pendingInspection).to.equal(true);
+          expect(regenerator.pendingInspection).to.equal(true);
         });
       });
     });
 
-    context("with non producer", () => {
-      context("when is not producer and try request inspection", () => {
+    context("with non regenerator", () => {
+      context("when is not regenerator and try request inspection", () => {
         it("should return message error", async () => {
-          await expect(instance.requestInspection()).to.be.revertedWith("Please register as producer");
+          await expect(instance.requestInspection()).to.be.revertedWith("Please register as regenerator");
         });
       });
     });
@@ -498,17 +498,17 @@ describe("Sintrop", () => {
       await addCategory("Soil C", owner);
       await addCategory("Soil D", owner);
 
-      await addInvitation(owner, producerAddress, userTypes.Producer, owner);
+      await addInvitation(owner, regeneratorAddress, userTypes.Regenerator, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
-      await addProducer("Producer A", producerAddress);
+      await addRegenerator("Regenerator A", regeneratorAddress);
       await addInspector("Inspector A", inspectorAddress);
     });
 
     context("with inspector", () => {
       context("when inspection exists", () => {
         beforeEach(async () => {
-          await requestInspection(producerAddress);
+          await requestInspection(regeneratorAddress);
         });
 
         context("when have not waited inspection delay time", () => {
@@ -520,7 +520,7 @@ describe("Sintrop", () => {
         context("when do not have security blocks to validator analysis", () => {
           context("when nextEraIn is less than blocksToExpireAcceptedInspection", () => {
             beforeEach(async () => {
-              const nextEraIn = await producerContract.nextEraIn();
+              const nextEraIn = await regeneratorContract.nextEraIn();
               const blocks = parseInt(nextEraIn) - sintropArgs.blocksToExpireAcceptedInspection;
 
               await advanceBlock(blocks);
@@ -533,7 +533,7 @@ describe("Sintrop", () => {
 
           context("when nextEraIn is bigger than blocksToExpireAcceptedInspection", () => {
             beforeEach(async () => {
-              const nextEraIn = await producerContract.nextEraIn();
+              const nextEraIn = await regeneratorContract.nextEraIn();
 
               const blocks = parseInt(nextEraIn) - sintropArgs.blocksToExpireAcceptedInspection - 20;
               await advanceBlock(blocks);
@@ -565,29 +565,29 @@ describe("Sintrop", () => {
 
         context("when inspector has more than 3 giveups", () => {
           beforeEach(async () => {
-            await addInvitation(owner, producer2Address, userTypes.Producer, owner);
-            await addInvitation(owner, producer3Address, userTypes.Producer, owner);
-            await addInvitation(owner, producer4Address, userTypes.Producer, owner);
+            await addInvitation(owner, regenerator2Address, userTypes.Regenerator, owner);
+            await addInvitation(owner, regenerator3Address, userTypes.Regenerator, owner);
+            await addInvitation(owner, regenerator4Address, userTypes.Regenerator, owner);
 
-            await addProducer("Producer B", producer2Address);
-            await addProducer("Producer C", producer3Address);
-            await addProducer("Producer D", producer4Address);
+            await addRegenerator("Regenerator B", regenerator2Address);
+            await addRegenerator("Regenerator C", regenerator3Address);
+            await addRegenerator("Regenerator D", regenerator4Address);
 
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
             await acceptInspection(1, inspectorAddress);
             await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
 
-            await requestInspection(producer2Address);
+            await requestInspection(regenerator2Address);
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
             await acceptInspection(2, inspectorAddress);
             await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
 
-            await requestInspection(producer3Address);
+            await requestInspection(regenerator3Address);
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
             await acceptInspection(3, inspectorAddress);
             await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
 
-            await requestInspection(producer4Address);
+            await requestInspection(regenerator4Address);
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           });
 
@@ -596,7 +596,7 @@ describe("Sintrop", () => {
           });
         });
 
-        context("when never realized inspection from producer", () => {
+        context("when never realized inspection from regenerator", () => {
           context("when inspection is OPEN", () => {
             beforeEach(async () => {
               await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
@@ -643,11 +643,11 @@ describe("Sintrop", () => {
 
           context("when have accepted other inspection", () => {
             beforeEach(async () => {
-              await addInvitation(owner, producer2Address, userTypes.Producer, owner);
-              await addProducer("Producer B", producer2Address);
+              await addInvitation(owner, regenerator2Address, userTypes.Regenerator, owner);
+              await addRegenerator("Regenerator B", regenerator2Address);
               await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
               await acceptInspection(1, inspectorAddress);
-              await requestInspection(producer2Address);
+              await requestInspection(regenerator2Address);
             });
 
             context("when last inspection is not expired", () => {
@@ -695,7 +695,7 @@ describe("Sintrop", () => {
           });
         });
 
-        context("when already realized inspection from producer", () => {
+        context("when already realized inspection from regenerator", () => {
           beforeEach(async () => {
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
             await acceptInspection(1, inspectorAddress);
@@ -703,11 +703,13 @@ describe("Sintrop", () => {
 
             await advanceBlock(20);
 
-            await requestInspection(producerAddress);
+            await requestInspection(regeneratorAddress);
           });
 
           it("should return error message", async () => {
-            await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Already inspected this producer");
+            await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith(
+              "Already inspected this regenerator"
+            );
           });
         });
       });
@@ -721,8 +723,8 @@ describe("Sintrop", () => {
 
     context("with non inspector", () => {
       it("should return error message", async () => {
-        await requestInspection(producerAddress);
-        await expect(acceptInspection(1, producerAddress)).to.be.revertedWith("Please register as inspector");
+        await requestInspection(regeneratorAddress);
+        await expect(acceptInspection(1, regeneratorAddress)).to.be.revertedWith("Please register as inspector");
       });
     });
   });
@@ -732,17 +734,17 @@ describe("Sintrop", () => {
       await userContract.newAllowedCaller(activist1Address);
       await addInvitation(owner, activist1Address, userTypes.Activist, owner);
       await addActivist("Activist 1", activist1Address);
-      await addInvitation(activist1Address, producerAddress, userTypes.Producer, activist1Address);
+      await addInvitation(activist1Address, regeneratorAddress, userTypes.Regenerator, activist1Address);
       await addInvitation(activist1Address, inspectorAddress, userTypes.Inspector, activist1Address);
 
-      await addProducer("Producer A", producerAddress);
+      await addRegenerator("Regenerator A", regeneratorAddress);
       await addInspector("Inspector A", inspectorAddress);
     });
 
     context("with inspector", () => {
       context("when inspection exists", () => {
         beforeEach(async () => {
-          await requestInspection(producerAddress);
+          await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
         });
 
@@ -774,7 +776,7 @@ describe("Sintrop", () => {
 
               context("when pass regenerationInspection equal 4 regenerationIndex size", () => {
                 describe(".setActivistLevel", () => {
-                  context("when producer do not win minimum inspection", () => {
+                  context("when regenerator do not win minimum inspection", () => {
                     beforeEach(async () => {
                       await realizeInspection(1, report, regenerationIndex(), inspectorAddress);
                     });
@@ -810,10 +812,10 @@ describe("Sintrop", () => {
                     });
                   });
 
-                  context("when producer win minimum inspection", () => {
+                  context("when regenerator win minimum inspection", () => {
                     beforeEach(async () => {
-                      await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
-                      await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
+                      await regeneratorContract.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
+                      await regeneratorContract.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
                       await realizeInspection(1, report, regenerationIndex(), inspectorAddress);
                     });
 
@@ -854,10 +856,10 @@ describe("Sintrop", () => {
                     });
                   });
 
-                  context("when producer and inspector win minimum inspection", () => {
+                  context("when regenerator and inspector win minimum inspection", () => {
                     beforeEach(async () => {
-                      await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
-                      await producerContract.connect(owner).afterRealizeInspection(producerAddress, 0);
+                      await regeneratorContract.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
+                      await regeneratorContract.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
 
                       await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
                       await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
@@ -917,23 +919,23 @@ describe("Sintrop", () => {
                     expect(regenerationInspectionResponse.join("")).to.equals(regenerationIndex_.join(""));
                   });
 
-                  it("should add regenerationScore in producer", async () => {
+                  it("should add regenerationScore in regenerator", async () => {
                     const inspection = await instance.getInspection(1);
-                    const producer = await producerContract.getProducer(producerAddress);
+                    const regenerator = await regeneratorContract.getRegenerator(regeneratorAddress);
 
-                    expect(inspection.regenerationScore).to.equal(producer.regenerationScore.score);
+                    expect(inspection.regenerationScore).to.equal(regenerator.regenerationScore.score);
                   });
 
-                  it("should set producer pendingInspection to false", async () => {
-                    const producer = await producerContract.getProducer(producerAddress);
+                  it("should set regenerator pendingInspection to false", async () => {
+                    const regenerator = await regeneratorContract.getRegenerator(regeneratorAddress);
 
-                    expect(producer.pendingInspection).to.equal(false);
+                    expect(regenerator.pendingInspection).to.equal(false);
                   });
 
-                  it("should increment producer totalInspections", async () => {
-                    const producer = await producerContract.getProducer(producerAddress);
+                  it("should increment regenerator totalInspections", async () => {
+                    const regenerator = await regeneratorContract.getRegenerator(regeneratorAddress);
 
-                    expect(producer.totalInspections).to.equal(1);
+                    expect(regenerator.totalInspections).to.equal(1);
                   });
 
                   it("should increment inspector totalInspections", async () => {
@@ -948,8 +950,8 @@ describe("Sintrop", () => {
                     expect(userInspections.length).to.equal(1);
                   });
 
-                  it("should add inspection to producer in userInspections", async () => {
-                    const userInspections = await instance.connect(producerAddress).getInspectionsHistory();
+                  it("should add inspection to regenerator in userInspections", async () => {
+                    const userInspections = await instance.connect(regeneratorAddress).getInspectionsHistory();
 
                     expect(userInspections.length).to.equal(1);
                   });
@@ -1475,11 +1477,11 @@ describe("Sintrop", () => {
 
     context("with non inspector", () => {
       it("should return error message", async () => {
-        await requestInspection(producerAddress);
+        await requestInspection(regeneratorAddress);
         await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
         await acceptInspection(1, inspectorAddress);
 
-        await expect(realizeInspection(1, report, regenerationIndex(), producerAddress)).to.be.revertedWith(
+        await expect(realizeInspection(1, report, regenerationIndex(), regeneratorAddress)).to.be.revertedWith(
           "Please register as inspector"
         );
       });
@@ -1493,10 +1495,10 @@ describe("Sintrop", () => {
       await addCategory("Soil C", owner);
       await addCategory("Soil D", owner);
 
-      await addInvitation(owner, producerAddress, userTypes.Producer, owner);
+      await addInvitation(owner, regeneratorAddress, userTypes.Regenerator, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
-      await addProducer("Producer A", producerAddress);
+      await addRegenerator("Regenerator A", regeneratorAddress);
       await addInspector("Inspector A", inspectorAddress);
     });
 
@@ -1519,7 +1521,7 @@ describe("Sintrop", () => {
           await addCategory("Soil B", owner);
           await addCategory("Soil C", owner);
 
-          await requestInspection(producerAddress);
+          await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(1, inspectorAddress);
           await realizeInspection(1, report, regenerationIndex(), inspectorAddress);
@@ -1550,13 +1552,13 @@ describe("Sintrop", () => {
               await addInspector("Inspector C", inspector3Address);
 
               await advanceBlock(sintropArgs.timeBetweenInspections);
-              await requestInspection(producerAddress);
+              await requestInspection(regeneratorAddress);
               await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
               await acceptInspection(2, inspector2Address);
               await realizeInspection(2, report, negativeScore(), inspector2Address);
 
               await advanceBlock(sintropArgs.timeBetweenInspections);
-              await requestInspection(producerAddress);
+              await requestInspection(regeneratorAddress);
 
               await validatorContract.connect(validator1Address).addLevel();
               await validatorContract.connect(validator2Address).addLevel();
@@ -1642,16 +1644,16 @@ describe("Sintrop", () => {
               expect(totalPenalties).to.equal(1);
             });
 
-            it("remove  negative producer regenerationScore", async () => {
-              const producer = await producerContract.getProducer(producerAddress);
+            it("remove  negative regenerator regenerationScore", async () => {
+              const regenerator = await regeneratorContract.getRegenerator(regeneratorAddress);
 
-              expect(producer.regenerationScore.score).to.equal(132);
+              expect(regenerator.regenerationScore.score).to.equal(132);
             });
 
-            it("decrement producer totalInspections", async () => {
-              const producer = await producerContract.getProducer(producerAddress);
+            it("decrement regenerator totalInspections", async () => {
+              const regenerator = await regeneratorContract.getRegenerator(regeneratorAddress);
 
-              expect(producer.totalInspections).to.equal(2);
+              expect(regenerator.totalInspections).to.equal(2);
             });
 
             it("decrement inspector totalInspections", async () => {
@@ -1660,8 +1662,8 @@ describe("Sintrop", () => {
               expect(inspector.totalInspections).to.equal(0);
             });
 
-            it("remove negative producerPool era level score", async () => {
-              const levels = await producerPool.eraLevels(1, producerAddress);
+            it("remove negative regeneratorPool era level score", async () => {
+              const levels = await regeneratorPool.eraLevels(1, regeneratorAddress);
 
               expect(levels).to.equal(132);
             });
@@ -1693,16 +1695,16 @@ describe("Sintrop", () => {
               expect(totalPenalties).to.equal(1);
             });
 
-            it("remove producer regenerationScore", async () => {
-              const producer = await producerContract.getProducer(producerAddress);
+            it("remove regenerator regenerationScore", async () => {
+              const regenerator = await regeneratorContract.getRegenerator(regeneratorAddress);
 
-              expect(producer.regenerationScore.score).to.equal(0);
+              expect(regenerator.regenerationScore.score).to.equal(0);
             });
 
-            it("decrement producer totalInspections", async () => {
-              const producer = await producerContract.getProducer(producerAddress);
+            it("decrement regenerator totalInspections", async () => {
+              const regenerator = await regeneratorContract.getRegenerator(regeneratorAddress);
 
-              expect(producer.totalInspections).to.equal(0);
+              expect(regenerator.totalInspections).to.equal(0);
             });
 
             it("decrement inspector totalInspections", async () => {
@@ -1711,8 +1713,8 @@ describe("Sintrop", () => {
               expect(inspector.totalInspections).to.equal(0);
             });
 
-            it("zero producerPool era level score", async () => {
-              const levels = await producerPool.eraLevels(1, producerAddress);
+            it("zero regeneratorPool era level score", async () => {
+              const levels = await regeneratorPool.eraLevels(1, regeneratorAddress);
 
               expect(levels).to.equal(0);
             });
@@ -1753,12 +1755,12 @@ describe("Sintrop", () => {
           await addCategory("Soil B", owner);
           await addCategory("Soil C", owner);
 
-          await requestInspection(producerAddress);
+          await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(1, inspectorAddress);
           await realizeInspection(1, report, regenerationIndex(), inspectorAddress);
 
-          await advanceBlock(producerPoolArgs.blocksPerEra);
+          await advanceBlock(regeneratorPoolArgs.blocksPerEra);
         });
 
         it("should return error message", async () => {
@@ -1779,9 +1781,9 @@ describe("Sintrop", () => {
 
     context("with non validator", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(producerAddress).addInspectionValidation(1, "justification")).to.be.revertedWith(
-          "Please register as validator"
-        );
+        await expect(
+          instance.connect(regeneratorAddress).addInspectionValidation(1, "justification")
+        ).to.be.revertedWith("Please register as validator");
       });
     });
   });

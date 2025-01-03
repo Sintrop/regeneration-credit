@@ -36,8 +36,8 @@ describe("InvitationContract", () => {
 
   describe("#invite", () => {
     beforeEach(async () => {
-      await addInvitation(owner, user1Address, userTypes.Producer, owner);
-      await addUser(user1Address, userTypes.Producer, owner);
+      await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+      await addUser(user1Address, userTypes.Regenerator, owner);
     });
 
     context("when user already invited", () => {
@@ -150,18 +150,18 @@ describe("InvitationContract", () => {
           });
         });
 
-        context("when send to producer", () => {
+        context("when send to regenerator", () => {
           context("when have a previous invitation", () => {
             context("when is not recent", () => {
               beforeEach(async () => {
-                await instance.connect(user2Address).invite(user3Address, userTypes.Producer);
+                await instance.connect(user2Address).invite(user3Address, userTypes.Regenerator);
                 const blocks = await userTypeDelayBlocks(userTypes.Activist);
 
                 await advanceBlock(blocks);
               });
 
               it("invite with success", async () => {
-                await instance.connect(user2Address).invite(user4Address, userTypes.Producer);
+                await instance.connect(user2Address).invite(user4Address, userTypes.Regenerator);
 
                 const invitation = await userContract.invitations(user4Address);
 
@@ -171,12 +171,12 @@ describe("InvitationContract", () => {
 
             context("when is recent", () => {
               beforeEach(async () => {
-                await instance.connect(user2Address).invite(user3Address, userTypes.Producer);
+                await instance.connect(user2Address).invite(user3Address, userTypes.Regenerator);
               });
 
               it("revert", async () => {
                 await expect(
-                  instance.connect(user2Address).invite(user4Address, userTypes.Producer)
+                  instance.connect(user2Address).invite(user4Address, userTypes.Regenerator)
                 ).to.be.revertedWith("Invite delay not reached");
               });
             });
@@ -184,7 +184,7 @@ describe("InvitationContract", () => {
 
           context("when do not have a previous invitation", () => {
             it("invite with success", async () => {
-              await instance.connect(user2Address).invite(user3Address, userTypes.Producer);
+              await instance.connect(user2Address).invite(user3Address, userTypes.Regenerator);
 
               const invitation = await userContract.invitations(user3Address);
 

@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
-import { ProducerContract } from "./ProducerContract.sol";
+import { RegeneratorContract } from "./RegeneratorContract.sol";
 import { Validator, UserValidation, ResourceValidation, Pool, ContractsDependency } from "./types/ValidatorTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { Callable } from "./Callable.sol";
@@ -34,7 +34,7 @@ contract ValidatorContract is Callable {
   mapping(address => mapping(address => bool)) private validatorUsersValidations;
 
   UserContract private userContract;
-  ProducerContract private producerContract;
+  RegeneratorContract private regeneratorContract;
   ValidatorPool private validatorPool;
   InspectorContract private inspectorContract;
   DeveloperContract private developerContract;
@@ -54,7 +54,7 @@ contract ValidatorContract is Callable {
 
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
     userContract = UserContract(contractDependency.userContractAddress);
-    producerContract = ProducerContract(contractDependency.producerContractAddress);
+    regeneratorContract = RegeneratorContract(contractDependency.regeneratorContractAddress);
     validatorPool = ValidatorPool(contractDependency.validatorPoolAddress);
     inspectorContract = InspectorContract(contractDependency.inspectorContractAddress);
     developerContract = DeveloperContract(contractDependency.developerContractAddress);
@@ -183,14 +183,14 @@ contract ValidatorContract is Callable {
 
   function removeUserInspection(Inspection memory inspection) internal {
     inspectorContract.decrementInspections(inspection.inspector);
-    producerContract.decrementInspections(inspection.producer);
+    regeneratorContract.decrementInspections(inspection.regenerator);
 
     removeLevelsFromPool(inspection.inspector, 1);
 
     if (inspection.regenerationScore < 0)
-      return producerContract.removeNegativeScore(inspection.producer, -(inspection.regenerationScore));
+      return regeneratorContract.removeNegativeScore(inspection.regenerator, -(inspection.regenerationScore));
 
-    removeLevelsFromPool(inspection.producer, uint256(inspection.regenerationScore));
+    removeLevelsFromPool(inspection.regenerator, uint256(inspection.regenerationScore));
   }
 
   function externalDenieUser(address userAddress) private {
@@ -207,7 +207,7 @@ contract ValidatorContract is Callable {
     UserType oldUserType = userContract.getUser(userAddress);
 
     if (oldUserType == UserType.INSPECTOR) return inspectorContract.removePoolLevels(userAddress, levels);
-    if (oldUserType == UserType.PRODUCER) return producerContract.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.REGENERATOR) return regeneratorContract.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.DEVELOPER) return developerContract.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.RESEARCHER) return researcherContract.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.CONTRIBUTOR) return contributorContract.removePoolLevels(userAddress, levels);
