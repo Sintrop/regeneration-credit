@@ -34,11 +34,11 @@ struct Work {
 
 struct Item {
   uint256 id;
-  address createdBy;  
+  address createdBy;
   string title;
   uint256 carbonImpact;
   uint256 soilImpact;
-  uint256 waterImpact;    
+  uint256 waterImpact;
   uint256 biodiversityImpact;
 }
 

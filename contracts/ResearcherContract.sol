@@ -17,7 +17,7 @@ import { ValidatorContract } from "./ValidatorContract.sol";
 contract ResearcherContract is Callable {
   mapping(address => Researcher) internal researchers;
   mapping(uint256 => Work) public works;
-  mapping(uint256 => Item) public items;  
+  mapping(uint256 => Item) public items;
   mapping(address => Penalty[]) public penalties;
 
   UserContract internal userContract;
@@ -27,7 +27,7 @@ contract ResearcherContract is Callable {
   address[] internal researchersAddress;
   UserType private constant USER_TYPE = UserType.RESEARCHER;
   uint256 public worksCount;
-  uint256 public itemsCount;  
+  uint256 public itemsCount;
   uint256 internal immutable timeBetweenWorks;
 
   uint256 public immutable MAX_PENALTIES;
@@ -212,7 +212,13 @@ contract ResearcherContract is Callable {
     return researcherPool.currentContractEra();
   }
 
-  function addItem(string memory title, uint256 carbonImpact, uint256 waterImpact, uint256 soilImpact, uint256 biodiversityImpact) public {
+  function addItem(
+    string memory title,
+    uint256 carbonImpact,
+    uint256 waterImpact,
+    uint256 soilImpact,
+    uint256 biodiversityImpact
+  ) public {
     require(userContract.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
     require(canPublishItem(msg.sender), "Can't publish yet");
 
@@ -225,7 +231,7 @@ contract ResearcherContract is Callable {
     items[id] = item;
     itemsCount++;
     researcher.lastItemAt = block.number;
-  }  
+  }
 
   function canPublishWork(address addr) internal view returns (bool) {
     Researcher memory researcher = researchers[addr];
@@ -241,7 +247,7 @@ contract ResearcherContract is Callable {
 
     bool canPublish = block.number > lastItemAt + timeBetweenWorks;
     return canPublish || lastItemAt == 0;
-  }  
+  }
 
   /**
    * @dev Calculate blocks to next era
