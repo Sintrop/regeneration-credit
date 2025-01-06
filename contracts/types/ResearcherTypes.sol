@@ -11,6 +11,7 @@ struct Researcher {
   string proofPhoto;
   uint256 publishedWorks;
   uint256 lastPublishedAt;
+  uint256 lastItemAt;
 }
 
 struct Pool {
@@ -29,6 +30,16 @@ struct Work {
   bool valid;
   uint256 invalidatedAt;
   uint256 createdAtBlock;
+}
+
+struct Item {
+  uint256 id;
+  address createdBy;
+  string title;
+  uint256 carbonImpact;
+  uint256 soilImpact;
+  uint256 waterImpact;
+  uint256 biodiversityImpact;
 }
 
 struct Penalty {

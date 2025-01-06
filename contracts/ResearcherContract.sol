@@ -3,7 +3,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { Callable } from "./Callable.sol";
 import { UserContract } from "./UserContract.sol";
-import { Researcher, Work, Pool, Penalty } from "./types/ResearcherTypes.sol";
+import { Researcher, Work, Pool, Item, Penalty } from "./types/ResearcherTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { ResearcherPool } from "./ResearcherPool.sol";
 import { ValidatorContract } from "./ValidatorContract.sol";
@@ -17,6 +17,7 @@ import { ValidatorContract } from "./ValidatorContract.sol";
 contract ResearcherContract is Callable {
   mapping(address => Researcher) internal researchers;
   mapping(uint256 => Work) public works;
+  mapping(uint256 => Item) public items;  
   mapping(address => Penalty[]) public penalties;
 
   UserContract internal userContract;
@@ -26,6 +27,7 @@ contract ResearcherContract is Callable {
   address[] internal researchersAddress;
   UserType private constant USER_TYPE = UserType.RESEARCHER;
   uint256 public worksCount;
+  uint256 public itemsCount;  
   uint256 internal immutable timeBetweenWorks;
 
   uint256 public immutable MAX_PENALTIES;
@@ -59,6 +61,7 @@ contract ResearcherContract is Callable {
       name,
       Pool(0, researcherPoolEra()),
       proofPhoto,
+      0,
       0,
       0
     );
@@ -209,6 +212,21 @@ contract ResearcherContract is Callable {
     return researcherPool.currentContractEra();
   }
 
+  function addItem(string memory title, uint256 carbonImpact, uint256 waterImpact, uint256 soilImpact, uint256 biodiversityImpact) public {
+    require(userContract.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
+    require(canPublishItem(msg.sender), "Can't publish yet");
+
+    Researcher storage researcher = researchers[msg.sender];
+
+    uint256 id = itemsCount + 1;
+
+    Item memory item = Item(id, msg.sender, title, carbonImpact, waterImpact, soilImpact, biodiversityImpact);
+
+    items[id] = item;
+    itemsCount++;
+    researcher.lastItemAt = block.number;
+  }  
+
   function canPublishWork(address addr) internal view returns (bool) {
     Researcher memory researcher = researchers[addr];
     uint256 lastPublishedAt = researcher.lastPublishedAt;
@@ -216,6 +234,14 @@ contract ResearcherContract is Callable {
     bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
     return canPublish || lastPublishedAt == 0;
   }
+
+  function canPublishItem(address addr) internal view returns (bool) {
+    Researcher memory researcher = researchers[addr];
+    uint256 lastItemAt = researcher.lastItemAt;
+
+    bool canPublish = block.number > lastItemAt + timeBetweenWorks;
+    return canPublish || lastItemAt == 0;
+  }  
 
   /**
    * @dev Calculate blocks to next era
