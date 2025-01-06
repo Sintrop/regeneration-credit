@@ -17,7 +17,7 @@ import { ValidatorContract } from "./ValidatorContract.sol";
 contract ResearcherContract is Callable {
   mapping(address => Researcher) internal researchers;
   mapping(uint256 => Work) public works;
-  mapping(uint256 => Item) public items;  
+  mapping(uint256 => Item) public items;
   mapping(address => Penalty[]) public penalties;
 
   UserContract internal userContract;
@@ -27,7 +27,7 @@ contract ResearcherContract is Callable {
   address[] internal researchersAddress;
   UserType private constant USER_TYPE = UserType.RESEARCHER;
   uint256 public worksCount;
-  uint256 public itemsCount;  
+  uint256 public itemsCount;
   uint256 internal immutable timeBetweenWorks;
 
   uint256 public immutable MAX_PENALTIES;
@@ -106,7 +106,7 @@ contract ResearcherContract is Callable {
   }
 
   /**
-   * @dev Allows a contributor to attempt to publish a research report
+   * @dev Allows a researcher to attempt to publish a research report
    * @notice Publish research before security blocks
    * @param title Paper title
    * @param thesis Short thesis description
@@ -212,7 +212,22 @@ contract ResearcherContract is Callable {
     return researcherPool.currentContractEra();
   }
 
-  function addItem(string memory title, uint256 carbonImpact, uint256 waterImpact, uint256 soilImpact, uint256 biodiversityImpact) public {
+  /**
+   * @dev Allows a researcher to attempt to publish an item
+   * @notice One item per work
+   * @param title Item title
+   * @param carbonImpact Kg of carbon
+   * @param waterImpact M³ of water
+   * @param soilImpact M² of water
+   * @param waterImpact Units of life
+   */
+  function addItem(
+    string memory title,
+    uint256 carbonImpact,
+    uint256 waterImpact,
+    uint256 soilImpact,
+    uint256 biodiversityImpact
+  ) public {
     require(userContract.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
     require(canPublishItem(msg.sender), "Can't publish yet");
 
@@ -225,8 +240,13 @@ contract ResearcherContract is Callable {
     items[id] = item;
     itemsCount++;
     researcher.lastItemAt = block.number;
-  }  
+  }
 
+  /**
+   * @dev Checks if user can publish a work
+   * @return bool True if can
+   * @param addr Msg.sender addresss
+   */
   function canPublishWork(address addr) internal view returns (bool) {
     Researcher memory researcher = researchers[addr];
     uint256 lastPublishedAt = researcher.lastPublishedAt;
@@ -235,13 +255,18 @@ contract ResearcherContract is Callable {
     return canPublish || lastPublishedAt == 0;
   }
 
+  /**
+   * @dev Checks if user can publish an item
+   * @return bool True if can
+   * @param addr Msg.sender addresss
+   */
   function canPublishItem(address addr) internal view returns (bool) {
     Researcher memory researcher = researchers[addr];
     uint256 lastItemAt = researcher.lastItemAt;
 
     bool canPublish = block.number > lastItemAt + timeBetweenWorks;
     return canPublish || lastItemAt == 0;
-  }  
+  }
 
   /**
    * @dev Calculate blocks to next era

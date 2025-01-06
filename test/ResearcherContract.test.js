@@ -51,7 +51,7 @@ describe("ResearcherContract", () => {
 
   const addItem = async (from) => {
     await instance.connect(from).addItem("title", 1, 1, 1, 1);
-  };  
+  };
 
   beforeEach(async () => {
     [owner, resea1Address, resea2Address, validator1Address, validator2Address, validator3Address, validator4Address] =
@@ -598,7 +598,7 @@ describe("ResearcherContract", () => {
       expect(reseacher.pool.level).to.equal(1);
     });
   });
-  
+
   describe("#addItem", () => {
     context("when is not a researcher", () => {
       it("should return error", async () => {
@@ -626,5 +626,5 @@ describe("ResearcherContract", () => {
         });
       });
     });
-  });  
+  });
 });
