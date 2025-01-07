@@ -747,7 +747,7 @@ describe("ValidatorContract", () => {
 
             context("with validator", () => {
               beforeEach(async () => {
-                await instance.connect(validator1Address).addLevel();
+                await instance.connect(validator1Address).declareAlive();
 
                 await instance.connect(validator1Address).addUserValidation(validator1Address, "my justification");
                 await instance.connect(validator3Address).addUserValidation(validator1Address, "my justification");
@@ -792,10 +792,10 @@ describe("ValidatorContract", () => {
           context("when current era is 2", () => {
             context("when validators have contributed to last era", () => {
               beforeEach(async () => {
-                await instance.connect(validator1Address).addLevel();
-                await instance.connect(validator2Address).addLevel();
-                await instance.connect(validator3Address).addLevel();
-                await instance.connect(validator4Address).addLevel();
+                await instance.connect(validator1Address).declareAlive();
+                await instance.connect(validator2Address).declareAlive();
+                await instance.connect(validator3Address).declareAlive();
+                await instance.connect(validator4Address).declareAlive();
 
                 await advanceBlock(validatorPoolArgs.blocksPerEra);
               });
@@ -824,9 +824,9 @@ describe("ValidatorContract", () => {
 
             context("when validator does not have contributed to last era", () => {
               beforeEach(async () => {
-                await instance.connect(validator2Address).addLevel();
-                await instance.connect(validator3Address).addLevel();
-                await instance.connect(validator4Address).addLevel();
+                await instance.connect(validator2Address).declareAlive();
+                await instance.connect(validator3Address).declareAlive();
+                await instance.connect(validator4Address).declareAlive();
 
                 await advanceBlock(validatorPoolArgs.blocksPerEra);
               });
@@ -1132,10 +1132,10 @@ describe("ValidatorContract", () => {
                 invalidatedAt: 0,
               };
 
-              await instance.connect(validator1Address).addLevel();
-              await instance.connect(validator2Address).addLevel();
-              await instance.connect(validator3Address).addLevel();
-              await instance.connect(validator4Address).addLevel();
+              await instance.connect(validator1Address).declareAlive();
+              await instance.connect(validator2Address).declareAlive();
+              await instance.connect(validator3Address).declareAlive();
+              await instance.connect(validator4Address).declareAlive();
 
               await advanceBlock(validatorPoolArgs.blocksPerEra);
 
@@ -1331,10 +1331,10 @@ describe("ValidatorContract", () => {
               let contribution = await developerContract.getContribution(1);
               contribution = generateContributionObject(contribution);
 
-              await instance.connect(validator1Address).addLevel();
-              await instance.connect(validator2Address).addLevel();
-              await instance.connect(validator3Address).addLevel();
-              await instance.connect(validator4Address).addLevel();
+              await instance.connect(validator1Address).declareAlive();
+              await instance.connect(validator2Address).declareAlive();
+              await instance.connect(validator3Address).declareAlive();
+              await instance.connect(validator4Address).declareAlive();
 
               await advanceBlock(validatorPoolArgs.blocksPerEra);
 
@@ -1513,10 +1513,10 @@ describe("ValidatorContract", () => {
               work = generateWorkObject(work);
               work.validationsCount = 1;
 
-              await instance.connect(validator1Address).addLevel();
-              await instance.connect(validator2Address).addLevel();
-              await instance.connect(validator3Address).addLevel();
-              await instance.connect(validator4Address).addLevel();
+              await instance.connect(validator1Address).declareAlive();
+              await instance.connect(validator2Address).declareAlive();
+              await instance.connect(validator3Address).declareAlive();
+              await instance.connect(validator4Address).declareAlive();
 
               await advanceBlock(validatorPoolArgs.blocksPerEra);
 
@@ -1639,10 +1639,10 @@ describe("ValidatorContract", () => {
 
         context("when 4 validators have contributed in era 1", () => {
           beforeEach(async () => {
-            await instance.connect(validator1Address).addLevel();
-            await instance.connect(validator2Address).addLevel();
-            await instance.connect(validator3Address).addLevel();
-            await instance.connect(validator4Address).addLevel();
+            await instance.connect(validator1Address).declareAlive();
+            await instance.connect(validator2Address).declareAlive();
+            await instance.connect(validator3Address).declareAlive();
+            await instance.connect(validator4Address).declareAlive();
 
             await advanceBlock(validatorPoolArgs.blocksPerEra);
           });
@@ -1669,10 +1669,10 @@ describe("ValidatorContract", () => {
     });
   });
 
-  describe("#addLevel", () => {
+  describe("#declareAlive", () => {
     context("when is not a validator", () => {
       it("should return error", async () => {
-        await expect(instance.connect(regenerator1Address).addLevel()).to.be.revertedWith("User must be a validator");
+        await expect(instance.connect(regenerator1Address).declareAlive()).to.be.revertedWith("User must be a validator");
       });
     });
 
@@ -1682,7 +1682,7 @@ describe("ValidatorContract", () => {
       });
 
       it("should add 1 level", async () => {
-        await instance.connect(validator1Address).addLevel();
+        await instance.connect(validator1Address).declareAlive();
 
         const validator = await instance.getValidator(validator1Address);
 
@@ -1693,11 +1693,11 @@ describe("ValidatorContract", () => {
     context("when is a validator and has already added a level in that era", () => {
       beforeEach(async () => {
         await addValidator(validator1Address);
-        await instance.connect(validator1Address).addLevel();
+        await instance.connect(validator1Address).declareAlive();
       });
 
       it("should return error", async () => {
-        await expect(instance.connect(validator1Address).addLevel()).to.be.revertedWith("Only once per era");
+        await expect(instance.connect(validator1Address).declareAlive()).to.be.revertedWith("Only once per era");
       });
     });
   });
@@ -1706,7 +1706,7 @@ describe("ValidatorContract", () => {
     context("when is a validator", () => {
       beforeEach(async () => {
         await addValidator(validator1Address);
-        await instance.connect(validator1Address).addLevel();
+        await instance.connect(validator1Address).declareAlive();
       });
 
       context("when validator is in era 1 and current era is 1", () => {
@@ -1734,7 +1734,7 @@ describe("ValidatorContract", () => {
           beforeEach(async () => {
             await addInvitation(owner, validator2Address, userTypes.Validator, owner);
             await addValidator(validator2Address);
-            await instance.connect(validator2Address).addLevel();
+            await instance.connect(validator2Address).declareAlive();
 
             await advanceBlock(validatorPoolArgs.blocksPerEra);
 

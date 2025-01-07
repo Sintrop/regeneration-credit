@@ -1560,10 +1560,10 @@ describe("Sintrop", () => {
               await advanceBlock(sintropArgs.timeBetweenInspections);
               await requestInspection(regeneratorAddress);
 
-              await validatorContract.connect(validator1Address).addLevel();
-              await validatorContract.connect(validator2Address).addLevel();
-              await validatorContract.connect(validator3Address).addLevel();
-              await validatorContract.connect(validator4Address).addLevel();
+              await validatorContract.connect(validator1Address).declareAlive();
+              await validatorContract.connect(validator2Address).declareAlive();
+              await validatorContract.connect(validator3Address).declareAlive();
+              await validatorContract.connect(validator4Address).declareAlive();
 
               await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
               await advanceBlock(validatorPoolargs.blocksPerEra);
