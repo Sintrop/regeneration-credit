@@ -1672,7 +1672,9 @@ describe("ValidatorContract", () => {
   describe("#declareAlive", () => {
     context("when is not a validator", () => {
       it("should return error", async () => {
-        await expect(instance.connect(regenerator1Address).declareAlive()).to.be.revertedWith("User must be a validator");
+        await expect(instance.connect(regenerator1Address).declareAlive()).to.be.revertedWith(
+          "User must be a validator"
+        );
       });
     });
 
