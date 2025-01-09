@@ -13,7 +13,7 @@ import { ResearcherContract } from "./ResearcherContract.sol";
 import { ContributorContract } from "./ContributorContract.sol";
 import { ActivistContract } from "./ActivistContract.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
-import { Contribution } from "./types/DeveloperTypes.sol";
+import { Report } from "./types/DeveloperTypes.sol";
 import { Work } from "./types/ResearcherTypes.sol";
 
 /**
@@ -26,9 +26,9 @@ contract ValidatorContract is Callable {
   mapping(address => Validator) private validators;
   mapping(address => UserValidation[]) private userValidations;
   mapping(uint256 => ResourceValidation[]) public inspectionValidations;
-  mapping(uint256 => ResourceValidation[]) public contributionValidations;
+  mapping(uint256 => ResourceValidation[]) public reportValidations;
   mapping(uint256 => ResourceValidation[]) public workValidations;
-  mapping(address => mapping(uint256 => bool)) private validatorContributionsValidations;
+  mapping(address => mapping(uint256 => bool)) private validatorReportsValidations;
   mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
   mapping(address => mapping(uint256 => bool)) private validatorWorksValidations;
   mapping(address => mapping(address => bool)) private validatorUsersValidations;
@@ -123,29 +123,29 @@ contract ValidatorContract is Callable {
     if (inspectorTotalPenalties >= inspectorContract.maxPenalties()) externalDenieUser(inspection.inspector);
   }
 
-  function addDeveloperContributionValidation(
-    Contribution memory contribution,
+  function addDeveloperReportValidation(
+    Report memory report,
     string memory justification,
     address validatorAddress
   ) public mustBeAllowedCaller canAddValidationModifier(validatorAddress) {
-    require(!validatorContributionsValidations[validatorAddress][contribution.id], "Already voted");
+    require(!validatorReportsValidations[validatorAddress][report.id], "Already voted");
 
-    validatorContributionsValidations[validatorAddress][contribution.id] = true;
+    validatorReportsValidations[validatorAddress][report.id] = true;
 
     uint256 majorityValidatorsCount_ = majorityValidatorsCount();
 
-    bool addPenalty = contribution.validationsCount >= majorityValidatorsCount_;
+    bool addPenalty = report.validationsCount >= majorityValidatorsCount_;
 
-    contributionValidations[contribution.id].push(
-      ResourceValidation(validatorAddress, contribution.id, justification, majorityValidatorsCount_, block.number)
+    reportValidations[report.id].push(
+      ResourceValidation(validatorAddress, report.id, justification, majorityValidatorsCount_, block.number)
     );
 
     if (!addPenalty) return;
 
-    uint256 developerTotalPenalties = developerContract.addPenalty(contribution.developer, contribution.id);
-    removeDeveloperContribution(contribution);
+    uint256 developerTotalPenalties = developerContract.addPenalty(report.developer, report.id);
+    removeDeveloperReport(report);
 
-    if (developerTotalPenalties >= developerContract.MAX_PENALTIES()) externalDenieUser(contribution.developer);
+    if (developerTotalPenalties >= developerContract.MAX_PENALTIES()) externalDenieUser(report.developer);
   }
 
   function addResearcheWorkValidation(
@@ -173,8 +173,8 @@ contract ValidatorContract is Callable {
     if (totalPenalties >= researcherContract.MAX_PENALTIES()) externalDenieUser(work.createdBy);
   }
 
-  function removeDeveloperContribution(Contribution memory contribution) internal {
-    removeLevelsFromPool(contribution.developer, 1);
+  function removeDeveloperReport(Report memory report) internal {
+    removeLevelsFromPool(report.developer, 1);
   }
 
   function removeReseacherWork(Work memory work) internal {

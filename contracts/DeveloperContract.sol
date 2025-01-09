@@ -7,7 +7,7 @@ import { UserContract } from "./UserContract.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { DeveloperPool } from "./DeveloperPool.sol";
 import { ValidatorContract } from "./ValidatorContract.sol";
-import { Developer, Pool, Contribution, Penalty } from "./types/DeveloperTypes.sol";
+import { Developer, Pool, Report, Penalty } from "./types/DeveloperTypes.sol";
 
 /**
  * @author Sintrop
@@ -17,8 +17,8 @@ import { Developer, Pool, Contribution, Penalty } from "./types/DeveloperTypes.s
  */
 contract DeveloperContract is Ownable, Callable {
   mapping(address => Developer) public developers;
-  mapping(uint256 => mapping(address => bool)) public developerContributionsEra;
-  mapping(uint256 => Contribution) public contributions;
+  mapping(uint256 => mapping(address => bool)) public developerReportsEra;
+  mapping(uint256 => Report) public reports;
   mapping(address => Penalty[]) public penalties;
 
   UserContract internal userContract;
@@ -27,7 +27,7 @@ contract DeveloperContract is Ownable, Callable {
 
   address[] internal developersAddress;
   UserType private constant USER_TYPE = UserType.DEVELOPER;
-  uint256 public contributionsCount;
+  uint256 public reportsCount;
 
   uint256 public immutable MAX_PENALTIES;
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
@@ -73,27 +73,28 @@ contract DeveloperContract is Ownable, Callable {
    * @notice Publish one development report per era before security blocks
    * @param report Hash of the report file
    */
-  function addContribution(string memory report) public {
+  function addReport(string memory description, string memory report) public {
     require(userContract.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
-    require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add contribution");
+    require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add report");
 
     uint256 currentEra = developerPoolEra();
-    bool contributionEra = developerContributionsEra[currentEra][msg.sender];
+    bool reportEra = developerReportsEra[currentEra][msg.sender];
 
-    require(!contributionEra, "Already has contribution");
+    require(!reportEra, "Already has report");
 
-    developerContributionsEra[currentEra][msg.sender] = true;
+    developerReportsEra[currentEra][msg.sender] = true;
 
-    contributionsCount++;
-    uint256 id = contributionsCount;
+    reportsCount++;
+    uint256 id = reportsCount;
 
-    developers[msg.sender].totalContributions++;
+    developers[msg.sender].totalReports++;
 
-    contributions[id] = Contribution(
+    reports[id] = Report(
       id,
       currentEra,
       msg.sender,
       developers[msg.sender].pool.level,
+      description,
       report,
       0,
       true,
@@ -106,36 +107,36 @@ contract DeveloperContract is Ownable, Callable {
   }
 
   /**
-   * @dev Allows a validator to vote to invalidate a development contribution
+   * @dev Allows a validator to vote to invalidate a development report
    * @notice Publish one development report per era before security blocks
-   * @param id Contribution id
+   * @param id Report id
    * @param justification String with invalidation explanation
    */
-  function addContributionValidation(uint256 id, string memory justification) public {
+  function addReportValidation(uint256 id, string memory justification) public {
     require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
-    Contribution memory contribution = contributions[id];
+    Report memory report = reports[id];
 
-    require(contribution.valid && contribution.era == developerPoolEra(), "This contribution is not VALID");
+    require(report.valid && report.era == developerPoolEra(), "This report is not VALID");
 
-    contribution.validationsCount += 1;
-    contributions[id] = contribution;
+    report.validationsCount += 1;
+    reports[id] = report;
 
-    bool mustInvalidateContribution = contribution.validationsCount >= validatorContract.majorityValidatorsCount();
+    bool mustInvalidateReport = report.validationsCount >= validatorContract.majorityValidatorsCount();
 
-    if (mustInvalidateContribution) invalidateContribution(contribution);
+    if (mustInvalidateReport) invalidateReport(report);
 
-    validatorContract.addDeveloperContributionValidation(contribution, justification, msg.sender);
+    validatorContract.addDeveloperReportValidation(report, justification, msg.sender);
   }
 
   /**
    * @dev Executes invalidation
-   * @param contribution Contribution id
+   * @param report Report id
    */
-  function invalidateContribution(Contribution memory contribution) internal {
-    contribution.valid = false;
-    contribution.invalidatedAt = block.number;
-    contributions[contribution.id] = contribution;
+  function invalidateReport(Report memory report) internal {
+    report.valid = false;
+    report.invalidatedAt = block.number;
+    reports[report.id] = report;
   }
 
   /**
@@ -173,11 +174,11 @@ contract DeveloperContract is Ownable, Callable {
   }
 
   /**
-   * @dev Returns a contribution
-   * @param id contributionId
+   * @dev Returns a report
+   * @param id reportId
    */
-  function getContribution(uint256 id) public view returns (Contribution memory) {
-    return contributions[id];
+  function getReport(uint256 id) public view returns (Report memory) {
+    return reports[id];
   }
 
   /**
@@ -217,8 +218,8 @@ contract DeveloperContract is Ownable, Callable {
     developerPool.addLevel(addr, developer.pool.level, 1);
   }
 
-  function addPenalty(address addr, uint256 contributionId) public mustBeAllowedCaller returns (uint256) {
-    penalties[addr].push(Penalty(contributionId));
+  function addPenalty(address addr, uint256 reportId) public mustBeAllowedCaller returns (uint256) {
+    penalties[addr].push(Penalty(reportId));
 
     return totalPenalties(addr);
   }

@@ -132,18 +132,19 @@ describe("ValidatorContract", () => {
     await userContract.setDeniedType(userAddress);
   };
 
-  const generateContributionObject = (contribution) => {
+  const generateReportObject = (report) => {
     return {
-      id: contribution.id,
-      era: contribution.era,
-      developer: contribution.developer,
-      level: contribution.level,
-      report: contribution.report,
-      validationsCount: contribution.validationsCount,
-      contributed: contribution.contributed,
-      valid: contribution.valid,
-      invalidatedAt: contribution.invalidatedAt,
-      createdAtBlockNumber: contribution.createdAtBlockNumber,
+      id: report.id,
+      era: report.era,
+      developer: report.developer,
+      level: report.level,
+      description: report.description,
+      report: report.report,
+      validationsCount: report.validationsCount,
+      contributed: report.contributed,
+      valid: report.valid,
+      invalidatedAt: report.invalidatedAt,
+      createdAtBlockNumber: report.createdAtBlockNumber,
     };
   };
 
@@ -558,7 +559,7 @@ describe("ValidatorContract", () => {
                 await addContributor("Contributor  A", contributor1Address);
                 await addContributor("Contributor  B", contributor2Address);
 
-                await contributorContract.connect(contributor1Address).addContribution("report");
+                await contributorContract.connect(contributor1Address).addContribution("contribution");
 
                 await instance.connect(validator1Address).addUserValidation(contributor1Address, "my justification");
                 await instance.connect(validator3Address).addUserValidation(contributor1Address, "my justification");
@@ -606,7 +607,7 @@ describe("ValidatorContract", () => {
                 await addDeveloper("Developer  A", dev1Address);
                 await addDeveloper("Developer  A", dev2Address);
 
-                await developerContract.connect(dev1Address).addContribution("contribution");
+                await developerContract.connect(dev1Address).addReport("description", "report");
 
                 await instance.connect(validator1Address).addUserValidation(dev1Address, "my justification");
                 await instance.connect(validator3Address).addUserValidation(dev1Address, "my justification");
@@ -1192,7 +1193,7 @@ describe("ValidatorContract", () => {
     });
   });
 
-  describe("#addDeveloperContributionValidation", () => {
+  describe("#addDeveloperReportValidation", () => {
     context("with allowed caller", () => {
       beforeEach(async () => {
         await addInvitation(owner, dev1Address, userTypes.Developer, owner);
@@ -1206,53 +1207,47 @@ describe("ValidatorContract", () => {
         await addValidator(validator3Address);
         await addValidator(validator4Address);
 
-        await developerContract.connect(dev1Address).addContribution("report");
+        await developerContract.connect(dev1Address).addReport("description", "report");
       });
 
-      context("when validator already voted to contribution", () => {
+      context("when validator already voted to report", () => {
         beforeEach(async () => {
-          let contribution = await developerContract.getContribution(1);
-          contribution = generateContributionObject(contribution);
+          let report = await developerContract.getReport(1);
+          report = generateReportObject(report);
 
-          await instance
-            .connect(owner)
-            .addDeveloperContributionValidation(contribution, "justification", validator1Address);
+          await instance.connect(owner).addDeveloperReportValidation(report, "justification", validator1Address);
         });
 
         it("should return error", async () => {
-          let contribution = await developerContract.getContribution(1);
-          contribution = generateContributionObject(contribution);
+          let report = await developerContract.getReport(1);
+          report = generateReportObject(report);
 
           await expect(
-            instance.connect(owner).addDeveloperContributionValidation(contribution, "justification", validator1Address)
+            instance.connect(owner).addDeveloperReportValidation(report, "justification", validator1Address)
           ).to.be.revertedWith("Already voted");
         });
       });
 
-      context("when validator did not voted to contribution", () => {
+      context("when validator did not voted to report", () => {
         context("when current era is 1", () => {
-          context("when contribution validations is => majorityValidatorsCount (addPenalty == true)", () => {
+          context("when report validations is => majorityValidatorsCount (addPenalty == true)", () => {
             context("when developer total penalties is >= developerContract.maxPenalties", () => {
               beforeEach(async () => {
-                let contribution = await developerContract.getContribution(1);
-                contribution = generateContributionObject(contribution);
-                contribution.validationsCount = 1;
+                let report = await developerContract.getReport(1);
+                report = generateReportObject(report);
+                report.validationsCount = 1;
 
-                await developerContract.addPenalty(dev1Address, contribution.id);
-                await developerContract.addPenalty(dev1Address, contribution.id);
+                await developerContract.addPenalty(dev1Address, report.id);
+                await developerContract.addPenalty(dev1Address, report.id);
 
-                await instance
-                  .connect(owner)
-                  .addDeveloperContributionValidation(contribution, "justification", validator1Address);
+                await instance.connect(owner).addDeveloperReportValidation(report, "justification", validator1Address);
 
-                contribution.validationsCount = 2;
-                await instance
-                  .connect(owner)
-                  .addDeveloperContributionValidation(contribution, "justification", validator2Address);
+                report.validationsCount = 2;
+                await instance.connect(owner).addDeveloperReportValidation(report, "justification", validator2Address);
               });
 
               it("should add work validation", async () => {
-                const validation = await instance.contributionValidations(1, 0);
+                const validation = await instance.reportValidations(1, 0);
 
                 expect(validation[0]).to.equal(validator1Address.address);
                 expect(validation[1]).to.equal(1);
@@ -1266,7 +1261,7 @@ describe("ValidatorContract", () => {
                 expect(newDeveloperType).to.equal(9);
               });
 
-              it("remove contribution regeneration score level from developer pool", async () => {
+              it("remove report regeneration score level from developer pool", async () => {
                 const levels = await developerPool.eraLevels(4, dev1Address);
 
                 expect(levels).to.equal(0);
@@ -1275,21 +1270,17 @@ describe("ValidatorContract", () => {
 
             context("when developer total penalties is < developerContract.maxPenalties", () => {
               beforeEach(async () => {
-                let contribution = await developerContract.getContribution(1);
-                contribution = generateContributionObject(contribution);
-                contribution.validationsCount = 1;
+                let report = await developerContract.getReport(1);
+                report = generateReportObject(report);
+                report.validationsCount = 1;
 
-                await instance
-                  .connect(owner)
-                  .addDeveloperContributionValidation(contribution, "justification", validator1Address);
+                await instance.connect(owner).addDeveloperReportValidation(report, "justification", validator1Address);
 
-                contribution = await developerContract.getContribution(1);
-                contribution = generateContributionObject(contribution);
-                contribution.validationsCount = 2;
+                report = await developerContract.getReport(1);
+                report = generateReportObject(report);
+                report.validationsCount = 2;
 
-                await instance
-                  .connect(owner)
-                  .addDeveloperContributionValidation(contribution, "justification", validator2Address);
+                await instance.connect(owner).addDeveloperReportValidation(report, "justification", validator2Address);
               });
 
               it("developer is the same", async () => {
@@ -1298,7 +1289,7 @@ describe("ValidatorContract", () => {
                 expect(newDeveloperType).to.equal(4);
               });
 
-              it("remove contribution regeneration score level from developer pool", async () => {
+              it("remove report regeneration score level from developer pool", async () => {
                 const levels = await developerPool.eraLevels(2, dev1Address);
 
                 expect(levels).to.equal(0);
@@ -1306,15 +1297,13 @@ describe("ValidatorContract", () => {
             });
           });
 
-          context("when contribution validations is < majorityValidatorsCount (addPenalty == false)", () => {
+          context("when report validations is < majorityValidatorsCount (addPenalty == false)", () => {
             beforeEach(async () => {
-              let contribution = await developerContract.getContribution(1);
-              contribution = generateContributionObject(contribution);
-              contribution.validationsCount = 1;
+              let report = await developerContract.getReport(1);
+              report = generateReportObject(report);
+              report.validationsCount = 1;
 
-              await instance
-                .connect(owner)
-                .addDeveloperContributionValidation(contribution, "justification", validator1Address);
+              await instance.connect(owner).addDeveloperReportValidation(report, "justification", validator1Address);
             });
 
             it("total penalties is zero", async () => {
@@ -1328,8 +1317,8 @@ describe("ValidatorContract", () => {
         context("when current era is 2", () => {
           context("when validators have contributed to last era", () => {
             beforeEach(async () => {
-              let contribution = await developerContract.getContribution(1);
-              contribution = generateContributionObject(contribution);
+              let report = await developerContract.getReport(1);
+              report = generateReportObject(report);
 
               await instance.connect(validator1Address).addLevel();
               await instance.connect(validator2Address).addLevel();
@@ -1338,12 +1327,12 @@ describe("ValidatorContract", () => {
 
               await advanceBlock(validatorPoolArgs.blocksPerEra);
 
-              contribution.validationsCount = 1;
-              await instance.connect(owner).addDeveloperContributionValidation(contribution, "foo", validator1Address);
+              report.validationsCount = 1;
+              await instance.connect(owner).addDeveloperReportValidation(report, "foo", validator1Address);
             });
 
             it("add inspection validation", async () => {
-              const validation = await instance.contributionValidations(1, 0);
+              const validation = await instance.reportValidations(1, 0);
 
               expect(validation[0]).to.equal(validator1Address.address);
               expect(validation[1]).to.equal(1);
@@ -1354,15 +1343,15 @@ describe("ValidatorContract", () => {
 
           context("when validator does not have contributed to last era", () => {
             beforeEach(async () => {
-              contribution = await developerContract.getContribution(1);
-              contribution = generateContributionObject(contribution);
+              report = await developerContract.getReport(1);
+              report = generateReportObject(report);
 
               await advanceBlock(validatorPoolArgs.blocksPerEra);
             });
 
             it("should return error", async () => {
               await expect(
-                instance.connect(owner).addDeveloperContributionValidation(contribution, "foo", validator1Address)
+                instance.connect(owner).addDeveloperReportValidation(report, "foo", validator1Address)
               ).to.be.revertedWith("You did not contribute in the last era");
             });
           });
@@ -1372,13 +1361,11 @@ describe("ValidatorContract", () => {
 
     context("without allowed caller", () => {
       it("should return error", async () => {
-        let contribution = await developerContract.getContribution(1);
-        contribution = generateContributionObject(contribution);
+        let report = await developerContract.getReport(1);
+        report = generateReportObject(report);
 
         await expect(
-          instance
-            .connect(validator1Address)
-            .addDeveloperContributionValidation(contribution, "justification", validator1Address)
+          instance.connect(validator1Address).addDeveloperReportValidation(report, "justification", validator1Address)
         ).to.be.revertedWith("Not allowed caller");
       });
     });
@@ -1480,7 +1467,7 @@ describe("ValidatorContract", () => {
                 expect(userType).to.equal(3);
               });
 
-              it("remove contribution regeneration score level from researcher pool", async () => {
+              it("remove report regeneration score level from researcher pool", async () => {
                 let work = await researcherContract.works(1);
                 const levels = await researcherPool.eraLevels(work.era, resea1Address);
 

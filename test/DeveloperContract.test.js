@@ -127,7 +127,7 @@ describe("DeveloperContract", (accounts) => {
       expect(developer.developerWallet).to.equal(dev1Address.address);
       expect(developer.name).to.equal("Developer A");
       expect(developer.proofPhoto).to.equal("photoURL");
-      expect(developer.totalContributions).to.equal(0);
+      expect(developer.totalReports).to.equal(0);
       expect(developer.pool.level).to.equal(0);
       expect(developer.pool.currentEra).to.equal(1);
     });
@@ -200,31 +200,31 @@ describe("DeveloperContract", (accounts) => {
     });
   });
 
-  describe("addContribution", () => {
+  describe("addReport", () => {
     beforeEach(async () => {
       await addDeveloper("Developer A", dev1Address);
     });
 
     context("with developer", () => {
-      context("when already has contribution", () => {
+      context("when already has report", () => {
         beforeEach(async () => {
-          await instance.connect(dev1Address).addContribution("report");
+          await instance.connect(dev1Address).addReport("description", "report");
         });
 
         it("should return error message", async () => {
-          await expect(instance.connect(dev1Address).addContribution("report")).to.be.revertedWith(
-            "Already has contribution"
+          await expect(instance.connect(dev1Address).addReport("description", "report")).to.be.revertedWith(
+            "Already has report"
           );
         });
       });
 
-      context("when don't have contribution", () => {
+      context("when don't have report", () => {
         beforeEach(async () => {
-          await instance.connect(dev1Address).addContribution("report");
+          await instance.connect(dev1Address).addReport("description", "report");
         });
 
-        it("add contribution", async () => {
-          const construbution = await instance.contributions(1);
+        it("add report", async () => {
+          const construbution = await instance.reports(1);
 
           expect(construbution.id).to.equal(1);
           expect(construbution.era).to.equal(1);
@@ -235,10 +235,10 @@ describe("DeveloperContract", (accounts) => {
           expect(construbution.valid).to.equal(true);
         });
 
-        it("increment contributionsCount", async () => {
-          const contributionsCount = await instance.contributionsCount();
+        it("increment reportsCount", async () => {
+          const reportsCount = await instance.reportsCount();
 
-          expect(contributionsCount).to.equal(1);
+          expect(reportsCount).to.equal(1);
         });
 
         it("add level to developer", async () => {
@@ -260,8 +260,8 @@ describe("DeveloperContract", (accounts) => {
         });
 
         it("should return error message", async () => {
-          await expect(instance.connect(dev1Address).addContribution("report")).to.be.revertedWith(
-            "Wait until next era to add contribution"
+          await expect(instance.connect(dev1Address).addReport("description", "report")).to.be.revertedWith(
+            "Wait until next era to add report"
           );
         });
       });
@@ -269,33 +269,33 @@ describe("DeveloperContract", (accounts) => {
 
     context("without developer", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(owner).addContribution("report")).to.be.revertedWith("Only Developer");
+        await expect(instance.connect(owner).addReport("description", "report")).to.be.revertedWith("Only Developer");
       });
     });
   });
 
-  describe("#getContribution", () => {
+  describe("#getReport", () => {
     beforeEach(async () => {
       await addDeveloper("Developer A", dev1Address);
-      await instance.connect(dev1Address).addContribution("report");
+      await instance.connect(dev1Address).addReport("description", "report");
     });
 
     it("should have fields", async () => {
-      const contribution = await instance.getContribution(1);
+      const report = await instance.getReport(1);
 
-      expect(contribution.id).to.equal("1");
-      expect(contribution.era).to.equal("1");
-      expect(contribution.developer).to.equal(dev1Address.address);
-      expect(contribution.level).to.equal("0"); // TODO: Remover esse campo pois não vai ser mais utilizado
-      expect(contribution.report).to.equal("report");
-      expect(contribution.validationsCount).to.equal("0");
-      expect(contribution.contributed).to.equal(true);
-      expect(contribution.valid).to.equal(true);
-      expect(contribution.invalidatedAt).to.equal("0");
+      expect(report.id).to.equal("1");
+      expect(report.era).to.equal("1");
+      expect(report.developer).to.equal(dev1Address.address);
+      expect(report.level).to.equal("0"); // TODO: Remover esse campo pois não vai ser mais utilizado
+      expect(report.report).to.equal("report");
+      expect(report.validationsCount).to.equal("0");
+      expect(report.contributed).to.equal(true);
+      expect(report.valid).to.equal(true);
+      expect(report.invalidatedAt).to.equal("0");
     });
   });
 
-  describe("addContributionValidation", () => {
+  describe("addReportValidation", () => {
     context("with validator", () => {
       beforeEach(async () => {
         await addInvitation(owner, validator1Address, userTypes.Validator, owner);
@@ -307,27 +307,27 @@ describe("DeveloperContract", (accounts) => {
         await addDeveloper("Developer A", dev1Address);
       });
 
-      context("with valid contribution", () => {
-        context("when contribution must be invalidated", () => {
+      context("with valid report", () => {
+        context("when report must be invalidated", () => {
           beforeEach(async () => {
-            await instance.connect(dev1Address).addContribution("report");
+            await instance.connect(dev1Address).addReport("description", "report");
 
             await addValidator(validator2Address);
             await addValidator(validator3Address);
             await addValidator(validator4Address);
 
-            await instance.connect(validator1Address).addContributionValidation(1, "justification");
-            await instance.connect(validator2Address).addContributionValidation(1, "justification");
+            await instance.connect(validator1Address).addReportValidation(1, "justification");
+            await instance.connect(validator2Address).addReportValidation(1, "justification");
           });
 
           it("set valid field to false", async () => {
-            const construbution = await instance.contributions(1);
+            const construbution = await instance.reports(1);
 
             expect(construbution.valid).to.eq(false);
           });
 
           it("populate invalidatedAt field", async () => {
-            const construbution = await instance.contributions(1);
+            const construbution = await instance.reports(1);
 
             expect(construbution.invalidatedAt).to.above(0);
           });
@@ -345,32 +345,32 @@ describe("DeveloperContract", (accounts) => {
           });
 
           it("must remove one pool level from current era", async () => {
-            const construbution = await instance.contributions(1);
+            const construbution = await instance.reports(1);
             const eraLevels = await developerPool.eraLevels(construbution.era, dev1Address);
 
             expect(eraLevels).to.eq(0);
           });
         });
 
-        context("when contribution must not be invalidated", () => {
+        context("when report must not be invalidated", () => {
           beforeEach(async () => {
-            await instance.connect(dev1Address).addContribution("report");
+            await instance.connect(dev1Address).addReport("description", "report");
 
             await addValidator(validator2Address);
             await addValidator(validator3Address);
             await addValidator(validator4Address);
 
-            await instance.connect(validator1Address).addContributionValidation(1, "justification");
+            await instance.connect(validator1Address).addReportValidation(1, "justification");
           });
 
           it("valid field is true", async () => {
-            const construbution = await instance.contributions(1);
+            const construbution = await instance.reports(1);
 
             expect(construbution.valid).to.eq(true);
           });
 
           it("invalidatedAt is equal 0", async () => {
-            const construbution = await instance.contributions(1);
+            const construbution = await instance.reports(1);
 
             expect(construbution.invalidatedAt).to.eq(0);
           });
@@ -382,7 +382,7 @@ describe("DeveloperContract", (accounts) => {
           });
 
           it("developer pool level is 1", async () => {
-            const construbution = await instance.contributions(1);
+            const construbution = await instance.reports(1);
             const eraLevels = await developerPool.eraLevels(construbution.era, dev1Address);
 
             expect(eraLevels).to.eq(1);
@@ -397,18 +397,18 @@ describe("DeveloperContract", (accounts) => {
           await validatorContract.connect(validator1Address).addLevel();
           await validatorContract.connect(validator2Address).addLevel();
 
-          await instance.connect(dev1Address).addContribution("report");
-          await instance.connect(validator1Address).addContributionValidation(1, "justification");
+          await instance.connect(dev1Address).addReport("description", "report");
+          await instance.connect(validator1Address).addReportValidation(1, "justification");
 
           await advanceBlock(developerPoolParams.blocksPerEra);
 
-          await instance.connect(dev1Address).addContribution("report");
-          await instance.connect(validator1Address).addContributionValidation(2, "justification");
+          await instance.connect(dev1Address).addReport("description", "report");
+          await instance.connect(validator1Address).addReportValidation(2, "justification");
 
           await advanceBlock(developerPoolParams.blocksPerEra);
 
-          await instance.connect(dev1Address).addContribution("report");
-          await instance.connect(validator1Address).addContributionValidation(3, "justification");
+          await instance.connect(dev1Address).addReport("description", "report");
+          await instance.connect(validator1Address).addReportValidation(3, "justification");
         });
 
         it("user type must be DENIED", async () => {
@@ -418,24 +418,24 @@ describe("DeveloperContract", (accounts) => {
         });
       });
 
-      context("with invalid contribution", () => {
-        context("when current era is different from contribution created era", () => {
+      context("with invalid report", () => {
+        context("when current era is different from report created era", () => {
           beforeEach(async () => {
-            await instance.connect(dev1Address).addContribution("report");
+            await instance.connect(dev1Address).addReport("description", "report");
 
             await advanceBlock(developerPoolParams.blocksPerEra + 1);
           });
 
           it("should return error message", async () => {
             await expect(
-              instance.connect(validator1Address).addContributionValidation(1, "justification")
-            ).to.be.revertedWith("This contribution is not VALID");
+              instance.connect(validator1Address).addReportValidation(1, "justification")
+            ).to.be.revertedWith("This report is not VALID");
           });
         });
 
-        context("when contribution is invalidated", () => {
+        context("when report is invalidated", () => {
           beforeEach(async () => {
-            await instance.connect(dev1Address).addContribution("report");
+            await instance.connect(dev1Address).addReport("description", "report");
 
             await addValidator(validator2Address);
             await addValidator(validator3Address);
@@ -444,22 +444,22 @@ describe("DeveloperContract", (accounts) => {
             await validatorContract.connect(validator1Address).addLevel();
             await validatorContract.connect(validator2Address).addLevel();
 
-            await instance.connect(validator1Address).addContributionValidation(1, "justification");
-            await instance.connect(validator2Address).addContributionValidation(1, "justification");
+            await instance.connect(validator1Address).addReportValidation(1, "justification");
+            await instance.connect(validator2Address).addReportValidation(1, "justification");
           });
 
           it("should return error message", async () => {
             await expect(
-              instance.connect(validator3Address).addContributionValidation(1, "justification")
-            ).to.be.revertedWith("This contribution is not VALID");
+              instance.connect(validator3Address).addReportValidation(1, "justification")
+            ).to.be.revertedWith("This report is not VALID");
           });
         });
 
-        context("when contribution do not exists", () => {
+        context("when report do not exists", () => {
           it("should return error message", async () => {
             await expect(
-              instance.connect(validator1Address).addContributionValidation(0, "justification")
-            ).to.be.revertedWith("This contribution is not VALID");
+              instance.connect(validator1Address).addReportValidation(0, "justification")
+            ).to.be.revertedWith("This report is not VALID");
           });
         });
       });
@@ -467,7 +467,7 @@ describe("DeveloperContract", (accounts) => {
 
     context("without validator", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(owner).addContributionValidation(1, "justification")).to.be.revertedWith(
+        await expect(instance.connect(owner).addReportValidation(1, "justification")).to.be.revertedWith(
           "Please register as validator"
         );
       });
@@ -529,7 +529,7 @@ describe("DeveloperContract", (accounts) => {
         context("when is unique developer in era with 1 level", () => {
           context("when Developer is in era 1 and contract is in era 2", () => {
             beforeEach(async () => {
-              await instance.connect(dev1Address).addContribution("report");
+              await instance.connect(dev1Address).addReport("description", "report");
 
               await advanceBlock(developerPoolParams.blocksPerEra + 2);
               await instance.connect(dev1Address).withdraw();
@@ -560,8 +560,8 @@ describe("DeveloperContract", (accounts) => {
           context("with same levels", () => {
             context("when Developers is in era 1 and contract is in era 2", () => {
               beforeEach(async () => {
-                await instance.connect(dev1Address).addContribution("report");
-                await instance.connect(dev2Address).addContribution("report");
+                await instance.connect(dev1Address).addReport("description", "report");
+                await instance.connect(dev2Address).addReport("description", "report");
 
                 await advanceBlock(developerPoolParams.blocksPerEra + 2);
                 await instance.connect(dev1Address).withdraw();
@@ -601,7 +601,7 @@ describe("DeveloperContract", (accounts) => {
 
         context("when can withdraw only to one era and try withdraw again", () => {
           beforeEach(async () => {
-            await instance.connect(dev1Address).addContribution("report");
+            await instance.connect(dev1Address).addReport("description", "report");
             await advanceBlock(developerPoolParams.blocksPerEra + 2);
             await instance.connect(dev1Address).withdraw();
           });
@@ -613,10 +613,10 @@ describe("DeveloperContract", (accounts) => {
 
         context("when can withdraw to two eras and try withdraw again", () => {
           beforeEach(async () => {
-            await instance.connect(dev1Address).addContribution("report");
+            await instance.connect(dev1Address).addReport("description", "report");
             await advanceBlock(developerPoolParams.blocksPerEra + 2);
 
-            await instance.connect(dev1Address).addContribution("report");
+            await instance.connect(dev1Address).addReport("description", "report");
             await advanceBlock(developerPoolParams.blocksPerEra + 2);
 
             await instance.connect(dev1Address).withdraw();
@@ -650,11 +650,11 @@ describe("DeveloperContract", (accounts) => {
     beforeEach(async () => {
       await addDeveloper("Developer  A", dev1Address);
 
-      await instance.connect(dev1Address).addContribution("report");
+      await instance.connect(dev1Address).addReport("description", "report");
 
       await advanceBlock(developerPoolParams.blocksPerEra);
 
-      await instance.connect(dev1Address).addContribution("report");
+      await instance.connect(dev1Address).addReport("description", "report");
 
       await instance.removePoolLevels(dev1Address, 1);
     });
