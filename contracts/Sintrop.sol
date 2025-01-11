@@ -123,7 +123,6 @@ contract Sintrop is Callable {
     require(inspection.id >= 1, "This inspection do not exist");
     require(alreadyHaveInspectionAccepted(), "You already have an inspection Accepted");
     require(!inspectorInspected[msg.sender][inspection.regenerator], "Already inspected this regenerator");
-    require(!inspectorInspected[msg.sender][inspection.regenerator], "Already inspected this regenerator");
     require(inspection.status == InspectionStatus.OPEN, "This inspection is not OPEN");
     require(acceptInspectionDelayBlocksPassed(inspection), "Wait inspection delay blocks");
     require(beforeAcceptHaveSecurityBlocksToVote(), "Wait until next era to accept");
