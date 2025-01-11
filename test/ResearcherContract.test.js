@@ -469,22 +469,22 @@ describe("ResearcherContract", () => {
         beforeEach(async () => {
           await addValidator(validator2Address);
 
-          await validatorContract.connect(validator1Address).addLevel();
-          await validatorContract.connect(validator2Address).addLevel();
+          await validatorContract.connect(validator1Address).declareAlive();
+          await validatorContract.connect(validator2Address).declareAlive();
 
           await addWork(resea1Address);
           await instance.connect(validator1Address).addWorkValidation(1, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
-          await validatorContract.connect(validator1Address).addLevel();
+          await validatorContract.connect(validator1Address).declareAlive();
 
           await addWork(resea1Address);
           await instance.connect(validator1Address).addWorkValidation(2, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
-          await validatorContract.connect(validator1Address).addLevel();
+          await validatorContract.connect(validator1Address).declareAlive();
 
           await addWork(resea1Address);
 
@@ -519,9 +519,9 @@ describe("ResearcherContract", () => {
             await addValidator(validator3Address);
             await addValidator(validator4Address);
 
-            await validatorContract.connect(validator1Address).addLevel();
-            await validatorContract.connect(validator2Address).addLevel();
-            await validatorContract.connect(validator4Address).addLevel();
+            await validatorContract.connect(validator1Address).declareAlive();
+            await validatorContract.connect(validator2Address).declareAlive();
+            await validatorContract.connect(validator4Address).declareAlive();
 
             await advanceBlock(validatorPoolArgs.blocksPerEra);
 

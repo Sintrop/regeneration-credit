@@ -394,8 +394,8 @@ describe("DeveloperContract", (accounts) => {
         beforeEach(async () => {
           await addValidator(validator2Address);
 
-          await validatorContract.connect(validator1Address).addLevel();
-          await validatorContract.connect(validator2Address).addLevel();
+          await validatorContract.connect(validator1Address).declareAlive();
+          await validatorContract.connect(validator2Address).declareAlive();
 
           await instance.connect(dev1Address).addContribution("report");
           await instance.connect(validator1Address).addContributionValidation(1, "justification");
@@ -441,8 +441,8 @@ describe("DeveloperContract", (accounts) => {
             await addValidator(validator3Address);
             await addValidator(validator4Address);
 
-            await validatorContract.connect(validator1Address).addLevel();
-            await validatorContract.connect(validator2Address).addLevel();
+            await validatorContract.connect(validator1Address).declareAlive();
+            await validatorContract.connect(validator2Address).declareAlive();
 
             await instance.connect(validator1Address).addContributionValidation(1, "justification");
             await instance.connect(validator2Address).addContributionValidation(1, "justification");
