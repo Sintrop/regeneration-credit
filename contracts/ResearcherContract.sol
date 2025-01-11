@@ -3,7 +3,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { Callable } from "./Callable.sol";
 import { UserContract } from "./UserContract.sol";
-import { Researcher, Work, Pool, Penalty } from "./types/ResearcherTypes.sol";
+import { Researcher, Work, Pool, CalculatorItem, Penalty } from "./types/ResearcherTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { ResearcherPool } from "./ResearcherPool.sol";
 import { ValidatorContract } from "./ValidatorContract.sol";
@@ -17,6 +17,7 @@ import { ValidatorContract } from "./ValidatorContract.sol";
 contract ResearcherContract is Callable {
   mapping(address => Researcher) internal researchers;
   mapping(uint256 => Work) public works;
+  mapping(uint256 => CalculatorItem) public calculatorItems;
   mapping(address => Penalty[]) public penalties;
 
   UserContract internal userContract;
@@ -26,6 +27,7 @@ contract ResearcherContract is Callable {
   address[] internal researchersAddress;
   UserType private constant USER_TYPE = UserType.RESEARCHER;
   uint256 public worksCount;
+  uint256 public calculatorItemsCount;
   uint256 internal immutable timeBetweenWorks;
 
   uint256 public immutable MAX_PENALTIES;
@@ -59,6 +61,7 @@ contract ResearcherContract is Callable {
       name,
       Pool(0, researcherPoolEra()),
       proofPhoto,
+      0,
       0,
       0
     );
@@ -103,7 +106,7 @@ contract ResearcherContract is Callable {
   }
 
   /**
-   * @dev Allows a contributor to attempt to publish a research report
+   * @dev Allows a researcher to attempt to publish a research report
    * @notice Publish research before security blocks
    * @param title Paper title
    * @param thesis Short thesis description
@@ -209,12 +212,68 @@ contract ResearcherContract is Callable {
     return researcherPool.currentContractEra();
   }
 
+  /**
+   * @dev Allows a researcher to attempt to publish an calculatorItem to users calculate their degradation
+   * @notice One calculatorItem per work
+   * @param title CalculatorItem title
+   * @param carbonImpact Kg of carbon
+   * @param waterImpact M³ of water
+   * @param soilImpact M² of water
+   * @param waterImpact Units of life
+   */
+  function addCalculatorItem(
+    string memory title,
+    uint256 carbonImpact,
+    uint256 waterImpact,
+    uint256 soilImpact,
+    uint256 biodiversityImpact
+  ) public {
+    require(userContract.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
+
+    Researcher memory researcher = researchers[msg.sender];
+
+    require(canPublishCalculatorItem(researcher), "Can't publish yet");
+
+    uint256 id = calculatorItemsCount + 1;
+
+    CalculatorItem memory calculatorItem = CalculatorItem(
+      id,
+      msg.sender,
+      title,
+      carbonImpact,
+      waterImpact,
+      soilImpact,
+      biodiversityImpact
+    );
+
+    calculatorItems[id] = calculatorItem;
+    calculatorItemsCount++;
+    researchers[msg.sender].lastCalculatorItemAt = block.number;
+  }
+
+  /**
+   * @dev Checks if user can publish a work
+   * @return bool True if can
+   * @param addr Msg.sender addresss
+   */
   function canPublishWork(address addr) internal view returns (bool) {
     Researcher memory researcher = researchers[addr];
     uint256 lastPublishedAt = researcher.lastPublishedAt;
 
     bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
     return canPublish || lastPublishedAt == 0;
+  }
+
+  /**
+   * @dev Checks if user can publish an calculatorItem
+   * @return bool True if can
+   * @param researcher Msg.sender addresss
+   */
+  function canPublishCalculatorItem(Researcher memory researcher) internal view returns (bool) {
+    uint256 lastCalculatorItemAt = researcher.lastCalculatorItemAt;
+
+    bool canPublish = block.number > lastCalculatorItemAt + timeBetweenWorks;
+    return canPublish || lastCalculatorItemAt == 0;
   }
 
   /**

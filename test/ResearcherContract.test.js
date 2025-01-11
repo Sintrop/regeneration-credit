@@ -49,6 +49,10 @@ describe("ResearcherContract", () => {
     await instance.connect(from).addWork("title", "thesis", "fileURL");
   };
 
+  const addCalculatorItem = async (from) => {
+    await instance.connect(from).addCalculatorItem("title", 1, 1, 1, 1);
+  };
+
   beforeEach(async () => {
     [owner, resea1Address, resea2Address, validator1Address, validator2Address, validator3Address, validator4Address] =
       await ethers.getSigners();
@@ -592,6 +596,35 @@ describe("ResearcherContract", () => {
       const reseacher = await instance.getResearcher(resea1Address);
 
       expect(reseacher.pool.level).to.equal(1);
+    });
+  });
+
+  describe("#addCalculatorItem", () => {
+    context("when is not a researcher", () => {
+      it("should return error", async () => {
+        await expect(addCalculatorItem(owner)).to.be.revertedWith("Only allowed to researchers");
+      });
+    });
+
+    context("when is a researcher", () => {
+      beforeEach(async () => {
+        await addResearcher("Researcher A", resea1Address);
+        await addCalculatorItem(resea1Address);
+      });
+
+      context("when have waited time between calculatorItems", () => {
+        it("add an calculatorItem", async () => {
+          const firstCalculatorItem = await instance.calculatorItemsCount();
+
+          expect(firstCalculatorItem).to.equal(1);
+        });
+      });
+
+      context("when have not waited time between calculatorItems", () => {
+        it("should return error message", async () => {
+          await expect(addCalculatorItem(resea1Address)).to.be.revertedWith("Can't publish yet");
+        });
+      });
     });
   });
 });
