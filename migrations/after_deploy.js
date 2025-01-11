@@ -365,7 +365,9 @@ async function transferTokens() {
   await regenerationCredit.transfer("0x25822ca8524Fcd0D7446b167413CE71880A69f43", "17730000000000000000000");
   await regenerationCredit.transfer("0xd672Bbff8726AAD5Df56DDB5f9f8719022DE50cA", "35461000000000000000000");
   await regenerationCredit.transfer("0xaD611ba99d45aF2aA7868FC7DFB346f062a1Dac3", "35461000000000000000000");
+  await regenerationCredit.transfer("0x01AFF7942F9f27fEEEe98E0203493365e10F5C06", "35461000000000000000000");
   await regenerationCredit.transfer("0xFbF12d63D54b9a9cC68ff2aBFc71EE3567C57B70", "10638000000000000000000");
+  await regenerationCredit.transfer("0x0Ef5eF923CF01da31673eeaAB7E63D273b609ca3", "109500000000000000000000");
 
   console.log("After token transfer is OK");
 }

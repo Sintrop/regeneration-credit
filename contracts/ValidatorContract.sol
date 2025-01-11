@@ -236,7 +236,7 @@ contract ValidatorContract is Callable {
     }
   }
 
-  function addLevel() public {
+  function declareAlive() public {
     require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
     address addr = msg.sender;
     uint256 levels = validatorPool.eraLevels(validatorPoolEra(), addr);
