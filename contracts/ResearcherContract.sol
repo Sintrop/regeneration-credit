@@ -213,7 +213,7 @@ contract ResearcherContract is Callable {
   }
 
   /**
-   * @dev Allows a researcher to attempt to publish an item
+   * @dev Allows a researcher to attempt to publish an item to users calculate their degradation
    * @notice One item per work
    * @param title Item title
    * @param carbonImpact Kg of carbon
@@ -221,7 +221,7 @@ contract ResearcherContract is Callable {
    * @param soilImpact M² of water
    * @param waterImpact Units of life
    */
-  function addItem(
+  function addCalculatorItem(
     string memory title,
     uint256 carbonImpact,
     uint256 waterImpact,
@@ -229,9 +229,10 @@ contract ResearcherContract is Callable {
     uint256 biodiversityImpact
   ) public {
     require(userContract.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
-    require(canPublishItem(msg.sender), "Can't publish yet");
 
-    Researcher storage researcher = researchers[msg.sender];
+    Researcher memory researcher = researchers[msg.sender];
+
+    require(canPublishItem(researcher), "Can't publish yet");
 
     uint256 id = itemsCount + 1;
 
@@ -239,7 +240,7 @@ contract ResearcherContract is Callable {
 
     items[id] = item;
     itemsCount++;
-    researcher.lastItemAt = block.number;
+    researchers[msg.sender].lastItemAt = block.number;
   }
 
   /**
@@ -258,10 +259,9 @@ contract ResearcherContract is Callable {
   /**
    * @dev Checks if user can publish an item
    * @return bool True if can
-   * @param addr Msg.sender addresss
+   * @param researcher Msg.sender addresss
    */
-  function canPublishItem(address addr) internal view returns (bool) {
-    Researcher memory researcher = researchers[addr];
+  function canPublishItem(Researcher memory researcher) internal view returns (bool) {
     uint256 lastItemAt = researcher.lastItemAt;
 
     bool canPublish = block.number > lastItemAt + timeBetweenWorks;
