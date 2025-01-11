@@ -71,6 +71,7 @@ contract DeveloperContract is Ownable, Callable {
   /**
    * @dev Allows a developer to attempt to publish a development report report
    * @notice Publish one development report per era before security blocks
+   * @param description Title or description of the report   
    * @param report Hash of the report file
    */
   function addReport(string memory description, string memory report) public {
