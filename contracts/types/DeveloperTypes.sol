@@ -9,7 +9,7 @@ struct Developer {
   string name;
   string proofPhoto;
   Pool pool;
-  uint256 totalContributions;
+  uint256 totalReports;
   uint256 createdAt;
 }
 
@@ -18,11 +18,12 @@ struct Pool {
   uint256 currentEra;
 }
 
-struct Contribution {
+struct Report {
   uint256 id;
   uint256 era;
   address developer;
   uint256 level;
+  string description;
   string report;
   uint256 validationsCount;
   bool contributed;
@@ -32,5 +33,5 @@ struct Contribution {
 }
 
 struct Penalty {
-  uint256 contributionId;
+  uint256 reportId;
 }
