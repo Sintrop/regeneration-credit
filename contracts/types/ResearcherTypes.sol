@@ -11,7 +11,7 @@ struct Researcher {
   string proofPhoto;
   uint256 publishedWorks;
   uint256 lastPublishedAt;
-  uint256 lastItemAt;
+  uint256 lastCalculatorItemAt;
 }
 
 struct Pool {
@@ -32,7 +32,7 @@ struct Work {
   uint256 createdAtBlock;
 }
 
-struct Item {
+struct CalculatorItem {
   uint256 id;
   address createdBy;
   string title;
