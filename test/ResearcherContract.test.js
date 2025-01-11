@@ -49,8 +49,8 @@ describe("ResearcherContract", () => {
     await instance.connect(from).addWork("title", "thesis", "fileURL");
   };
 
-  const addCalculatorCalculatorItem = async (from) => {
-    await instance.connect(from).addCalculatorCalculatorItem("title", 1, 1, 1, 1);
+  const addCalculatorItem = async (from) => {
+    await instance.connect(from).addCalculatorItem("title", 1, 1, 1, 1);
   };
 
   beforeEach(async () => {
@@ -599,17 +599,17 @@ describe("ResearcherContract", () => {
     });
   });
 
-  describe("#addCalculatorCalculatorItem", () => {
+  describe("#addCalculatorItem", () => {
     context("when is not a researcher", () => {
       it("should return error", async () => {
-        await expect(addCalculatorCalculatorItem(owner)).to.be.revertedWith("Only allowed to researchers");
+        await expect(addCalculatorItem(owner)).to.be.revertedWith("Only allowed to researchers");
       });
     });
 
     context("when is a researcher", () => {
       beforeEach(async () => {
         await addResearcher("Researcher A", resea1Address);
-        await addCalculatorCalculatorItem(resea1Address);
+        await addCalculatorItem(resea1Address);
       });
 
       context("when have waited time between calculatorItems", () => {
@@ -622,10 +622,7 @@ describe("ResearcherContract", () => {
 
       context("when have not waited time between calculatorItems", () => {
         it("should return error message", async () => {
-          await expect(addCalculatorCalculatorItem(resea1Address)).to.be.revertedWith("Can't publish yet");
-          //await addCalculatorCalculatorItem(resea1Address);
-          //const firstCalculatorItem = await instance.calculatorItemsCount();
-          //console.log(firstCalculatorItem);
+          await expect(addCalculatorItem(resea1Address)).to.be.revertedWith("Can't publish yet");
         });
       });
     });

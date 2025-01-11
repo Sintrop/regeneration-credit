@@ -221,7 +221,7 @@ contract ResearcherContract is Callable {
    * @param soilImpact M² of water
    * @param waterImpact Units of life
    */
-  function addCalculatorCalculatorItem(
+  function addCalculatorItem(
     string memory title,
     uint256 carbonImpact,
     uint256 waterImpact,
