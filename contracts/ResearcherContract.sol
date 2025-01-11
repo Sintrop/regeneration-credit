@@ -236,7 +236,15 @@ contract ResearcherContract is Callable {
 
     uint256 id = calculatorItemsCount + 1;
 
-    CalculatorItem memory calculatorItem = CalculatorItem(id, msg.sender, title, carbonImpact, waterImpact, soilImpact, biodiversityImpact);
+    CalculatorItem memory calculatorItem = CalculatorItem(
+      id,
+      msg.sender,
+      title,
+      carbonImpact,
+      waterImpact,
+      soilImpact,
+      biodiversityImpact
+    );
 
     calculatorItems[id] = calculatorItem;
     calculatorItemsCount++;
