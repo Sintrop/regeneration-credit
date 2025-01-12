@@ -3,7 +3,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { UserRules } from "./UserRules.sol";
-import { UserType } from "./types/UserTypes.sol";
+import { UserType } from "./types/UserData.sol";
 
 /**
  * @author Sintrop

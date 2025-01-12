@@ -2,10 +2,10 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserRules } from "./UserRules.sol";
-import { Regenerator, Pool, AreaInformation } from "./types/RegeneratorTypes.sol";
+import { Regenerator, Pool, AreaInformation } from "./types/RegeneratorData.sol";
 import { CallerRules } from "./CallerRules.sol";
 import { RegeneratorPool } from "./RegeneratorPool.sol";
-import { UserType } from "./types/UserTypes.sol";
+import { UserType } from "./types/UserData.sol";
 
 /**
  * @author Sintrop

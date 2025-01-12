@@ -2,8 +2,8 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserRules } from "./UserRules.sol";
-import { Supporter } from "./types/SupporterTypes.sol";
-import { UserType, Invitation } from "./types/UserTypes.sol";
+import { Supporter } from "./types/SupporterData.sol";
+import { UserType, Invitation } from "./types/UserData.sol";
 import { SupporterPool } from "./SupporterPool.sol";
 
 /**

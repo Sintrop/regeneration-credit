@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "./UserTypes.sol";
+import "./UserData.sol";
 
 struct Regenerator {
   uint256 id;

@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { UserType, Delation, Invitation, UserTypeSetting } from "./types/UserTypes.sol";
+import { UserType, Delation, Invitation, UserTypeSetting } from "./types/UserData.sol";
 import { CallerRules } from "./CallerRules.sol";
 
 /**

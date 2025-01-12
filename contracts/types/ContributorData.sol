@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { UserType } from "./UserTypes.sol";
+import { UserType } from "./UserData.sol";
 
-struct Developer {
+struct Contributor {
   uint256 id;
-  address developerWallet;
+  address contributorWallet;
   string name;
   string proofPhoto;
   Pool pool;
-  uint256 totalReports;
   uint256 createdAt;
 }
 
@@ -18,20 +17,11 @@ struct Pool {
   uint256 currentEra;
 }
 
-struct Report {
+struct Contribution {
   uint256 id;
   uint256 era;
-  address developer;
+  address user;
   uint256 level;
-  string description;
   string report;
-  uint256 validationsCount;
-  bool contributed;
-  bool valid;
-  uint256 invalidatedAt;
   uint256 createdAtBlockNumber;
-}
-
-struct Penalty {
-  uint256 reportId;
 }

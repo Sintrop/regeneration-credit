@@ -2,9 +2,9 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserRules } from "./UserRules.sol";
-import { Inspector, Penalty, Pool } from "./types/InspectorTypes.sol";
+import { Inspector, Penalty, Pool } from "./types/InspectorData.sol";
 import { CallerRules } from "./CallerRules.sol";
-import { UserType } from "./types/UserTypes.sol";
+import { UserType } from "./types/UserData.sol";
 import { InspectorPool } from "./InspectorPool.sol";
 
 /**
