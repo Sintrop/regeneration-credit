@@ -238,11 +238,7 @@ describe("InspectionRules", () => {
     const validatorRulesFactory = await ethers.getContractFactory("ValidatorRules");
     validatorRules = await validatorRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
-    inspectorRules = await inspectorRulesFactory.deploy(
-      userRules.target,
-      inspectorPool.target,
-      inspectorMaxPenalties
-    );
+    inspectorRules = await inspectorRulesFactory.deploy(userRules.target, inspectorPool.target, inspectorMaxPenalties);
 
     const researcherSecuryBlocksToAnalysis = 10;
     researcherRules = await researcherRulesFactory.deploy(
