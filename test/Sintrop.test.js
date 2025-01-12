@@ -6,7 +6,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
-describe("Sintrop", () => {
+describe("InspectionRules", () => {
   let instance;
   let userContract;
   let inspectorContract;
@@ -280,7 +280,7 @@ describe("Sintrop", () => {
       categoryContractAddress: categoryContract.target,
     };
 
-    const instanceFactory = await ethers.getContractFactory("Sintrop");
+    const instanceFactory = await ethers.getContractFactory("InspectionRules");
     instance = await instanceFactory.deploy(
       sintropArgs.timeBetweenInspections,
       sintropArgs.blocksToExpireAcceptedInspection,

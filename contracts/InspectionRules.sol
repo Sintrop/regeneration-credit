@@ -18,11 +18,11 @@ import { CallerRules } from "./CallerRules.sol";
 
 /**
  * @author Sintrop
- * @title SintropContract
+ * @title InspectionRules
  * @dev Manage inspections rules and data
  * @notice Allow regenerator to request inspection, and inspectors to accept and realize it
  */
-contract Sintrop is CallerRules {
+contract InspectionRules is CallerRules {
   using SafeMath for uint256;
 
   mapping(address => mapping(address => bool)) internal inspectorInspected;
