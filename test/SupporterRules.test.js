@@ -1,11 +1,11 @@
-const { userContractDeployed } = require("./shared/user_contract_deployed");
+const { userRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("SupporterRules", () => {
-  let instance, userContract, regenerationCredit, supporterPool;
+  let instance, userRules, regenerationCredit, supporterPool;
   let ownerAddress, inv1Address, inv2Address;
 
   const addSupporter = async (name, from) => {
@@ -19,7 +19,7 @@ describe("SupporterRules", () => {
   beforeEach(async () => {
     [ownerAddress, inv1Address, inv2Address] = await ethers.getSigners();
 
-    userContract = await userContractDeployed();
+    userRules = await userRulesDeployed();
 
     regenerationCredit = await regenerationCreditDeployed();
 
@@ -27,10 +27,10 @@ describe("SupporterRules", () => {
     supporterPool = await supporterPoolFactory.deploy(regenerationCredit.target);
 
     const instanceFactory = await ethers.getContractFactory("SupporterRules");
-    instance = await instanceFactory.deploy(userContract.target, supporterPool.target);
+    instance = await instanceFactory.deploy(userRules.target, supporterPool.target);
 
-    await userContract.newAllowedCaller(instance.target);
-    await userContract.newAllowedCaller(ownerAddress);
+    await userRules.newAllowedCaller(instance.target);
+    await userRules.newAllowedCaller(ownerAddress);
     await supporterPool.newAllowedCaller(instance.target);
     await regenerationCredit.addContractPool(supporterPool.target, 0);
   });
@@ -55,7 +55,7 @@ describe("SupporterRules", () => {
       it("increment supporterCount", async () => {
         await addSupporter("Supporter A", inv1Address);
         await addSupporter("Supporter B", inv2Address);
-        const supportersCount = await userContract.userTypesCount(userTypes.Supporter);
+        const supportersCount = await userRules.userTypesCount(userTypes.Supporter);
 
         expect(supportersCount).to.equal(2);
       });
@@ -72,7 +72,7 @@ describe("SupporterRules", () => {
       it("add created supporter in userType contract as a SUPPORTER", async () => {
         await addSupporter("Supporter A", inv1Address);
 
-        const userType = await userContract.getUser(inv1Address);
+        const userType = await userRules.getUser(inv1Address);
         const SUPPORTER = 7;
 
         expect(userType).to.equal(SUPPORTER);
@@ -122,7 +122,7 @@ describe("SupporterRules", () => {
       context("when amount is greater than zero", () => {
         context("when SUPPORTER was invited", () => {
           beforeEach(async () => {
-            await userContract.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
+            await userRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
             await addSupporter("Supporter B", inv2Address);
             await transferTokensTo(inv2Address, 100000000000000000000n);
           });

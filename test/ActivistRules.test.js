@@ -1,11 +1,11 @@
-const { userContractDeployed } = require("./shared/user_contract_deployed");
+const { userRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { expect } = require("chai");
 const { advanceBlock } = require("./shared/advance_block");
 
 describe("ActivistRules", () => {
-  let instance, userContract, activistPool, regenerationCredit;
+  let instance, userRules, activistPool, regenerationCredit;
   let owner, activ1Address, activ2Address, activ3Address, regenerator1Address, inspector1Address, inspector2Address;
 
   const activistPoolArgs = {
@@ -19,7 +19,7 @@ describe("ActivistRules", () => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userContract.connect(from).addInvitation(inviter, invited, userType);
+    await userRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
   beforeEach(async () => {
@@ -27,7 +27,7 @@ describe("ActivistRules", () => {
       await ethers.getSigners();
 
     regenerationCredit = await regenerationCreditDeployed();
-    userContract = await userContractDeployed();
+    userRules = await userRulesDeployed();
 
     const activistPoolFactory = await ethers.getContractFactory("ActivistPool");
     activistPool = await activistPoolFactory.deploy(
@@ -37,11 +37,11 @@ describe("ActivistRules", () => {
     );
 
     const instanceContractFactory = await ethers.getContractFactory("ActivistRules");
-    instance = await instanceContractFactory.deploy(userContract.target, activistPool.target);
+    instance = await instanceContractFactory.deploy(userRules.target, activistPool.target);
 
-    await userContract.newAllowedCaller(activ1Address);
-    await userContract.newAllowedCaller(instance.target);
-    await userContract.newAllowedCaller(owner);
+    await userRules.newAllowedCaller(activ1Address);
+    await userRules.newAllowedCaller(instance.target);
+    await userRules.newAllowedCaller(owner);
 
     await activistPool.newAllowedCaller(instance.target);
     await instance.newAllowedCaller(owner);
@@ -77,7 +77,7 @@ describe("ActivistRules", () => {
         it("should increment activistCount", async () => {
           await addActivist("Activist A", activ1Address);
           await addActivist("Activist C", activ3Address);
-          const activistsCount = await userContract.userTypesCount(userTypes.Activist);
+          const activistsCount = await userRules.userTypesCount(userTypes.Activist);
 
           expect(activistsCount).to.equal(2);
         });
@@ -94,7 +94,7 @@ describe("ActivistRules", () => {
         it("should add created activist in userType contract as a ACTIVIST", async () => {
           await addActivist("Activist A", activ1Address);
 
-          const userType = await userContract.getUser(activ1Address);
+          const userType = await userRules.getUser(activ1Address);
           const ACTIVIST = 6;
 
           expect(userType).to.equal(ACTIVIST);
@@ -280,7 +280,7 @@ describe("ActivistRules", () => {
             beforeEach(async () => {
               await addActivist("Activist B", activ3Address);
 
-              await userContract.newAllowedCaller(activ3Address);
+              await userRules.newAllowedCaller(activ3Address);
               await addInvitation(activ3Address, inspector2Address, userTypes.Inspector, activ3Address);
 
               await instance.addLevel(regenerator1Address, 0, inspector2Address, 3);

@@ -14,10 +14,10 @@ contract InvitationRules is Ownable {
   mapping(address => uint256) public lastInviteBlocks;
   mapping(UserType => UserType) public canBeInviteds;
 
-  UserRules internal userContract;
+  UserRules internal userRules;
 
-  constructor(address userContractAddress) {
-    userContract = UserRules(userContractAddress);
+  constructor(address userRulesAddress) {
+    userRules = UserRules(userRulesAddress);
 
     canBeInviteds[UserType.ACTIVIST] = UserType.ACTIVIST;
     canBeInviteds[UserType.INSPECTOR] = UserType.ACTIVIST;
@@ -35,14 +35,14 @@ contract InvitationRules is Ownable {
    * @param userType Invited type
    */
   function invite(address invited, UserType userType) public {
-    UserType msgSenderUserType = userContract.getUser(msg.sender);
+    UserType msgSenderUserType = userRules.getUser(msg.sender);
 
     require(invitationDelayReached(msgSenderUserType), "Invite delay not reached");
     require(canBeInviteds[userType] == msgSenderUserType, "can't invite this type");
 
     lastInviteBlocks[msg.sender] = block.number;
 
-    userContract.addInvitation(msg.sender, invited, userType);
+    userRules.addInvitation(msg.sender, invited, userType);
   }
 
   /**
@@ -51,7 +51,7 @@ contract InvitationRules is Ownable {
    * @param userType Invited type
    */
   function onlyOwnerInvite(address invited, UserType userType) public onlyOwner {
-    userContract.addInvitation(msg.sender, invited, userType);
+    userRules.addInvitation(msg.sender, invited, userType);
   }
 
   /**
@@ -60,7 +60,7 @@ contract InvitationRules is Ownable {
    * @return bool True if user waited delay blocks
    */
   function invitationDelayReached(UserType userType) internal view returns (bool) {
-    uint256 delayBlocks = userContract.getUserTypeSettings(userType).invitationDelayBlocks;
+    uint256 delayBlocks = userRules.getUserTypeSettings(userType).invitationDelayBlocks;
 
     return lastInviteBlocks[msg.sender] <= 0 || block.number - lastInviteBlocks[msg.sender] >= delayBlocks;
   }

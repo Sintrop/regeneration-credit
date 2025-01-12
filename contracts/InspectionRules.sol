@@ -31,12 +31,12 @@ contract InspectionRules is CallerRules {
   mapping(uint256 => RegenerationInspection[]) public regenerationInspection;
   mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
-  InspectorRules private inspectorContract;
-  RegeneratorRules private regeneratorContract;
-  UserRules private userContract;
-  ValidatorRules private validatorContract;
-  ActivistRules private activistContract;
-  RegenerationIndexRules private categoryContract;
+  InspectorRules private inspectorRules;
+  RegeneratorRules private regeneratorRules;
+  UserRules private userRules;
+  ValidatorRules private validatorRules;
+  ActivistRules private activistRules;
+  RegenerationIndexRules private regenerationIndexRules;
 
   uint256 public inspectionsCount;
   uint256 public immutable timeBetweenInspections;
@@ -60,12 +60,12 @@ contract InspectionRules is CallerRules {
   }
 
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
-    userContract = UserRules(contractDependency.userContractAddress);
-    regeneratorContract = RegeneratorRules(contractDependency.regeneratorContractAddress);
-    validatorContract = ValidatorRules(contractDependency.validatorContractAddress);
-    inspectorContract = InspectorRules(contractDependency.inspectorContractAddress);
-    categoryContract = RegenerationIndexRules(contractDependency.categoryContractAddress);
-    activistContract = ActivistRules(contractDependency.activistContractAddress);
+    userRules = UserRules(contractDependency.userRulesAddress);
+    regeneratorRules = RegeneratorRules(contractDependency.regeneratorRulesAddress);
+    validatorRules = ValidatorRules(contractDependency.validatorRulesAddress);
+    inspectorRules = InspectorRules(contractDependency.inspectorRulesAddress);
+    regenerationIndexRules = RegenerationIndexRules(contractDependency.regenerationIndexRulesAddress);
+    activistRules = ActivistRules(contractDependency.activistRulesAddress);
   }
 
   /**
@@ -79,9 +79,9 @@ contract InspectionRules is CallerRules {
    * @dev Allows the current user (regenerator) request a inspection.
    */
   function requestInspection() public {
-    Regenerator memory regenerator = regeneratorContract.getRegenerator(msg.sender);
+    Regenerator memory regenerator = regeneratorRules.getRegenerator(msg.sender);
 
-    require(userContract.userTypeIs(UserType.REGENERATOR, msg.sender), "Please register as regenerator");
+    require(userRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Please register as regenerator");
     require(!regenerator.pendingInspection, "Request already OPEN");
     require(waitToRequest(regenerator), "Wait to request");
     require(
@@ -107,7 +107,7 @@ contract InspectionRules is CallerRules {
   }
 
   function afterRequestInspection() internal {
-    regeneratorContract.afterRequestInspection(msg.sender);
+    regeneratorRules.afterRequestInspection(msg.sender);
   }
 
   /**
@@ -115,8 +115,8 @@ contract InspectionRules is CallerRules {
    * @param inspectionId The id of the inspection that the inspector want accept.
    */
   function acceptInspection(uint256 inspectionId) public {
-    require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
-    require(inspectorContract.isInspectorValid(msg.sender), "No more than 3 giveUps allowed");
+    require(userRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
+    require(inspectorRules.isInspectorValid(msg.sender), "No more than 3 giveUps allowed");
 
     Inspection memory inspection = inspections[inspectionId];
 
@@ -132,8 +132,8 @@ contract InspectionRules is CallerRules {
     inspection.inspector = msg.sender;
     inspections[inspectionId] = inspection;
 
-    regeneratorContract.afterAcceptInspection(inspection.regenerator);
-    inspectorContract.afterAcceptInspection(msg.sender, inspectionId);
+    regeneratorRules.afterAcceptInspection(inspection.regenerator);
+    inspectorRules.afterAcceptInspection(msg.sender, inspectionId);
   }
 
   /**
@@ -150,7 +150,7 @@ contract InspectionRules is CallerRules {
     Inspection memory inspection = inspections[inspectionId];
 
     require(_regenerationInspection.length == 4, "Invalid regenerationIndex length");
-    require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
+    require(userRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
     require(inspection.inspector == msg.sender, "You have not accepted this inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
@@ -169,11 +169,11 @@ contract InspectionRules is CallerRules {
     RegenerationInspection[] memory _regenerationInspection
   ) internal {
     inspection.status = InspectionStatus.INSPECTED;
-    inspection.regenerationScore = categoryContract.calculateScore(_regenerationInspection);
+    inspection.regenerationScore = regenerationIndexRules.calculateScore(_regenerationInspection);
     inspection.proofPhoto = proofPhoto;
     inspection.report = report;
     inspection.inspectedAt = block.number;
-    inspection.inspectedAtEra = regeneratorContract.regeneratorPoolEra();
+    inspection.inspectedAtEra = regeneratorRules.regeneratorPoolEra();
 
     inspections[inspection.id] = inspection;
 
@@ -191,11 +191,11 @@ contract InspectionRules is CallerRules {
     address regeneratorAddress = inspection.regenerator;
     address inspectorAddress = inspection.inspector;
 
-    activistContract.addLevel(
+    activistRules.addLevel(
       regeneratorAddress,
-      regeneratorContract.afterRealizeInspection(regeneratorAddress, inspection.regenerationScore),
+      regeneratorRules.afterRealizeInspection(regeneratorAddress, inspection.regenerationScore),
       inspectorAddress,
-      inspectorContract.afterRealizeInspection(inspectorAddress)
+      inspectorRules.afterRealizeInspection(inspectorAddress)
     );
 
     userInspections[regeneratorAddress].push(inspection.id);
@@ -203,20 +203,20 @@ contract InspectionRules is CallerRules {
   }
 
   function addInspectionValidation(uint256 id, string memory justification) public {
-    require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+    require(userRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
     Inspection memory inspection = inspections[id];
 
-    require(inspection.inspectedAtEra == regeneratorContract.regeneratorPoolEra(), "Can not add validation anymore");
+    require(inspection.inspectedAtEra == regeneratorRules.regeneratorPoolEra(), "Can not add validation anymore");
 
     inspection.validationsCount += 1;
     inspections[inspection.id] = inspection;
 
-    bool mustInvalidateInspection = inspection.validationsCount >= validatorContract.majorityValidatorsCount();
+    bool mustInvalidateInspection = inspection.validationsCount >= validatorRules.majorityValidatorsCount();
 
     if (mustInvalidateInspection) invalidateInspection(inspection);
 
-    validatorContract.addInspectionValidation(inspection, justification, msg.sender);
+    validatorRules.addInspectionValidation(inspection, justification, msg.sender);
   }
 
   function invalidateInspection(Inspection memory inspection) internal {
@@ -252,7 +252,7 @@ contract InspectionRules is CallerRules {
   }
 
   function alreadyHaveInspectionAccepted() private view returns (bool) {
-    Inspector memory inspector = inspectorContract.getInspector(msg.sender);
+    Inspector memory inspector = inspectorRules.getInspector(msg.sender);
     Inspection memory lastInspection = inspections[inspector.lastInspection];
 
     bool acceptedInspectionExpired = block.number > lastInspection.acceptedAt + blocksToExpireAcceptedInspection;
@@ -268,8 +268,8 @@ contract InspectionRules is CallerRules {
   }
 
   function beforeAcceptHaveSecurityBlocksToVote() private view returns (bool) {
-    if (regeneratorContract.nextEraIn() < blocksToExpireAcceptedInspection) return false;
+    if (regeneratorRules.nextEraIn() < blocksToExpireAcceptedInspection) return false;
 
-    return regeneratorContract.nextEraIn().sub(blocksToExpireAcceptedInspection) > securityBlocksToValidatorAnalysis;
+    return regeneratorRules.nextEraIn().sub(blocksToExpireAcceptedInspection) > securityBlocksToValidatorAnalysis;
   }
 }

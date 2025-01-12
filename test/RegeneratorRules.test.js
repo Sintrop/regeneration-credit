@@ -1,4 +1,4 @@
-const { userContractDeployed } = require("./shared/user_contract_deployed");
+const { userRulesDeployed } = require("./shared/user_contract_deployed");
 const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { userTypes } = require("./shared/user_types");
@@ -7,7 +7,7 @@ const { expect } = require("chai");
 describe("RegeneratorRules", () => {
   let instance;
   let regenerationCredit;
-  let userContract;
+  let userRules;
   let regeneratorPool;
   let owner, prod1Address, prod2Address;
 
@@ -16,7 +16,7 @@ describe("RegeneratorRules", () => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userContract.connect(from).addInvitation(inviter, invited, userType);
+    await userRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
   const regeneratorPoolArgs = {
@@ -30,7 +30,7 @@ describe("RegeneratorRules", () => {
 
     regenerationCredit = await regenerationCreditDeployed();
 
-    userContract = await userContractDeployed();
+    userRules = await userRulesDeployed();
 
     const regeneratorPoolFactory = await ethers.getContractFactory("RegeneratorPool");
 
@@ -42,11 +42,11 @@ describe("RegeneratorRules", () => {
 
     const instanceFactory = await ethers.getContractFactory("RegeneratorRules");
 
-    instance = await instanceFactory.deploy(userContract.target, regeneratorPool.target);
+    instance = await instanceFactory.deploy(userRules.target, regeneratorPool.target);
 
     await regenerationCredit.addContractPool(regeneratorPool.target, regeneratorPoolArgs.totalTokens);
-    await userContract.newAllowedCaller(instance.target);
-    await userContract.newAllowedCaller(owner);
+    await userRules.newAllowedCaller(instance.target);
+    await userRules.newAllowedCaller(owner);
     await instance.newAllowedCaller(owner);
     await regeneratorPool.newAllowedCaller(instance.target);
 
@@ -118,7 +118,7 @@ describe("RegeneratorRules", () => {
     it("should increment regeneratorsCount after create regenerator", async () => {
       await addRegenerator("Regenerator A", prod1Address);
       await addRegenerator("Regenerator B", prod2Address);
-      const regeneratorsCount = await userContract.userTypesCount(userTypes.Regenerator);
+      const regeneratorsCount = await userRules.userTypesCount(userTypes.Regenerator);
 
       expect(regeneratorsCount).to.equal(2);
     });
@@ -126,7 +126,7 @@ describe("RegeneratorRules", () => {
     it("should add created regenerator in userType contract as a REGENERATOR", async () => {
       await addRegenerator("Regenerator A", prod1Address);
 
-      const userType = await userContract.getUser(prod1Address);
+      const userType = await userRules.getUser(prod1Address);
       const REGENERATOR = 1;
 
       expect(userType).to.equal(REGENERATOR);

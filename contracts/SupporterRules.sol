@@ -15,13 +15,13 @@ import { SupporterPool } from "./SupporterPool.sol";
 contract SupporterRules {
   mapping(address => Supporter) internal supporters;
 
-  UserRules internal userContract;
+  UserRules internal userRules;
   SupporterPool internal supporterPool;
   address[] internal supportersAddress;
   UserType private constant USER_TYPE = UserType.SUPPORTER;
 
-  constructor(address userContractAddress, address supporterPoolAddress) {
-    userContract = UserRules(userContractAddress);
+  constructor(address userRulesAddress, address supporterPoolAddress) {
+    userRules = UserRules(userRulesAddress);
     supporterPool = SupporterPool(supporterPoolAddress);
   }
 
@@ -31,20 +31,20 @@ contract SupporterRules {
    * @return a supporter
    */
   function addSupporter(string memory name) public returns (Supporter memory) {
-    Supporter memory supporter = Supporter(userContract.userTypesCount(USER_TYPE) + 1, msg.sender, name);
+    Supporter memory supporter = Supporter(userRules.userTypesCount(USER_TYPE) + 1, msg.sender, name);
 
     supporters[msg.sender] = supporter;
     supportersAddress.push(msg.sender);
-    userContract.addUser(msg.sender, USER_TYPE);
+    userRules.addUser(msg.sender, USER_TYPE);
 
     return supporter;
   }
 
   function burnTokens(uint256 amount) public {
-    require(userContract.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
+    require(userRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount > 0, "Amount invalid");
 
-    Invitation memory invitation = userContract.getInvitation(msg.sender);
+    Invitation memory invitation = userRules.getInvitation(msg.sender);
     bool isInvited = invitation.createdAtBlock != 0;
 
     supporterPool.burnTokens(msg.sender, invitation.inviter, amount, isInvited);
@@ -55,7 +55,7 @@ contract SupporterRules {
    * @return Supporter struct array
    */
   function getSupporters() public view returns (Supporter[] memory) {
-    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    uint256 usersCount = userRules.userTypesCount(USER_TYPE);
     Supporter[] memory supporterList = new Supporter[](usersCount);
 
     for (uint256 i = 0; i < usersCount; i++) {

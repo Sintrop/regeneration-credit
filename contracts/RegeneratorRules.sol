@@ -19,15 +19,15 @@ contract RegeneratorRules is CallerRules {
 
   mapping(address => Regenerator) public regenerators;
 
-  UserRules internal userContract;
+  UserRules internal userRules;
   RegeneratorPool internal regeneratorPool;
 
   address[] internal regeneratorsAddress;
   UserType private constant USER_TYPE = UserType.REGENERATOR;
   uint256 public regeneratorsSustainable;
 
-  constructor(address userContractAddress, address regeneratorPoolAddress) {
-    userContract = UserRules(userContractAddress);
+  constructor(address userRulesAddress, address regeneratorPoolAddress) {
+    userRules = UserRules(userRulesAddress);
     regeneratorPool = RegeneratorPool(regeneratorPoolAddress);
   }
 
@@ -46,7 +46,7 @@ contract RegeneratorRules is CallerRules {
   ) public {
     Regenerator memory regenerator = regenerators[msg.sender];
 
-    regenerator.id = userContract.userTypesCount(USER_TYPE) + 1;
+    regenerator.id = userRules.userTypesCount(USER_TYPE) + 1;
     regenerator.regeneratorWallet = msg.sender;
     regenerator.name = name;
     regenerator.proofPhoto = proofPhoto;
@@ -55,7 +55,7 @@ contract RegeneratorRules is CallerRules {
 
     regenerators[msg.sender] = regenerator;
     regeneratorsAddress.push(msg.sender);
-    userContract.addUser(msg.sender, USER_TYPE);
+    userRules.addUser(msg.sender, USER_TYPE);
   }
 
   /**
@@ -63,7 +63,7 @@ contract RegeneratorRules is CallerRules {
    * @return Regenerator struct array
    */
   function getRegenerators() public view returns (Regenerator[] memory) {
-    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    uint256 usersCount = userRules.userTypesCount(USER_TYPE);
     Regenerator[] memory regeneratorList = new Regenerator[](usersCount);
 
     for (uint256 i = 0; i < usersCount; i++) {
@@ -87,7 +87,7 @@ contract RegeneratorRules is CallerRules {
    * @notice Withdraw regeneration credit from regeneration service provided
    */
   function withdraw() public {
-    require(userContract.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators pool");
+    require(userRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators pool");
 
     Regenerator memory regenerator = regenerators[msg.sender];
     require(minimumInspections(regenerator.totalInspections), "Minimum inspections");

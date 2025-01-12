@@ -1,4 +1,4 @@
-const { userContractDeployed } = require("./shared/user_contract_deployed");
+const { userRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 
@@ -6,7 +6,7 @@ describe("UserRules", function () {
   let instance;
   let owner, user1Address, user2Address, user3Address, user4Address;
 
-  const userContractParams = {
+  const userRulesParams = {
     inspectorProportionality: 2,
     activistProportionality: 1,
     researcherProportionality: 1,
@@ -43,7 +43,7 @@ describe("UserRules", function () {
   beforeEach(async function () {
     [owner, user1Address, user2Address, user3Address, user4Address] = await ethers.getSigners();
 
-    instance = await userContractDeployed(userContractParams);
+    instance = await userRulesDeployed(userRulesParams);
 
     await instance.newAllowedCaller(owner);
   });

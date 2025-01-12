@@ -1,5 +1,5 @@
 const { ethers } = require("hardhat");
-const { userContractDeployed } = require("./shared/user_contract_deployed");
+const { userRulesDeployed } = require("./shared/user_contract_deployed");
 const { expect } = require("chai");
 
 describe("RegenerationCredit", (accounts) => {
@@ -22,7 +22,7 @@ describe("RegenerationCredit", (accounts) => {
 
     const instanceFactory = await ethers.getContractFactory("RegenerationCredit");
     instance = await instanceFactory.deploy(args.totalRegenerationCredits);
-    userContract = await userContractDeployed();
+    userRules = await userRulesDeployed();
 
     const regeneratorPoolFactory = await ethers.getContractFactory("RegeneratorPool");
     regeneratorPool = await regeneratorPoolFactory.deploy(

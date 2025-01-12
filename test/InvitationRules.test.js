@@ -1,23 +1,23 @@
 const { ethers } = require("hardhat");
-const { userContractDeployed } = require("./shared/user_contract_deployed");
+const { userRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 const { advanceBlock } = require("./shared/advance_block");
 
 describe("InvitationRules", () => {
-  let instance, userContract;
+  let instance, userRules;
   let owner, user1Address, user2Address, user3Address, user4Address;
 
   const addUser = async (address, userType, from) => {
-    await userContract.connect(from).addUser(address, userType);
+    await userRules.connect(from).addUser(address, userType);
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userContract.connect(from).addInvitation(inviter, invited, userType);
+    await userRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
   const userTypeDelayBlocks = async (userType) => {
-    const settings = await userContract.getUserTypeSettings(userType);
+    const settings = await userRules.getUserTypeSettings(userType);
 
     return settings.invitationDelayBlocks;
   };
@@ -25,13 +25,13 @@ describe("InvitationRules", () => {
   beforeEach(async () => {
     [owner, user1Address, user2Address, user3Address, user4Address] = await ethers.getSigners();
 
-    userContract = await userContractDeployed();
+    userRules = await userRulesDeployed();
 
     const instanceFactory = await ethers.getContractFactory("InvitationRules");
-    instance = await instanceFactory.deploy(userContract.target);
+    instance = await instanceFactory.deploy(userRules.target);
 
-    await userContract.newAllowedCaller(instance.target);
-    await userContract.newAllowedCaller(owner);
+    await userRules.newAllowedCaller(instance.target);
+    await userRules.newAllowedCaller(owner);
   });
 
   describe("#invite", () => {
@@ -77,7 +77,7 @@ describe("InvitationRules", () => {
               it("invite with success", async () => {
                 await instance.connect(user2Address).invite(user4Address, userTypes.Activist);
 
-                const invitation = await userContract.invitations(user4Address);
+                const invitation = await userRules.invitations(user4Address);
 
                 expect(invitation.invited).to.equal(user4Address.address);
               });
@@ -100,7 +100,7 @@ describe("InvitationRules", () => {
             it("invite with success", async () => {
               await instance.connect(user2Address).invite(user3Address, userTypes.Activist);
 
-              const invitation = await userContract.invitations(user3Address);
+              const invitation = await userRules.invitations(user3Address);
 
               expect(invitation.invited).to.equal(user3Address.address);
             });
@@ -120,7 +120,7 @@ describe("InvitationRules", () => {
               it("invite with success", async () => {
                 await instance.connect(user2Address).invite(user4Address, userTypes.Inspector);
 
-                const invitation = await userContract.invitations(user4Address);
+                const invitation = await userRules.invitations(user4Address);
 
                 expect(invitation.invited).to.equal(user4Address.address);
               });
@@ -143,7 +143,7 @@ describe("InvitationRules", () => {
             it("invite with success", async () => {
               await instance.connect(user2Address).invite(user3Address, userTypes.Inspector);
 
-              const invitation = await userContract.invitations(user3Address);
+              const invitation = await userRules.invitations(user3Address);
 
               expect(invitation.invited).to.equal(user3Address.address);
             });
@@ -163,7 +163,7 @@ describe("InvitationRules", () => {
               it("invite with success", async () => {
                 await instance.connect(user2Address).invite(user4Address, userTypes.Regenerator);
 
-                const invitation = await userContract.invitations(user4Address);
+                const invitation = await userRules.invitations(user4Address);
 
                 expect(invitation.invited).to.equal(user4Address.address);
               });
@@ -186,7 +186,7 @@ describe("InvitationRules", () => {
             it("invite with success", async () => {
               await instance.connect(user2Address).invite(user3Address, userTypes.Regenerator);
 
-              const invitation = await userContract.invitations(user3Address);
+              const invitation = await userRules.invitations(user3Address);
 
               expect(invitation.invited).to.equal(user3Address.address);
             });
@@ -213,7 +213,7 @@ describe("InvitationRules", () => {
               it("invite with success", async () => {
                 await instance.connect(user2Address).invite(user4Address, userTypes.Developer);
 
-                const invitation = await userContract.invitations(user4Address);
+                const invitation = await userRules.invitations(user4Address);
 
                 expect(invitation.invited).to.equal(user4Address.address);
               });
@@ -236,7 +236,7 @@ describe("InvitationRules", () => {
             it("invite with success", async () => {
               await instance.connect(user2Address).invite(user3Address, userTypes.Developer);
 
-              const invitation = await userContract.invitations(user3Address);
+              const invitation = await userRules.invitations(user3Address);
 
               expect(invitation.invited).to.equal(user3Address.address);
             });
@@ -263,7 +263,7 @@ describe("InvitationRules", () => {
               it("invite with success", async () => {
                 await instance.connect(user2Address).invite(user4Address, userTypes.Researcher);
 
-                const invitation = await userContract.invitations(user4Address);
+                const invitation = await userRules.invitations(user4Address);
 
                 expect(invitation.invited).to.equal(user4Address.address);
               });
@@ -286,7 +286,7 @@ describe("InvitationRules", () => {
             it("invite with success", async () => {
               await instance.connect(user2Address).invite(user3Address, userTypes.Researcher);
 
-              const invitation = await userContract.invitations(user3Address);
+              const invitation = await userRules.invitations(user3Address);
 
               expect(invitation.invited).to.equal(user3Address.address);
             });
@@ -313,7 +313,7 @@ describe("InvitationRules", () => {
               it("invite with success", async () => {
                 await instance.connect(user2Address).invite(user4Address, userTypes.Validator);
 
-                const invitation = await userContract.invitations(user4Address);
+                const invitation = await userRules.invitations(user4Address);
 
                 expect(invitation.invited).to.equal(user4Address.address);
               });
@@ -336,7 +336,7 @@ describe("InvitationRules", () => {
             it("invite with success", async () => {
               await instance.connect(user2Address).invite(user3Address, userTypes.Validator);
 
-              const invitation = await userContract.invitations(user3Address);
+              const invitation = await userRules.invitations(user3Address);
 
               expect(invitation.invited).to.equal(user3Address.address);
             });
@@ -363,7 +363,7 @@ describe("InvitationRules", () => {
               it("invite with success", async () => {
                 await instance.connect(user2Address).invite(user4Address, userTypes.Supporter);
 
-                const invitation = await userContract.invitations(user4Address);
+                const invitation = await userRules.invitations(user4Address);
 
                 expect(invitation.invited).to.equal(user4Address.address);
               });
@@ -377,7 +377,7 @@ describe("InvitationRules", () => {
               it("invite with success", async () => {
                 await instance.connect(user2Address).invite(user4Address, userTypes.Supporter);
 
-                const invitation = await userContract.invitations(user4Address);
+                const invitation = await userRules.invitations(user4Address);
 
                 expect(invitation.invited).to.equal(user4Address.address);
               });
@@ -388,7 +388,7 @@ describe("InvitationRules", () => {
             it("invite with success", async () => {
               await instance.connect(user2Address).invite(user3Address, userTypes.Supporter);
 
-              const invitation = await userContract.invitations(user3Address);
+              const invitation = await userRules.invitations(user3Address);
 
               expect(invitation.invited).to.equal(user3Address.address);
             });
@@ -404,7 +404,7 @@ describe("InvitationRules", () => {
         it("invite with success", async () => {
           await instance.onlyOwnerInvite(user3Address, userTypes.Developer);
 
-          const invitation = await userContract.invitations(user3Address);
+          const invitation = await userRules.invitations(user3Address);
 
           expect(invitation.invited).to.equal(user3Address.address);
         });

@@ -21,9 +21,9 @@ contract DeveloperRules is Ownable, CallerRules {
   mapping(uint256 => Report) public reports;
   mapping(address => Penalty[]) public penalties;
 
-  UserRules internal userContract;
+  UserRules internal userRules;
   DeveloperPool internal developerPool;
-  ValidatorRules internal validatorContract;
+  ValidatorRules internal validatorRules;
 
   address[] internal developersAddress;
   UserType private constant USER_TYPE = UserType.DEVELOPER;
@@ -33,15 +33,15 @@ contract DeveloperRules is Ownable, CallerRules {
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
   constructor(
-    address userContractAddress,
+    address userRulesAddress,
     address developerPoolAddress,
-    address validatorContractAddress,
+    address validatorRulesAddress,
     uint256 maxPenalties_,
     uint256 securityBlocksToValidatorAnalysis
   ) {
-    userContract = UserRules(userContractAddress);
+    userRules = UserRules(userRulesAddress);
     developerPool = DeveloperPool(developerPoolAddress);
-    validatorContract = ValidatorRules(validatorContractAddress);
+    validatorRules = ValidatorRules(validatorRulesAddress);
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
@@ -55,7 +55,7 @@ contract DeveloperRules is Ownable, CallerRules {
     uint256 level = 0;
 
     developers[msg.sender] = Developer(
-      userContract.userTypesCount(USER_TYPE) + 1,
+      userRules.userTypesCount(USER_TYPE) + 1,
       msg.sender,
       name,
       proofPhoto,
@@ -65,7 +65,7 @@ contract DeveloperRules is Ownable, CallerRules {
     );
 
     developersAddress.push(msg.sender);
-    userContract.addUser(msg.sender, USER_TYPE);
+    userRules.addUser(msg.sender, USER_TYPE);
   }
 
   /**
@@ -75,7 +75,7 @@ contract DeveloperRules is Ownable, CallerRules {
    * @param report Hash of the report file
    */
   function addReport(string memory description, string memory report) public {
-    require(userContract.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
+    require(userRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add report");
 
     uint256 currentEra = developerPoolEra();
@@ -114,7 +114,7 @@ contract DeveloperRules is Ownable, CallerRules {
    * @param justification String with invalidation explanation
    */
   function addReportValidation(uint256 id, string memory justification) public {
-    require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+    require(userRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
     Report memory report = reports[id];
 
@@ -123,11 +123,11 @@ contract DeveloperRules is Ownable, CallerRules {
     report.validationsCount += 1;
     reports[id] = report;
 
-    bool mustInvalidateReport = report.validationsCount >= validatorContract.majorityValidatorsCount();
+    bool mustInvalidateReport = report.validationsCount >= validatorRules.majorityValidatorsCount();
 
     if (mustInvalidateReport) invalidateReport(report);
 
-    validatorContract.addDeveloperReportValidation(report, justification, msg.sender);
+    validatorRules.addDeveloperReportValidation(report, justification, msg.sender);
   }
 
   /**
@@ -155,7 +155,7 @@ contract DeveloperRules is Ownable, CallerRules {
    * @dev Returns all developers
    */
   function getDevelopers() public view returns (Developer[] memory) {
-    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    uint256 usersCount = userRules.userTypesCount(USER_TYPE);
     Developer[] memory developerList = new Developer[](usersCount);
 
     for (uint256 i = 0; i < usersCount; i++) {
@@ -195,7 +195,7 @@ contract DeveloperRules is Ownable, CallerRules {
    * @notice Withdraw regeneration credit from development service provided
    */
   function withdraw() public {
-    require(userContract.userTypeIs(UserType.DEVELOPER, msg.sender), "Pool only to developer");
+    require(userRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Pool only to developer");
 
     Developer memory developer = developers[msg.sender];
     uint256 currentEra = developer.pool.currentEra;

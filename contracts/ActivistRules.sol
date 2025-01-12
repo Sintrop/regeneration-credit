@@ -18,15 +18,15 @@ contract ActivistRules is CallerRules {
   mapping(address => Activist) internal activists;
   mapping(address => mapping(address => bool)) internal activistWonLevel;
 
-  UserRules internal userContract;
+  UserRules internal userRules;
   address[] internal activistsAddress;
   ActivistPool internal activistPool;
   UserType private constant USER_TYPE = UserType.ACTIVIST;
 
   uint256 private constant MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS = 3;
 
-  constructor(address userContractAddress, address activistPoolAddress) {
-    userContract = UserRules(userContractAddress);
+  constructor(address userRulesAddress, address activistPoolAddress) {
+    userRules = UserRules(userRulesAddress);
     activistPool = ActivistPool(activistPoolAddress);
   }
 
@@ -37,7 +37,7 @@ contract ActivistRules is CallerRules {
    */
   function addActivist(string memory name, string memory proofPhoto) public returns (Activist memory) {
     Activist memory activist = Activist(
-      userContract.userTypesCount(USER_TYPE) + 1,
+      userRules.userTypesCount(USER_TYPE) + 1,
       msg.sender,
       name,
       proofPhoto,
@@ -46,7 +46,7 @@ contract ActivistRules is CallerRules {
 
     activists[msg.sender] = activist;
     activistsAddress.push(msg.sender);
-    userContract.addUser(msg.sender, USER_TYPE);
+    userRules.addUser(msg.sender, USER_TYPE);
 
     return activist;
   }
@@ -56,7 +56,7 @@ contract ActivistRules is CallerRules {
    * @return Activist[]
    */
   function getActivists() public view returns (Activist[] memory) {
-    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    uint256 usersCount = userRules.userTypesCount(USER_TYPE);
     Activist[] memory activistList = new Activist[](usersCount);
 
     for (uint256 i = 0; i < usersCount; i++) {
@@ -100,7 +100,7 @@ contract ActivistRules is CallerRules {
    * @param regeneratorTotalInspections Invited regenerator total inspections
    */
   function addLevelFromRegenerator(address regeneratorAddress, uint256 regeneratorTotalInspections) private {
-    Invitation memory regeneratorInvitation = userContract.getInvitation(regeneratorAddress);
+    Invitation memory regeneratorInvitation = userRules.getInvitation(regeneratorAddress);
 
     if (
       !activistWonLevel[regeneratorInvitation.inviter][regeneratorAddress] &&
@@ -117,7 +117,7 @@ contract ActivistRules is CallerRules {
    * @param inspectorTotalInspections Invited inspector total inspections
    */
   function addLevelFromInspector(address inspectorAddress, uint256 inspectorTotalInspections) private {
-    Invitation memory inspectorInvitation = userContract.getInvitation(inspectorAddress);
+    Invitation memory inspectorInvitation = userRules.getInvitation(inspectorAddress);
 
     if (
       !activistWonLevel[inspectorInvitation.inviter][inspectorAddress] &&
@@ -148,7 +148,7 @@ contract ActivistRules is CallerRules {
    * @notice Withdraw regeneration credit from activism service provided
    */
   function withdraw() public {
-    require(userContract.userTypeIs(UserType.ACTIVIST, msg.sender), "Pool only to activist");
+    require(userRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Pool only to activist");
 
     Activist memory activist = activists[msg.sender];
     uint256 currentEra = activist.pool.currentEra;

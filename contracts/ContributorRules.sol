@@ -19,7 +19,7 @@ contract ContributorRules is Ownable, CallerRules {
   mapping(uint256 => mapping(address => bool)) public contributorContributionsEra;
   mapping(uint256 => Contribution) public contributions;
 
-  UserRules internal userContract;
+  UserRules internal userRules;
   ContributorPool internal contributorPool;
 
   address[] internal contributorsAddress;
@@ -27,8 +27,8 @@ contract ContributorRules is Ownable, CallerRules {
   uint256 public contributionsCount;
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
-  constructor(address userContractAddress, address contributorPoolAddress, uint256 securityBlocksToValidatorAnalysis) {
-    userContract = UserRules(userContractAddress);
+  constructor(address userRulesAddress, address contributorPoolAddress, uint256 securityBlocksToValidatorAnalysis) {
+    userRules = UserRules(userRulesAddress);
     contributorPool = ContributorPool(contributorPoolAddress);
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
@@ -42,7 +42,7 @@ contract ContributorRules is Ownable, CallerRules {
     uint256 level = 0;
 
     contributors[msg.sender] = Contributor(
-      userContract.userTypesCount(USER_TYPE) + 1,
+      userRules.userTypesCount(USER_TYPE) + 1,
       msg.sender,
       name,
       proofPhoto,
@@ -52,7 +52,7 @@ contract ContributorRules is Ownable, CallerRules {
 
     contributorsAddress.push(msg.sender);
 
-    userContract.addUser(msg.sender, USER_TYPE);
+    userRules.addUser(msg.sender, USER_TYPE);
   }
 
   /**
@@ -61,7 +61,7 @@ contract ContributorRules is Ownable, CallerRules {
    * @param report Hash of the report file
    */
   function addContribution(string memory report) public {
-    require(userContract.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Only Contributor");
+    require(userRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Only Contributor");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add contribution");
 
     uint256 currentEra = contributorPoolEra();
@@ -90,7 +90,7 @@ contract ContributorRules is Ownable, CallerRules {
    * @dev Returns all contributors
    */
   function getContributors() public view returns (Contributor[] memory) {
-    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    uint256 usersCount = userRules.userTypesCount(USER_TYPE);
     Contributor[] memory contributorList = new Contributor[](usersCount);
 
     for (uint256 i = 0; i < usersCount; i++) {
@@ -130,7 +130,7 @@ contract ContributorRules is Ownable, CallerRules {
    * @notice Withdraw regeneration credit from contribution service provided
    */
   function withdraw() public {
-    require(userContract.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Pool only to contributor");
+    require(userRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Pool only to contributor");
 
     Contributor memory contributor = contributors[msg.sender];
     uint256 currentEra = contributor.pool.currentEra;

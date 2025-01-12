@@ -1,4 +1,4 @@
-const { userContractDeployed } = require("./shared/user_contract_deployed");
+const { userRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 
@@ -8,7 +8,7 @@ const { ethers } = require("hardhat");
 
 describe("ContributorRules", (accounts) => {
   let instance;
-  let userContract;
+  let userRules;
   let contributorPool;
   let regenerationCredit;
   let owner, contr1Address, contr2Address, contr3Address;
@@ -26,14 +26,14 @@ describe("ContributorRules", (accounts) => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userContract.connect(from).addInvitation(inviter, invited, userType);
+    await userRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
   beforeEach(async () => {
     [owner, contr1Address, contr2Address, contr3Address] = await ethers.getSigners();
 
     regenerationCredit = await regenerationCreditDeployed();
-    userContract = await userContractDeployed();
+    userRules = await userRulesDeployed();
 
     contributorPoolFactory = await ethers.getContractFactory("ContributorPool");
     contributorPool = await contributorPoolFactory.deploy(
@@ -42,15 +42,15 @@ describe("ContributorRules", (accounts) => {
       contributorPoolParams.blocksPerEra
     );
 
-    contributorContractFactory = await ethers.getContractFactory("ContributorRules");
-    instance = await contributorContractFactory.deploy(
-      userContract.target,
+    contributorRulesFactory = await ethers.getContractFactory("ContributorRules");
+    instance = await contributorRulesFactory.deploy(
+      userRules.target,
       contributorPool.target,
       securityBlocksToValidatorAnalysis
     );
 
-    await userContract.newAllowedCaller(instance.target);
-    await userContract.newAllowedCaller(owner);
+    await userRules.newAllowedCaller(instance.target);
+    await userRules.newAllowedCaller(owner);
     await contributorPool.newAllowedCaller(instance.target);
     await regenerationCredit.addContractPool(contributorPool.target, "30000000000000000000000000");
 
@@ -98,7 +98,7 @@ describe("ContributorRules", (accounts) => {
 
         it("should increment contributorsCount after create contributor", async () => {
           await addContributor("Contributor A", contr1Address);
-          const contributorsCount = await userContract.userTypesCount(userTypes.Contributor);
+          const contributorsCount = await userRules.userTypesCount(userTypes.Contributor);
 
           expect(contributorsCount).to.equal(1);
         });
@@ -114,7 +114,7 @@ describe("ContributorRules", (accounts) => {
         it("should add created contributor in userType contract as a CONTRIBUTOR", async () => {
           await addContributor("Contributor A", contr1Address);
 
-          const userType = await userContract.getUser(contr1Address);
+          const userType = await userRules.getUser(contr1Address);
           const CONTRIBUTOR = 5;
 
           expect(userType).to.equal(CONTRIBUTOR);

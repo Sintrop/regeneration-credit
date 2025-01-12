@@ -19,7 +19,7 @@ contract InspectorRules is CallerRules {
   mapping(address => Inspector) internal inspectors;
   mapping(address => Penalty[]) public penalties;
 
-  UserRules internal userContract;
+  UserRules internal userRules;
   InspectorPool internal inspectorPool;
   address[] internal inspectorsAddress;
   UserType private constant USER_TYPE = UserType.INSPECTOR;
@@ -27,8 +27,8 @@ contract InspectorRules is CallerRules {
   uint256 public immutable maxPenalties;
   uint256 private constant MAX_GIVEUPS = 3;
 
-  constructor(address userContractAddress, address inspectorPoolAddress, uint256 maxPenalties_) {
-    userContract = UserRules(userContractAddress);
+  constructor(address userRulesAddress, address inspectorPoolAddress, uint256 maxPenalties_) {
+    userRules = UserRules(userRulesAddress);
     inspectorPool = InspectorPool(inspectorPoolAddress);
     maxPenalties = maxPenalties_;
   }
@@ -40,7 +40,7 @@ contract InspectorRules is CallerRules {
    */
   function addInspector(string memory name, string memory proofPhoto) public returns (Inspector memory) {
     Inspector memory inspector = Inspector(
-      userContract.userTypesCount(USER_TYPE) + 1,
+      userRules.userTypesCount(USER_TYPE) + 1,
       msg.sender,
       name,
       proofPhoto,
@@ -53,7 +53,7 @@ contract InspectorRules is CallerRules {
 
     inspectors[msg.sender] = inspector;
     inspectorsAddress.push(msg.sender);
-    userContract.addUser(msg.sender, USER_TYPE);
+    userRules.addUser(msg.sender, USER_TYPE);
 
     return inspector;
   }
@@ -73,7 +73,7 @@ contract InspectorRules is CallerRules {
    * @return Inspector struct array
    */
   function getInspectors() public view returns (Inspector[] memory) {
-    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    uint256 usersCount = userRules.userTypesCount(USER_TYPE);
     Inspector[] memory inspectorList = new Inspector[](usersCount);
 
     for (uint256 i = 0; i < usersCount; i++) {
@@ -205,7 +205,7 @@ contract InspectorRules is CallerRules {
    * @notice Withdraw regeneration credit from inspection service provided
    */
   function withdraw() public {
-    require(userContract.userTypeIs(UserType.INSPECTOR, msg.sender), "Pool only to inspectors");
+    require(userRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Pool only to inspectors");
 
     Inspector memory inspector = inspectors[msg.sender];
     require(minimumInspections(inspector.totalInspections), "Minimum inspections");

@@ -1,4 +1,4 @@
-const { userContractDeployed } = require("./shared/user_contract_deployed");
+const { userRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 
 const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
@@ -8,7 +8,7 @@ const { ethers } = require("hardhat");
 
 describe("InspectorRules", () => {
   let instance;
-  let userContract;
+  let userRules;
   let owner, inspe1Address, inspe2Address;
 
   const addInspector = async (name, from) => {
@@ -16,7 +16,7 @@ describe("InspectorRules", () => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userContract.connect(from).addInvitation(inviter, invited, userType);
+    await userRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
   const args = {
@@ -29,19 +29,19 @@ describe("InspectorRules", () => {
     [owner, inspe1Address, inspe2Address] = await ethers.getSigners();
 
     regenerationCredit = await regenerationCreditDeployed();
-    userContract = await userContractDeployed();
+    userRules = await userRulesDeployed();
     const maxPenalties = 2;
 
     const inspectorPoolFactory = await ethers.getContractFactory("InspectorPool");
     inspectorPool = await inspectorPoolFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra);
 
     const instanceFactory = await ethers.getContractFactory("InspectorRules");
-    instance = await instanceFactory.deploy(userContract.target, inspectorPool.target, maxPenalties);
+    instance = await instanceFactory.deploy(userRules.target, inspectorPool.target, maxPenalties);
 
     await inspectorPool.newAllowedCaller(instance.target);
     await regenerationCredit.addContractPool(inspectorPool.target, args.totalTokens);
-    await userContract.newAllowedCaller(instance.target);
-    await userContract.newAllowedCaller(owner);
+    await userRules.newAllowedCaller(instance.target);
+    await userRules.newAllowedCaller(owner);
     await instance.newAllowedCaller(owner);
 
     await addInvitation(owner, inspe1Address, userTypes.Inspector, owner);
@@ -101,7 +101,7 @@ describe("InspectorRules", () => {
         it("should increment inspectorsCount after create inspector", async () => {
           await addInspector("Inspector A", inspe1Address);
           await addInspector("Inspector B", inspe2Address);
-          const inspectorsCount = await userContract.userTypesCount(userTypes.Inspector);
+          const inspectorsCount = await userRules.userTypesCount(userTypes.Inspector);
 
           expect(inspectorsCount).to.equal(2);
         });
@@ -118,7 +118,7 @@ describe("InspectorRules", () => {
         it("should add created inspector in userType contract as a INSPECTOR", async () => {
           await addInspector("Inspector A", inspe1Address);
 
-          const userType = await userContract.getUser(inspe1Address);
+          const userType = await userRules.getUser(inspe1Address);
           const INSPECTOR = 2;
 
           expect(userType).to.equal(INSPECTOR);

@@ -33,14 +33,14 @@ contract ValidatorRules is CallerRules {
   mapping(address => mapping(uint256 => bool)) private validatorWorksValidations;
   mapping(address => mapping(address => bool)) private validatorUsersValidations;
 
-  UserRules private userContract;
-  RegeneratorRules private regeneratorContract;
+  UserRules private userRules;
+  RegeneratorRules private regeneratorRules;
   ValidatorPool private validatorPool;
-  InspectorRules private inspectorContract;
-  DeveloperRules private developerContract;
-  ResearcherRules private researcherContract;
-  ContributorRules private contributorContract;
-  ActivistRules private activistContract;
+  InspectorRules private inspectorRules;
+  DeveloperRules private developerRules;
+  ResearcherRules private researcherRules;
+  ContributorRules private contributorRules;
+  ActivistRules private activistRules;
 
   address[] public validatorsAddress;
   UserType private constant USER_TYPE = UserType.VALIDATOR;
@@ -53,14 +53,14 @@ contract ValidatorRules is CallerRules {
   }
 
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
-    userContract = UserRules(contractDependency.userContractAddress);
-    regeneratorContract = RegeneratorRules(contractDependency.regeneratorContractAddress);
+    userRules = UserRules(contractDependency.userRulesAddress);
+    regeneratorRules = RegeneratorRules(contractDependency.regeneratorRulesAddress);
     validatorPool = ValidatorPool(contractDependency.validatorPoolAddress);
-    inspectorContract = InspectorRules(contractDependency.inspectorContractAddress);
-    developerContract = DeveloperRules(contractDependency.developerContractAddress);
-    researcherContract = ResearcherRules(contractDependency.researcherContractAddress);
-    contributorContract = ContributorRules(contractDependency.contributorContractAddress);
-    activistContract = ActivistRules(contractDependency.activistContractAddress);
+    inspectorRules = InspectorRules(contractDependency.inspectorRulesAddress);
+    developerRules = DeveloperRules(contractDependency.developerRulesAddress);
+    researcherRules = ResearcherRules(contractDependency.researcherRulesAddress);
+    contributorRules = ContributorRules(contractDependency.contributorRulesAddress);
+    activistRules = ActivistRules(contractDependency.activistRulesAddress);
   }
 
   /**
@@ -68,22 +68,22 @@ contract ValidatorRules is CallerRules {
    */
   function addValidator() public {
     validators[msg.sender] = Validator(
-      userContract.userTypesCount(USER_TYPE) + 1,
+      userRules.userTypesCount(USER_TYPE) + 1,
       msg.sender,
       Pool(0, validatorPoolEra())
     );
 
     validatorsAddress.push(msg.sender);
-    userContract.addUser(msg.sender, USER_TYPE);
+    userRules.addUser(msg.sender, USER_TYPE);
   }
 
   function addUserValidation(
     address userAddress,
     string memory justification
   ) public canAddValidationModifier(msg.sender) {
-    require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
-    require(!userContract.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
-    require(!userContract.userTypeIs(UserType.DENIED, userAddress), "User already denied");
+    require(userRules.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
+    require(!userRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
+    require(!userRules.userTypeIs(UserType.DENIED, userAddress), "User already denied");
     require(!validatorUsersValidations[msg.sender][userAddress], "Already voted");
 
     validatorUsersValidations[msg.sender][userAddress] = true;
@@ -117,10 +117,10 @@ contract ValidatorRules is CallerRules {
 
     if (!addPenalty) return;
 
-    uint256 inspectorTotalPenalties = inspectorContract.addPenalty(inspection.inspector, inspection.id);
+    uint256 inspectorTotalPenalties = inspectorRules.addPenalty(inspection.inspector, inspection.id);
     removeUserInspection(inspection);
 
-    if (inspectorTotalPenalties >= inspectorContract.maxPenalties()) externalDenieUser(inspection.inspector);
+    if (inspectorTotalPenalties >= inspectorRules.maxPenalties()) externalDenieUser(inspection.inspector);
   }
 
   function addDeveloperReportValidation(
@@ -142,10 +142,10 @@ contract ValidatorRules is CallerRules {
 
     if (!addPenalty) return;
 
-    uint256 developerTotalPenalties = developerContract.addPenalty(report.developer, report.id);
+    uint256 developerTotalPenalties = developerRules.addPenalty(report.developer, report.id);
     removeDeveloperReport(report);
 
-    if (developerTotalPenalties >= developerContract.MAX_PENALTIES()) externalDenieUser(report.developer);
+    if (developerTotalPenalties >= developerRules.MAX_PENALTIES()) externalDenieUser(report.developer);
   }
 
   function addResearcheWorkValidation(
@@ -167,10 +167,10 @@ contract ValidatorRules is CallerRules {
 
     if (!addPenalty) return;
 
-    uint256 totalPenalties = researcherContract.addPenalty(work.createdBy, work.id);
+    uint256 totalPenalties = researcherRules.addPenalty(work.createdBy, work.id);
     removeReseacherWork(work);
 
-    if (totalPenalties >= researcherContract.MAX_PENALTIES()) externalDenieUser(work.createdBy);
+    if (totalPenalties >= researcherRules.MAX_PENALTIES()) externalDenieUser(work.createdBy);
   }
 
   function removeDeveloperReport(Report memory report) internal {
@@ -182,13 +182,13 @@ contract ValidatorRules is CallerRules {
   }
 
   function removeUserInspection(Inspection memory inspection) internal {
-    inspectorContract.decrementInspections(inspection.inspector);
-    regeneratorContract.decrementInspections(inspection.regenerator);
+    inspectorRules.decrementInspections(inspection.inspector);
+    regeneratorRules.decrementInspections(inspection.regenerator);
 
     removeLevelsFromPool(inspection.inspector, 1);
 
     if (inspection.regenerationScore < 0)
-      return regeneratorContract.removeNegativeScore(inspection.regenerator, -(inspection.regenerationScore));
+      return regeneratorRules.removeNegativeScore(inspection.regenerator, -(inspection.regenerationScore));
 
     removeLevelsFromPool(inspection.regenerator, uint256(inspection.regenerationScore));
   }
@@ -200,18 +200,18 @@ contract ValidatorRules is CallerRules {
   function denieUser(address userAddress) internal {
     removeLevelsFromPool(userAddress, 0);
 
-    userContract.setDeniedType(userAddress);
+    userRules.setDeniedType(userAddress);
   }
 
   function removeLevelsFromPool(address userAddress, uint256 levels) internal {
-    UserType oldUserType = userContract.getUser(userAddress);
+    UserType oldUserType = userRules.getUser(userAddress);
 
-    if (oldUserType == UserType.INSPECTOR) return inspectorContract.removePoolLevels(userAddress, levels);
-    if (oldUserType == UserType.REGENERATOR) return regeneratorContract.removePoolLevels(userAddress, levels);
-    if (oldUserType == UserType.DEVELOPER) return developerContract.removePoolLevels(userAddress, levels);
-    if (oldUserType == UserType.RESEARCHER) return researcherContract.removePoolLevels(userAddress, levels);
-    if (oldUserType == UserType.CONTRIBUTOR) return contributorContract.removePoolLevels(userAddress, levels);
-    if (oldUserType == UserType.ACTIVIST) return activistContract.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.INSPECTOR) return inspectorRules.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.REGENERATOR) return regeneratorRules.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.DEVELOPER) return developerRules.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.RESEARCHER) return researcherRules.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.CONTRIBUTOR) return contributorRules.removePoolLevels(userAddress, levels);
+    if (oldUserType == UserType.ACTIVIST) return activistRules.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.VALIDATOR) return validatorRemovePoolLevels(userAddress, levels);
   }
 
@@ -227,7 +227,7 @@ contract ValidatorRules is CallerRules {
     uint256 currentEra = validatorPoolEra();
 
     if (currentEra == 1) {
-      uint256 _validatorsCount = userContract.userTypesCount(USER_TYPE);
+      uint256 _validatorsCount = userRules.userTypesCount(USER_TYPE);
       return _validatorsCount / 2;
     } else {
       uint256 levels = validatorPool.getEra(currentEra - 1).levels;
@@ -237,7 +237,7 @@ contract ValidatorRules is CallerRules {
   }
 
   function declareAlive() public {
-    require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
+    require(userRules.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
     address addr = msg.sender;
     uint256 levels = validatorPool.eraLevels(validatorPoolEra(), addr);
 
@@ -255,7 +255,7 @@ contract ValidatorRules is CallerRules {
    * @notice Withdraw regeneration credit from validation service provided
    */
   function withdraw() public {
-    require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Pool only to validators");
+    require(userRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Pool only to validators");
 
     Validator memory validator = validators[msg.sender];
     uint256 currentEra = validator.pool.currentEra;

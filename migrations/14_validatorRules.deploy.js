@@ -2,8 +2,8 @@ const saveContractAddress = require("../scripts/shared/saveContractAddress");
 const getDeployedContract = require("../scripts/shared/getDeployedContract");
 const verifyContract = require("../scripts/shared/verifyContract");
 
-async function validatorContractDeploy() {
-  const userContract = await getDeployedContract("UserRules");
+async function validatorRulesDeploy() {
+  const userRules = await getDeployedContract("UserRules");
   const firstValidatorLimit = process.env["FIRST_VALIDATOR_LIMIT"];
   const secondValidatorLimit = process.env["SECOND_VALIDATOR_LIMIT"];
 
@@ -11,17 +11,17 @@ async function validatorContractDeploy() {
 
   const args = [firstValidatorLimit, secondValidatorLimit];
 
-  const validatorContract = await ValidatorRules.deploy(...args);
+  const validatorRules = await ValidatorRules.deploy(...args);
 
-  saveContractAddress("ValidatorRules", validatorContract.target);
+  saveContractAddress("ValidatorRules", validatorRules.target);
 
-  await userContract.newAllowedCaller(validatorContract.target);
+  await userRules.newAllowedCaller(validatorRules.target);
 
-  console.log(`ValidatorRules address ${validatorContract.target}`);
+  console.log(`ValidatorRules address ${validatorRules.target}`);
 
-  await verifyContract(validatorContract, "ValidatorRules", args);
+  await verifyContract(validatorRules, "ValidatorRules", args);
 
-  return validatorContract;
+  return validatorRules;
 }
 
-module.exports = validatorContractDeploy;
+module.exports = validatorRulesDeploy;

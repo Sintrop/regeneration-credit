@@ -1,7 +1,7 @@
 const saveContractAddress = require("../scripts/shared/saveContractAddress");
 const verifyContract = require("../scripts/shared/verifyContract");
 
-async function userContractDeploy() {
+async function userRulesDeploy() {
   const inspectorProportionality = process.env["INSPECTOR_PROPORTIONALITY"];
   const activistProportionality = process.env["ACTIVIST_PROPORTIONALITY"];
   const researcherProportionality = process.env["RESEARCHER_PROPORTIONALITY"];
@@ -20,15 +20,15 @@ async function userContractDeploy() {
     contributorProportionality,
   ];
 
-  var userContract = await UserRules.deploy(...args);
+  var userRules = await UserRules.deploy(...args);
 
-  saveContractAddress("UserRules", userContract.target);
+  saveContractAddress("UserRules", userRules.target);
 
-  console.log(`UserRules address ${userContract.target}`);
+  console.log(`UserRules address ${userRules.target}`);
 
-  await verifyContract(userContract, "UserRules", args);
+  await verifyContract(userRules, "UserRules", args);
 
-  return userContract;
+  return userRules;
 }
 
-module.exports = userContractDeploy;
+module.exports = userRulesDeploy;

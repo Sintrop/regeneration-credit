@@ -1,4 +1,4 @@
-const { userContractDeployed } = require("./shared/user_contract_deployed");
+const { userRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
@@ -10,8 +10,8 @@ describe("ResearcherRules", () => {
   let instance;
   let regenerationCredit;
   let researcherPool;
-  let userContract;
-  let validatorContract;
+  let userRules;
+  let validatorRules;
   let validatorPool;
   let owner, resea1Address, resea2Address, validator1Address, validator2Address, validator3Address, validator4Address;
 
@@ -38,11 +38,11 @@ describe("ResearcherRules", () => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userContract.connect(from).addInvitation(inviter, invited, userType);
+    await userRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
   const addValidator = async (from) => {
-    await validatorContract.connect(from).addValidator();
+    await validatorRules.connect(from).addValidator();
   };
 
   const addWork = async (from) => {
@@ -58,7 +58,7 @@ describe("ResearcherRules", () => {
       await ethers.getSigners();
 
     regenerationCredit = await regenerationCreditDeployed();
-    userContract = await userContractDeployed();
+    userRules = await userRulesDeployed();
 
     const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
     researcherPool = await researcherPoolFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra);
@@ -70,40 +70,40 @@ describe("ResearcherRules", () => {
       validatorPoolArgs.blocksPerEra
     );
 
-    const validatorContractFactory = await ethers.getContractFactory("ValidatorRules");
-    validatorContract = await validatorContractFactory.deploy(firstValidatorLimit, secondValidatorLimit);
+    const validatorRulesFactory = await ethers.getContractFactory("ValidatorRules");
+    validatorRules = await validatorRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
     const instanceFactory = await ethers.getContractFactory("ResearcherRules");
     instance = await instanceFactory.deploy(
-      userContract.target,
+      userRules.target,
       researcherPool.target,
-      validatorContract.target,
+      validatorRules.target,
       timeBetweenWorks,
       maxPenalties,
       securityBlocksToValidatorAnalysis
     );
 
-    const validatorContractDependencies = {
-      userContractAddress: userContract.target,
-      regeneratorContractAddress: ZERO_ADDRESS,
+    const validatorRulesDependencies = {
+      userRulesAddress: userRules.target,
+      regeneratorRulesAddress: ZERO_ADDRESS,
       validatorPoolAddress: validatorPool.target,
-      inspectorContractAddress: ZERO_ADDRESS,
-      developerContractAddress: ZERO_ADDRESS,
-      researcherContractAddress: instance.target,
-      contributorContractAddress: ZERO_ADDRESS,
-      activistContractAddress: ZERO_ADDRESS,
+      inspectorRulesAddress: ZERO_ADDRESS,
+      developerRulesAddress: ZERO_ADDRESS,
+      researcherRulesAddress: instance.target,
+      contributorRulesAddress: ZERO_ADDRESS,
+      activistRulesAddress: ZERO_ADDRESS,
     };
 
-    await validatorContract.setContractAddressDependencies(validatorContractDependencies);
+    await validatorRules.setContractAddressDependencies(validatorRulesDependencies);
 
-    await userContract.newAllowedCaller(validatorContract.target);
-    await userContract.newAllowedCaller(instance.target);
-    await userContract.newAllowedCaller(owner);
+    await userRules.newAllowedCaller(validatorRules.target);
+    await userRules.newAllowedCaller(instance.target);
+    await userRules.newAllowedCaller(owner);
     await researcherPool.newAllowedCaller(instance.target);
-    await validatorPool.newAllowedCaller(validatorContract.target);
-    await validatorContract.newAllowedCaller(instance.target);
-    await validatorContract.newAllowedCaller(owner);
-    await instance.newAllowedCaller(validatorContract.target);
+    await validatorPool.newAllowedCaller(validatorRules.target);
+    await validatorRules.newAllowedCaller(instance.target);
+    await validatorRules.newAllowedCaller(owner);
+    await instance.newAllowedCaller(validatorRules.target);
     await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(researcherPool.target, args.totalTokens);
 
@@ -137,7 +137,7 @@ describe("ResearcherRules", () => {
         });
 
         it("increment researcherCount after create researcher", async () => {
-          const researchersCount = await userContract.userTypesCount(userTypes.Researcher);
+          const researchersCount = await userRules.userTypesCount(userTypes.Researcher);
 
           expect(researchersCount).to.equal(1);
         });
@@ -149,7 +149,7 @@ describe("ResearcherRules", () => {
         });
 
         it("add created researcher in userType contract as a RESEARCHER", async () => {
-          const userType = await userContract.getUser(resea1Address);
+          const userType = await userRules.getUser(resea1Address);
           const RESEARCHER = 3;
 
           expect(userType).to.equal(RESEARCHER);
@@ -416,7 +416,7 @@ describe("ResearcherRules", () => {
           });
 
           it("user type must be RESEARCHER yet", async () => {
-            const userType = await userContract.getUser(resea1Address);
+            const userType = await userRules.getUser(resea1Address);
 
             expect(userType).to.eq(userTypes.Researcher);
           });
@@ -473,22 +473,22 @@ describe("ResearcherRules", () => {
         beforeEach(async () => {
           await addValidator(validator2Address);
 
-          await validatorContract.connect(validator1Address).declareAlive();
-          await validatorContract.connect(validator2Address).declareAlive();
+          await validatorRules.connect(validator1Address).declareAlive();
+          await validatorRules.connect(validator2Address).declareAlive();
 
           await addWork(resea1Address);
           await instance.connect(validator1Address).addWorkValidation(1, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
-          await validatorContract.connect(validator1Address).declareAlive();
+          await validatorRules.connect(validator1Address).declareAlive();
 
           await addWork(resea1Address);
           await instance.connect(validator1Address).addWorkValidation(2, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
-          await validatorContract.connect(validator1Address).declareAlive();
+          await validatorRules.connect(validator1Address).declareAlive();
 
           await addWork(resea1Address);
 
@@ -496,7 +496,7 @@ describe("ResearcherRules", () => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await userContract.getUser(resea1Address);
+          const userType = await userRules.getUser(resea1Address);
 
           expect(userType).to.eq(userTypes.Denied);
         });
@@ -523,9 +523,9 @@ describe("ResearcherRules", () => {
             await addValidator(validator3Address);
             await addValidator(validator4Address);
 
-            await validatorContract.connect(validator1Address).declareAlive();
-            await validatorContract.connect(validator2Address).declareAlive();
-            await validatorContract.connect(validator4Address).declareAlive();
+            await validatorRules.connect(validator1Address).declareAlive();
+            await validatorRules.connect(validator2Address).declareAlive();
+            await validatorRules.connect(validator4Address).declareAlive();
 
             await advanceBlock(validatorPoolArgs.blocksPerEra);
 

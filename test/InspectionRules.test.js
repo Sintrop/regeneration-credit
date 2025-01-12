@@ -1,5 +1,5 @@
 const { userTypes } = require("./shared/user_types");
-const { userContractDeployed } = require("./shared/user_contract_deployed");
+const { userRulesDeployed } = require("./shared/user_contract_deployed");
 const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
@@ -8,11 +8,11 @@ const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
 describe("InspectionRules", () => {
   let instance;
-  let userContract;
-  let inspectorContract;
-  let regeneratorContract;
-  let researcherContract;
-  let activistContract;
+  let userRules;
+  let inspectorRules;
+  let regeneratorRules;
+  let researcherRules;
+  let activistRules;
   let researcherPool;
   let inspectorPool;
   let regeneratorPool;
@@ -90,27 +90,27 @@ describe("InspectionRules", () => {
   };
 
   const addRegenerator = async (name, from) => {
-    await regeneratorContract.connect(from).addRegenerator(10, name, "photoURL", "135465-005");
+    await regeneratorRules.connect(from).addRegenerator(10, name, "photoURL", "135465-005");
   };
 
   const addInspector = async (name, from) => {
-    await inspectorContract.connect(from).addInspector(name, "photoURL");
+    await inspectorRules.connect(from).addInspector(name, "photoURL");
   };
 
   const addActivist = async (name, from) => {
-    await activistContract.connect(from).addActivist(name, "photoURL");
+    await activistRules.connect(from).addActivist(name, "photoURL");
   };
 
   const addResearcher = async (name, from) => {
-    await researcherContract.connect(from).addResearcher(name, "photoURL");
+    await researcherRules.connect(from).addResearcher(name, "photoURL");
   };
 
   const addValidator = async (from) => {
-    await validatorContract.connect(from).addValidator();
+    await validatorRules.connect(from).addValidator();
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userContract.connect(from).addInvitation(inviter, invited, userType);
+    await userRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
   const addCategory = async (name, from) => {
@@ -127,7 +127,7 @@ describe("InspectionRules", () => {
       },
     ];
 
-    await categoryContract.connect(from).addCategory(name, description, regenerationIndexDescriptions);
+    await regenerationIndexRules.connect(from).addCategory(name, description, regenerationIndexDescriptions);
   };
 
   const regenerationIndex = () => {
@@ -193,7 +193,7 @@ describe("InspectionRules", () => {
     ] = await ethers.getSigners();
 
     regenerationCredit = await regenerationCreditDeployed();
-    userContract = await userContractDeployed();
+    userRules = await userRulesDeployed();
 
     const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
     researcherPool = await researcherPoolFactory.deploy(
@@ -230,54 +230,54 @@ describe("InspectionRules", () => {
       activistPoolArgs.blocksPerEra
     );
 
-    const inspectorContractFactory = await ethers.getContractFactory("InspectorRules");
-    const researcherContractFactory = await ethers.getContractFactory("ResearcherRules");
-    const regeneratorContractFactory = await ethers.getContractFactory("RegeneratorRules");
-    const activistContractFactory = await ethers.getContractFactory("ActivistRules");
+    const inspectorRulesFactory = await ethers.getContractFactory("InspectorRules");
+    const researcherRulesFactory = await ethers.getContractFactory("ResearcherRules");
+    const regeneratorRulesFactory = await ethers.getContractFactory("RegeneratorRules");
+    const activistRulesFactory = await ethers.getContractFactory("ActivistRules");
 
-    const validatorContractFactory = await ethers.getContractFactory("ValidatorRules");
-    validatorContract = await validatorContractFactory.deploy(firstValidatorLimit, secondValidatorLimit);
+    const validatorRulesFactory = await ethers.getContractFactory("ValidatorRules");
+    validatorRules = await validatorRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
-    inspectorContract = await inspectorContractFactory.deploy(
-      userContract.target,
+    inspectorRules = await inspectorRulesFactory.deploy(
+      userRules.target,
       inspectorPool.target,
       inspectorMaxPenalties
     );
 
     const researcherSecuryBlocksToAnalysis = 10;
-    researcherContract = await researcherContractFactory.deploy(
-      userContract.target,
+    researcherRules = await researcherRulesFactory.deploy(
+      userRules.target,
       researcherPool.target,
-      validatorContract.target,
+      validatorRules.target,
       timeBetweenWorks,
       researcherMaxPenalties,
       researcherSecuryBlocksToAnalysis
     );
 
-    regeneratorContract = await regeneratorContractFactory.deploy(userContract.target, regeneratorPool.target);
-    activistContract = await activistContractFactory.deploy(userContract.target, activistPool.target);
+    regeneratorRules = await regeneratorRulesFactory.deploy(userRules.target, regeneratorPool.target);
+    activistRules = await activistRulesFactory.deploy(userRules.target, activistPool.target);
 
-    const categoryContractFactory = await ethers.getContractFactory("RegenerationIndexRules");
-    categoryContract = await categoryContractFactory.deploy();
+    const regenerationIndexRulesFactory = await ethers.getContractFactory("RegenerationIndexRules");
+    regenerationIndexRules = await regenerationIndexRulesFactory.deploy();
 
-    const validatorContractDependencies = {
-      userContractAddress: userContract.target,
-      regeneratorContractAddress: regeneratorContract.target,
+    const validatorRulesDependencies = {
+      userRulesAddress: userRules.target,
+      regeneratorRulesAddress: regeneratorRules.target,
       validatorPoolAddress: validatorPool.target,
-      inspectorContractAddress: inspectorContract.target,
-      developerContractAddress: ZERO_ADDRESS,
-      researcherContractAddress: researcherContract.target,
-      contributorContractAddress: ZERO_ADDRESS,
-      activistContractAddress: activistContract.target,
+      inspectorRulesAddress: inspectorRules.target,
+      developerRulesAddress: ZERO_ADDRESS,
+      researcherRulesAddress: researcherRules.target,
+      contributorRulesAddress: ZERO_ADDRESS,
+      activistRulesAddress: activistRules.target,
     };
 
     const sintropDependencies = {
-      userContractAddress: userContract.target,
-      regeneratorContractAddress: regeneratorContract.target,
-      validatorContractAddress: validatorContract.target,
-      inspectorContractAddress: inspectorContract.target,
-      activistContractAddress: activistContract.target,
-      categoryContractAddress: categoryContract.target,
+      userRulesAddress: userRules.target,
+      regeneratorRulesAddress: regeneratorRules.target,
+      validatorRulesAddress: validatorRules.target,
+      inspectorRulesAddress: inspectorRules.target,
+      activistRulesAddress: activistRules.target,
+      regenerationIndexRulesAddress: regenerationIndexRules.target,
     };
 
     const instanceFactory = await ethers.getContractFactory("InspectionRules");
@@ -291,26 +291,26 @@ describe("InspectionRules", () => {
 
     await instance.setContractAddressDependencies(sintropDependencies);
 
-    await validatorContract.setContractAddressDependencies(validatorContractDependencies);
-    await userContract.newAllowedCaller(inspectorContract.target);
-    await userContract.newAllowedCaller(regeneratorContract.target);
-    await userContract.newAllowedCaller(researcherContract.target);
-    await userContract.newAllowedCaller(validatorContract.target);
-    await userContract.newAllowedCaller(activistContract.target);
-    await userContract.newAllowedCaller(owner);
-    await inspectorContract.newAllowedCaller(instance.target);
-    await inspectorContract.newAllowedCaller(owner);
-    await inspectorContract.newAllowedCaller(validatorContract.target);
-    await validatorContract.newAllowedCaller(instance.target);
-    await activistContract.newAllowedCaller(instance.target);
-    await activistPool.newAllowedCaller(activistContract.target);
-    await regeneratorContract.newAllowedCaller(owner);
-    await regeneratorContract.newAllowedCaller(instance.target);
-    await regeneratorContract.newAllowedCaller(validatorContract.target);
-    await regeneratorPool.newAllowedCaller(regeneratorContract.target);
-    await inspectorPool.newAllowedCaller(inspectorContract.target);
-    await validatorPool.newAllowedCaller(validatorContract.target);
-    await categoryContract.newAllowedCaller(instance.target);
+    await validatorRules.setContractAddressDependencies(validatorRulesDependencies);
+    await userRules.newAllowedCaller(inspectorRules.target);
+    await userRules.newAllowedCaller(regeneratorRules.target);
+    await userRules.newAllowedCaller(researcherRules.target);
+    await userRules.newAllowedCaller(validatorRules.target);
+    await userRules.newAllowedCaller(activistRules.target);
+    await userRules.newAllowedCaller(owner);
+    await inspectorRules.newAllowedCaller(instance.target);
+    await inspectorRules.newAllowedCaller(owner);
+    await inspectorRules.newAllowedCaller(validatorRules.target);
+    await validatorRules.newAllowedCaller(instance.target);
+    await activistRules.newAllowedCaller(instance.target);
+    await activistPool.newAllowedCaller(activistRules.target);
+    await regeneratorRules.newAllowedCaller(owner);
+    await regeneratorRules.newAllowedCaller(instance.target);
+    await regeneratorRules.newAllowedCaller(validatorRules.target);
+    await regeneratorPool.newAllowedCaller(regeneratorRules.target);
+    await inspectorPool.newAllowedCaller(inspectorRules.target);
+    await validatorPool.newAllowedCaller(validatorRules.target);
+    await regenerationIndexRules.newAllowedCaller(instance.target);
 
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
 
@@ -366,7 +366,7 @@ describe("InspectionRules", () => {
       context("when is sustainable", () => {
         beforeEach(async () => {
           await addRegenerator("Regenerator B", regenerator2Address);
-          await regeneratorContract.afterRealizeInspection(regenerator2Address, 1000);
+          await regeneratorRules.afterRealizeInspection(regenerator2Address, 1000);
         });
 
         it("should return error", async () => {
@@ -475,7 +475,7 @@ describe("InspectionRules", () => {
         });
 
         it("should set to true regenerator pendingInspection", async () => {
-          const regenerator = await regeneratorContract.getRegenerator(regeneratorAddress);
+          const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
 
           expect(regenerator.pendingInspection).to.equal(true);
         });
@@ -520,7 +520,7 @@ describe("InspectionRules", () => {
         context("when do not have security blocks to validator analysis", () => {
           context("when nextEraIn is less than blocksToExpireAcceptedInspection", () => {
             beforeEach(async () => {
-              const nextEraIn = await regeneratorContract.nextEraIn();
+              const nextEraIn = await regeneratorRules.nextEraIn();
               const blocks = parseInt(nextEraIn) - sintropArgs.blocksToExpireAcceptedInspection;
 
               await advanceBlock(blocks);
@@ -533,7 +533,7 @@ describe("InspectionRules", () => {
 
           context("when nextEraIn is bigger than blocksToExpireAcceptedInspection", () => {
             beforeEach(async () => {
-              const nextEraIn = await regeneratorContract.nextEraIn();
+              const nextEraIn = await regeneratorRules.nextEraIn();
 
               const blocks = parseInt(nextEraIn) - sintropArgs.blocksToExpireAcceptedInspection - 20;
               await advanceBlock(blocks);
@@ -616,13 +616,13 @@ describe("InspectionRules", () => {
             });
 
             it("should increment inspector giveUps by 1", async () => {
-              const inspector = await inspectorContract.getInspector(inspectorAddress);
+              const inspector = await inspectorRules.getInspector(inspectorAddress);
 
               expect(inspector.giveUps).to.equal("1");
             });
 
             it("Set last inspectionId to accepted inspection 1", async () => {
-              const inspector = await inspectorContract.getInspector(inspectorAddress);
+              const inspector = await inspectorRules.getInspector(inspectorAddress);
 
               expect(inspector.lastInspection).to.equal("1");
             });
@@ -731,7 +731,7 @@ describe("InspectionRules", () => {
 
   describe("#realizeInspection", () => {
     beforeEach(async () => {
-      await userContract.newAllowedCaller(activist1Address);
+      await userRules.newAllowedCaller(activist1Address);
       await addInvitation(owner, activist1Address, userTypes.Activist, owner);
       await addActivist("Activist 1", activist1Address);
       await addInvitation(activist1Address, regeneratorAddress, userTypes.Regenerator, activist1Address);
@@ -782,7 +782,7 @@ describe("InspectionRules", () => {
                     });
 
                     it("Activist must do not win levels", async () => {
-                      const activist = await activistContract.getActivist(activistContract);
+                      const activist = await activistRules.getActivist(activistRules);
 
                       expect(activist.pool.level).to.equal(0);
                     });
@@ -800,7 +800,7 @@ describe("InspectionRules", () => {
                     });
 
                     it("Activist must do not win levels", async () => {
-                      const activist = await activistContract.getActivist(activistContract);
+                      const activist = await activistRules.getActivist(activistRules);
 
                       expect(activist.pool.level).to.equal(0);
                     });
@@ -814,13 +814,13 @@ describe("InspectionRules", () => {
 
                   context("when regenerator win minimum inspection", () => {
                     beforeEach(async () => {
-                      await regeneratorContract.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
-                      await regeneratorContract.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
+                      await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
+                      await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
                       await realizeInspection(1, report, regenerationIndex(), inspectorAddress);
                     });
 
                     it("Activist must win 1 level", async () => {
-                      const activist = await activistContract.getActivist(activist1Address);
+                      const activist = await activistRules.getActivist(activist1Address);
 
                       expect(activist.pool.level).to.equal(1);
                     });
@@ -834,17 +834,17 @@ describe("InspectionRules", () => {
 
                   context("when inspector win minimum inspection", () => {
                     beforeEach(async () => {
-                      await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
-                      await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
+                      await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 1);
+                      await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 1);
 
-                      await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
-                      await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
+                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
+                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
 
                       await realizeInspection(1, report, regenerationIndex(), inspectorAddress);
                     });
 
                     it("Activist must win 1 level", async () => {
-                      const activist = await activistContract.getActivist(activist1Address);
+                      const activist = await activistRules.getActivist(activist1Address);
 
                       expect(activist.pool.level).to.equal(1);
                     });
@@ -858,19 +858,19 @@ describe("InspectionRules", () => {
 
                   context("when regenerator and inspector win minimum inspection", () => {
                     beforeEach(async () => {
-                      await regeneratorContract.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
-                      await regeneratorContract.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
+                      await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
+                      await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
 
-                      await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
-                      await inspectorContract.connect(owner).afterAcceptInspection(inspectorAddress, 1);
+                      await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 1);
+                      await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 1);
 
-                      await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
-                      await inspectorContract.connect(owner).afterRealizeInspection(inspectorAddress);
+                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
+                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
                       await realizeInspection(1, report, regenerationIndex(), inspectorAddress);
                     });
 
                     it("Activist must win 1 level", async () => {
-                      const activist = await activistContract.getActivist(activist1Address);
+                      const activist = await activistRules.getActivist(activist1Address);
 
                       expect(activist.pool.level).to.equal(2);
                     });
@@ -901,7 +901,7 @@ describe("InspectionRules", () => {
                   });
 
                   it("should decrease inspector giveUps by 1", async () => {
-                    const inspector = await inspectorContract.getInspector(inspectorAddress);
+                    const inspector = await inspectorRules.getInspector(inspectorAddress);
 
                     expect(inspector.giveUps).to.equal("0");
                   });
@@ -921,25 +921,25 @@ describe("InspectionRules", () => {
 
                   it("should add regenerationScore in regenerator", async () => {
                     const inspection = await instance.getInspection(1);
-                    const regenerator = await regeneratorContract.getRegenerator(regeneratorAddress);
+                    const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
 
                     expect(inspection.regenerationScore).to.equal(regenerator.regenerationScore.score);
                   });
 
                   it("should set regenerator pendingInspection to false", async () => {
-                    const regenerator = await regeneratorContract.getRegenerator(regeneratorAddress);
+                    const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
 
                     expect(regenerator.pendingInspection).to.equal(false);
                   });
 
                   it("should increment regenerator totalInspections", async () => {
-                    const regenerator = await regeneratorContract.getRegenerator(regeneratorAddress);
+                    const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
 
                     expect(regenerator.totalInspections).to.equal(1);
                   });
 
                   it("should increment inspector totalInspections", async () => {
-                    const inspector = await inspectorContract.getInspector(inspectorAddress);
+                    const inspector = await inspectorRules.getInspector(inspectorAddress);
 
                     expect(inspector.totalInspections).to.equal(1);
                   });
@@ -1533,7 +1533,7 @@ describe("InspectionRules", () => {
           });
 
           it("add validation", async () => {
-            const validation = await validatorContract.inspectionValidations(1, 0);
+            const validation = await validatorRules.inspectionValidations(1, 0);
 
             expect(validation[0]).to.equal(validator1Address.address);
             expect(validation[1]).to.equal(1);
@@ -1560,10 +1560,10 @@ describe("InspectionRules", () => {
               await advanceBlock(sintropArgs.timeBetweenInspections);
               await requestInspection(regeneratorAddress);
 
-              await validatorContract.connect(validator1Address).declareAlive();
-              await validatorContract.connect(validator2Address).declareAlive();
-              await validatorContract.connect(validator3Address).declareAlive();
-              await validatorContract.connect(validator4Address).declareAlive();
+              await validatorRules.connect(validator1Address).declareAlive();
+              await validatorRules.connect(validator2Address).declareAlive();
+              await validatorRules.connect(validator3Address).declareAlive();
+              await validatorRules.connect(validator4Address).declareAlive();
 
               await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
               await advanceBlock(validatorPoolargs.blocksPerEra);
@@ -1625,8 +1625,8 @@ describe("InspectionRules", () => {
             };
 
             it("add validations", async () => {
-              const validation1 = await validatorContract.inspectionValidations(2, 0);
-              const validation2 = await validatorContract.inspectionValidations(2, 1);
+              const validation1 = await validatorRules.inspectionValidations(2, 0);
+              const validation2 = await validatorRules.inspectionValidations(2, 1);
 
               expect(validation1.validator).to.equal(validator1Address.address);
               expect(validation2.validator).to.equal(validator2Address.address);
@@ -1639,25 +1639,25 @@ describe("InspectionRules", () => {
             });
 
             it("inspector receive 1 penalty", async () => {
-              const totalPenalties = await inspectorContract.totalPenalties(inspector2Address);
+              const totalPenalties = await inspectorRules.totalPenalties(inspector2Address);
 
               expect(totalPenalties).to.equal(1);
             });
 
             it("remove  negative regenerator regenerationScore", async () => {
-              const regenerator = await regeneratorContract.getRegenerator(regeneratorAddress);
+              const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
 
               expect(regenerator.regenerationScore.score).to.equal(132);
             });
 
             it("decrement regenerator totalInspections", async () => {
-              const regenerator = await regeneratorContract.getRegenerator(regeneratorAddress);
+              const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
 
               expect(regenerator.totalInspections).to.equal(2);
             });
 
             it("decrement inspector totalInspections", async () => {
-              const inspector = await inspectorContract.getInspector(inspector2Address);
+              const inspector = await inspectorRules.getInspector(inspector2Address);
 
               expect(inspector.totalInspections).to.equal(0);
             });
@@ -1676,8 +1676,8 @@ describe("InspectionRules", () => {
             });
 
             it("add validations", async () => {
-              const validation1 = await validatorContract.inspectionValidations(1, 0);
-              const validation2 = await validatorContract.inspectionValidations(1, 1);
+              const validation1 = await validatorRules.inspectionValidations(1, 0);
+              const validation2 = await validatorRules.inspectionValidations(1, 1);
 
               expect(validation1.validator).to.equal(validator1Address.address);
               expect(validation2.validator).to.equal(validator2Address.address);
@@ -1690,25 +1690,25 @@ describe("InspectionRules", () => {
             });
 
             it("inspector receive 1 penalty", async () => {
-              const totalPenalties = await inspectorContract.totalPenalties(inspectorAddress);
+              const totalPenalties = await inspectorRules.totalPenalties(inspectorAddress);
 
               expect(totalPenalties).to.equal(1);
             });
 
             it("remove regenerator regenerationScore", async () => {
-              const regenerator = await regeneratorContract.getRegenerator(regeneratorAddress);
+              const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
 
               expect(regenerator.regenerationScore.score).to.equal(0);
             });
 
             it("decrement regenerator totalInspections", async () => {
-              const regenerator = await regeneratorContract.getRegenerator(regeneratorAddress);
+              const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
 
               expect(regenerator.totalInspections).to.equal(0);
             });
 
             it("decrement inspector totalInspections", async () => {
-              const inspector = await inspectorContract.getInspector(inspectorAddress);
+              const inspector = await inspectorRules.getInspector(inspectorAddress);
 
               expect(inspector.totalInspections).to.equal(0);
             });
@@ -1723,14 +1723,14 @@ describe("InspectionRules", () => {
 
         context("when inspector receive max penalties alloweds", () => {
           beforeEach(async () => {
-            await inspectorContract.addPenalty(inspectorAddress, 1);
+            await inspectorRules.addPenalty(inspectorAddress, 1);
 
             await instance.connect(validator1Address).addInspectionValidation(1, "justification");
             await instance.connect(validator2Address).addInspectionValidation(1, "justification");
           });
 
           it("inspector type to DENIED", async () => {
-            const userType = await userContract.getUser(inspectorAddress);
+            const userType = await userRules.getUser(inspectorAddress);
 
             expect(userType).to.equal(USER_TYPES.denied);
           });

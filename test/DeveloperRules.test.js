@@ -1,4 +1,4 @@
-const { userContractDeployed } = require("./shared/user_contract_deployed");
+const { userRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 
@@ -9,10 +9,10 @@ const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
 describe("DeveloperRules", (accounts) => {
   let instance;
-  let userContract;
+  let userRules;
   let developerPool;
   let regenerationCredit;
-  let validatorContract;
+  let validatorRules;
   let validatorPool;
   let owner,
     dev1Address,
@@ -40,11 +40,11 @@ describe("DeveloperRules", (accounts) => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userContract.connect(from).addInvitation(inviter, invited, userType);
+    await userRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
   const addValidator = async (from) => {
-    await validatorContract.connect(from).addValidator();
+    await validatorRules.connect(from).addValidator();
   };
 
   const maxPenalties = 3;
@@ -65,7 +65,7 @@ describe("DeveloperRules", (accounts) => {
     ] = await ethers.getSigners();
 
     regenerationCredit = await regenerationCreditDeployed();
-    userContract = await userContractDeployed();
+    userRules = await userRulesDeployed();
 
     developerPoolFactory = await ethers.getContractFactory("DeveloperPool");
     developerPool = await developerPoolFactory.deploy(
@@ -81,40 +81,40 @@ describe("DeveloperRules", (accounts) => {
       validatorPoolargs.blocksPerEra
     );
 
-    const validatorContractFactory = await ethers.getContractFactory("ValidatorRules");
-    validatorContract = await validatorContractFactory.deploy(firstValidatorLimit, secondValidatorLimit);
+    const validatorRulesFactory = await ethers.getContractFactory("ValidatorRules");
+    validatorRules = await validatorRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
-    developerContractFactory = await ethers.getContractFactory("DeveloperRules");
-    instance = await developerContractFactory.deploy(
-      userContract.target,
+    developerRulesFactory = await ethers.getContractFactory("DeveloperRules");
+    instance = await developerRulesFactory.deploy(
+      userRules.target,
       developerPool.target,
-      validatorContract.target,
+      validatorRules.target,
       maxPenalties,
       securityBlocksToValidatorAnalysis
     );
 
-    const validatorContractDependencies = {
-      userContractAddress: userContract.target,
-      regeneratorContractAddress: ZERO_ADDRESS,
+    const validatorRulesDependencies = {
+      userRulesAddress: userRules.target,
+      regeneratorRulesAddress: ZERO_ADDRESS,
       validatorPoolAddress: validatorPool.target,
-      inspectorContractAddress: userContract.target,
-      developerContractAddress: instance.target,
-      researcherContractAddress: ZERO_ADDRESS,
-      contributorContractAddress: ZERO_ADDRESS,
-      activistContractAddress: ZERO_ADDRESS,
+      inspectorRulesAddress: userRules.target,
+      developerRulesAddress: instance.target,
+      researcherRulesAddress: ZERO_ADDRESS,
+      contributorRulesAddress: ZERO_ADDRESS,
+      activistRulesAddress: ZERO_ADDRESS,
     };
 
-    await userContract.newAllowedCaller(instance.target);
-    await userContract.newAllowedCaller(owner);
-    await userContract.newAllowedCaller(validatorContract.target);
+    await userRules.newAllowedCaller(instance.target);
+    await userRules.newAllowedCaller(owner);
+    await userRules.newAllowedCaller(validatorRules.target);
     await developerPool.newAllowedCaller(instance.target);
-    await validatorPool.newAllowedCaller(validatorContract.target);
-    await validatorContract.newAllowedCaller(instance.target);
-    await validatorContract.newAllowedCaller(owner);
-    await instance.newAllowedCaller(validatorContract.target);
+    await validatorPool.newAllowedCaller(validatorRules.target);
+    await validatorRules.newAllowedCaller(instance.target);
+    await validatorRules.newAllowedCaller(owner);
+    await instance.newAllowedCaller(validatorRules.target);
     await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(developerPool.target, "30000000000000000000000000");
-    await validatorContract.setContractAddressDependencies(validatorContractDependencies);
+    await validatorRules.setContractAddressDependencies(validatorRulesDependencies);
     await addInvitation(owner, dev1Address, userTypes.Developer, owner);
   });
 
@@ -159,7 +159,7 @@ describe("DeveloperRules", (accounts) => {
 
         it("should increment developersCount after create developer", async () => {
           await addDeveloper("Developer A", dev1Address);
-          const developersCount = await userContract.userTypesCount(userTypes.Developer);
+          const developersCount = await userRules.userTypesCount(userTypes.Developer);
 
           expect(developersCount).to.equal(1);
         });
@@ -175,7 +175,7 @@ describe("DeveloperRules", (accounts) => {
         it("should add created developer in userType contract as a DEVELOPER", async () => {
           await addDeveloper("Developer A", dev1Address);
 
-          const userType = await userContract.getUser(dev1Address);
+          const userType = await userRules.getUser(dev1Address);
           const DEVELOPER = 4;
 
           expect(userType).to.equal(DEVELOPER);
@@ -339,7 +339,7 @@ describe("DeveloperRules", (accounts) => {
           });
 
           it("user type must be DEVELOPER yet", async () => {
-            const userType = await userContract.getUser(dev1Address);
+            const userType = await userRules.getUser(dev1Address);
 
             expect(userType).to.eq(userTypes.Developer);
           });
@@ -394,8 +394,8 @@ describe("DeveloperRules", (accounts) => {
         beforeEach(async () => {
           await addValidator(validator2Address);
 
-          await validatorContract.connect(validator1Address).declareAlive();
-          await validatorContract.connect(validator2Address).declareAlive();
+          await validatorRules.connect(validator1Address).declareAlive();
+          await validatorRules.connect(validator2Address).declareAlive();
 
           await instance.connect(dev1Address).addReport("description", "report");
           await instance.connect(validator1Address).addReportValidation(1, "justification");
@@ -412,7 +412,7 @@ describe("DeveloperRules", (accounts) => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await userContract.getUser(dev1Address);
+          const userType = await userRules.getUser(dev1Address);
 
           expect(userType).to.eq(userTypes.Denied);
         });
@@ -441,8 +441,8 @@ describe("DeveloperRules", (accounts) => {
             await addValidator(validator3Address);
             await addValidator(validator4Address);
 
-            await validatorContract.connect(validator1Address).declareAlive();
-            await validatorContract.connect(validator2Address).declareAlive();
+            await validatorRules.connect(validator1Address).declareAlive();
+            await validatorRules.connect(validator2Address).declareAlive();
 
             await instance.connect(validator1Address).addReportValidation(1, "justification");
             await instance.connect(validator2Address).addReportValidation(1, "justification");

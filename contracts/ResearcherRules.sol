@@ -20,9 +20,9 @@ contract ResearcherRules is CallerRules {
   mapping(uint256 => CalculatorItem) public calculatorItems;
   mapping(address => Penalty[]) public penalties;
 
-  UserRules internal userContract;
+  UserRules internal userRules;
   ResearcherPool internal researcherPool;
-  ValidatorRules internal validatorContract;
+  ValidatorRules internal validatorRules;
 
   address[] internal researchersAddress;
   UserType private constant USER_TYPE = UserType.RESEARCHER;
@@ -34,16 +34,16 @@ contract ResearcherRules is CallerRules {
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
   constructor(
-    address userContractAddress,
+    address userRulesAddress,
     address researcherPoolAddress,
-    address validatorContractAddress,
+    address validatorRulesAddress,
     uint256 timeBetweenWorks_,
     uint256 maxPenalties_,
     uint256 securityBlocksToValidatorAnalysis
   ) {
-    userContract = UserRules(userContractAddress);
+    userRules = UserRules(userRulesAddress);
     researcherPool = ResearcherPool(researcherPoolAddress);
-    validatorContract = ValidatorRules(validatorContractAddress);
+    validatorRules = ValidatorRules(validatorRulesAddress);
     timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
@@ -56,7 +56,7 @@ contract ResearcherRules is CallerRules {
    */
   function addResearcher(string memory name, string memory proofPhoto) public returns (Researcher memory) {
     Researcher memory researcher = Researcher(
-      userContract.userTypesCount(USER_TYPE) + 1,
+      userRules.userTypesCount(USER_TYPE) + 1,
       msg.sender,
       name,
       Pool(0, researcherPoolEra()),
@@ -68,7 +68,7 @@ contract ResearcherRules is CallerRules {
 
     researchers[msg.sender] = researcher;
     researchersAddress.push(msg.sender);
-    userContract.addUser(msg.sender, USER_TYPE);
+    userRules.addUser(msg.sender, USER_TYPE);
 
     return researcher;
   }
@@ -78,7 +78,7 @@ contract ResearcherRules is CallerRules {
    * @return Researcher struct array
    */
   function getResearchers() public view returns (Researcher[] memory) {
-    uint256 usersCount = userContract.userTypesCount(USER_TYPE);
+    uint256 usersCount = userRules.userTypesCount(USER_TYPE);
     Researcher[] memory researcherList = new Researcher[](usersCount);
 
     for (uint256 i = 0; i < usersCount; i++) {
@@ -113,7 +113,7 @@ contract ResearcherRules is CallerRules {
    * @param file Hash of the report file
    */
   function addWork(string memory title, string memory thesis, string memory file) public {
-    require(userContract.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
+    require(userRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add work");
     require(canPublishWork(msg.sender), "Can't publish yet");
 
@@ -133,7 +133,7 @@ contract ResearcherRules is CallerRules {
   }
 
   function addWorkValidation(uint256 id, string memory justification) public {
-    require(userContract.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+    require(userRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
     Work memory work = works[id];
 
@@ -142,11 +142,11 @@ contract ResearcherRules is CallerRules {
     work.validationsCount += 1;
     works[id] = work;
 
-    bool mustInvalidateWork = work.validationsCount >= validatorContract.majorityValidatorsCount();
+    bool mustInvalidateWork = work.validationsCount >= validatorRules.majorityValidatorsCount();
 
     if (mustInvalidateWork) invalidateWork(work);
 
-    validatorContract.addResearcheWorkValidation(work, justification, msg.sender);
+    validatorRules.addResearcheWorkValidation(work, justification, msg.sender);
   }
 
   function invalidateWork(Work memory work) internal {
@@ -192,7 +192,7 @@ contract ResearcherRules is CallerRules {
    * @notice Withdraw regeneration credit from research service provided
    */
   function withdraw() public {
-    require(userContract.userTypeIs(UserType.RESEARCHER, msg.sender), "Pool only to researchers");
+    require(userRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Pool only to researchers");
 
     Researcher memory researcher = researchers[msg.sender];
     uint256 currentEra = researcher.pool.currentEra;
@@ -228,7 +228,7 @@ contract ResearcherRules is CallerRules {
     uint256 soilImpact,
     uint256 biodiversityImpact
   ) public {
-    require(userContract.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
+    require(userRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
 
     Researcher memory researcher = researchers[msg.sender];
 
