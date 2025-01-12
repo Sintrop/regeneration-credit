@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { Category, RegenerationIndex, RegenerationIndexDescription } from "./types/CategoryData.sol";
+import { Category, RegenerationIndex, RegenerationIndexDescription } from "./types/IndexData.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { RegenerationInspection } from "./types/InspectionData.sol";
 import { CallerRules } from "./CallerRules.sol";
 
 /**
  * @author Sintrop
- * @title CategoryContract
+ * @title RegenerationIndexRules
  * @dev Manage index categories and score
  */
-contract CategoryContract is Ownable, CallerRules {
+contract RegenerationIndexRules is Ownable, CallerRules {
   mapping(uint256 => Category) public categories;
   mapping(uint256 => RegenerationIndexDescription[]) public categoryRegenerationIndexDescriptions;
   mapping(uint256 => RegenerationIndex) public regenerationIndex;

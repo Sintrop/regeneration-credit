@@ -3,9 +3,9 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { RegeneratorRules } from "./RegeneratorRules.sol";
 import { InspectorRules } from "./InspectorRules.sol";
-import { CategoryContract } from "./CategoryContract.sol";
+import { RegenerationIndexRules } from "./RegenerationIndexRules.sol";
 import { ValidatorRules } from "./ValidatorRules.sol";
-import { CategoryContract } from "./CategoryContract.sol";
+import { RegenerationIndexRules } from "./RegenerationIndexRules.sol";
 import { ActivistRules } from "./ActivistRules.sol";
 import { UserRules } from "./UserRules.sol";
 import { InspectionStatus, RegenerationInspection, Inspection } from "./types/InspectionData.sol";
@@ -36,7 +36,7 @@ contract Sintrop is CallerRules {
   UserRules private userContract;
   ValidatorRules private validatorContract;
   ActivistRules private activistContract;
-  CategoryContract private categoryContract;
+  RegenerationIndexRules private categoryContract;
 
   uint256 public inspectionsCount;
   uint256 public immutable timeBetweenInspections;
@@ -64,7 +64,7 @@ contract Sintrop is CallerRules {
     regeneratorContract = RegeneratorRules(contractDependency.regeneratorContractAddress);
     validatorContract = ValidatorRules(contractDependency.validatorContractAddress);
     inspectorContract = InspectorRules(contractDependency.inspectorContractAddress);
-    categoryContract = CategoryContract(contractDependency.categoryContractAddress);
+    categoryContract = RegenerationIndexRules(contractDependency.categoryContractAddress);
     activistContract = ActivistRules(contractDependency.activistContractAddress);
   }
 

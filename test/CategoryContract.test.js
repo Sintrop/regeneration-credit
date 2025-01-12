@@ -1,6 +1,6 @@
 const { expect } = require("chai");
 
-describe("CategoryContract", () => {
+describe("RegenerationIndexRules", () => {
   let instance;
   let owner, user1Address;
 
@@ -24,7 +24,7 @@ describe("CategoryContract", () => {
   beforeEach(async () => {
     [owner, user1Address] = await ethers.getSigners();
 
-    const instanceContractFactory = await ethers.getContractFactory("CategoryContract");
+    const instanceContractFactory = await ethers.getContractFactory("RegenerationIndexRules");
     instance = await instanceContractFactory.deploy();
 
     await addCategory("Soil A", owner);

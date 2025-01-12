@@ -43,7 +43,7 @@ fuzz:
         - "contracts/InspectorPool"
         - "contracts/InspectorRules"
         - "contracts/InvitationRules"
-        - "contracts/CategoryContract"
+        - "contracts/RegenerationIndexRules"
         - "contracts/RegenerationCredit.sol"
         - "contracts/RegenerationCreditIco.sol"
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { RegenerationCreditInterface } from "./RegenerationCreditInterface.sol";
+import { RegenerationCreditInterface } from "./interfaces/RegenerationCreditInterface.sol";
 import { BlockRules } from "./BlockRules.sol";
 import { CallerRules } from "./CallerRules.sol";
 import { PoolRules } from "./PoolRules.sol";

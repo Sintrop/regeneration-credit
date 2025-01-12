@@ -50,7 +50,7 @@ async function configureSintrop() {
   const userContract = await getDeployedContract("UserRules");
   const regeneratorContract = await getDeployedContract("RegeneratorRules");
   const validatorContract = await getDeployedContract("ValidatorRules");
-  const categoryContract = await getDeployedContract("CategoryContract");
+  const categoryContract = await getDeployedContract("RegenerationIndexRules");
 
   const contractDependencies = {
     userContractAddress: userContract.target,
@@ -74,7 +74,7 @@ async function configureSintrop() {
 }
 
 async function addCategories() {
-  const categoryContract = await getDeployedContract("CategoryContract");
+  const categoryContract = await getDeployedContract("RegenerationIndexRules");
 
   await categoryContract.addCategory("Carbon", "Indicator to measure CO2 balance. Must evaluate carbon emissions and sequestration. Carbon balance = sequestration - emissions [tCO2]", [
     {
@@ -301,7 +301,7 @@ async function addCategories() {
 async function renounceOwnership() {
   const regenerationCredit = await getDeployedContract("RegenerationCredit");
   const sintrop = await getDeployedContract("Sintrop");
-  const categoryContract = await getDeployedContract("CategoryContract");
+  const categoryContract = await getDeployedContract("RegenerationIndexRules");
   const userContract = await getDeployedContract("UserRules");
   const inspectorContract = await getDeployedContract("InspectorRules");
   const activistContract = await getDeployedContract("ActivistRules");

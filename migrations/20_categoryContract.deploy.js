@@ -2,15 +2,15 @@ const saveContractAddress = require("../scripts/shared/saveContractAddress");
 const verifyContract = require("../scripts/shared/verifyContract");
 
 async function categoryContractDeploy() {
-  const CategoryContract = await ethers.getContractFactory("CategoryContract");
+  const RegenerationIndexRules = await ethers.getContractFactory("RegenerationIndexRules");
 
-  const categoryContract = await CategoryContract.deploy();
+  const categoryContract = await RegenerationIndexRules.deploy();
 
-  saveContractAddress("CategoryContract", categoryContract.target);
+  saveContractAddress("RegenerationIndexRules", categoryContract.target);
 
-  console.log(`CategoryContract address ${categoryContract.target}`);
+  console.log(`RegenerationIndexRules address ${categoryContract.target}`);
 
-  await verifyContract(categoryContract, "CategoryContract");
+  await verifyContract(categoryContract, "RegenerationIndexRules");
 
   return categoryContract;
 }

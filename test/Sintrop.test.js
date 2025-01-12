@@ -257,7 +257,7 @@ describe("Sintrop", () => {
     regeneratorContract = await regeneratorContractFactory.deploy(userContract.target, regeneratorPool.target);
     activistContract = await activistContractFactory.deploy(userContract.target, activistPool.target);
 
-    const categoryContractFactory = await ethers.getContractFactory("CategoryContract");
+    const categoryContractFactory = await ethers.getContractFactory("RegenerationIndexRules");
     categoryContract = await categoryContractFactory.deploy();
 
     const validatorContractDependencies = {
