@@ -1,7 +1,7 @@
 const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
 
-describe("Poolable", () => {
+describe("PoolRules", () => {
   let instance;
 
   const params = {
@@ -10,7 +10,7 @@ describe("Poolable", () => {
   };
 
   beforeEach(async () => {
-    const poolableContractFactory = await ethers.getContractFactory("Poolable");
+    const poolableContractFactory = await ethers.getContractFactory("PoolRules");
 
     instance = await poolableContractFactory.deploy(params.totalTokens);
   });

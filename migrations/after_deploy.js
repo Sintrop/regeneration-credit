@@ -14,7 +14,7 @@ async function afterDeploy() {
 
 async function configureValidatorRules() {
   const validatorContract = await getDeployedContract("ValidatorRules");
-  const userContract = await getDeployedContract("UserContract");
+  const userContract = await getDeployedContract("UserRules");
   const validatorPool = await getDeployedContract("ValidatorPool");
   const regeneratorContract = await getDeployedContract("RegeneratorRules");
   const inspectorContract = await getDeployedContract("InspectorRules");
@@ -47,7 +47,7 @@ async function configureSintrop() {
   const sintrop = await getDeployedContract("Sintrop");
   const inspectorContract = await getDeployedContract("InspectorRules");
   const activistContract = await getDeployedContract("ActivistRules");
-  const userContract = await getDeployedContract("UserContract");
+  const userContract = await getDeployedContract("UserRules");
   const regeneratorContract = await getDeployedContract("RegeneratorRules");
   const validatorContract = await getDeployedContract("ValidatorRules");
   const categoryContract = await getDeployedContract("CategoryContract");
@@ -302,7 +302,7 @@ async function renounceOwnership() {
   const regenerationCredit = await getDeployedContract("RegenerationCredit");
   const sintrop = await getDeployedContract("Sintrop");
   const categoryContract = await getDeployedContract("CategoryContract");
-  const userContract = await getDeployedContract("UserContract");
+  const userContract = await getDeployedContract("UserRules");
   const inspectorContract = await getDeployedContract("InspectorRules");
   const activistContract = await getDeployedContract("ActivistRules");
   const regeneratorContract = await getDeployedContract("RegeneratorRules");
@@ -373,7 +373,7 @@ async function transferTokens() {
 }
 
 async function inviteUsers() {
-  const invitationContract = await getDeployedContract("InvitationContract");
+  const invitationContract = await getDeployedContract("InvitationRules");
 
   //testnet - v8 users
   await invitationContract.onlyOwnerInvite("0x9D89B8562B00713a034DEb7A867D5d3Bc45e19E6", 1);  

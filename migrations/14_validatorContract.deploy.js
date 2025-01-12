@@ -3,7 +3,7 @@ const getDeployedContract = require("../scripts/shared/getDeployedContract");
 const verifyContract = require("../scripts/shared/verifyContract");
 
 async function validatorContractDeploy() {
-  const userContract = await getDeployedContract("UserContract");
+  const userContract = await getDeployedContract("UserRules");
   const firstValidatorLimit = process.env["FIRST_VALIDATOR_LIMIT"];
   const secondValidatorLimit = process.env["SECOND_VALIDATOR_LIMIT"];
 

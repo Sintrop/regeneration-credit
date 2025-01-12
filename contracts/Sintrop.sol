@@ -7,14 +7,14 @@ import { CategoryContract } from "./CategoryContract.sol";
 import { ValidatorRules } from "./ValidatorRules.sol";
 import { CategoryContract } from "./CategoryContract.sol";
 import { ActivistRules } from "./ActivistRules.sol";
-import { UserContract } from "./UserContract.sol";
+import { UserRules } from "./UserRules.sol";
 import { InspectionStatus, RegenerationInspection, Inspection } from "./types/InspectionTypes.sol";
 import { Regenerator } from "./types/RegeneratorTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { ContractsDependency } from "./types/SintropTypes.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import { Callable } from "./Callable.sol";
+import { CallerRules } from "./CallerRules.sol";
 
 /**
  * @author Sintrop
@@ -22,7 +22,7 @@ import { Callable } from "./Callable.sol";
  * @dev Manage inspections rules and data
  * @notice Allow regenerator to request inspection, and inspectors to accept and realize it
  */
-contract Sintrop is Callable {
+contract Sintrop is CallerRules {
   using SafeMath for uint256;
 
   mapping(address => mapping(address => bool)) internal inspectorInspected;
@@ -33,7 +33,7 @@ contract Sintrop is Callable {
 
   InspectorRules private inspectorContract;
   RegeneratorRules private regeneratorContract;
-  UserContract private userContract;
+  UserRules private userContract;
   ValidatorRules private validatorContract;
   ActivistRules private activistContract;
   CategoryContract private categoryContract;
@@ -60,7 +60,7 @@ contract Sintrop is Callable {
   }
 
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
-    userContract = UserContract(contractDependency.userContractAddress);
+    userContract = UserRules(contractDependency.userContractAddress);
     regeneratorContract = RegeneratorRules(contractDependency.regeneratorContractAddress);
     validatorContract = ValidatorRules(contractDependency.validatorContractAddress);
     inspectorContract = InspectorRules(contractDependency.inspectorContractAddress);

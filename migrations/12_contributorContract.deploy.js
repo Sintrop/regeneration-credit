@@ -3,7 +3,7 @@ const getDeployedContract = require("../scripts/shared/getDeployedContract");
 const verifyContract = require("../scripts/shared/verifyContract");
 
 async function contributorContractDeploy() {
-  const userContract = await getDeployedContract("UserContract");
+  const userContract = await getDeployedContract("UserRules");
   const contributorPool = await getDeployedContract("ContributorPool");
 
   const ContributorRules = await ethers.getContractFactory("ContributorRules");

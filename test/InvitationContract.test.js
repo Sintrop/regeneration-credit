@@ -4,7 +4,7 @@ const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 const { advanceBlock } = require("./shared/advance_block");
 
-describe("InvitationContract", () => {
+describe("InvitationRules", () => {
   let instance, userContract;
   let owner, user1Address, user2Address, user3Address, user4Address;
 
@@ -27,7 +27,7 @@ describe("InvitationContract", () => {
 
     userContract = await userContractDeployed();
 
-    const instanceFactory = await ethers.getContractFactory("InvitationContract");
+    const instanceFactory = await ethers.getContractFactory("InvitationRules");
     instance = await instanceFactory.deploy(userContract.target);
 
     await userContract.newAllowedCaller(instance.target);

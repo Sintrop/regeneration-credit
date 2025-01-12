@@ -2,11 +2,11 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { UserContract } from "./UserContract.sol";
+import { UserRules } from "./UserRules.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { ContributorPool } from "./ContributorPool.sol";
 import { Contributor, Pool, Contribution } from "./types/ContributorTypes.sol";
-import { Callable } from "./Callable.sol";
+import { CallerRules } from "./CallerRules.sol";
 
 /**
  * @author Sintrop
@@ -14,12 +14,12 @@ import { Callable } from "./Callable.sol";
  * @dev Manage contributors rules and data
  * @notice User type to perform generic contributions to the project
  */
-contract ContributorRules is Ownable, Callable {
+contract ContributorRules is Ownable, CallerRules {
   mapping(address => Contributor) public contributors;
   mapping(uint256 => mapping(address => bool)) public contributorContributionsEra;
   mapping(uint256 => Contribution) public contributions;
 
-  UserContract internal userContract;
+  UserRules internal userContract;
   ContributorPool internal contributorPool;
 
   address[] internal contributorsAddress;
@@ -28,7 +28,7 @@ contract ContributorRules is Ownable, Callable {
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
   constructor(address userContractAddress, address contributorPoolAddress, uint256 securityBlocksToValidatorAnalysis) {
-    userContract = UserContract(userContractAddress);
+    userContract = UserRules(userContractAddress);
     contributorPool = ContributorPool(contributorPoolAddress);
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }

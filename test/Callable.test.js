@@ -1,13 +1,13 @@
 const { expect } = require("chai");
 
-describe("Callable", () => {
+describe("CallerRules", () => {
   let instance;
   let owner, user1Address, user2Address;
 
   beforeEach(async () => {
     [owner, user1Address, user2Address] = await ethers.getSigners();
 
-    const instanceFactory = await ethers.getContractFactory("Callable");
+    const instanceFactory = await ethers.getContractFactory("CallerRules");
 
     instance = await instanceFactory.deploy();
   });

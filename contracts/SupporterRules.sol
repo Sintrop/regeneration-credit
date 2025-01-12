@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { UserContract } from "./UserContract.sol";
+import { UserRules } from "./UserRules.sol";
 import { Supporter } from "./types/SupporterTypes.sol";
 import { UserType, Invitation } from "./types/UserTypes.sol";
 import { SupporterPool } from "./SupporterPool.sol";
@@ -15,13 +15,13 @@ import { SupporterPool } from "./SupporterPool.sol";
 contract SupporterRules {
   mapping(address => Supporter) internal supporters;
 
-  UserContract internal userContract;
+  UserRules internal userContract;
   SupporterPool internal supporterPool;
   address[] internal supportersAddress;
   UserType private constant USER_TYPE = UserType.SUPPORTER;
 
   constructor(address userContractAddress, address supporterPoolAddress) {
-    userContract = UserContract(userContractAddress);
+    userContract = UserRules(userContractAddress);
     supporterPool = SupporterPool(supporterPoolAddress);
   }
 

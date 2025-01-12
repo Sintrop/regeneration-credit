@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { UserContract } from "./UserContract.sol";
+import { UserRules } from "./UserRules.sol";
 import { RegeneratorRules } from "./RegeneratorRules.sol";
 import { Validator, UserValidation, ResourceValidation, Pool, ContractsDependency } from "./types/ValidatorTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
-import { Callable } from "./Callable.sol";
+import { CallerRules } from "./CallerRules.sol";
 import { ValidatorPool } from "./ValidatorPool.sol";
 import { InspectorRules } from "./InspectorRules.sol";
 import { DeveloperRules } from "./DeveloperRules.sol";
@@ -22,7 +22,7 @@ import { Work } from "./types/ResearcherTypes.sol";
  * @dev Manage validators rules and data
  * @notice Responsible for reviewing and voting to invalidate wrong or corrupted actions
  */
-contract ValidatorRules is Callable {
+contract ValidatorRules is CallerRules {
   mapping(address => Validator) private validators;
   mapping(address => UserValidation[]) private userValidations;
   mapping(uint256 => ResourceValidation[]) public inspectionValidations;
@@ -33,7 +33,7 @@ contract ValidatorRules is Callable {
   mapping(address => mapping(uint256 => bool)) private validatorWorksValidations;
   mapping(address => mapping(address => bool)) private validatorUsersValidations;
 
-  UserContract private userContract;
+  UserRules private userContract;
   RegeneratorRules private regeneratorContract;
   ValidatorPool private validatorPool;
   InspectorRules private inspectorContract;
@@ -53,7 +53,7 @@ contract ValidatorRules is Callable {
   }
 
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
-    userContract = UserContract(contractDependency.userContractAddress);
+    userContract = UserRules(contractDependency.userContractAddress);
     regeneratorContract = RegeneratorRules(contractDependency.regeneratorContractAddress);
     validatorPool = ValidatorPool(contractDependency.validatorPoolAddress);
     inspectorContract = InspectorRules(contractDependency.inspectorContractAddress);

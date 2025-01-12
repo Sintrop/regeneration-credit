@@ -3,21 +3,21 @@ const getDeployedContract = require("../scripts/shared/getDeployedContract");
 const verifyContract = require("../scripts/shared/verifyContract");
 
 async function invitationContractDeploy() {
-  const userContract = await getDeployedContract("UserContract");
+  const userContract = await getDeployedContract("UserRules");
 
-  const InvitationContract = await ethers.getContractFactory("InvitationContract");
+  const InvitationRules = await ethers.getContractFactory("InvitationRules");
 
   const args = [userContract.target];
 
-  const invitationContract = await InvitationContract.deploy(...args);
+  const invitationContract = await InvitationRules.deploy(...args);
 
-  saveContractAddress("InvitationContract", invitationContract.target);
+  saveContractAddress("InvitationRules", invitationContract.target);
 
-  console.log(`InvitationContract address ${invitationContract.target}`);
+  console.log(`InvitationRules address ${invitationContract.target}`);
 
   await userContract.newAllowedCaller(invitationContract.target);
 
-  await verifyContract(invitationContract, "InvitationContract", args);
+  await verifyContract(invitationContract, "InvitationRules", args);
 
   return invitationContract;
 }

@@ -2,9 +2,9 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { RegenerationCreditInterface } from "./RegenerationCreditInterface.sol";
-import { Blockable } from "./Blockable.sol";
-import { Callable } from "./Callable.sol";
-import { Poolable } from "./Poolable.sol";
+import { BlockRules } from "./BlockRules.sol";
+import { CallerRules } from "./CallerRules.sol";
+import { PoolRules } from "./PoolRules.sol";
 
 /**
  * @author Sintrop
@@ -12,7 +12,7 @@ import { Poolable } from "./Poolable.sol";
  * @dev ValidatorPool is a contract to reward validators
  * @notice Receive tokens for validation service provided
  */
-contract ValidatorPool is Poolable, Blockable, Callable {
+contract ValidatorPool is PoolRules, BlockRules, CallerRules {
   RegenerationCreditInterface internal regenerationCredit;
 
   uint256 internal constant TOTAL_TOKENS_POOL = 30000000000000000000000000;
@@ -21,7 +21,7 @@ contract ValidatorPool is Poolable, Blockable, Callable {
     address regenerationCreditAddress,
     uint256 _halving,
     uint256 _blocksPerEra
-  ) Blockable(_blocksPerEra, _halving) Poolable(TOTAL_TOKENS_POOL) {
+  ) BlockRules(_blocksPerEra, _halving) PoolRules(TOTAL_TOKENS_POOL) {
     regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
   }
 

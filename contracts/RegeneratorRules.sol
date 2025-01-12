@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { UserContract } from "./UserContract.sol";
+import { UserRules } from "./UserRules.sol";
 import { Regenerator, Pool, AreaInformation } from "./types/RegeneratorTypes.sol";
-import { Callable } from "./Callable.sol";
+import { CallerRules } from "./CallerRules.sol";
 import { RegeneratorPool } from "./RegeneratorPool.sol";
 import { UserType } from "./types/UserTypes.sol";
 
@@ -13,13 +13,13 @@ import { UserType } from "./types/UserTypes.sol";
  * @dev Manage regenerator user logic.
  * @notice Person, family or a group of peolpe that are restoring nature
  */
-contract RegeneratorRules is Callable {
+contract RegeneratorRules is CallerRules {
   uint256 internal constant MINIMUM_INSPECTION_TO_POOL = 3;
   int256 internal constant LIMIT_REGENERATION_SCORE_TO_POOL = 1000;
 
   mapping(address => Regenerator) public regenerators;
 
-  UserContract internal userContract;
+  UserRules internal userContract;
   RegeneratorPool internal regeneratorPool;
 
   address[] internal regeneratorsAddress;
@@ -27,7 +27,7 @@ contract RegeneratorRules is Callable {
   uint256 public regeneratorsSustainable;
 
   constructor(address userContractAddress, address regeneratorPoolAddress) {
-    userContract = UserContract(userContractAddress);
+    userContract = UserRules(userContractAddress);
     regeneratorPool = RegeneratorPool(regeneratorPoolAddress);
   }
 

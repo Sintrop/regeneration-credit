@@ -2,8 +2,8 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { Callable } from "./Callable.sol";
-import { UserContract } from "./UserContract.sol";
+import { CallerRules } from "./CallerRules.sol";
+import { UserRules } from "./UserRules.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { DeveloperPool } from "./DeveloperPool.sol";
 import { ValidatorRules } from "./ValidatorRules.sol";
@@ -15,13 +15,13 @@ import { Developer, Pool, Report, Penalty } from "./types/DeveloperTypes.sol";
  * @dev Manage developers rules and data
  * @notice Responsible for the development of the project
  */
-contract DeveloperRules is Ownable, Callable {
+contract DeveloperRules is Ownable, CallerRules {
   mapping(address => Developer) public developers;
   mapping(uint256 => mapping(address => bool)) public developerReportsEra;
   mapping(uint256 => Report) public reports;
   mapping(address => Penalty[]) public penalties;
 
-  UserContract internal userContract;
+  UserRules internal userContract;
   DeveloperPool internal developerPool;
   ValidatorRules internal validatorContract;
 
@@ -39,7 +39,7 @@ contract DeveloperRules is Ownable, Callable {
     uint256 maxPenalties_,
     uint256 securityBlocksToValidatorAnalysis
   ) {
-    userContract = UserContract(userContractAddress);
+    userContract = UserRules(userContractAddress);
     developerPool = DeveloperPool(developerPoolAddress);
     validatorContract = ValidatorRules(validatorContractAddress);
     MAX_PENALTIES = maxPenalties_;

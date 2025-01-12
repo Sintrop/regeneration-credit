@@ -5,7 +5,7 @@ const verifyContract = require("../scripts/shared/verifyContract");
 async function inspectorContractDeploy() {
   const inspectorMaxPenalties = process.env["INSPECTOR_MAX_PENALTIES"];
 
-  const userContract = await getDeployedContract("UserContract");
+  const userContract = await getDeployedContract("UserRules");
   const inspectorPool = await getDeployedContract("InspectorPool");
 
   const InspectorRules = await ethers.getContractFactory("InspectorRules");

@@ -13,7 +13,7 @@ const userContractDeployed = async ({
   const VALIDATOR_PROPORTIONALITY = validatorProportionality;
   const CONTRIBUTOR_PROPORTIONALITY = contributorProportionality;
 
-  const userContractFactory = await ethers.getContractFactory("UserContract");
+  const userContractFactory = await ethers.getContractFactory("UserRules");
   userContract = await userContractFactory.deploy(
     INSPECTOR_PROPORTIONALITY,
     ACTIVIST_PROPORTIONALITY,

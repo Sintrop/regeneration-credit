@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { UserContract } from "./UserContract.sol";
+import { UserRules } from "./UserRules.sol";
 import { Activist, Pool } from "./types/ActivistTypes.sol";
 import { UserType, Invitation } from "./types/UserTypes.sol";
 import { ActivistPool } from "./ActivistPool.sol";
-import { Callable } from "./Callable.sol";
+import { CallerRules } from "./CallerRules.sol";
 
 /**
  * @author Sintrop
@@ -14,11 +14,11 @@ import { Callable } from "./Callable.sol";
  * @notice User responsible for inviting new regenerators and inspectors
  */
 
-contract ActivistRules is Callable {
+contract ActivistRules is CallerRules {
   mapping(address => Activist) internal activists;
   mapping(address => mapping(address => bool)) internal activistWonLevel;
 
-  UserContract internal userContract;
+  UserRules internal userContract;
   address[] internal activistsAddress;
   ActivistPool internal activistPool;
   UserType private constant USER_TYPE = UserType.ACTIVIST;
@@ -26,7 +26,7 @@ contract ActivistRules is Callable {
   uint256 private constant MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS = 3;
 
   constructor(address userContractAddress, address activistPoolAddress) {
-    userContract = UserContract(userContractAddress);
+    userContract = UserRules(userContractAddress);
     activistPool = ActivistPool(activistPoolAddress);
   }
 

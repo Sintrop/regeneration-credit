@@ -2,22 +2,22 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { UserContract } from "./UserContract.sol";
+import { UserRules } from "./UserRules.sol";
 import { UserType } from "./types/UserTypes.sol";
 
 /**
  * @author Sintrop
- * @title InvitationContract
+ * @title InvitationRules
  * @dev Manage logic to allow users invite others
  */
-contract InvitationContract is Ownable {
+contract InvitationRules is Ownable {
   mapping(address => uint256) public lastInviteBlocks;
   mapping(UserType => UserType) public canBeInviteds;
 
-  UserContract internal userContract;
+  UserRules internal userContract;
 
   constructor(address userContractAddress) {
-    userContract = UserContract(userContractAddress);
+    userContract = UserRules(userContractAddress);
 
     canBeInviteds[UserType.ACTIVIST] = UserType.ACTIVIST;
     canBeInviteds[UserType.INSPECTOR] = UserType.ACTIVIST;

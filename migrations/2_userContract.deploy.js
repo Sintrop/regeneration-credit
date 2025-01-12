@@ -9,7 +9,7 @@ async function userContractDeploy() {
   const validatorProportionality = process.env["VALIDATOR_PROPORTIONALITY"];
   const contributorProportionality = process.env["CONTRIBUTOR_PROPORTIONALITY"];
 
-  const UserContract = await ethers.getContractFactory("UserContract");
+  const UserRules = await ethers.getContractFactory("UserRules");
 
   const args = [
     inspectorProportionality,
@@ -20,13 +20,13 @@ async function userContractDeploy() {
     contributorProportionality,
   ];
 
-  var userContract = await UserContract.deploy(...args);
+  var userContract = await UserRules.deploy(...args);
 
-  saveContractAddress("UserContract", userContract.target);
+  saveContractAddress("UserRules", userContract.target);
 
-  console.log(`UserContract address ${userContract.target}`);
+  console.log(`UserRules address ${userContract.target}`);
 
-  await verifyContract(userContract, "UserContract", args);
+  await verifyContract(userContract, "UserRules", args);
 
   return userContract;
 }

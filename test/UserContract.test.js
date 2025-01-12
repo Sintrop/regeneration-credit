@@ -2,7 +2,7 @@ const { userContractDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 
-describe("UserContract", function () {
+describe("UserRules", function () {
   let instance;
   let owner, user1Address, user2Address, user3Address, user4Address;
 

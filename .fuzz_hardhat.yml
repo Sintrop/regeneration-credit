@@ -27,7 +27,7 @@ fuzz:
     # This is the contract that the campaign will show coverage for/ map issues to etc
     # It's a list of all the relevant contracts (don't worry about dependencies, we'll get those automatically 🙌)
     targets:
-        - "contracts/UserContract.sol"
+        - "contracts/UserRules.sol"
         - "contracts/ActivistPool"
         - "contracts/ActivistRules"
         - "contracts/ResearcherPool"
@@ -42,7 +42,7 @@ fuzz:
         - "contracts/RegeneratorRules"
         - "contracts/InspectorPool"
         - "contracts/InspectorRules"
-        - "contracts/InvitationContract"
+        - "contracts/InvitationRules"
         - "contracts/CategoryContract"
         - "contracts/RegenerationCredit.sol"
         - "contracts/RegenerationCreditIco.sol"
