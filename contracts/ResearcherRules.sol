@@ -6,15 +6,15 @@ import { UserContract } from "./UserContract.sol";
 import { Researcher, Work, Pool, CalculatorItem, Penalty } from "./types/ResearcherTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { ResearcherPool } from "./ResearcherPool.sol";
-import { ValidatorContract } from "./ValidatorContract.sol";
+import { ValidatorRules } from "./ValidatorRules.sol";
 
 /**
  * @author Sintrop
- * @title ResearcherContract
+ * @title ResearcherRules
  * @dev Manage researchers rules and data
  * @notice Responsible for developing evaluation methodologies
  */
-contract ResearcherContract is Callable {
+contract ResearcherRules is Callable {
   mapping(address => Researcher) internal researchers;
   mapping(uint256 => Work) public works;
   mapping(uint256 => CalculatorItem) public calculatorItems;
@@ -22,7 +22,7 @@ contract ResearcherContract is Callable {
 
   UserContract internal userContract;
   ResearcherPool internal researcherPool;
-  ValidatorContract internal validatorContract;
+  ValidatorRules internal validatorContract;
 
   address[] internal researchersAddress;
   UserType private constant USER_TYPE = UserType.RESEARCHER;
@@ -43,7 +43,7 @@ contract ResearcherContract is Callable {
   ) {
     userContract = UserContract(userContractAddress);
     researcherPool = ResearcherPool(researcherPoolAddress);
-    validatorContract = ValidatorContract(validatorContractAddress);
+    validatorContract = ValidatorRules(validatorContractAddress);
     timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;

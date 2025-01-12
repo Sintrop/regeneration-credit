@@ -7,7 +7,7 @@ const { advanceBlock } = require("./shared/advance_block");
 const { ethers } = require("hardhat");
 const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
-describe("DeveloperContract", (accounts) => {
+describe("DeveloperRules", (accounts) => {
   let instance;
   let userContract;
   let developerPool;
@@ -81,10 +81,10 @@ describe("DeveloperContract", (accounts) => {
       validatorPoolargs.blocksPerEra
     );
 
-    const validatorContractFactory = await ethers.getContractFactory("ValidatorContract");
+    const validatorContractFactory = await ethers.getContractFactory("ValidatorRules");
     validatorContract = await validatorContractFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
-    developerContractFactory = await ethers.getContractFactory("DeveloperContract");
+    developerContractFactory = await ethers.getContractFactory("DeveloperRules");
     instance = await developerContractFactory.deploy(
       userContract.target,
       developerPool.target,

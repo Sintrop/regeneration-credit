@@ -2,27 +2,27 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserContract } from "./UserContract.sol";
-import { RegeneratorContract } from "./RegeneratorContract.sol";
+import { RegeneratorRules } from "./RegeneratorRules.sol";
 import { Validator, UserValidation, ResourceValidation, Pool, ContractsDependency } from "./types/ValidatorTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { Callable } from "./Callable.sol";
 import { ValidatorPool } from "./ValidatorPool.sol";
-import { InspectorContract } from "./InspectorContract.sol";
-import { DeveloperContract } from "./DeveloperContract.sol";
-import { ResearcherContract } from "./ResearcherContract.sol";
-import { ContributorContract } from "./ContributorContract.sol";
-import { ActivistContract } from "./ActivistContract.sol";
+import { InspectorRules } from "./InspectorRules.sol";
+import { DeveloperRules } from "./DeveloperRules.sol";
+import { ResearcherRules } from "./ResearcherRules.sol";
+import { ContributorRules } from "./ContributorRules.sol";
+import { ActivistRules } from "./ActivistRules.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
 import { Report } from "./types/DeveloperTypes.sol";
 import { Work } from "./types/ResearcherTypes.sol";
 
 /**
  * @author Sintrop
- * @title ValidatorContract
+ * @title ValidatorRules
  * @dev Manage validators rules and data
  * @notice Responsible for reviewing and voting to invalidate wrong or corrupted actions
  */
-contract ValidatorContract is Callable {
+contract ValidatorRules is Callable {
   mapping(address => Validator) private validators;
   mapping(address => UserValidation[]) private userValidations;
   mapping(uint256 => ResourceValidation[]) public inspectionValidations;
@@ -34,13 +34,13 @@ contract ValidatorContract is Callable {
   mapping(address => mapping(address => bool)) private validatorUsersValidations;
 
   UserContract private userContract;
-  RegeneratorContract private regeneratorContract;
+  RegeneratorRules private regeneratorContract;
   ValidatorPool private validatorPool;
-  InspectorContract private inspectorContract;
-  DeveloperContract private developerContract;
-  ResearcherContract private researcherContract;
-  ContributorContract private contributorContract;
-  ActivistContract private activistContract;
+  InspectorRules private inspectorContract;
+  DeveloperRules private developerContract;
+  ResearcherRules private researcherContract;
+  ContributorRules private contributorContract;
+  ActivistRules private activistContract;
 
   address[] public validatorsAddress;
   UserType private constant USER_TYPE = UserType.VALIDATOR;
@@ -54,13 +54,13 @@ contract ValidatorContract is Callable {
 
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
     userContract = UserContract(contractDependency.userContractAddress);
-    regeneratorContract = RegeneratorContract(contractDependency.regeneratorContractAddress);
+    regeneratorContract = RegeneratorRules(contractDependency.regeneratorContractAddress);
     validatorPool = ValidatorPool(contractDependency.validatorPoolAddress);
-    inspectorContract = InspectorContract(contractDependency.inspectorContractAddress);
-    developerContract = DeveloperContract(contractDependency.developerContractAddress);
-    researcherContract = ResearcherContract(contractDependency.researcherContractAddress);
-    contributorContract = ContributorContract(contractDependency.contributorContractAddress);
-    activistContract = ActivistContract(contractDependency.activistContractAddress);
+    inspectorContract = InspectorRules(contractDependency.inspectorContractAddress);
+    developerContract = DeveloperRules(contractDependency.developerContractAddress);
+    researcherContract = ResearcherRules(contractDependency.researcherContractAddress);
+    contributorContract = ContributorRules(contractDependency.contributorContractAddress);
+    activistContract = ActivistRules(contractDependency.activistContractAddress);
   }
 
   /**

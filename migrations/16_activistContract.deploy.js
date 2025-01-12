@@ -6,20 +6,20 @@ async function activistContractDeploy() {
   const userContract = await getDeployedContract("UserContract");
   const activistPool = await getDeployedContract("ActivistPool");
 
-  const ActivistContract = await ethers.getContractFactory("ActivistContract");
+  const ActivistRules = await ethers.getContractFactory("ActivistRules");
 
   const args = [userContract.target, activistPool.target];
 
-  const activistContract = await ActivistContract.deploy(...args);
+  const activistContract = await ActivistRules.deploy(...args);
 
-  saveContractAddress("ActivistContract", activistContract.target);
+  saveContractAddress("ActivistRules", activistContract.target);
 
   await userContract.newAllowedCaller(activistContract.target);
   await activistPool.newAllowedCaller(activistContract.target);
 
-  console.log(`ActivistContract address ${activistContract.target}`);
+  console.log(`ActivistRules address ${activistContract.target}`);
 
-  await verifyContract(activistContract, "ActivistContract", args);
+  await verifyContract(activistContract, "ActivistRules", args);
 
   return activistContract;
 }

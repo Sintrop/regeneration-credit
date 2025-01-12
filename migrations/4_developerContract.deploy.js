@@ -5,9 +5,9 @@ const verifyContract = require("../scripts/shared/verifyContract");
 async function developerContractDeploy() {
   const userContract = await getDeployedContract("UserContract");
   const developerPool = await getDeployedContract("DeveloperPool");
-  const validatorContract = await getDeployedContract("ValidatorContract");
+  const validatorContract = await getDeployedContract("ValidatorRules");
 
-  const DeveloperContract = await ethers.getContractFactory("DeveloperContract");
+  const DeveloperRules = await ethers.getContractFactory("DeveloperRules");
 
   const developerMaxPenalties = process.env["DEVELOPER_MAX_PENALTIES"];
   const securityBlocksToValidatorAnalysis = process.env["DEVELOPER_SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS"];
@@ -20,17 +20,17 @@ async function developerContractDeploy() {
     securityBlocksToValidatorAnalysis,
   ];
 
-  const developerContract = await DeveloperContract.deploy(...args);
+  const developerContract = await DeveloperRules.deploy(...args);
 
-  saveContractAddress("DeveloperContract", developerContract.target);
+  saveContractAddress("DeveloperRules", developerContract.target);
 
   await developerPool.newAllowedCaller(developerContract.target);
   await userContract.newAllowedCaller(developerContract.target);
   await developerContract.newAllowedCaller(validatorContract.target);
 
-  console.log(`DeveloperContract address ${developerContract.target}`);
+  console.log(`DeveloperRules address ${developerContract.target}`);
 
-  await verifyContract(developerContract, "DeveloperContract", args);
+  await verifyContract(developerContract, "DeveloperRules", args);
 
   return developerContract;
 }

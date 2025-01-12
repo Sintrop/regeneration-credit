@@ -6,7 +6,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
-describe("ResearcherContract", () => {
+describe("ResearcherRules", () => {
   let instance;
   let regenerationCredit;
   let researcherPool;
@@ -70,10 +70,10 @@ describe("ResearcherContract", () => {
       validatorPoolArgs.blocksPerEra
     );
 
-    const validatorContractFactory = await ethers.getContractFactory("ValidatorContract");
+    const validatorContractFactory = await ethers.getContractFactory("ValidatorRules");
     validatorContract = await validatorContractFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
-    const instanceFactory = await ethers.getContractFactory("ResearcherContract");
+    const instanceFactory = await ethers.getContractFactory("ResearcherRules");
     instance = await instanceFactory.deploy(
       userContract.target,
       researcherPool.target,

@@ -7,19 +7,19 @@ async function validatorContractDeploy() {
   const firstValidatorLimit = process.env["FIRST_VALIDATOR_LIMIT"];
   const secondValidatorLimit = process.env["SECOND_VALIDATOR_LIMIT"];
 
-  const ValidatorContract = await ethers.getContractFactory("ValidatorContract");
+  const ValidatorRules = await ethers.getContractFactory("ValidatorRules");
 
   const args = [firstValidatorLimit, secondValidatorLimit];
 
-  const validatorContract = await ValidatorContract.deploy(...args);
+  const validatorContract = await ValidatorRules.deploy(...args);
 
-  saveContractAddress("ValidatorContract", validatorContract.target);
+  saveContractAddress("ValidatorRules", validatorContract.target);
 
   await userContract.newAllowedCaller(validatorContract.target);
 
-  console.log(`ValidatorContract address ${validatorContract.target}`);
+  console.log(`ValidatorRules address ${validatorContract.target}`);
 
-  await verifyContract(validatorContract, "ValidatorContract", args);
+  await verifyContract(validatorContract, "ValidatorRules", args);
 
   return validatorContract;
 }

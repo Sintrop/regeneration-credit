@@ -6,7 +6,7 @@ const { regenerationCreditDeployed } = require("./shared/regeneration_credit_dep
 const { advanceBlock } = require("./shared/advance_block");
 const { ethers } = require("hardhat");
 
-describe("ContributorContract", (accounts) => {
+describe("ContributorRules", (accounts) => {
   let instance;
   let userContract;
   let contributorPool;
@@ -42,7 +42,7 @@ describe("ContributorContract", (accounts) => {
       contributorPoolParams.blocksPerEra
     );
 
-    contributorContractFactory = await ethers.getContractFactory("ContributorContract");
+    contributorContractFactory = await ethers.getContractFactory("ContributorRules");
     instance = await contributorContractFactory.deploy(
       userContract.target,
       contributorPool.target,

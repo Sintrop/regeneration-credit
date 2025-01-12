@@ -6,22 +6,22 @@ async function contributorContractDeploy() {
   const userContract = await getDeployedContract("UserContract");
   const contributorPool = await getDeployedContract("ContributorPool");
 
-  const ContributorContract = await ethers.getContractFactory("ContributorContract");
+  const ContributorRules = await ethers.getContractFactory("ContributorRules");
 
   const securityBlocksToValidatorAnalysis = process.env["CONTRIBUTOR_SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS"];
 
   const args = [userContract.target, contributorPool.target, securityBlocksToValidatorAnalysis];
 
-  const contributorContract = await ContributorContract.deploy(...args);
+  const contributorContract = await ContributorRules.deploy(...args);
 
-  saveContractAddress("ContributorContract", contributorContract.target);
+  saveContractAddress("ContributorRules", contributorContract.target);
 
   await userContract.newAllowedCaller(contributorContract.target);
   await contributorContract.newAllowedCaller(contributorPool.target);
 
-  console.log(`ContributorContract address ${contributorContract.target}`);
+  console.log(`ContributorRules address ${contributorContract.target}`);
 
-  await verifyContract(contributorContract, "ContributorContract", args);
+  await verifyContract(contributorContract, "ContributorRules", args);
 
   return contributorContract;
 }

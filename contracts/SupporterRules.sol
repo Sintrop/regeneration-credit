@@ -8,11 +8,11 @@ import { SupporterPool } from "./SupporterPool.sol";
 
 /**
  * @author Sintrop
- * @title SupporterContract
+ * @title SupporterRules
  * @dev Manage supporters rules and data
  * @notice Burn tokens to compensate your degradation
  */
-contract SupporterContract {
+contract SupporterRules {
   mapping(address => Supporter) internal supporters;
 
   UserContract internal userContract;

@@ -10,11 +10,11 @@ import { Callable } from "./Callable.sol";
 
 /**
  * @author Sintrop
- * @title ContributorContract
+ * @title ContributorRules
  * @dev Manage contributors rules and data
  * @notice User type to perform generic contributions to the project
  */
-contract ContributorContract is Ownable, Callable {
+contract ContributorRules is Ownable, Callable {
   mapping(address => Contributor) public contributors;
   mapping(uint256 => mapping(address => bool)) public contributorContributionsEra;
   mapping(uint256 => Contribution) public contributions;

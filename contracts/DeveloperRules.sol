@@ -6,16 +6,16 @@ import { Callable } from "./Callable.sol";
 import { UserContract } from "./UserContract.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { DeveloperPool } from "./DeveloperPool.sol";
-import { ValidatorContract } from "./ValidatorContract.sol";
+import { ValidatorRules } from "./ValidatorRules.sol";
 import { Developer, Pool, Report, Penalty } from "./types/DeveloperTypes.sol";
 
 /**
  * @author Sintrop
- * @title DeveloperContract
+ * @title DeveloperRules
  * @dev Manage developers rules and data
  * @notice Responsible for the development of the project
  */
-contract DeveloperContract is Ownable, Callable {
+contract DeveloperRules is Ownable, Callable {
   mapping(address => Developer) public developers;
   mapping(uint256 => mapping(address => bool)) public developerReportsEra;
   mapping(uint256 => Report) public reports;
@@ -23,7 +23,7 @@ contract DeveloperContract is Ownable, Callable {
 
   UserContract internal userContract;
   DeveloperPool internal developerPool;
-  ValidatorContract internal validatorContract;
+  ValidatorRules internal validatorContract;
 
   address[] internal developersAddress;
   UserType private constant USER_TYPE = UserType.DEVELOPER;
@@ -41,7 +41,7 @@ contract DeveloperContract is Ownable, Callable {
   ) {
     userContract = UserContract(userContractAddress);
     developerPool = DeveloperPool(developerPoolAddress);
-    validatorContract = ValidatorContract(validatorContractAddress);
+    validatorContract = ValidatorRules(validatorContractAddress);
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }

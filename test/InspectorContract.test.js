@@ -6,7 +6,7 @@ const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("InspectorContract", () => {
+describe("InspectorRules", () => {
   let instance;
   let userContract;
   let owner, inspe1Address, inspe2Address;
@@ -35,7 +35,7 @@ describe("InspectorContract", () => {
     const inspectorPoolFactory = await ethers.getContractFactory("InspectorPool");
     inspectorPool = await inspectorPoolFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra);
 
-    const instanceFactory = await ethers.getContractFactory("InspectorContract");
+    const instanceFactory = await ethers.getContractFactory("InspectorRules");
     instance = await instanceFactory.deploy(userContract.target, inspectorPool.target, maxPenalties);
 
     await inspectorPool.newAllowedCaller(instance.target);

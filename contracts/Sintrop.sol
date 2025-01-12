@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { RegeneratorContract } from "./RegeneratorContract.sol";
-import { InspectorContract } from "./InspectorContract.sol";
+import { RegeneratorRules } from "./RegeneratorRules.sol";
+import { InspectorRules } from "./InspectorRules.sol";
 import { CategoryContract } from "./CategoryContract.sol";
-import { ValidatorContract } from "./ValidatorContract.sol";
+import { ValidatorRules } from "./ValidatorRules.sol";
 import { CategoryContract } from "./CategoryContract.sol";
-import { ActivistContract } from "./ActivistContract.sol";
+import { ActivistRules } from "./ActivistRules.sol";
 import { UserContract } from "./UserContract.sol";
 import { InspectionStatus, RegenerationInspection, Inspection } from "./types/InspectionTypes.sol";
 import { Regenerator } from "./types/RegeneratorTypes.sol";
@@ -31,11 +31,11 @@ contract Sintrop is Callable {
   mapping(uint256 => RegenerationInspection[]) public regenerationInspection;
   mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
-  InspectorContract private inspectorContract;
-  RegeneratorContract private regeneratorContract;
+  InspectorRules private inspectorContract;
+  RegeneratorRules private regeneratorContract;
   UserContract private userContract;
-  ValidatorContract private validatorContract;
-  ActivistContract private activistContract;
+  ValidatorRules private validatorContract;
+  ActivistRules private activistContract;
   CategoryContract private categoryContract;
 
   uint256 public inspectionsCount;
@@ -61,11 +61,11 @@ contract Sintrop is Callable {
 
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
     userContract = UserContract(contractDependency.userContractAddress);
-    regeneratorContract = RegeneratorContract(contractDependency.regeneratorContractAddress);
-    validatorContract = ValidatorContract(contractDependency.validatorContractAddress);
-    inspectorContract = InspectorContract(contractDependency.inspectorContractAddress);
+    regeneratorContract = RegeneratorRules(contractDependency.regeneratorContractAddress);
+    validatorContract = ValidatorRules(contractDependency.validatorContractAddress);
+    inspectorContract = InspectorRules(contractDependency.inspectorContractAddress);
     categoryContract = CategoryContract(contractDependency.categoryContractAddress);
-    activistContract = ActivistContract(contractDependency.activistContractAddress);
+    activistContract = ActivistRules(contractDependency.activistContractAddress);
   }
 
   /**

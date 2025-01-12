@@ -6,20 +6,20 @@ async function supporterContractDeploy() {
   const userContract = await getDeployedContract("UserContract");
   const supporterPool = await getDeployedContract("SupporterPool");
 
-  const SupporterContract = await ethers.getContractFactory("SupporterContract");
+  const SupporterRules = await ethers.getContractFactory("SupporterRules");
 
   const args = [userContract.target, supporterPool.target];
 
-  const supporterContract = await SupporterContract.deploy(...args);
+  const supporterContract = await SupporterRules.deploy(...args);
 
-  saveContractAddress("SupporterContract", supporterContract.target);
+  saveContractAddress("SupporterRules", supporterContract.target);
 
   await userContract.newAllowedCaller(supporterContract.target);
   await supporterPool.newAllowedCaller(supporterContract.target);
 
-  console.log(`SupporterContract address ${supporterContract.target}`);
+  console.log(`SupporterRules address ${supporterContract.target}`);
 
-  await verifyContract(supporterContract, "SupporterContract", args);
+  await verifyContract(supporterContract, "SupporterRules", args);
 
   return supporterContract;
 }

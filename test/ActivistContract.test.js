@@ -4,7 +4,7 @@ const { regenerationCreditDeployed } = require("./shared/regeneration_credit_dep
 const { expect } = require("chai");
 const { advanceBlock } = require("./shared/advance_block");
 
-describe("ActivistContract", () => {
+describe("ActivistRules", () => {
   let instance, userContract, activistPool, regenerationCredit;
   let owner, activ1Address, activ2Address, activ3Address, regenerator1Address, inspector1Address, inspector2Address;
 
@@ -36,7 +36,7 @@ describe("ActivistContract", () => {
       activistPoolArgs.blocksPerEra
     );
 
-    const instanceContractFactory = await ethers.getContractFactory("ActivistContract");
+    const instanceContractFactory = await ethers.getContractFactory("ActivistRules");
     instance = await instanceContractFactory.deploy(userContract.target, activistPool.target);
 
     await userContract.newAllowedCaller(activ1Address);

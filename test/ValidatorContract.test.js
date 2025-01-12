@@ -4,7 +4,7 @@ const { regenerationCreditDeployed } = require("./shared/regeneration_credit_dep
 const { advanceBlock } = require("./shared/advance_block");
 const { userContractDeployed } = require("./shared/user_contract_deployed");
 
-describe("ValidatorContract", () => {
+describe("ValidatorRules", () => {
   let instance;
   let userContract;
   let regeneratorContract;
@@ -217,7 +217,7 @@ describe("ValidatorContract", () => {
       validatorPoolArgs.blocksPerEra
     );
 
-    const regeneratorContractFactory = await ethers.getContractFactory("RegeneratorContract");
+    const regeneratorContractFactory = await ethers.getContractFactory("RegeneratorRules");
     regeneratorContract = await regeneratorContractFactory.deploy(userContract.target, regeneratorPool.target);
 
     const inspectorPoolFactory = await ethers.getContractFactory("InspectorPool");
@@ -249,15 +249,15 @@ describe("ValidatorContract", () => {
     );
 
     const maxPenalties = 2;
-    const inspectorContractFactory = await ethers.getContractFactory("InspectorContract");
+    const inspectorContractFactory = await ethers.getContractFactory("InspectorRules");
     inspectorContract = await inspectorContractFactory.deploy(userContract.target, inspectorPool.target, maxPenalties);
 
-    const validatorContractFactory = await ethers.getContractFactory("ValidatorContract");
+    const validatorContractFactory = await ethers.getContractFactory("ValidatorRules");
     instance = await validatorContractFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
     const developerMaxPenalties = 3;
     const developerSecuryBlocksToAnalysis = 10;
-    const developerContractFactory = await ethers.getContractFactory("DeveloperContract");
+    const developerContractFactory = await ethers.getContractFactory("DeveloperRules");
     developerContract = await developerContractFactory.deploy(
       userContract.target,
       developerPool.target,
@@ -267,7 +267,7 @@ describe("ValidatorContract", () => {
     );
 
     const contributorSecuryBlocksToAnalysis = 10;
-    const contributorContractFactory = await ethers.getContractFactory("ContributorContract");
+    const contributorContractFactory = await ethers.getContractFactory("ContributorRules");
     contributorContract = await contributorContractFactory.deploy(
       userContract.target,
       contributorPool.target,
@@ -277,7 +277,7 @@ describe("ValidatorContract", () => {
     const reseacherMaxPenalties = 3;
     const reseacherTimeBetweenWorks = 10;
     const researcherSecuryBlocksToAnalysis = 10;
-    const researcherContractFactory = await ethers.getContractFactory("ResearcherContract");
+    const researcherContractFactory = await ethers.getContractFactory("ResearcherRules");
     researcherContract = await researcherContractFactory.deploy(
       userContract.target,
       researcherPool.target,
@@ -294,7 +294,7 @@ describe("ValidatorContract", () => {
       activistPoolArgs.blocksPerEra
     );
 
-    const activistContractFactory = await ethers.getContractFactory("ActivistContract");
+    const activistContractFactory = await ethers.getContractFactory("ActivistRules");
     activistContract = await activistContractFactory.deploy(userContract.target, activistPool.target);
 
     const validatorContractDependencies = {

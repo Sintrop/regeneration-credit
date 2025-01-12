@@ -4,7 +4,7 @@ const { regenerationCreditDeployed } = require("./shared/regeneration_credit_dep
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("SupporterContract", () => {
+describe("SupporterRules", () => {
   let instance, userContract, regenerationCredit, supporterPool;
   let ownerAddress, inv1Address, inv2Address;
 
@@ -26,7 +26,7 @@ describe("SupporterContract", () => {
     const supporterPoolFactory = await ethers.getContractFactory("SupporterPool");
     supporterPool = await supporterPoolFactory.deploy(regenerationCredit.target);
 
-    const instanceFactory = await ethers.getContractFactory("SupporterContract");
+    const instanceFactory = await ethers.getContractFactory("SupporterRules");
     instance = await instanceFactory.deploy(userContract.target, supporterPool.target);
 
     await userContract.newAllowedCaller(instance.target);

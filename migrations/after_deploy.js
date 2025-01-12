@@ -1,7 +1,7 @@
 const getDeployedContract = require("../scripts/shared/getDeployedContract");
 
 async function afterDeploy() {
-  await configureValidatorContract();
+  await configureValidatorRules();
   await configureSintrop();
   await addCategories();
   await renounceOwnership();
@@ -12,16 +12,16 @@ async function afterDeploy() {
   console.log("After Deploy OK");
 }
 
-async function configureValidatorContract() {
-  const validatorContract = await getDeployedContract("ValidatorContract");
+async function configureValidatorRules() {
+  const validatorContract = await getDeployedContract("ValidatorRules");
   const userContract = await getDeployedContract("UserContract");
   const validatorPool = await getDeployedContract("ValidatorPool");
-  const regeneratorContract = await getDeployedContract("RegeneratorContract");
-  const inspectorContract = await getDeployedContract("InspectorContract");
-  const developerContract = await getDeployedContract("DeveloperContract");
-  const researcherContract = await getDeployedContract("ResearcherContract");
-  const activistContract = await getDeployedContract("ActivistContract");
-  const contributorContract = await getDeployedContract("ContributorContract");
+  const regeneratorContract = await getDeployedContract("RegeneratorRules");
+  const inspectorContract = await getDeployedContract("InspectorRules");
+  const developerContract = await getDeployedContract("DeveloperRules");
+  const researcherContract = await getDeployedContract("ResearcherRules");
+  const activistContract = await getDeployedContract("ActivistRules");
+  const contributorContract = await getDeployedContract("ContributorRules");
 
   const contractDependencies = {
     userContractAddress: userContract.target,
@@ -39,17 +39,17 @@ async function configureValidatorContract() {
   await validatorPool.newAllowedCaller(validatorContract.target);
   await inspectorContract.newAllowedCaller(validatorContract.target);
 
-  console.log("After ValidatorContract deploy is OK");
+  console.log("After ValidatorRules deploy is OK");
 }
 
 
 async function configureSintrop() {
   const sintrop = await getDeployedContract("Sintrop");
-  const inspectorContract = await getDeployedContract("InspectorContract");
-  const activistContract = await getDeployedContract("ActivistContract");
+  const inspectorContract = await getDeployedContract("InspectorRules");
+  const activistContract = await getDeployedContract("ActivistRules");
   const userContract = await getDeployedContract("UserContract");
-  const regeneratorContract = await getDeployedContract("RegeneratorContract");
-  const validatorContract = await getDeployedContract("ValidatorContract");
+  const regeneratorContract = await getDeployedContract("RegeneratorRules");
+  const validatorContract = await getDeployedContract("ValidatorRules");
   const categoryContract = await getDeployedContract("CategoryContract");
 
   const contractDependencies = {
@@ -303,13 +303,13 @@ async function renounceOwnership() {
   const sintrop = await getDeployedContract("Sintrop");
   const categoryContract = await getDeployedContract("CategoryContract");
   const userContract = await getDeployedContract("UserContract");
-  const inspectorContract = await getDeployedContract("InspectorContract");
-  const activistContract = await getDeployedContract("ActivistContract");
-  const regeneratorContract = await getDeployedContract("RegeneratorContract");
-  const validatorContract = await getDeployedContract("ValidatorContract");
-  const developerContract = await getDeployedContract("DeveloperContract");
-  const researcherContract = await getDeployedContract("ResearcherContract");
-  const contributorContract = await getDeployedContract("ContributorContract");
+  const inspectorContract = await getDeployedContract("InspectorRules");
+  const activistContract = await getDeployedContract("ActivistRules");
+  const regeneratorContract = await getDeployedContract("RegeneratorRules");
+  const validatorContract = await getDeployedContract("ValidatorRules");
+  const developerContract = await getDeployedContract("DeveloperRules");
+  const researcherContract = await getDeployedContract("ResearcherRules");
+  const contributorContract = await getDeployedContract("ContributorRules");
   const regeneratorPool = await getDeployedContract("RegeneratorPool");
   const inspectorPool = await getDeployedContract("InspectorPool");
   const researcherPool = await getDeployedContract("ResearcherPool");

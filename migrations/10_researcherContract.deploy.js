@@ -5,9 +5,9 @@ const verifyContract = require("../scripts/shared/verifyContract");
 async function researcherContractDeploy() {
   const userContract = await getDeployedContract("UserContract");
   const researcherPool = await getDeployedContract("ResearcherPool");
-  const validatorContract = await getDeployedContract("ValidatorContract");
+  const validatorContract = await getDeployedContract("ValidatorRules");
 
-  const ResearcherContract = await ethers.getContractFactory("ResearcherContract");
+  const ResearcherRules = await ethers.getContractFactory("ResearcherRules");
 
   const timeBetweenWorks = process.env["RESEARCHER_TIME_BETWEEN_WORKS"];
   const researcherMaxPenalties = process.env["RESEARCHER_MAX_PENALTIES"];
@@ -22,9 +22,9 @@ async function researcherContractDeploy() {
     securityBlocksToValidatorAnalysis,
   ];
 
-  const researcherContract = await ResearcherContract.deploy(...args);
+  const researcherContract = await ResearcherRules.deploy(...args);
 
-  saveContractAddress("ResearcherContract", researcherContract.target);
+  saveContractAddress("ResearcherRules", researcherContract.target);
 
   await userContract.newAllowedCaller(researcherContract.target);
   await researcherPool.newAllowedCaller(researcherContract.target);
@@ -32,7 +32,7 @@ async function researcherContractDeploy() {
 
   console.log(`ReseacherContract address ${researcherContract.target}`);
 
-  await verifyContract(researcherContract, "ResearcherContract", args);
+  await verifyContract(researcherContract, "ResearcherRules", args);
 
   return researcherContract;
 }

@@ -8,20 +8,20 @@ async function inspectorContractDeploy() {
   const userContract = await getDeployedContract("UserContract");
   const inspectorPool = await getDeployedContract("InspectorPool");
 
-  const InspectorContract = await ethers.getContractFactory("InspectorContract");
+  const InspectorRules = await ethers.getContractFactory("InspectorRules");
 
   const args = [userContract.target, inspectorPool.target, inspectorMaxPenalties];
 
-  const inspectorContract = await InspectorContract.deploy(...args);
+  const inspectorContract = await InspectorRules.deploy(...args);
 
-  saveContractAddress("InspectorContract", inspectorContract.target);
+  saveContractAddress("InspectorRules", inspectorContract.target);
 
   await userContract.newAllowedCaller(inspectorContract.target);
   await inspectorPool.newAllowedCaller(inspectorContract.target);
 
-  console.log(`InspectorContract address ${inspectorContract.target}`);
+  console.log(`InspectorRules address ${inspectorContract.target}`);
 
-  await verifyContract(inspectorContract, "InspectorContract", args);
+  await verifyContract(inspectorContract, "InspectorRules", args);
 
   return inspectorContract;
 }

@@ -4,7 +4,7 @@ const { advanceBlock } = require("./shared/advance_block");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 
-describe("RegeneratorContract", () => {
+describe("RegeneratorRules", () => {
   let instance;
   let regenerationCredit;
   let userContract;
@@ -40,7 +40,7 @@ describe("RegeneratorContract", () => {
       regeneratorPoolArgs.blocksPerEra
     );
 
-    const instanceFactory = await ethers.getContractFactory("RegeneratorContract");
+    const instanceFactory = await ethers.getContractFactory("RegeneratorRules");
 
     instance = await instanceFactory.deploy(userContract.target, regeneratorPool.target);
 

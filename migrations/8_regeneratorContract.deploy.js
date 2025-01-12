@@ -6,20 +6,20 @@ async function regeneratorContractDeploy() {
   const userContract = await getDeployedContract("UserContract");
   const regeneratorPool = await getDeployedContract("RegeneratorPool");
 
-  const RegeneratorContract = await ethers.getContractFactory("RegeneratorContract");
+  const RegeneratorRules = await ethers.getContractFactory("RegeneratorRules");
 
   const args = [userContract.target, regeneratorPool.target];
 
-  const regeneratorContract = await RegeneratorContract.deploy(...args);
+  const regeneratorContract = await RegeneratorRules.deploy(...args);
 
-  saveContractAddress("RegeneratorContract", regeneratorContract.target);
+  saveContractAddress("RegeneratorRules", regeneratorContract.target);
 
   await userContract.newAllowedCaller(regeneratorContract.target);
   await regeneratorPool.newAllowedCaller(regeneratorContract.target);
 
-  console.log(`RegeneratorContract address ${regeneratorContract.target}`);
+  console.log(`RegeneratorRules address ${regeneratorContract.target}`);
 
-  await verifyContract(regeneratorContract, "RegeneratorContract", args);
+  await verifyContract(regeneratorContract, "RegeneratorRules", args);
 
   return regeneratorContract;
 }

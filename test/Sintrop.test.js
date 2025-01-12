@@ -230,12 +230,12 @@ describe("Sintrop", () => {
       activistPoolArgs.blocksPerEra
     );
 
-    const inspectorContractFactory = await ethers.getContractFactory("InspectorContract");
-    const researcherContractFactory = await ethers.getContractFactory("ResearcherContract");
-    const regeneratorContractFactory = await ethers.getContractFactory("RegeneratorContract");
-    const activistContractFactory = await ethers.getContractFactory("ActivistContract");
+    const inspectorContractFactory = await ethers.getContractFactory("InspectorRules");
+    const researcherContractFactory = await ethers.getContractFactory("ResearcherRules");
+    const regeneratorContractFactory = await ethers.getContractFactory("RegeneratorRules");
+    const activistContractFactory = await ethers.getContractFactory("ActivistRules");
 
-    const validatorContractFactory = await ethers.getContractFactory("ValidatorContract");
+    const validatorContractFactory = await ethers.getContractFactory("ValidatorRules");
     validatorContract = await validatorContractFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
     inspectorContract = await inspectorContractFactory.deploy(

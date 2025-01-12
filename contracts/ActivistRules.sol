@@ -9,12 +9,12 @@ import { Callable } from "./Callable.sol";
 
 /**
  * @author Sintrop
- * @title ActivistContract
+ * @title ActivistRules
  * @dev Manage activists rules and data
  * @notice User responsible for inviting new regenerators and inspectors
  */
 
-contract ActivistContract is Callable {
+contract ActivistRules is Callable {
   mapping(address => Activist) internal activists;
   mapping(address => mapping(address => bool)) internal activistWonLevel;
 
