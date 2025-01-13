@@ -140,7 +140,7 @@ contract ActivistContract is Callable {
     activist.pool.level++;
     activists[activistAddress] = activist;
 
-    activistPool.addLevel(activistAddress, 1, 1);
+    activistPool.addLevel(activistAddress, 1);
   }
 
   /**

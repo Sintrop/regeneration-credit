@@ -47,13 +47,12 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
   /**
    * @dev Called by the researcher contract, function to increase researcher level
    * @param addr Researcher wallet
-   * @param currentLevel Researcher current level
-   * @param addLevels Levels to increase
+   * @param levels Levels to increase
    */
-  function addLevel(address addr, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
+  function addLevel(address addr, uint256 levels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 
-    addPoolLevel(addr, currentLevel, addLevels, era);
+    addPoolLevel(addr, levels, era);
   }
 
   /**

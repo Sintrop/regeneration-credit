@@ -216,7 +216,7 @@ contract DeveloperContract is Ownable, Callable {
     developer.pool.level++;
     developers[addr] = developer;
 
-    developerPool.addLevel(addr, developer.pool.level, 1);
+    developerPool.addLevel(addr, 1);
   }
 
   function addPenalty(address addr, uint256 reportId) public mustBeAllowedCaller returns (uint256) {

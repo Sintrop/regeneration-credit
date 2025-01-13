@@ -1677,6 +1677,28 @@ describe("ValidatorContract", () => {
 
         expect(validator.pool.level).to.equal(1);
       });
+
+      context("when adding report to eras", () => {
+        beforeEach(async () => {
+          await instance.connect(validator1Address).declareAlive();
+
+          await advanceBlock(validatorPoolArgs.blocksPerEra);
+
+          await instance.connect(validator1Address).declareAlive();
+        });
+
+        it("eras 1 must have 1 level", async () => {
+          const eraLevels = await validatorPool.eraLevels(1, validator1Address);
+
+          expect(eraLevels).to.equal(1);
+        });
+
+        it("eras 2 must have 1 level", async () => {
+          const eraLevels = await validatorPool.eraLevels(2, validator1Address);
+
+          expect(eraLevels).to.equal(1);
+        });
+      });
     });
 
     context("when is a validator and has already added a level in that era", () => {

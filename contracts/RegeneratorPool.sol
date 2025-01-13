@@ -48,13 +48,10 @@ contract RegeneratorPool is Poolable, Ownable, Blockable, Callable {
   /**
    * @dev Called by the regenerator contract, function to increase regenerator level
    * @param regenerator Regenerator wallet
-   * @param currentLevel Regenerator current level
-   * @param addLevels Levels to increase
+   * @param levels Levels to increase
    */
-  function addLevel(address regenerator, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
-    uint256 era = currentContractEra();
-
-    addPoolLevel(regenerator, currentLevel, addLevels, era);
+  function addLevel(address regenerator, uint256 levels) public mustBeAllowedCaller {
+    addPoolLevel(regenerator, levels, currentContractEra());
   }
 
   /**

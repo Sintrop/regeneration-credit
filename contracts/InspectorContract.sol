@@ -140,7 +140,7 @@ contract InspectorContract is Callable {
 
     if (!minimumInspections(inspector.totalInspections)) return;
 
-    inspectorPool.addLevel(addr, 1, 1);
+    inspectorPool.addLevel(addr, 1);
   }
 
   /**

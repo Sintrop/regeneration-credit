@@ -72,8 +72,8 @@ describe("ContributorPool", () => {
         context("when contributor have 0 levels in era 1", () => {
           context("when add level", () => {
             beforeEach(async () => {
-              await instance.addLevel(contr1Address, 1, 1);
-              await instance.addLevel(contr2Address, 1, 1);
+              await instance.addLevel(contr1Address, 1);
+              await instance.addLevel(contr2Address, 1);
             });
 
             it("era 1 must have 2 level", async () => {
@@ -104,18 +104,18 @@ describe("ContributorPool", () => {
 
         context("when contributors have levels in era 1", () => {
           beforeEach(async () => {
-            await instance.addLevel(contr1Address, 1, 1);
-            await instance.addLevel(contr1Address, 1, 5);
+            await instance.addLevel(contr1Address, 1);
+            await instance.addLevel(contr1Address, 5);
 
-            await instance.addLevel(contr2Address, 1, 1);
-            await instance.addLevel(contr2Address, 1, 1);
-            await instance.addLevel(contr2Address, 1, 1);
+            await instance.addLevel(contr2Address, 1);
+            await instance.addLevel(contr2Address, 1);
+            await instance.addLevel(contr2Address, 1);
           });
 
           context("when add level", () => {
             beforeEach(async () => {
-              await instance.addLevel(contr1Address, 1, 1);
-              await instance.addLevel(contr2Address, 1, 1);
+              await instance.addLevel(contr1Address, 1);
+              await instance.addLevel(contr2Address, 1);
             });
 
             it("era 1 must have 11 level", async () => {
@@ -148,7 +148,7 @@ describe("ContributorPool", () => {
 
     context("without allowed caller", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(contr1Address).addLevel(contr1Address, 1, 1)).to.be.revertedWith(
+        await expect(instance.connect(contr1Address).addLevel(contr1Address, 1)).to.be.revertedWith(
           "Not allowed caller"
         );
       });
@@ -368,13 +368,13 @@ describe("ContributorPool", () => {
             context("when total of levels in era is 6", () => {
               context("when contr1 have 3 levels in era 1", () => {
                 beforeEach(async () => {
-                  await instance.addLevel(contr1Address, 1, 1);
-                  await instance.addLevel(contr1Address, 1, 1);
-                  await instance.addLevel(contr1Address, 1, 1);
+                  await instance.addLevel(contr1Address, 1);
+                  await instance.addLevel(contr1Address, 1);
+                  await instance.addLevel(contr1Address, 1);
 
-                  await instance.addLevel(contr2Address, 1, 1);
-                  await instance.addLevel(contr2Address, 1, 1);
-                  await instance.addLevel(contr2Address, 1, 1);
+                  await instance.addLevel(contr2Address, 1);
+                  await instance.addLevel(contr2Address, 1);
+                  await instance.addLevel(contr2Address, 1);
 
                   await advanceBlock(args.blocksPerEra);
                 });
@@ -389,12 +389,12 @@ describe("ContributorPool", () => {
 
               context("when contr1 have 6 levels in era 1", () => {
                 beforeEach(async () => {
-                  await instance.addLevel(contr1Address, 1, 1);
-                  await instance.addLevel(contr1Address, 1, 1);
-                  await instance.addLevel(contr1Address, 1, 1);
-                  await instance.addLevel(contr1Address, 1, 1);
-                  await instance.addLevel(contr1Address, 1, 1);
-                  await instance.addLevel(contr1Address, 1, 1);
+                  await instance.addLevel(contr1Address, 1);
+                  await instance.addLevel(contr1Address, 1);
+                  await instance.addLevel(contr1Address, 1);
+                  await instance.addLevel(contr1Address, 1);
+                  await instance.addLevel(contr1Address, 1);
+                  await instance.addLevel(contr1Address, 1);
 
                   await advanceBlock(args.blocksPerEra);
                 });
@@ -416,13 +416,13 @@ describe("ContributorPool", () => {
 
               context("when contr2 have 3 levels in era 1", () => {
                 beforeEach(async () => {
-                  await instance.addLevel(contr1Address, 1, 1);
-                  await instance.addLevel(contr1Address, 1, 1);
-                  await instance.addLevel(contr1Address, 1, 1);
+                  await instance.addLevel(contr1Address, 1);
+                  await instance.addLevel(contr1Address, 1);
+                  await instance.addLevel(contr1Address, 1);
 
-                  await instance.addLevel(contr2Address, 1, 1);
-                  await instance.addLevel(contr2Address, 1, 1);
-                  await instance.addLevel(contr2Address, 1, 1);
+                  await instance.addLevel(contr2Address, 1);
+                  await instance.addLevel(contr2Address, 1);
+                  await instance.addLevel(contr2Address, 1);
 
                   await advanceBlock(args.blocksPerEra);
                 });
@@ -440,23 +440,23 @@ describe("ContributorPool", () => {
           context("when is era 2", () => {
             context("when dont have withdraw from era 1", () => {
               beforeEach(async () => {
-                await instance.addLevel(contr1Address, 1, 1);
-                await instance.addLevel(contr1Address, 1, 1);
-                await instance.addLevel(contr1Address, 1, 1);
+                await instance.addLevel(contr1Address, 1);
+                await instance.addLevel(contr1Address, 1);
+                await instance.addLevel(contr1Address, 1);
 
-                await instance.addLevel(contr2Address, 1, 1);
-                await instance.addLevel(contr2Address, 1, 1);
-                await instance.addLevel(contr2Address, 1, 1);
+                await instance.addLevel(contr2Address, 1);
+                await instance.addLevel(contr2Address, 1);
+                await instance.addLevel(contr2Address, 1);
 
                 await advanceBlock(8);
 
-                await instance.addLevel(contr1Address, 1, 1);
-                await instance.addLevel(contr1Address, 1, 1);
-                await instance.addLevel(contr1Address, 1, 1);
+                await instance.addLevel(contr1Address, 1);
+                await instance.addLevel(contr1Address, 1);
+                await instance.addLevel(contr1Address, 1);
 
-                await instance.addLevel(contr2Address, 1, 1);
-                await instance.addLevel(contr2Address, 1, 1);
-                await instance.addLevel(contr2Address, 1, 1);
+                await instance.addLevel(contr2Address, 1);
+                await instance.addLevel(contr2Address, 1);
+                await instance.addLevel(contr2Address, 1);
               });
 
               context("when contr1 withdraw from era 1 and era 2", () => {
@@ -529,13 +529,13 @@ describe("ContributorPool", () => {
             context("when total of levels in era is 6", () => {
               context("when contr1 have 3 levels in era 1", () => {
                 beforeEach(async () => {
-                  await instance.addLevel(contr1Address, 1, 1);
-                  await instance.addLevel(contr1Address, 1, 1);
-                  await instance.addLevel(contr1Address, 1, 1);
+                  await instance.addLevel(contr1Address, 1);
+                  await instance.addLevel(contr1Address, 1);
+                  await instance.addLevel(contr1Address, 1);
 
-                  await instance.addLevel(contr2Address, 1, 1);
-                  await instance.addLevel(contr2Address, 1, 1);
-                  await instance.addLevel(contr2Address, 1, 1);
+                  await instance.addLevel(contr2Address, 1);
+                  await instance.addLevel(contr2Address, 1);
+                  await instance.addLevel(contr2Address, 1);
 
                   await advanceBlock(args.blocksPerEra * args.halving);
                 });
@@ -550,12 +550,12 @@ describe("ContributorPool", () => {
 
               context("when contr1 have 6 levels in era 1", () => {
                 beforeEach(async () => {
-                  await instance.addLevel(contr1Address, 1, 1);
-                  await instance.addLevel(contr1Address, 1, 1);
-                  await instance.addLevel(contr1Address, 1, 1);
-                  await instance.addLevel(contr1Address, 1, 1);
-                  await instance.addLevel(contr1Address, 1, 1);
-                  await instance.addLevel(contr1Address, 1, 1);
+                  await instance.addLevel(contr1Address, 1);
+                  await instance.addLevel(contr1Address, 1);
+                  await instance.addLevel(contr1Address, 1);
+                  await instance.addLevel(contr1Address, 1);
+                  await instance.addLevel(contr1Address, 1);
+                  await instance.addLevel(contr1Address, 1);
 
                   await advanceBlock(args.blocksPerEra * args.halving);
                 });
@@ -577,13 +577,13 @@ describe("ContributorPool", () => {
 
               context("when contr2 have 3 levels in era 1", () => {
                 beforeEach(async () => {
-                  await instance.addLevel(contr1Address, 1, 1);
-                  await instance.addLevel(contr1Address, 1, 1);
-                  await instance.addLevel(contr1Address, 1, 1);
+                  await instance.addLevel(contr1Address, 1);
+                  await instance.addLevel(contr1Address, 1);
+                  await instance.addLevel(contr1Address, 1);
 
-                  await instance.addLevel(contr2Address, 1, 1);
-                  await instance.addLevel(contr2Address, 1, 1);
-                  await instance.addLevel(contr2Address, 1, 1);
+                  await instance.addLevel(contr2Address, 1);
+                  await instance.addLevel(contr2Address, 1);
+                  await instance.addLevel(contr2Address, 1);
 
                   await advanceBlock(args.blocksPerEra * args.halving);
                 });
@@ -601,23 +601,23 @@ describe("ContributorPool", () => {
           context("when is era 2", () => {
             context("when dont have withdraw from era 1", () => {
               beforeEach(async () => {
-                await instance.addLevel(contr1Address, 1, 1);
-                await instance.addLevel(contr1Address, 1, 1);
-                await instance.addLevel(contr1Address, 1, 1);
+                await instance.addLevel(contr1Address, 1);
+                await instance.addLevel(contr1Address, 1);
+                await instance.addLevel(contr1Address, 1);
 
-                await instance.addLevel(contr2Address, 1, 1);
-                await instance.addLevel(contr2Address, 1, 1);
-                await instance.addLevel(contr2Address, 1, 1);
+                await instance.addLevel(contr2Address, 1);
+                await instance.addLevel(contr2Address, 1);
+                await instance.addLevel(contr2Address, 1);
 
                 await advanceBlock(8);
 
-                await instance.addLevel(contr1Address, 1, 1);
-                await instance.addLevel(contr1Address, 1, 1);
-                await instance.addLevel(contr1Address, 1, 1);
+                await instance.addLevel(contr1Address, 1);
+                await instance.addLevel(contr1Address, 1);
+                await instance.addLevel(contr1Address, 1);
 
-                await instance.addLevel(contr2Address, 1, 1);
-                await instance.addLevel(contr2Address, 1, 1);
-                await instance.addLevel(contr2Address, 1, 1);
+                await instance.addLevel(contr2Address, 1);
+                await instance.addLevel(contr2Address, 1);
+                await instance.addLevel(contr2Address, 1);
 
                 await advanceBlock(args.blocksPerEra * args.halving);
               });

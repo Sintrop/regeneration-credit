@@ -235,7 +235,7 @@ describe("RegeneratorPool", () => {
           context("when totalScores is 80", () => {
             context("when regenerator1 have 80 regenerationScore", () => {
               beforeEach(async () => {
-                await instance.addLevel(regenerator1Address, 80, 80);
+                await instance.addLevel(regenerator1Address, 80);
                 await advanceBlock(args.blocksPerEra);
               });
 
@@ -257,8 +257,8 @@ describe("RegeneratorPool", () => {
 
           context("when totalScores is 125", () => {
             beforeEach(async () => {
-              await instance.addLevel(regenerator1Address, 80, 80);
-              await instance.addLevel(regenerator2Address, 45, 45);
+              await instance.addLevel(regenerator1Address, 80);
+              await instance.addLevel(regenerator2Address, 45);
               await advanceBlock(args.blocksPerEra);
             });
 
@@ -300,7 +300,7 @@ describe("RegeneratorPool", () => {
             context("when totalScores is 80", () => {
               context("when regenerator1 have 80 regenerationScore", () => {
                 beforeEach(async () => {
-                  await instance.addLevel(regenerator1Address, 80, 80);
+                  await instance.addLevel(regenerator1Address, 80);
                   await advanceBlock(args.blocksPerEra * args.halving);
                 });
 
@@ -322,8 +322,8 @@ describe("RegeneratorPool", () => {
 
             context("when totalScores is 125", () => {
               beforeEach(async () => {
-                await instance.addLevel(regenerator1Address, 80, 80);
-                await instance.addLevel(regenerator2Address, 45, 45);
+                await instance.addLevel(regenerator1Address, 80);
+                await instance.addLevel(regenerator2Address, 45);
                 await advanceBlock(args.blocksPerEra * args.halving);
               });
 
@@ -371,8 +371,8 @@ describe("RegeneratorPool", () => {
         context("when regenerator have 0 levels in era 1", () => {
           context("when add level", () => {
             beforeEach(async () => {
-              await instance.addLevel(regenerator1Address, 1, 1);
-              await instance.addLevel(regenerator2Address, 1, 1);
+              await instance.addLevel(regenerator1Address, 1);
+              await instance.addLevel(regenerator2Address, 1);
             });
 
             it("era 1 must have 2 level", async () => {
@@ -403,18 +403,18 @@ describe("RegeneratorPool", () => {
 
         context("when regenerators have levels in era 1", () => {
           beforeEach(async () => {
-            await instance.addLevel(regenerator1Address, 1, 1);
-            await instance.addLevel(regenerator1Address, 1, 80);
+            await instance.addLevel(regenerator1Address, 1);
+            await instance.addLevel(regenerator1Address, 80);
 
-            await instance.addLevel(regenerator2Address, 1, 1);
-            await instance.addLevel(regenerator2Address, 1, 1);
-            await instance.addLevel(regenerator2Address, 1, 1);
+            await instance.addLevel(regenerator2Address, 1);
+            await instance.addLevel(regenerator2Address, 1);
+            await instance.addLevel(regenerator2Address, 1);
           });
 
           context("when add level", () => {
             beforeEach(async () => {
-              await instance.addLevel(regenerator1Address, 1, 1);
-              await instance.addLevel(regenerator2Address, 1, 1);
+              await instance.addLevel(regenerator1Address, 1);
+              await instance.addLevel(regenerator2Address, 1);
             });
 
             it("era 1 must have 7 level", async () => {
@@ -447,15 +447,15 @@ describe("RegeneratorPool", () => {
       context("when add level in era 2", () => {
         context("when regenerators have levels in era 1", () => {
           beforeEach(async () => {
-            await instance.addLevel(regenerator1Address, 80, 80);
+            await instance.addLevel(regenerator1Address, 80);
           });
 
           context("when add level", () => {
             beforeEach(async () => {
               await advanceBlock(args.blocksPerEra);
 
-              await instance.addLevel(regenerator1Address, 20, 20);
-              await instance.addLevel(regenerator1Address, 20, 20);
+              await instance.addLevel(regenerator1Address, 20);
+              await instance.addLevel(regenerator1Address, 20);
             });
 
             it("era 1 must have 80 level", async () => {
@@ -488,7 +488,7 @@ describe("RegeneratorPool", () => {
 
     context("without allowed caller", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(regenerator1Address).addLevel(regenerator1Address, 1, 1)).to.be.revertedWith(
+        await expect(instance.connect(regenerator1Address).addLevel(regenerator1Address, 1)).to.be.revertedWith(
           "Not allowed caller"
         );
       });

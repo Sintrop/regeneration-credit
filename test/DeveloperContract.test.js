@@ -224,15 +224,15 @@ describe("DeveloperContract", (accounts) => {
         });
 
         it("add report", async () => {
-          const construbution = await instance.reports(1);
+          const report = await instance.reports(1);
 
-          expect(construbution.id).to.equal(1);
-          expect(construbution.era).to.equal(1);
-          expect(construbution.developer).to.equal(dev1Address.address);
-          expect(construbution.report).to.equal("report");
-          expect(construbution.validationsCount).to.equal(0);
-          expect(construbution.contributed).to.equal(true);
-          expect(construbution.valid).to.equal(true);
+          expect(report.id).to.equal(1);
+          expect(report.era).to.equal(1);
+          expect(report.developer).to.equal(dev1Address.address);
+          expect(report.report).to.equal("report");
+          expect(report.validationsCount).to.equal(0);
+          expect(report.contributed).to.equal(true);
+          expect(report.valid).to.equal(true);
         });
 
         it("increment reportsCount", async () => {
@@ -263,6 +263,28 @@ describe("DeveloperContract", (accounts) => {
           await expect(instance.connect(dev1Address).addReport("description", "report")).to.be.revertedWith(
             "Wait until next era to add report"
           );
+        });
+      });
+
+      context("when adding report to eras", () => {
+        beforeEach(async () => {
+          await instance.connect(dev1Address).addReport("description", "report");
+
+          await advanceBlock(developerPoolParams.blocksPerEra);
+
+          await instance.connect(dev1Address).addReport("description", "report");
+        });
+
+        it("eras 1 must have 1 level", async () => {
+          const eraLevels = await developerPool.eraLevels(1, dev1Address);
+
+          expect(eraLevels).to.eq(1);
+        });
+
+        it("eras 2 must have 1 level", async () => {
+          const eraLevels = await developerPool.eraLevels(1, dev1Address);
+
+          expect(eraLevels).to.eq(1);
         });
       });
     });
