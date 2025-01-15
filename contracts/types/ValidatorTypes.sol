@@ -31,12 +31,12 @@ struct ResourceValidation {
 }
 
 struct ContractsDependency {
-  address userContractAddress;
-  address regeneratorContractAddress;
+  address userRulesAddress;
+  address regeneratorRulesAddress;
   address validatorPoolAddress;
-  address inspectorContractAddress;
-  address developerContractAddress;
-  address researcherContractAddress;
-  address contributorContractAddress;
-  address activistContractAddress;
+  address inspectorRulesAddress;
+  address developerRulesAddress;
+  address researcherRulesAddress;
+  address contributorRulesAddress;
+  address activistRulesAddress;
 }
