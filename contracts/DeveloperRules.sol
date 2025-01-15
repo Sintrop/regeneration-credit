@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { CallerRules } from "./CallerRules.sol";
+import { CallableRules } from "./CallableRules.sol";
 import { UserRules } from "./UserRules.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { DeveloperPool } from "./DeveloperPool.sol";
@@ -15,7 +15,7 @@ import { Developer, Pool, Report, Penalty } from "./types/DeveloperTypes.sol";
  * @dev Manage developers rules and data
  * @notice Responsible for the development of the project
  */
-contract DeveloperRules is Ownable, CallerRules {
+contract DeveloperRules is Ownable, CallableRules {
   mapping(address => Developer) public developers;
   mapping(uint256 => mapping(address => bool)) public developerReportsEra;
   mapping(uint256 => Report) public reports;

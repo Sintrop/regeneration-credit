@@ -4,8 +4,8 @@ pragma solidity >=0.7.0 <=0.9.0;
 import { RegenerationCreditInterface } from "./interfaces/RegenerationCreditInterface.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { BlockRules } from "./BlockRules.sol";
-import { CallerRules } from "./CallerRules.sol";
+import { BlockableRules } from "./BlockableRules.sol";
+import { CallableRules } from "./CallableRules.sol";
 import { PoolRules } from "./PoolRules.sol";
 
 /**
@@ -14,7 +14,7 @@ import { PoolRules } from "./PoolRules.sol";
  * @dev ResearcherPool is a contract to reward researchers
  * @notice Receive tokens for research service provided
  */
-contract ResearcherPool is PoolRules, Ownable, BlockRules, CallerRules {
+contract ResearcherPool is PoolRules, Ownable, BlockableRules, CallableRules {
   using SafeMath for uint256;
 
   RegenerationCreditInterface internal regenerationCredit;
@@ -25,7 +25,7 @@ contract ResearcherPool is PoolRules, Ownable, BlockRules, CallerRules {
     address regenerationCreditAddress,
     uint256 _halving,
     uint256 _blocksPerEra
-  ) BlockRules(_blocksPerEra, _halving) PoolRules(TOTAL_TOKENS_POOL) {
+  ) BlockableRules(_blocksPerEra, _halving) PoolRules(TOTAL_TOKENS_POOL) {
     regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
   }
 

@@ -3,14 +3,14 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { UserType, Delation, Invitation, UserTypeSetting } from "./types/UserTypes.sol";
-import { CallerRules } from "./CallerRules.sol";
+import { CallableRules } from "./CallableRules.sol";
 
 /**
  * @author Sintrop
  * @title UserRules
  * @dev Users registration system
  */
-contract UserRules is Ownable, CallerRules {
+contract UserRules is Ownable, CallableRules {
   mapping(address => UserType) internal users;
   mapping(address => Delation[]) private delations;
   mapping(address => Invitation) public invitations;

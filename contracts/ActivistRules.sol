@@ -5,7 +5,7 @@ import { UserRules } from "./UserRules.sol";
 import { Activist, Pool } from "./types/ActivistTypes.sol";
 import { UserType, Invitation } from "./types/UserTypes.sol";
 import { ActivistPool } from "./ActivistPool.sol";
-import { CallerRules } from "./CallerRules.sol";
+import { CallableRules } from "./CallableRules.sol";
 
 /**
  * @author Sintrop
@@ -14,7 +14,7 @@ import { CallerRules } from "./CallerRules.sol";
  * @notice User responsible for inviting new regenerators and inspectors
  */
 
-contract ActivistRules is CallerRules {
+contract ActivistRules is CallableRules {
   mapping(address => Activist) internal activists;
   mapping(address => mapping(address => bool)) internal activistWonLevel;
 

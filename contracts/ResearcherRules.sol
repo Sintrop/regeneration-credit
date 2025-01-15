@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { CallerRules } from "./CallerRules.sol";
+import { CallableRules } from "./CallableRules.sol";
 import { UserRules } from "./UserRules.sol";
 import { Researcher, Work, Pool, CalculatorItem, Penalty } from "./types/ResearcherTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
@@ -14,7 +14,7 @@ import { ValidatorRules } from "./ValidatorRules.sol";
  * @dev Manage researchers rules and data
  * @notice Responsible for developing evaluation methodologies
  */
-contract ResearcherRules is CallerRules {
+contract ResearcherRules is CallableRules {
   mapping(address => Researcher) internal researchers;
   mapping(uint256 => Work) public works;
   mapping(uint256 => CalculatorItem) public calculatorItems;

@@ -5,10 +5,10 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
  * @author Sintrop
- * @title BlockRules
+ * @title BlockableRules
  * @dev Contract to manage time, blocks and eras
  */
-contract BlockRules {
+contract BlockableRules {
   using SafeMath for uint256;
 
   uint256 public constant BLOCKS_PRECISION = 5;
