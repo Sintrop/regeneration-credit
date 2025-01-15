@@ -60,15 +60,6 @@ describe("SupporterRules", () => {
         expect(supportersCount).to.equal(2);
       });
 
-      it("add created supporter in supporterList", async () => {
-        await addSupporter("Supporter A", inv1Address);
-        await addSupporter("Supporter B", inv2Address);
-
-        const supporters = await instance.getSupporters();
-
-        expect(supporters[0].supporterWallet).to.equal(inv1Address.address);
-      });
-
       it("add created supporter in userType contract as a SUPPORTER", async () => {
         await addSupporter("Supporter A", inv1Address);
 
@@ -76,29 +67,6 @@ describe("SupporterRules", () => {
         const SUPPORTER = 7;
 
         expect(userType).to.equal(SUPPORTER);
-      });
-    });
-  });
-
-  describe("#getSupporters", () => {
-    context("when have supporters", () => {
-      beforeEach(async () => {
-        await addSupporter("Supporter A", inv1Address);
-        await addSupporter("Supporter B", inv2Address);
-      });
-
-      it("return supporters when has supporters", async () => {
-        const supporters = await instance.getSupporters();
-
-        expect(supporters.length).to.equal(2);
-      });
-    });
-
-    context("when dont have supporters", () => {
-      it("return empty supporters array", async () => {
-        const supporters = await instance.getSupporters();
-
-        expect(supporters.length).to.equal(0);
       });
     });
   });

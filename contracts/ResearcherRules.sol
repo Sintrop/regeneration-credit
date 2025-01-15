@@ -74,22 +74,6 @@ contract ResearcherRules is CallableRules {
   }
 
   /**
-   * @dev Returns all registered researchers
-   * @return Researcher struct array
-   */
-  function getResearchers() public view returns (Researcher[] memory) {
-    uint256 usersCount = userRules.userTypesCount(USER_TYPE);
-    Researcher[] memory researcherList = new Researcher[](usersCount);
-
-    for (uint256 i = 0; i < usersCount; i++) {
-      address acAddress = researchersAddress[i];
-      researcherList[i] = researchers[acAddress];
-    }
-
-    return researcherList;
-  }
-
-  /**
    * @dev Return a specific researcher
    * @param addr the address of the researcher.
    */
