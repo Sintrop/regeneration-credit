@@ -3,8 +3,8 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { CallerRules } from "./CallerRules.sol";
 import { UserRules } from "./UserRules.sol";
-import { Researcher, Work, Pool, CalculatorItem, Penalty } from "./types/ResearcherData.sol";
-import { UserType } from "./types/UserData.sol";
+import { Researcher, Work, Pool, CalculatorItem, Penalty } from "./types/ResearcherTypes.sol";
+import { UserType } from "./types/UserTypes.sol";
 import { ResearcherPool } from "./ResearcherPool.sol";
 import { ValidatorRules } from "./ValidatorRules.sol";
 

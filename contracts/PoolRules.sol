@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import { Era } from "./types/PoolData.sol";
+import { Era } from "./types/PoolTypes.sol";
 
 /**
  * @author Sintrop

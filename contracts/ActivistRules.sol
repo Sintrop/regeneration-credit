@@ -2,8 +2,8 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserRules } from "./UserRules.sol";
-import { Activist, Pool } from "./types/ActivistData.sol";
-import { UserType, Invitation } from "./types/UserData.sol";
+import { Activist, Pool } from "./types/ActivistTypes.sol";
+import { UserType, Invitation } from "./types/UserTypes.sol";
 import { ActivistPool } from "./ActivistPool.sol";
 import { CallerRules } from "./CallerRules.sol";
 

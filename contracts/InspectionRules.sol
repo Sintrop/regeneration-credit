@@ -8,11 +8,11 @@ import { ValidatorRules } from "./ValidatorRules.sol";
 import { RegenerationIndexRules } from "./RegenerationIndexRules.sol";
 import { ActivistRules } from "./ActivistRules.sol";
 import { UserRules } from "./UserRules.sol";
-import { InspectionStatus, RegenerationInspection, Inspection } from "./types/InspectionData.sol";
-import { Regenerator } from "./types/RegeneratorData.sol";
-import { Inspector } from "./types/InspectorData.sol";
-import { UserType } from "./types/UserData.sol";
-import { ContractsDependency } from "./types/SintropData.sol";
+import { InspectionStatus, RegenerationInspection, Inspection } from "./types/InspectionTypes.sol";
+import { Regenerator } from "./types/RegeneratorTypes.sol";
+import { Inspector } from "./types/InspectorTypes.sol";
+import { UserType } from "./types/UserTypes.sol";
+import { ContractsDependency } from "./types/SintropTypes.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { CallerRules } from "./CallerRules.sol";
 

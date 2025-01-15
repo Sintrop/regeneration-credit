@@ -3,8 +3,8 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserRules } from "./UserRules.sol";
 import { RegeneratorRules } from "./RegeneratorRules.sol";
-import { Validator, UserValidation, ResourceValidation, Pool, ContractsDependency } from "./types/ValidatorData.sol";
-import { UserType } from "./types/UserData.sol";
+import { Validator, UserValidation, ResourceValidation, Pool, ContractsDependency } from "./types/ValidatorTypes.sol";
+import { UserType } from "./types/UserTypes.sol";
 import { CallerRules } from "./CallerRules.sol";
 import { ValidatorPool } from "./ValidatorPool.sol";
 import { InspectorRules } from "./InspectorRules.sol";
@@ -12,9 +12,9 @@ import { DeveloperRules } from "./DeveloperRules.sol";
 import { ResearcherRules } from "./ResearcherRules.sol";
 import { ContributorRules } from "./ContributorRules.sol";
 import { ActivistRules } from "./ActivistRules.sol";
-import { Inspection } from "./types/InspectionData.sol";
-import { Report } from "./types/DeveloperData.sol";
-import { Work } from "./types/ResearcherData.sol";
+import { Inspection } from "./types/InspectionTypes.sol";
+import { Report } from "./types/DeveloperTypes.sol";
+import { Work } from "./types/ResearcherTypes.sol";
 
 /**
  * @author Sintrop

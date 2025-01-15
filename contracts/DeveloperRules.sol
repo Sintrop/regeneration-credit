@@ -4,10 +4,10 @@ pragma solidity >=0.7.0 <=0.9.0;
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { CallerRules } from "./CallerRules.sol";
 import { UserRules } from "./UserRules.sol";
-import { UserType } from "./types/UserData.sol";
+import { UserType } from "./types/UserTypes.sol";
 import { DeveloperPool } from "./DeveloperPool.sol";
 import { ValidatorRules } from "./ValidatorRules.sol";
-import { Developer, Pool, Report, Penalty } from "./types/DeveloperData.sol";
+import { Developer, Pool, Report, Penalty } from "./types/DeveloperTypes.sol";
 
 /**
  * @author Sintrop

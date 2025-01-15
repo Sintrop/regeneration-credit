@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { Category, RegenerationIndex, RegenerationIndexDescription } from "./types/IndexData.sol";
+import { Category, RegenerationIndex, RegenerationIndexDescription } from "./types/IndexTypes.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { RegenerationInspection } from "./types/InspectionData.sol";
+import { RegenerationInspection } from "./types/InspectionTypes.sol";
 import { CallerRules } from "./CallerRules.sol";
 
 /**
