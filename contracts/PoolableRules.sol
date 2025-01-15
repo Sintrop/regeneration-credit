@@ -6,10 +6,10 @@ import { Era } from "./types/PoolTypes.sol";
 
 /**
  * @author Sintrop
- * @title PoolRules
+ * @title PoolableRules
  * @dev Manage tokens distribution logic
  */
-contract PoolRules {
+contract PoolableRules {
   using SafeMath for uint256;
 
   uint256 internal immutable TOTAL_TOKENS;

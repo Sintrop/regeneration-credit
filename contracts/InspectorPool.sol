@@ -7,7 +7,7 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { BlockableRules } from "./BlockableRules.sol";
 import { CallableRules } from "./CallableRules.sol";
-import { PoolRules } from "./PoolRules.sol";
+import { PoolableRules } from "./PoolableRules.sol";
 
 /**
  * @author Sintrop
@@ -15,7 +15,7 @@ import { PoolRules } from "./PoolRules.sol";
  * @dev InspectorPool is a contract to reward inspectors
  * @notice Receive tokens for inspection service provided
  */
-contract InspectorPool is PoolRules, Ownable, BlockableRules, CallableRules {
+contract InspectorPool is PoolableRules, Ownable, BlockableRules, CallableRules {
   using SafeMath for uint256;
 
   RegenerationCreditInterface internal regenerationCredit;
@@ -26,7 +26,7 @@ contract InspectorPool is PoolRules, Ownable, BlockableRules, CallableRules {
     address regenerationCreditAddress,
     uint256 _halving,
     uint256 _blocksPerEra
-  ) BlockableRules(_blocksPerEra, _halving) PoolRules(TOTAL_TOKENS_POOL) {
+  ) BlockableRules(_blocksPerEra, _halving) PoolableRules(TOTAL_TOKENS_POOL) {
     regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
   }
 
