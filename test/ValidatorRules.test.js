@@ -400,7 +400,7 @@ describe("ValidatorRules", () => {
         });
 
         it("should return error", async () => {
-          expect(
+          await expect(
             instance.connect(validator1Address).addUserValidation(validator2Address, "justification")
           ).to.be.revertedWith("User already denied");
         });
@@ -855,7 +855,7 @@ describe("ValidatorRules", () => {
     context("when caller is not validator", () => {
       it("should return error", async () => {
         await expect(
-          instance.connect(otherAddress).addUserValidation(validator1Address, "justification")
+          instance.connect(otherAddress).addUserValidation(validator5Address, "justification")
         ).to.be.revertedWith("User must be a validator");
       });
     });
@@ -883,9 +883,10 @@ describe("ValidatorRules", () => {
       it("should return error", async () => {
         await addInvitation(owner, validator2Address, userTypes.Validator, owner);
         await addValidator(validator1Address);
-        expect(instance.connect(otherAddress).addUserValidation(undefinedAddress, "justification")).to.be.revertedWith(
-          "User not registered"
-        );
+
+        await expect(
+          instance.connect(validator1Address).addUserValidation(undefinedAddress, "justification")
+        ).to.be.revertedWith("User not registered");
       });
     });
   });
@@ -925,7 +926,7 @@ describe("ValidatorRules", () => {
         });
 
         it("should return error", async () => {
-          expect(
+          await expect(
             instance.connect(owner).addInspectionValidation(inspectionMock, "justification", validator1Address)
           ).to.be.revertedWith("Already voted");
         });
@@ -1186,8 +1187,24 @@ describe("ValidatorRules", () => {
 
     context("without allowed caller", () => {
       it("should return error", async () => {
-        expect(
-          instance.connect(owner).addInspectionValidation(1, "justification", validator1Address)
+        inspectionMock = {
+          id: 1,
+          status: 3,
+          regenerator: regenerator1Address,
+          inspector: inspector1Address,
+          regenerationScore: 20,
+          proofPhoto: "",
+          report: "",
+          validationsCount: 0,
+          createdAt: 100,
+          acceptedAt: 100,
+          inspectedAt: 100,
+          inspectedAtEra: 10,
+          invalidatedAt: 0,
+        };
+
+        await expect(
+          instance.connect(dev1Address).addInspectionValidation(inspectionMock, "justification", validator1Address)
         ).to.be.revertedWith("Not allowed caller");
       });
     });
