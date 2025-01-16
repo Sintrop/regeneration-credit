@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { RegenerationCreditInterface } from "./RegenerationCreditInterface.sol";
+import { RegenerationCreditInterface } from "./interfaces/RegenerationCreditInterface.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { Blockable } from "./Blockable.sol";
-import { Callable } from "./Callable.sol";
-import { Poolable } from "./Poolable.sol";
+import { BlockableRules } from "./BlockableRules.sol";
+import { CallableRules } from "./CallableRules.sol";
+import { PoolableRules } from "./PoolableRules.sol";
 
 /**
  * @author Sintrop
@@ -14,7 +14,7 @@ import { Poolable } from "./Poolable.sol";
  * @dev ResearcherPool is a contract to reward researchers
  * @notice Receive tokens for research service provided
  */
-contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
+contract ResearcherPool is PoolableRules, Ownable, BlockableRules, CallableRules {
   using SafeMath for uint256;
 
   RegenerationCreditInterface internal regenerationCredit;
@@ -25,7 +25,7 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
     address regenerationCreditAddress,
     uint256 _halving,
     uint256 _blocksPerEra
-  ) Blockable(_blocksPerEra, _halving) Poolable(TOTAL_TOKENS_POOL) {
+  ) BlockableRules(_blocksPerEra, _halving) PoolableRules(TOTAL_TOKENS_POOL) {
     regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
   }
 

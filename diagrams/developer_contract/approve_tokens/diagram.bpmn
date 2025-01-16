@@ -13,7 +13,7 @@
     <bpmn:startEvent id="Event_0pg4gd6">
       <bpmn:outgoing>Flow_03lx9i0</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:task id="Activity_1rqvxcc" name="Chama o método approve de developerContract">
+    <bpmn:task id="Activity_1rqvxcc" name="Chama o método approve de developerRules">
       <bpmn:incoming>Flow_03lx9i0</bpmn:incoming>
       <bpmn:outgoing>Flow_1kkuvn4</bpmn:outgoing>
     </bpmn:task>
@@ -84,7 +84,7 @@
     <bpmn:task id="Activity_0mh0ogw" name="Chama o método approveWith com o total de tokens">
       <bpmn:incoming>Flow_0d8xni2</bpmn:incoming>
     </bpmn:task>
-    <bpmn:task id="Activity_1au48de" name="Retorna ao DeveloperContract" />
+    <bpmn:task id="Activity_1au48de" name="Retorna ao DeveloperRules" />
     <bpmn:sequenceFlow id="Flow_12npyq1" sourceRef="Activity_05xi860" targetRef="Gateway_1rm24si" />
     <bpmn:sequenceFlow id="Flow_034ylfk" name="Não" sourceRef="Gateway_1rm24si" targetRef="Activity_1skd6mp" />
     <bpmn:sequenceFlow id="Flow_0ii82k0" sourceRef="Activity_1skd6mp" targetRef="Event_1lzm916" />
