@@ -177,7 +177,7 @@ contract RegeneratorRules is CallableRules {
     }
 
     if (!regenerator.pool.onContractPool) regenerators[regenerator.regeneratorWallet].pool.onContractPool = true;
-    regeneratorPool.addLevel(regenerator.regeneratorWallet, levels, levels);
+    regeneratorPool.addLevel(regenerator.regeneratorWallet, levels);
   }
 
   function removeRegenerationScore(Regenerator memory regenerator, int256 regenerationScore) internal {
@@ -201,7 +201,7 @@ contract RegeneratorRules is CallableRules {
 
   function removeNegativeScore(address addr, int256 levels) public mustBeAllowedCaller {
     regenerators[addr].regenerationScore.score += levels;
-    regeneratorPool.addLevel(addr, uint256(levels), uint256(levels));
+    regeneratorPool.addLevel(addr, uint256(levels));
   }
 
   function changeRegeneratorToSustainable(Regenerator memory regenerator) internal {

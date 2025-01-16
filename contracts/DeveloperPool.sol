@@ -47,13 +47,12 @@ contract DeveloperPool is PoolableRules, Ownable, BlockableRules, CallableRules 
   /**
    * @dev Called by the developer contract, function to increase developer pool level
    * @param addr Developer wallet
-   * @param currentLevel Developer current level
-   * @param addLevels Levels to increase
+   * @param levels Levels to increase
    */
-  function addLevel(address addr, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
+  function addLevel(address addr, uint256 levels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 
-    addPoolLevel(addr, currentLevel, addLevels, era);
+    addPoolLevel(addr, levels, era);
   }
 
   /**

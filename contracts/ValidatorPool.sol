@@ -43,11 +43,10 @@ contract ValidatorPool is PoolableRules, BlockableRules, CallableRules {
   /**
    * @dev Called by the validator contract, function to increase validator level
    * @param addr Validator wallet
-   * @param currentLevel Validator current level
-   * @param addLevels Levels to increase
+   * @param levels Levels to increase
    */
-  function addLevel(address addr, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
-    addPoolLevel(addr, currentLevel, addLevels, currentContractEra());
+  function addLevel(address addr, uint256 levels) public mustBeAllowedCaller {
+    addPoolLevel(addr, levels, currentContractEra());
   }
 
   /**

@@ -129,7 +129,7 @@ contract ResearcherRules is CallableRules {
     researcher.publishedWorks++;
     researcher.lastPublishedAt = block.number;
 
-    researcherPool.addLevel(msg.sender, 1, 1);
+    researcherPool.addLevel(msg.sender, 1);
   }
 
   function addWorkValidation(uint256 id, string memory justification) public {

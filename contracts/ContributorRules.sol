@@ -150,8 +150,9 @@ contract ContributorRules is Ownable, CallableRules {
     Contributor memory contributor = contributors[addr];
     contributor.pool.level++;
     contributors[addr] = contributor;
+    // Contributors[addr].pool.level++;
 
-    contributorPool.addLevel(addr, contributor.pool.level, 1);
+    contributorPool.addLevel(addr, 1);
   }
 
   /**

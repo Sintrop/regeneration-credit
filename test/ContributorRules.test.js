@@ -16,7 +16,7 @@ describe("ContributorRules", (accounts) => {
   let contributorPoolParams = {
     totalTokens: "7500000000000000000000000",
     halving: 12,
-    blocksPerEra: 30,
+    blocksPerEra: 40,
   };
 
   const securityBlocksToValidatorAnalysis = 10;
@@ -198,12 +198,32 @@ describe("ContributorRules", (accounts) => {
 
             expect(contributionsCount).to.equal(1);
           });
+
+          context("when adding report to eras", () => {
+            beforeEach(async () => {
+              await advanceBlock(contributorPoolParams.blocksPerEra);
+
+              await instance.connect(contr1Address).addContribution("report");
+            });
+
+            it("eras 1 must have 1 level", async () => {
+              const eraLevels = await contributorPool.eraLevels(1, contr1Address);
+
+              expect(eraLevels).to.equal(1);
+            });
+
+            it("eras 2 must have 1 level", async () => {
+              const eraLevels = await contributorPool.eraLevels(2, contr1Address);
+
+              expect(eraLevels).to.equal(1);
+            });
+          });
         });
       });
 
       context("when do not have time to validator analysis", () => {
         beforeEach(async () => {
-          await advanceBlock(20);
+          await advanceBlock(25);
         });
 
         it("should return error message", async () => {

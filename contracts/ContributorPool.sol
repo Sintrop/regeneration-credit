@@ -48,13 +48,10 @@ contract ContributorPool is PoolableRules, Ownable, BlockableRules, CallableRule
   /**
    * @dev Called by the contributor contract, function to increase contributor pool level
    * @param addr Contributor wallet
-   * @param currentLevel Contributor current level
-   * @param addLevels Levels to increase
+   * @param levels Contributor add level
    */
-  function addLevel(address addr, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
-    uint256 era = currentContractEra();
-
-    addPoolLevel(addr, currentLevel, addLevels, era);
+  function addLevel(address addr, uint256 levels) public mustBeAllowedCaller {
+    addPoolLevel(addr, levels, currentContractEra());
   }
 
   /**

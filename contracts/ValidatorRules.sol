@@ -247,7 +247,7 @@ contract ValidatorRules is CallableRules {
     validator.pool.level++;
     validators[addr] = validator;
 
-    validatorPool.addLevel(addr, validator.pool.level, 1);
+    validatorPool.addLevel(addr, 1);
   }
 
   /**
