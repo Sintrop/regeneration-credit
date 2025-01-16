@@ -4,7 +4,7 @@ const { expect } = require("chai");
 
 describe("UserRules", function () {
   let instance;
-  let owner, user1Address, user2Address, user3Address, user4Address;
+  let owner, user1Address, user2Address, user3Address, user4Address, user5Address, user6Address, user7Address;
 
   const userRulesParams = {
     inspectorProportionality: 2,
@@ -28,8 +28,8 @@ describe("UserRules", function () {
     "DENIED",
   ];
 
-  const addUser = async (address, userType, caller) => {
-    return await instance.addUser(address, userType, { from: caller });
+  const addUser = async (address, userType, from) => {
+    return await instance.connect(from).addUser(address, userType);
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
@@ -41,7 +41,8 @@ describe("UserRules", function () {
   };
 
   beforeEach(async function () {
-    [owner, user1Address, user2Address, user3Address, user4Address] = await ethers.getSigners();
+    [owner, user1Address, user2Address, user3Address, user4Address, user5Address, user6Address, user7Address] =
+      await ethers.getSigners();
 
     instance = await userRulesDeployed(userRulesParams);
 
@@ -84,13 +85,13 @@ describe("UserRules", function () {
           await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
           await addUser(user1Address, userTypes.Regenerator, owner);
 
-          expect(addUser(user1Address, userTypes.Regenerator, owner)).to.be.revertedWith("User already exists");
+          await expect(addUser(user1Address, userTypes.Regenerator, owner)).to.be.revertedWith("User already exists");
         });
       });
 
       context("with UNDEFINED user type", () => {
         it("should return error message", async () => {
-          expect(addUser(user1Address, userTypes.Undefined, owner)).to.be.revertedWith("Invalid user type");
+          await expect(addUser(user1Address, userTypes.Undefined, owner)).to.be.revertedWith("Invalid user type");
         });
       });
 
@@ -210,13 +211,20 @@ describe("UserRules", function () {
             await addInvitation(owner, user2Address, userTypes.Inspector, owner);
             await addInvitation(owner, user3Address, userTypes.Inspector, owner);
             await addInvitation(owner, user4Address, userTypes.Inspector, owner);
+            await addInvitation(owner, user5Address, userTypes.Inspector, owner);
+            await addInvitation(owner, user6Address, userTypes.Inspector, owner);
 
             await addUser(user2Address, userTypes.Inspector, owner);
             await addUser(user3Address, userTypes.Inspector, owner);
+            await addUser(user4Address, userTypes.Inspector, owner);
+            await addUser(user5Address, userTypes.Inspector, owner);
+            await addUser(user6Address, userTypes.Inspector, owner);
           });
 
           it("should return error message", async () => {
-            expect(addUser(user4Address, userTypes.Inspector, owner)).to.be.revertedWith("Proportionality invalid");
+            await expect(addUser(user7Address, userTypes.Inspector, owner)).to.be.revertedWith(
+              "Proportionality invalid"
+            );
           });
         });
 
@@ -224,12 +232,21 @@ describe("UserRules", function () {
           beforeEach(async () => {
             await addInvitation(owner, user2Address, userTypes.Activist, owner);
             await addInvitation(owner, user3Address, userTypes.Activist, owner);
+            await addInvitation(owner, user4Address, userTypes.Activist, owner);
+            await addInvitation(owner, user5Address, userTypes.Activist, owner);
+            await addInvitation(owner, user6Address, userTypes.Activist, owner);
 
             await addUser(user2Address, userTypes.Activist, owner);
+            await addUser(user3Address, userTypes.Activist, owner);
+            await addUser(user4Address, userTypes.Activist, owner);
+            await addUser(user5Address, userTypes.Activist, owner);
+            await addUser(user6Address, userTypes.Activist, owner);
           });
 
           it("should return error message", async () => {
-            expect(addUser(user3Address, userTypes.Activist, owner)).to.be.revertedWith("Proportionality invalid");
+            await expect(addUser(user7Address, userTypes.Activist, owner)).to.be.revertedWith(
+              "Proportionality invalid"
+            );
           });
         });
 
@@ -237,12 +254,21 @@ describe("UserRules", function () {
           beforeEach(async () => {
             await addInvitation(owner, user2Address, userTypes.Researcher, owner);
             await addInvitation(owner, user3Address, userTypes.Researcher, owner);
+            await addInvitation(owner, user4Address, userTypes.Researcher, owner);
+            await addInvitation(owner, user5Address, userTypes.Researcher, owner);
+            await addInvitation(owner, user6Address, userTypes.Researcher, owner);
 
             await addUser(user2Address, userTypes.Researcher, owner);
+            await addUser(user3Address, userTypes.Researcher, owner);
+            await addUser(user4Address, userTypes.Researcher, owner);
+            await addUser(user5Address, userTypes.Researcher, owner);
+            await addUser(user6Address, userTypes.Researcher, owner);
           });
 
           it("should return error message", async () => {
-            expect(addUser(user3Address, userTypes.Researcher, owner)).to.be.revertedWith("Proportionality invalid");
+            await expect(addUser(user7Address, userTypes.Researcher, owner)).to.be.revertedWith(
+              "Proportionality invalid"
+            );
           });
         });
 
@@ -250,12 +276,21 @@ describe("UserRules", function () {
           beforeEach(async () => {
             await addInvitation(owner, user2Address, userTypes.Developer, owner);
             await addInvitation(owner, user3Address, userTypes.Developer, owner);
+            await addInvitation(owner, user4Address, userTypes.Developer, owner);
+            await addInvitation(owner, user5Address, userTypes.Developer, owner);
+            await addInvitation(owner, user6Address, userTypes.Developer, owner);
 
             await addUser(user2Address, userTypes.Developer, owner);
+            await addUser(user3Address, userTypes.Developer, owner);
+            await addUser(user4Address, userTypes.Developer, owner);
+            await addUser(user5Address, userTypes.Developer, owner);
+            await addUser(user6Address, userTypes.Developer, owner);
           });
 
           it("should return error message", async () => {
-            expect(addUser(user3Address, userTypes.Developer, owner)).to.be.revertedWith("Proportionality invalid");
+            await expect(addUser(user7Address, userTypes.Developer, owner)).to.be.revertedWith(
+              "Proportionality invalid"
+            );
           });
         });
 
@@ -263,12 +298,21 @@ describe("UserRules", function () {
           beforeEach(async () => {
             await addInvitation(owner, user2Address, userTypes.Contributor, owner);
             await addInvitation(owner, user3Address, userTypes.Contributor, owner);
+            await addInvitation(owner, user4Address, userTypes.Contributor, owner);
+            await addInvitation(owner, user5Address, userTypes.Contributor, owner);
+            await addInvitation(owner, user6Address, userTypes.Contributor, owner);
 
             await addUser(user2Address, userTypes.Contributor, owner);
+            await addUser(user3Address, userTypes.Contributor, owner);
+            await addUser(user4Address, userTypes.Contributor, owner);
+            await addUser(user5Address, userTypes.Contributor, owner);
+            await addUser(user6Address, userTypes.Contributor, owner);
           });
 
           it("should return error message", async () => {
-            expect(addUser(user3Address, userTypes.Contributor, owner)).to.be.revertedWith("Proportionality invalid");
+            await expect(addUser(user7Address, userTypes.Contributor, owner)).to.be.revertedWith(
+              "Proportionality invalid"
+            );
           });
         });
 
@@ -276,12 +320,21 @@ describe("UserRules", function () {
           beforeEach(async () => {
             await addInvitation(owner, user2Address, userTypes.Validator, owner);
             await addInvitation(owner, user3Address, userTypes.Validator, owner);
+            await addInvitation(owner, user4Address, userTypes.Validator, owner);
+            await addInvitation(owner, user5Address, userTypes.Validator, owner);
+            await addInvitation(owner, user6Address, userTypes.Validator, owner);
 
             await addUser(user2Address, userTypes.Validator, owner);
+            await addUser(user3Address, userTypes.Validator, owner);
+            await addUser(user4Address, userTypes.Validator, owner);
+            await addUser(user5Address, userTypes.Validator, owner);
+            await addUser(user6Address, userTypes.Validator, owner);
           });
 
           it("should return error message", async () => {
-            expect(addUser(user3Address, userTypes.Validator, owner)).to.be.revertedWith("Proportionality invalid");
+            await expect(addUser(user7Address, userTypes.Validator, owner)).to.be.revertedWith(
+              "Proportionality invalid"
+            );
           });
         });
       });
@@ -305,7 +358,7 @@ describe("UserRules", function () {
 
         context("when try register as another user type of invitation", () => {
           it("should return error message", async () => {
-            expect(addUser(user1Address, userTypes.Developer, owner)).to.be.revertedWith("Invalid invitation");
+            await expect(addUser(user1Address, userTypes.Developer, owner)).to.be.revertedWith("Invalid invitation");
           });
         });
       });
@@ -324,7 +377,9 @@ describe("UserRules", function () {
 
     context("without allowed caller", () => {
       it("should return error message", async () => {
-        expect(addUser(user1Address, userTypes.Regenerator, user1Address)).to.be.revertedWith("Not allowed caller");
+        await expect(addUser(user1Address, userTypes.Regenerator, user1Address)).to.be.revertedWith(
+          "Not allowed caller"
+        );
       });
     });
   });

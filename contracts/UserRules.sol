@@ -19,6 +19,7 @@ contract UserRules is Ownable, CallableRules {
 
   uint256 public delationsCount;
   uint256 public usersCount;
+  uint256 public constant MINIMUM_REGISTERED_USERS_QUANTITY = 5;
 
   constructor(
     uint256 inspectorProportionality,
@@ -84,6 +85,7 @@ contract UserRules is Ownable, CallableRules {
     uint256 proportionality = setting.proportionalityOnRegister;
 
     if (proportionality == 0) return true;
+    if (registeredUserTypeCount < MINIMUM_REGISTERED_USERS_QUANTITY) return true;
 
     if (setting.directProportionalityRegistration) return registeredUserTypeCount < regeneratorsCount * proportionality;
     return registeredUserTypeCount < regeneratorsCount / proportionality;
