@@ -14,7 +14,7 @@ import { Inspector } from "./types/InspectorTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { ContractsDependency } from "./types/SintropTypes.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import { CallableRules } from "./CallableRules.sol";
+import { Callable } from "./shared/Callable.sol";
 
 /**
  * @author Sintrop
@@ -22,7 +22,7 @@ import { CallableRules } from "./CallableRules.sol";
  * @dev Manage inspections rules and data
  * @notice Allow regenerator to request inspection, and inspectors to accept and realize it
  */
-contract InspectionRules is CallableRules {
+contract InspectionRules is Callable {
   using SafeMath for uint256;
 
   mapping(address => mapping(address => bool)) internal inspectorInspected;

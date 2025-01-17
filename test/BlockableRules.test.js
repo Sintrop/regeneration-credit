@@ -1,7 +1,7 @@
 const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
 
-describe("BlockableRules", () => {
+describe("Blockable", () => {
   let instance;
   let blocksPrecision;
   let owner, user1Address, user2Address;
@@ -14,7 +14,7 @@ describe("BlockableRules", () => {
   beforeEach(async () => {
     [owner, user1Address, user2Address] = await ethers.getSigners();
 
-    const blockableContractFactory = await ethers.getContractFactory("BlockableRules");
+    const blockableContractFactory = await ethers.getContractFactory("Blockable");
 
     instance = await blockableContractFactory.deploy(params.blocksPerEra, params.halving);
   });
