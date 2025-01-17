@@ -3,7 +3,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserRules } from "./UserRules.sol";
 import { Regenerator, Pool, AreaInformation } from "./types/RegeneratorTypes.sol";
-import { CallableRules } from "./CallableRules.sol";
+import { Callable } from "./shared/Callable.sol";
 import { RegeneratorPool } from "./RegeneratorPool.sol";
 import { UserType } from "./types/UserTypes.sol";
 
@@ -13,7 +13,7 @@ import { UserType } from "./types/UserTypes.sol";
  * @dev Manage regenerator user logic.
  * @notice Person, family or a group of peolpe that are restoring nature
  */
-contract RegeneratorRules is CallableRules {
+contract RegeneratorRules is Callable {
   uint256 internal constant MINIMUM_INSPECTION_TO_POOL = 3;
   int256 internal constant LIMIT_REGENERATION_SCORE_TO_POOL = 1000;
 

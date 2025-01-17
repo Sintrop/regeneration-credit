@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { CallableRules } from "./CallableRules.sol";
+import { Callable } from "./shared/Callable.sol";
 import { RegenerationCredit } from "./RegenerationCredit.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
@@ -11,7 +11,7 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * @dev SupporterPool is a contract to reward supporters
  * @notice Receive tokens for inviting others to burn tokens
  */
-contract SupporterPool is CallableRules {
+contract SupporterPool is Callable {
   using SafeMath for uint256;
 
   RegenerationCredit internal regenerationCredit;

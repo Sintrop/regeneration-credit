@@ -3,7 +3,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserRules } from "./UserRules.sol";
 import { Inspector, Penalty, Pool } from "./types/InspectorTypes.sol";
-import { CallableRules } from "./CallableRules.sol";
+import { Callable } from "./shared/Callable.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { InspectorPool } from "./InspectorPool.sol";
 
@@ -13,7 +13,7 @@ import { InspectorPool } from "./InspectorPool.sol";
  * @dev Manage inspectors rules and data
  * @notice Responsible for collecting regenerators data
  */
-contract InspectorRules is CallableRules {
+contract InspectorRules is Callable {
   uint256 internal constant MINIMUM_INSPECTIONS_TO_POOL = 3;
 
   mapping(address => Inspector) internal inspectors;

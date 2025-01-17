@@ -4,14 +4,14 @@ pragma solidity >=0.7.0 <=0.9.0;
 import { Category, RegenerationIndex, RegenerationIndexDescription } from "./types/IndexTypes.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { RegenerationInspection } from "./types/InspectionTypes.sol";
-import { CallableRules } from "./CallableRules.sol";
+import { Callable } from "./shared/Callable.sol";
 
 /**
  * @author Sintrop
  * @title RegenerationIndexRules
  * @dev Manage index categories and score
  */
-contract RegenerationIndexRules is Ownable, CallableRules {
+contract RegenerationIndexRules is Ownable, Callable {
   mapping(uint256 => Category) public categories;
   mapping(uint256 => RegenerationIndexDescription[]) public categoryRegenerationIndexDescriptions;
   mapping(uint256 => RegenerationIndex) public regenerationIndex;

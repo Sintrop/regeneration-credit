@@ -5,9 +5,9 @@ import { PoolInterface } from "./interfaces/PoolInterface.sol";
 import { RegenerationCreditInterface } from "./interfaces/RegenerationCreditInterface.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { BlockableRules } from "./BlockableRules.sol";
-import { CallableRules } from "./CallableRules.sol";
-import { PoolableRules } from "./PoolableRules.sol";
+import { Blockable } from "./shared/Blockable.sol";
+import { Callable } from "./shared/Callable.sol";
+import { Poolable } from "./shared/Poolable.sol";
 
 /**
  * @author Sintrop
@@ -15,7 +15,7 @@ import { PoolableRules } from "./PoolableRules.sol";
  * @dev Manage rewards to contributors
  * @notice Receive tokens for generic service provided
  */
-contract ContributorPool is PoolableRules, Ownable, BlockableRules, CallableRules {
+contract ContributorPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;
 
   RegenerationCreditInterface internal regenerationCredit;
@@ -26,7 +26,7 @@ contract ContributorPool is PoolableRules, Ownable, BlockableRules, CallableRule
     address regenerationCreditAddress,
     uint256 _halving,
     uint256 _blocksPerEra
-  ) BlockableRules(_blocksPerEra, _halving) PoolableRules(TOTAL_TOKENS_POOL) {
+  ) Blockable(_blocksPerEra, _halving) Poolable(TOTAL_TOKENS_POOL) {
     regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
   }
 

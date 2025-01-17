@@ -5,7 +5,7 @@ import { UserRules } from "./UserRules.sol";
 import { RegeneratorRules } from "./RegeneratorRules.sol";
 import { Validator, UserValidation, ResourceValidation, Pool, ContractsDependency } from "./types/ValidatorTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
-import { CallableRules } from "./CallableRules.sol";
+import { Callable } from "./shared/Callable.sol";
 import { ValidatorPool } from "./ValidatorPool.sol";
 import { InspectorRules } from "./InspectorRules.sol";
 import { DeveloperRules } from "./DeveloperRules.sol";
@@ -22,7 +22,7 @@ import { Work } from "./types/ResearcherTypes.sol";
  * @dev Manage validators rules and data
  * @notice Responsible for reviewing and voting to invalidate wrong or corrupted actions
  */
-contract ValidatorRules is CallableRules {
+contract ValidatorRules is Callable {
   mapping(address => Validator) private validators;
   mapping(address => UserValidation[]) private userValidations;
   mapping(uint256 => ResourceValidation[]) public inspectionValidations;
