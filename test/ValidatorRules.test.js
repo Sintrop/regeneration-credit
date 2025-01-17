@@ -1393,7 +1393,7 @@ describe("ValidatorRules", () => {
           let work = await researcherRules.works(1);
           work = generateWorkObject(work);
 
-          await instance.connect(owner).addResearcheWorkValidation(work, "justification", validator1Address);
+          await instance.connect(owner).addResearcherWorkValidation(work, "justification", validator1Address);
         });
 
         it("should add work validation", async () => {
@@ -1410,7 +1410,7 @@ describe("ValidatorRules", () => {
           work = generateWorkObject(work);
 
           await expect(
-            instance.connect(owner).addResearcheWorkValidation(work, "justification", validator1Address)
+            instance.connect(owner).addResearcherWorkValidation(work, "justification", validator1Address)
           ).to.be.revertedWith("Already voted");
         });
       });
@@ -1427,10 +1427,10 @@ describe("ValidatorRules", () => {
                 await researcherRules.addPenalty(work.createdBy, work.id);
                 await researcherRules.addPenalty(work.createdBy, work.id);
 
-                await instance.connect(owner).addResearcheWorkValidation(work, "justification", validator1Address);
+                await instance.connect(owner).addResearcherWorkValidation(work, "justification", validator1Address);
 
                 work.validationsCount = 2;
-                await instance.connect(owner).addResearcheWorkValidation(work, "justification", validator2Address);
+                await instance.connect(owner).addResearcherWorkValidation(work, "justification", validator2Address);
               });
 
               it("deny researcher", async () => {
@@ -1452,13 +1452,13 @@ describe("ValidatorRules", () => {
                 work = generateWorkObject(work);
                 work.validationsCount = 1;
 
-                await instance.connect(owner).addResearcheWorkValidation(work, "justification", validator1Address);
+                await instance.connect(owner).addResearcherWorkValidation(work, "justification", validator1Address);
 
                 work = await researcherRules.works(1);
                 work = generateWorkObject(work);
                 work.validationsCount = 2;
 
-                await instance.connect(owner).addResearcheWorkValidation(work, "justification", validator2Address);
+                await instance.connect(owner).addResearcherWorkValidation(work, "justification", validator2Address);
               });
 
               it("researcher is the same", async () => {
@@ -1482,7 +1482,7 @@ describe("ValidatorRules", () => {
               work = generateWorkObject(work);
               work.validationsCount = 1;
 
-              await instance.connect(owner).addResearcheWorkValidation(work, "justification", validator1Address);
+              await instance.connect(owner).addResearcherWorkValidation(work, "justification", validator1Address);
             });
 
             it("total penalties is zero", async () => {
@@ -1508,7 +1508,7 @@ describe("ValidatorRules", () => {
               await advanceBlock(validatorPoolArgs.blocksPerEra);
 
               work.validationsCount = 1;
-              await instance.connect(owner).addResearcheWorkValidation(work, "foo", validator1Address);
+              await instance.connect(owner).addResearcherWorkValidation(work, "foo", validator1Address);
             });
 
             it("add inspection validation", async () => {
@@ -1531,7 +1531,7 @@ describe("ValidatorRules", () => {
 
             it("should return error", async () => {
               await expect(
-                instance.connect(owner).addResearcheWorkValidation(work, "justification", validator1Address)
+                instance.connect(owner).addResearcherWorkValidation(work, "justification", validator1Address)
               ).to.be.revertedWith("You did not contribute in the last era");
             });
           });
@@ -1545,7 +1545,7 @@ describe("ValidatorRules", () => {
         work = generateWorkObject(work);
 
         await expect(
-          instance.connect(validator1Address).addResearcheWorkValidation(work, "justification", validator1Address)
+          instance.connect(validator1Address).addResearcherWorkValidation(work, "justification", validator1Address)
         ).to.be.revertedWith("Not allowed caller");
       });
     });

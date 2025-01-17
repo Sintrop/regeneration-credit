@@ -148,7 +148,7 @@ contract ValidatorRules is CallableRules {
     if (developerTotalPenalties >= developerRules.MAX_PENALTIES()) externalDenieUser(report.developer);
   }
 
-  function addResearcheWorkValidation(
+  function addResearcherWorkValidation(
     Work memory work,
     string memory justification,
     address validatorAddress

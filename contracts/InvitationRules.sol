@@ -38,7 +38,7 @@ contract InvitationRules is Ownable {
     UserType msgSenderUserType = userRules.getUser(msg.sender);
 
     require(invitationDelayReached(msgSenderUserType), "Invite delay not reached");
-    require(canBeInviteds[userType] == msgSenderUserType, "can't invite this type");
+    require(canBeInviteds[userType] == msgSenderUserType, "Can't invite this type");
 
     lastInviteBlocks[msg.sender] = block.number;
 

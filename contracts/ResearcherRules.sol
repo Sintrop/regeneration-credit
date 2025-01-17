@@ -146,7 +146,7 @@ contract ResearcherRules is CallableRules {
 
     if (mustInvalidateWork) invalidateWork(work);
 
-    validatorRules.addResearcheWorkValidation(work, justification, msg.sender);
+    validatorRules.addResearcherWorkValidation(work, justification, msg.sender);
   }
 
   function invalidateWork(Work memory work) internal {
