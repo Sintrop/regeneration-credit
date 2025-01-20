@@ -6,7 +6,7 @@ import { UserRules } from "./UserRules.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { ContributorPool } from "./ContributorPool.sol";
 import { Contributor, Pool, Contribution } from "./types/ContributorTypes.sol";
-import { CallableRules } from "./CallableRules.sol";
+import { Callable } from "./shared/Callable.sol";
 
 /**
  * @author Sintrop
@@ -14,7 +14,7 @@ import { CallableRules } from "./CallableRules.sol";
  * @dev Manage contributors rules and data
  * @notice User type to perform generic contributions to the project
  */
-contract ContributorRules is Ownable, CallableRules {
+contract ContributorRules is Ownable, Callable {
   mapping(address => Contributor) public contributors;
   mapping(uint256 => mapping(address => bool)) public contributorContributionsEra;
   mapping(uint256 => Contribution) public contributions;

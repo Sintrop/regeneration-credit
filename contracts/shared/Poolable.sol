@@ -2,14 +2,14 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import { Era } from "./types/PoolTypes.sol";
+import { Era } from "contracts/types/PoolTypes.sol";
 
 /**
  * @author Sintrop
- * @title PoolableRules
+ * @title Poolable
  * @dev Manage tokens distribution logic
  */
-contract PoolableRules {
+contract Poolable {
   using SafeMath for uint256;
 
   uint256 internal immutable TOTAL_TOKENS;
