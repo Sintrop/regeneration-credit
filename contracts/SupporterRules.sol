@@ -2,9 +2,12 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserRules } from "./UserRules.sol";
+import { ResearcherRules } from "./ResearcherRules.sol";
+import { CalculatorItem } from "./types/ResearcherTypes.sol";
 import { Supporter } from "./types/SupporterTypes.sol";
 import { UserType, Invitation } from "./types/UserTypes.sol";
 import { SupporterPool } from "./SupporterPool.sol";
+import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
  * @author Sintrop
@@ -13,16 +16,23 @@ import { SupporterPool } from "./SupporterPool.sol";
  * @notice Burn tokens to compensate your degradation
  */
 contract SupporterRules {
+  using SafeMath for uint256;
+
   mapping(address => Supporter) internal supporters;
+  mapping(address => mapping(uint256 => uint256)) public calculatorItemCertificates;
+
+  uint256 public constant INVITER_PERCENTAGE = 5;
 
   UserRules internal userRules;
   SupporterPool internal supporterPool;
+  ResearcherRules internal researcherRules;
   address[] internal supportersAddress;
   UserType private constant USER_TYPE = UserType.SUPPORTER;
 
-  constructor(address userRulesAddress, address supporterPoolAddress) {
+  constructor(address userRulesAddress, address supporterPoolAddress, address researcherRulesAddress) {
     userRules = UserRules(userRulesAddress);
     supporterPool = SupporterPool(supporterPoolAddress);
+    researcherRules = ResearcherRules(researcherRulesAddress);
   }
 
   /**
@@ -40,14 +50,22 @@ contract SupporterRules {
     return supporter;
   }
 
-  function burnTokens(uint256 amount) public {
+  function burnTokens(uint256 amount, uint256 calculatorItemId) public {
     require(userRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount > 0, "Amount invalid");
 
     Invitation memory invitation = userRules.getInvitation(msg.sender);
     bool isInvited = invitation.createdAtBlock != 0;
 
-    supporterPool.burnTokens(msg.sender, invitation.inviter, amount, isInvited);
+    uint256 inviterTotalTokens = isInvited ? amount.mul(INVITER_PERCENTAGE).div(100) : 0;
+    uint256 amountBurn = amount.sub(inviterTotalTokens);
+
+    if (calculatorItemId > 0) {
+      CalculatorItem memory calculatorItem = researcherRules.getCalculatorItem(calculatorItemId);
+      if (calculatorItem.id > 0) calculatorItemCertificates[msg.sender][calculatorItemId] = amountBurn;
+    }
+
+    supporterPool.burnTokens(msg.sender, invitation.inviter, amountBurn, inviterTotalTokens);
   }
 
   /**

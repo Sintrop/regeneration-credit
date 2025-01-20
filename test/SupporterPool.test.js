@@ -30,7 +30,7 @@ describe("SupporterPool", () => {
 
     context("when user was invited", () => {
       beforeEach(async () => {
-        receipt = await instance.burnTokens(user1Address, user2Address, "1000000000000000000", true);
+        receipt = await instance.burnTokens(user1Address, user2Address, "950000000000000000", "50000000000000000");
       });
 
       it("user1Address balance must be 99000000000000000000", async () => {
@@ -51,19 +51,13 @@ describe("SupporterPool", () => {
       it("send PoolBurnTokensEvent", async () => {
         await expect(receipt)
           .to.emit(instance, "PoolBurnTokensEvent")
-          .withArgs(
-            user1Address.address,
-            1000000000000000000n,
-            950000000000000000n,
-            user2Address.address,
-            50000000000000000n
-          );
+          .withArgs(user1Address.address, 950000000000000000n, user2Address.address, 50000000000000000n);
       });
     });
 
     context("when user was not invited", () => {
       beforeEach(async () => {
-        receipt = await instance.burnTokens(user1Address, user2Address, "1000000000000000000", false);
+        receipt = await instance.burnTokens(user1Address, user2Address, "1000000000000000000", 0);
       });
 
       it("user1Address balance must be 99000000000000000000", async () => {
@@ -84,7 +78,7 @@ describe("SupporterPool", () => {
       it("send PoolBurnTokensEvent", async () => {
         await expect(receipt)
           .to.emit(instance, "PoolBurnTokensEvent")
-          .withArgs(user1Address.address, 1000000000000000000n, 1000000000000000000n, user2Address.address, 0n);
+          .withArgs(user1Address.address, 1000000000000000000n, user2Address.address, 0n);
       });
     });
   });

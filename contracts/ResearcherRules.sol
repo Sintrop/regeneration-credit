@@ -252,6 +252,14 @@ contract ResearcherRules is Callable {
   }
 
   /**
+   * @dev Return a specific calculatorItem
+   * @param id of the calculatorItem
+   */
+  function getCalculatorItem(uint256 id) public view returns (CalculatorItem memory) {
+    return calculatorItems[id];
+  }
+
+  /**
    * @dev Checks if user can publish a work
    * @return bool True if can
    * @param addr Msg.sender addresss
