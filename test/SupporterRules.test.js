@@ -188,7 +188,7 @@ describe("SupporterRules", () => {
                 expect(totalCertified).to.equal(950000000000000000n);
               });
 
-              it("calculatorItemCertificates to item 1 must be XXXX", async () => {
+              it("calculatorItemCertificates to item 1 must be 950000000000000000n", async () => {
                 const value = await instance.calculatorItemCertificates(inv2Address, 1);
 
                 expect(value).to.equal(950000000000000000n);
@@ -277,6 +277,7 @@ describe("SupporterRules", () => {
             await userRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
             await addSupporter("Supporter B", inv2Address);
             await transferTokensTo(inv2Address, 100000000000000000000n);
+            await instance.connect(inv2Address).burnTokens(1000000000000000000n, 10);
           });
 
           context("when burn 1000000000000000000 tokens", () => {
