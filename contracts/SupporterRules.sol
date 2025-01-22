@@ -70,6 +70,8 @@ contract SupporterRules {
   }
 
   function declareReductionCommitment(uint256 calculatorItemId) public {
+    require(userRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
+
     CalculatorItem memory calculatorItem = researcherRules.getCalculatorItem(calculatorItemId);
 
     require(calculatorItem.id > 0, "CalculatorItem does not exists");

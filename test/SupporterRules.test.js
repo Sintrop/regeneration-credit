@@ -309,26 +309,38 @@ describe("SupporterRules", () => {
       await addSupporter("Supporter A", inv1Address);
     });
 
-    context("when calculatorItem exists", () => {
-      beforeEach(async () => {
-        await userRules.addInvitation(inv1Address, user1Address, userTypes.Researcher);
-        await researcherRules.connect(user1Address).addResearcher("Researcher  A", "photoURL");
+    context("when is supporter", () => {
+      context("when calculatorItem exists", () => {
+        beforeEach(async () => {
+          await userRules.addInvitation(inv1Address, user1Address, userTypes.Researcher);
+          await researcherRules.connect(user1Address).addResearcher("Researcher  A", "photoURL");
 
-        await addCalculatorItem(user1Address);
+          await addCalculatorItem(user1Address);
 
-        await instance.connect(inv1Address).declareReductionCommitment(1);
+          await instance.connect(inv1Address).declareReductionCommitment(1);
+        });
+
+        it("return a supporter", async () => {
+          const reductionCommitments = await instance.getReductionCommitments(inv1Address);
+
+          expect(reductionCommitments[0]).to.eq(1);
+        });
       });
 
-      it("return a supporter", async () => {
-        const reductionCommitments = await instance.getReductionCommitments(inv1Address);
-
-        expect(reductionCommitments[0]).to.eq(1);
+      context("when calculatorItem does not exists", () => {
+        it("return a supporter", async () => {
+          await expect(instance.connect(inv1Address).declareReductionCommitment(100)).to.be.revertedWith(
+            "CalculatorItem does not exists"
+          );
+        });
       });
     });
 
-    context("when calculatorItem does not exists", () => {
+    context("when is not a supporter", () => {
       it("return a supporter", async () => {
-        await expect(instance.declareReductionCommitment(100)).to.be.revertedWith("CalculatorItem does not exists");
+        await expect(instance.connect(user1Address).declareReductionCommitment(100)).to.be.revertedWith(
+          "Only supporters"
+        );
       });
     });
   });
