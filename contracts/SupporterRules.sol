@@ -20,6 +20,7 @@ contract SupporterRules {
 
   mapping(address => Supporter) internal supporters;
   mapping(address => mapping(uint256 => uint256)) public calculatorItemCertificates;
+  mapping(address => uint256[]) public reductionCommitments;
 
   uint256 public constant INVITER_PERCENTAGE = 5;
 
@@ -66,6 +67,20 @@ contract SupporterRules {
     }
 
     supporterPool.burnTokens(msg.sender, invitation.inviter, amountBurn, inviterTotalTokens);
+  }
+
+  function declareReductionCommitment(uint256 calculatorItemId) public {
+    require(userRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
+
+    CalculatorItem memory calculatorItem = researcherRules.getCalculatorItem(calculatorItemId);
+
+    require(calculatorItem.id > 0, "CalculatorItem does not exists");
+
+    reductionCommitments[msg.sender].push(calculatorItemId);
+  }
+
+  function getReductionCommitments(address addr) public view returns (uint256[] memory) {
+    return reductionCommitments[addr];
   }
 
   /**
