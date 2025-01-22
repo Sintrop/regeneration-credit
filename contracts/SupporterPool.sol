@@ -12,11 +12,7 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * @notice Receive tokens for inviting others to burn tokens
  */
 contract SupporterPool is Callable {
-  using SafeMath for uint256;
-
   RegenerationCredit internal regenerationCredit;
-
-  uint256 public constant INVITER_PERCENTAGE = 5;
 
   constructor(address regenerationCreditAddress) {
     regenerationCredit = RegenerationCredit(regenerationCreditAddress);
@@ -24,7 +20,6 @@ contract SupporterPool is Callable {
 
   event PoolBurnTokensEvent(
     address indexed _tokenOwner,
-    uint256 _amountSend,
     uint256 _amountBurned,
     address indexed _inviter,
     uint256 _inviterTotalTokens
@@ -34,15 +29,17 @@ contract SupporterPool is Callable {
     return regenerationCredit.balanceOf(addr);
   }
 
-  function burnTokens(address tokenOwner, address inviter, uint256 amount, bool isInvited) public mustBeAllowedCaller {
-    uint256 inviterTotalTokens = isInvited ? amount.mul(INVITER_PERCENTAGE).div(100) : 0;
-    uint256 amountBurn = amount.sub(inviterTotalTokens);
-
+  function burnTokens(
+    address tokenOwner,
+    address inviter,
+    uint256 amountBurn,
+    uint256 inviterTotalTokens
+  ) public mustBeAllowedCaller {
     regenerationCredit.burnTokensWith(tokenOwner, amountBurn);
 
-    emit PoolBurnTokensEvent(tokenOwner, amount, amountBurn, inviter, inviterTotalTokens);
+    emit PoolBurnTokensEvent(tokenOwner, amountBurn, inviter, inviterTotalTokens);
 
-    if (!isInvited) return;
+    if (inviterTotalTokens <= 0) return;
 
     regenerationCredit.transferWith(tokenOwner, inviter, inviterTotalTokens);
   }
