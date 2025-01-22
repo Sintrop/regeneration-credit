@@ -63,7 +63,8 @@ contract ResearcherRules is Callable {
       proofPhoto,
       0,
       0,
-      0
+      0,
+      block.number
     );
 
     researchers[msg.sender] = researcher;

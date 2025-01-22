@@ -7,4 +7,5 @@ struct Supporter {
   uint256 id;
   address supporterWallet;
   string name;
+  uint256 createdAt;
 }

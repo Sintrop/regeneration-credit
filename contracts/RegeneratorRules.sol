@@ -52,6 +52,7 @@ contract RegeneratorRules is Callable {
     regenerator.proofPhoto = proofPhoto;
     regenerator.areaInformation = AreaInformation(coordinates, totalArea);
     regenerator.pool = Pool(false, regeneratorPool.currentContractEra());
+    regenerator.createdAt = block.number;
 
     regenerators[msg.sender] = regenerator;
     regeneratorsAddress.push(msg.sender);

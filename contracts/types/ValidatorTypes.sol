@@ -7,6 +7,7 @@ struct Validator {
   uint256 id;
   address validatorWallet;
   Pool pool;
+  uint256 createdAt;
 }
 
 struct Pool {

@@ -48,7 +48,8 @@ contract InspectorRules is Callable {
       0,
       0,
       0,
-      Pool(0, inspectorPoolEra())
+      Pool(0, inspectorPoolEra()),
+      block.number
     );
 
     inspectors[msg.sender] = inspector;

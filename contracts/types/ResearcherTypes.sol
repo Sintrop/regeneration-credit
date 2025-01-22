@@ -12,6 +12,7 @@ struct Researcher {
   uint256 publishedWorks;
   uint256 lastPublishedAt;
   uint256 lastCalculatorItemAt;
+  uint256 createdAt;
 }
 
 struct Pool {

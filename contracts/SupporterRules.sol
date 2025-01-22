@@ -41,7 +41,7 @@ contract SupporterRules {
    * @return a supporter
    */
   function addSupporter(string memory name) public returns (Supporter memory) {
-    Supporter memory supporter = Supporter(userRules.userTypesCount(USER_TYPE) + 1, msg.sender, name);
+    Supporter memory supporter = Supporter(userRules.userTypesCount(USER_TYPE) + 1, msg.sender, name, block.number);
 
     supporters[msg.sender] = supporter;
     supportersAddress.push(msg.sender);
