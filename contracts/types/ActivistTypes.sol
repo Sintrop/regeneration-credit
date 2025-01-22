@@ -9,6 +9,7 @@ struct Activist {
   string name;
   string proofPhoto;
   Pool pool;
+  uint256 createdAt;  
 }
 
 struct Pool {

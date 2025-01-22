@@ -13,6 +13,7 @@ struct Inspector {
   uint256 lastAcceptedAt;
   uint256 lastInspection;
   Pool pool;
+  uint256 createdAt;
 }
 
 struct Penalty {
