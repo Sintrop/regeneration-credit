@@ -14,6 +14,7 @@ struct Regenerator {
   RegenerationScore regenerationScore;
   AreaInformation areaInformation;
   Pool pool;
+  uint256 createdAt;
 }
 
 struct Pool {

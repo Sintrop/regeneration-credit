@@ -70,7 +70,8 @@ contract ValidatorRules is Callable {
     validators[msg.sender] = Validator(
       userRules.userTypesCount(USER_TYPE) + 1,
       msg.sender,
-      Pool(0, validatorPoolEra())
+      Pool(0, validatorPoolEra()),
+      block.number
     );
 
     validatorsAddress.push(msg.sender);

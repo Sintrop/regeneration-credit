@@ -41,7 +41,8 @@ contract ActivistRules is Callable {
       msg.sender,
       name,
       proofPhoto,
-      Pool(0, activistPoolEra())
+      Pool(0, activistPoolEra()),
+      block.number
     );
 
     activists[msg.sender] = activist;
