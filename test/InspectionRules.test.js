@@ -90,7 +90,7 @@ describe("InspectionRules", () => {
   };
 
   const addRegenerator = async (name, from) => {
-    await regeneratorRules.connect(from).addRegenerator(10, name, "photoURL", "135465-005");
+    await regeneratorRules.connect(from).addRegenerator(10, name, "photoURL", "135465-005", "coordinates", "report");
   };
 
   const addInspector = async (name, from) => {

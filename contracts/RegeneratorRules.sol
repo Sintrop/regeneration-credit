@@ -42,7 +42,9 @@ contract RegeneratorRules is Callable {
     uint256 totalArea,
     string memory name,
     string memory proofPhoto,
-    string memory coordinates
+    string memory coordinates,
+    string memory regenerationZones,
+    string memory report
   ) public {
     Regenerator memory regenerator = regenerators[msg.sender];
 
@@ -50,7 +52,7 @@ contract RegeneratorRules is Callable {
     regenerator.regeneratorWallet = msg.sender;
     regenerator.name = name;
     regenerator.proofPhoto = proofPhoto;
-    regenerator.areaInformation = AreaInformation(coordinates, totalArea);
+    regenerator.areaInformation = AreaInformation(coordinates, totalArea, regenerationZones, report);
     regenerator.pool = Pool(false, regeneratorPool.currentContractEra());
     regenerator.createdAt = block.number;
 

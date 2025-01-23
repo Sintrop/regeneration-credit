@@ -12,7 +12,7 @@ describe("RegeneratorRules", () => {
   let owner, prod1Address, prod2Address;
 
   const addRegenerator = async (name, from) => {
-    await instance.connect(from).addRegenerator(10, name, "photoURL", "135465-005");
+    await instance.connect(from).addRegenerator(10, name, "photoURL", "135465-005", "coordinates", "report");
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
@@ -72,6 +72,8 @@ describe("RegeneratorRules", () => {
 
       expect(regenerator.areaInformation.coordinates).to.equal("135465-005");
       expect(regenerator.areaInformation.totalArea).to.equal("10");
+      expect(regenerator.areaInformation.regenerationZones).to.equal("coordinates");
+      expect(regenerator.areaInformation.report).to.equal("report");
     });
   });
 
