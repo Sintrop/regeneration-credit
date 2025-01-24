@@ -14,7 +14,7 @@ import { ContributorRules } from "./ContributorRules.sol";
 import { ActivistRules } from "./ActivistRules.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
 import { Report } from "./types/DeveloperTypes.sol";
-import { Work } from "./types/ResearcherTypes.sol";
+import { Research } from "./types/ResearcherTypes.sol";
 
 /**
  * @author Sintrop
@@ -30,7 +30,7 @@ contract ValidatorRules is Callable {
   mapping(uint256 => ResourceValidation[]) public workValidations;
   mapping(address => mapping(uint256 => bool)) private validatorReportsValidations;
   mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
-  mapping(address => mapping(uint256 => bool)) private validatorWorksValidations;
+  mapping(address => mapping(uint256 => bool)) private validatorResearchesValidations;
   mapping(address => mapping(address => bool)) private validatorUsersValidations;
 
   UserRules private userRules;
@@ -149,14 +149,14 @@ contract ValidatorRules is Callable {
     if (developerTotalPenalties >= developerRules.MAX_PENALTIES()) externalDenieUser(report.developer);
   }
 
-  function addResearcherWorkValidation(
-    Work memory work,
+  function addResearcherResearchValidation(
+    Research memory work,
     string memory justification,
     address validatorAddress
   ) public mustBeAllowedCaller canAddValidationModifier(validatorAddress) {
-    require(!validatorWorksValidations[validatorAddress][work.id], "Already voted");
+    require(!validatorResearchesValidations[validatorAddress][work.id], "Already voted");
 
-    validatorWorksValidations[validatorAddress][work.id] = true;
+    validatorResearchesValidations[validatorAddress][work.id] = true;
 
     uint256 majorityValidatorsCount_ = majorityValidatorsCount();
 
@@ -169,7 +169,7 @@ contract ValidatorRules is Callable {
     if (!addPenalty) return;
 
     uint256 totalPenalties = researcherRules.addPenalty(work.createdBy, work.id);
-    removeReseacherWork(work);
+    removeReseacherResearch(work);
 
     if (totalPenalties >= researcherRules.MAX_PENALTIES()) externalDenieUser(work.createdBy);
   }
@@ -178,7 +178,7 @@ contract ValidatorRules is Callable {
     removeLevelsFromPool(report.developer, 1);
   }
 
-  function removeReseacherWork(Work memory work) internal {
+  function removeReseacherResearch(Research memory work) internal {
     removeLevelsFromPool(work.createdBy, 1);
   }
 

@@ -9,7 +9,7 @@ struct Researcher {
   string name;
   Pool pool;
   string proofPhoto;
-  uint256 publishedWorks;
+  uint256 publishedResearches;
   uint256 lastPublishedAt;
   uint256 lastCalculatorItemAt;
   uint256 createdAt;
@@ -20,7 +20,7 @@ struct Pool {
   uint256 currentEra;
 }
 
-struct Work {
+struct Research {
   uint256 id;
   uint256 era;
   address createdBy;

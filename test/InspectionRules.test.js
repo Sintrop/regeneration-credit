@@ -48,7 +48,7 @@ describe("InspectionRules", () => {
     denied: 9,
   };
 
-  const timeBetweenWorks = 6;
+  const timeBetweenResearches = 6;
   const researcherMaxPenalties = 3;
 
   const regeneratorPoolArgs = {
@@ -245,7 +245,7 @@ describe("InspectionRules", () => {
       userRules.target,
       researcherPool.target,
       validatorRules.target,
-      timeBetweenWorks,
+      timeBetweenResearches,
       researcherMaxPenalties,
       researcherSecuryBlocksToAnalysis
     );

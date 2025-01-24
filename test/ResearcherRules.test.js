@@ -15,7 +15,7 @@ describe("ResearcherRules", () => {
   let validatorPool;
   let owner, resea1Address, resea2Address, validator1Address, validator2Address, validator3Address, validator4Address;
 
-  const timeBetweenWorks = 10;
+  const timeBetweenResearches = 10;
   const maxPenalties = 3;
   const securityBlocksToValidatorAnalysis = 10;
   const firstValidatorLimit = 8;
@@ -45,8 +45,8 @@ describe("ResearcherRules", () => {
     await validatorRules.connect(from).addValidator();
   };
 
-  const addWork = async (from) => {
-    await instance.connect(from).addWork("title", "thesis", "fileURL");
+  const addResearch = async (from) => {
+    await instance.connect(from).addResearch("title", "thesis", "fileURL");
   };
 
   const addCalculatorItem = async (from) => {
@@ -78,7 +78,7 @@ describe("ResearcherRules", () => {
       userRules.target,
       researcherPool.target,
       validatorRules.target,
-      timeBetweenWorks,
+      timeBetweenResearches,
       maxPenalties,
       securityBlocksToValidatorAnalysis
     );
@@ -155,10 +155,10 @@ describe("ResearcherRules", () => {
           expect(userType).to.equal(RESEARCHER);
         });
 
-        it("add created researcher with 0 published works", async () => {
+        it("add created researcher with 0 published researches", async () => {
           const researcher = await instance.getResearcher(resea1Address);
 
-          expect(researcher.publishedWorks).to.equal(0);
+          expect(researcher.publishedResearches).to.equal(0);
         });
       });
     });
@@ -235,7 +235,7 @@ describe("ResearcherRules", () => {
       context("when researcher is in era 1 and current era is 2", () => {
         context("with one researches", () => {
           beforeEach(async () => {
-            await addWork(resea1Address);
+            await addResearch(resea1Address);
 
             await advanceBlock(args.blocksPerEra);
 
@@ -254,8 +254,8 @@ describe("ResearcherRules", () => {
           beforeEach(async () => {
             await addInvitation(owner, resea2Address, userTypes.Researcher, owner);
             await addResearcher("Researcher B", resea2Address);
-            await addWork(resea1Address);
-            await addWork(resea2Address);
+            await addResearch(resea1Address);
+            await addResearch(resea2Address);
 
             await advanceBlock(args.blocksPerEra);
 
@@ -279,10 +279,10 @@ describe("ResearcherRules", () => {
     });
   });
 
-  describe("#addWork", () => {
+  describe("#addResearch", () => {
     context("when is not a researcher", () => {
       it("should return error", async () => {
-        await expect(addWork(owner)).to.be.revertedWith("Only allowed to researchers");
+        await expect(addResearch(owner)).to.be.revertedWith("Only allowed to researchers");
       });
     });
 
@@ -293,20 +293,20 @@ describe("ResearcherRules", () => {
 
       context("when have time to validator analysis", () => {
         beforeEach(async () => {
-          await addWork(resea1Address);
+          await addResearch(resea1Address);
         });
 
-        context("when have waited time between works", () => {
+        context("when have waited time between researches", () => {
           it("add a work", async () => {
-            const firstWork = await instance.worksCount();
+            const firstResearch = await instance.researchesCount();
 
-            expect(firstWork).to.equal(1);
+            expect(firstResearch).to.equal(1);
           });
 
-          it("add 1 to researcher publishedWorks", async () => {
+          it("add 1 to researcher publishedResearches", async () => {
             const researcher = await instance.getResearcher(resea1Address);
 
-            expect(researcher.publishedWorks).to.equal(1);
+            expect(researcher.publishedResearches).to.equal(1);
           });
 
           it("add 1 to researcher pool level", async () => {
@@ -331,7 +331,7 @@ describe("ResearcherRules", () => {
             beforeEach(async () => {
               await advanceBlock(args.blocksPerEra);
 
-              await addWork(resea1Address);
+              await addResearch(resea1Address);
             });
 
             it("add +1 to researcher pool eraLeves of era 2", async () => {
@@ -354,9 +354,9 @@ describe("ResearcherRules", () => {
           });
         });
 
-        context("when have not waited time between works", () => {
+        context("when have not waited time between researches", () => {
           it("should return error message", async () => {
-            await expect(addWork(resea1Address)).to.be.revertedWith("Can't publish yet");
+            await expect(addResearch(resea1Address)).to.be.revertedWith("Can't publish yet");
           });
         });
       });
@@ -367,13 +367,13 @@ describe("ResearcherRules", () => {
         });
 
         it("should return error message", async () => {
-          await expect(addWork(resea1Address)).to.be.revertedWith("Wait until next era to add work");
+          await expect(addResearch(resea1Address)).to.be.revertedWith("Wait until next era to add work");
         });
       });
     });
   });
 
-  describe("addWorkValidation", () => {
+  describe("addResearchValidation", () => {
     context("with validator", () => {
       beforeEach(async () => {
         await addInvitation(owner, validator1Address, userTypes.Validator, owner);
@@ -388,23 +388,23 @@ describe("ResearcherRules", () => {
       context("with valid contribution", () => {
         context("when work must be invalidated", () => {
           beforeEach(async () => {
-            await addWork(resea1Address);
+            await addResearch(resea1Address);
 
             await addValidator(validator2Address);
             await addValidator(validator3Address);
             await addValidator(validator4Address);
-            await instance.connect(validator1Address).addWorkValidation(1, "justification");
-            await instance.connect(validator2Address).addWorkValidation(1, "justification");
+            await instance.connect(validator1Address).addResearchValidation(1, "justification");
+            await instance.connect(validator2Address).addResearchValidation(1, "justification");
           });
 
           it("set valid field to false", async () => {
-            const work = await instance.works(1);
+            const work = await instance.researches(1);
 
             expect(work.valid).to.eq(false);
           });
 
           it("populate invalidatedAt field", async () => {
-            const work = await instance.works(1);
+            const work = await instance.researches(1);
 
             expect(work.invalidatedAt).to.above(0);
           });
@@ -422,7 +422,7 @@ describe("ResearcherRules", () => {
           });
 
           it("must remove one pool level from current era", async () => {
-            const work = await instance.works(1);
+            const work = await instance.researches(1);
 
             const eraLevels = await researcherPool.eraLevels(work.era, resea1Address);
 
@@ -432,23 +432,23 @@ describe("ResearcherRules", () => {
 
         context("when work must not be invalidated", () => {
           beforeEach(async () => {
-            await addWork(resea1Address);
+            await addResearch(resea1Address);
 
             await addValidator(validator2Address);
             await addValidator(validator3Address);
             await addValidator(validator4Address);
 
-            await instance.connect(validator1Address).addWorkValidation(1, "justification");
+            await instance.connect(validator1Address).addResearchValidation(1, "justification");
           });
 
           it("valid field is true", async () => {
-            const work = await instance.works(1);
+            const work = await instance.researches(1);
 
             expect(work.valid).to.eq(true);
           });
 
           it("invalidatedAt is equal 0", async () => {
-            const work = await instance.works(1);
+            const work = await instance.researches(1);
 
             expect(work.invalidatedAt).to.eq(0);
           });
@@ -460,7 +460,7 @@ describe("ResearcherRules", () => {
           });
 
           it("reseacher pool level is 1", async () => {
-            const work = await instance.works(1);
+            const work = await instance.researches(1);
 
             const eraLevels = await researcherPool.eraLevels(work.era, resea1Address);
 
@@ -476,23 +476,23 @@ describe("ResearcherRules", () => {
           await validatorRules.connect(validator1Address).declareAlive();
           await validatorRules.connect(validator2Address).declareAlive();
 
-          await addWork(resea1Address);
-          await instance.connect(validator1Address).addWorkValidation(1, "justification");
+          await addResearch(resea1Address);
+          await instance.connect(validator1Address).addResearchValidation(1, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
           await validatorRules.connect(validator1Address).declareAlive();
 
-          await addWork(resea1Address);
-          await instance.connect(validator1Address).addWorkValidation(2, "justification");
+          await addResearch(resea1Address);
+          await instance.connect(validator1Address).addResearchValidation(2, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
           await validatorRules.connect(validator1Address).declareAlive();
 
-          await addWork(resea1Address);
+          await addResearch(resea1Address);
 
-          await instance.connect(validator1Address).addWorkValidation(3, "justification");
+          await instance.connect(validator1Address).addResearchValidation(3, "justification");
         });
 
         it("user type must be DENIED", async () => {
@@ -505,15 +505,15 @@ describe("ResearcherRules", () => {
       context("with invalid work", () => {
         context("when current era is different from contribution created era", () => {
           beforeEach(async () => {
-            await addWork(resea1Address);
+            await addResearch(resea1Address);
 
             await advanceBlock(args.blocksPerEra + 1);
           });
 
           it("should return error message", async () => {
-            await expect(instance.connect(validator1Address).addWorkValidation(1, "justification")).to.be.revertedWith(
-              "This work is not VALID"
-            );
+            await expect(
+              instance.connect(validator1Address).addResearchValidation(1, "justification")
+            ).to.be.revertedWith("This work is not VALID");
           });
         });
 
@@ -529,23 +529,23 @@ describe("ResearcherRules", () => {
 
             await advanceBlock(validatorPoolArgs.blocksPerEra);
 
-            await addWork(resea1Address);
+            await addResearch(resea1Address);
 
-            await instance.connect(validator1Address).addWorkValidation(1, "justification");
+            await instance.connect(validator1Address).addResearchValidation(1, "justification");
           });
 
           it("should return error message", async () => {
-            await expect(instance.connect(validator3Address).addWorkValidation(1, "justification")).to.be.revertedWith(
-              "This work is not VALID"
-            );
+            await expect(
+              instance.connect(validator3Address).addResearchValidation(1, "justification")
+            ).to.be.revertedWith("This work is not VALID");
           });
         });
 
         context("when contribution do not exists", () => {
           it("should return error message", async () => {
-            await expect(instance.connect(validator1Address).addWorkValidation(0, "justification")).to.be.revertedWith(
-              "This work is not VALID"
-            );
+            await expect(
+              instance.connect(validator1Address).addResearchValidation(0, "justification")
+            ).to.be.revertedWith("This work is not VALID");
           });
         });
       });
@@ -553,23 +553,23 @@ describe("ResearcherRules", () => {
 
     context("without validator", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(owner).addWorkValidation(1, "justification")).to.be.revertedWith(
+        await expect(instance.connect(owner).addResearchValidation(1, "justification")).to.be.revertedWith(
           "Please register as validator"
         );
       });
     });
   });
 
-  describe("#getWorks", () => {
+  describe("#getResearches", () => {
     beforeEach(async () => {
       await addResearcher("Researcher A", resea1Address);
-      await addWork(resea1Address);
+      await addResearch(resea1Address);
     });
 
-    it("should return published works list", async () => {
-      const works = await instance.getWorks();
+    it("should return published researches list", async () => {
+      const researches = await instance.getResearches();
 
-      expect(works.length).to.equal(1);
+      expect(researches.length).to.equal(1);
     });
   });
 
@@ -577,11 +577,11 @@ describe("ResearcherRules", () => {
     beforeEach(async () => {
       await addResearcher("Researcher  A", resea1Address);
 
-      await addWork(resea1Address);
+      await addResearch(resea1Address);
 
-      await advanceBlock(timeBetweenWorks);
+      await advanceBlock(timeBetweenResearches);
 
-      await addWork(resea1Address);
+      await addResearch(resea1Address);
 
       await instance.removePoolLevels(resea1Address, 1);
     });
