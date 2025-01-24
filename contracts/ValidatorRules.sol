@@ -14,7 +14,7 @@ import { ContributorRules } from "./ContributorRules.sol";
 import { ActivistRules } from "./ActivistRules.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
 import { Report } from "./types/DeveloperTypes.sol";
-import { Work } from "./types/ResearcherTypes.sol";
+import { Research } from "./types/ResearcherTypes.sol";
 
 /**
  * @author Sintrop
@@ -27,10 +27,10 @@ contract ValidatorRules is Callable {
   mapping(address => UserValidation[]) private userValidations;
   mapping(uint256 => ResourceValidation[]) public inspectionValidations;
   mapping(uint256 => ResourceValidation[]) public reportValidations;
-  mapping(uint256 => ResourceValidation[]) public workValidations;
+  mapping(uint256 => ResourceValidation[]) public researchValidations;
   mapping(address => mapping(uint256 => bool)) private validatorReportsValidations;
   mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
-  mapping(address => mapping(uint256 => bool)) private validatorWorksValidations;
+  mapping(address => mapping(uint256 => bool)) private validatorResearchesValidations;
   mapping(address => mapping(address => bool)) private validatorUsersValidations;
 
   UserRules private userRules;
@@ -149,37 +149,37 @@ contract ValidatorRules is Callable {
     if (developerTotalPenalties >= developerRules.MAX_PENALTIES()) externalDenieUser(report.developer);
   }
 
-  function addResearcherWorkValidation(
-    Work memory work,
+  function addResearcherResearchValidation(
+    Research memory research,
     string memory justification,
     address validatorAddress
   ) public mustBeAllowedCaller canAddValidationModifier(validatorAddress) {
-    require(!validatorWorksValidations[validatorAddress][work.id], "Already voted");
+    require(!validatorResearchesValidations[validatorAddress][research.id], "Already voted");
 
-    validatorWorksValidations[validatorAddress][work.id] = true;
+    validatorResearchesValidations[validatorAddress][research.id] = true;
 
     uint256 majorityValidatorsCount_ = majorityValidatorsCount();
 
-    bool addPenalty = work.validationsCount >= majorityValidatorsCount_;
+    bool addPenalty = research.validationsCount >= majorityValidatorsCount_;
 
-    workValidations[work.id].push(
-      ResourceValidation(validatorAddress, work.id, justification, majorityValidatorsCount_, block.number)
+    researchValidations[research.id].push(
+      ResourceValidation(validatorAddress, research.id, justification, majorityValidatorsCount_, block.number)
     );
 
     if (!addPenalty) return;
 
-    uint256 totalPenalties = researcherRules.addPenalty(work.createdBy, work.id);
-    removeReseacherWork(work);
+    uint256 totalPenalties = researcherRules.addPenalty(research.createdBy, research.id);
+    removeReseacherResearch(research);
 
-    if (totalPenalties >= researcherRules.MAX_PENALTIES()) externalDenieUser(work.createdBy);
+    if (totalPenalties >= researcherRules.MAX_PENALTIES()) externalDenieUser(research.createdBy);
   }
 
   function removeDeveloperReport(Report memory report) internal {
     removeLevelsFromPool(report.developer, 1);
   }
 
-  function removeReseacherWork(Work memory work) internal {
-    removeLevelsFromPool(work.createdBy, 1);
+  function removeReseacherResearch(Research memory research) internal {
+    removeLevelsFromPool(research.createdBy, 1);
   }
 
   function removeUserInspection(Inspection memory inspection) internal {

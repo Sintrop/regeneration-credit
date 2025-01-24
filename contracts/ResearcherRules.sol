@@ -3,7 +3,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { Callable } from "./shared/Callable.sol";
 import { UserRules } from "./UserRules.sol";
-import { Researcher, Work, Pool, CalculatorItem, Penalty } from "./types/ResearcherTypes.sol";
+import { Researcher, Research, Pool, CalculatorItem, Penalty } from "./types/ResearcherTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { ResearcherPool } from "./ResearcherPool.sol";
 import { ValidatorRules } from "./ValidatorRules.sol";
@@ -16,7 +16,7 @@ import { ValidatorRules } from "./ValidatorRules.sol";
  */
 contract ResearcherRules is Callable {
   mapping(address => Researcher) internal researchers;
-  mapping(uint256 => Work) public works;
+  mapping(uint256 => Research) public researches;
   mapping(uint256 => CalculatorItem) public calculatorItems;
   mapping(address => Penalty[]) public penalties;
 
@@ -26,9 +26,9 @@ contract ResearcherRules is Callable {
 
   address[] internal researchersAddress;
   UserType private constant USER_TYPE = UserType.RESEARCHER;
-  uint256 public worksCount;
+  uint256 public researchesCount;
   uint256 public calculatorItemsCount;
-  uint256 internal immutable timeBetweenWorks;
+  uint256 internal immutable timeBetweenResearches;
 
   uint256 public immutable MAX_PENALTIES;
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
@@ -37,14 +37,14 @@ contract ResearcherRules is Callable {
     address userRulesAddress,
     address researcherPoolAddress,
     address validatorRulesAddress,
-    uint256 timeBetweenWorks_,
+    uint256 timeBetweenResearches_,
     uint256 maxPenalties_,
     uint256 securityBlocksToValidatorAnalysis
   ) {
     userRules = UserRules(userRulesAddress);
     researcherPool = ResearcherPool(researcherPoolAddress);
     validatorRules = ValidatorRules(validatorRulesAddress);
-    timeBetweenWorks = timeBetweenWorks_;
+    timeBetweenResearches = timeBetweenResearches_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
@@ -113,47 +113,58 @@ contract ResearcherRules is Callable {
    * @param thesis Short thesis description
    * @param file Hash of the report file
    */
-  function addWork(string memory title, string memory thesis, string memory file) public {
+  function addResearch(string memory title, string memory thesis, string memory file) public {
     require(userRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
-    require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add work");
-    require(canPublishWork(msg.sender), "Can't publish yet");
+    require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add research");
+    require(canPublishResearch(msg.sender), "Can't publish yet");
 
     Researcher storage researcher = researchers[msg.sender];
     researcher.pool.level++;
 
-    uint256 id = worksCount + 1;
+    uint256 id = researchesCount + 1;
 
-    Work memory work = Work(id, researcherPoolEra(), msg.sender, title, thesis, file, 0, true, 0, block.number);
+    Research memory research = Research(
+      id,
+      researcherPoolEra(),
+      msg.sender,
+      title,
+      thesis,
+      file,
+      0,
+      true,
+      0,
+      block.number
+    );
 
-    works[id] = work;
-    worksCount++;
-    researcher.publishedWorks++;
+    researches[id] = research;
+    researchesCount++;
+    researcher.publishedResearches++;
     researcher.lastPublishedAt = block.number;
 
     researcherPool.addLevel(msg.sender, 1);
   }
 
-  function addWorkValidation(uint256 id, string memory justification) public {
+  function addResearchValidation(uint256 id, string memory justification) public {
     require(userRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
-    Work memory work = works[id];
+    Research memory research = researches[id];
 
-    require(work.valid && work.era == researcherPoolEra(), "This work is not VALID");
+    require(research.valid && research.era == researcherPoolEra(), "This research is not VALID");
 
-    work.validationsCount += 1;
-    works[id] = work;
+    research.validationsCount += 1;
+    researches[id] = research;
 
-    bool mustInvalidateWork = work.validationsCount >= validatorRules.majorityValidatorsCount();
+    bool mustInvalidateResearch = research.validationsCount >= validatorRules.majorityValidatorsCount();
 
-    if (mustInvalidateWork) invalidateWork(work);
+    if (mustInvalidateResearch) invalidateResearch(research);
 
-    validatorRules.addResearcherWorkValidation(work, justification, msg.sender);
+    validatorRules.addResearcherResearchValidation(research, justification, msg.sender);
   }
 
-  function invalidateWork(Work memory work) internal {
-    work.valid = false;
-    work.invalidatedAt = block.number;
-    works[work.id] = work;
+  function invalidateResearch(Research memory research) internal {
+    research.valid = false;
+    research.invalidatedAt = block.number;
+    researches[research.id] = research;
   }
 
   /**
@@ -167,8 +178,8 @@ contract ResearcherRules is Callable {
     researcherPool.removePoolLevels(addr, researcherPoolEra(), removeSomeLevels);
   }
 
-  function addPenalty(address addr, uint256 workId) public mustBeAllowedCaller returns (uint256) {
-    penalties[addr].push(Penalty(workId));
+  function addPenalty(address addr, uint256 researchId) public mustBeAllowedCaller returns (uint256) {
+    penalties[addr].push(Penalty(researchId));
 
     return totalPenalties(addr);
   }
@@ -177,15 +188,15 @@ contract ResearcherRules is Callable {
     return penalties[addr].length;
   }
 
-  function getWorks() public view returns (Work[] memory) {
-    Work[] memory worksList = new Work[](worksCount);
-    uint256 count = worksCount;
+  function getResearches() public view returns (Research[] memory) {
+    Research[] memory researchesList = new Research[](researchesCount);
+    uint256 count = researchesCount;
 
     for (uint256 i = 0; i < count; i++) {
-      worksList[i] = works[i + 1];
+      researchesList[i] = researches[i + 1];
     }
 
-    return worksList;
+    return researchesList;
   }
 
   /**
@@ -215,7 +226,7 @@ contract ResearcherRules is Callable {
 
   /**
    * @dev Allows a researcher to attempt to publish an calculatorItem to users calculate their degradation
-   * @notice One calculatorItem per work
+   * @notice One calculatorItem per research
    * @param title CalculatorItem title
    * @param carbonImpact Kg of carbon
    * @param waterImpact M³ of water
@@ -261,15 +272,15 @@ contract ResearcherRules is Callable {
   }
 
   /**
-   * @dev Checks if user can publish a work
+   * @dev Checks if user can publish a research
    * @return bool True if can
    * @param addr Msg.sender addresss
    */
-  function canPublishWork(address addr) internal view returns (bool) {
+  function canPublishResearch(address addr) internal view returns (bool) {
     Researcher memory researcher = researchers[addr];
     uint256 lastPublishedAt = researcher.lastPublishedAt;
 
-    bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
+    bool canPublish = block.number > lastPublishedAt + timeBetweenResearches;
     return canPublish || lastPublishedAt == 0;
   }
 
@@ -281,7 +292,7 @@ contract ResearcherRules is Callable {
   function canPublishCalculatorItem(Researcher memory researcher) internal view returns (bool) {
     uint256 lastCalculatorItemAt = researcher.lastCalculatorItemAt;
 
-    bool canPublish = block.number > lastCalculatorItemAt + timeBetweenWorks;
+    bool canPublish = block.number > lastCalculatorItemAt + timeBetweenResearches;
     return canPublish || lastCalculatorItemAt == 0;
   }
 

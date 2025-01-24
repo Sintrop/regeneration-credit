@@ -45,7 +45,7 @@ describe("SupporterRules", () => {
     );
 
     const reseacherMaxPenalties = 3;
-    const reseacherTimeBetweenWorks = 10;
+    const reseacherTimeBetweenResearches = 10;
     const researcherSecuryBlocksToAnalysis = 10;
     const researcherRulesFactory = await ethers.getContractFactory("ResearcherRules");
 
@@ -53,7 +53,7 @@ describe("SupporterRules", () => {
       userRules.target,
       researcherPool.target,
       ZERO_ADDRESS,
-      reseacherTimeBetweenWorks,
+      reseacherTimeBetweenResearches,
       reseacherMaxPenalties,
       researcherSecuryBlocksToAnalysis
     );
