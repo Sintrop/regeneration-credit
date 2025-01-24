@@ -115,7 +115,7 @@ contract ResearcherRules is Callable {
    */
   function addResearch(string memory title, string memory thesis, string memory file) public {
     require(userRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
-    require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add work");
+    require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add research");
     require(canPublishResearch(msg.sender), "Can't publish yet");
 
     Researcher storage researcher = researchers[msg.sender];
@@ -123,9 +123,9 @@ contract ResearcherRules is Callable {
 
     uint256 id = researchesCount + 1;
 
-    Research memory work = Research(id, researcherPoolEra(), msg.sender, title, thesis, file, 0, true, 0, block.number);
+    Research memory research = Research(id, researcherPoolEra(), msg.sender, title, thesis, file, 0, true, 0, block.number);
 
-    researches[id] = work;
+    researches[id] = research;
     researchesCount++;
     researcher.publishedResearches++;
     researcher.lastPublishedAt = block.number;
@@ -136,24 +136,24 @@ contract ResearcherRules is Callable {
   function addResearchValidation(uint256 id, string memory justification) public {
     require(userRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
-    Research memory work = researches[id];
+    Research memory research = researches[id];
 
-    require(work.valid && work.era == researcherPoolEra(), "This work is not VALID");
+    require(research.valid && research.era == researcherPoolEra(), "This research is not VALID");
 
-    work.validationsCount += 1;
-    researches[id] = work;
+    research.validationsCount += 1;
+    researches[id] = research;
 
-    bool mustInvalidateResearch = work.validationsCount >= validatorRules.majorityValidatorsCount();
+    bool mustInvalidateResearch = research.validationsCount >= validatorRules.majorityValidatorsCount();
 
-    if (mustInvalidateResearch) invalidateResearch(work);
+    if (mustInvalidateResearch) invalidateResearch(research);
 
-    validatorRules.addResearcherResearchValidation(work, justification, msg.sender);
+    validatorRules.addResearcherResearchValidation(research, justification, msg.sender);
   }
 
-  function invalidateResearch(Research memory work) internal {
-    work.valid = false;
-    work.invalidatedAt = block.number;
-    researches[work.id] = work;
+  function invalidateResearch(Research memory research) internal {
+    research.valid = false;
+    research.invalidatedAt = block.number;
+    researches[research.id] = research;
   }
 
   /**
@@ -167,8 +167,8 @@ contract ResearcherRules is Callable {
     researcherPool.removePoolLevels(addr, researcherPoolEra(), removeSomeLevels);
   }
 
-  function addPenalty(address addr, uint256 workId) public mustBeAllowedCaller returns (uint256) {
-    penalties[addr].push(Penalty(workId));
+  function addPenalty(address addr, uint256 researchId) public mustBeAllowedCaller returns (uint256) {
+    penalties[addr].push(Penalty(researchId));
 
     return totalPenalties(addr);
   }
@@ -215,7 +215,7 @@ contract ResearcherRules is Callable {
 
   /**
    * @dev Allows a researcher to attempt to publish an calculatorItem to users calculate their degradation
-   * @notice One calculatorItem per work
+   * @notice One calculatorItem per research
    * @param title CalculatorItem title
    * @param carbonImpact Kg of carbon
    * @param waterImpact M³ of water
@@ -261,7 +261,7 @@ contract ResearcherRules is Callable {
   }
 
   /**
-   * @dev Checks if user can publish a work
+   * @dev Checks if user can publish a research
    * @return bool True if can
    * @param addr Msg.sender addresss
    */

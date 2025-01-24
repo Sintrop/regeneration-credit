@@ -44,5 +44,5 @@ struct CalculatorItem {
 }
 
 struct Penalty {
-  uint256 workId;
+  uint256 researchId;
 }

@@ -297,7 +297,7 @@ describe("ResearcherRules", () => {
         });
 
         context("when have waited time between researches", () => {
-          it("add a work", async () => {
+          it("add a research", async () => {
             const firstResearch = await instance.researchesCount();
 
             expect(firstResearch).to.equal(1);
@@ -367,7 +367,7 @@ describe("ResearcherRules", () => {
         });
 
         it("should return error message", async () => {
-          await expect(addResearch(resea1Address)).to.be.revertedWith("Wait until next era to add work");
+          await expect(addResearch(resea1Address)).to.be.revertedWith("Wait until next era to add research");
         });
       });
     });
@@ -386,7 +386,7 @@ describe("ResearcherRules", () => {
       });
 
       context("with valid contribution", () => {
-        context("when work must be invalidated", () => {
+        context("when research must be invalidated", () => {
           beforeEach(async () => {
             await addResearch(resea1Address);
 
@@ -398,15 +398,15 @@ describe("ResearcherRules", () => {
           });
 
           it("set valid field to false", async () => {
-            const work = await instance.researches(1);
+            const research = await instance.researches(1);
 
-            expect(work.valid).to.eq(false);
+            expect(research.valid).to.eq(false);
           });
 
           it("populate invalidatedAt field", async () => {
-            const work = await instance.researches(1);
+            const research = await instance.researches(1);
 
-            expect(work.invalidatedAt).to.above(0);
+            expect(research.invalidatedAt).to.above(0);
           });
 
           it("set maxPenalties to reseacher", async () => {
@@ -422,15 +422,15 @@ describe("ResearcherRules", () => {
           });
 
           it("must remove one pool level from current era", async () => {
-            const work = await instance.researches(1);
+            const research = await instance.researches(1);
 
-            const eraLevels = await researcherPool.eraLevels(work.era, resea1Address);
+            const eraLevels = await researcherPool.eraLevels(research.era, resea1Address);
 
             expect(eraLevels).to.eq(0);
           });
         });
 
-        context("when work must not be invalidated", () => {
+        context("when research must not be invalidated", () => {
           beforeEach(async () => {
             await addResearch(resea1Address);
 
@@ -442,15 +442,15 @@ describe("ResearcherRules", () => {
           });
 
           it("valid field is true", async () => {
-            const work = await instance.researches(1);
+            const research = await instance.researches(1);
 
-            expect(work.valid).to.eq(true);
+            expect(research.valid).to.eq(true);
           });
 
           it("invalidatedAt is equal 0", async () => {
-            const work = await instance.researches(1);
+            const research = await instance.researches(1);
 
-            expect(work.invalidatedAt).to.eq(0);
+            expect(research.invalidatedAt).to.eq(0);
           });
 
           it("researcher totalPenalties is 0", async () => {
@@ -460,9 +460,9 @@ describe("ResearcherRules", () => {
           });
 
           it("reseacher pool level is 1", async () => {
-            const work = await instance.researches(1);
+            const research = await instance.researches(1);
 
-            const eraLevels = await researcherPool.eraLevels(work.era, resea1Address);
+            const eraLevels = await researcherPool.eraLevels(research.era, resea1Address);
 
             expect(eraLevels).to.eq(1);
           });
@@ -502,7 +502,7 @@ describe("ResearcherRules", () => {
         });
       });
 
-      context("with invalid work", () => {
+      context("with invalid research", () => {
         context("when current era is different from contribution created era", () => {
           beforeEach(async () => {
             await addResearch(resea1Address);
@@ -513,7 +513,7 @@ describe("ResearcherRules", () => {
           it("should return error message", async () => {
             await expect(
               instance.connect(validator1Address).addResearchValidation(1, "justification")
-            ).to.be.revertedWith("This work is not VALID");
+            ).to.be.revertedWith("This research is not VALID");
           });
         });
 
@@ -537,7 +537,7 @@ describe("ResearcherRules", () => {
           it("should return error message", async () => {
             await expect(
               instance.connect(validator3Address).addResearchValidation(1, "justification")
-            ).to.be.revertedWith("This work is not VALID");
+            ).to.be.revertedWith("This research is not VALID");
           });
         });
 
@@ -545,7 +545,7 @@ describe("ResearcherRules", () => {
           it("should return error message", async () => {
             await expect(
               instance.connect(validator1Address).addResearchValidation(0, "justification")
-            ).to.be.revertedWith("This work is not VALID");
+            ).to.be.revertedWith("This research is not VALID");
           });
         });
       });

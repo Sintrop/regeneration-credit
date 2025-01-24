@@ -148,18 +148,18 @@ describe("ValidatorRules", () => {
     };
   };
 
-  const generateResearchObject = (work) => {
+  const generateResearchObject = (research) => {
     return {
-      id: work.id,
-      era: work.era,
-      createdBy: work.createdBy,
-      title: work.title,
-      thesis: work.thesis,
-      file: work.file,
-      validationsCount: work.validationsCount,
-      valid: work.valid,
-      invalidatedAt: work.invalidatedAt,
-      createdAtBlock: work.createdAtBlock,
+      id: research.id,
+      era: research.era,
+      createdBy: research.createdBy,
+      title: research.title,
+      thesis: research.thesis,
+      file: research.file,
+      validationsCount: research.validationsCount,
+      valid: research.valid,
+      invalidatedAt: research.invalidatedAt,
+      createdAtBlock: research.createdAtBlock,
     };
   };
 
@@ -1263,7 +1263,7 @@ describe("ValidatorRules", () => {
                 await instance.connect(owner).addDeveloperReportValidation(report, "justification", validator2Address);
               });
 
-              it("should add work validation", async () => {
+              it("should add research validation", async () => {
                 const validation = await instance.reportValidations(1, 0);
 
                 expect(validation[0]).to.equal(validator1Address.address);
@@ -1405,16 +1405,16 @@ describe("ValidatorRules", () => {
         await addResearch(resea1Address);
       });
 
-      context("when validator already voted to work", () => {
+      context("when validator already voted to research", () => {
         beforeEach(async () => {
-          let work = await researcherRules.researches(1);
-          work = generateResearchObject(work);
+          let research = await researcherRules.researches(1);
+          research = generateResearchObject(research);
 
-          await instance.connect(owner).addResearcherResearchValidation(work, "justification", validator1Address);
+          await instance.connect(owner).addResearcherResearchValidation(research, "justification", validator1Address);
         });
 
-        it("should add work validation", async () => {
-          const validation = await instance.workValidations(1, 0);
+        it("should add research validation", async () => {
+          const validation = await instance.researchValidations(1, 0);
 
           expect(validation[0]).to.equal(validator1Address.address);
           expect(validation[1]).to.equal(1);
@@ -1423,31 +1423,31 @@ describe("ValidatorRules", () => {
         });
 
         it("should return error", async () => {
-          let work = await researcherRules.researches(1);
-          work = generateResearchObject(work);
+          let research = await researcherRules.researches(1);
+          research = generateResearchObject(research);
 
           await expect(
-            instance.connect(owner).addResearcherResearchValidation(work, "justification", validator1Address)
+            instance.connect(owner).addResearcherResearchValidation(research, "justification", validator1Address)
           ).to.be.revertedWith("Already voted");
         });
       });
 
-      context("when validator did not voted to work", () => {
+      context("when validator did not voted to research", () => {
         context("when current era is 1", () => {
-          context("when work validations is => majorityValidatorsCount (addPenalty == true)", () => {
+          context("when research validations is => majorityValidatorsCount (addPenalty == true)", () => {
             context("when researcher total penalties is >= researcherRules.maxPenalties", () => {
               beforeEach(async () => {
-                let work = await researcherRules.researches(1);
-                work = generateResearchObject(work);
-                work.validationsCount = 1;
+                let research = await researcherRules.researches(1);
+                research = generateResearchObject(research);
+                research.validationsCount = 1;
 
-                await researcherRules.addPenalty(work.createdBy, work.id);
-                await researcherRules.addPenalty(work.createdBy, work.id);
+                await researcherRules.addPenalty(research.createdBy, research.id);
+                await researcherRules.addPenalty(research.createdBy, research.id);
 
-                await instance.connect(owner).addResearcherResearchValidation(work, "justification", validator1Address);
+                await instance.connect(owner).addResearcherResearchValidation(research, "justification", validator1Address);
 
-                work.validationsCount = 2;
-                await instance.connect(owner).addResearcherResearchValidation(work, "justification", validator2Address);
+                research.validationsCount = 2;
+                await instance.connect(owner).addResearcherResearchValidation(research, "justification", validator2Address);
               });
 
               it("deny researcher", async () => {
@@ -1456,7 +1456,7 @@ describe("ValidatorRules", () => {
                 expect(newResearcherType).to.equal(9);
               });
 
-              it("remove work regeneration score level from researcher pool", async () => {
+              it("remove research regeneration score level from researcher pool", async () => {
                 const levels = await researcherPool.eraLevels(4, resea1Address);
 
                 expect(levels).to.equal(0);
@@ -1465,17 +1465,17 @@ describe("ValidatorRules", () => {
 
             context("when researcher total penalties is < researcherRules.maxPenalties", () => {
               beforeEach(async () => {
-                let work = await researcherRules.researches(1);
-                work = generateResearchObject(work);
-                work.validationsCount = 1;
+                let research = await researcherRules.researches(1);
+                research = generateResearchObject(research);
+                research.validationsCount = 1;
 
-                await instance.connect(owner).addResearcherResearchValidation(work, "justification", validator1Address);
+                await instance.connect(owner).addResearcherResearchValidation(research, "justification", validator1Address);
 
-                work = await researcherRules.researches(1);
-                work = generateResearchObject(work);
-                work.validationsCount = 2;
+                research = await researcherRules.researches(1);
+                research = generateResearchObject(research);
+                research.validationsCount = 2;
 
-                await instance.connect(owner).addResearcherResearchValidation(work, "justification", validator2Address);
+                await instance.connect(owner).addResearcherResearchValidation(research, "justification", validator2Address);
               });
 
               it("researcher is the same", async () => {
@@ -1485,21 +1485,21 @@ describe("ValidatorRules", () => {
               });
 
               it("remove report regeneration score level from researcher pool", async () => {
-                let work = await researcherRules.researches(1);
-                const levels = await researcherPool.eraLevels(work.era, resea1Address);
+                let research = await researcherRules.researches(1);
+                const levels = await researcherPool.eraLevels(research.era, resea1Address);
 
                 expect(levels).to.equal(0);
               });
             });
           });
 
-          context("when work validations is < majorityValidatorsCount (addPenalty == false)", () => {
+          context("when research validations is < majorityValidatorsCount (addPenalty == false)", () => {
             beforeEach(async () => {
-              let work = await researcherRules.researches(1);
-              work = generateResearchObject(work);
-              work.validationsCount = 1;
+              let research = await researcherRules.researches(1);
+              research = generateResearchObject(research);
+              research.validationsCount = 1;
 
-              await instance.connect(owner).addResearcherResearchValidation(work, "justification", validator1Address);
+              await instance.connect(owner).addResearcherResearchValidation(research, "justification", validator1Address);
             });
 
             it("total penalties is zero", async () => {
@@ -1513,9 +1513,9 @@ describe("ValidatorRules", () => {
         context("when current era is 2", () => {
           context("when validators have contributed to last era", () => {
             beforeEach(async () => {
-              let work = await researcherRules.researches(1);
-              work = generateResearchObject(work);
-              work.validationsCount = 1;
+              let research = await researcherRules.researches(1);
+              research = generateResearchObject(research);
+              research.validationsCount = 1;
 
               await instance.connect(validator1Address).declareAlive();
               await instance.connect(validator2Address).declareAlive();
@@ -1524,12 +1524,12 @@ describe("ValidatorRules", () => {
 
               await advanceBlock(validatorPoolArgs.blocksPerEra);
 
-              work.validationsCount = 1;
-              await instance.connect(owner).addResearcherResearchValidation(work, "foo", validator1Address);
+              research.validationsCount = 1;
+              await instance.connect(owner).addResearcherResearchValidation(research, "foo", validator1Address);
             });
 
             it("add inspection validation", async () => {
-              const validation = await instance.workValidations(1, 0);
+              const validation = await instance.researchValidations(1, 0);
 
               expect(validation[0]).to.equal(validator1Address.address);
               expect(validation[1]).to.equal(1);
@@ -1540,15 +1540,15 @@ describe("ValidatorRules", () => {
 
           context("when validator does not have contributed to last era", () => {
             beforeEach(async () => {
-              work = await researcherRules.researches(1);
-              work = generateResearchObject(work);
+              research = await researcherRules.researches(1);
+              research = generateResearchObject(research);
 
               await advanceBlock(validatorPoolArgs.blocksPerEra);
             });
 
             it("should return error", async () => {
               await expect(
-                instance.connect(owner).addResearcherResearchValidation(work, "justification", validator1Address)
+                instance.connect(owner).addResearcherResearchValidation(research, "justification", validator1Address)
               ).to.be.revertedWith("You did not contribute in the last era");
             });
           });
@@ -1558,11 +1558,11 @@ describe("ValidatorRules", () => {
 
     context("without allowed caller", () => {
       it("should return error", async () => {
-        let work = await researcherRules.researches(1);
-        work = generateResearchObject(work);
+        let research = await researcherRules.researches(1);
+        research = generateResearchObject(research);
 
         await expect(
-          instance.connect(validator1Address).addResearcherResearchValidation(work, "justification", validator1Address)
+          instance.connect(validator1Address).addResearcherResearchValidation(research, "justification", validator1Address)
         ).to.be.revertedWith("Not allowed caller");
       });
     });

@@ -27,7 +27,7 @@ contract ValidatorRules is Callable {
   mapping(address => UserValidation[]) private userValidations;
   mapping(uint256 => ResourceValidation[]) public inspectionValidations;
   mapping(uint256 => ResourceValidation[]) public reportValidations;
-  mapping(uint256 => ResourceValidation[]) public workValidations;
+  mapping(uint256 => ResourceValidation[]) public researchValidations;
   mapping(address => mapping(uint256 => bool)) private validatorReportsValidations;
   mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
   mapping(address => mapping(uint256 => bool)) private validatorResearchesValidations;
@@ -150,36 +150,36 @@ contract ValidatorRules is Callable {
   }
 
   function addResearcherResearchValidation(
-    Research memory work,
+    Research memory research,
     string memory justification,
     address validatorAddress
   ) public mustBeAllowedCaller canAddValidationModifier(validatorAddress) {
-    require(!validatorResearchesValidations[validatorAddress][work.id], "Already voted");
+    require(!validatorResearchesValidations[validatorAddress][research.id], "Already voted");
 
-    validatorResearchesValidations[validatorAddress][work.id] = true;
+    validatorResearchesValidations[validatorAddress][research.id] = true;
 
     uint256 majorityValidatorsCount_ = majorityValidatorsCount();
 
-    bool addPenalty = work.validationsCount >= majorityValidatorsCount_;
+    bool addPenalty = research.validationsCount >= majorityValidatorsCount_;
 
-    workValidations[work.id].push(
-      ResourceValidation(validatorAddress, work.id, justification, majorityValidatorsCount_, block.number)
+    researchValidations[research.id].push(
+      ResourceValidation(validatorAddress, research.id, justification, majorityValidatorsCount_, block.number)
     );
 
     if (!addPenalty) return;
 
-    uint256 totalPenalties = researcherRules.addPenalty(work.createdBy, work.id);
-    removeReseacherResearch(work);
+    uint256 totalPenalties = researcherRules.addPenalty(research.createdBy, research.id);
+    removeReseacherResearch(research);
 
-    if (totalPenalties >= researcherRules.MAX_PENALTIES()) externalDenieUser(work.createdBy);
+    if (totalPenalties >= researcherRules.MAX_PENALTIES()) externalDenieUser(research.createdBy);
   }
 
   function removeDeveloperReport(Report memory report) internal {
     removeLevelsFromPool(report.developer, 1);
   }
 
-  function removeReseacherResearch(Research memory work) internal {
-    removeLevelsFromPool(work.createdBy, 1);
+  function removeReseacherResearch(Research memory research) internal {
+    removeLevelsFromPool(research.createdBy, 1);
   }
 
   function removeUserInspection(Inspection memory inspection) internal {
