@@ -1444,10 +1444,14 @@ describe("ValidatorRules", () => {
                 await researcherRules.addPenalty(research.createdBy, research.id);
                 await researcherRules.addPenalty(research.createdBy, research.id);
 
-                await instance.connect(owner).addResearcherResearchValidation(research, "justification", validator1Address);
+                await instance
+                  .connect(owner)
+                  .addResearcherResearchValidation(research, "justification", validator1Address);
 
                 research.validationsCount = 2;
-                await instance.connect(owner).addResearcherResearchValidation(research, "justification", validator2Address);
+                await instance
+                  .connect(owner)
+                  .addResearcherResearchValidation(research, "justification", validator2Address);
               });
 
               it("deny researcher", async () => {
@@ -1469,13 +1473,17 @@ describe("ValidatorRules", () => {
                 research = generateResearchObject(research);
                 research.validationsCount = 1;
 
-                await instance.connect(owner).addResearcherResearchValidation(research, "justification", validator1Address);
+                await instance
+                  .connect(owner)
+                  .addResearcherResearchValidation(research, "justification", validator1Address);
 
                 research = await researcherRules.researches(1);
                 research = generateResearchObject(research);
                 research.validationsCount = 2;
 
-                await instance.connect(owner).addResearcherResearchValidation(research, "justification", validator2Address);
+                await instance
+                  .connect(owner)
+                  .addResearcherResearchValidation(research, "justification", validator2Address);
               });
 
               it("researcher is the same", async () => {
@@ -1499,7 +1507,9 @@ describe("ValidatorRules", () => {
               research = generateResearchObject(research);
               research.validationsCount = 1;
 
-              await instance.connect(owner).addResearcherResearchValidation(research, "justification", validator1Address);
+              await instance
+                .connect(owner)
+                .addResearcherResearchValidation(research, "justification", validator1Address);
             });
 
             it("total penalties is zero", async () => {
@@ -1562,7 +1572,9 @@ describe("ValidatorRules", () => {
         research = generateResearchObject(research);
 
         await expect(
-          instance.connect(validator1Address).addResearcherResearchValidation(research, "justification", validator1Address)
+          instance
+            .connect(validator1Address)
+            .addResearcherResearchValidation(research, "justification", validator1Address)
         ).to.be.revertedWith("Not allowed caller");
       });
     });

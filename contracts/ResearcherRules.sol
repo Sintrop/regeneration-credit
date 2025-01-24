@@ -123,7 +123,18 @@ contract ResearcherRules is Callable {
 
     uint256 id = researchesCount + 1;
 
-    Research memory research = Research(id, researcherPoolEra(), msg.sender, title, thesis, file, 0, true, 0, block.number);
+    Research memory research = Research(
+      id,
+      researcherPoolEra(),
+      msg.sender,
+      title,
+      thesis,
+      file,
+      0,
+      true,
+      0,
+      block.number
+    );
 
     researches[id] = research;
     researchesCount++;
