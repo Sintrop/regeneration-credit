@@ -70,22 +70,6 @@ contract InspectorRules is Callable {
   }
 
   /**
-   * @dev Returns all registered inspectors
-   * @return Inspector struct array
-   */
-  function getInspectors() public view returns (Inspector[] memory) {
-    uint256 usersCount = userRules.userTypesCount(USER_TYPE);
-    Inspector[] memory inspectorList = new Inspector[](usersCount);
-
-    for (uint256 i = 0; i < usersCount; i++) {
-      address acAddress = inspectorsAddress[i];
-      inspectorList[i] = inspectors[acAddress];
-    }
-
-    return inspectorList;
-  }
-
-  /**
    * @dev Return a specific inspector
    * @param addr the address of the inspector.
    */

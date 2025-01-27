@@ -152,21 +152,6 @@ contract DeveloperRules is Ownable, Callable {
   }
 
   /**
-   * @dev Returns all developers
-   */
-  function getDevelopers() public view returns (Developer[] memory) {
-    uint256 usersCount = userRules.userTypesCount(USER_TYPE);
-    Developer[] memory developerList = new Developer[](usersCount);
-
-    for (uint256 i = 0; i < usersCount; i++) {
-      address devAddress = developersAddress[i];
-      developerList[i] = developers[devAddress];
-    }
-
-    return developerList;
-  }
-
-  /**
    * @dev Returns a developer
    * @param addr The address of the developer
    */

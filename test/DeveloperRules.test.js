@@ -164,14 +164,6 @@ describe("DeveloperRules", (accounts) => {
           expect(developersCount).to.equal(1);
         });
 
-        it("should add created developer in developerList (array)", async () => {
-          await addDeveloper("Developer A", dev1Address);
-
-          const developers = await instance.getDevelopers();
-
-          expect(developers[0].developerWallet).to.equal(dev1Address.address);
-        });
-
         it("should add created developer in userType contract as a DEVELOPER", async () => {
           await addDeveloper("Developer A", dev1Address);
 
@@ -493,26 +485,6 @@ describe("DeveloperRules", (accounts) => {
           "Please register as validator"
         );
       });
-    });
-  });
-
-  describe("#getDevelopers", () => {
-    beforeEach(async () => {
-      await addInvitation(owner, dev2Address, userTypes.Developer, owner);
-    });
-    it("should return developers when has developers", async () => {
-      await addDeveloper("Developer A", dev1Address);
-      await addDeveloper("Developer B", dev2Address);
-
-      const developers = await instance.getDevelopers();
-
-      expect(developers.length).to.equal(2);
-    });
-
-    it("should return developers equal zero when dont has it", async () => {
-      const developers = await instance.getDevelopers();
-
-      expect(developers.length).to.equal(0);
     });
   });
 

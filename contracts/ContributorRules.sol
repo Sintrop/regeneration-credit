@@ -87,21 +87,6 @@ contract ContributorRules is Ownable, Callable {
   }
 
   /**
-   * @dev Returns all contributors
-   */
-  function getContributors() public view returns (Contributor[] memory) {
-    uint256 usersCount = userRules.userTypesCount(USER_TYPE);
-    Contributor[] memory contributorList = new Contributor[](usersCount);
-
-    for (uint256 i = 0; i < usersCount; i++) {
-      address devAddress = contributorsAddress[i];
-      contributorList[i] = contributors[devAddress];
-    }
-
-    return contributorList;
-  }
-
-  /**
    * @dev Returns a contributor
    * @param addr The address of the contributor
    */

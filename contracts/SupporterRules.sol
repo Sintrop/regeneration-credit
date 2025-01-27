@@ -84,22 +84,6 @@ contract SupporterRules {
   }
 
   /**
-   * @dev Returns all registered supporters
-   * @return Supporter struct array
-   */
-  function getSupporters() public view returns (Supporter[] memory) {
-    uint256 usersCount = userRules.userTypesCount(USER_TYPE);
-    Supporter[] memory supporterList = new Supporter[](usersCount);
-
-    for (uint256 i = 0; i < usersCount; i++) {
-      address acAddress = supportersAddress[i];
-      supporterList[i] = supporters[acAddress];
-    }
-
-    return supporterList;
-  }
-
-  /**
    * @dev Return a specific supporter
    * @param addr the address of the supporter.
    */

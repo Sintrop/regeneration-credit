@@ -53,22 +53,6 @@ contract ActivistRules is Callable {
   }
 
   /**
-   * @dev Returns all registered activists
-   * @return Activist[]
-   */
-  function getActivists() public view returns (Activist[] memory) {
-    uint256 usersCount = userRules.userTypesCount(USER_TYPE);
-    Activist[] memory activistList = new Activist[](usersCount);
-
-    for (uint256 i = 0; i < usersCount; i++) {
-      address acAddress = activistsAddress[i];
-      activistList[i] = activists[acAddress];
-    }
-
-    return activistList;
-  }
-
-  /**
    * @dev Return a specific activist
    * @param addr The address of the activist
    * @return Activist

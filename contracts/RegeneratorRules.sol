@@ -62,22 +62,6 @@ contract RegeneratorRules is Callable {
   }
 
   /**
-   * @dev Returns all registered regenerators
-   * @return Regenerator struct array
-   */
-  function getRegenerators() public view returns (Regenerator[] memory) {
-    uint256 usersCount = userRules.userTypesCount(USER_TYPE);
-    Regenerator[] memory regeneratorList = new Regenerator[](usersCount);
-
-    for (uint256 i = 0; i < usersCount; i++) {
-      address acAddress = regeneratorsAddress[i];
-      regeneratorList[i] = regenerators[acAddress];
-    }
-
-    return regeneratorList;
-  }
-
-  /**
    * @dev Return a specific regenerator
    * @param addr the address of the regenerator.
    */
