@@ -19,12 +19,12 @@ contract ResearcherRules is Callable {
   mapping(uint256 => Research) public researches;
   mapping(uint256 => CalculatorItem) public calculatorItems;
   mapping(address => Penalty[]) public penalties;
+  mapping(uint256 => address) public researchersAddress;
 
   UserRules internal userRules;
   ResearcherPool internal researcherPool;
   ValidatorRules internal validatorRules;
 
-  address[] internal researchersAddress;
   UserType private constant USER_TYPE = UserType.RESEARCHER;
   uint256 public researchesCount;
   uint256 public calculatorItemsCount;
@@ -55,8 +55,10 @@ contract ResearcherRules is Callable {
    * @param proofPhoto Identity photo
    */
   function addResearcher(string memory name, string memory proofPhoto) public returns (Researcher memory) {
+    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
+
     Researcher memory researcher = Researcher(
-      userRules.userTypesCount(USER_TYPE) + 1,
+      id,
       msg.sender,
       name,
       Pool(0, researcherPoolEra()),
@@ -68,7 +70,7 @@ contract ResearcherRules is Callable {
     );
 
     researchers[msg.sender] = researcher;
-    researchersAddress.push(msg.sender);
+    researchersAddress[id] = msg.sender;
     userRules.addUser(msg.sender, USER_TYPE);
 
     return researcher;

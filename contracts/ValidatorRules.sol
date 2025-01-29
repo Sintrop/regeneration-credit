@@ -32,6 +32,7 @@ contract ValidatorRules is Callable {
   mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
   mapping(address => mapping(uint256 => bool)) private validatorResearchesValidations;
   mapping(address => mapping(address => bool)) private validatorUsersValidations;
+  mapping(uint256 => address) public validatorsAddress;
 
   UserRules private userRules;
   RegeneratorRules private regeneratorRules;
@@ -42,7 +43,6 @@ contract ValidatorRules is Callable {
   ContributorRules private contributorRules;
   ActivistRules private activistRules;
 
-  address[] public validatorsAddress;
   UserType private constant USER_TYPE = UserType.VALIDATOR;
   uint256 private immutable firstValidatorLimit;
   uint256 private immutable secondValidatorLimit;
@@ -67,14 +67,11 @@ contract ValidatorRules is Callable {
    * @dev Allows a user to attempt to register as a validator
    */
   function addValidator() public {
-    validators[msg.sender] = Validator(
-      userRules.userTypesCount(USER_TYPE) + 1,
-      msg.sender,
-      Pool(0, validatorPoolEra()),
-      block.number
-    );
+    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
 
-    validatorsAddress.push(msg.sender);
+    validators[msg.sender] = Validator(id, msg.sender, Pool(0, validatorPoolEra()), block.number);
+
+    validatorsAddress[id] = msg.sender;
     userRules.addUser(msg.sender, USER_TYPE);
   }
 

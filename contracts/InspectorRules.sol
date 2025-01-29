@@ -18,10 +18,10 @@ contract InspectorRules is Callable {
 
   mapping(address => Inspector) internal inspectors;
   mapping(address => Penalty[]) public penalties;
+  mapping(uint256 => address) public inspectorsAddress;
 
   UserRules internal userRules;
   InspectorPool internal inspectorPool;
-  address[] internal inspectorsAddress;
   UserType private constant USER_TYPE = UserType.INSPECTOR;
 
   uint256 public immutable maxPenalties;
@@ -39,8 +39,10 @@ contract InspectorRules is Callable {
    * @param proofPhoto Identity photo
    */
   function addInspector(string memory name, string memory proofPhoto) public returns (Inspector memory) {
+    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
+
     Inspector memory inspector = Inspector(
-      userRules.userTypesCount(USER_TYPE) + 1,
+      id,
       msg.sender,
       name,
       proofPhoto,
@@ -53,7 +55,7 @@ contract InspectorRules is Callable {
     );
 
     inspectors[msg.sender] = inspector;
-    inspectorsAddress.push(msg.sender);
+    inspectorsAddress[id] = msg.sender;
     userRules.addUser(msg.sender, USER_TYPE);
 
     return inspector;

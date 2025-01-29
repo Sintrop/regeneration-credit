@@ -20,12 +20,12 @@ contract DeveloperRules is Ownable, Callable {
   mapping(uint256 => mapping(address => bool)) public developerReportsEra;
   mapping(uint256 => Report) public reports;
   mapping(address => Penalty[]) public penalties;
+  mapping(uint256 => address) public developersAddress;
 
   UserRules internal userRules;
   DeveloperPool internal developerPool;
   ValidatorRules internal validatorRules;
 
-  address[] internal developersAddress;
   UserType private constant USER_TYPE = UserType.DEVELOPER;
   uint256 public reportsCount;
 
@@ -53,9 +53,10 @@ contract DeveloperRules is Ownable, Callable {
    */
   function addDeveloper(string memory name, string memory proofPhoto) public {
     uint256 level = 0;
+    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
 
     developers[msg.sender] = Developer(
-      userRules.userTypesCount(USER_TYPE) + 1,
+      id,
       msg.sender,
       name,
       proofPhoto,
@@ -64,7 +65,7 @@ contract DeveloperRules is Ownable, Callable {
       block.number
     );
 
-    developersAddress.push(msg.sender);
+    developersAddress[id] = msg.sender;
     userRules.addUser(msg.sender, USER_TYPE);
   }
 

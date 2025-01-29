@@ -21,13 +21,13 @@ contract SupporterRules {
   mapping(address => Supporter) internal supporters;
   mapping(address => mapping(uint256 => uint256)) public calculatorItemCertificates;
   mapping(address => uint256[]) public reductionCommitments;
+  mapping(uint256 => address) public supportersAddress;
 
   uint256 public constant INVITER_PERCENTAGE = 5;
 
   UserRules internal userRules;
   SupporterPool internal supporterPool;
   ResearcherRules internal researcherRules;
-  address[] internal supportersAddress;
   UserType private constant USER_TYPE = UserType.SUPPORTER;
 
   constructor(address userRulesAddress, address supporterPoolAddress, address researcherRulesAddress) {
@@ -42,10 +42,12 @@ contract SupporterRules {
    * @return a supporter
    */
   function addSupporter(string memory name) public returns (Supporter memory) {
-    Supporter memory supporter = Supporter(userRules.userTypesCount(USER_TYPE) + 1, msg.sender, name, block.number);
+    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
+
+    Supporter memory supporter = Supporter(id, msg.sender, name, block.number);
 
     supporters[msg.sender] = supporter;
-    supportersAddress.push(msg.sender);
+    supportersAddress[id] = msg.sender;
     userRules.addUser(msg.sender, USER_TYPE);
 
     return supporter;

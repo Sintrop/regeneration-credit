@@ -18,11 +18,11 @@ contract ContributorRules is Ownable, Callable {
   mapping(address => Contributor) public contributors;
   mapping(uint256 => mapping(address => bool)) public contributorContributionsEra;
   mapping(uint256 => Contribution) public contributions;
+  mapping(uint256 => address) public contributorsAddress;
 
   UserRules internal userRules;
   ContributorPool internal contributorPool;
 
-  address[] internal contributorsAddress;
   UserType private constant USER_TYPE = UserType.CONTRIBUTOR;
   uint256 public contributionsCount;
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
@@ -40,9 +40,10 @@ contract ContributorRules is Ownable, Callable {
    */
   function addContributor(string memory name, string memory proofPhoto) public {
     uint256 level = 0;
+    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
 
     contributors[msg.sender] = Contributor(
-      userRules.userTypesCount(USER_TYPE) + 1,
+      id,
       msg.sender,
       name,
       proofPhoto,
@@ -50,7 +51,7 @@ contract ContributorRules is Ownable, Callable {
       block.number
     );
 
-    contributorsAddress.push(msg.sender);
+    contributorsAddress[id] = msg.sender;
 
     userRules.addUser(msg.sender, USER_TYPE);
   }
