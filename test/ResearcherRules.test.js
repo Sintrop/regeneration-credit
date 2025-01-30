@@ -142,12 +142,6 @@ describe("ResearcherRules", () => {
           expect(researchersCount).to.equal(1);
         });
 
-        it("add created researcher in researcherList (array)", async () => {
-          const researchers = await instance.getResearchers();
-
-          expect(researchers[0].researcherWallet).to.equal(resea1Address.address);
-        });
-
         it("add created researcher in userType contract as a RESEARCHER", async () => {
           const userType = await userRules.getUser(resea1Address);
           const RESEARCHER = 3;
@@ -160,28 +154,6 @@ describe("ResearcherRules", () => {
 
           expect(researcher.publishedResearches).to.equal(0);
         });
-      });
-    });
-  });
-
-  describe("#getResearchers", () => {
-    context("when has researchers", () => {
-      beforeEach(async () => {
-        await addResearcher("Researcher A", resea1Address);
-      });
-
-      it("return researchers", async () => {
-        const researchers = await instance.getResearchers();
-
-        expect(researchers.length).to.equal(1);
-      });
-    });
-
-    context("when has not researchers", () => {
-      it("return zero researchers", async () => {
-        const researchers = await instance.getResearchers();
-
-        expect(researchers.length).to.equal(0);
       });
     });
   });
@@ -564,12 +536,6 @@ describe("ResearcherRules", () => {
     beforeEach(async () => {
       await addResearcher("Researcher A", resea1Address);
       await addResearch(resea1Address);
-    });
-
-    it("should return published researches list", async () => {
-      const researches = await instance.getResearches();
-
-      expect(researches.length).to.equal(1);
     });
   });
 

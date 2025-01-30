@@ -106,15 +106,6 @@ describe("InspectorRules", () => {
           expect(inspectorsCount).to.equal(2);
         });
 
-        it("should add created inspector in inspectorList (array)", async () => {
-          await addInspector("Inspector A", inspe1Address);
-          await addInspector("Inspector B", inspe2Address);
-
-          const inspectors = await instance.getInspectors();
-
-          expect(inspectors[0].inspectorWallet).to.equal(inspe1Address.address);
-        });
-
         it("should add created inspector in userType contract as a INSPECTOR", async () => {
           await addInspector("Inspector A", inspe1Address);
 
@@ -124,23 +115,6 @@ describe("InspectorRules", () => {
           expect(userType).to.equal(INSPECTOR);
         });
       });
-    });
-  });
-
-  context("when will get inspectors (.getInspectors)", () => {
-    it("should return inspectors when has inspectors", async () => {
-      await addInspector("Inspector A", inspe1Address);
-      await addInspector("Inspector B", inspe2Address);
-
-      const inspectors = await instance.getInspectors();
-
-      expect(inspectors.length).to.equal(2);
-    });
-
-    it("should return inspectors equal zero when dont has it", async () => {
-      const inspectors = await instance.getInspectors();
-
-      expect(inspectors.length).to.equal(0);
     });
   });
 

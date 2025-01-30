@@ -161,43 +161,6 @@ describe("RegeneratorRules", () => {
     });
   });
 
-  context("when call getRegenerator", () => {
-    it("should return a regenerator", async () => {
-      await addRegenerator("Regenerator A", prod1Address);
-
-      const regenerator = await instance.getRegenerator(prod1Address);
-
-      expect(regenerator.regeneratorWallet).to.equal(prod1Address.address);
-    });
-
-    it("should return regenerators when call getRegenerators and has it", async () => {
-      await addRegenerator("Regenerator A", prod1Address);
-      await addRegenerator("Regenerator A", prod2Address);
-
-      const regenerators = await instance.getRegenerators();
-
-      expect(regenerators.length).to.equal(2);
-    });
-
-    it("should return regenerators zero when call getRegenerators and dont has it", async () => {
-      const regenerators = await instance.getRegenerators();
-
-      expect(regenerators.length).to.equal(0);
-    });
-
-    it("should return same regenerator in mapping and array list", async () => {
-      await addRegenerator("Regenerator A", prod1Address);
-      await addRegenerator("Regenerator A", prod2Address);
-
-      const regenerators = await instance.getRegenerators();
-      const regenerator1 = await instance.getRegenerator(prod1Address);
-      const regenerator2 = await instance.getRegenerator(prod2Address);
-
-      expect(regenerators[0].regenerator_wallet).to.equal(regenerator1.regenerator_wallet);
-      expect(regenerators[1].regenerator_wallet).to.equal(regenerator2.regenerator_wallet);
-    });
-  });
-
   describe("#afterRequestInspection", () => {
     beforeEach(async () => {
       await addRegenerator("Regenerator A", prod1Address);

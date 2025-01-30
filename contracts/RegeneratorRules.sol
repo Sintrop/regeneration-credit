@@ -18,11 +18,11 @@ contract RegeneratorRules is Callable {
   int256 internal constant LIMIT_REGENERATION_SCORE_TO_POOL = 1000;
 
   mapping(address => Regenerator) public regenerators;
+  mapping(uint256 => address) public regeneratorsAddress;
 
   UserRules internal userRules;
   RegeneratorPool internal regeneratorPool;
 
-  address[] internal regeneratorsAddress;
   UserType private constant USER_TYPE = UserType.REGENERATOR;
   uint256 public regeneratorsSustainable;
 
@@ -47,8 +47,9 @@ contract RegeneratorRules is Callable {
     string memory report
   ) public {
     Regenerator memory regenerator = regenerators[msg.sender];
+    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
 
-    regenerator.id = userRules.userTypesCount(USER_TYPE) + 1;
+    regenerator.id = id;
     regenerator.regeneratorWallet = msg.sender;
     regenerator.name = name;
     regenerator.proofPhoto = proofPhoto;
@@ -57,24 +58,8 @@ contract RegeneratorRules is Callable {
     regenerator.createdAt = block.number;
 
     regenerators[msg.sender] = regenerator;
-    regeneratorsAddress.push(msg.sender);
+    regeneratorsAddress[id] = msg.sender;
     userRules.addUser(msg.sender, USER_TYPE);
-  }
-
-  /**
-   * @dev Returns all registered regenerators
-   * @return Regenerator struct array
-   */
-  function getRegenerators() public view returns (Regenerator[] memory) {
-    uint256 usersCount = userRules.userTypesCount(USER_TYPE);
-    Regenerator[] memory regeneratorList = new Regenerator[](usersCount);
-
-    for (uint256 i = 0; i < usersCount; i++) {
-      address acAddress = regeneratorsAddress[i];
-      regeneratorList[i] = regenerators[acAddress];
-    }
-
-    return regeneratorList;
   }
 
   /**

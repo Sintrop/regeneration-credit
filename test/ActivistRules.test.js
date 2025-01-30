@@ -82,15 +82,6 @@ describe("ActivistRules", () => {
           expect(activistsCount).to.equal(2);
         });
 
-        it("should add created activist in activistList (array)", async () => {
-          await addActivist("Activist A", activ1Address);
-          await addActivist("Activist C", activ3Address);
-
-          const activists = await instance.getActivists();
-
-          expect(activists[0].activistWallet).to.equal(activ1Address.address);
-        });
-
         it("should add created activist in userType contract as a ACTIVIST", async () => {
           await addActivist("Activist A", activ1Address);
 
@@ -99,29 +90,6 @@ describe("ActivistRules", () => {
 
           expect(userType).to.equal(ACTIVIST);
         });
-      });
-    });
-  });
-
-  describe("#getActivists", () => {
-    context("when have activists", () => {
-      beforeEach(async () => {
-        await addActivist("Activist A", activ1Address);
-        await addActivist("Activist C", activ3Address);
-      });
-
-      it("should return activists when has activists", async () => {
-        const activists = await instance.getActivists();
-
-        expect(activists.length).to.equal(2);
-      });
-    });
-
-    context("when do not have activists", () => {
-      it("should return activists equal zero when dont has it", async () => {
-        const activists = await instance.getActivists();
-
-        expect(activists.length).to.equal(0);
       });
     });
   });

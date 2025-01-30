@@ -17,9 +17,9 @@ import { Callable } from "./shared/Callable.sol";
 contract ActivistRules is Callable {
   mapping(address => Activist) internal activists;
   mapping(address => mapping(address => bool)) internal activistWonLevel;
+  mapping(uint256 => address) public activistsAddress;
 
   UserRules internal userRules;
-  address[] internal activistsAddress;
   ActivistPool internal activistPool;
   UserType private constant USER_TYPE = UserType.ACTIVIST;
 
@@ -36,36 +36,15 @@ contract ActivistRules is Callable {
    * @param proofPhoto Identity photo
    */
   function addActivist(string memory name, string memory proofPhoto) public returns (Activist memory) {
-    Activist memory activist = Activist(
-      userRules.userTypesCount(USER_TYPE) + 1,
-      msg.sender,
-      name,
-      proofPhoto,
-      Pool(0, activistPoolEra()),
-      block.number
-    );
+    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
+
+    Activist memory activist = Activist(id, msg.sender, name, proofPhoto, Pool(0, activistPoolEra()), block.number);
 
     activists[msg.sender] = activist;
-    activistsAddress.push(msg.sender);
+    activistsAddress[id] = msg.sender;
     userRules.addUser(msg.sender, USER_TYPE);
 
     return activist;
-  }
-
-  /**
-   * @dev Returns all registered activists
-   * @return Activist[]
-   */
-  function getActivists() public view returns (Activist[] memory) {
-    uint256 usersCount = userRules.userTypesCount(USER_TYPE);
-    Activist[] memory activistList = new Activist[](usersCount);
-
-    for (uint256 i = 0; i < usersCount; i++) {
-      address acAddress = activistsAddress[i];
-      activistList[i] = activists[acAddress];
-    }
-
-    return activistList;
   }
 
   /**

@@ -103,14 +103,6 @@ describe("ContributorRules", (accounts) => {
           expect(contributorsCount).to.equal(1);
         });
 
-        it("should add created contributor in contributorList (array)", async () => {
-          await addContributor("Contributor A", contr1Address);
-
-          const contributors = await instance.getContributors();
-
-          expect(contributors[0].contributorWallet).to.equal(contr1Address.address);
-        });
-
         it("should add created contributor in userType contract as a CONTRIBUTOR", async () => {
           await addContributor("Contributor A", contr1Address);
 
@@ -255,26 +247,6 @@ describe("ContributorRules", (accounts) => {
       expect(contribution.user).to.equal(contr1Address.address);
       expect(contribution.level).to.equal("0");
       expect(contribution.report).to.equal("report");
-    });
-  });
-
-  describe("#getContributors", () => {
-    beforeEach(async () => {
-      await addInvitation(owner, contr2Address, userTypes.Contributor, owner);
-    });
-    it("should return contributors when has contributors", async () => {
-      await addContributor("Contributor A", contr1Address);
-      await addContributor("Contributor B", contr2Address);
-
-      const contributors = await instance.getContributors();
-
-      expect(contributors.length).to.equal(2);
-    });
-
-    it("should return contributors equal zero when dont has it", async () => {
-      const contributors = await instance.getContributors();
-
-      expect(contributors.length).to.equal(0);
     });
   });
 
