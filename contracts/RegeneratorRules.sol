@@ -261,10 +261,6 @@ contract RegeneratorRules is Callable {
   }
 
   function decrementArea(address addr) public mustBeAllowedCaller {
-    Regenerator memory regenerator = regenerators[addr];
-    uint256 deniedArea = regenerator.areaInformation.totalArea;
-
-    uint256 newRegenerationArea = regenerationArea - deniedArea;
-    regenerationArea = newRegenerationArea;
+    regenerationArea -= regenerators[addr].areaInformation.totalArea;
   }
 }
