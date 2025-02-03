@@ -260,7 +260,7 @@ contract RegeneratorRules is Callable {
     return regenerationArea;
   }
 
-  function decrementArea(address addr) public mustBeAllowedCaller {
+  function decrementArea(address addr) internal {
     regenerationArea -= regenerators[addr].areaInformation.totalArea;
   }
 }
