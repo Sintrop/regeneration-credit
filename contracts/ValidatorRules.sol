@@ -197,9 +197,6 @@ contract ValidatorRules is Callable {
 
   function denieUser(address userAddress) internal {
     removeLevelsFromPool(userAddress, 0);
-
-    if (userRules.userTypeIs(UserType.REGENERATOR, userAddress)) regeneratorRules.decrementArea(userAddress);
-
     userRules.setDeniedType(userAddress);
   }
 

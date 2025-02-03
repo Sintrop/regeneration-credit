@@ -25,7 +25,9 @@ contract RegeneratorRules is Callable {
 
   UserType private constant USER_TYPE = UserType.REGENERATOR;
   uint256 public regeneratorsSustainable;
-  uint256 public regenerationArea; //  [ha]
+
+  /// @notice [ha] 1 ha = 10000m²
+  uint256 public regenerationArea;
 
   constructor(address userRulesAddress, address regeneratorPoolAddress) {
     userRules = UserRules(userRulesAddress);
@@ -62,8 +64,7 @@ contract RegeneratorRules is Callable {
     regeneratorsAddress[id] = msg.sender;
     userRules.addUser(msg.sender, USER_TYPE);
 
-    uint256 newRegenerationArea = regenerationArea + totalArea;
-    regenerationArea = newRegenerationArea;
+    regenerationArea += totalArea;
   }
 
   /**
@@ -181,11 +182,16 @@ contract RegeneratorRules is Callable {
   /**
    * @dev Remove pool levels from regenerator
    * @param addr Regenerator wallet
+   * @param removeSomeLevels Levels to be removed, when 0 the user is being blocked
    */
   function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Regenerator memory regenerator = regenerators[addr];
 
-    if (removeSomeLevels == 0) regenerators[addr].regenerationScore.score = 0;
+    if (removeSomeLevels == 0) {
+      regenerators[addr].regenerationScore.score = 0;
+      decrementArea(addr);
+    }
+
     if (removeSomeLevels > 0) regenerators[addr].regenerationScore.score -= int256(removeSomeLevels);
 
     regeneratorPool.removePoolLevels(addr, regenerator.pool.currentEra, removeSomeLevels);
