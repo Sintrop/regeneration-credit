@@ -25,6 +25,7 @@ contract RegeneratorRules is Callable {
 
   UserType private constant USER_TYPE = UserType.REGENERATOR;
   uint256 public regeneratorsSustainable;
+  uint256 public regenerationArea; //  [m²]
 
   constructor(address userRulesAddress, address regeneratorPoolAddress) {
     userRules = UserRules(userRulesAddress);
@@ -60,6 +61,9 @@ contract RegeneratorRules is Callable {
     regenerators[msg.sender] = regenerator;
     regeneratorsAddress[id] = msg.sender;
     userRules.addUser(msg.sender, USER_TYPE);
+
+    uint256 newRegenerationArea = regenerationArea + totalArea;
+    regenerationArea = newRegenerationArea;
   }
 
   /**
@@ -244,5 +248,17 @@ contract RegeneratorRules is Callable {
    */
   function nextEraIn() public view returns (uint256) {
     return uint256(regeneratorPool.nextEraIn(regeneratorPoolEra()));
+  }
+
+  function regenerationTotalArea() public view returns (uint256) {
+    return regenerationArea;
+  }
+
+  function decrementArea(address addr) public mustBeAllowedCaller {
+    Regenerator memory regenerator = regenerators[addr];
+    uint256 deniedArea = regenerator.areaInformation.totalArea;
+
+    uint256 newRegenerationArea = regenerationArea - deniedArea;
+    regenerationArea = newRegenerationArea;
   }
 }

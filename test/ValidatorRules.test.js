@@ -494,6 +494,12 @@ describe("ValidatorRules", () => {
                 expect(userTypesCount).to.equal(1);
               });
 
+              it("regenerationArea should be decremented", async () => {
+                const decrementedArea = await regeneratorRules.regenerationArea();
+
+                expect(decrementedArea).to.equal(10);
+              });
+
               it("must emit DeniedUserEevent", async () => {
                 await expect(receipt).to.emit(userRules, "DeniedUserEevent").withArgs(regenerator1Address);
               });
