@@ -26,6 +26,9 @@ contract RegeneratorRules is Callable {
   UserType private constant USER_TYPE = UserType.REGENERATOR;
   uint256 public regeneratorsSustainable;
 
+  /// @notice [ha] 1 ha = 10000m²
+  uint256 public regenerationArea;
+
   constructor(address userRulesAddress, address regeneratorPoolAddress) {
     userRules = UserRules(userRulesAddress);
     regeneratorPool = RegeneratorPool(regeneratorPoolAddress);
@@ -35,7 +38,7 @@ contract RegeneratorRules is Callable {
    * @dev Allows a user to attempt to register as a regenerator
    * @param name The name of the regenerator
    * @param proofPhoto Identity photo
-   * @param totalArea in hectares = 1 he = 10.000 m2
+   * @param totalArea in hectares = 1 ha = 10.000 m2
    * @param coordinates the coordinates of the regenerator area
    */
   function addRegenerator(
@@ -60,6 +63,8 @@ contract RegeneratorRules is Callable {
     regenerators[msg.sender] = regenerator;
     regeneratorsAddress[id] = msg.sender;
     userRules.addUser(msg.sender, USER_TYPE);
+
+    regenerationArea += totalArea;
   }
 
   /**
@@ -177,11 +182,16 @@ contract RegeneratorRules is Callable {
   /**
    * @dev Remove pool levels from regenerator
    * @param addr Regenerator wallet
+   * @param removeSomeLevels Levels to be removed, when 0 the user is being blocked
    */
   function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Regenerator memory regenerator = regenerators[addr];
 
-    if (removeSomeLevels == 0) regenerators[addr].regenerationScore.score = 0;
+    if (removeSomeLevels == 0) {
+      regenerators[addr].regenerationScore.score = 0;
+      decrementArea(addr);
+    }
+
     if (removeSomeLevels > 0) regenerators[addr].regenerationScore.score -= int256(removeSomeLevels);
 
     regeneratorPool.removePoolLevels(addr, regenerator.pool.currentEra, removeSomeLevels);
@@ -244,5 +254,13 @@ contract RegeneratorRules is Callable {
    */
   function nextEraIn() public view returns (uint256) {
     return uint256(regeneratorPool.nextEraIn(regeneratorPoolEra()));
+  }
+
+  function regenerationTotalArea() public view returns (uint256) {
+    return regenerationArea;
+  }
+
+  function decrementArea(address addr) internal {
+    regenerationArea -= regenerators[addr].areaInformation.totalArea;
   }
 }

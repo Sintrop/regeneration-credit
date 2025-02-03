@@ -197,7 +197,6 @@ contract ValidatorRules is Callable {
 
   function denieUser(address userAddress) internal {
     removeLevelsFromPool(userAddress, 0);
-
     userRules.setDeniedType(userAddress);
   }
 

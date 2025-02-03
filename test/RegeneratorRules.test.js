@@ -133,6 +133,14 @@ describe("RegeneratorRules", () => {
 
       expect(userType).to.equal(REGENERATOR);
     });
+
+    it("should add totalArea to regenerationArea", async () => {
+      await addRegenerator("Regenerator A", prod1Address);
+      await addRegenerator("Regenerator B", prod2Address);
+
+      const newRegenerationArea = await instance.regenerationArea();
+      expect(newRegenerationArea).to.equal(20);
+    });
   });
 
   context("when regenerator alredy exists", () => {
