@@ -25,7 +25,7 @@ contract RegeneratorRules is Callable {
 
   UserType private constant USER_TYPE = UserType.REGENERATOR;
   uint256 public regeneratorsSustainable;
-  uint256 public regenerationArea; //  [m²]
+  uint256 public regenerationArea; //  [ha]
 
   constructor(address userRulesAddress, address regeneratorPoolAddress) {
     userRules = UserRules(userRulesAddress);
@@ -36,7 +36,7 @@ contract RegeneratorRules is Callable {
    * @dev Allows a user to attempt to register as a regenerator
    * @param name The name of the regenerator
    * @param proofPhoto Identity photo
-   * @param totalArea in hectares = 1 he = 10.000 m2
+   * @param totalArea in hectares = 1 ha = 10.000 m2
    * @param coordinates the coordinates of the regenerator area
    */
   function addRegenerator(
