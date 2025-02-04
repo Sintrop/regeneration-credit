@@ -272,6 +272,142 @@ describe("SupporterRules", () => {
     });
   });
 
+  describe("#burnTokensPublication", () => {
+    context("when msg.sender is SUPPORTER", () => {
+      beforeEach(async () => {
+        await addSupporter("Supporter A", inv1Address);
+      });
+
+      context("when amount is greater than zero", () => {
+        context("when publish and burn", () => {
+          context("when SUPPORTER was invited", () => {
+            beforeEach(async () => {
+              await userRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
+              await addSupporter("Supporter B", inv2Address);
+              await transferTokensTo(inv2Address, 100000000000000000000n);
+            });
+
+            context("when burn 1000000000000000000 tokens", () => {
+              beforeEach(async () => {
+                await instance.connect(inv2Address).burnTokensPublication("1000000000000000000", "text", "text");
+              });
+
+              it("Supporter balance must be 99000000000000000000", async () => {
+                const balance = await supporterPool.balanceOf(inv2Address);
+                expect(balance).to.equal(99000000000000000000n);
+              });
+
+              it("Supporter inviter balance must be 50000000000000000", async () => {
+                const balance = await supporterPool.balanceOf(inv1Address);
+                expect(balance).to.equal(50000000000000000n);
+              });
+
+              it("totalCertified must be 950000000000000000", async () => {
+                const totalCertified = await regenerationCredit.totalCertified();
+                expect(totalCertified).to.equal(950000000000000000n);
+              });
+
+              it("must add publication amount", async () => {
+                const publication = await instance.publications(inv2Address, 0);
+                expect(publication.amount).to.equal("1000000000000000000");
+                expect(publication.description).to.equal("text");
+                expect(publication.content).to.equal("text");
+              });
+            });
+
+            context("when burn 500000000000000000 tokens", () => {
+              beforeEach(async () => {
+                await instance.connect(inv2Address).burnTokensPublication(500000000000000000n, "text", "text");
+              });
+
+              it("Supporter balance must be 99500000000000000000", async () => {
+                const balance = await supporterPool.balanceOf(inv2Address);
+                expect(balance).to.equal(99500000000000000000n);
+              });
+
+              it("Supporter inviter balance must be 25000000000000000", async () => {
+                const balance = await supporterPool.balanceOf(inv1Address);
+                expect(balance).to.equal(25000000000000000n);
+              });
+
+              it("totalCertified must be 475000000000000000", async () => {
+                const totalCertified = await regenerationCredit.totalCertified();
+                expect(totalCertified).to.equal(475000000000000000n);
+              });
+            });
+          });
+
+          context("when SUPPORTER wasn't invited", () => {
+            beforeEach(async () => {
+              await transferTokensTo(inv1Address, "100000000000000000000");
+            });
+
+            context("when burn 1000000000000000000 tokens", () => {
+              beforeEach(async () => {
+                await instance.connect(inv1Address).burnTokensPublication(1000000000000000000n, "text", "text");
+              });
+
+              it("Supporter balance must be 99000000000000000000", async () => {
+                const supporterBalance = await supporterPool.balanceOf(inv1Address);
+
+                expect(supporterBalance).to.equal(99000000000000000000n);
+              });
+
+              it("totalCertified must be 1000000000000000000", async () => {
+                const totalCertified = await regenerationCredit.totalCertified();
+
+                expect(totalCertified).to.equal(1000000000000000000n);
+              });
+            });
+
+            context("when burn 500000000000000000 tokens", () => {
+              beforeEach(async () => {
+                await instance.connect(inv1Address).burnTokensPublication(500000000000000000n, "text", "text");
+              });
+
+              it("Supporter balance must be 99500000000000000000", async () => {
+                const supporterBalance = await supporterPool.balanceOf(inv1Address);
+
+                expect(supporterBalance).to.equal(99500000000000000000n);
+              });
+
+              it("totalCertified must be 500000000000000000", async () => {
+                const totalCertified = await regenerationCredit.totalCertified();
+
+                expect(totalCertified).to.equal(500000000000000000n);
+              });
+            });
+          });
+        });
+      });
+
+      context("when amount is equal zero", () => {
+        it("should return error", async () => {
+          await expect(instance.connect(inv1Address).burnTokensPublication(0, "text", "text")).to.be.revertedWith(
+            "Amount invalid"
+          );
+        });
+      });
+
+      context("when amount is below one and more than zero", () => {
+        it("should return error", async () => {
+          await transferTokensTo(inv1Address, "100000000000000000000");
+          await expect(instance.connect(inv1Address).burnTokensPublication(1, "text", "text")).to.be.revertedWith(
+            "Amount invalid"
+          );
+        });
+      });
+    });
+
+    context("when msg.sender is not SUPPORTER", () => {
+      it("should return error", async () => {
+        await expect(instance.connect(inv1Address).burnTokensPublication(1, "text", "text")).to.be.revertedWith(
+          "Only supporters"
+        );
+      });
+    });
+  });
+
   describe("#declareReductionCommitment", () => {
     beforeEach(async () => {
       await addSupporter("Supporter A", inv1Address);
