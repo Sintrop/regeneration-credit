@@ -29,6 +29,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
 
   UserType private constant USER_TYPE = UserType.DEVELOPER;
   uint256 public reportsCount;
+  uint256 public reportsTotalCount;
 
   uint256 public immutable MAX_PENALTIES;
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
@@ -75,7 +76,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
 
     if (developer.id <= 0) return false;
 
-    return canInvite(reportsCount, developer.pool.level, userRules.userTypesTotalCount(USER_TYPE));
+    return canInvite(reportsTotalCount, developer.pool.level, userRules.userTypesTotalCount(USER_TYPE));
   }
 
   /**
@@ -96,6 +97,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     developerReportsEra[currentEra][msg.sender] = true;
 
     reportsCount++;
+    reportsTotalCount++;
     uint256 id = reportsCount;
 
     developers[msg.sender].totalReports++;
@@ -145,10 +147,10 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @param report Report id
    */
   function invalidateReport(Report memory report) internal {
+    reportsTotalCount--;
     report.valid = false;
     report.invalidatedAt = block.number;
     reports[report.id] = report;
-    reportsCount--;
   }
 
   /**

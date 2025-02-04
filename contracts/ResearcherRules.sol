@@ -28,6 +28,7 @@ contract ResearcherRules is Callable, Invitable {
 
   UserType private constant USER_TYPE = UserType.RESEARCHER;
   uint256 public researchesCount;
+  uint256 public researchesTotalCount;
   uint256 public calculatorItemsCount;
   uint256 internal immutable timeBetweenResearches;
 
@@ -82,7 +83,7 @@ contract ResearcherRules is Callable, Invitable {
 
     if (researcher.id <= 0) return false;
 
-    return canInvite(researchesCount, researcher.pool.level, userRules.userTypesTotalCount(USER_TYPE));
+    return canInvite(researchesTotalCount, researcher.pool.level, userRules.userTypesTotalCount(USER_TYPE));
   }
 
   /**
@@ -133,6 +134,7 @@ contract ResearcherRules is Callable, Invitable {
 
     researches[id] = research;
     researchesCount++;
+    researchesTotalCount++;
     researcher.publishedResearches++;
     researcher.lastPublishedAt = block.number;
 
@@ -157,10 +159,10 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   function invalidateResearch(Research memory research) internal {
+    researchesTotalCount--;
     research.valid = false;
     research.invalidatedAt = block.number;
     researches[research.id] = research;
-    researchesCount--;
   }
 
   /**

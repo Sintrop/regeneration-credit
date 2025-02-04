@@ -140,6 +140,12 @@ describe("ActivistRules", () => {
 
             expect(eraLevels).to.equal(2);
           });
+
+          it("must increment approvedInvites", async () => {
+            const approvedInvites = await instance.approvedInvites();
+
+            expect(approvedInvites).to.equal(2);
+          });
         });
 
         context("when current era of pool is 2", () => {
@@ -161,6 +167,12 @@ describe("ActivistRules", () => {
             const eraLevels = await activistPool.eraLevels(2, activ1Address);
 
             expect(eraLevels).to.equal(1);
+          });
+
+          it("must increment approvedInvites", async () => {
+            const approvedInvites = await instance.approvedInvites();
+
+            expect(approvedInvites).to.equal(3);
           });
         });
       });

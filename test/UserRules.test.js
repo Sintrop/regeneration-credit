@@ -75,6 +75,12 @@ describe("UserRules", function () {
           expect(usersCount).to.equal(1);
         });
 
+        it("should increment userTypesCount to regenerator", async () => {
+          const usersCount = await instance.userTypesTotalCount(userTypes.Regenerator);
+
+          expect(usersCount).to.equal(1);
+        });
+
         it("must emit AddUserEvent", async () => {
           await expect(receipt).to.emit(instance, "AddUserEvent").withArgs(user1Address, userTypes.Regenerator);
         });

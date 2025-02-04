@@ -23,7 +23,7 @@ contract ActivistRules is Callable, Invitable {
   UserRules internal userRules;
   ActivistPool internal activistPool;
   UserType private constant USER_TYPE = UserType.ACTIVIST;
-  uint256 approvedInvites;
+  uint256 public approvedInvites;
 
   uint256 private constant MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS = 3;
 
@@ -98,7 +98,7 @@ contract ActivistRules is Callable, Invitable {
       regeneratorTotalInspections >= MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS
     ) {
       activistWonLevel[activistAddress][regeneratorAddress] = true;
-      approvedInvites += 1;
+      approvedInvites++;
       setActivistLevel(activistAddress);
     }
   }
@@ -117,7 +117,7 @@ contract ActivistRules is Callable, Invitable {
       inspectorTotalInspections >= MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS
     ) {
       activistWonLevel[activistAddress][inspectorAddress] = true;
-      approvedInvites += 1;
+      approvedInvites++;
       setActivistLevel(activistAddress);
     }
   }
