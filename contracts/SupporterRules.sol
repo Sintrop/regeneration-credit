@@ -22,7 +22,7 @@ contract SupporterRules {
   mapping(address => mapping(uint256 => uint256)) public calculatorItemCertificates;
   mapping(address => uint256[]) public reductionCommitments;
   mapping(uint256 => address) public supportersAddress;
-  mapping(address => Publication[]) public publications;  
+  mapping(address => Publication[]) public publications;
 
   uint256 public constant INVITER_PERCENTAGE = 5;
 
@@ -58,11 +58,11 @@ contract SupporterRules {
     require(userRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount > 0, "Amount invalid");
 
-    burnTokensInternal(msg.sender, amount);
+    uint256 amountBurn = burnTokensInternal(msg.sender, amount);
 
     if (calculatorItemId > 0) {
       CalculatorItem memory calculatorItem = researcherRules.getCalculatorItem(calculatorItemId);
-      if (calculatorItem.id > 0) calculatorItemCertificates[msg.sender][calculatorItemId] = amount;
+      if (calculatorItem.id > 0) calculatorItemCertificates[msg.sender][calculatorItemId] = amountBurn;
     }
   }
 
@@ -75,15 +75,17 @@ contract SupporterRules {
     publications[msg.sender].push(Publication(amount, description, content));
   }
 
-  function burnTokensInternal(address addr, uint256 amount) internal {
+  function burnTokensInternal(address addr, uint256 amount) internal returns (uint256) {
     Invitation memory invitation = userRules.getInvitation(addr);
     bool isInvited = invitation.createdAtBlock != 0;
 
     uint256 inviterTotalTokens = isInvited ? amount.mul(INVITER_PERCENTAGE).div(100) : 0;
     uint256 amountBurn = amount.sub(inviterTotalTokens);
 
-    supporterPool.burnTokens(msg.sender, invitation.inviter, amountBurn, inviterTotalTokens);    
-  }   
+    supporterPool.burnTokens(msg.sender, invitation.inviter, amountBurn, inviterTotalTokens);
+
+    return amountBurn;
+  }
 
   function declareReductionCommitment(uint256 calculatorItemId) public {
     require(userRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
