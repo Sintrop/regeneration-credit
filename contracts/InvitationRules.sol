@@ -3,6 +3,11 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { UserRules } from "./UserRules.sol";
+import { ResearcherRules } from "./ResearcherRules.sol";
+import { DeveloperRules } from "./DeveloperRules.sol";
+import { ActivistRules } from "./ActivistRules.sol";
+import { ContributorRules } from "./ContributorRules.sol";
+import { ValidatorRules } from "./ValidatorRules.sol";
 import { UserType } from "./types/UserTypes.sol";
 
 /**
@@ -15,9 +20,26 @@ contract InvitationRules is Ownable {
   mapping(UserType => UserType) public canBeInviteds;
 
   UserRules internal userRules;
+  ResearcherRules internal researcherRules;
+  DeveloperRules internal developerRules;
+  ActivistRules internal activistRules;
+  ContributorRules internal contributorRules;
+  ValidatorRules internal validatorRules;
 
-  constructor(address userRulesAddress) {
+  constructor(
+    address userRulesAddress,
+    address researcherRulesAddress,
+    address developerRulesAddress,
+    address activistRulesAddress,
+    address contributorRulesAddress,
+    address validatorRulesAddress
+  ) {
     userRules = UserRules(userRulesAddress);
+    researcherRules = ResearcherRules(researcherRulesAddress);
+    developerRules = DeveloperRules(developerRulesAddress);
+    activistRules = ActivistRules(activistRulesAddress);
+    contributorRules = ContributorRules(contributorRulesAddress);
+    validatorRules = ValidatorRules(validatorRulesAddress);
 
     canBeInviteds[UserType.ACTIVIST] = UserType.ACTIVIST;
     canBeInviteds[UserType.INSPECTOR] = UserType.ACTIVIST;
@@ -37,12 +59,29 @@ contract InvitationRules is Ownable {
   function invite(address invited, UserType userType) public {
     UserType msgSenderUserType = userRules.getUser(msg.sender);
 
+    require(canSendInvite(msgSenderUserType), "Only most active users allowed to invite");
     require(invitationDelayReached(msgSenderUserType), "Invite delay not reached");
     require(canBeInviteds[userType] == msgSenderUserType, "Can't invite this type");
 
     lastInviteBlocks[msg.sender] = block.number;
 
     userRules.addInvitation(msg.sender, invited, userType);
+  }
+
+  function canSendInvite(UserType userType) internal view returns (bool) {
+    if (userType == UserType.ACTIVIST) {
+      return activistRules.canSendInvite(msg.sender);
+    } else if (userType == UserType.CONTRIBUTOR) {
+      return contributorRules.canSendInvite(msg.sender);
+    } else if (userType == UserType.DEVELOPER) {
+      return developerRules.canSendInvite(msg.sender);
+    } else if (userType == UserType.RESEARCHER) {
+      return researcherRules.canSendInvite(msg.sender);
+    } else if (userType == UserType.VALIDATOR) {
+      return validatorRules.canSendInvite(msg.sender);
+    } else {
+      return true;
+    }
   }
 
   /**

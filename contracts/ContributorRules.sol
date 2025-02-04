@@ -7,6 +7,7 @@ import { UserType } from "./types/UserTypes.sol";
 import { ContributorPool } from "./ContributorPool.sol";
 import { Contributor, Pool, Contribution } from "./types/ContributorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
+import { Invitable } from "./shared/Invitable.sol";
 
 /**
  * @author Sintrop
@@ -14,7 +15,7 @@ import { Callable } from "./shared/Callable.sol";
  * @dev Manage contributors rules and data
  * @notice User type to perform generic contributions to the project
  */
-contract ContributorRules is Ownable, Callable {
+contract ContributorRules is Ownable, Callable, Invitable {
   mapping(address => Contributor) public contributors;
   mapping(uint256 => mapping(address => bool)) public contributorContributionsEra;
   mapping(uint256 => Contribution) public contributions;
@@ -54,6 +55,14 @@ contract ContributorRules is Ownable, Callable {
     contributorsAddress[id] = msg.sender;
 
     userRules.addUser(msg.sender, USER_TYPE);
+  }
+
+  function canSendInvite(address addr) public view returns (bool) {
+    Contributor memory contributor = contributors[addr];
+
+    if (contributor.id <= 0) return false;
+
+    return canInvite(contributionsCount, contributor.pool.level, userRules.userTypesTotalCount(USER_TYPE));
   }
 
   /**
@@ -136,7 +145,6 @@ contract ContributorRules is Ownable, Callable {
     Contributor memory contributor = contributors[addr];
     contributor.pool.level++;
     contributors[addr] = contributor;
-    // Contributors[addr].pool.level++;
 
     contributorPool.addLevel(addr, 1);
   }

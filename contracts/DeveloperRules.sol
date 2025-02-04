@@ -3,6 +3,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Callable } from "./shared/Callable.sol";
+import { Invitable } from "./shared/Invitable.sol";
 import { UserRules } from "./UserRules.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { DeveloperPool } from "./DeveloperPool.sol";
@@ -15,7 +16,7 @@ import { Developer, Pool, Report, Penalty } from "./types/DeveloperTypes.sol";
  * @dev Manage developers rules and data
  * @notice Responsible for the development of the project
  */
-contract DeveloperRules is Ownable, Callable {
+contract DeveloperRules is Ownable, Callable, Invitable {
   mapping(address => Developer) public developers;
   mapping(uint256 => mapping(address => bool)) public developerReportsEra;
   mapping(uint256 => Report) public reports;
@@ -67,6 +68,14 @@ contract DeveloperRules is Ownable, Callable {
 
     developersAddress[id] = msg.sender;
     userRules.addUser(msg.sender, USER_TYPE);
+  }
+
+  function canSendInvite(address addr) public view returns (bool) {
+    Developer memory developer = developers[addr];
+
+    if (developer.id <= 0) return false;
+
+    return canInvite(reportsCount, developer.pool.level, userRules.userTypesTotalCount(USER_TYPE));
   }
 
   /**
@@ -139,6 +148,7 @@ contract DeveloperRules is Ownable, Callable {
     report.valid = false;
     report.invalidatedAt = block.number;
     reports[report.id] = report;
+    reportsCount--;
   }
 
   /**

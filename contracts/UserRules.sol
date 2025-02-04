@@ -15,6 +15,7 @@ contract UserRules is Ownable, Callable {
   mapping(address => Delation[]) private delations;
   mapping(address => Invitation) public invitations;
   mapping(UserType => uint256) public userTypesCount;
+  mapping(UserType => uint256) public userTypesTotalCount;
   mapping(UserType => UserTypeSetting) public userTypeSettings;
 
   uint256 public delationsCount;
@@ -57,6 +58,7 @@ contract UserRules is Ownable, Callable {
     users[addr] = userType;
     usersCount++;
     userTypesCount[userType]++;
+    userTypesTotalCount[userType]++;
 
     emit AddUserEvent(addr, userType);
   }

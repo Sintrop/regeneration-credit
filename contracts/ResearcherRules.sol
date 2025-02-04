@@ -2,6 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { Callable } from "./shared/Callable.sol";
+import { Invitable } from "./shared/Invitable.sol";
 import { UserRules } from "./UserRules.sol";
 import { Researcher, Research, Pool, CalculatorItem, Penalty } from "./types/ResearcherTypes.sol";
 import { UserType } from "./types/UserTypes.sol";
@@ -14,7 +15,7 @@ import { ValidatorRules } from "./ValidatorRules.sol";
  * @dev Manage researchers rules and data
  * @notice Responsible for developing evaluation methodologies
  */
-contract ResearcherRules is Callable {
+contract ResearcherRules is Callable, Invitable {
   mapping(address => Researcher) internal researchers;
   mapping(uint256 => Research) public researches;
   mapping(uint256 => CalculatorItem) public calculatorItems;
@@ -74,6 +75,14 @@ contract ResearcherRules is Callable {
     userRules.addUser(msg.sender, USER_TYPE);
 
     return researcher;
+  }
+
+  function canSendInvite(address addr) public view returns (bool) {
+    Researcher memory researcher = getResearcher(addr);
+
+    if (researcher.id <= 0) return false;
+
+    return canInvite(researchesCount, researcher.pool.level, userRules.userTypesTotalCount(USER_TYPE));
   }
 
   /**
@@ -151,6 +160,7 @@ contract ResearcherRules is Callable {
     research.valid = false;
     research.invalidatedAt = block.number;
     researches[research.id] = research;
+    researchesCount--;
   }
 
   /**
