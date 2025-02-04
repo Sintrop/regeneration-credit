@@ -90,7 +90,7 @@ contract SupporterRules {
 
     CalculatorItem memory calculatorItem = researcherRules.getCalculatorItem(calculatorItemId);
 
-    require(calculatorItem.id > 0, "CalculatorItem does not exists");
+    require(calculatorItem.id > 0, "Calculator item does not exist");
 
     reductionCommitments[msg.sender].push(calculatorItemId);
   }

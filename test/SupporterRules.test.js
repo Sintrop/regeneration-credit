@@ -298,7 +298,7 @@ describe("SupporterRules", () => {
       context("when calculatorItem does not exists", () => {
         it("return a supporter", async () => {
           await expect(instance.connect(inv1Address).declareReductionCommitment(100)).to.be.revertedWith(
-            "CalculatorItem does not exists"
+            "Calculator item does not exist"
           );
         });
       });
