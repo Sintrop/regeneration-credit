@@ -66,7 +66,7 @@ contract SupporterRules {
     }
   }
 
-  function burnTokensPost(uint256 amount, string memory description, string memory content) public {
+  function burnTokensPublication(uint256 amount, string memory description, string memory content) public {
     require(userRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount >= 1, "Amount invalid");
 
