@@ -29,8 +29,11 @@ struct RegenerationScore {
 }
 
 struct AreaInformation {
-  string coordinates;
+  Coordinates[] coordinates;
   uint256 totalArea;
-  string regenerationZones;
-  string report;
+}
+
+struct Coordinates {
+  string latitude;
+  string longitude;
 }

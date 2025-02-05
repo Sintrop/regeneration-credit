@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserRules } from "./UserRules.sol";
-import { Regenerator, Pool, AreaInformation } from "./types/RegeneratorTypes.sol";
+import { Regenerator, Pool, AreaInformation, Coordinates } from "./types/RegeneratorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { RegeneratorPool } from "./RegeneratorPool.sol";
 import { UserType } from "./types/UserTypes.sol";
@@ -45,10 +45,10 @@ contract RegeneratorRules is Callable {
     uint256 totalArea,
     string memory name,
     string memory proofPhoto,
-    string memory coordinates,
-    string memory regenerationZones,
-    string memory report
+    Coordinates[] memory coordinates
   ) public {
+    require(coordinates.length >= 3, "Minimum three coordinate points");
+    
     Regenerator memory regenerator = regenerators[msg.sender];
     uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
 
@@ -56,7 +56,7 @@ contract RegeneratorRules is Callable {
     regenerator.regeneratorWallet = msg.sender;
     regenerator.name = name;
     regenerator.proofPhoto = proofPhoto;
-    regenerator.areaInformation = AreaInformation(coordinates, totalArea, regenerationZones, report);
+    regenerator.areaInformation = AreaInformation(coordinates, totalArea);
     regenerator.pool = Pool(false, regeneratorPool.currentContractEra());
     regenerator.createdAt = block.number;
 
