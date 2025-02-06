@@ -5,10 +5,11 @@ const verifyContract = require("../scripts/shared/verifyContract");
 async function supporterRulesDeploy() {
   const userRules = await getDeployedContract("UserRules");
   const supporterPool = await getDeployedContract("SupporterPool");
+  const researcherRules = await getDeployedContract("ResearcherRules");
 
   const SupporterRules = await ethers.getContractFactory("SupporterRules");
 
-  const args = [userRules.target, supporterPool.target];
+  const args = [userRules.target, supporterPool.target, researcherRules.target];
 
   const supporterRules = await SupporterRules.deploy(...args);
 
