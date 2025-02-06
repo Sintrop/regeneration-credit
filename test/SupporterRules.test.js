@@ -309,7 +309,7 @@ describe("SupporterRules", () => {
 
               it("must add publication amount", async () => {
                 const publication = await instance.publications(inv2Address, 0);
-                expect(publication.amount).to.equal("1000000000000000000");
+                expect(publication.amount).to.equal("950000000000000000");
                 expect(publication.description).to.equal("text");
                 expect(publication.content).to.equal("text");
               });

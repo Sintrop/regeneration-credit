@@ -58,7 +58,7 @@ contract SupporterRules {
     require(userRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount > 0, "Amount invalid");
 
-    uint256 amountBurn = burnTokensInternal(msg.sender, amount);
+    uint256 amountBurn = burnTokensInternal(amount);
 
     if (calculatorItemId > 0) {
       CalculatorItem memory calculatorItem = researcherRules.getCalculatorItem(calculatorItemId);
@@ -70,13 +70,13 @@ contract SupporterRules {
     require(userRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount > 1, "Amount invalid");
 
-    burnTokensInternal(msg.sender, amount);
+    uint256 amountBurn = burnTokensInternal(amount);
 
-    publications[msg.sender].push(Publication(amount, description, content));
+    publications[msg.sender].push(Publication(amountBurn, description, content));
   }
 
-  function burnTokensInternal(address addr, uint256 amount) internal returns (uint256) {
-    Invitation memory invitation = userRules.getInvitation(addr);
+  function burnTokensInternal(uint256 amount) internal returns (uint256) {
+    Invitation memory invitation = userRules.getInvitation(msg.sender);
     bool isInvited = invitation.createdAtBlock != 0;
 
     uint256 inviterTotalTokens = isInvited ? amount.mul(INVITER_PERCENTAGE).div(100) : 0;
