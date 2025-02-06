@@ -57,7 +57,7 @@ contract ResearcherRules is Callable, Invitable {
    * @param proofPhoto Identity photo
    */
   function addResearcher(string memory name, string memory proofPhoto) public returns (Researcher memory) {
-    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
+    uint256 id = userRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Researcher memory researcher = Researcher(
       id,

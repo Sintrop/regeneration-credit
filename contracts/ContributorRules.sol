@@ -41,7 +41,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
    */
   function addContributor(string memory name, string memory proofPhoto) public {
     uint256 level = 0;
-    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
+    uint256 id = userRules.userTypesTotalCount(USER_TYPE) + 1;
 
     contributors[msg.sender] = Contributor(
       id,

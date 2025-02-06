@@ -39,7 +39,7 @@ contract InspectorRules is Callable {
    * @param proofPhoto Identity photo
    */
   function addInspector(string memory name, string memory proofPhoto) public returns (Inspector memory) {
-    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
+    uint256 id = userRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Inspector memory inspector = Inspector(
       id,

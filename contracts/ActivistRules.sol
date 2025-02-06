@@ -38,7 +38,7 @@ contract ActivistRules is Callable, Invitable {
    * @param proofPhoto Identity photo
    */
   function addActivist(string memory name, string memory proofPhoto) public returns (Activist memory) {
-    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
+    uint256 id = userRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Activist memory activist = Activist(id, msg.sender, name, proofPhoto, Pool(0, activistPoolEra()), block.number);
 

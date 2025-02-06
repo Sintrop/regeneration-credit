@@ -55,7 +55,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    */
   function addDeveloper(string memory name, string memory proofPhoto) public {
     uint256 level = 0;
-    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
+    uint256 id = userRules.userTypesTotalCount(USER_TYPE) + 1;
 
     developers[msg.sender] = Developer(
       id,

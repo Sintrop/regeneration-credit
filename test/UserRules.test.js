@@ -75,7 +75,7 @@ describe("UserRules", function () {
           expect(usersCount).to.equal(1);
         });
 
-        it("should increment userTypesCount to regenerator", async () => {
+        it("should increment userTypesTotalCount to regenerator", async () => {
           const usersCount = await instance.userTypesTotalCount(userTypes.Regenerator);
 
           expect(usersCount).to.equal(1);
