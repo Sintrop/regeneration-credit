@@ -365,7 +365,7 @@ describe("DeveloperRules", (accounts) => {
             expect(eraLevels).to.eq(0);
           });
 
-          it("must decrement reportsCount in one", async () => {
+          it("must decrement reportsTotalCount in one", async () => {
             const reportsTotalCount = await instance.reportsTotalCount();
 
             expect(reportsTotalCount).to.eq(0);

@@ -54,7 +54,7 @@ contract ActivistRules is Callable, Invitable {
 
     if (activist.id <= 0) return false;
 
-    return canInvite(approvedInvites, activist.pool.level, userRules.userTypesTotalCount(USER_TYPE));
+    return canInvite(approvedInvites, userRules.userTypesTotalCount(USER_TYPE), activist.pool.level);
   }
 
   /**

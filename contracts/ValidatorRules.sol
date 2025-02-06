@@ -82,7 +82,7 @@ contract ValidatorRules is Callable, Invitable {
 
     if (validator.id <= 0) return false;
 
-    return canInvite(totalDeclaredAlives, validator.pool.level, userRules.userTypesTotalCount(USER_TYPE));
+    return canInvite(totalDeclaredAlives, userRules.userTypesTotalCount(USER_TYPE), validator.pool.level);
   }
 
   function addUserValidation(

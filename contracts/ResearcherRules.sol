@@ -83,7 +83,7 @@ contract ResearcherRules is Callable, Invitable {
 
     if (researcher.id <= 0) return false;
 
-    return canInvite(researchesTotalCount, researcher.pool.level, userRules.userTypesTotalCount(USER_TYPE));
+    return canInvite(researchesTotalCount, userRules.userTypesTotalCount(USER_TYPE), researcher.pool.level);
   }
 
   /**

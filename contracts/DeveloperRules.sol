@@ -76,7 +76,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
 
     if (developer.id <= 0) return false;
 
-    return canInvite(reportsTotalCount, developer.pool.level, userRules.userTypesTotalCount(USER_TYPE));
+    return canInvite(reportsTotalCount, userRules.userTypesTotalCount(USER_TYPE), developer.pool.level);
   }
 
   /**

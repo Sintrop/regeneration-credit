@@ -62,7 +62,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
 
     if (contributor.id <= 0) return false;
 
-    return canInvite(contributionsCount, contributor.pool.level, userRules.userTypesTotalCount(USER_TYPE));
+    return canInvite(contributionsCount, userRules.userTypesTotalCount(USER_TYPE), contributor.pool.level);
   }
 
   /**
