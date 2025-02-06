@@ -9,3 +9,9 @@ struct Supporter {
   string name;
   uint256 createdAt;
 }
+
+struct Publication {
+  uint256 amount;
+  string description;
+  string content;
+}
