@@ -54,11 +54,11 @@ contract SupporterRules {
     return supporter;
   }
 
-  function burnTokens(uint256 amount, uint256 calculatorItemId) public {
+  function burnTokensCalculator(uint256 amount, uint256 calculatorItemId) public {
     require(userRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount > 0, "Amount invalid");
 
-    uint256 amountBurn = burnTokensInternal(amount);
+    uint256 amountBurn = burnTokens(amount);
 
     if (calculatorItemId > 0) {
       CalculatorItem memory calculatorItem = researcherRules.getCalculatorItem(calculatorItemId);
@@ -70,12 +70,12 @@ contract SupporterRules {
     require(userRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount > 1, "Amount invalid");
 
-    uint256 amountBurn = burnTokensInternal(amount);
+    uint256 amountBurn = burnTokens(amount);
 
     publications[msg.sender].push(Publication(amountBurn, description, content));
   }
 
-  function burnTokensInternal(uint256 amount) internal returns (uint256) {
+  function burnTokens(uint256 amount) internal returns (uint256) {
     Invitation memory invitation = userRules.getInvitation(msg.sender);
     bool isInvited = invitation.createdAtBlock != 0;
 

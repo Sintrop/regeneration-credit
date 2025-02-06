@@ -114,7 +114,7 @@ describe("SupporterRules", () => {
     });
   });
 
-  describe("#burnTokens", () => {
+  describe("#burnTokensCalculator", () => {
     context("when msg.sender is SUPPORTER", () => {
       beforeEach(async () => {
         await addSupporter("Supporter A", inv1Address);
@@ -138,7 +138,7 @@ describe("SupporterRules", () => {
 
             context("when burn 1000000000000000000 tokens", () => {
               beforeEach(async () => {
-                await instance.connect(inv2Address).burnTokens(1000000000000000000n, 1);
+                await instance.connect(inv2Address).burnTokensCalculator(1000000000000000000n, 1);
               });
 
               it("Supporter balance must be 99000000000000000000", async () => {
@@ -165,7 +165,7 @@ describe("SupporterRules", () => {
 
             context("when burn 500000000000000000 tokens", () => {
               beforeEach(async () => {
-                await instance.connect(inv2Address).burnTokens(500000000000000000n, 1);
+                await instance.connect(inv2Address).burnTokensCalculator(500000000000000000n, 1);
               });
 
               it("Supporter balance must be 99500000000000000000", async () => {
@@ -192,7 +192,7 @@ describe("SupporterRules", () => {
 
             context("when burn 1000000000000000000 tokens", () => {
               beforeEach(async () => {
-                await instance.connect(inv1Address).burnTokens(1000000000000000000n, 1);
+                await instance.connect(inv1Address).burnTokensCalculator(1000000000000000000n, 1);
               });
 
               it("Supporter balance must be 99000000000000000000", async () => {
@@ -216,7 +216,7 @@ describe("SupporterRules", () => {
 
             context("when burn 500000000000000000 tokens", () => {
               beforeEach(async () => {
-                await instance.connect(inv1Address).burnTokens(500000000000000000n, 1);
+                await instance.connect(inv1Address).burnTokensCalculator(500000000000000000n, 1);
               });
 
               it("Supporter balance must be 99500000000000000000", async () => {
@@ -245,7 +245,7 @@ describe("SupporterRules", () => {
             await userRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
             await addSupporter("Supporter B", inv2Address);
             await transferTokensTo(inv2Address, 100000000000000000000n);
-            await instance.connect(inv2Address).burnTokens(1000000000000000000n, 10);
+            await instance.connect(inv2Address).burnTokensCalculator(1000000000000000000n, 10);
           });
 
           context("when burn 1000000000000000000 tokens", () => {
@@ -260,14 +260,14 @@ describe("SupporterRules", () => {
 
       context("when amount is equal zero", () => {
         it("should return error", async () => {
-          await expect(instance.connect(inv1Address).burnTokens(0, 0)).to.be.revertedWith("Amount invalid");
+          await expect(instance.connect(inv1Address).burnTokensCalculator(0, 0)).to.be.revertedWith("Amount invalid");
         });
       });
     });
 
     context("when msg.sender is not SUPPORTER", () => {
       it("should return error", async () => {
-        await expect(instance.connect(inv1Address).burnTokens(1, 0)).to.be.revertedWith("Only supporters");
+        await expect(instance.connect(inv1Address).burnTokensCalculator(1, 0)).to.be.revertedWith("Only supporters");
       });
     });
   });
