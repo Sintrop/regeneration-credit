@@ -15,6 +15,7 @@ import { ActivistRules } from "./ActivistRules.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
 import { Report } from "./types/DeveloperTypes.sol";
 import { Research } from "./types/ResearcherTypes.sol";
+import { Invitable } from "./shared/Invitable.sol";
 
 /**
  * @author Sintrop
@@ -22,7 +23,7 @@ import { Research } from "./types/ResearcherTypes.sol";
  * @dev Manage validators rules and data
  * @notice Responsible for reviewing and voting to invalidate wrong or corrupted actions
  */
-contract ValidatorRules is Callable {
+contract ValidatorRules is Callable, Invitable {
   mapping(address => Validator) private validators;
   mapping(address => UserValidation[]) private userValidations;
   mapping(uint256 => ResourceValidation[]) public inspectionValidations;
@@ -46,6 +47,7 @@ contract ValidatorRules is Callable {
   UserType private constant USER_TYPE = UserType.VALIDATOR;
   uint256 private immutable firstValidatorLimit;
   uint256 private immutable secondValidatorLimit;
+  uint256 internal totalDeclaredAlives;
 
   constructor(uint256 firstValidatorLimit_, uint256 secondValidatorLimit_) {
     firstValidatorLimit = firstValidatorLimit_;
@@ -73,6 +75,14 @@ contract ValidatorRules is Callable {
 
     validatorsAddress[id] = msg.sender;
     userRules.addUser(msg.sender, USER_TYPE);
+  }
+
+  function canSendInvite(address addr) public view returns (bool) {
+    Validator memory validator = validators[addr];
+
+    if (validator.id <= 0) return false;
+
+    return canInvite(totalDeclaredAlives, userRules.userTypesTotalCount(USER_TYPE), validator.pool.level);
   }
 
   function addUserValidation(
@@ -239,6 +249,8 @@ contract ValidatorRules is Callable {
     uint256 levels = validatorPool.eraLevels(validatorPoolEra(), addr);
 
     require(levels == 0, "Only once per era");
+
+    totalDeclaredAlives++;
 
     Validator memory validator = validators[addr];
     validator.pool.level++;

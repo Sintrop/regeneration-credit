@@ -50,7 +50,7 @@ contract RegeneratorRules is Callable {
     string memory report
   ) public {
     Regenerator memory regenerator = regenerators[msg.sender];
-    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
+    uint256 id = userRules.userTypesTotalCount(USER_TYPE) + 1;
 
     regenerator.id = id;
     regenerator.regeneratorWallet = msg.sender;

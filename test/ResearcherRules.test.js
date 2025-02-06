@@ -400,6 +400,12 @@ describe("ResearcherRules", () => {
 
             expect(eraLevels).to.eq(0);
           });
+
+          it("must decrement researchesCount in one", async () => {
+            const researchesTotalCount = await instance.researchesTotalCount();
+
+            expect(researchesTotalCount).to.eq(0);
+          });
         });
 
         context("when research must not be invalidated", () => {

@@ -6,6 +6,7 @@ import { Activist, Pool } from "./types/ActivistTypes.sol";
 import { UserType, Invitation } from "./types/UserTypes.sol";
 import { ActivistPool } from "./ActivistPool.sol";
 import { Callable } from "./shared/Callable.sol";
+import { Invitable } from "./shared/Invitable.sol";
 
 /**
  * @author Sintrop
@@ -14,7 +15,7 @@ import { Callable } from "./shared/Callable.sol";
  * @notice User responsible for inviting new regenerators and inspectors
  */
 
-contract ActivistRules is Callable {
+contract ActivistRules is Callable, Invitable {
   mapping(address => Activist) internal activists;
   mapping(address => mapping(address => bool)) internal activistWonLevel;
   mapping(uint256 => address) public activistsAddress;
@@ -22,6 +23,7 @@ contract ActivistRules is Callable {
   UserRules internal userRules;
   ActivistPool internal activistPool;
   UserType private constant USER_TYPE = UserType.ACTIVIST;
+  uint256 public approvedInvites;
 
   uint256 private constant MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS = 3;
 
@@ -36,7 +38,7 @@ contract ActivistRules is Callable {
    * @param proofPhoto Identity photo
    */
   function addActivist(string memory name, string memory proofPhoto) public returns (Activist memory) {
-    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
+    uint256 id = userRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Activist memory activist = Activist(id, msg.sender, name, proofPhoto, Pool(0, activistPoolEra()), block.number);
 
@@ -45,6 +47,14 @@ contract ActivistRules is Callable {
     userRules.addUser(msg.sender, USER_TYPE);
 
     return activist;
+  }
+
+  function canSendInvite(address addr) public view returns (bool) {
+    Activist memory activist = activists[addr];
+
+    if (activist.id <= 0) return false;
+
+    return canInvite(approvedInvites, userRules.userTypesTotalCount(USER_TYPE), activist.pool.level);
   }
 
   /**
@@ -79,15 +89,17 @@ contract ActivistRules is Callable {
    * @param regeneratorAddress Invited regenerator wallet
    * @param regeneratorTotalInspections Invited regenerator total inspections
    */
-  function addLevelFromRegenerator(address regeneratorAddress, uint256 regeneratorTotalInspections) private {
+  function addLevelFromRegenerator(address regeneratorAddress, uint256 regeneratorTotalInspections) internal {
     Invitation memory regeneratorInvitation = userRules.getInvitation(regeneratorAddress);
+    address activistAddress = regeneratorInvitation.inviter;
 
     if (
-      !activistWonLevel[regeneratorInvitation.inviter][regeneratorAddress] &&
+      !activistWonLevel[activistAddress][regeneratorAddress] &&
       regeneratorTotalInspections >= MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS
     ) {
-      activistWonLevel[regeneratorInvitation.inviter][regeneratorAddress] = true;
-      setActivistLevel(regeneratorInvitation.inviter);
+      activistWonLevel[activistAddress][regeneratorAddress] = true;
+      approvedInvites++;
+      setActivistLevel(activistAddress);
     }
   }
 
@@ -96,15 +108,17 @@ contract ActivistRules is Callable {
    * @param inspectorAddress Invited inspector wallet
    * @param inspectorTotalInspections Invited inspector total inspections
    */
-  function addLevelFromInspector(address inspectorAddress, uint256 inspectorTotalInspections) private {
+  function addLevelFromInspector(address inspectorAddress, uint256 inspectorTotalInspections) internal {
     Invitation memory inspectorInvitation = userRules.getInvitation(inspectorAddress);
+    address activistAddress = inspectorInvitation.inviter;
 
     if (
-      !activistWonLevel[inspectorInvitation.inviter][inspectorAddress] &&
+      !activistWonLevel[activistAddress][inspectorAddress] &&
       inspectorTotalInspections >= MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS
     ) {
-      activistWonLevel[inspectorInvitation.inviter][inspectorAddress] = true;
-      setActivistLevel(inspectorInvitation.inviter);
+      activistWonLevel[activistAddress][inspectorAddress] = true;
+      approvedInvites++;
+      setActivistLevel(activistAddress);
     }
   }
 
@@ -112,7 +126,7 @@ contract ActivistRules is Callable {
    * @dev Increases activist level
    * @param activistAddress Activist wallet
    */
-  function setActivistLevel(address activistAddress) private {
+  function setActivistLevel(address activistAddress) internal {
     Activist memory activist = activists[activistAddress];
 
     if (activist.id == 0) return;

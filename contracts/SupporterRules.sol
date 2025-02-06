@@ -43,7 +43,7 @@ contract SupporterRules {
    * @return a supporter
    */
   function addSupporter(string memory name) public returns (Supporter memory) {
-    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
+    uint256 id = userRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Supporter memory supporter = Supporter(id, msg.sender, name, block.number);
 

@@ -3,6 +3,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Callable } from "./shared/Callable.sol";
+import { Invitable } from "./shared/Invitable.sol";
 import { UserRules } from "./UserRules.sol";
 import { UserType } from "./types/UserTypes.sol";
 import { DeveloperPool } from "./DeveloperPool.sol";
@@ -15,7 +16,7 @@ import { Developer, Pool, Report, Penalty } from "./types/DeveloperTypes.sol";
  * @dev Manage developers rules and data
  * @notice Responsible for the development of the project
  */
-contract DeveloperRules is Ownable, Callable {
+contract DeveloperRules is Ownable, Callable, Invitable {
   mapping(address => Developer) public developers;
   mapping(uint256 => mapping(address => bool)) public developerReportsEra;
   mapping(uint256 => Report) public reports;
@@ -28,6 +29,7 @@ contract DeveloperRules is Ownable, Callable {
 
   UserType private constant USER_TYPE = UserType.DEVELOPER;
   uint256 public reportsCount;
+  uint256 public reportsTotalCount;
 
   uint256 public immutable MAX_PENALTIES;
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
@@ -53,7 +55,7 @@ contract DeveloperRules is Ownable, Callable {
    */
   function addDeveloper(string memory name, string memory proofPhoto) public {
     uint256 level = 0;
-    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
+    uint256 id = userRules.userTypesTotalCount(USER_TYPE) + 1;
 
     developers[msg.sender] = Developer(
       id,
@@ -67,6 +69,14 @@ contract DeveloperRules is Ownable, Callable {
 
     developersAddress[id] = msg.sender;
     userRules.addUser(msg.sender, USER_TYPE);
+  }
+
+  function canSendInvite(address addr) public view returns (bool) {
+    Developer memory developer = developers[addr];
+
+    if (developer.id <= 0) return false;
+
+    return canInvite(reportsTotalCount, userRules.userTypesTotalCount(USER_TYPE), developer.pool.level);
   }
 
   /**
@@ -87,6 +97,7 @@ contract DeveloperRules is Ownable, Callable {
     developerReportsEra[currentEra][msg.sender] = true;
 
     reportsCount++;
+    reportsTotalCount++;
     uint256 id = reportsCount;
 
     developers[msg.sender].totalReports++;
@@ -136,6 +147,7 @@ contract DeveloperRules is Ownable, Callable {
    * @param report Report id
    */
   function invalidateReport(Report memory report) internal {
+    reportsTotalCount--;
     report.valid = false;
     report.invalidatedAt = block.number;
     reports[report.id] = report;
