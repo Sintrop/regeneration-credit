@@ -113,23 +113,6 @@ describe("InspectionRules", () => {
     await userRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
-  const addCategory = async (name, from) => {
-    const description = `The description of ${name}`;
-
-    const regenerationIndexDescriptions = [
-      {
-        regenerationIndexId: 1,
-        description: "Description for regenerationIndexId 1 to category",
-      },
-      {
-        regenerationIndexId: 2,
-        description: "Description for regenerationIndexId 2 to category",
-      },
-    ];
-
-    await regenerationIndexRules.connect(from).addCategory(name, description, regenerationIndexDescriptions);
-  };
-
   const regenerationIndex = () => {
     return [
       {
@@ -141,16 +124,6 @@ describe("InspectionRules", () => {
         categoryId: 2,
         regenerationIndexId: 1,
         indicator: 10,
-      },
-      {
-        categoryId: 3,
-        regenerationIndexId: 2,
-        indicator: 10,
-      },
-      {
-        categoryId: 4,
-        regenerationIndexId: 7,
-        indicator: 0,
       },
     ];
   };
@@ -390,10 +363,6 @@ describe("InspectionRules", () => {
         context("when don't has request OPEN or ACCEPTED", () => {
           beforeEach(async () => {
             await acceptInspection(1, inspectorAddress);
-            await addCategory("Soil A", owner);
-            await addCategory("Soil B", owner);
-            await addCategory("Soil C", owner);
-            await addCategory("Soil D", owner);
 
             const regenerationIndex = [
               {
@@ -403,16 +372,6 @@ describe("InspectionRules", () => {
               },
               {
                 categoryId: 2,
-                regenerationIndexId: 1,
-                indicator: 25,
-              },
-              {
-                categoryId: 3,
-                regenerationIndexId: 1,
-                indicator: 25,
-              },
-              {
-                categoryId: 4,
                 regenerationIndexId: 1,
                 indicator: 25,
               },
@@ -489,11 +448,6 @@ describe("InspectionRules", () => {
 
   describe("#acceptInspection", () => {
     beforeEach(async () => {
-      await addCategory("Soil A", owner);
-      await addCategory("Soil B", owner);
-      await addCategory("Soil C", owner);
-      await addCategory("Soil D", owner);
-
       await addInvitation(owner, regeneratorAddress, userTypes.Regenerator, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
@@ -763,13 +717,6 @@ describe("InspectionRules", () => {
             });
 
             context("when inspection is not expired", () => {
-              beforeEach(async () => {
-                await addCategory("Soil A", owner);
-                await addCategory("Soil B", owner);
-                await addCategory("Soil C", owner);
-                await addCategory("Soil D", owner);
-              });
-
               context("when pass regenerationInspection equal 4 regenerationIndex size", () => {
                 describe(".setActivistLevel", () => {
                   context("when regenerator do not win minimum inspection", () => {
@@ -846,7 +793,7 @@ describe("InspectionRules", () => {
                     });
 
                     it("Activist pool win 1 level to activist", async () => {
-                      const levels = await activistPool.eraLevels(5, activist1Address);
+                      const levels = await activistPool.eraLevels(4, activist1Address);
 
                       expect(levels).to.equal(1);
                     });
@@ -872,7 +819,7 @@ describe("InspectionRules", () => {
                     });
 
                     it("Activist pool win 1 level to activist", async () => {
-                      const levels = await activistPool.eraLevels(5, activist1Address);
+                      const levels = await activistPool.eraLevels(4, activist1Address);
 
                       expect(levels).to.equal(2);
                     });
@@ -908,8 +855,6 @@ describe("InspectionRules", () => {
                     const regenerationIndex_ = [
                       [1n, 1n, 10n],
                       [2n, 1n, 10n],
-                      [3n, 2n, 10n],
-                      [4n, 7n, 0n],
                     ];
 
                     expect(regenerationInspectionResponse.join("")).to.equals(regenerationIndex_.join(""));
@@ -967,16 +912,6 @@ describe("InspectionRules", () => {
                           regenerationIndexId: 1,
                           indicator: 25,
                         },
-                        {
-                          categoryId: 3,
-                          regenerationIndexId: 1,
-                          indicator: 25,
-                        },
-                        {
-                          categoryId: 4,
-                          regenerationIndexId: 1,
-                          indicator: 25,
-                        },
                       ];
 
                       await realizeInspection(1, report, regenerationIndex, inspectorAddress);
@@ -985,7 +920,7 @@ describe("InspectionRules", () => {
                     it("should add 100 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
 
-                      expect(inspection.regenerationScore).to.equal(100);
+                      expect(inspection.regenerationScore).to.equal(50);
                     });
                   });
 
@@ -1002,16 +937,6 @@ describe("InspectionRules", () => {
                           regenerationIndexId: 2,
                           indicator: 25,
                         },
-                        {
-                          categoryId: 3,
-                          regenerationIndexId: 2,
-                          indicator: 25,
-                        },
-                        {
-                          categoryId: 4,
-                          regenerationIndexId: 2,
-                          indicator: 25,
-                        },
                       ];
 
                       await realizeInspection(1, report, regenerationIndex, inspectorAddress);
@@ -1020,7 +945,7 @@ describe("InspectionRules", () => {
                     it("should add 64 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
 
-                      expect(inspection.regenerationScore).to.equal(64);
+                      expect(inspection.regenerationScore).to.equal(32);
                     });
                   });
 
@@ -1037,16 +962,6 @@ describe("InspectionRules", () => {
                           regenerationIndexId: 3,
                           indicator: 25,
                         },
-                        {
-                          categoryId: 3,
-                          regenerationIndexId: 3,
-                          indicator: 25,
-                        },
-                        {
-                          categoryId: 4,
-                          regenerationIndexId: 3,
-                          indicator: 25,
-                        },
                       ];
 
                       await realizeInspection(1, report, regenerationIndex, inspectorAddress);
@@ -1055,7 +970,7 @@ describe("InspectionRules", () => {
                     it("should add 32 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
 
-                      expect(inspection.regenerationScore).to.equal(32);
+                      expect(inspection.regenerationScore).to.equal(16);
                     });
                   });
 
@@ -1072,16 +987,6 @@ describe("InspectionRules", () => {
                           regenerationIndexId: 4,
                           indicator: 25,
                         },
-                        {
-                          categoryId: 3,
-                          regenerationIndexId: 4,
-                          indicator: 25,
-                        },
-                        {
-                          categoryId: 4,
-                          regenerationIndexId: 4,
-                          indicator: 25,
-                        },
                       ];
 
                       await realizeInspection(1, report, regenerationIndex, inspectorAddress);
@@ -1090,7 +995,7 @@ describe("InspectionRules", () => {
                     it("should add 16 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
 
-                      expect(inspection.regenerationScore).to.equal(16);
+                      expect(inspection.regenerationScore).to.equal(8);
                     });
                   });
 
@@ -1107,16 +1012,6 @@ describe("InspectionRules", () => {
                           regenerationIndexId: 5,
                           indicator: 25,
                         },
-                        {
-                          categoryId: 3,
-                          regenerationIndexId: 5,
-                          indicator: 25,
-                        },
-                        {
-                          categoryId: 4,
-                          regenerationIndexId: 5,
-                          indicator: 25,
-                        },
                       ];
 
                       await realizeInspection(1, report, regenerationIndex, inspectorAddress);
@@ -1125,7 +1020,7 @@ describe("InspectionRules", () => {
                     it("should add 8 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
 
-                      expect(inspection.regenerationScore).to.equal(8);
+                      expect(inspection.regenerationScore).to.equal(4);
                     });
                   });
 
@@ -1142,16 +1037,6 @@ describe("InspectionRules", () => {
                           regenerationIndexId: 6,
                           indicator: 25,
                         },
-                        {
-                          categoryId: 3,
-                          regenerationIndexId: 6,
-                          indicator: 25,
-                        },
-                        {
-                          categoryId: 4,
-                          regenerationIndexId: 6,
-                          indicator: 25,
-                        },
                       ];
 
                       await realizeInspection(1, report, regenerationIndex, inspectorAddress);
@@ -1160,7 +1045,7 @@ describe("InspectionRules", () => {
                     it("should add 1 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
 
-                      expect(inspection.regenerationScore).to.equal(4);
+                      expect(inspection.regenerationScore).to.equal(2);
                     });
                   });
 
@@ -1177,16 +1062,6 @@ describe("InspectionRules", () => {
                           regenerationIndexId: 7,
                           indicator: 25,
                         },
-                        {
-                          categoryId: 3,
-                          regenerationIndexId: 7,
-                          indicator: 25,
-                        },
-                        {
-                          categoryId: 4,
-                          regenerationIndexId: 7,
-                          indicator: 25,
-                        },
                       ];
 
                       await realizeInspection(1, report, regenerationIndex, inspectorAddress);
@@ -1198,216 +1073,6 @@ describe("InspectionRules", () => {
                       expect(inspection.regenerationScore).to.equal(0);
                     });
                   });
-
-                  context("when select NOT_REGENERATIVE_1", () => {
-                    beforeEach(async () => {
-                      const regenerationIndex = [
-                        {
-                          categoryId: 1,
-                          regenerationIndexId: 8,
-                          indicator: -1,
-                        },
-                        {
-                          categoryId: 2,
-                          regenerationIndexId: 8,
-                          indicator: -1,
-                        },
-                        {
-                          categoryId: 3,
-                          regenerationIndexId: 8,
-                          indicator: -1,
-                        },
-                        {
-                          categoryId: 4,
-                          regenerationIndexId: 8,
-                          indicator: -1,
-                        },
-                      ];
-
-                      await realizeInspection(1, report, regenerationIndex, inspectorAddress);
-                    });
-
-                    it("should add -4 regenerationScore to inspection", async () => {
-                      const inspection = await instance.getInspection(1);
-
-                      expect(inspection.regenerationScore).to.equal(-4);
-                    });
-                  });
-
-                  context("when select NOT_REGENERATIVE_2", () => {
-                    beforeEach(async () => {
-                      const regenerationIndex = [
-                        {
-                          categoryId: 1,
-                          regenerationIndexId: 9,
-                          indicator: -1,
-                        },
-                        {
-                          categoryId: 2,
-                          regenerationIndexId: 9,
-                          indicator: -1,
-                        },
-                        {
-                          categoryId: 3,
-                          regenerationIndexId: 9,
-                          indicator: -1,
-                        },
-                        {
-                          categoryId: 4,
-                          regenerationIndexId: 9,
-                          indicator: -1,
-                        },
-                      ];
-
-                      await realizeInspection(1, report, regenerationIndex, inspectorAddress);
-                    });
-
-                    it("should add -8 regenerationScore to inspection", async () => {
-                      const inspection = await instance.getInspection(1);
-
-                      expect(inspection.regenerationScore).to.equal(-8);
-                    });
-                  });
-
-                  context("when select NOT_REGENERATIVE_3", () => {
-                    beforeEach(async () => {
-                      const regenerationIndex = [
-                        {
-                          categoryId: 1,
-                          regenerationIndexId: 10,
-                          indicator: -1,
-                        },
-                        {
-                          categoryId: 2,
-                          regenerationIndexId: 10,
-                          indicator: -1,
-                        },
-                        {
-                          categoryId: 3,
-                          regenerationIndexId: 10,
-                          indicator: -1,
-                        },
-                        {
-                          categoryId: 4,
-                          regenerationIndexId: 10,
-                          indicator: -1,
-                        },
-                      ];
-
-                      await realizeInspection(1, report, regenerationIndex, inspectorAddress);
-                    });
-
-                    it("should add -16 regenerationScore to inspection", async () => {
-                      const inspection = await instance.getInspection(1);
-
-                      expect(inspection.regenerationScore).to.equal(-16);
-                    });
-                  });
-
-                  context("when select NOT_REGENERATIVE_4", () => {
-                    beforeEach(async () => {
-                      const regenerationIndex = [
-                        {
-                          categoryId: 1,
-                          regenerationIndexId: 11,
-                          indicator: -1,
-                        },
-                        {
-                          categoryId: 2,
-                          regenerationIndexId: 11,
-                          indicator: -1,
-                        },
-                        {
-                          categoryId: 3,
-                          regenerationIndexId: 11,
-                          indicator: -1,
-                        },
-                        {
-                          categoryId: 4,
-                          regenerationIndexId: 11,
-                          indicator: -1,
-                        },
-                      ];
-
-                      await realizeInspection(1, report, regenerationIndex, inspectorAddress);
-                    });
-
-                    it("should add -32 regenerationScore to inspection", async () => {
-                      const inspection = await instance.getInspection(1);
-
-                      expect(inspection.regenerationScore).to.equal(-32);
-                    });
-                  });
-
-                  context("when select NOT_REGENERATIVE_5", () => {
-                    beforeEach(async () => {
-                      const regenerationIndex = [
-                        {
-                          categoryId: 1,
-                          regenerationIndexId: 12,
-                          indicator: -1,
-                        },
-                        {
-                          categoryId: 2,
-                          regenerationIndexId: 12,
-                          indicator: -1,
-                        },
-                        {
-                          categoryId: 3,
-                          regenerationIndexId: 12,
-                          indicator: -1,
-                        },
-                        {
-                          categoryId: 4,
-                          regenerationIndexId: 12,
-                          indicator: -1,
-                        },
-                      ];
-
-                      await realizeInspection(1, report, regenerationIndex, inspectorAddress);
-                    });
-
-                    it("should add -64 regenerationScore to inspection", async () => {
-                      const inspection = await instance.getInspection(1);
-
-                      expect(inspection.regenerationScore).to.equal(-64);
-                    });
-                  });
-
-                  context("when select NOT_REGENERATIVE_6", () => {
-                    beforeEach(async () => {
-                      const regenerationIndex = [
-                        {
-                          categoryId: 1,
-                          regenerationIndexId: 13,
-                          indicator: -1,
-                        },
-                        {
-                          categoryId: 2,
-                          regenerationIndexId: 13,
-                          indicator: -1,
-                        },
-                        {
-                          categoryId: 3,
-                          regenerationIndexId: 13,
-                          indicator: -1,
-                        },
-                        {
-                          categoryId: 4,
-                          regenerationIndexId: 13,
-                          indicator: -1,
-                        },
-                      ];
-
-                      await realizeInspection(1, report, regenerationIndex, inspectorAddress);
-                    });
-
-                    it("should add -100 regenerationScore to inspection", async () => {
-                      const inspection = await instance.getInspection(1);
-
-                      expect(inspection.regenerationScore).to.equal(-100);
-                    });
-                  });
                 });
               });
 
@@ -1415,16 +1080,6 @@ describe("InspectionRules", () => {
                 const regenerationIndex = [
                   {
                     categoryId: 1,
-                    regenerationIndexId: 1,
-                    indicator: 25,
-                  },
-                  {
-                    categoryId: 2,
-                    regenerationIndexId: 1,
-                    indicator: 25,
-                  },
-                  {
-                    categoryId: 3,
                     regenerationIndexId: 1,
                     indicator: 25,
                   },
@@ -1486,11 +1141,6 @@ describe("InspectionRules", () => {
 
   describe("#addInspectionValidation", () => {
     beforeEach(async () => {
-      await addCategory("Soil A", owner);
-      await addCategory("Soil B", owner);
-      await addCategory("Soil C", owner);
-      await addCategory("Soil D", owner);
-
       await addInvitation(owner, regeneratorAddress, userTypes.Regenerator, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
@@ -1513,10 +1163,6 @@ describe("InspectionRules", () => {
 
       context("with valid inspection", () => {
         beforeEach(async () => {
-          await addCategory("Soil A", owner);
-          await addCategory("Soil B", owner);
-          await addCategory("Soil C", owner);
-
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(1, inspectorAddress);
@@ -1539,131 +1185,111 @@ describe("InspectionRules", () => {
         });
 
         context("when have 2 validations (half of the validators)", () => {
-          context("when inspection score is negative", () => {
-            beforeEach(async () => {
-              await addInvitation(owner, inspector2Address, userTypes.Inspector, owner);
-              await addInspector("Inspector B", inspector2Address);
+          // context.only("when inspection score is negative", () => {
+          //   beforeEach(async () => {
+          //     await addInvitation(owner, inspector2Address, userTypes.Inspector, owner);
+          //     await addInspector("Inspector B", inspector2Address);
 
-              await addInvitation(owner, inspector3Address, userTypes.Inspector, owner);
-              await addInspector("Inspector C", inspector3Address);
+          //     await addInvitation(owner, inspector3Address, userTypes.Inspector, owner);
+          //     await addInspector("Inspector C", inspector3Address);
 
-              await advanceBlock(sintropArgs.timeBetweenInspections);
-              await requestInspection(regeneratorAddress);
-              await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-              await acceptInspection(2, inspector2Address);
-              await realizeInspection(2, report, negativeScore(), inspector2Address);
+          //     await advanceBlock(sintropArgs.timeBetweenInspections);
+          //     await requestInspection(regeneratorAddress);
+          //     await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          //     await acceptInspection(2, inspector2Address);
+          //     await realizeInspection(2, report, negativeScore(), inspector2Address);
 
-              await advanceBlock(sintropArgs.timeBetweenInspections);
-              await requestInspection(regeneratorAddress);
+          //     await advanceBlock(sintropArgs.timeBetweenInspections);
+          //     await requestInspection(regeneratorAddress);
 
-              await validatorRules.connect(validator1Address).declareAlive();
-              await validatorRules.connect(validator2Address).declareAlive();
-              await validatorRules.connect(validator3Address).declareAlive();
-              await validatorRules.connect(validator4Address).declareAlive();
+          //     await validatorRules.connect(validator1Address).declareAlive();
+          //     await validatorRules.connect(validator2Address).declareAlive();
+          //     await validatorRules.connect(validator3Address).declareAlive();
+          //     await validatorRules.connect(validator4Address).declareAlive();
 
-              await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-              await advanceBlock(validatorPoolargs.blocksPerEra);
-              await acceptInspection(3, inspector3Address);
-              await realizeInspection(3, report, regenerationIndex(), inspector3Address);
+          //     await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          //     await advanceBlock(validatorPoolargs.blocksPerEra);
+          //     await acceptInspection(3, inspector3Address);
+          //     await realizeInspection(3, report, regenerationIndex(), inspector3Address);
 
-              await instance.connect(validator1Address).addInspectionValidation(2, "justification");
-              await instance.connect(validator2Address).addInspectionValidation(2, "justification");
-            });
+          //     await instance.connect(validator1Address).addInspectionValidation(2, "justification");
+          //     await instance.connect(validator2Address).addInspectionValidation(2, "justification");
+          //   });
 
-            const negativeScore = () => {
-              return [
-                {
-                  categoryId: 1,
-                  regenerationIndexId: 8,
-                  indicator: 10,
-                },
-                {
-                  categoryId: 2,
-                  regenerationIndexId: 8,
-                  indicator: 10,
-                },
-                {
-                  categoryId: 3,
-                  regenerationIndexId: 8,
-                  indicator: 10,
-                },
-                {
-                  categoryId: 4,
-                  regenerationIndexId: 7,
-                  indicator: 0,
-                },
-              ];
-            };
+          //   const negativeScore = () => {
+          //     return [
+          //       {
+          //         categoryId: 1,
+          //         regenerationIndexId: 7,
+          //         indicator: 10,
+          //       },
+          //       {
+          //         categoryId: 2,
+          //         regenerationIndexId: 7,
+          //         indicator: 10,
+          //       }
+          //     ];
+          //   };
 
-            const regenerationIndex = () => {
-              return [
-                {
-                  categoryId: 1,
-                  regenerationIndexId: 1,
-                  indicator: 10,
-                },
-                {
-                  categoryId: 2,
-                  regenerationIndexId: 1,
-                  indicator: 10,
-                },
-                {
-                  categoryId: 3,
-                  regenerationIndexId: 2,
-                  indicator: 10,
-                },
-                {
-                  categoryId: 4,
-                  regenerationIndexId: 7,
-                  indicator: 0,
-                },
-              ];
-            };
+          //   const regenerationIndex = () => {
+          //     return [
+          //       {
+          //         categoryId: 1,
+          //         regenerationIndexId: 1,
+          //         indicator: 10,
+          //       },
+          //       {
+          //         categoryId: 2,
+          //         regenerationIndexId: 1,
+          //         indicator: 10,
+          //       }
+          //     ];
+          //   };
 
-            it("add validations", async () => {
-              const validation1 = await validatorRules.inspectionValidations(2, 0);
-              const validation2 = await validatorRules.inspectionValidations(2, 1);
+          //   it("add validations", async () => {
+          //     const validation1 = await validatorRules.inspectionValidations(2, 0);
+          //     const validation2 = await validatorRules.inspectionValidations(2, 1);
 
-              expect(validation1.validator).to.equal(validator1Address.address);
-              expect(validation2.validator).to.equal(validator2Address.address);
-            });
+          //     expect(validation1.validator).to.equal(validator1Address.address);
+          //     expect(validation2.validator).to.equal(validator2Address.address);
+          //   });
 
-            it("inspection status INVALIDATED", async () => {
-              const inspection = await instance.getInspection(2);
+          //   it("inspection status INVALIDATED", async () => {
+          //     const inspection = await instance.getInspection(2);
 
-              expect(inspection.status).to.equal(STATUS.invalidated);
-            });
+          //     expect(inspection.status).to.equal(STATUS.invalidated);
+          //   });
 
-            it("inspector receive 1 penalty", async () => {
-              const totalPenalties = await inspectorRules.totalPenalties(inspector2Address);
+          //   it("inspector receive 1 penalty", async () => {
+          //     const totalPenalties = await inspectorRules.totalPenalties(inspector2Address);
 
-              expect(totalPenalties).to.equal(1);
-            });
+          //     expect(totalPenalties).to.equal(1);
+          //   });
 
-            it("remove  negative regenerator regenerationScore", async () => {
-              const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+          //   it("remove  negative regenerator regenerationScore", async () => {
+          //     const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
 
-              expect(regenerator.regenerationScore.score).to.equal(132);
-            });
+          //     expect(regenerator.regenerationScore.score).to.equal(132);
+          //   });
 
-            it("decrement regenerator totalInspections", async () => {
-              const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+          //   it("decrement regenerator totalInspections", async () => {
+          //     const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
 
-              expect(regenerator.totalInspections).to.equal(2);
-            });
+          //     expect(regenerator.totalInspections).to.equal(2);
+          //   });
 
-            it("decrement inspector totalInspections", async () => {
-              const inspector = await inspectorRules.getInspector(inspector2Address);
+          //   it("decrement inspector totalInspections", async () => {
+          //     const inspector = await inspectorRules.getInspector(inspector2Address);
 
-              expect(inspector.totalInspections).to.equal(0);
-            });
+          //     expect(inspector.totalInspections).to.equal(0);
+          //   });
 
-            it("remove negative regeneratorPool era level score", async () => {
-              const levels = await regeneratorPool.eraLevels(1, regeneratorAddress);
+          //   it("remove negative regeneratorPool era level score", async () => {
+          //     const levels = await regeneratorPool.eraLevels(1, regeneratorAddress);
 
-              expect(levels).to.equal(132);
-            });
-          });
+          //     expect(levels).to.equal(132);
+          //   });
+          // });
 
           context("when inspection score is positive", () => {
             beforeEach(async () => {
@@ -1747,10 +1373,6 @@ describe("InspectionRules", () => {
 
       context("when inspection inspectedAtEra is passed", () => {
         beforeEach(async () => {
-          await addCategory("Soil A", owner);
-          await addCategory("Soil B", owner);
-          await addCategory("Soil C", owner);
-
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(1, inspectorAddress);

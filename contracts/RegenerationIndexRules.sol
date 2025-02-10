@@ -26,51 +26,46 @@ contract RegenerationIndexRules is Ownable, Callable {
     regenerationIndex[5] = RegenerationIndex("REGENERATIVO 2", 2);
     regenerationIndex[6] = RegenerationIndex("REGENERATIVO 1", 1);
     regenerationIndex[7] = RegenerationIndex("NEUTRO", 0);
-    regenerationIndex[8] = RegenerationIndex("NOT_REGENERATIVE 1", -1);
-    regenerationIndex[9] = RegenerationIndex("NOT_REGENERATIVE 2", -2);
-    regenerationIndex[10] = RegenerationIndex("NOT_REGENERATIVE 3", -4);
-    regenerationIndex[11] = RegenerationIndex("NOT_REGENERATIVE 4", -8);
-    regenerationIndex[12] = RegenerationIndex("NOT_REGENERATIVE 5", -16);
-    regenerationIndex[13] = RegenerationIndex("NOT_REGENERATIVE 6", -25);
+
+    addCategories();
+
+    categoryCounts = 2;
   }
 
   /**
-   * @dev add a new index category
-   * @param name Category name
-   * @param description Category description
-   * @param regenerationIndexDescriptions RegenerationIndexDescription[]
-   * @return bool
+   * @dev create categories to the system
    */
-  function addCategory(
-    string memory name,
-    string memory description,
-    RegenerationIndexDescription[] memory regenerationIndexDescriptions
-  ) public onlyOwner returns (bool) {
-    Category memory category = Category(categoryCounts + 1, name, description);
+  function addCategories() internal {
+    Category memory carbonCategory = Category(
+      1,
+      "Carbon",
+      "Indicator to measure CO2 balance. Must evaluate carbon emissions and sequestration. Carbon balance = sequestration - emissions [tCO2]"
+    );
 
-    categories[category.id] = category;
-    categoryCounts++;
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(1, "Balance > 100.000"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(2, "100.000 > Balance > 10.000"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(3, "10.000 > Balance > 1000"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(4, "1000 > Balance > 100"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(5, "100 > Balance > 10"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(6, "10 > Balance > 0"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(7, "Not applicable"));
 
-    for (uint256 i = 0; i < regenerationIndexDescriptions.length; i++) {
-      categoryRegenerationIndexDescriptions[category.id].push(regenerationIndexDescriptions[i]);
-    }
+    Category memory biodiversity = Category(
+      2,
+      "Biodiversity",
+      "Indicator to measure CO2 balance. Must evaluate carbon emissions and sequestration. Carbon balance = sequestration - emissions [tCO2]"
+    );
 
-    return true;
-  }
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(1, "Balance > 100.000"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(2, "100.000 > Balance > 10.000"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(3, "10.000 > Balance > 1000"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(4, "1000 > Balance > 100"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(5, "100 > Balance > 10"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(6, "10 > Balance > 0"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(7, "Not applicable"));
 
-  /**
-   * @dev Returns all added categories
-   * @return category struc array
-   */
-  function getCategories() public view returns (Category[] memory) {
-    uint256 count = categoryCounts;
-    Category[] memory categoriesList = new Category[](count);
-
-    for (uint256 i = 0; i < count; i++) {
-      categoriesList[i] = categories[i + 1];
-    }
-
-    return categoriesList;
+    categories[1] = carbonCategory;
+    categories[2] = biodiversity;
   }
 
   /**
