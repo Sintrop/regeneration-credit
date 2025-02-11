@@ -2,96 +2,56 @@ const { expect } = require("chai");
 
 describe("RegenerationIndexRules", () => {
   let instance;
-  let owner, user1Address;
-
-  const addCategory = async (name, from) => {
-    const description = `The description of ${name}`;
-
-    const regenerationIndexDescriptions = [
-      {
-        regenerationIndexId: 1,
-        description: "Description for regenerationIndexId 1 to category",
-      },
-      {
-        regenerationIndexId: 2,
-        description: "Description for regenerationIndexId 2 to category",
-      },
-    ];
-
-    await instance.connect(from).addCategory(name, description, regenerationIndexDescriptions);
-  };
+  let owner;
 
   beforeEach(async () => {
     [owner, user1Address] = await ethers.getSigners();
 
     const instanceContractFactory = await ethers.getContractFactory("RegenerationIndexRules");
     instance = await instanceContractFactory.deploy();
-
-    await addCategory("Soil A", owner);
-    await addCategory("Soil B", owner);
-    await addCategory("Soil C", owner);
-    await addCategory("Soil D", owner);
-  });
-
-  describe("#addCategory", () => {
-    context("When is not the owner", () => {
-      it("should return error message", async () => {
-        const name = "Soil";
-        await expect(addCategory(name, user1Address)).to.be.revertedWith("Ownable: caller is not the owner");
-      });
-    });
-
-    context("When is the owner", () => {
-      it("should create category", async () => {
-        const categories = await instance.getCategories();
-
-        expect(categories[0].name).to.equal("Soil A");
-      });
-
-      it("should increment id of category when created", async () => {
-        await addCategory("Soil", owner);
-        await addCategory("Soil 2", owner);
-
-        const categories = await instance.getCategories();
-
-        expect(categories[1].id).to.equal(2);
-      });
-
-      it("should increment total of categories", async () => {
-        const categoryCounts = await instance.categoryCounts();
-
-        expect(categoryCounts).to.equal(4);
-      });
-
-      it("should insert regeneration index descriptions", async () => {
-        await addCategory("Soil", owner);
-        const regenerationIndexDescriptions = await instance.getCategoryRegenerationIndexDescription(1);
-
-        const expected = [
-          [1n, "Description for regenerationIndexId 1 to category"],
-          [2n, "Description for regenerationIndexId 2 to category"],
-        ];
-
-        expect(regenerationIndexDescriptions).deep.to.equal(expected);
-      });
-    });
   });
 
   describe("#categories", () => {
-    it("should have fields", async () => {
+    it("with category 1", async () => {
       const category = await instance.categories(1);
 
       expect(category.id).to.equal(1);
-      expect(category.name).to.equal("Soil A");
-      expect(category.description).to.equal(`The description of Soil A`);
+      expect(category.name).to.equal("Carbon");
+      expect(category.description).to.equal(
+        "Indicator to measure CO2 balance. Must evaluate carbon emissions and sequestration. Carbon balance = sequestration - emissions [tCO2]"
+      );
+    });
+
+    it("with category 2", async () => {
+      const category = await instance.categories(2);
+
+      expect(category.id).to.equal(2);
+      expect(category.name).to.equal("Biodiversity");
+      expect(category.description).to.equal(
+        "Indicator to measure the level of biodiversity. Our unit is 'unit of life', meaning one species of fauna and flora."
+      );
     });
   });
 
-  describe("#getCategories", () => {
-    it("should return category list", async () => {
-      const categories = await instance.getCategories();
+  describe("#getCategoryRegenerationIndexDescription", () => {
+    it("with category 1", async () => {
+      let categoryRegenerationIndexDescriptions = await instance.getCategoryRegenerationIndexDescription(1);
 
-      expect(categories.length).to.equal(4);
+      categoryRegenerationIndexDescriptions = categoryRegenerationIndexDescriptions.toString();
+
+      expect(categoryRegenerationIndexDescriptions).to.equal(
+        "1,Balance > 100.000,2,100.000 > Balance > 10.000,3,10.000 > Balance > 1000,4,1000 > Balance > 100,5,100 > Balance > 10,6,10 > Balance > 0,7,Not applicable"
+      );
+    });
+
+    it("with category 2", async () => {
+      let categoryRegenerationIndexDescriptions = await instance.getCategoryRegenerationIndexDescription(2);
+
+      categoryRegenerationIndexDescriptions = categoryRegenerationIndexDescriptions.toString();
+
+      expect(categoryRegenerationIndexDescriptions).to.equal(
+        "1,Biodiversity > 1000,2,1000 > Biodiversity > 500,3,500 > Biodiversity > 200,4,200 > Biodiversity > 100,5,100 > Biodiversity > 50,6,50 > Biodiversity > 25,7,Biodiversity < 25"
+      );
     });
   });
 

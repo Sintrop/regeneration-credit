@@ -149,7 +149,7 @@ contract InspectionRules is Callable {
   ) public {
     Inspection memory inspection = inspections[inspectionId];
 
-    require(_regenerationInspection.length == 4, "Invalid regenerationIndex length");
+    require(_regenerationInspection.length == 2, "Invalid regenerationIndex length");
     require(userRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
     require(inspection.inspector == msg.sender, "You have not accepted this inspection");
@@ -179,8 +179,6 @@ contract InspectionRules is Callable {
 
     regenerationInspection[inspection.id].push(_regenerationInspection[0]);
     regenerationInspection[inspection.id].push(_regenerationInspection[1]);
-    regenerationInspection[inspection.id].push(_regenerationInspection[2]);
-    regenerationInspection[inspection.id].push(_regenerationInspection[3]);
   }
 
   /**
