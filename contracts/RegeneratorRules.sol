@@ -15,7 +15,7 @@ import { UserType } from "./types/UserTypes.sol";
  */
 contract RegeneratorRules is Callable {
   uint256 internal constant MINIMUM_INSPECTION_TO_POOL = 3;
-  int256 internal constant LIMIT_REGENERATION_SCORE_TO_POOL = 1000;
+  uint256 internal constant LIMIT_REGENERATION_SCORE_TO_POOL = 1000;
 
   mapping(address => Regenerator) public regenerators;
   mapping(uint256 => address) public regeneratorsAddress;
@@ -138,45 +138,16 @@ contract RegeneratorRules is Callable {
    * @param addr Regenerator address
    * @param regenerationScore New score
    */
-  function setRegenerationScore(address addr, int256 regenerationScore) private {
+  function setRegenerationScore(address addr, uint256 regenerationScore) private {
     Regenerator memory regenerator = regenerators[addr];
 
-    int256 beforeRegenerationScore = regenerator.regenerationScore.score;
     regenerator.regenerationScore.score += regenerationScore;
     regenerators[addr] = regenerator;
 
     if (limitRegenerationScore(regenerator)) changeRegeneratorToSustainable(regenerator);
     if (!minimumInspections(regenerator.totalInspections)) return;
-    if (regenerationScore > 0) addRegenerationScore(regenerator, beforeRegenerationScore, regenerationScore);
-    if (regenerationScore < 0) removeRegenerationScore(regenerator, regenerationScore);
-  }
 
-  function addRegenerationScore(
-    Regenerator memory regenerator,
-    int256 beforeRegenerationScore,
-    int256 regenerationScore
-  ) private {
-    if (regenerator.regenerationScore.score <= 0) return;
-    uint256 levels;
-
-    bool newScoreMakeRegeneratorPositive = beforeRegenerationScore < 0;
-
-    if (newScoreMakeRegeneratorPositive) {
-      levels = uint256(regenerator.regenerationScore.score);
-    } else {
-      levels = regenerator.pool.onContractPool
-        ? uint256(regenerationScore)
-        : uint256(regenerator.regenerationScore.score);
-    }
-
-    if (!regenerator.pool.onContractPool) regenerators[regenerator.regeneratorWallet].pool.onContractPool = true;
-    regeneratorPool.addLevel(regenerator.regeneratorWallet, levels);
-  }
-
-  function removeRegenerationScore(Regenerator memory regenerator, int256 regenerationScore) internal {
-    if (!regenerator.pool.onContractPool) return;
-
-    regeneratorPool.removeLevel(regenerator.regeneratorWallet, uint256(-(regenerationScore)));
+    regeneratorPool.addLevel(addr, regenerator.regenerationScore.score);
   }
 
   /**
@@ -192,14 +163,7 @@ contract RegeneratorRules is Callable {
       decrementArea(addr);
     }
 
-    if (removeSomeLevels > 0) regenerators[addr].regenerationScore.score -= int256(removeSomeLevels);
-
     regeneratorPool.removePoolLevels(addr, regenerator.pool.currentEra, removeSomeLevels);
-  }
-
-  function removeNegativeScore(address addr, int256 levels) public mustBeAllowedCaller {
-    regenerators[addr].regenerationScore.score += levels;
-    regeneratorPool.addLevel(addr, uint256(levels));
   }
 
   function changeRegeneratorToSustainable(Regenerator memory regenerator) internal {
@@ -228,7 +192,7 @@ contract RegeneratorRules is Callable {
     pendingInspection(addr, false);
   }
 
-  function afterRealizeInspection(address addr, int256 score) public mustBeAllowedCaller returns (uint256) {
+  function afterRealizeInspection(address addr, uint256 score) public mustBeAllowedCaller returns (uint256) {
     uint256 totalInspections = incrementInspections(addr);
 
     setRegenerationScore(addr, score);

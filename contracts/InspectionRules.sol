@@ -28,7 +28,7 @@ contract InspectionRules is Callable {
   mapping(address => mapping(address => bool)) internal inspectorInspected;
   mapping(address => uint256[]) internal userInspections;
   mapping(uint256 => Inspection) internal inspections;
-  mapping(uint256 => RegenerationInspection[]) public regenerationInspection;
+  mapping(uint256 => mapping(uint256 => RegenerationInspection)) public regenerationInspection;
   mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
   InspectorRules private inspectorRules;
@@ -39,6 +39,8 @@ contract InspectionRules is Callable {
   RegenerationIndexRules private regenerationIndexRules;
 
   uint256 public inspectionsCount;
+  uint256 public inspectionsCarbonImpact;
+  uint256 public inspectionsBiodiversityImpact;
   uint256 public immutable timeBetweenInspections;
   uint256 public immutable blocksToExpireAcceptedInspection;
   uint256 public immutable allowedInitialRequests;
@@ -139,26 +141,33 @@ contract InspectionRules is Callable {
   /**
    * @dev Allow a inspector realize a inspection and mark as INSPECTED
    * @param inspectionId The id of the inspection to be realized
-   * @param _regenerationInspection The RegenerationInspection[] of the inspection to be realized
+   * @param carbonIndicator The RegenerationInspection[] of the inspection to be realized
+   * @param biodiversityIndicator The RegenerationInspection[] of the inspection to be realized
    */
   function realizeInspection(
     uint256 inspectionId,
     string memory proofPhoto,
     string memory report,
-    RegenerationInspection[] memory _regenerationInspection
+    RegenerationInspection memory carbonIndicator,
+    RegenerationInspection memory biodiversityIndicator
   ) public {
     Inspection memory inspection = inspections[inspectionId];
 
-    require(_regenerationInspection.length == 2, "Invalid regenerationIndex length");
+    require(
+      carbonIndicator.categoryId == 1 && biodiversityIndicator.categoryId == 2,
+      "Invalid regenerationIndex length"
+    );
     require(userRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
     require(inspection.inspector == msg.sender, "You have not accepted this inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
 
-    markAsRealized(inspection, proofPhoto, report, _regenerationInspection);
+    markAsRealized(inspection, proofPhoto, report, carbonIndicator, biodiversityIndicator);
 
     afterRealizeInspection(inspection);
 
+    inspectionsCarbonImpact += carbonIndicator.indicator;
+    inspectionsBiodiversityImpact += biodiversityIndicator.indicator;
     inspectorInspected[msg.sender][inspection.regenerator] = true;
   }
 
@@ -166,10 +175,11 @@ contract InspectionRules is Callable {
     Inspection memory inspection,
     string memory proofPhoto,
     string memory report,
-    RegenerationInspection[] memory _regenerationInspection
+    RegenerationInspection memory carbonIndicator,
+    RegenerationInspection memory biodiversityIndicator
   ) internal {
     inspection.status = InspectionStatus.INSPECTED;
-    inspection.regenerationScore = regenerationIndexRules.calculateScore(_regenerationInspection);
+    inspection.regenerationScore = regenerationIndexRules.calculateScore(carbonIndicator, biodiversityIndicator);
     inspection.proofPhoto = proofPhoto;
     inspection.report = report;
     inspection.inspectedAt = block.number;
@@ -177,8 +187,8 @@ contract InspectionRules is Callable {
 
     inspections[inspection.id] = inspection;
 
-    regenerationInspection[inspection.id].push(_regenerationInspection[0]);
-    regenerationInspection[inspection.id].push(_regenerationInspection[1]);
+    regenerationInspection[inspection.id][1] = carbonIndicator;
+    regenerationInspection[inspection.id][2] = biodiversityIndicator;
   }
 
   /**
@@ -218,6 +228,9 @@ contract InspectionRules is Callable {
   }
 
   function invalidateInspection(Inspection memory inspection) internal {
+    inspectionsCarbonImpact -= regenerationInspection[inspection.id][1].indicator;
+    inspectionsBiodiversityImpact -= regenerationInspection[inspection.id][2].indicator;
+
     inspection.status = InspectionStatus.INVALIDATED;
     inspection.invalidatedAt = block.number;
     inspections[inspection.id] = inspection;

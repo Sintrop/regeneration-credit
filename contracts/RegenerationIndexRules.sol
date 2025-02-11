@@ -80,29 +80,55 @@ contract RegenerationIndexRules is Ownable, Callable {
 
   /**
    * @dev Function to calculate the inspection score
-   * @param _regenerationInspection Inspection result provided by inspector
+   * @param carbonIndicator Inspection result provided by inspector
+   * @param biodiversityIndicator Inspection result provided by inspector
    * @return int256 Inspection score
    */
-  function calculateScore(RegenerationInspection[] memory _regenerationInspection) public view returns (int256) {
-    int256 regenerationScore;
-    RegenerationIndex memory regeneration;
-    Category memory category;
-    bool valid = true;
+  function calculateScore(
+    RegenerationInspection memory carbonIndicator,
+    RegenerationInspection memory biodiversityIndicator
+  ) public view returns (uint256) {
+    RegenerationIndex memory carbon = regenerationIndex[carbonRegenerationIndexId(carbonIndicator.indicator)];
+    RegenerationIndex memory biodiversity = regenerationIndex[
+      carbonRegenerationIndexId(biodiversityIndicator.indicator)
+    ];
 
-    for (uint8 i = 0; i < _regenerationInspection.length; i++) {
-      regeneration = regenerationIndex[_regenerationInspection[i].regenerationIndexId];
-      category = categories[_regenerationInspection[i].categoryId];
+    return carbon.value + biodiversity.value;
+  }
 
-      if (category.id != i + 1 || bytes(regeneration.name).length <= 0) {
-        valid = false;
-        break;
-      }
-
-      regenerationScore += regeneration.value;
+  function carbonRegenerationIndexId(uint256 indicator) internal pure returns (uint256) {
+    if (indicator > 100000) {
+      return 1;
+    } else if (indicator > 10000 && indicator < 100000) {
+      return 2;
+    } else if (indicator > 1000 && indicator < 10000) {
+      return 3;
+    } else if (indicator > 100 && indicator < 1000) {
+      return 4;
+    } else if (indicator > 10 && indicator < 100) {
+      return 5;
+    } else if (indicator > 10 && indicator < 0) {
+      return 6;
+    } else {
+      return 7;
     }
+  }
 
-    require(valid, "Category or Regeneration Index do not exists");
-
-    return regenerationScore;
+  function biodiversityRegenerationIndexId(uint256 indicator) internal pure returns (uint256) {
+    if (indicator > 1000) {
+      return 1;
+    } else if (indicator > 500 && indicator < 1000) {
+      return 2;
+    } else if (indicator > 200 && indicator < 500) {
+      return 3;
+    } else if (indicator > 100 && indicator < 200) {
+      return 4;
+    } else if (indicator > 50 && indicator < 100) {
+      return 5;
+    } else if (indicator > 25 && indicator < 50) {
+      return 6;
+    } else {
+      return 7;
+    }
   }
 }
