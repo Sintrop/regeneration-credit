@@ -12,7 +12,7 @@ describe("RegeneratorRules", () => {
   let owner, prod1Address, prod2Address;
 
   const addRegenerator = async (name, from) => {
-    await instance.connect(from).addRegenerator(10, name, "photoURL", "135465-005", "coordinates", "report");
+    await instance.connect(from).addRegenerator(10, name, "photoURL",  coordinates);
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
@@ -23,6 +23,27 @@ describe("RegeneratorRules", () => {
     totalTokens: "750000000000000000000000000",
     halving: 50,
     blocksPerEra: 50,
+  };
+
+  const coordinates = () => {
+    return [
+      {
+        latitude: "-22.912554",
+        longitude: "-44.4925355",
+      },
+      {
+        latitude: "-22.912553",
+        longitude: "-44.4925354",
+      },
+      {
+        latitude: "-22.912555",
+        longitude: "-44.4925354",
+      },
+      {
+        latitude: "-22.912553",
+        longitude: "-44.4925373",
+      },
+    ];
   };
 
   beforeEach(async () => {
@@ -63,17 +84,13 @@ describe("RegeneratorRules", () => {
       expect(regenerator.regeneratorWallet).to.equal(prod1Address.address);
       expect(regenerator.name).to.equal("Regenerator A");
       expect(regenerator.proofPhoto).to.equal("photoURL");
+      expect(regenerator.totalArea).to.equal("10");
       expect(regenerator.totalInspections).to.equal(0);
       expect(regenerator.pendingInspection).to.equal(false);
       expect(regenerator.regenerationScore.average).to.equal("0");
       expect(regenerator.regenerationScore.score).to.equal("0");
 
       expect(regenerator.pool.currentEra).to.equal(1);
-
-      expect(regenerator.areaInformation.coordinates).to.equal("135465-005");
-      expect(regenerator.areaInformation.totalArea).to.equal("10");
-      expect(regenerator.areaInformation.regenerationZones).to.equal("coordinates");
-      expect(regenerator.areaInformation.report).to.equal("report");
     });
   });
 
