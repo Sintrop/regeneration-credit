@@ -28,7 +28,7 @@ describe("RegenerationIndexRules", () => {
       expect(category.id).to.equal(2);
       expect(category.name).to.equal("Biodiversity");
       expect(category.description).to.equal(
-        "Indicator to measure CO2 balance. Must evaluate carbon emissions and sequestration. Carbon balance = sequestration - emissions [tCO2]"
+        "Indicator to measure the level of biodiversity. Our unit is 'unit of life', meaning one species of fauna and flora."
       );
     });
   });
@@ -50,7 +50,7 @@ describe("RegenerationIndexRules", () => {
       categoryRegenerationIndexDescriptions = categoryRegenerationIndexDescriptions.toString();
 
       expect(categoryRegenerationIndexDescriptions).to.equal(
-        "1,Balance > 100.000,2,100.000 > Balance > 10.000,3,10.000 > Balance > 1000,4,1000 > Balance > 100,5,100 > Balance > 10,6,10 > Balance > 0,7,Not applicable"
+        "1,Biodiversity > 1000,2,1000 > Biodiversity > 500,3,500 > Biodiversity > 200,4,200 > Biodiversity > 100,5,100 > Biodiversity > 50,6,50 > Biodiversity > 25,7,Biodiversity < 25"
       );
     });
   });

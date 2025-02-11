@@ -53,16 +53,16 @@ contract RegenerationIndexRules is Ownable, Callable {
     Category memory biodiversity = Category(
       2,
       "Biodiversity",
-      "Indicator to measure CO2 balance. Must evaluate carbon emissions and sequestration. Carbon balance = sequestration - emissions [tCO2]"
+      "Indicator to measure the level of biodiversity. Our unit is 'unit of life', meaning one species of fauna and flora."
     );
 
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(1, "Balance > 100.000"));
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(2, "100.000 > Balance > 10.000"));
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(3, "10.000 > Balance > 1000"));
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(4, "1000 > Balance > 100"));
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(5, "100 > Balance > 10"));
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(6, "10 > Balance > 0"));
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(7, "Not applicable"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(1, "Biodiversity > 1000"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(2, "1000 > Biodiversity > 500"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(3, "500 > Biodiversity > 200"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(4, "200 > Biodiversity > 100"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(5, "100 > Biodiversity > 50"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(6, "50 > Biodiversity > 25"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(7, "Biodiversity < 25"));
 
     categories[1] = carbonCategory;
     categories[2] = biodiversity;
