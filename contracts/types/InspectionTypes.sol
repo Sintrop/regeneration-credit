@@ -11,7 +11,6 @@ enum InspectionStatus {
 
 struct RegenerationInspection {
   uint256 categoryId;
-  uint256 regenerationIndexId;
   uint256 indicator;
 }
 

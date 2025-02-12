@@ -161,6 +161,8 @@ contract RegeneratorRules is Callable {
     if (removeSomeLevels == 0) {
       regenerators[addr].regenerationScore.score = 0;
       decrementArea(addr);
+    } else {
+      regenerators[addr].regenerationScore.score -= removeSomeLevels;
     }
 
     regeneratorPool.removePoolLevels(addr, regenerator.pool.currentEra, removeSomeLevels);

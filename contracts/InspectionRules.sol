@@ -155,7 +155,7 @@ contract InspectionRules is Callable {
 
     require(
       carbonIndicator.categoryId == 1 && biodiversityIndicator.categoryId == 2,
-      "Invalid regenerationIndex length"
+      "Invalid carbonIndicator or biodiversityIndicator"
     );
     require(userRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
@@ -248,8 +248,8 @@ contract InspectionRules is Callable {
    * @dev List RegenerationInspection from inspection
    * @param inspectionId The id of the inspection to get RegenerationInspection
    */
-  function getRegenerationInspection(uint256 inspectionId) public view returns (RegenerationInspection[] memory) {
-    return regenerationInspection[inspectionId];
+  function getRegenerationInspection(uint256 inspectionId, uint256 categoryId) public view returns (RegenerationInspection memory) {
+    return regenerationInspection[inspectionId][categoryId];
   }
 
   function waitToRequest(Regenerator memory regenerator) public view returns (bool) {

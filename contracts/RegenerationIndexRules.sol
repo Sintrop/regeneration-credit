@@ -90,7 +90,7 @@ contract RegenerationIndexRules is Ownable, Callable {
   ) public view returns (uint256) {
     RegenerationIndex memory carbon = regenerationIndex[carbonRegenerationIndexId(carbonIndicator.indicator)];
     RegenerationIndex memory biodiversity = regenerationIndex[
-      carbonRegenerationIndexId(biodiversityIndicator.indicator)
+      biodiversityRegenerationIndexId(biodiversityIndicator.indicator)
     ];
 
     return carbon.value + biodiversity.value;
@@ -107,7 +107,7 @@ contract RegenerationIndexRules is Ownable, Callable {
       return 4;
     } else if (indicator > 10 && indicator < 100) {
       return 5;
-    } else if (indicator > 10 && indicator < 0) {
+    } else if (indicator > 0 && indicator < 10) {
       return 6;
     } else {
       return 7;
