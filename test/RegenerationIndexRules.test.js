@@ -4,6 +4,16 @@ describe("RegenerationIndexRules", () => {
   let instance;
   let owner;
 
+  const carbonIndicatorValue = {
+    categoryId: 1,
+    indicator: 100001,
+  };
+
+  const biodiversityIndicatorValue = {
+    categoryId: 2,
+    indicator: 1001,
+  };
+
   beforeEach(async () => {
     [owner, user1Address] = await ethers.getSigners();
 
@@ -62,50 +72,10 @@ describe("RegenerationIndexRules", () => {
       });
 
       context("when category and regeneration index exists", () => {
-        const regenerationIndexPayload = [
-          {
-            categoryId: 1,
-            regenerationIndexId: 1,
-            indicator: 1,
-          },
-        ];
-
         it("calculate regenerationScore", async () => {
-          const score = await instance.calculateScore(regenerationIndexPayload);
+          const score = await instance.calculateScore(carbonIndicatorValue, biodiversityIndicatorValue);
 
-          expect(score).to.equal(25);
-        });
-      });
-
-      context("when category do not exists", () => {
-        const regenerationIndexPayload = [
-          {
-            categoryId: 100,
-            regenerationIndexId: 1,
-            indicator: 1,
-          },
-        ];
-
-        it("returns error message", async () => {
-          await expect(instance.calculateScore(regenerationIndexPayload)).to.be.revertedWith(
-            "Category or Regeneration Index do not exists"
-          );
-        });
-      });
-
-      context("when Regeneration Index do not exists", () => {
-        const regenerationIndexPayload = [
-          {
-            categoryId: 1,
-            regenerationIndexId: 100,
-            indicator: 1,
-          },
-        ];
-
-        it("returns error message", async () => {
-          await expect(instance.calculateScore(regenerationIndexPayload)).to.be.revertedWith(
-            "Category or Regeneration Index do not exists"
-          );
+          expect(score).to.equal(50);
         });
       });
     });

@@ -248,7 +248,10 @@ contract InspectionRules is Callable {
    * @dev List RegenerationInspection from inspection
    * @param inspectionId The id of the inspection to get RegenerationInspection
    */
-  function getRegenerationInspection(uint256 inspectionId, uint256 categoryId) public view returns (RegenerationInspection memory) {
+  function getRegenerationInspection(
+    uint256 inspectionId,
+    uint256 categoryId
+  ) public view returns (RegenerationInspection memory) {
     return regenerationInspection[inspectionId][categoryId];
   }
 

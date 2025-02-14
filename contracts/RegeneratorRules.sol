@@ -147,7 +147,14 @@ contract RegeneratorRules is Callable {
     if (limitRegenerationScore(regenerator)) changeRegeneratorToSustainable(regenerator);
     if (!minimumInspections(regenerator.totalInspections)) return;
 
-    regeneratorPool.addLevel(addr, regenerator.regenerationScore.score);
+    uint256 levels = regenerationScore;
+
+    if (!regenerator.pool.onContractPool) {
+      regenerators[addr].pool.onContractPool = true;
+      levels = regenerator.regenerationScore.score;
+    }
+
+    regeneratorPool.addLevel(addr, levels);
   }
 
   /**
