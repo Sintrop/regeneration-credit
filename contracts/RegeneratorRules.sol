@@ -48,9 +48,8 @@ contract RegeneratorRules is Callable {
     string memory proofPhoto,
     Coordinates[] memory _coordinates
   ) public {
-    require(_coordinates.length >= 3, "Minimum three coordinate points");
-    require(_coordinates.length <= 10, "Maximum ten coordinate points");
-    
+    require(_coordinates.length >= 3 && _coordinates.length <= 10, "Minimum 3 and maximum 10 coordinate points");
+
     Regenerator memory regenerator = regenerators[msg.sender];
     uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
 
@@ -58,6 +57,7 @@ contract RegeneratorRules is Callable {
     regenerator.regeneratorWallet = msg.sender;
     regenerator.name = name;
     regenerator.proofPhoto = proofPhoto;
+    regenerator.totalArea = totalArea;
     regenerator.pool = Pool(false, regeneratorPool.currentContractEra());
     regenerator.createdAt = block.number;
 
@@ -68,8 +68,8 @@ contract RegeneratorRules is Callable {
     regenerationArea += totalArea;
 
     for (uint256 i = 0; i < _coordinates.length; i++) {
-        coordinates[msg.sender].push(_coordinates[i]);
-    }    
+      coordinates[msg.sender].push(_coordinates[i]);
+    }
   }
 
   /**
