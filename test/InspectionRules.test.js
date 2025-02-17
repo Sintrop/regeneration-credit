@@ -90,7 +90,28 @@ describe("InspectionRules", () => {
   };
 
   const addRegenerator = async (name, from) => {
-    await regeneratorRules.connect(from).addRegenerator(10, name, "photoURL", "135465-005", "coordinates", "report");
+    await regeneratorRules.connect(from).addRegenerator(10, name, "photoURL", coordinates());
+  };
+
+  const coordinates = () => {
+    return [
+      {
+        latitude: "-22.912554",
+        longitude: "-44.4925355",
+      },
+      {
+        latitude: "-22.912553",
+        longitude: "-44.4925354",
+      },
+      {
+        latitude: "-22.912555",
+        longitude: "-44.4925354",
+      },
+      {
+        latitude: "-22.912553",
+        longitude: "-44.4925373",
+      },
+    ];
   };
 
   const addInspector = async (name, from) => {
