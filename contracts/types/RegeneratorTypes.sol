@@ -8,11 +8,11 @@ struct Regenerator {
   address regeneratorWallet;
   string name;
   string proofPhoto;
+  uint256 totalArea;
   bool pendingInspection;
   uint256 totalInspections;
   uint256 lastRequestAt;
   RegenerationScore regenerationScore;
-  AreaInformation areaInformation;
   Pool pool;
   uint256 createdAt;
 }
@@ -28,9 +28,7 @@ struct RegenerationScore {
   bool sustainable;
 }
 
-struct AreaInformation {
-  string coordinates;
-  uint256 totalArea;
-  string regenerationZones;
-  string report;
+struct Coordinates {
+  string latitude;
+  string longitude;
 }
