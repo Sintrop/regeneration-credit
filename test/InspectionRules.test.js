@@ -870,6 +870,18 @@ describe("InspectionRules", () => {
                     expect(inspection.status).to.equal(STATUS.inspected);
                   });
 
+                  it("should set inspectionsCarbonImpact", async () => {
+                    const inspectionsCarbonImpact = await instance.inspectionsCarbonImpact();
+
+                    expect(inspectionsCarbonImpact).to.equal(10);
+                  });
+
+                  it("should set inspectionsBiodiversityImpact", async () => {
+                    const inspectionsBiodiversityImpact = await instance.inspectionsBiodiversityImpact();
+
+                    expect(inspectionsBiodiversityImpact).to.equal(10);
+                  });
+
                   it("populate inspection inspectedAt", async () => {
                     const inspection = await instance.getInspection(1);
 
@@ -1250,6 +1262,18 @@ describe("InspectionRules", () => {
 
               expect(validation1.validator).to.equal(validator1Address.address);
               expect(validation2.validator).to.equal(validator2Address.address);
+            });
+
+            it("decrement inspectionsCarbonImpact", async () => {
+              const inspectionsCarbonImpact = await instance.inspectionsCarbonImpact();
+
+              expect(inspectionsCarbonImpact).to.equal(0);
+            });
+
+            it("decrement inspectionsCarbonImpact", async () => {
+              const inspectionsBiodiversityImpact = await instance.inspectionsBiodiversityImpact();
+
+              expect(inspectionsBiodiversityImpact).to.equal(0);
             });
 
             it("inspection status INVALIDATED", async () => {
