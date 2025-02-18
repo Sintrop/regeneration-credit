@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserRules } from "./UserRules.sol";
-import { Regenerator, Pool, AreaInformation } from "./types/RegeneratorTypes.sol";
+import { Regenerator, Pool, Coordinates } from "./types/RegeneratorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { RegeneratorPool } from "./RegeneratorPool.sol";
 import { UserType } from "./types/UserTypes.sol";
@@ -19,6 +19,7 @@ contract RegeneratorRules is Callable {
 
   mapping(address => Regenerator) public regenerators;
   mapping(uint256 => address) public regeneratorsAddress;
+  mapping(address => Coordinates[]) public coordinates;
 
   UserRules internal userRules;
   RegeneratorPool internal regeneratorPool;
@@ -39,16 +40,16 @@ contract RegeneratorRules is Callable {
    * @param name The name of the regenerator
    * @param proofPhoto Identity photo
    * @param totalArea in hectares = 1 ha = 10.000 m2
-   * @param coordinates the coordinates of the regenerator area
+   * @param _coordinates the coordinates of the regenerator area
    */
   function addRegenerator(
     uint256 totalArea,
     string memory name,
     string memory proofPhoto,
-    string memory coordinates,
-    string memory regenerationZones,
-    string memory report
+    Coordinates[] memory _coordinates
   ) public {
+    require(_coordinates.length >= 3 && _coordinates.length <= 10, "Minimum 3 and maximum 10 coordinate points");
+
     Regenerator memory regenerator = regenerators[msg.sender];
     uint256 id = userRules.userTypesTotalCount(USER_TYPE) + 1;
 
@@ -56,7 +57,7 @@ contract RegeneratorRules is Callable {
     regenerator.regeneratorWallet = msg.sender;
     regenerator.name = name;
     regenerator.proofPhoto = proofPhoto;
-    regenerator.areaInformation = AreaInformation(coordinates, totalArea, regenerationZones, report);
+    regenerator.totalArea = totalArea;
     regenerator.pool = Pool(false, regeneratorPool.currentContractEra());
     regenerator.createdAt = block.number;
 
@@ -65,6 +66,10 @@ contract RegeneratorRules is Callable {
     userRules.addUser(msg.sender, USER_TYPE);
 
     regenerationArea += totalArea;
+
+    for (uint256 i = 0; i < _coordinates.length; i++) {
+      coordinates[msg.sender].push(_coordinates[i]);
+    }
   }
 
   /**
@@ -234,6 +239,6 @@ contract RegeneratorRules is Callable {
   }
 
   function decrementArea(address addr) internal {
-    regenerationArea -= regenerators[addr].areaInformation.totalArea;
+    regenerationArea -= regenerators[addr].totalArea;
   }
 }

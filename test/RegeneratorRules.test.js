@@ -11,8 +11,30 @@ describe("RegeneratorRules", () => {
   let regeneratorPool;
   let owner, prod1Address, prod2Address;
 
-  const addRegenerator = async (name, from) => {
-    await instance.connect(from).addRegenerator(10, name, "photoURL", "135465-005", "coordinates", "report");
+  const addRegenerator = async (name, from, _coordinates = []) => {
+    const test = _coordinates.length > 0 ? _coordinates : coordinates();
+    await instance.connect(from).addRegenerator(10, name, "photoURL", test);
+  };
+
+  const coordinates = () => {
+    return [
+      {
+        latitude: "-22.912554",
+        longitude: "-44.4925355",
+      },
+      {
+        latitude: "-22.912553",
+        longitude: "-44.4925354",
+      },
+      {
+        latitude: "-22.912555",
+        longitude: "-44.4925354",
+      },
+      {
+        latitude: "-22.912553",
+        longitude: "-44.4925373",
+      },
+    ];
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
@@ -63,17 +85,13 @@ describe("RegeneratorRules", () => {
       expect(regenerator.regeneratorWallet).to.equal(prod1Address.address);
       expect(regenerator.name).to.equal("Regenerator A");
       expect(regenerator.proofPhoto).to.equal("photoURL");
+      expect(regenerator.totalArea).to.equal("10");
       expect(regenerator.totalInspections).to.equal(0);
       expect(regenerator.pendingInspection).to.equal(false);
       expect(regenerator.regenerationScore.average).to.equal("0");
       expect(regenerator.regenerationScore.score).to.equal("0");
 
       expect(regenerator.pool.currentEra).to.equal(1);
-
-      expect(regenerator.areaInformation.coordinates).to.equal("135465-005");
-      expect(regenerator.areaInformation.totalArea).to.equal("10");
-      expect(regenerator.areaInformation.regenerationZones).to.equal("coordinates");
-      expect(regenerator.areaInformation.report).to.equal("report");
     });
   });
 
@@ -117,6 +135,13 @@ describe("RegeneratorRules", () => {
       expect(regenerator.lastRequestAt).to.equal(0);
     });
 
+    it("should add coordinates to regenerator mapping", async () => {
+      await addRegenerator("Regenerator A", prod1Address);
+
+      const coordinates = await instance.coordinates(prod1Address, 0);
+      expect(coordinates.toString()).to.equal("-22.912554,-44.4925355");
+    });
+
     it("should increment regeneratorsCount after create regenerator", async () => {
       await addRegenerator("Regenerator A", prod1Address);
       await addRegenerator("Regenerator B", prod2Address);
@@ -140,6 +165,76 @@ describe("RegeneratorRules", () => {
 
       const newRegenerationArea = await instance.regenerationArea();
       expect(newRegenerationArea).to.equal(20);
+    });
+  });
+
+  context("when coordinate points is invalid", () => {
+    context("when coordinates is below 3", () => {
+      it("should return error when try create regenerator without valid coordinates", async () => {
+        const _coordinates = [
+          {
+            latitude: "-22.912554",
+            longitude: "-44.4925355",
+          },
+        ];
+        await expect(addRegenerator("Regenerator A", prod1Address, _coordinates)).to.be.revertedWith(
+          "Minimum 3 and maximum 10 coordinate points"
+        );
+      });
+    });
+
+    context("when coordinates is bigger than 10", () => {
+      it("should return error when try create regenerator without valid coordinates", async () => {
+        const _coordinates = [
+          {
+            latitude: "-22.912554",
+            longitude: "-44.4925355",
+          },
+          {
+            latitude: "-22.912554",
+            longitude: "-44.4925355",
+          },
+          {
+            latitude: "-22.912554",
+            longitude: "-44.4925355",
+          },
+          {
+            latitude: "-22.912554",
+            longitude: "-44.4925355",
+          },
+          {
+            latitude: "-22.912554",
+            longitude: "-44.4925355",
+          },
+          {
+            latitude: "-22.912554",
+            longitude: "-44.4925355",
+          },
+          {
+            latitude: "-22.912554",
+            longitude: "-44.4925355",
+          },
+          {
+            latitude: "-22.912554",
+            longitude: "-44.4925355",
+          },
+          {
+            latitude: "-22.912554",
+            longitude: "-44.4925355",
+          },
+          {
+            latitude: "-22.912554",
+            longitude: "-44.4925355",
+          },
+          {
+            latitude: "-22.912554",
+            longitude: "-44.4925355",
+          },
+        ];
+        await expect(addRegenerator("Regenerator A", prod1Address, _coordinates)).to.be.revertedWith(
+          "Minimum 3 and maximum 10 coordinate points"
+        );
+      });
     });
   });
 
