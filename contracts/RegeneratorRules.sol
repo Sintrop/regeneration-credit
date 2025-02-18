@@ -51,7 +51,7 @@ contract RegeneratorRules is Callable {
     require(_coordinates.length >= 3 && _coordinates.length <= 10, "Minimum 3 and maximum 10 coordinate points");
 
     Regenerator memory regenerator = regenerators[msg.sender];
-    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
+    uint256 id = userRules.userTypesTotalCount(USER_TYPE) + 1;
 
     regenerator.id = id;
     regenerator.regeneratorWallet = msg.sender;
