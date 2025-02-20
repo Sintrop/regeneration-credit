@@ -28,7 +28,11 @@ contract ContributorRules is Ownable, Callable, Invitable {
   uint256 public contributionsCount;
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
-  constructor(address communityRulesAddress, address contributorPoolAddress, uint256 securityBlocksToValidatorAnalysis) {
+  constructor(
+    address communityRulesAddress,
+    address contributorPoolAddress,
+    uint256 securityBlocksToValidatorAnalysis
+  ) {
     communityRules = CommunityRules(communityRulesAddress);
     contributorPool = ContributorPool(contributorPoolAddress);
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
