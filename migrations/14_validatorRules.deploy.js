@@ -3,7 +3,7 @@ const getDeployedContract = require("../scripts/shared/getDeployedContract");
 const verifyContract = require("../scripts/shared/verifyContract");
 
 async function validatorRulesDeploy() {
-  const userRules = await getDeployedContract("UserRules");
+  const communityRules = await getDeployedContract("CommunityRules");
   const firstValidatorLimit = process.env["FIRST_VALIDATOR_LIMIT"];
   const secondValidatorLimit = process.env["SECOND_VALIDATOR_LIMIT"];
 
@@ -15,7 +15,7 @@ async function validatorRulesDeploy() {
 
   saveContractAddress("ValidatorRules", validatorRules.target);
 
-  await userRules.newAllowedCaller(validatorRules.target);
+  await communityRules.newAllowedCaller(validatorRules.target);
 
   console.log(`ValidatorRules address ${validatorRules.target}`);
 

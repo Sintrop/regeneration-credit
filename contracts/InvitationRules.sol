@@ -2,13 +2,13 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { UserRules } from "./UserRules.sol";
+import { CommunityRules } from "./CommunityRules.sol";
 import { ResearcherRules } from "./ResearcherRules.sol";
 import { DeveloperRules } from "./DeveloperRules.sol";
 import { ActivistRules } from "./ActivistRules.sol";
 import { ContributorRules } from "./ContributorRules.sol";
 import { ValidatorRules } from "./ValidatorRules.sol";
-import { UserType } from "./types/UserTypes.sol";
+import { UserType } from "./types/CommunityTypes.sol";
 
 /**
  * @author Sintrop
@@ -19,7 +19,7 @@ contract InvitationRules is Ownable {
   mapping(address => uint256) public lastInviteBlocks;
   mapping(UserType => UserType) public canBeInviteds;
 
-  UserRules internal userRules;
+  CommunityRules internal communityRules;
   ResearcherRules internal researcherRules;
   DeveloperRules internal developerRules;
   ActivistRules internal activistRules;
@@ -27,14 +27,14 @@ contract InvitationRules is Ownable {
   ValidatorRules internal validatorRules;
 
   constructor(
-    address userRulesAddress,
+    address communityRulesAddress,
     address researcherRulesAddress,
     address developerRulesAddress,
     address activistRulesAddress,
     address contributorRulesAddress,
     address validatorRulesAddress
   ) {
-    userRules = UserRules(userRulesAddress);
+    communityRules = CommunityRules(communityRulesAddress);
     researcherRules = ResearcherRules(researcherRulesAddress);
     developerRules = DeveloperRules(developerRulesAddress);
     activistRules = ActivistRules(activistRulesAddress);
@@ -57,7 +57,7 @@ contract InvitationRules is Ownable {
    * @param userType Invited type
    */
   function invite(address invited, UserType userType) public {
-    UserType msgSenderUserType = userRules.getUser(msg.sender);
+    UserType msgSenderUserType = communityRules.getUser(msg.sender);
 
     require(canSendInvite(msgSenderUserType), "Only most active users allowed to invite");
     require(invitationDelayReached(msgSenderUserType), "Invite delay not reached");
@@ -65,7 +65,7 @@ contract InvitationRules is Ownable {
 
     lastInviteBlocks[msg.sender] = block.number;
 
-    userRules.addInvitation(msg.sender, invited, userType);
+    communityRules.addInvitation(msg.sender, invited, userType);
   }
 
   function canSendInvite(UserType userType) internal view returns (bool) {
@@ -90,7 +90,7 @@ contract InvitationRules is Ownable {
    * @param userType Invited type
    */
   function onlyOwnerInvite(address invited, UserType userType) public onlyOwner {
-    userRules.addInvitation(msg.sender, invited, userType);
+    communityRules.addInvitation(msg.sender, invited, userType);
   }
 
   /**
@@ -99,7 +99,7 @@ contract InvitationRules is Ownable {
    * @return bool True if user waited delay blocks
    */
   function invitationDelayReached(UserType userType) internal view returns (bool) {
-    uint256 delayBlocks = userRules.getUserTypeSettings(userType).invitationDelayBlocks;
+    uint256 delayBlocks = communityRules.getUserTypeSettings(userType).invitationDelayBlocks;
 
     return lastInviteBlocks[msg.sender] <= 0 || block.number - lastInviteBlocks[msg.sender] >= delayBlocks;
   }

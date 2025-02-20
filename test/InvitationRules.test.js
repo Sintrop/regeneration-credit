@@ -1,5 +1,5 @@
 const { ethers } = require("hardhat");
-const { userRulesDeployed } = require("./shared/user_contract_deployed");
+const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 const { advanceBlock } = require("./shared/advance_block");
@@ -7,11 +7,11 @@ const { regenerationCreditDeployed } = require("./shared/regeneration_credit_dep
 const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
 describe("InvitationRules", () => {
-  let instance, userRules, researcherRules, validatorRules, activistRules, developerRules, contributorRules;
+  let instance, communityRules, researcherRules, validatorRules, activistRules, developerRules, contributorRules;
   let owner, user1Address, user2Address, user3Address, user4Address;
 
   const addUser = async (address, userType, from) => {
-    await userRules.connect(from).addUser(address, userType);
+    await communityRules.connect(from).addUser(address, userType);
   };
 
   const addResearcher = async (name, from) => {
@@ -39,11 +39,11 @@ describe("InvitationRules", () => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userRules.connect(from).addInvitation(inviter, invited, userType);
+    await communityRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
   const userTypeDelayBlocks = async (userType) => {
-    const settings = await userRules.getUserTypeSettings(userType);
+    const settings = await communityRules.getUserTypeSettings(userType);
 
     return settings.invitationDelayBlocks;
   };
@@ -87,7 +87,7 @@ describe("InvitationRules", () => {
   beforeEach(async () => {
     [owner, user1Address, user2Address, user3Address, user4Address] = await ethers.getSigners();
 
-    userRules = await userRulesDeployed();
+    communityRules = await communityRulesDeployed();
 
     const regenerationCredit = await regenerationCreditDeployed();
 
@@ -110,7 +110,7 @@ describe("InvitationRules", () => {
 
     const researcherRulesFactory = await ethers.getContractFactory("ResearcherRules");
     researcherRules = await researcherRulesFactory.deploy(
-      userRules.target,
+      communityRules.target,
       researcherPool.target,
       validatorRules.target,
       timeBetweenResearches,
@@ -127,7 +127,7 @@ describe("InvitationRules", () => {
 
     const developerRulesFactory = await ethers.getContractFactory("DeveloperRules");
     developerRules = await developerRulesFactory.deploy(
-      userRules.target,
+      communityRules.target,
       developerPool.target,
       validatorRules.target,
       maxPenalties,
@@ -142,7 +142,7 @@ describe("InvitationRules", () => {
     );
 
     const activistRulesFactory = await ethers.getContractFactory("ActivistRules");
-    activistRules = await activistRulesFactory.deploy(userRules.target, activistPool.target);
+    activistRules = await activistRulesFactory.deploy(communityRules.target, activistPool.target);
 
     const contributorPoolFactory = await ethers.getContractFactory("ContributorPool");
     const contributorPool = await contributorPoolFactory.deploy(
@@ -153,13 +153,13 @@ describe("InvitationRules", () => {
 
     const contributorRulesFactory = await ethers.getContractFactory("ContributorRules");
     contributorRules = await contributorRulesFactory.deploy(
-      userRules.target,
+      communityRules.target,
       contributorPool.target,
       securityBlocksToValidatorAnalysis
     );
 
     const validatorRulesDependencies = {
-      userRulesAddress: userRules.target,
+      communityRulesAddress: communityRules.target,
       regeneratorRulesAddress: ZERO_ADDRESS,
       validatorPoolAddress: validatorPool.target,
       inspectorRulesAddress: ZERO_ADDRESS,
@@ -171,7 +171,7 @@ describe("InvitationRules", () => {
 
     const instanceFactory = await ethers.getContractFactory("InvitationRules");
     instance = await instanceFactory.deploy(
-      userRules.target,
+      communityRules.target,
       researcherRules.target,
       developerRules.target,
       activistRules.target,
@@ -181,13 +181,13 @@ describe("InvitationRules", () => {
 
     await validatorRules.setContractAddressDependencies(validatorRulesDependencies);
 
-    await userRules.newAllowedCaller(instance.target);
-    await userRules.newAllowedCaller(researcherRules.target);
-    await userRules.newAllowedCaller(validatorRules.target);
-    await userRules.newAllowedCaller(activistRules.target);
-    await userRules.newAllowedCaller(developerRules.target);
-    await userRules.newAllowedCaller(contributorRules.target);
-    await userRules.newAllowedCaller(owner);
+    await communityRules.newAllowedCaller(instance.target);
+    await communityRules.newAllowedCaller(researcherRules.target);
+    await communityRules.newAllowedCaller(validatorRules.target);
+    await communityRules.newAllowedCaller(activistRules.target);
+    await communityRules.newAllowedCaller(developerRules.target);
+    await communityRules.newAllowedCaller(contributorRules.target);
+    await communityRules.newAllowedCaller(owner);
     await activistRules.newAllowedCaller(owner);
     await researcherPool.newAllowedCaller(researcherRules.target);
     await validatorPool.newAllowedCaller(validatorRules.target);
@@ -248,7 +248,7 @@ describe("InvitationRules", () => {
                 it("invite with success", async () => {
                   await instance.connect(user2Address).invite(user4Address, userTypes.Activist);
 
-                  const invitation = await userRules.invitations(user4Address);
+                  const invitation = await communityRules.invitations(user4Address);
 
                   expect(invitation.invited).to.equal(user4Address.address);
                 });
@@ -269,7 +269,7 @@ describe("InvitationRules", () => {
 
             context("when do not have a previous invitation", () => {
               it("invite with success", async () => {
-                const invitation = await userRules.invitations(user3Address);
+                const invitation = await communityRules.invitations(user3Address);
 
                 expect(invitation.invited).to.equal(user3Address.address);
               });
@@ -288,7 +288,7 @@ describe("InvitationRules", () => {
                 it("invite with success", async () => {
                   await instance.connect(user2Address).invite(user4Address, userTypes.Inspector);
 
-                  const invitation = await userRules.invitations(user4Address);
+                  const invitation = await communityRules.invitations(user4Address);
 
                   expect(invitation.invited).to.equal(user4Address.address);
                 });
@@ -309,7 +309,7 @@ describe("InvitationRules", () => {
 
             context("when do not have a previous invitation", () => {
               it("invite with success", async () => {
-                const invitation = await userRules.invitations(user3Address);
+                const invitation = await communityRules.invitations(user3Address);
 
                 expect(invitation.invited).to.equal(user3Address.address);
               });
@@ -328,7 +328,7 @@ describe("InvitationRules", () => {
                 it("invite with success", async () => {
                   await instance.connect(user2Address).invite(user4Address, userTypes.Regenerator);
 
-                  const invitation = await userRules.invitations(user4Address);
+                  const invitation = await communityRules.invitations(user4Address);
 
                   expect(invitation.invited).to.equal(user4Address.address);
                 });
@@ -349,7 +349,7 @@ describe("InvitationRules", () => {
 
             context("when do not have a previous invitation", () => {
               it("invite with success", async () => {
-                const invitation = await userRules.invitations(user3Address);
+                const invitation = await communityRules.invitations(user3Address);
 
                 expect(invitation.invited).to.equal(user3Address.address);
               });
@@ -392,7 +392,7 @@ describe("InvitationRules", () => {
                 it("invite with success", async () => {
                   await instance.connect(user2Address).invite(user4Address, userTypes.Developer);
 
-                  const invitation = await userRules.invitations(user4Address);
+                  const invitation = await communityRules.invitations(user4Address);
 
                   expect(invitation.invited).to.equal(user4Address.address);
                 });
@@ -415,7 +415,7 @@ describe("InvitationRules", () => {
               it("invite with success", async () => {
                 await instance.connect(user2Address).invite(user4Address, userTypes.Developer);
 
-                const invitation = await userRules.invitations(user3Address);
+                const invitation = await communityRules.invitations(user3Address);
 
                 expect(invitation.invited).to.equal(user3Address.address);
               });
@@ -458,7 +458,7 @@ describe("InvitationRules", () => {
                 it("invite with success", async () => {
                   await instance.connect(user2Address).invite(user4Address, userTypes.Contributor);
 
-                  const invitation = await userRules.invitations(user4Address);
+                  const invitation = await communityRules.invitations(user4Address);
 
                   expect(invitation.invited).to.equal(user4Address.address);
                 });
@@ -481,7 +481,7 @@ describe("InvitationRules", () => {
               it("invite with success", async () => {
                 await instance.connect(user2Address).invite(user4Address, userTypes.Contributor);
 
-                const invitation = await userRules.invitations(user3Address);
+                const invitation = await communityRules.invitations(user3Address);
 
                 expect(invitation.invited).to.equal(user3Address.address);
               });
@@ -524,7 +524,7 @@ describe("InvitationRules", () => {
                 it("invite with success", async () => {
                   await instance.connect(user2Address).invite(user4Address, userTypes.Researcher);
 
-                  const invitation = await userRules.invitations(user4Address);
+                  const invitation = await communityRules.invitations(user4Address);
 
                   expect(invitation.invited).to.equal(user4Address.address);
                 });
@@ -547,7 +547,7 @@ describe("InvitationRules", () => {
               it("invite with success", async () => {
                 await instance.connect(user2Address).invite(user4Address, userTypes.Researcher);
 
-                const invitation = await userRules.invitations(user4Address);
+                const invitation = await communityRules.invitations(user4Address);
 
                 expect(invitation.invited).to.equal(user4Address.address);
               });
@@ -590,7 +590,7 @@ describe("InvitationRules", () => {
                 it("invite with success", async () => {
                   await instance.connect(user2Address).invite(user4Address, userTypes.Validator);
 
-                  const invitation = await userRules.invitations(user4Address);
+                  const invitation = await communityRules.invitations(user4Address);
 
                   expect(invitation.invited).to.equal(user4Address.address);
                 });
@@ -613,7 +613,7 @@ describe("InvitationRules", () => {
               it("invite with success", async () => {
                 await instance.connect(user2Address).invite(user4Address, userTypes.Validator);
 
-                const invitation = await userRules.invitations(user3Address);
+                const invitation = await communityRules.invitations(user3Address);
 
                 expect(invitation.invited).to.equal(user3Address.address);
               });
@@ -649,7 +649,7 @@ describe("InvitationRules", () => {
               it("invite with success", async () => {
                 await instance.connect(user2Address).invite(user4Address, userTypes.Supporter);
 
-                const invitation = await userRules.invitations(user4Address);
+                const invitation = await communityRules.invitations(user4Address);
 
                 expect(invitation.invited).to.equal(user4Address.address);
               });
@@ -663,7 +663,7 @@ describe("InvitationRules", () => {
               it("invite with success", async () => {
                 await instance.connect(user2Address).invite(user4Address, userTypes.Supporter);
 
-                const invitation = await userRules.invitations(user4Address);
+                const invitation = await communityRules.invitations(user4Address);
 
                 expect(invitation.invited).to.equal(user4Address.address);
               });
@@ -674,7 +674,7 @@ describe("InvitationRules", () => {
             it("invite with success", async () => {
               await instance.connect(user2Address).invite(user3Address, userTypes.Supporter);
 
-              const invitation = await userRules.invitations(user3Address);
+              const invitation = await communityRules.invitations(user3Address);
 
               expect(invitation.invited).to.equal(user3Address.address);
             });
@@ -690,7 +690,7 @@ describe("InvitationRules", () => {
         it("invite with success", async () => {
           await instance.onlyOwnerInvite(user3Address, userTypes.Developer);
 
-          const invitation = await userRules.invitations(user3Address);
+          const invitation = await communityRules.invitations(user3Address);
 
           expect(invitation.invited).to.equal(user3Address.address);
         });

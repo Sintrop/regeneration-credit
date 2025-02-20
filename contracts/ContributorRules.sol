@@ -2,8 +2,8 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { UserRules } from "./UserRules.sol";
-import { UserType } from "./types/UserTypes.sol";
+import { CommunityRules } from "./CommunityRules.sol";
+import { UserType } from "./types/CommunityTypes.sol";
 import { ContributorPool } from "./ContributorPool.sol";
 import { Contributor, Pool, Contribution } from "./types/ContributorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
@@ -21,15 +21,19 @@ contract ContributorRules is Ownable, Callable, Invitable {
   mapping(uint256 => Contribution) public contributions;
   mapping(uint256 => address) public contributorsAddress;
 
-  UserRules internal userRules;
+  CommunityRules internal communityRules;
   ContributorPool internal contributorPool;
 
   UserType private constant USER_TYPE = UserType.CONTRIBUTOR;
   uint256 public contributionsCount;
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
-  constructor(address userRulesAddress, address contributorPoolAddress, uint256 securityBlocksToValidatorAnalysis) {
-    userRules = UserRules(userRulesAddress);
+  constructor(
+    address communityRulesAddress,
+    address contributorPoolAddress,
+    uint256 securityBlocksToValidatorAnalysis
+  ) {
+    communityRules = CommunityRules(communityRulesAddress);
     contributorPool = ContributorPool(contributorPoolAddress);
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
@@ -41,7 +45,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
    */
   function addContributor(string memory name, string memory proofPhoto) public {
     uint256 level = 0;
-    uint256 id = userRules.userTypesTotalCount(USER_TYPE) + 1;
+    uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     contributors[msg.sender] = Contributor(
       id,
@@ -54,7 +58,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
 
     contributorsAddress[id] = msg.sender;
 
-    userRules.addUser(msg.sender, USER_TYPE);
+    communityRules.addUser(msg.sender, USER_TYPE);
   }
 
   function canSendInvite(address addr) public view returns (bool) {
@@ -62,7 +66,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
 
     if (contributor.id <= 0) return false;
 
-    return canInvite(contributionsCount, userRules.userTypesTotalCount(USER_TYPE), contributor.pool.level);
+    return canInvite(contributionsCount, communityRules.userTypesTotalCount(USER_TYPE), contributor.pool.level);
   }
 
   /**
@@ -71,7 +75,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
    * @param report Hash of the report file
    */
   function addContribution(string memory report) public {
-    require(userRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Only Contributor");
+    require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Only Contributor");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add contribution");
 
     uint256 currentEra = contributorPoolEra();
@@ -125,7 +129,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
    * @notice Withdraw regeneration credit from contribution service provided
    */
   function withdraw() public {
-    require(userRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Pool only to contributor");
+    require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Pool only to contributor");
 
     Contributor memory contributor = contributors[msg.sender];
     uint256 currentEra = contributor.pool.currentEra;

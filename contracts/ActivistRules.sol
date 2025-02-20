@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { UserRules } from "./UserRules.sol";
+import { CommunityRules } from "./CommunityRules.sol";
 import { Activist, Pool } from "./types/ActivistTypes.sol";
-import { UserType, Invitation } from "./types/UserTypes.sol";
+import { UserType, Invitation } from "./types/CommunityTypes.sol";
 import { ActivistPool } from "./ActivistPool.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
@@ -20,15 +20,15 @@ contract ActivistRules is Callable, Invitable {
   mapping(address => mapping(address => bool)) internal activistWonLevel;
   mapping(uint256 => address) public activistsAddress;
 
-  UserRules internal userRules;
+  CommunityRules internal communityRules;
   ActivistPool internal activistPool;
   UserType private constant USER_TYPE = UserType.ACTIVIST;
   uint256 public approvedInvites;
 
   uint256 private constant MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS = 3;
 
-  constructor(address userRulesAddress, address activistPoolAddress) {
-    userRules = UserRules(userRulesAddress);
+  constructor(address communityRulesAddress, address activistPoolAddress) {
+    communityRules = CommunityRules(communityRulesAddress);
     activistPool = ActivistPool(activistPoolAddress);
   }
 
@@ -38,13 +38,13 @@ contract ActivistRules is Callable, Invitable {
    * @param proofPhoto Identity photo
    */
   function addActivist(string memory name, string memory proofPhoto) public returns (Activist memory) {
-    uint256 id = userRules.userTypesTotalCount(USER_TYPE) + 1;
+    uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Activist memory activist = Activist(id, msg.sender, name, proofPhoto, Pool(0, activistPoolEra()), block.number);
 
     activists[msg.sender] = activist;
     activistsAddress[id] = msg.sender;
-    userRules.addUser(msg.sender, USER_TYPE);
+    communityRules.addUser(msg.sender, USER_TYPE);
 
     return activist;
   }
@@ -54,7 +54,7 @@ contract ActivistRules is Callable, Invitable {
 
     if (activist.id <= 0) return false;
 
-    return canInvite(approvedInvites, userRules.userTypesTotalCount(USER_TYPE), activist.pool.level);
+    return canInvite(approvedInvites, communityRules.userTypesTotalCount(USER_TYPE), activist.pool.level);
   }
 
   /**
@@ -90,7 +90,7 @@ contract ActivistRules is Callable, Invitable {
    * @param regeneratorTotalInspections Invited regenerator total inspections
    */
   function addLevelFromRegenerator(address regeneratorAddress, uint256 regeneratorTotalInspections) internal {
-    Invitation memory regeneratorInvitation = userRules.getInvitation(regeneratorAddress);
+    Invitation memory regeneratorInvitation = communityRules.getInvitation(regeneratorAddress);
     address activistAddress = regeneratorInvitation.inviter;
 
     if (
@@ -109,7 +109,7 @@ contract ActivistRules is Callable, Invitable {
    * @param inspectorTotalInspections Invited inspector total inspections
    */
   function addLevelFromInspector(address inspectorAddress, uint256 inspectorTotalInspections) internal {
-    Invitation memory inspectorInvitation = userRules.getInvitation(inspectorAddress);
+    Invitation memory inspectorInvitation = communityRules.getInvitation(inspectorAddress);
     address activistAddress = inspectorInvitation.inviter;
 
     if (
@@ -142,7 +142,7 @@ contract ActivistRules is Callable, Invitable {
    * @notice Withdraw regeneration credit from activism service provided
    */
   function withdraw() public {
-    require(userRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Pool only to activist");
+    require(communityRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Pool only to activist");
 
     Activist memory activist = activists[msg.sender];
     uint256 currentEra = activist.pool.currentEra;

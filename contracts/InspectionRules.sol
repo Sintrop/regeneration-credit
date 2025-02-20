@@ -7,11 +7,11 @@ import { RegenerationIndexRules } from "./RegenerationIndexRules.sol";
 import { ValidatorRules } from "./ValidatorRules.sol";
 import { RegenerationIndexRules } from "./RegenerationIndexRules.sol";
 import { ActivistRules } from "./ActivistRules.sol";
-import { UserRules } from "./UserRules.sol";
+import { CommunityRules } from "./CommunityRules.sol";
 import { InspectionStatus, RegenerationInspection, Inspection } from "./types/InspectionTypes.sol";
 import { Regenerator } from "./types/RegeneratorTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
-import { UserType } from "./types/UserTypes.sol";
+import { UserType } from "./types/CommunityTypes.sol";
 import { ContractsDependency } from "./types/SintropTypes.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Callable } from "./shared/Callable.sol";
@@ -33,7 +33,7 @@ contract InspectionRules is Callable {
 
   InspectorRules private inspectorRules;
   RegeneratorRules private regeneratorRules;
-  UserRules private userRules;
+  CommunityRules private communityRules;
   ValidatorRules private validatorRules;
   ActivistRules private activistRules;
   RegenerationIndexRules private regenerationIndexRules;
@@ -62,7 +62,7 @@ contract InspectionRules is Callable {
   }
 
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
-    userRules = UserRules(contractDependency.userRulesAddress);
+    communityRules = CommunityRules(contractDependency.communityRulesAddress);
     regeneratorRules = RegeneratorRules(contractDependency.regeneratorRulesAddress);
     validatorRules = ValidatorRules(contractDependency.validatorRulesAddress);
     inspectorRules = InspectorRules(contractDependency.inspectorRulesAddress);
@@ -83,7 +83,7 @@ contract InspectionRules is Callable {
   function requestInspection() public {
     Regenerator memory regenerator = regeneratorRules.getRegenerator(msg.sender);
 
-    require(userRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Please register as regenerator");
+    require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Please register as regenerator");
     require(!regenerator.pendingInspection, "Request already OPEN");
     require(waitToRequest(regenerator), "Wait to request");
     require(
@@ -117,7 +117,7 @@ contract InspectionRules is Callable {
    * @param inspectionId The id of the inspection that the inspector want accept.
    */
   function acceptInspection(uint256 inspectionId) public {
-    require(userRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
+    require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspectorRules.isInspectorValid(msg.sender), "No more than 3 giveUps allowed");
 
     Inspection memory inspection = inspections[inspectionId];
@@ -157,7 +157,7 @@ contract InspectionRules is Callable {
       carbonIndicator.categoryId == 1 && biodiversityIndicator.categoryId == 2,
       "Invalid carbonIndicator or biodiversityIndicator"
     );
-    require(userRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
+    require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
     require(inspection.inspector == msg.sender, "You have not accepted this inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
@@ -211,7 +211,7 @@ contract InspectionRules is Callable {
   }
 
   function addInspectionValidation(uint256 id, string memory justification) public {
-    require(userRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+    require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
     Inspection memory inspection = inspections[id];
 

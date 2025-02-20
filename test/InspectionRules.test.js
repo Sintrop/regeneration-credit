@@ -1,5 +1,5 @@
 const { userTypes } = require("./shared/user_types");
-const { userRulesDeployed } = require("./shared/user_contract_deployed");
+const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
@@ -8,7 +8,7 @@ const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
 describe("InspectionRules", () => {
   let instance;
-  let userRules;
+  let communityRules;
   let inspectorRules;
   let regeneratorRules;
   let researcherRules;
@@ -131,7 +131,7 @@ describe("InspectionRules", () => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userRules.connect(from).addInvitation(inviter, invited, userType);
+    await communityRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
   const carbonIndicatorValue = () => {
@@ -186,7 +186,7 @@ describe("InspectionRules", () => {
     ] = await ethers.getSigners();
 
     regenerationCredit = await regenerationCreditDeployed();
-    userRules = await userRulesDeployed();
+    communityRules = await communityRulesDeployed();
 
     const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
     researcherPool = await researcherPoolFactory.deploy(
@@ -231,11 +231,15 @@ describe("InspectionRules", () => {
     const validatorRulesFactory = await ethers.getContractFactory("ValidatorRules");
     validatorRules = await validatorRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
-    inspectorRules = await inspectorRulesFactory.deploy(userRules.target, inspectorPool.target, inspectorMaxPenalties);
+    inspectorRules = await inspectorRulesFactory.deploy(
+      communityRules.target,
+      inspectorPool.target,
+      inspectorMaxPenalties
+    );
 
     const researcherSecuryBlocksToAnalysis = 10;
     researcherRules = await researcherRulesFactory.deploy(
-      userRules.target,
+      communityRules.target,
       researcherPool.target,
       validatorRules.target,
       timeBetweenResearches,
@@ -243,14 +247,14 @@ describe("InspectionRules", () => {
       researcherSecuryBlocksToAnalysis
     );
 
-    regeneratorRules = await regeneratorRulesFactory.deploy(userRules.target, regeneratorPool.target);
-    activistRules = await activistRulesFactory.deploy(userRules.target, activistPool.target);
+    regeneratorRules = await regeneratorRulesFactory.deploy(communityRules.target, regeneratorPool.target);
+    activistRules = await activistRulesFactory.deploy(communityRules.target, activistPool.target);
 
     const regenerationIndexRulesFactory = await ethers.getContractFactory("RegenerationIndexRules");
     regenerationIndexRules = await regenerationIndexRulesFactory.deploy();
 
     const validatorRulesDependencies = {
-      userRulesAddress: userRules.target,
+      communityRulesAddress: communityRules.target,
       regeneratorRulesAddress: regeneratorRules.target,
       validatorPoolAddress: validatorPool.target,
       inspectorRulesAddress: inspectorRules.target,
@@ -261,7 +265,7 @@ describe("InspectionRules", () => {
     };
 
     const sintropDependencies = {
-      userRulesAddress: userRules.target,
+      communityRulesAddress: communityRules.target,
       regeneratorRulesAddress: regeneratorRules.target,
       validatorRulesAddress: validatorRules.target,
       inspectorRulesAddress: inspectorRules.target,
@@ -281,12 +285,12 @@ describe("InspectionRules", () => {
     await instance.setContractAddressDependencies(sintropDependencies);
 
     await validatorRules.setContractAddressDependencies(validatorRulesDependencies);
-    await userRules.newAllowedCaller(inspectorRules.target);
-    await userRules.newAllowedCaller(regeneratorRules.target);
-    await userRules.newAllowedCaller(researcherRules.target);
-    await userRules.newAllowedCaller(validatorRules.target);
-    await userRules.newAllowedCaller(activistRules.target);
-    await userRules.newAllowedCaller(owner);
+    await communityRules.newAllowedCaller(inspectorRules.target);
+    await communityRules.newAllowedCaller(regeneratorRules.target);
+    await communityRules.newAllowedCaller(researcherRules.target);
+    await communityRules.newAllowedCaller(validatorRules.target);
+    await communityRules.newAllowedCaller(activistRules.target);
+    await communityRules.newAllowedCaller(owner);
     await inspectorRules.newAllowedCaller(instance.target);
     await inspectorRules.newAllowedCaller(owner);
     await inspectorRules.newAllowedCaller(validatorRules.target);
@@ -699,7 +703,7 @@ describe("InspectionRules", () => {
 
   describe("#realizeInspection", () => {
     beforeEach(async () => {
-      await userRules.newAllowedCaller(activist1Address);
+      await communityRules.newAllowedCaller(activist1Address);
       await addInvitation(owner, activist1Address, userTypes.Activist, owner);
       await addActivist("Activist 1", activist1Address);
       await addInvitation(activist1Address, regeneratorAddress, userTypes.Regenerator, activist1Address);
@@ -1344,7 +1348,7 @@ describe("InspectionRules", () => {
           });
 
           it("inspector type to DENIED", async () => {
-            const userType = await userRules.getUser(inspectorAddress);
+            const userType = await communityRules.getUser(inspectorAddress);
 
             expect(userType).to.equal(USER_TYPES.denied);
           });

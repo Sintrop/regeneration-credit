@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { UserRules } from "./UserRules.sol";
+import { CommunityRules } from "./CommunityRules.sol";
 import { Regenerator, Pool, Coordinates } from "./types/RegeneratorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { RegeneratorPool } from "./RegeneratorPool.sol";
-import { UserType } from "./types/UserTypes.sol";
+import { UserType } from "./types/CommunityTypes.sol";
 
 /**
  * @author Sintrop
@@ -21,7 +21,7 @@ contract RegeneratorRules is Callable {
   mapping(uint256 => address) public regeneratorsAddress;
   mapping(address => Coordinates[]) public coordinates;
 
-  UserRules internal userRules;
+  CommunityRules internal communityRules;
   RegeneratorPool internal regeneratorPool;
 
   UserType private constant USER_TYPE = UserType.REGENERATOR;
@@ -30,8 +30,8 @@ contract RegeneratorRules is Callable {
   /// @notice [ha] 1 ha = 10000m²
   uint256 public regenerationArea;
 
-  constructor(address userRulesAddress, address regeneratorPoolAddress) {
-    userRules = UserRules(userRulesAddress);
+  constructor(address communityRulesAddress, address regeneratorPoolAddress) {
+    communityRules = CommunityRules(communityRulesAddress);
     regeneratorPool = RegeneratorPool(regeneratorPoolAddress);
   }
 
@@ -51,7 +51,7 @@ contract RegeneratorRules is Callable {
     require(_coordinates.length >= 3 && _coordinates.length <= 10, "Minimum 3 and maximum 10 coordinate points");
 
     Regenerator memory regenerator = regenerators[msg.sender];
-    uint256 id = userRules.userTypesTotalCount(USER_TYPE) + 1;
+    uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     regenerator.id = id;
     regenerator.regeneratorWallet = msg.sender;
@@ -63,7 +63,7 @@ contract RegeneratorRules is Callable {
 
     regenerators[msg.sender] = regenerator;
     regeneratorsAddress[id] = msg.sender;
-    userRules.addUser(msg.sender, USER_TYPE);
+    communityRules.addUser(msg.sender, USER_TYPE);
 
     regenerationArea += totalArea;
 
@@ -85,7 +85,7 @@ contract RegeneratorRules is Callable {
    * @notice Withdraw regeneration credit from regeneration service provided
    */
   function withdraw() public {
-    require(userRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators pool");
+    require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators pool");
 
     Regenerator memory regenerator = regenerators[msg.sender];
     require(minimumInspections(regenerator.totalInspections), "Minimum inspections");

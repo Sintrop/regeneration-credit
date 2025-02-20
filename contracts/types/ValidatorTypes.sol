@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { UserType } from "./UserTypes.sol";
+import { UserType } from "./CommunityTypes.sol";
 
 struct Validator {
   uint256 id;
@@ -32,7 +32,7 @@ struct ResourceValidation {
 }
 
 struct ContractsDependency {
-  address userRulesAddress;
+  address communityRulesAddress;
   address regeneratorRulesAddress;
   address validatorPoolAddress;
   address inspectorRulesAddress;

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { UserRules } from "./UserRules.sol";
+import { CommunityRules } from "./CommunityRules.sol";
 import { RegeneratorRules } from "./RegeneratorRules.sol";
 import { Validator, UserValidation, ResourceValidation, Pool, ContractsDependency } from "./types/ValidatorTypes.sol";
-import { UserType } from "./types/UserTypes.sol";
+import { UserType } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { ValidatorPool } from "./ValidatorPool.sol";
 import { InspectorRules } from "./InspectorRules.sol";
@@ -35,7 +35,7 @@ contract ValidatorRules is Callable, Invitable {
   mapping(address => mapping(address => bool)) private validatorUsersValidations;
   mapping(uint256 => address) public validatorsAddress;
 
-  UserRules private userRules;
+  CommunityRules private communityRules;
   RegeneratorRules private regeneratorRules;
   ValidatorPool private validatorPool;
   InspectorRules private inspectorRules;
@@ -55,7 +55,7 @@ contract ValidatorRules is Callable, Invitable {
   }
 
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
-    userRules = UserRules(contractDependency.userRulesAddress);
+    communityRules = CommunityRules(contractDependency.communityRulesAddress);
     regeneratorRules = RegeneratorRules(contractDependency.regeneratorRulesAddress);
     validatorPool = ValidatorPool(contractDependency.validatorPoolAddress);
     inspectorRules = InspectorRules(contractDependency.inspectorRulesAddress);
@@ -69,12 +69,12 @@ contract ValidatorRules is Callable, Invitable {
    * @dev Allows a user to attempt to register as a validator
    */
   function addValidator() public {
-    uint256 id = userRules.userTypesCount(USER_TYPE) + 1;
+    uint256 id = communityRules.userTypesCount(USER_TYPE) + 1;
 
     validators[msg.sender] = Validator(id, msg.sender, Pool(0, validatorPoolEra()), block.number);
 
     validatorsAddress[id] = msg.sender;
-    userRules.addUser(msg.sender, USER_TYPE);
+    communityRules.addUser(msg.sender, USER_TYPE);
   }
 
   function canSendInvite(address addr) public view returns (bool) {
@@ -82,16 +82,16 @@ contract ValidatorRules is Callable, Invitable {
 
     if (validator.id <= 0) return false;
 
-    return canInvite(totalDeclaredAlives, userRules.userTypesTotalCount(USER_TYPE), validator.pool.level);
+    return canInvite(totalDeclaredAlives, communityRules.userTypesTotalCount(USER_TYPE), validator.pool.level);
   }
 
   function addUserValidation(
     address userAddress,
     string memory justification
   ) public canAddValidationModifier(msg.sender) {
-    require(userRules.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
-    require(!userRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
-    require(!userRules.userTypeIs(UserType.DENIED, userAddress), "User already denied");
+    require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
+    require(!communityRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
+    require(!communityRules.userTypeIs(UserType.DENIED, userAddress), "User already denied");
     require(!validatorUsersValidations[msg.sender][userAddress], "Already voted");
 
     validatorUsersValidations[msg.sender][userAddress] = true;
@@ -203,11 +203,11 @@ contract ValidatorRules is Callable, Invitable {
 
   function denieUser(address userAddress) internal {
     removeLevelsFromPool(userAddress, 0);
-    userRules.setDeniedType(userAddress);
+    communityRules.setDeniedType(userAddress);
   }
 
   function removeLevelsFromPool(address userAddress, uint256 levels) internal {
-    UserType oldUserType = userRules.getUser(userAddress);
+    UserType oldUserType = communityRules.getUser(userAddress);
 
     if (oldUserType == UserType.INSPECTOR) return inspectorRules.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.REGENERATOR) return regeneratorRules.removePoolLevels(userAddress, levels);
@@ -230,7 +230,7 @@ contract ValidatorRules is Callable, Invitable {
     uint256 currentEra = validatorPoolEra();
 
     if (currentEra == 1) {
-      uint256 _validatorsCount = userRules.userTypesCount(USER_TYPE);
+      uint256 _validatorsCount = communityRules.userTypesCount(USER_TYPE);
       return _validatorsCount / 2;
     } else {
       uint256 levels = validatorPool.getEra(currentEra - 1).levels;
@@ -240,7 +240,7 @@ contract ValidatorRules is Callable, Invitable {
   }
 
   function declareAlive() public {
-    require(userRules.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
+    require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
     address addr = msg.sender;
     uint256 levels = validatorPool.eraLevels(validatorPoolEra(), addr);
 
@@ -260,7 +260,7 @@ contract ValidatorRules is Callable, Invitable {
    * @notice Withdraw regeneration credit from validation service provided
    */
   function withdraw() public {
-    require(userRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Pool only to validators");
+    require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Pool only to validators");
 
     Validator memory validator = validators[msg.sender];
     uint256 currentEra = validator.pool.currentEra;

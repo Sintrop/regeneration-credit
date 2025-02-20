@@ -3,20 +3,20 @@ const getDeployedContract = require("../scripts/shared/getDeployedContract");
 const verifyContract = require("../scripts/shared/verifyContract");
 
 async function contributorRulesDeploy() {
-  const userRules = await getDeployedContract("UserRules");
+  const communityRules = await getDeployedContract("CommunityRules");
   const contributorPool = await getDeployedContract("ContributorPool");
 
   const ContributorRules = await ethers.getContractFactory("ContributorRules");
 
   const securityBlocksToValidatorAnalysis = process.env["CONTRIBUTOR_SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS"];
 
-  const args = [userRules.target, contributorPool.target, securityBlocksToValidatorAnalysis];
+  const args = [communityRules.target, contributorPool.target, securityBlocksToValidatorAnalysis];
 
   const contributorRules = await ContributorRules.deploy(...args);
 
   saveContractAddress("ContributorRules", contributorRules.target);
 
-  await userRules.newAllowedCaller(contributorRules.target);
+  await communityRules.newAllowedCaller(contributorRules.target);
   await contributorRules.newAllowedCaller(contributorPool.target);
 
   console.log(`ContributorRules address ${contributorRules.target}`);

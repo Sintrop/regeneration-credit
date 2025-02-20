@@ -3,9 +3,9 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
-import { UserRules } from "./UserRules.sol";
+import { CommunityRules } from "./CommunityRules.sol";
 import { Researcher, Research, Pool, CalculatorItem, Penalty } from "./types/ResearcherTypes.sol";
-import { UserType } from "./types/UserTypes.sol";
+import { UserType } from "./types/CommunityTypes.sol";
 import { ResearcherPool } from "./ResearcherPool.sol";
 import { ValidatorRules } from "./ValidatorRules.sol";
 
@@ -22,7 +22,7 @@ contract ResearcherRules is Callable, Invitable {
   mapping(address => Penalty[]) public penalties;
   mapping(uint256 => address) public researchersAddress;
 
-  UserRules internal userRules;
+  CommunityRules internal communityRules;
   ResearcherPool internal researcherPool;
   ValidatorRules internal validatorRules;
 
@@ -36,14 +36,14 @@ contract ResearcherRules is Callable, Invitable {
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
   constructor(
-    address userRulesAddress,
+    address communityRulesAddress,
     address researcherPoolAddress,
     address validatorRulesAddress,
     uint256 timeBetweenResearches_,
     uint256 maxPenalties_,
     uint256 securityBlocksToValidatorAnalysis
   ) {
-    userRules = UserRules(userRulesAddress);
+    communityRules = CommunityRules(communityRulesAddress);
     researcherPool = ResearcherPool(researcherPoolAddress);
     validatorRules = ValidatorRules(validatorRulesAddress);
     timeBetweenResearches = timeBetweenResearches_;
@@ -57,7 +57,7 @@ contract ResearcherRules is Callable, Invitable {
    * @param proofPhoto Identity photo
    */
   function addResearcher(string memory name, string memory proofPhoto) public returns (Researcher memory) {
-    uint256 id = userRules.userTypesTotalCount(USER_TYPE) + 1;
+    uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Researcher memory researcher = Researcher(
       id,
@@ -73,7 +73,7 @@ contract ResearcherRules is Callable, Invitable {
 
     researchers[msg.sender] = researcher;
     researchersAddress[id] = msg.sender;
-    userRules.addUser(msg.sender, USER_TYPE);
+    communityRules.addUser(msg.sender, USER_TYPE);
 
     return researcher;
   }
@@ -83,7 +83,7 @@ contract ResearcherRules is Callable, Invitable {
 
     if (researcher.id <= 0) return false;
 
-    return canInvite(researchesTotalCount, userRules.userTypesTotalCount(USER_TYPE), researcher.pool.level);
+    return canInvite(researchesTotalCount, communityRules.userTypesTotalCount(USER_TYPE), researcher.pool.level);
   }
 
   /**
@@ -110,7 +110,7 @@ contract ResearcherRules is Callable, Invitable {
    * @param file Hash of the report file
    */
   function addResearch(string memory title, string memory thesis, string memory file) public {
-    require(userRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
+    require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add research");
     require(canPublishResearch(msg.sender), "Can't publish yet");
 
@@ -142,7 +142,7 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   function addResearchValidation(uint256 id, string memory justification) public {
-    require(userRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+    require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
     Research memory research = researches[id];
 
@@ -191,7 +191,7 @@ contract ResearcherRules is Callable, Invitable {
    * @notice Withdraw regeneration credit from research service provided
    */
   function withdraw() public {
-    require(userRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Pool only to researchers");
+    require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Pool only to researchers");
 
     Researcher memory researcher = researchers[msg.sender];
     uint256 currentEra = researcher.pool.currentEra;
@@ -227,7 +227,7 @@ contract ResearcherRules is Callable, Invitable {
     uint256 soilImpact,
     uint256 biodiversityImpact
   ) public {
-    require(userRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
+    require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
 
     Researcher memory researcher = researchers[msg.sender];
 
