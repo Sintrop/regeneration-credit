@@ -3,7 +3,7 @@ const getDeployedContract = require("../scripts/shared/getDeployedContract");
 const verifyContract = require("../scripts/shared/verifyContract");
 
 async function developerRulesDeploy() {
-  const userRules = await getDeployedContract("UserRules");
+  const communityRules = await getDeployedContract("CommunityRules");
   const developerPool = await getDeployedContract("DeveloperPool");
   const validatorRules = await getDeployedContract("ValidatorRules");
 
@@ -13,7 +13,7 @@ async function developerRulesDeploy() {
   const securityBlocksToValidatorAnalysis = process.env["DEVELOPER_SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS"];
 
   const args = [
-    userRules.target,
+    communityRules.target,
     developerPool.target,
     validatorRules.target,
     developerMaxPenalties,
@@ -25,7 +25,7 @@ async function developerRulesDeploy() {
   saveContractAddress("DeveloperRules", developerRules.target);
 
   await developerPool.newAllowedCaller(developerRules.target);
-  await userRules.newAllowedCaller(developerRules.target);
+  await communityRules.newAllowedCaller(developerRules.target);
   await developerRules.newAllowedCaller(validatorRules.target);
 
   console.log(`DeveloperRules address ${developerRules.target}`);

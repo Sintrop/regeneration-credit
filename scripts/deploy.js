@@ -7,7 +7,7 @@
 const hre = require("hardhat");
 var fs = require("fs");
 const regenerationCreditDeploy = require("../migrations/1_regenerationCredit.deploy.js");
-const userRulesDeploy = require("../migrations/2_userRules.deploy.js");
+const communityRulesDeploy = require("../migrations/2_communityRules.deploy.js");
 const developerPoolDeploy = require("../migrations/3_developerPool.deploy.js");
 const developerRulesDeploy = require("../migrations/4_developerRules.deploy.js");
 const inspectorPoolDeploy = require("../migrations/5_inspectorPool.deploy.js");
@@ -68,7 +68,7 @@ async function main() {
   await startDeployAlert();
 
   await regenerationCreditDeploy();
-  await userRulesDeploy();
+  await communityRulesDeploy();
   await validatorPoolDeploy();
   await validatorRulesDeploy();
   await developerPoolDeploy();

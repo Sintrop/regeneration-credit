@@ -1,12 +1,12 @@
-const { userRulesDeployed } = require("./shared/user_contract_deployed");
+const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 
-describe("UserRules", function () {
+describe("CommunityRules", function () {
   let instance;
   let owner, user1Address, user2Address, user3Address, user4Address, user5Address, user6Address, user7Address;
 
-  const userRulesParams = {
+  const communityRulesParams = {
     inspectorProportionality: 2,
     activistProportionality: 1,
     researcherProportionality: 1,
@@ -44,7 +44,7 @@ describe("UserRules", function () {
     [owner, user1Address, user2Address, user3Address, user4Address, user5Address, user6Address, user7Address] =
       await ethers.getSigners();
 
-    instance = await userRulesDeployed(userRulesParams);
+    instance = await communityRulesDeployed(communityRulesParams);
 
     await instance.newAllowedCaller(owner);
   });

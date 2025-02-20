@@ -1,4 +1,4 @@
-const { userRulesDeployed } = require("./shared/user_contract_deployed");
+const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { expect } = require("chai");
@@ -6,7 +6,7 @@ const { ethers } = require("hardhat");
 const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
 describe("SupporterRules", () => {
-  let instance, userRules, regenerationCredit, supporterPool, researcherRules;
+  let instance, communityRules, regenerationCredit, supporterPool, researcherRules;
   let ownerAddress, inv1Address, inv2Address, user1Address;
 
   const addSupporter = async (name, from) => {
@@ -30,7 +30,7 @@ describe("SupporterRules", () => {
   beforeEach(async () => {
     [ownerAddress, inv1Address, inv2Address, user1Address] = await ethers.getSigners();
 
-    userRules = await userRulesDeployed();
+    communityRules = await communityRulesDeployed();
 
     regenerationCredit = await regenerationCreditDeployed();
 
@@ -50,7 +50,7 @@ describe("SupporterRules", () => {
     const researcherRulesFactory = await ethers.getContractFactory("ResearcherRules");
 
     researcherRules = await researcherRulesFactory.deploy(
-      userRules.target,
+      communityRules.target,
       researcherPool.target,
       ZERO_ADDRESS,
       reseacherTimeBetweenResearches,
@@ -59,11 +59,11 @@ describe("SupporterRules", () => {
     );
 
     const instanceFactory = await ethers.getContractFactory("SupporterRules");
-    instance = await instanceFactory.deploy(userRules.target, supporterPool.target, researcherRules.target);
+    instance = await instanceFactory.deploy(communityRules.target, supporterPool.target, researcherRules.target);
 
-    await userRules.newAllowedCaller(instance.target);
-    await userRules.newAllowedCaller(researcherRules.target);
-    await userRules.newAllowedCaller(ownerAddress);
+    await communityRules.newAllowedCaller(instance.target);
+    await communityRules.newAllowedCaller(researcherRules.target);
+    await communityRules.newAllowedCaller(ownerAddress);
     await supporterPool.newAllowedCaller(instance.target);
     await regenerationCredit.addContractPool(supporterPool.target, 0);
   });
@@ -88,7 +88,7 @@ describe("SupporterRules", () => {
       it("increment supporterCount", async () => {
         await addSupporter("Supporter A", inv1Address);
         await addSupporter("Supporter B", inv2Address);
-        const supportersCount = await userRules.userTypesCount(userTypes.Supporter);
+        const supportersCount = await communityRules.userTypesCount(userTypes.Supporter);
 
         expect(supportersCount).to.equal(2);
       });
@@ -96,7 +96,7 @@ describe("SupporterRules", () => {
       it("add created supporter in userType contract as a SUPPORTER", async () => {
         await addSupporter("Supporter A", inv1Address);
 
-        const userType = await userRules.getUser(inv1Address);
+        const userType = await communityRules.getUser(inv1Address);
         const SUPPORTER = 7;
 
         expect(userType).to.equal(SUPPORTER);
@@ -123,7 +123,7 @@ describe("SupporterRules", () => {
       context("when amount is greater than zero", () => {
         context("when calculatorItemId exists", () => {
           beforeEach(async () => {
-            await userRules.addInvitation(inv1Address, user1Address, userTypes.Researcher);
+            await communityRules.addInvitation(inv1Address, user1Address, userTypes.Researcher);
             await researcherRules.connect(user1Address).addResearcher("Researcher  A", "photoURL");
 
             await addCalculatorItem(user1Address);
@@ -131,7 +131,7 @@ describe("SupporterRules", () => {
 
           context("when SUPPORTER was invited", () => {
             beforeEach(async () => {
-              await userRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
+              await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
               await addSupporter("Supporter B", inv2Address);
               await transferTokensTo(inv2Address, 100000000000000000000n);
             });
@@ -242,7 +242,7 @@ describe("SupporterRules", () => {
 
         context("when calculatorItemId does not exists", () => {
           beforeEach(async () => {
-            await userRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
+            await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
             await addSupporter("Supporter B", inv2Address);
             await transferTokensTo(inv2Address, 100000000000000000000n);
             await instance.connect(inv2Address).burnTokensCalculator(1000000000000000000n, 10);
@@ -282,7 +282,7 @@ describe("SupporterRules", () => {
         context("when publish and burn", () => {
           context("when SUPPORTER was invited", () => {
             beforeEach(async () => {
-              await userRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
+              await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
               await addSupporter("Supporter B", inv2Address);
               await transferTokensTo(inv2Address, 100000000000000000000n);
             });
@@ -416,7 +416,7 @@ describe("SupporterRules", () => {
     context("when is supporter", () => {
       context("when calculatorItem exists", () => {
         beforeEach(async () => {
-          await userRules.addInvitation(inv1Address, user1Address, userTypes.Researcher);
+          await communityRules.addInvitation(inv1Address, user1Address, userTypes.Researcher);
           await researcherRules.connect(user1Address).addResearcher("Researcher  A", "photoURL");
 
           await addCalculatorItem(user1Address);

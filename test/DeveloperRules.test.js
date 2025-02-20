@@ -1,4 +1,4 @@
-const { userRulesDeployed } = require("./shared/user_contract_deployed");
+const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 
@@ -9,7 +9,7 @@ const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
 describe("DeveloperRules", (accounts) => {
   let instance;
-  let userRules;
+  let communityRules;
   let developerPool;
   let regenerationCredit;
   let validatorRules;
@@ -40,7 +40,7 @@ describe("DeveloperRules", (accounts) => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userRules.connect(from).addInvitation(inviter, invited, userType);
+    await communityRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
   const addValidator = async (from) => {
@@ -65,7 +65,7 @@ describe("DeveloperRules", (accounts) => {
     ] = await ethers.getSigners();
 
     regenerationCredit = await regenerationCreditDeployed();
-    userRules = await userRulesDeployed();
+    communityRules = await communityRulesDeployed();
 
     developerPoolFactory = await ethers.getContractFactory("DeveloperPool");
     developerPool = await developerPoolFactory.deploy(
@@ -86,7 +86,7 @@ describe("DeveloperRules", (accounts) => {
 
     developerRulesFactory = await ethers.getContractFactory("DeveloperRules");
     instance = await developerRulesFactory.deploy(
-      userRules.target,
+      communityRules.target,
       developerPool.target,
       validatorRules.target,
       maxPenalties,
@@ -94,19 +94,19 @@ describe("DeveloperRules", (accounts) => {
     );
 
     const validatorRulesDependencies = {
-      userRulesAddress: userRules.target,
+      communityRulesAddress: communityRules.target,
       regeneratorRulesAddress: ZERO_ADDRESS,
       validatorPoolAddress: validatorPool.target,
-      inspectorRulesAddress: userRules.target,
+      inspectorRulesAddress: communityRules.target,
       developerRulesAddress: instance.target,
       researcherRulesAddress: ZERO_ADDRESS,
       contributorRulesAddress: ZERO_ADDRESS,
       activistRulesAddress: ZERO_ADDRESS,
     };
 
-    await userRules.newAllowedCaller(instance.target);
-    await userRules.newAllowedCaller(owner);
-    await userRules.newAllowedCaller(validatorRules.target);
+    await communityRules.newAllowedCaller(instance.target);
+    await communityRules.newAllowedCaller(owner);
+    await communityRules.newAllowedCaller(validatorRules.target);
     await developerPool.newAllowedCaller(instance.target);
     await validatorPool.newAllowedCaller(validatorRules.target);
     await validatorRules.newAllowedCaller(instance.target);
@@ -159,7 +159,7 @@ describe("DeveloperRules", (accounts) => {
 
         it("should increment developersCount after create developer", async () => {
           await addDeveloper("Developer A", dev1Address);
-          const developersCount = await userRules.userTypesCount(userTypes.Developer);
+          const developersCount = await communityRules.userTypesCount(userTypes.Developer);
 
           expect(developersCount).to.equal(1);
         });
@@ -167,7 +167,7 @@ describe("DeveloperRules", (accounts) => {
         it("should add created developer in userType contract as a DEVELOPER", async () => {
           await addDeveloper("Developer A", dev1Address);
 
-          const userType = await userRules.getUser(dev1Address);
+          const userType = await communityRules.getUser(dev1Address);
           const DEVELOPER = 4;
 
           expect(userType).to.equal(DEVELOPER);
@@ -353,7 +353,7 @@ describe("DeveloperRules", (accounts) => {
           });
 
           it("user type must be DEVELOPER yet", async () => {
-            const userType = await userRules.getUser(dev1Address);
+            const userType = await communityRules.getUser(dev1Address);
 
             expect(userType).to.eq(userTypes.Developer);
           });
@@ -432,7 +432,7 @@ describe("DeveloperRules", (accounts) => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await userRules.getUser(dev1Address);
+          const userType = await communityRules.getUser(dev1Address);
 
           expect(userType).to.eq(userTypes.Denied);
         });

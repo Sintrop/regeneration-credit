@@ -4,8 +4,8 @@ pragma solidity >=0.7.0 <=0.9.0;
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
-import { UserRules } from "./UserRules.sol";
-import { UserType } from "./types/UserTypes.sol";
+import { CommunityRules } from "./CommunityRules.sol";
+import { UserType } from "./types/CommunityTypes.sol";
 import { DeveloperPool } from "./DeveloperPool.sol";
 import { ValidatorRules } from "./ValidatorRules.sol";
 import { Developer, Pool, Report, Penalty } from "./types/DeveloperTypes.sol";
@@ -23,7 +23,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   mapping(address => Penalty[]) public penalties;
   mapping(uint256 => address) public developersAddress;
 
-  UserRules internal userRules;
+  CommunityRules internal communityRules;
   DeveloperPool internal developerPool;
   ValidatorRules internal validatorRules;
 
@@ -35,13 +35,13 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
   constructor(
-    address userRulesAddress,
+    address communityRulesAddress,
     address developerPoolAddress,
     address validatorRulesAddress,
     uint256 maxPenalties_,
     uint256 securityBlocksToValidatorAnalysis
   ) {
-    userRules = UserRules(userRulesAddress);
+    communityRules = CommunityRules(communityRulesAddress);
     developerPool = DeveloperPool(developerPoolAddress);
     validatorRules = ValidatorRules(validatorRulesAddress);
     MAX_PENALTIES = maxPenalties_;
@@ -55,7 +55,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    */
   function addDeveloper(string memory name, string memory proofPhoto) public {
     uint256 level = 0;
-    uint256 id = userRules.userTypesTotalCount(USER_TYPE) + 1;
+    uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     developers[msg.sender] = Developer(
       id,
@@ -68,7 +68,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     );
 
     developersAddress[id] = msg.sender;
-    userRules.addUser(msg.sender, USER_TYPE);
+    communityRules.addUser(msg.sender, USER_TYPE);
   }
 
   function canSendInvite(address addr) public view returns (bool) {
@@ -76,7 +76,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
 
     if (developer.id <= 0) return false;
 
-    return canInvite(reportsTotalCount, userRules.userTypesTotalCount(USER_TYPE), developer.pool.level);
+    return canInvite(reportsTotalCount, communityRules.userTypesTotalCount(USER_TYPE), developer.pool.level);
   }
 
   /**
@@ -86,7 +86,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @param report Hash of the report file
    */
   function addReport(string memory description, string memory report) public {
-    require(userRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
+    require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add report");
 
     uint256 currentEra = developerPoolEra();
@@ -126,7 +126,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @param justification String with invalidation explanation
    */
   function addReportValidation(uint256 id, string memory justification) public {
-    require(userRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+    require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
     Report memory report = reports[id];
 
@@ -193,7 +193,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @notice Withdraw regeneration credit from development service provided
    */
   function withdraw() public {
-    require(userRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Pool only to developer");
+    require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Pool only to developer");
 
     Developer memory developer = developers[msg.sender];
     uint256 currentEra = developer.pool.currentEra;

@@ -3,7 +3,7 @@ const getDeployedContract = require("../scripts/shared/getDeployedContract");
 const verifyContract = require("../scripts/shared/verifyContract");
 
 async function researcherRulesDeploy() {
-  const userRules = await getDeployedContract("UserRules");
+  const communityRules = await getDeployedContract("CommunityRules");
   const researcherPool = await getDeployedContract("ResearcherPool");
   const validatorRules = await getDeployedContract("ValidatorRules");
 
@@ -14,7 +14,7 @@ async function researcherRulesDeploy() {
   const securityBlocksToValidatorAnalysis = process.env["RESEARCHER_SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS"];
 
   const args = [
-    userRules.target,
+    communityRules.target,
     researcherPool.target,
     validatorRules.target,
     timeBetweenResearches,
@@ -26,7 +26,7 @@ async function researcherRulesDeploy() {
 
   saveContractAddress("ResearcherRules", researcherRules.target);
 
-  await userRules.newAllowedCaller(researcherRules.target);
+  await communityRules.newAllowedCaller(researcherRules.target);
   await researcherPool.newAllowedCaller(researcherRules.target);
   await researcherRules.newAllowedCaller(validatorRules.target);
 

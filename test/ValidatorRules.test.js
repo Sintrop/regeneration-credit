@@ -2,11 +2,11 @@ const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
-const { userRulesDeployed } = require("./shared/user_contract_deployed");
+const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 
 describe("ValidatorRules", () => {
   let instance;
-  let userRules;
+  let communityRules;
   let regeneratorRules;
   let regeneratorPool;
   let validatorPool;
@@ -113,7 +113,7 @@ describe("ValidatorRules", () => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userRules.connect(from).addInvitation(inviter, invited, userType);
+    await communityRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
   const addRegenerator = async (name, from) => {
@@ -150,7 +150,7 @@ describe("ValidatorRules", () => {
   };
 
   const denyUser = async (userAddress) => {
-    await userRules.setDeniedType(userAddress);
+    await communityRules.setDeniedType(userAddress);
   };
 
   const generateReportObject = (report) => {
@@ -222,7 +222,7 @@ describe("ValidatorRules", () => {
     ] = await ethers.getSigners();
 
     regenerationCredit = await regenerationCreditDeployed();
-    userRules = await userRulesDeployed();
+    communityRules = await communityRulesDeployed();
 
     const regeneratorPoolFactory = await ethers.getContractFactory("RegeneratorPool");
     regeneratorPool = await regeneratorPoolFactory.deploy(
@@ -239,7 +239,7 @@ describe("ValidatorRules", () => {
     );
 
     const regeneratorRulesFactory = await ethers.getContractFactory("RegeneratorRules");
-    regeneratorRules = await regeneratorRulesFactory.deploy(userRules.target, regeneratorPool.target);
+    regeneratorRules = await regeneratorRulesFactory.deploy(communityRules.target, regeneratorPool.target);
 
     const inspectorPoolFactory = await ethers.getContractFactory("InspectorPool");
     inspectorPool = await inspectorPoolFactory.deploy(
@@ -271,7 +271,7 @@ describe("ValidatorRules", () => {
 
     const maxPenalties = 2;
     const inspectorRulesFactory = await ethers.getContractFactory("InspectorRules");
-    inspectorRules = await inspectorRulesFactory.deploy(userRules.target, inspectorPool.target, maxPenalties);
+    inspectorRules = await inspectorRulesFactory.deploy(communityRules.target, inspectorPool.target, maxPenalties);
 
     const validatorRulesFactory = await ethers.getContractFactory("ValidatorRules");
     instance = await validatorRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
@@ -280,7 +280,7 @@ describe("ValidatorRules", () => {
     const developerSecuryBlocksToAnalysis = 10;
     const developerRulesFactory = await ethers.getContractFactory("DeveloperRules");
     developerRules = await developerRulesFactory.deploy(
-      userRules.target,
+      communityRules.target,
       developerPool.target,
       instance.target,
       developerMaxPenalties,
@@ -290,7 +290,7 @@ describe("ValidatorRules", () => {
     const contributorSecuryBlocksToAnalysis = 10;
     const contributorRulesFactory = await ethers.getContractFactory("ContributorRules");
     contributorRules = await contributorRulesFactory.deploy(
-      userRules.target,
+      communityRules.target,
       contributorPool.target,
       contributorSecuryBlocksToAnalysis
     );
@@ -300,7 +300,7 @@ describe("ValidatorRules", () => {
     const researcherSecuryBlocksToAnalysis = 10;
     const researcherRulesFactory = await ethers.getContractFactory("ResearcherRules");
     researcherRules = await researcherRulesFactory.deploy(
-      userRules.target,
+      communityRules.target,
       researcherPool.target,
       instance.target,
       reseacherTimeBetweenResearches,
@@ -316,10 +316,10 @@ describe("ValidatorRules", () => {
     );
 
     const activistRulesFactory = await ethers.getContractFactory("ActivistRules");
-    activistRules = await activistRulesFactory.deploy(userRules.target, activistPool.target);
+    activistRules = await activistRulesFactory.deploy(communityRules.target, activistPool.target);
 
     const validatorRulesDependencies = {
-      userRulesAddress: userRules.target,
+      communityRulesAddress: communityRules.target,
       regeneratorRulesAddress: regeneratorRules.target,
       validatorPoolAddress: validatorPool.target,
       inspectorRulesAddress: inspectorRules.target,
@@ -329,14 +329,14 @@ describe("ValidatorRules", () => {
       activistRulesAddress: activistRules.target,
     };
 
-    await userRules.newAllowedCaller(instance.target);
-    await userRules.newAllowedCaller(regeneratorRules.target);
-    await userRules.newAllowedCaller(inspectorRules.target);
-    await userRules.newAllowedCaller(developerRules.target);
-    await userRules.newAllowedCaller(researcherRules.target);
-    await userRules.newAllowedCaller(contributorRules.target);
-    await userRules.newAllowedCaller(activistRules.target);
-    await userRules.newAllowedCaller(owner);
+    await communityRules.newAllowedCaller(instance.target);
+    await communityRules.newAllowedCaller(regeneratorRules.target);
+    await communityRules.newAllowedCaller(inspectorRules.target);
+    await communityRules.newAllowedCaller(developerRules.target);
+    await communityRules.newAllowedCaller(researcherRules.target);
+    await communityRules.newAllowedCaller(contributorRules.target);
+    await communityRules.newAllowedCaller(activistRules.target);
+    await communityRules.newAllowedCaller(owner);
     await regeneratorRules.newAllowedCaller(instance.target);
     await regeneratorRules.newAllowedCaller(owner);
     await developerRules.newAllowedCaller(owner);
@@ -393,7 +393,7 @@ describe("ValidatorRules", () => {
 
         it("should increment validatorCount after create validator", async () => {
           await addValidator(validator1Address);
-          const validatorsCount = await userRules.userTypesCount(userTypes.Validator);
+          const validatorsCount = await communityRules.userTypesCount(userTypes.Validator);
 
           expect(validatorsCount).to.equal(1);
         });
@@ -401,7 +401,7 @@ describe("ValidatorRules", () => {
         it("should add created validator in userType contract as a VALIDATOR", async () => {
           await addValidator(validator1Address);
 
-          const userType = await userRules.getUser(validator1Address);
+          const userType = await communityRules.getUser(validator1Address);
           const VALIDATOR = 8;
 
           expect(userType).to.equal(VALIDATOR);
@@ -450,7 +450,7 @@ describe("ValidatorRules", () => {
           });
 
           it("user type must be the same", async () => {
-            const user = await userRules.getUser(validator2Address);
+            const user = await communityRules.getUser(validator2Address);
             const VALIDATOR = 8;
 
             expect(user).to.equal(VALIDATOR);
@@ -491,7 +491,7 @@ describe("ValidatorRules", () => {
               });
 
               it("user type must be denied", async () => {
-                const user = await userRules.getUser(regenerator1Address);
+                const user = await communityRules.getUser(regenerator1Address);
                 const DENIED = 9;
 
                 expect(user).to.equal(DENIED);
@@ -510,7 +510,7 @@ describe("ValidatorRules", () => {
               });
 
               it("userTypesCount must be decremented", async () => {
-                const userTypesCount = await userRules.userTypesCount(userTypes.Regenerator);
+                const userTypesCount = await communityRules.userTypesCount(userTypes.Regenerator);
 
                 expect(userTypesCount).to.equal(1);
               });
@@ -522,7 +522,7 @@ describe("ValidatorRules", () => {
               });
 
               it("must emit DeniedUserEevent", async () => {
-                await expect(receipt).to.emit(userRules, "DeniedUserEevent").withArgs(regenerator1Address);
+                await expect(receipt).to.emit(communityRules, "DeniedUserEevent").withArgs(regenerator1Address);
               });
             });
 
@@ -552,7 +552,7 @@ describe("ValidatorRules", () => {
               });
 
               it("user type must be denied", async () => {
-                const user = await userRules.getUser(inspector1Address);
+                const user = await communityRules.getUser(inspector1Address);
                 const DENIED = 9;
 
                 expect(user).to.equal(DENIED);
@@ -573,7 +573,7 @@ describe("ValidatorRules", () => {
               });
 
               it("userTypesCount must be decremented", async () => {
-                const userTypesCount = await userRules.userTypesCount(userTypes.Inspector);
+                const userTypesCount = await communityRules.userTypesCount(userTypes.Inspector);
 
                 expect(userTypesCount).to.equal(1);
               });
@@ -600,7 +600,7 @@ describe("ValidatorRules", () => {
               });
 
               it("user type must be denied", async () => {
-                const user = await userRules.getUser(contributor1Address);
+                const user = await communityRules.getUser(contributor1Address);
                 const DENIED = 9;
 
                 expect(user).to.equal(DENIED);
@@ -621,7 +621,7 @@ describe("ValidatorRules", () => {
               });
 
               it("userTypesCount must be decremented", async () => {
-                const userTypesCount = await userRules.userTypesCount(userTypes.Contributor);
+                const userTypesCount = await communityRules.userTypesCount(userTypes.Contributor);
 
                 expect(userTypesCount).to.equal(1);
               });
@@ -648,7 +648,7 @@ describe("ValidatorRules", () => {
               });
 
               it("user type must be denied", async () => {
-                const user = await userRules.getUser(dev1Address);
+                const user = await communityRules.getUser(dev1Address);
                 const DENIED = 9;
 
                 expect(user).to.equal(DENIED);
@@ -669,7 +669,7 @@ describe("ValidatorRules", () => {
               });
 
               it("userTypesCount must be decremented", async () => {
-                const userTypesCount = await userRules.userTypesCount(userTypes.Developer);
+                const userTypesCount = await communityRules.userTypesCount(userTypes.Developer);
 
                 expect(userTypesCount).to.equal(1);
               });
@@ -696,7 +696,7 @@ describe("ValidatorRules", () => {
               });
 
               it("user type must be denied", async () => {
-                const user = await userRules.getUser(resea1Address);
+                const user = await communityRules.getUser(resea1Address);
                 const DENIED = 9;
 
                 expect(user).to.equal(DENIED);
@@ -717,7 +717,7 @@ describe("ValidatorRules", () => {
               });
 
               it("userTypesCount must be decremented", async () => {
-                const userTypesCount = await userRules.userTypesCount(userTypes.Researcher);
+                const userTypesCount = await communityRules.userTypesCount(userTypes.Researcher);
 
                 expect(userTypesCount).to.equal(1);
               });
@@ -746,7 +746,7 @@ describe("ValidatorRules", () => {
               });
 
               it("user type must be denied", async () => {
-                const user = await userRules.getUser(activist1Address);
+                const user = await communityRules.getUser(activist1Address);
                 const DENIED = 9;
 
                 expect(user).to.equal(DENIED);
@@ -767,7 +767,7 @@ describe("ValidatorRules", () => {
               });
 
               it("userTypesCount must be decremented", async () => {
-                const userTypesCount = await userRules.userTypesCount(userTypes.Activist);
+                const userTypesCount = await communityRules.userTypesCount(userTypes.Activist);
 
                 expect(userTypesCount).to.equal(1);
               });
@@ -789,7 +789,7 @@ describe("ValidatorRules", () => {
               });
 
               it("user type must be denied", async () => {
-                const user = await userRules.getUser(validator1Address);
+                const user = await communityRules.getUser(validator1Address);
                 const DENIED = 9;
 
                 expect(user).to.equal(DENIED);
@@ -810,7 +810,7 @@ describe("ValidatorRules", () => {
               });
 
               it("userTypesCount must be decremented", async () => {
-                const userTypesCount = await userRules.userTypesCount(userTypes.Validator);
+                const userTypesCount = await communityRules.userTypesCount(userTypes.Validator);
 
                 expect(userTypesCount).to.equal(3);
               });
@@ -1000,7 +1000,7 @@ describe("ValidatorRules", () => {
               });
 
               it("deny inspector", async () => {
-                const newInspectorType = await userRules.getUser(inspectionMock.inspector);
+                const newInspectorType = await communityRules.getUser(inspectionMock.inspector);
 
                 expect(newInspectorType).to.equal(9);
               });
@@ -1073,7 +1073,7 @@ describe("ValidatorRules", () => {
               });
 
               it("inspector is the same", async () => {
-                const newInspectorType = await userRules.getUser(inspectionMock.inspector);
+                const newInspectorType = await communityRules.getUser(inspectionMock.inspector);
 
                 expect(newInspectorType).to.equal(2);
               });
@@ -1300,7 +1300,7 @@ describe("ValidatorRules", () => {
               });
 
               it("deny developer", async () => {
-                const newDeveloperType = await userRules.getUser(dev1Address);
+                const newDeveloperType = await communityRules.getUser(dev1Address);
 
                 expect(newDeveloperType).to.equal(9);
               });
@@ -1328,7 +1328,7 @@ describe("ValidatorRules", () => {
               });
 
               it("developer is the same", async () => {
-                const newDeveloperType = await userRules.getUser(dev1Address);
+                const newDeveloperType = await communityRules.getUser(dev1Address);
 
                 expect(newDeveloperType).to.equal(4);
               });
@@ -1482,7 +1482,7 @@ describe("ValidatorRules", () => {
               });
 
               it("deny researcher", async () => {
-                const newResearcherType = await userRules.getUser(resea1Address);
+                const newResearcherType = await communityRules.getUser(resea1Address);
 
                 expect(newResearcherType).to.equal(9);
               });
@@ -1514,7 +1514,7 @@ describe("ValidatorRules", () => {
               });
 
               it("researcher is the same", async () => {
-                const userType = await userRules.getUser(resea1Address);
+                const userType = await communityRules.getUser(resea1Address);
 
                 expect(userType).to.equal(3);
               });

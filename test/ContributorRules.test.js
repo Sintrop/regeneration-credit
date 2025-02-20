@@ -1,4 +1,4 @@
-const { userRulesDeployed } = require("./shared/user_contract_deployed");
+const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 
@@ -8,7 +8,7 @@ const { ethers } = require("hardhat");
 
 describe("ContributorRules", (accounts) => {
   let instance;
-  let userRules;
+  let communityRules;
   let contributorPool;
   let regenerationCredit;
   let owner, contr1Address, contr2Address, contr3Address;
@@ -26,14 +26,14 @@ describe("ContributorRules", (accounts) => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await userRules.connect(from).addInvitation(inviter, invited, userType);
+    await communityRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
   beforeEach(async () => {
     [owner, contr1Address, contr2Address, contr3Address] = await ethers.getSigners();
 
     regenerationCredit = await regenerationCreditDeployed();
-    userRules = await userRulesDeployed();
+    communityRules = await communityRulesDeployed();
 
     contributorPoolFactory = await ethers.getContractFactory("ContributorPool");
     contributorPool = await contributorPoolFactory.deploy(
@@ -44,13 +44,13 @@ describe("ContributorRules", (accounts) => {
 
     contributorRulesFactory = await ethers.getContractFactory("ContributorRules");
     instance = await contributorRulesFactory.deploy(
-      userRules.target,
+      communityRules.target,
       contributorPool.target,
       securityBlocksToValidatorAnalysis
     );
 
-    await userRules.newAllowedCaller(instance.target);
-    await userRules.newAllowedCaller(owner);
+    await communityRules.newAllowedCaller(instance.target);
+    await communityRules.newAllowedCaller(owner);
     await contributorPool.newAllowedCaller(instance.target);
     await regenerationCredit.addContractPool(contributorPool.target, "30000000000000000000000000");
 
@@ -98,7 +98,7 @@ describe("ContributorRules", (accounts) => {
 
         it("should increment contributorsCount after create contributor", async () => {
           await addContributor("Contributor A", contr1Address);
-          const contributorsCount = await userRules.userTypesCount(userTypes.Contributor);
+          const contributorsCount = await communityRules.userTypesCount(userTypes.Contributor);
 
           expect(contributorsCount).to.equal(1);
         });
@@ -106,7 +106,7 @@ describe("ContributorRules", (accounts) => {
         it("should add created contributor in userType contract as a CONTRIBUTOR", async () => {
           await addContributor("Contributor A", contr1Address);
 
-          const userType = await userRules.getUser(contr1Address);
+          const userType = await communityRules.getUser(contr1Address);
           const CONTRIBUTOR = 5;
 
           expect(userType).to.equal(CONTRIBUTOR);

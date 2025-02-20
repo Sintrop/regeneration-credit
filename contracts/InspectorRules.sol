@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { UserRules } from "./UserRules.sol";
+import { CommunityRules } from "./CommunityRules.sol";
 import { Inspector, Penalty, Pool } from "./types/InspectorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
-import { UserType } from "./types/UserTypes.sol";
+import { UserType } from "./types/CommunityTypes.sol";
 import { InspectorPool } from "./InspectorPool.sol";
 
 /**
@@ -20,15 +20,15 @@ contract InspectorRules is Callable {
   mapping(address => Penalty[]) public penalties;
   mapping(uint256 => address) public inspectorsAddress;
 
-  UserRules internal userRules;
+  CommunityRules internal communityRules;
   InspectorPool internal inspectorPool;
   UserType private constant USER_TYPE = UserType.INSPECTOR;
 
   uint256 public immutable maxPenalties;
   uint256 private constant MAX_GIVEUPS = 3;
 
-  constructor(address userRulesAddress, address inspectorPoolAddress, uint256 maxPenalties_) {
-    userRules = UserRules(userRulesAddress);
+  constructor(address communityRulesAddress, address inspectorPoolAddress, uint256 maxPenalties_) {
+    communityRules = CommunityRules(communityRulesAddress);
     inspectorPool = InspectorPool(inspectorPoolAddress);
     maxPenalties = maxPenalties_;
   }
@@ -39,7 +39,7 @@ contract InspectorRules is Callable {
    * @param proofPhoto Identity photo
    */
   function addInspector(string memory name, string memory proofPhoto) public returns (Inspector memory) {
-    uint256 id = userRules.userTypesTotalCount(USER_TYPE) + 1;
+    uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Inspector memory inspector = Inspector(
       id,
@@ -56,7 +56,7 @@ contract InspectorRules is Callable {
 
     inspectors[msg.sender] = inspector;
     inspectorsAddress[id] = msg.sender;
-    userRules.addUser(msg.sender, USER_TYPE);
+    communityRules.addUser(msg.sender, USER_TYPE);
 
     return inspector;
   }
@@ -192,7 +192,7 @@ contract InspectorRules is Callable {
    * @notice Withdraw regeneration credit from inspection service provided
    */
   function withdraw() public {
-    require(userRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Pool only to inspectors");
+    require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Pool only to inspectors");
 
     Inspector memory inspector = inspectors[msg.sender];
     require(minimumInspections(inspector.totalInspections), "Minimum inspections");

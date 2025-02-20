@@ -3,7 +3,7 @@ const getDeployedContract = require("../scripts/shared/getDeployedContract");
 const verifyContract = require("../scripts/shared/verifyContract");
 
 async function invitationRulesDeploy() {
-  const userRules = await getDeployedContract("UserRules");
+  const communityRules = await getDeployedContract("CommunityRules");
   const researcherRules = await getDeployedContract("ResearcherRules");
   const developerRules = await getDeployedContract("DeveloperRules");
   const activistRules = await getDeployedContract("ActivistRules");
@@ -13,7 +13,7 @@ async function invitationRulesDeploy() {
   const InvitationRules = await ethers.getContractFactory("InvitationRules");
 
   const args = [
-    userRules.target,
+    communityRules.target,
     researcherRules.target,
     developerRules.target,
     activistRules.target,
@@ -27,7 +27,7 @@ async function invitationRulesDeploy() {
 
   console.log(`InvitationRules address ${invitationRules.target}`);
 
-  await userRules.newAllowedCaller(invitationRules.target);
+  await communityRules.newAllowedCaller(invitationRules.target);
 
   await verifyContract(invitationRules, "InvitationRules", args);
 

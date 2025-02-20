@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { UserRules } from "./UserRules.sol";
+import { CommunityRules } from "./CommunityRules.sol";
 import { ResearcherRules } from "./ResearcherRules.sol";
 import { CalculatorItem } from "./types/ResearcherTypes.sol";
 import { Supporter, Publication } from "./types/SupporterTypes.sol";
-import { UserType, Invitation } from "./types/UserTypes.sol";
+import { UserType, Invitation } from "./types/CommunityTypes.sol";
 import { SupporterPool } from "./SupporterPool.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
@@ -26,13 +26,13 @@ contract SupporterRules {
 
   uint256 public constant INVITER_PERCENTAGE = 5;
 
-  UserRules internal userRules;
+  CommunityRules internal communityRules;
   SupporterPool internal supporterPool;
   ResearcherRules internal researcherRules;
   UserType private constant USER_TYPE = UserType.SUPPORTER;
 
-  constructor(address userRulesAddress, address supporterPoolAddress, address researcherRulesAddress) {
-    userRules = UserRules(userRulesAddress);
+  constructor(address communityRulesAddress, address supporterPoolAddress, address researcherRulesAddress) {
+    communityRules = CommunityRules(communityRulesAddress);
     supporterPool = SupporterPool(supporterPoolAddress);
     researcherRules = ResearcherRules(researcherRulesAddress);
   }
@@ -43,19 +43,19 @@ contract SupporterRules {
    * @return a supporter
    */
   function addSupporter(string memory name) public returns (Supporter memory) {
-    uint256 id = userRules.userTypesTotalCount(USER_TYPE) + 1;
+    uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Supporter memory supporter = Supporter(id, msg.sender, name, block.number);
 
     supporters[msg.sender] = supporter;
     supportersAddress[id] = msg.sender;
-    userRules.addUser(msg.sender, USER_TYPE);
+    communityRules.addUser(msg.sender, USER_TYPE);
 
     return supporter;
   }
 
   function burnTokensCalculator(uint256 amount, uint256 calculatorItemId) public {
-    require(userRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
+    require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount > 0, "Amount invalid");
 
     uint256 amountBurn = burnTokens(amount);
@@ -67,7 +67,7 @@ contract SupporterRules {
   }
 
   function burnTokensPublication(uint256 amount, string memory description, string memory content) public {
-    require(userRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
+    require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount > 1, "Amount invalid");
 
     uint256 amountBurn = burnTokens(amount);
@@ -76,7 +76,7 @@ contract SupporterRules {
   }
 
   function burnTokens(uint256 amount) internal returns (uint256) {
-    Invitation memory invitation = userRules.getInvitation(msg.sender);
+    Invitation memory invitation = communityRules.getInvitation(msg.sender);
     bool isInvited = invitation.createdAtBlock != 0;
 
     uint256 inviterTotalTokens = isInvited ? amount.mul(INVITER_PERCENTAGE).div(100) : 0;
@@ -88,7 +88,7 @@ contract SupporterRules {
   }
 
   function declareReductionCommitment(uint256 calculatorItemId) public {
-    require(userRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
+    require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
 
     CalculatorItem memory calculatorItem = researcherRules.getCalculatorItem(calculatorItemId);
 
