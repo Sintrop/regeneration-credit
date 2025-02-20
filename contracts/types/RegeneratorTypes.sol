@@ -23,8 +23,8 @@ struct Pool {
 }
 
 struct RegenerationScore {
-  int256 score;
-  int256 average;
+  uint256 score;
+  uint256 average;
   bool sustainable;
 }
 

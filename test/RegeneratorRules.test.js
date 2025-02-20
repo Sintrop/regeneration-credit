@@ -324,42 +324,6 @@ describe("RegeneratorRules", () => {
               });
             });
 
-            context("when new score is negative", () => {
-              beforeEach(async () => {
-                await instance.afterRealizeInspection(prod1Address, -70);
-              });
-
-              it("regenerator regeneration score must be 530", async () => {
-                const regenerator = await instance.getRegenerator(prod1Address);
-
-                expect(regenerator.regenerationScore.score).to.equal(530);
-              });
-
-              it("regenerator must not be sustainable", async () => {
-                const regenerator = await instance.getRegenerator(prod1Address);
-
-                expect(regenerator.regenerationScore.sustainable).to.equal(false);
-              });
-            });
-
-            context("when new score + regenerator score result in a negative value", () => {
-              beforeEach(async () => {
-                await instance.afterRealizeInspection(prod1Address, -610);
-              });
-
-              it("regenerator regeneration score must be -10", async () => {
-                const regenerator = await instance.getRegenerator(prod1Address);
-
-                expect(regenerator.regenerationScore.score).to.equal(-10);
-              });
-
-              it("regenerator must not be sustainable", async () => {
-                const regenerator = await instance.getRegenerator(prod1Address);
-
-                expect(regenerator.regenerationScore.sustainable).to.equal(false);
-              });
-            });
-
             context("when new score + regenerator score is equal or bigger limit score", () => {
               beforeEach(async () => {
                 await instance.afterRealizeInspection(prod1Address, 400);
@@ -431,24 +395,6 @@ describe("RegeneratorRules", () => {
                 const regeneratorsSustainable = await instance.regeneratorsSustainable();
 
                 expect(regeneratorsSustainable).to.equal(1);
-              });
-            });
-
-            context("when new score + regenerator score result in a negative value", () => {
-              beforeEach(async () => {
-                await instance.afterRealizeInspection(prod1Address, -610);
-              });
-
-              it("regenerator regeneration score must be -10", async () => {
-                const regenerator = await instance.getRegenerator(prod1Address);
-
-                expect(regenerator.regenerationScore.score).to.equal(-10);
-              });
-
-              it("regenerator must not be sustainable", async () => {
-                const regenerator = await instance.getRegenerator(prod1Address);
-
-                expect(regenerator.regenerationScore.sustainable).to.equal(false);
               });
             });
           });
@@ -554,64 +500,6 @@ describe("RegeneratorRules", () => {
                     const regenerator = await instance.getRegenerator(prod1Address);
 
                     expect(regenerator.regenerationScore.score).to.equal(100);
-                  });
-                });
-              });
-
-              context("when receives more -25 levels", () => {
-                context("when is not in the pool yet", () => {
-                  beforeEach(async () => {
-                    await instance.afterRealizeInspection(prod1Address, -25);
-                  });
-
-                  it("set 0 levels to era 1 pool", async () => {
-                    const eraLevels = await regeneratorPool.eraLevels(1, prod1Address);
-
-                    expect(eraLevels).to.equal(0);
-                  });
-
-                  it("regenerator regenerationScore must be 25", async () => {
-                    const regenerator = await instance.getRegenerator(prod1Address);
-
-                    expect(regenerator.regenerationScore.score).to.equal(25);
-                  });
-                });
-
-                context("when already in the pool", () => {
-                  beforeEach(async () => {
-                    await instance.afterRealizeInspection(prod1Address, 25);
-                    await instance.afterRealizeInspection(prod1Address, -25);
-                  });
-
-                  it("set 50 levels to era 1 pool", async () => {
-                    const eraLevels = await regeneratorPool.eraLevels(1, prod1Address);
-
-                    expect(eraLevels).to.equal(50);
-                  });
-
-                  it("regenerator regenerationScore must be 50", async () => {
-                    const regenerator = await instance.getRegenerator(prod1Address);
-
-                    expect(regenerator.regenerationScore.score).to.equal(50);
-                  });
-                });
-
-                context("when have negative values in regenerator contract", () => {
-                  beforeEach(async () => {
-                    await instance.afterRealizeInspection(prod1Address, -75);
-                    await instance.afterRealizeInspection(prod1Address, 30);
-                  });
-
-                  it("set 5 levels to era 1 pool", async () => {
-                    const eraLevels = await regeneratorPool.eraLevels(1, prod1Address);
-
-                    expect(eraLevels).to.equal(5);
-                  });
-
-                  it("regenerator regenerationScore must be 5", async () => {
-                    const regenerator = await instance.getRegenerator(prod1Address);
-
-                    expect(regenerator.regenerationScore.score).to.equal(5);
                   });
                 });
               });

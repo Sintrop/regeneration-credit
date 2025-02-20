@@ -194,11 +194,7 @@ contract ValidatorRules is Callable, Invitable {
     regeneratorRules.decrementInspections(inspection.regenerator);
 
     removeLevelsFromPool(inspection.inspector, 1);
-
-    if (inspection.regenerationScore < 0)
-      return regeneratorRules.removeNegativeScore(inspection.regenerator, -(inspection.regenerationScore));
-
-    removeLevelsFromPool(inspection.regenerator, uint256(inspection.regenerationScore));
+    removeLevelsFromPool(inspection.regenerator, inspection.regenerationScore);
   }
 
   function externalDenieUser(address userAddress) private {

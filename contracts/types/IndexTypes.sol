@@ -14,5 +14,5 @@ struct RegenerationIndexDescription {
 
 struct RegenerationIndex {
   string name;
-  int256 value;
+  uint256 value;
 }
