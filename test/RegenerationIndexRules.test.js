@@ -4,12 +4,12 @@ describe("RegenerationIndexRules", () => {
   let instance;
   let owner;
 
-  const biomassIndicatorValue = {
+  const biomassResultValue = {
     categoryId: 1,
     indicator: 100001,
   };
 
-  const biodiversityIndicatorValue = {
+  const biodiversityResultValue = {
     categoryId: 2,
     indicator: 1001,
   };
@@ -73,7 +73,7 @@ describe("RegenerationIndexRules", () => {
 
       context("when category and regeneration index exists", () => {
         it("calculate regenerationScore", async () => {
-          const score = await instance.calculateScore(biomassIndicatorValue, biodiversityIndicatorValue);
+          const score = await instance.calculateScore(biomassResultValue, biodiversityResultValue);
 
           expect(score).to.equal(50);
         });

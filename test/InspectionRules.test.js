@@ -134,14 +134,14 @@ describe("InspectionRules", () => {
     await communityRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
-  const biomassIndicatorValue = () => {
+  const biomassResultValue = () => {
     return {
       categoryId: 1,
       indicator: 10,
     };
   };
 
-  const biodiversityIndicatorValue = () => {
+  const biodiversityResultValue = () => {
     return {
       categoryId: 2,
       indicator: 10,
@@ -158,10 +158,10 @@ describe("InspectionRules", () => {
     await instance.connect(from).acceptInspection(inspectionId);
   };
 
-  const realizeInspection = async (id, report, biomassIndicator, biodiversityIndicator, from) => {
+  const realizeInspection = async (id, report, biomassResult, biodiversityResult, from) => {
     const proofPhoto = "proofPhoto";
 
-    await instance.connect(from).realizeInspection(id, proofPhoto, report, biomassIndicator, biodiversityIndicator);
+    await instance.connect(from).realizeInspection(id, proofPhoto, report, biomassResult, biodiversityResult);
   };
 
   const firstValidatorLimit = 8;
@@ -388,17 +388,17 @@ describe("InspectionRules", () => {
           beforeEach(async () => {
             await acceptInspection(1, inspectorAddress);
 
-            const biomassIndicatorValue = {
+            const biomassResultValue = {
               categoryId: 1,
               indicator: 15,
             };
 
-            const biodiversityIndicatorValue = {
+            const biodiversityResultValue = {
               categoryId: 2,
               indicator: 51,
             };
 
-            await realizeInspection(1, report, biomassIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
+            await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
           });
 
           context("when last request is recent", () => {
@@ -646,7 +646,7 @@ describe("InspectionRules", () => {
             context("when have finished last inspection", () => {
               beforeEach(async () => {
                 await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-                await realizeInspection(1, "", biomassIndicatorValue(), biodiversityIndicatorValue(), inspectorAddress);
+                await realizeInspection(1, "", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
                 await acceptInspection(2, inspectorAddress);
               });
 
@@ -671,7 +671,7 @@ describe("InspectionRules", () => {
           beforeEach(async () => {
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
             await acceptInspection(1, inspectorAddress);
-            await realizeInspection(1, report, biomassIndicatorValue(), biodiversityIndicatorValue(), inspectorAddress);
+            await realizeInspection(1, report, biomassResultValue(), biodiversityResultValue(), inspectorAddress);
 
             await advanceBlock(20);
 
@@ -733,7 +733,7 @@ describe("InspectionRules", () => {
 
               it("should return error message", async () => {
                 await expect(
-                  realizeInspection(1, report, biomassIndicatorValue(), biodiversityIndicatorValue(), inspectorAddress)
+                  realizeInspection(1, report, biomassResultValue(), biodiversityResultValue(), inspectorAddress)
                 ).to.be.revertedWith("Inspection Expired");
               });
             });
@@ -746,8 +746,8 @@ describe("InspectionRules", () => {
                       await realizeInspection(
                         1,
                         report,
-                        biomassIndicatorValue(),
-                        biodiversityIndicatorValue(),
+                        biomassResultValue(),
+                        biodiversityResultValue(),
                         inspectorAddress
                       );
                     });
@@ -770,8 +770,8 @@ describe("InspectionRules", () => {
                       await realizeInspection(
                         1,
                         report,
-                        biomassIndicatorValue(),
-                        biodiversityIndicatorValue(),
+                        biomassResultValue(),
+                        biodiversityResultValue(),
                         inspectorAddress
                       );
                     });
@@ -796,8 +796,8 @@ describe("InspectionRules", () => {
                       await realizeInspection(
                         1,
                         report,
-                        biomassIndicatorValue(),
-                        biodiversityIndicatorValue(),
+                        biomassResultValue(),
+                        biodiversityResultValue(),
                         inspectorAddress
                       );
                     });
@@ -826,8 +826,8 @@ describe("InspectionRules", () => {
                       await realizeInspection(
                         1,
                         report,
-                        biomassIndicatorValue(),
-                        biodiversityIndicatorValue(),
+                        biomassResultValue(),
+                        biodiversityResultValue(),
                         inspectorAddress
                       );
                     });
@@ -858,8 +858,8 @@ describe("InspectionRules", () => {
                       await realizeInspection(
                         1,
                         report,
-                        biomassIndicatorValue(),
-                        biodiversityIndicatorValue(),
+                        biomassResultValue(),
+                        biodiversityResultValue(),
                         inspectorAddress
                       );
                     });
@@ -883,8 +883,8 @@ describe("InspectionRules", () => {
                     await realizeInspection(
                       1,
                       report,
-                      biomassIndicatorValue(),
-                      biodiversityIndicatorValue(),
+                      biomassResultValue(),
+                      biodiversityResultValue(),
                       inspectorAddress
                     );
                   });
@@ -968,12 +968,12 @@ describe("InspectionRules", () => {
                 context("when check inspection regenerationIndex", () => {
                   context("when select REGENERATIVE_6", () => {
                     beforeEach(async () => {
-                      const biomassIndicatorValue = {
+                      const biomassResultValue = {
                         categoryId: 1,
                         indicator: 100001,
                       };
 
-                      const biodiversityIndicatorValue = {
+                      const biodiversityResultValue = {
                         categoryId: 2,
                         indicator: 1001,
                       };
@@ -981,8 +981,8 @@ describe("InspectionRules", () => {
                       await realizeInspection(
                         1,
                         report,
-                        biomassIndicatorValue,
-                        biodiversityIndicatorValue,
+                        biomassResultValue,
+                        biodiversityResultValue,
                         inspectorAddress
                       );
                     });
@@ -996,12 +996,12 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_5", () => {
                     beforeEach(async () => {
-                      const biomassIndicatorValue = {
+                      const biomassResultValue = {
                         categoryId: 1,
                         indicator: 10001,
                       };
 
-                      const biodiversityIndicatorValue = {
+                      const biodiversityResultValue = {
                         categoryId: 2,
                         indicator: 501,
                       };
@@ -1009,8 +1009,8 @@ describe("InspectionRules", () => {
                       await realizeInspection(
                         1,
                         report,
-                        biomassIndicatorValue,
-                        biodiversityIndicatorValue,
+                        biomassResultValue,
+                        biodiversityResultValue,
                         inspectorAddress
                       );
                     });
@@ -1024,12 +1024,12 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_4", () => {
                     beforeEach(async () => {
-                      const biomassIndicatorValue = {
+                      const biomassResultValue = {
                         categoryId: 1,
                         indicator: 1001,
                       };
 
-                      const biodiversityIndicatorValue = {
+                      const biodiversityResultValue = {
                         categoryId: 2,
                         indicator: 201,
                       };
@@ -1037,8 +1037,8 @@ describe("InspectionRules", () => {
                       await realizeInspection(
                         1,
                         report,
-                        biomassIndicatorValue,
-                        biodiversityIndicatorValue,
+                        biomassResultValue,
+                        biodiversityResultValue,
                         inspectorAddress
                       );
                     });
@@ -1052,12 +1052,12 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_3", () => {
                     beforeEach(async () => {
-                      const biomassIndicatorValue = {
+                      const biomassResultValue = {
                         categoryId: 1,
                         indicator: 101,
                       };
 
-                      const biodiversityIndicatorValue = {
+                      const biodiversityResultValue = {
                         categoryId: 2,
                         indicator: 101,
                       };
@@ -1065,8 +1065,8 @@ describe("InspectionRules", () => {
                       await realizeInspection(
                         1,
                         report,
-                        biomassIndicatorValue,
-                        biodiversityIndicatorValue,
+                        biomassResultValue,
+                        biodiversityResultValue,
                         inspectorAddress
                       );
                     });
@@ -1080,12 +1080,12 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_2", () => {
                     beforeEach(async () => {
-                      const biomassIndicatorValue = {
+                      const biomassResultValue = {
                         categoryId: 1,
                         indicator: 15,
                       };
 
-                      const biodiversityIndicatorValue = {
+                      const biodiversityResultValue = {
                         categoryId: 2,
                         indicator: 51,
                       };
@@ -1093,8 +1093,8 @@ describe("InspectionRules", () => {
                       await realizeInspection(
                         1,
                         report,
-                        biomassIndicatorValue,
-                        biodiversityIndicatorValue,
+                        biomassResultValue,
+                        biodiversityResultValue,
                         inspectorAddress
                       );
                     });
@@ -1108,12 +1108,12 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_1", () => {
                     beforeEach(async () => {
-                      const biomassIndicatorValue = {
+                      const biomassResultValue = {
                         categoryId: 1,
                         indicator: 5,
                       };
 
-                      const biodiversityIndicatorValue = {
+                      const biodiversityResultValue = {
                         categoryId: 2,
                         indicator: 30,
                       };
@@ -1121,8 +1121,8 @@ describe("InspectionRules", () => {
                       await realizeInspection(
                         1,
                         report,
-                        biomassIndicatorValue,
-                        biodiversityIndicatorValue,
+                        biomassResultValue,
+                        biodiversityResultValue,
                         inspectorAddress
                       );
                     });
@@ -1136,12 +1136,12 @@ describe("InspectionRules", () => {
 
                   context("when select NEUTRO", () => {
                     beforeEach(async () => {
-                      const biomassIndicatorValue = {
+                      const biomassResultValue = {
                         categoryId: 1,
                         indicator: 0,
                       };
 
-                      const biodiversityIndicatorValue = {
+                      const biodiversityResultValue = {
                         categoryId: 2,
                         indicator: 0,
                       };
@@ -1149,8 +1149,8 @@ describe("InspectionRules", () => {
                       await realizeInspection(
                         1,
                         report,
-                        biomassIndicatorValue,
-                        biodiversityIndicatorValue,
+                        biomassResultValue,
+                        biodiversityResultValue,
                         inspectorAddress
                       );
                     });
@@ -1164,21 +1164,21 @@ describe("InspectionRules", () => {
                 });
               });
 
-              context("when pass wrong biomassIndicator or biodiversity", () => {
-                const biomassIndicatorValue = {
+              context("when pass wrong biomassResult or biodiversity", () => {
+                const biomassResultValue = {
                   categoryId: 10,
                   indicator: 1001,
                 };
 
-                const biodiversityIndicatorValue = {
+                const biodiversityResultValue = {
                   categoryId: 2,
                   indicator: 201,
                 };
 
                 it("should return error message", async () => {
                   await expect(
-                    realizeInspection(1, report, biomassIndicatorValue, biodiversityIndicatorValue, inspectorAddress)
-                  ).to.be.revertedWith("Invalid biomassIndicator or biodiversityIndicator");
+                    realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress)
+                  ).to.be.revertedWith("Invalid biomassResult or biodiversityResult");
                 });
               });
             });
@@ -1192,7 +1192,7 @@ describe("InspectionRules", () => {
 
             it("should return error message", async () => {
               await expect(
-                realizeInspection(1, report, biomassIndicatorValue(), biodiversityIndicatorValue(), inspector2Address)
+                realizeInspection(1, report, biomassResultValue(), biodiversityResultValue(), inspector2Address)
               ).to.be.revertedWith("You have not accepted this inspection");
             });
           });
@@ -1201,7 +1201,7 @@ describe("InspectionRules", () => {
         context("when inspection is not accepted", () => {
           it("should return error message", async () => {
             await expect(
-              realizeInspection(1, report, biomassIndicatorValue(), biodiversityIndicatorValue(), inspectorAddress)
+              realizeInspection(1, report, biomassResultValue(), biodiversityResultValue(), inspectorAddress)
             ).to.be.revertedWith("Accept this inspection before");
           });
         });
@@ -1210,7 +1210,7 @@ describe("InspectionRules", () => {
       context("when inspection dont exists", () => {
         it("should return error message", async () => {
           await expect(
-            realizeInspection(1, report, biomassIndicatorValue(), biodiversityIndicatorValue(), inspectorAddress)
+            realizeInspection(1, report, biomassResultValue(), biodiversityResultValue(), inspectorAddress)
           ).to.be.revertedWith("Accept this inspection before");
         });
       });
@@ -1223,7 +1223,7 @@ describe("InspectionRules", () => {
         await acceptInspection(1, inspectorAddress);
 
         await expect(
-          realizeInspection(1, report, biomassIndicatorValue(), biodiversityIndicatorValue(), regeneratorAddress)
+          realizeInspection(1, report, biomassResultValue(), biodiversityResultValue(), regeneratorAddress)
         ).to.be.revertedWith("Please register as inspector");
       });
     });
@@ -1256,7 +1256,7 @@ describe("InspectionRules", () => {
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(1, inspectorAddress);
-          await realizeInspection(1, report, biomassIndicatorValue(), biodiversityIndicatorValue(), inspectorAddress);
+          await realizeInspection(1, report, biomassResultValue(), biodiversityResultValue(), inspectorAddress);
         });
 
         context("when receive 1 validation", () => {
@@ -1372,7 +1372,7 @@ describe("InspectionRules", () => {
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(1, inspectorAddress);
-          await realizeInspection(1, report, biomassIndicatorValue(), biodiversityIndicatorValue(), inspectorAddress);
+          await realizeInspection(1, report, biomassResultValue(), biodiversityResultValue(), inspectorAddress);
 
           await advanceBlock(regeneratorPoolArgs.blocksPerEra);
         });
