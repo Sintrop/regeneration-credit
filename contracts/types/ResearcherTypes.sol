@@ -37,10 +37,9 @@ struct CalculatorItem {
   uint256 id;
   address createdBy;
   string title;
+  string unit;
+  string justification;
   uint256 carbonImpact;
-  uint256 soilImpact;
-  uint256 waterImpact;
-  uint256 biodiversityImpact;
 }
 
 struct Penalty {
