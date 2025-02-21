@@ -978,13 +978,7 @@ describe("InspectionRules", () => {
                         indicator: 1001,
                       };
 
-                      await realizeInspection(
-                        1,
-                        report,
-                        biomassResultValue,
-                        biodiversityResultValue,
-                        inspectorAddress
-                      );
+                      await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
                     it("should add 50 regenerationScore to inspection", async () => {
@@ -1006,13 +1000,7 @@ describe("InspectionRules", () => {
                         indicator: 501,
                       };
 
-                      await realizeInspection(
-                        1,
-                        report,
-                        biomassResultValue,
-                        biodiversityResultValue,
-                        inspectorAddress
-                      );
+                      await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
                     it("should add 32 regenerationScore to inspection", async () => {
@@ -1034,13 +1022,7 @@ describe("InspectionRules", () => {
                         indicator: 201,
                       };
 
-                      await realizeInspection(
-                        1,
-                        report,
-                        biomassResultValue,
-                        biodiversityResultValue,
-                        inspectorAddress
-                      );
+                      await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
                     it("should add 16 regenerationScore to inspection", async () => {
@@ -1062,13 +1044,7 @@ describe("InspectionRules", () => {
                         indicator: 101,
                       };
 
-                      await realizeInspection(
-                        1,
-                        report,
-                        biomassResultValue,
-                        biodiversityResultValue,
-                        inspectorAddress
-                      );
+                      await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
                     it("should add 4 regenerationScore to inspection", async () => {
@@ -1090,13 +1066,7 @@ describe("InspectionRules", () => {
                         indicator: 51,
                       };
 
-                      await realizeInspection(
-                        1,
-                        report,
-                        biomassResultValue,
-                        biodiversityResultValue,
-                        inspectorAddress
-                      );
+                      await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
                     it("should add 2 regenerationScore to inspection", async () => {
@@ -1118,13 +1088,7 @@ describe("InspectionRules", () => {
                         indicator: 30,
                       };
 
-                      await realizeInspection(
-                        1,
-                        report,
-                        biomassResultValue,
-                        biodiversityResultValue,
-                        inspectorAddress
-                      );
+                      await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
                     it("should add 1 regenerationScore to inspection", async () => {
@@ -1146,13 +1110,7 @@ describe("InspectionRules", () => {
                         indicator: 0,
                       };
 
-                      await realizeInspection(
-                        1,
-                        report,
-                        biomassResultValue,
-                        biodiversityResultValue,
-                        inspectorAddress
-                      );
+                      await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
                     it("should add 0 regenerationScore to inspection", async () => {
