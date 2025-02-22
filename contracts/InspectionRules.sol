@@ -39,6 +39,7 @@ contract InspectionRules is Callable {
   RegenerationIndexRules private regenerationIndexRules;
 
   uint256 public inspectionsCount;
+  uint256 public inspectionsTotalCount;
   uint256 public inspectionsCarbonImpact;
   uint256 public inspectionsBiodiversityImpact;
   uint256 public immutable timeBetweenInspections;
@@ -99,13 +100,14 @@ contract InspectionRules is Callable {
   function createInspection() internal {
     Inspection memory inspection;
 
-    inspection.id = inspectionsCount + 1;
+    inspection.id = inspectionsTotalCount + 1;
     inspection.status = InspectionStatus.OPEN;
     inspection.regenerator = msg.sender;
     inspection.inspector = address(0);
     inspection.createdAt = block.number;
     inspections[inspection.id] = inspection;
     inspectionsCount++;
+    inspectionsTotalCount++;
   }
 
   function afterRequestInspection() internal {
@@ -230,7 +232,8 @@ contract InspectionRules is Callable {
   function invalidateInspection(Inspection memory inspection) internal {
     inspectionsCarbonImpact -= regenerationInspection[inspection.id][1].indicator;
     inspectionsBiodiversityImpact -= regenerationInspection[inspection.id][2].indicator;
-
+    // Decrementar total de inpeções em 1
+    inspectionsCount--;
     inspection.status = InspectionStatus.INVALIDATED;
     inspection.invalidatedAt = block.number;
     inspections[inspection.id] = inspection;

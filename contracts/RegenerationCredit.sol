@@ -21,9 +21,9 @@ contract RegenerationCredit is ERC20, Ownable {
   mapping(address => uint256) public certificate;
   mapping(address => bool) internal contractsPools;
 
-  uint256 internal totalSupply_;
-  uint256 internal totalCertified_;
-  uint256 internal totalLocked_;
+  uint256 public totalSupply_;
+  uint256 public totalCertified_;
+  uint256 public totalLocked_;
 
   using SafeMath for uint256;
 
