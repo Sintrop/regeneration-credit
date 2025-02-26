@@ -981,10 +981,10 @@ describe("InspectionRules", () => {
                       await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
-                    it("should add 50 regenerationScore to inspection", async () => {
+                    it("should add 64 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
 
-                      expect(inspection.regenerationScore).to.equal(50);
+                      expect(inspection.regenerationScore).to.equal(64);
                     });
                   });
 

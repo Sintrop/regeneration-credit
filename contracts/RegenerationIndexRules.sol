@@ -19,7 +19,7 @@ contract RegenerationIndexRules is Ownable, Callable {
   uint256 public categoryCounts;
 
   constructor() {
-    regenerationIndex[1] = RegenerationIndex("REGENERATIVO 6", 25);
+    regenerationIndex[1] = RegenerationIndex("REGENERATIVO 6", 32);
     regenerationIndex[2] = RegenerationIndex("REGENERATIVO 5", 16);
     regenerationIndex[3] = RegenerationIndex("REGENERATIVO 4", 8);
     regenerationIndex[4] = RegenerationIndex("REGENERATIVO 3", 4);
