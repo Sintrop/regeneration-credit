@@ -75,7 +75,7 @@ module.exports = {
     },
   },
   gasReporter: {
-    enabled: !!gasReportEnabled,
+    enabled: gasReportEnabled == 'true',
     currency: "USD",
     L1Etherscan: etherscanApiKey,
     currencyDisplayPrecision: 2,

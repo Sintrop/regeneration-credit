@@ -18,7 +18,7 @@ describe("SupporterRules", () => {
   };
 
   const addCalculatorItem = async (from) => {
-    await researcherRules.connect(from).addCalculatorItem("title", 1, 1, 1, 1);
+    await researcherRules.connect(from).addCalculatorItem("title", "kg", "justification", 1);
   };
 
   const reseacherPoolArgs = {
