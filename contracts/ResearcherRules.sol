@@ -215,17 +215,14 @@ contract ResearcherRules is Callable, Invitable {
    * @dev Allows a researcher to attempt to publish an calculatorItem to users calculate their degradation
    * @notice One calculatorItem per research
    * @param title CalculatorItem title
-   * @param carbonImpact Kg of carbon
-   * @param waterImpact M³ of water
-   * @param soilImpact M² of water
-   * @param waterImpact Units of life
+   * @param justification Item result justification
+   * @param carbonImpact Tons of carbon [t]
    */
   function addCalculatorItem(
     string memory title,
-    uint256 carbonImpact,
-    uint256 waterImpact,
-    uint256 soilImpact,
-    uint256 biodiversityImpact
+    string memory unit,
+    string memory justification,
+    uint256 carbonImpact
   ) public {
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
 
@@ -235,15 +232,7 @@ contract ResearcherRules is Callable, Invitable {
 
     uint256 id = calculatorItemsCount + 1;
 
-    CalculatorItem memory calculatorItem = CalculatorItem(
-      id,
-      msg.sender,
-      title,
-      carbonImpact,
-      waterImpact,
-      soilImpact,
-      biodiversityImpact
-    );
+    CalculatorItem memory calculatorItem = CalculatorItem(id, msg.sender, title, unit, justification, carbonImpact);
 
     calculatorItems[id] = calculatorItem;
     calculatorItemsCount++;

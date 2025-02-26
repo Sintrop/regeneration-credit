@@ -50,7 +50,7 @@ describe("ResearcherRules", () => {
   };
 
   const addCalculatorItem = async (from) => {
-    await instance.connect(from).addCalculatorItem("title", 1, 1, 1, 1);
+    await instance.connect(from).addCalculatorItem("title", "kg", "justification", 1);
   };
 
   beforeEach(async () => {

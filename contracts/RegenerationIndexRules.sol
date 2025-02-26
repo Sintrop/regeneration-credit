@@ -36,10 +36,10 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @dev create categories to the system
    */
   function addCategories() internal {
-    Category memory carbonCategory = Category(
+    Category memory biomassCategory = Category(
       1,
-      "Carbon",
-      "Indicator to measure CO2 balance. Must evaluate carbon emissions and sequestration. Carbon balance = sequestration - emissions [tCO2]"
+      "Biomass",
+      "Indicator to measure the total amount of biomass in the regenerating area. How much organic matter is there on the site? Estimate by including living biomass, such as trees, plants and roots, as well as dead biomass, which includes leaves, branches, wood and other types of organic matter covering the soil. The result should be expressed in tons [t]"
     );
 
     categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(1, "Balance > 100.000"));
@@ -50,10 +50,10 @@ contract RegenerationIndexRules is Ownable, Callable {
     categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(6, "10 > Balance > 0"));
     categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(7, "Not applicable"));
 
-    Category memory biodiversity = Category(
+    Category memory biodiversityCategory = Category(
       2,
       "Biodiversity",
-      "Indicator to measure the level of biodiversity. Our unit is 'unit of life', meaning one species of fauna and flora."
+      "Indicator to measure the level of plant biodiversity in the regenerating area. How many different species are there in the area? Each different species is equivalent to one point and only trees and plants managed or planted by the regenerator should be counted"
     );
 
     categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(1, "Biodiversity > 1000"));
@@ -64,8 +64,8 @@ contract RegenerationIndexRules is Ownable, Callable {
     categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(6, "50 > Biodiversity > 25"));
     categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(7, "Biodiversity < 25"));
 
-    categories[1] = carbonCategory;
-    categories[2] = biodiversity;
+    categories[1] = biomassCategory;
+    categories[2] = biodiversityCategory;
   }
 
   /**
@@ -80,17 +80,17 @@ contract RegenerationIndexRules is Ownable, Callable {
 
   /**
    * @dev Function to calculate the inspection score
-   * @param carbonIndicator Inspection result provided by inspector
-   * @param biodiversityIndicator Inspection result provided by inspector
+   * @param biomassResult Inspection result provided by inspector
+   * @param biodiversityResult Inspection result provided by inspector
    * @return int256 Inspection score
    */
   function calculateScore(
-    RegenerationInspection memory carbonIndicator,
-    RegenerationInspection memory biodiversityIndicator
+    RegenerationInspection memory biomassResult,
+    RegenerationInspection memory biodiversityResult
   ) public view returns (uint256) {
-    RegenerationIndex memory carbon = regenerationIndex[carbonRegenerationIndexId(carbonIndicator.indicator)];
+    RegenerationIndex memory carbon = regenerationIndex[carbonRegenerationIndexId(biomassResult.indicator)];
     RegenerationIndex memory biodiversity = regenerationIndex[
-      biodiversityRegenerationIndexId(biodiversityIndicator.indicator)
+      biodiversityRegenerationIndexId(biodiversityResult.indicator)
     ];
 
     return carbon.value + biodiversity.value;
