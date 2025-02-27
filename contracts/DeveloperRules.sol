@@ -56,15 +56,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   function addDeveloper(string memory name, string memory proofPhoto) public {
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
-    developers[msg.sender] = Developer(
-      id,
-      msg.sender,
-      name,
-      proofPhoto,
-      Pool(0, developerPoolEra()),
-      0,
-      block.number
-    );
+    developers[msg.sender] = Developer(id, msg.sender, name, proofPhoto, Pool(0, developerPoolEra()), 0, block.number);
 
     developersAddress[id] = msg.sender;
     communityRules.addUser(msg.sender, USER_TYPE);
