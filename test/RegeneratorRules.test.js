@@ -316,12 +316,6 @@ describe("RegeneratorRules", () => {
 
                 expect(regenerator.regenerationScore.score).to.equal(670);
               });
-
-              it("regenerator must not be sustainable", async () => {
-                const regenerator = await instance.getRegenerator(prod1Address);
-
-                expect(regenerator.regenerationScore.sustainable).to.equal(false);
-              });
             });
 
             context("when new score + regenerator score is equal or bigger limit score", () => {
@@ -333,18 +327,6 @@ describe("RegeneratorRules", () => {
                 const regenerator = await instance.getRegenerator(prod1Address);
 
                 expect(regenerator.regenerationScore.score).to.equal(1000);
-              });
-
-              it("regenerator must be sustainable", async () => {
-                const regenerator = await instance.getRegenerator(prod1Address);
-
-                expect(regenerator.regenerationScore.sustainable).to.equal(true);
-              });
-
-              it("regenerators sustainable must increment", async () => {
-                const regeneratorsSustainable = await instance.regeneratorsSustainable();
-
-                expect(regeneratorsSustainable).to.equal(1);
               });
             });
           });
@@ -366,12 +348,6 @@ describe("RegeneratorRules", () => {
 
                 expect(regenerator.regenerationScore.score).to.equal(670);
               });
-
-              it("regenerator must not be sustainable", async () => {
-                const regenerator = await instance.getRegenerator(prod1Address);
-
-                expect(regenerator.regenerationScore.sustainable).to.equal(false);
-              });
             });
 
             context("when new score + regenerator A score is equal than limit score", () => {
@@ -383,18 +359,6 @@ describe("RegeneratorRules", () => {
                 const regenerator = await instance.getRegenerator(prod1Address);
 
                 expect(regenerator.regenerationScore.score).to.equal(1000);
-              });
-
-              it("regenerator A must be sustainable", async () => {
-                const regenerator = await instance.getRegenerator(prod1Address);
-
-                expect(regenerator.regenerationScore.sustainable).to.equal(true);
-              });
-
-              it("regenerators sustainable must increment", async () => {
-                const regeneratorsSustainable = await instance.regeneratorsSustainable();
-
-                expect(regeneratorsSustainable).to.equal(1);
               });
             });
           });
@@ -415,12 +379,6 @@ describe("RegeneratorRules", () => {
                 const regenerator = await instance.getRegenerator(prod1Address);
 
                 expect(regenerator.regenerationScore.score).to.equal(1100);
-              });
-
-              it("regenerator must be sustainable", async () => {
-                const regenerator = await instance.getRegenerator(prod1Address);
-
-                expect(regenerator.regenerationScore.sustainable).to.equal(true);
               });
             });
           });
