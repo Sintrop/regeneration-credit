@@ -44,7 +44,6 @@ contract ContributorRules is Ownable, Callable, Invitable {
    * @param proofPhoto Identity photo
    */
   function addContributor(string memory name, string memory proofPhoto) public {
-    uint256 level = 0;
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     contributors[msg.sender] = Contributor(
@@ -52,7 +51,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
       msg.sender,
       name,
       proofPhoto,
-      Pool(level, contributorPoolEra()),
+      Pool(0, contributorPoolEra()),
       block.number
     );
 

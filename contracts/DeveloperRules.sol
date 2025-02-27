@@ -54,7 +54,6 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @param proofPhoto Identity photo
    */
   function addDeveloper(string memory name, string memory proofPhoto) public {
-    uint256 level = 0;
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     developers[msg.sender] = Developer(
@@ -62,7 +61,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
       msg.sender,
       name,
       proofPhoto,
-      Pool(level, developerPoolEra()),
+      Pool(0, developerPoolEra()),
       0,
       block.number
     );
