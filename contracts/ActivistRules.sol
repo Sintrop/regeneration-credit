@@ -16,7 +16,6 @@ import { Invitable } from "./shared/Invitable.sol";
  */
 
 contract ActivistRules is Callable, Invitable {
-  
   /// @notice The relationship between address and activist data
   mapping(address => Activist) internal activists;
 

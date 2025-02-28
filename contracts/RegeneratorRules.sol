@@ -14,7 +14,6 @@ import { UserType } from "./types/CommunityTypes.sol";
  * @notice Person, family or a group of peolpe that are restoring nature
  */
 contract RegeneratorRules is Callable {
-
   /// @notice Minimum inspections to regenerator receive tokens
   uint256 internal constant MINIMUM_INSPECTION_TO_POOL = 3;
   uint256 internal constant LIMIT_REGENERATION_SCORE_TO_POOL = 1000;
