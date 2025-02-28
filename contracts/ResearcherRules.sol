@@ -16,23 +16,50 @@ import { ValidatorRules } from "./ValidatorRules.sol";
  * @notice Responsible for developing evaluation methodologies
  */
 contract ResearcherRules is Callable, Invitable {
+
+  /// @notice The relationship between address and researcher data
   mapping(address => Researcher) internal researchers;
+
+  /// @notice The relationship between id and research data
   mapping(uint256 => Research) public researches;
+
+  /// @notice The relationship between id and calculatorItem data
   mapping(uint256 => CalculatorItem) public calculatorItems;
+
+  /// @notice The relationship between address and penalties received
   mapping(address => Penalty[]) public penalties;
+
+  /// @notice The relationship between id and researcher address
   mapping(uint256 => address) public researchersAddress;
 
+  /// @notice CommunityRules contract address
   CommunityRules internal communityRules;
+
+  /// @notice ResearcherPool contract address
   ResearcherPool internal researcherPool;
+
+  /// @notice ValidatorPool contract address
   ValidatorRules internal validatorRules;
 
+  /// @notice Researcher UserType
   UserType private constant USER_TYPE = UserType.RESEARCHER;
+
+  /// @notice Total valid researches count
   uint256 public researchesCount;
+
+  /// @notice Total researches count
   uint256 public researchesTotalCount;
+
+  /// @notice Total calculatorItems count
   uint256 public calculatorItemsCount;
+
+  /// @notice Waiting blocks to publish research
   uint256 internal immutable timeBetweenResearches;
 
+  /// @notice Max allowed penalties before invalidation
   uint256 public immutable MAX_PENALTIES;
+
+  /// @notice Number of blocks to block addResearch before the end of an era
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
   constructor(
@@ -78,6 +105,11 @@ contract ResearcherRules is Callable, Invitable {
     return researcher;
   }
 
+  /**
+   * @dev Checks if a researcher can send invite
+   * @notice True if researcher can send invite
+   * @param addr The researcher address
+   */
   function canSendInvite(address addr) public view returns (bool) {
     Researcher memory researcher = getResearcher(addr);
 

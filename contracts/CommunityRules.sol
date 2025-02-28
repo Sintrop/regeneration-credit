@@ -9,17 +9,35 @@ import { Callable } from "./shared/Callable.sol";
  * @author Sintrop
  * @title CommunityRules
  * @dev Users registration system
+ * @notice Manage users types and data
  */
 contract CommunityRules is Ownable, Callable {
+
+  /// @notice The relationship between addresses and user type
   mapping(address => UserType) internal users;
+
+  /// @notice The relationship between addresses and delations received
   mapping(address => Delation[]) private delations;
+
+  /// @notice The relationship between addresses and invitation received
   mapping(address => Invitation) public invitations;
+
+  /// @notice Active user count by userType
   mapping(UserType => uint256) public userTypesCount;
+
+  /// @notice Active and invalid user count by userType
   mapping(UserType => uint256) public userTypesTotalCount;
+
+  /// @notice Settings by userType
   mapping(UserType => UserTypeSetting) public userTypeSettings;
 
+  /// @notice Total delations count received
   uint256 public delationsCount;
+
+  /// @notice Total usersCount
   uint256 public usersCount;
+
+  /// @notice Number of users allowed without proportion
   uint256 public constant MINIMUM_REGISTERED_USERS_QUANTITY = 5;
 
   constructor(
@@ -64,7 +82,7 @@ contract CommunityRules is Ownable, Callable {
   }
 
   /**
-   * @dev Add new user in the system
+   * @dev Checks if a user can invite a userType
    * @param addr The address of the user
    * @param userType The type of the user - enum UserType
    */
@@ -113,7 +131,7 @@ contract CommunityRules is Ownable, Callable {
    * @dev Add new delation in the system
    * @param addr The address of the user
    * @param title Title the delation
-   * @param testimony Content the delation
+   * @param testimony Delation justification
    */
   function addDelation(address addr, string memory title, string memory testimony) public {
     require(users[msg.sender] != UserType.UNDEFINED, "Caller must be registered");
@@ -125,6 +143,12 @@ contract CommunityRules is Ownable, Callable {
     emit AddDelelationEvent(msg.sender, addr);
   }
 
+  /**
+   * @dev Attemp to add an invitation, called by invitation contract
+   * @param inviter Inviter address
+   * @param invited Invited address
+   * @param userType Checked userType
+   */
   function addInvitation(address inviter, address invited, UserType userType) public mustBeAllowedCaller {
     require(invitations[invited].invited == address(0), "Already invited");
     require(users[invited] == UserType.UNDEFINED, "Already registered");

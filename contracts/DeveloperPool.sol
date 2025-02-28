@@ -18,6 +18,8 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;
 
   RegenerationCreditInterface internal regenerationCredit;
+
+  /// @notice Total developer pool tokens
   uint256 internal constant TOTAL_TOKENS_POOL = 30000000000000000000000000;
 
   constructor(

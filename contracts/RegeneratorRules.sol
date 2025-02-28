@@ -14,16 +14,27 @@ import { UserType } from "./types/CommunityTypes.sol";
  * @notice Person, family or a group of peolpe that are restoring nature
  */
 contract RegeneratorRules is Callable {
+
+  /// @notice Minimum inspections to regenerator receive tokens
   uint256 internal constant MINIMUM_INSPECTION_TO_POOL = 3;
   uint256 internal constant LIMIT_REGENERATION_SCORE_TO_POOL = 1000;
 
+  /// @notice The relationship between address and regenerator data
   mapping(address => Regenerator) public regenerators;
+
+  /// @notice The relationship between id and regenerator address
   mapping(uint256 => address) public regeneratorsAddress;
+
+  /// @notice The relationship between address and coordinates array
   mapping(address => Coordinates[]) public coordinates;
 
+  /// @notice CommunityRules contract address
   CommunityRules internal communityRules;
+
+  /// @notice RegeneratorPool contract address
   RegeneratorPool internal regeneratorPool;
 
+  /// @notice Regenerator UserType
   UserType private constant USER_TYPE = UserType.REGENERATOR;
 
   /// @notice [ha] 1 ha = 10000m²

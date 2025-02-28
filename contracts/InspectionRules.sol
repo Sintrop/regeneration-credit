@@ -25,17 +25,29 @@ import { Callable } from "./shared/Callable.sol";
 contract InspectionRules is Callable {
   using SafeMath for uint256;
 
+  /// @notice Checks if an inspector has already inspected a regenerator
   mapping(address => mapping(address => bool)) internal inspectorInspected;
+  
   mapping(address => uint256[]) internal userInspections;
+
+  /// @notice The relationship between id and inspection data
   mapping(uint256 => Inspection) internal inspections;
   mapping(uint256 => mapping(uint256 => RegenerationInspection)) public regenerationInspection;
   mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
   InspectorRules private inspectorRules;
   RegeneratorRules private regeneratorRules;
+
+  /// @notice CommunityRules contract address
   CommunityRules private communityRules;
+
+  /// @notice ValidatorRules contract address
   ValidatorRules private validatorRules;
+
+  /// @notice ActivistRules contract address
   ActivistRules private activistRules;
+
+  /// @notice RegenerationIndexRules contract address
   RegenerationIndexRules private regenerationIndexRules;
 
   uint256 public inspectionsCount;

@@ -16,14 +16,29 @@ import { UserType } from "./types/CommunityTypes.sol";
  * @dev Manage logic to allow users invite others
  */
 contract InvitationRules is Ownable {
+
+  /// @notice Relationship between address and last invitation blockNumber
   mapping(address => uint256) public lastInviteBlocks;
+
+  /// @notice Relationship between which userType can invite who
   mapping(UserType => UserType) public canBeInviteds;
 
+  /// @notice CommunityRules contract address
   CommunityRules internal communityRules;
+
+  /// @notice ResearcherRules contract address
   ResearcherRules internal researcherRules;
+
+  /// @notice DeveloperRules contract address
   DeveloperRules internal developerRules;
+
+  /// @notice ActivistRules contract address
   ActivistRules internal activistRules;
+
+  /// @notice ContributorRules contract address
   ContributorRules internal contributorRules;
+
+  /// @notice ValidatorRules contract address
   ValidatorRules internal validatorRules;
 
   constructor(
