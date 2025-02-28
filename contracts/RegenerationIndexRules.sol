@@ -12,7 +12,11 @@ import { Callable } from "./shared/Callable.sol";
  * @dev Manage index categories and score
  */
 contract RegenerationIndexRules is Ownable, Callable {
+
+  /// @notice Relationship between id and category data
   mapping(uint256 => Category) public categories;
+  
+  /// @notice Relationship between category id and category descriptions
   mapping(uint256 => RegenerationIndexDescription[]) public categoryRegenerationIndexDescriptions;
   mapping(uint256 => RegenerationIndex) public regenerationIndex;
 
@@ -88,7 +92,7 @@ contract RegenerationIndexRules is Ownable, Callable {
     RegenerationInspection memory biomassResult,
     RegenerationInspection memory biodiversityResult
   ) public view returns (uint256) {
-    RegenerationIndex memory carbon = regenerationIndex[carbonRegenerationIndexId(biomassResult.indicator)];
+    RegenerationIndex memory carbon = regenerationIndex[biomassRegenerationIndexId(biomassResult.indicator)];
     RegenerationIndex memory biodiversity = regenerationIndex[
       biodiversityRegenerationIndexId(biodiversityResult.indicator)
     ];
@@ -96,7 +100,12 @@ contract RegenerationIndexRules is Ownable, Callable {
     return carbon.value + biodiversity.value;
   }
 
-  function carbonRegenerationIndexId(uint256 indicator) internal pure returns (uint256) {
+  /**
+   * @dev Function to calculate the biomass inspection score
+   * @param indicator The result provided by the inspector
+   * @return The category regeneration score
+   */
+  function biomassRegenerationIndexId(uint256 indicator) internal pure returns (uint256) {
     if (indicator > 100000) {
       return 1;
     } else if (indicator > 10000 && indicator < 100000) {
@@ -114,6 +123,11 @@ contract RegenerationIndexRules is Ownable, Callable {
     }
   }
 
+  /**
+   * @dev Function to calculate the biodiversity inspection score
+   * @param indicator The result provided by the inspector
+   * @return The category regeneration score
+   */
   function biodiversityRegenerationIndexId(uint256 indicator) internal pure returns (uint256) {
     if (indicator > 1000) {
       return 1;

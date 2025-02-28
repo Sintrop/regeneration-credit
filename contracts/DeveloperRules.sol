@@ -17,21 +17,42 @@ import { Developer, Pool, Report, Penalty } from "./types/DeveloperTypes.sol";
  * @notice Responsible for the development of the project
  */
 contract DeveloperRules is Ownable, Callable, Invitable {
+
+  /// @notice The relationship between address and developer data
   mapping(address => Developer) public developers;
   mapping(uint256 => mapping(address => bool)) public developerReportsEra;
+
+  /// @notice The relationship between id and report data
   mapping(uint256 => Report) public reports;
+
+  /// @notice The relationship between address and penalties received
   mapping(address => Penalty[]) public penalties;
+
+  /// @notice The relationship between id and developer address
   mapping(uint256 => address) public developersAddress;
 
+  /// @notice CommunityRules contract address
   CommunityRules internal communityRules;
+
+  /// @notice DeveloperPool contract address
   DeveloperPool internal developerPool;
+
+  /// @notice ValidatorRules contract address
   ValidatorRules internal validatorRules;
 
+  /// @notice Developer UserType
   UserType private constant USER_TYPE = UserType.DEVELOPER;
+
+  /// @notice Total valid reports count
   uint256 public reportsCount;
+
+  /// @notice Total reports count
   uint256 public reportsTotalCount;
 
+  /// @notice Max allowed penalties before user invalidation
   uint256 public immutable MAX_PENALTIES;
+
+  /// @notice Number of blocks to block addReport before the end of an era
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
   constructor(
@@ -71,6 +92,11 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     communityRules.addUser(msg.sender, USER_TYPE);
   }
 
+  /**
+   * @dev Checks if a developer can send invite
+   * @notice True if developer can send invite
+   * @param addr The developer address
+   */
   function canSendInvite(address addr) public view returns (bool) {
     Developer memory developer = developers[addr];
 

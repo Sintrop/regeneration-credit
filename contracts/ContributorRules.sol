@@ -16,16 +16,30 @@ import { Invitable } from "./shared/Invitable.sol";
  * @notice User type to perform generic contributions to the project
  */
 contract ContributorRules is Ownable, Callable, Invitable {
+
+  /// @notice The relationship between address and contributor data
   mapping(address => Contributor) public contributors;
   mapping(uint256 => mapping(address => bool)) public contributorContributionsEra;
+
+  /// @notice The relationship between id and contribution data
   mapping(uint256 => Contribution) public contributions;
+
+  /// @notice The relationship between id and contributor address
   mapping(uint256 => address) public contributorsAddress;
 
+  /// @notice CommunityRules contract address
   CommunityRules internal communityRules;
+
+  /// @notice ContributorPool contract address
   ContributorPool internal contributorPool;
 
+  /// @notice Contributor UserType
   UserType private constant USER_TYPE = UserType.CONTRIBUTOR;
+
+  /// @notice Total contributions count
   uint256 public contributionsCount;
+
+  /// @notice Number of blocks to block addContribution before the end of an era
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
   constructor(
@@ -61,6 +75,11 @@ contract ContributorRules is Ownable, Callable, Invitable {
     communityRules.addUser(msg.sender, USER_TYPE);
   }
 
+  /**
+   * @dev Checks if a contributor can send invite
+   * @notice True if contributor can send invite
+   * @param addr The contributor address
+   */
   function canSendInvite(address addr) public view returns (bool) {
     Contributor memory contributor = contributors[addr];
 
