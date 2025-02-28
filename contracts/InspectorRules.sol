@@ -14,7 +14,6 @@ import { InspectorPool } from "./InspectorPool.sol";
  * @notice Responsible for collecting regenerators data
  */
 contract InspectorRules is Callable {
-
   /// @notice Minimum inspections to be rewarded
   uint256 internal constant MINIMUM_INSPECTIONS_TO_POOL = 3;
 

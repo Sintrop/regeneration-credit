@@ -17,7 +17,6 @@ import { Developer, Pool, Report, Penalty } from "./types/DeveloperTypes.sol";
  * @notice Responsible for the development of the project
  */
 contract DeveloperRules is Ownable, Callable, Invitable {
-
   /// @notice The relationship between address and developer data
   mapping(address => Developer) public developers;
   mapping(uint256 => mapping(address => bool)) public developerReportsEra;

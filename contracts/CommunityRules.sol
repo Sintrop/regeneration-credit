@@ -12,7 +12,6 @@ import { Callable } from "./shared/Callable.sol";
  * @notice Manage users types and data
  */
 contract CommunityRules is Ownable, Callable {
-
   /// @notice The relationship between addresses and user type
   mapping(address => UserType) internal users;
 

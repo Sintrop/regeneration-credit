@@ -12,10 +12,9 @@ import { Callable } from "./shared/Callable.sol";
  * @dev Manage index categories and score
  */
 contract RegenerationIndexRules is Ownable, Callable {
-
   /// @notice Relationship between id and category data
   mapping(uint256 => Category) public categories;
-  
+
   /// @notice Relationship between category id and category descriptions
   mapping(uint256 => RegenerationIndexDescription[]) public categoryRegenerationIndexDescriptions;
   mapping(uint256 => RegenerationIndex) public regenerationIndex;

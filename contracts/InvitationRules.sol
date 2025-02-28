@@ -16,7 +16,6 @@ import { UserType } from "./types/CommunityTypes.sol";
  * @dev Manage logic to allow users invite others
  */
 contract InvitationRules is Ownable {
-
   /// @notice Relationship between address and last invitation blockNumber
   mapping(address => uint256) public lastInviteBlocks;
 

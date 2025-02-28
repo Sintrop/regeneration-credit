@@ -16,7 +16,6 @@ import { Invitable } from "./shared/Invitable.sol";
  * @notice User type to perform generic contributions to the project
  */
 contract ContributorRules is Ownable, Callable, Invitable {
-
   /// @notice The relationship between address and contributor data
   mapping(address => Contributor) public contributors;
   mapping(uint256 => mapping(address => bool)) public contributorContributionsEra;

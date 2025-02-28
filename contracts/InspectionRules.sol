@@ -27,7 +27,7 @@ contract InspectionRules is Callable {
 
   /// @notice Checks if an inspector has already inspected a regenerator
   mapping(address => mapping(address => bool)) internal inspectorInspected;
-  
+
   mapping(address => uint256[]) internal userInspections;
 
   /// @notice The relationship between id and inspection data

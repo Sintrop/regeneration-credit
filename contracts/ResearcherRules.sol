@@ -16,7 +16,6 @@ import { ValidatorRules } from "./ValidatorRules.sol";
  * @notice Responsible for developing evaluation methodologies
  */
 contract ResearcherRules is Callable, Invitable {
-
   /// @notice The relationship between address and researcher data
   mapping(address => Researcher) internal researchers;
 

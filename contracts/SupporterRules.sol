@@ -33,8 +33,7 @@ contract SupporterRules {
   /// @notice The relationship between address and publications made
   mapping(address => Publication[]) public publications;
 
-
-  /// @notice Commission percentage on invited burn 
+  /// @notice Commission percentage on invited burn
   uint256 public constant INVITER_PERCENTAGE = 5;
 
   /// @notice CommunityRules contract address
