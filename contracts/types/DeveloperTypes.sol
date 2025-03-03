@@ -11,6 +11,7 @@ struct Developer {
   Pool pool;
   uint256 totalReports;
   uint256 createdAt;
+  uint256 lastPublishedAt;
 }
 
 struct Pool {

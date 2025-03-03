@@ -19,7 +19,6 @@ import { Developer, Pool, Report, Penalty } from "./types/DeveloperTypes.sol";
 contract DeveloperRules is Ownable, Callable, Invitable {
   /// @notice The relationship between address and developer data
   mapping(address => Developer) public developers;
-  mapping(uint256 => mapping(address => bool)) public developerReportsEra;
 
   /// @notice The relationship between id and report data
   mapping(uint256 => Report) public reports;
@@ -48,6 +47,9 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   /// @notice Total reports count
   uint256 public reportsTotalCount;
 
+  /// @notice Waiting blocks to publish report
+  uint256 internal immutable timeBetweenWorks;
+
   /// @notice Max allowed penalties before user invalidation
   uint256 public immutable MAX_PENALTIES;
 
@@ -58,12 +60,14 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     address communityRulesAddress,
     address developerPoolAddress,
     address validatorRulesAddress,
+    uint256 timeBetweenWorks_,
     uint256 maxPenalties_,
     uint256 securityBlocksToValidatorAnalysis
   ) {
     communityRules = CommunityRules(communityRulesAddress);
     developerPool = DeveloperPool(developerPoolAddress);
     validatorRules = ValidatorRules(validatorRulesAddress);
+    timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
@@ -84,7 +88,8 @@ contract DeveloperRules is Ownable, Callable, Invitable {
       proofPhoto,
       Pool(level, developerPoolEra()),
       0,
-      block.number
+      block.number,
+      0
     );
 
     developersAddress[id] = msg.sender;
@@ -113,13 +118,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   function addReport(string memory description, string memory report) public {
     require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add report");
-
-    uint256 currentEra = developerPoolEra();
-    bool reportEra = developerReportsEra[currentEra][msg.sender];
-
-    require(!reportEra, "Already has report");
-
-    developerReportsEra[currentEra][msg.sender] = true;
+    require(canPublishReport(msg.sender), "Can't publish yet");
 
     reportsCount++;
     reportsTotalCount++;
@@ -129,7 +128,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
 
     reports[id] = Report(
       id,
-      currentEra,
+      developerPoolEra(),
       msg.sender,
       developers[msg.sender].pool.level,
       description,
@@ -236,6 +235,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    */
   function updateLevel(address addr) internal {
     Developer memory developer = developers[addr];
+    developer.lastPublishedAt = block.number;
     developer.pool.level++;
     developers[addr] = developer;
 
@@ -258,6 +258,19 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    */
   function developerPoolEra() internal view returns (uint256) {
     return developerPool.currentContractEra();
+  }
+
+  /**
+   * @notice Checks if user can publish a report
+   * @return bool True if can
+   * @param addr Msg.sender addresss
+   */
+  function canPublishReport(address addr) internal view returns (bool) {
+    Developer memory developer = developers[addr];
+    uint256 lastPublishedAt = developer.lastPublishedAt;
+
+    bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
+    return canPublish || lastPublishedAt == 0;
   }
 
   /**

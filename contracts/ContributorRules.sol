@@ -18,7 +18,6 @@ import { Invitable } from "./shared/Invitable.sol";
 contract ContributorRules is Ownable, Callable, Invitable {
   /// @notice The relationship between address and contributor data
   mapping(address => Contributor) public contributors;
-  mapping(uint256 => mapping(address => bool)) public contributorContributionsEra;
 
   /// @notice The relationship between id and contribution data
   mapping(uint256 => Contribution) public contributions;
@@ -38,16 +37,21 @@ contract ContributorRules is Ownable, Callable, Invitable {
   /// @notice Total contributions count
   uint256 public contributionsCount;
 
+  /// @notice Waiting blocks to publish contribution
+  uint256 internal immutable timeBetweenWorks;
+
   /// @notice Number of blocks to block addContribution before the end of an era
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
   constructor(
     address communityRulesAddress,
     address contributorPoolAddress,
+    uint256 timeBetweenWorks_,
     uint256 securityBlocksToValidatorAnalysis
   ) {
     communityRules = CommunityRules(communityRulesAddress);
     contributorPool = ContributorPool(contributorPoolAddress);
+    timeBetweenWorks = timeBetweenWorks_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
 
@@ -66,7 +70,8 @@ contract ContributorRules is Ownable, Callable, Invitable {
       name,
       proofPhoto,
       Pool(level, contributorPoolEra()),
-      block.number
+      block.number,
+      0
     );
 
     contributorsAddress[id] = msg.sender;
@@ -90,27 +95,23 @@ contract ContributorRules is Ownable, Callable, Invitable {
   /**
    * @dev Allows a contributor to attempt to publish a contribution report
    * @notice Publish one contribution per era before security blocks
+   * @param description Title or description of the contribution
    * @param report Hash of the report file
    */
-  function addContribution(string memory report) public {
+  function addContribution(string memory description, string memory report) public {
     require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Only Contributor");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add contribution");
-
-    uint256 currentEra = contributorPoolEra();
-
-    bool contributionEra = contributorContributionsEra[currentEra][msg.sender];
-    require(!contributionEra, "Already has contribution");
-
-    contributorContributionsEra[currentEra][msg.sender] = true;
+    require(canPublishContribution(msg.sender), "Can't publish yet");
 
     contributionsCount++;
     uint256 id = contributionsCount;
 
     contributions[id] = Contribution(
       id,
-      currentEra,
+      contributorPoolEra(),
       msg.sender,
       contributors[msg.sender].pool.level,
+      description,
       report,
       block.number
     );
@@ -165,6 +166,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
    */
   function addPoolLevel(address addr) internal {
     Contributor memory contributor = contributors[addr];
+    contributor.lastPublishedAt = block.number;
     contributor.pool.level++;
     contributors[addr] = contributor;
 
@@ -187,6 +189,19 @@ contract ContributorRules is Ownable, Callable, Invitable {
    */
   function contributorPoolEra() internal view returns (uint256) {
     return contributorPool.currentContractEra();
+  }
+
+  /**
+   * @dev Checks if user can publish a contribution
+   * @return bool True if can
+   * @param addr Msg.sender addresss
+   */
+  function canPublishContribution(address addr) internal view returns (bool) {
+    Contributor memory contributor = contributors[addr];
+    uint256 lastPublishedAt = contributor.lastPublishedAt;
+
+    bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
+    return canPublish || lastPublishedAt == 0;
   }
 
   /**

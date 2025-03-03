@@ -9,6 +9,7 @@ async function developerRulesDeploy() {
 
   const DeveloperRules = await ethers.getContractFactory("DeveloperRules");
 
+  const timeBetweenWorks = process.env["TIME_BETWEEN_WORKS"];
   const developerMaxPenalties = process.env["DEVELOPER_MAX_PENALTIES"];
   const securityBlocksToValidatorAnalysis = process.env["DEVELOPER_SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS"];
 
@@ -16,6 +17,7 @@ async function developerRulesDeploy() {
     communityRules.target,
     developerPool.target,
     validatorRules.target,
+    timeBetweenWorks,
     developerMaxPenalties,
     securityBlocksToValidatorAnalysis,
   ];
