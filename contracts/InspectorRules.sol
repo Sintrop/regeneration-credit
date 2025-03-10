@@ -14,17 +14,31 @@ import { InspectorPool } from "./InspectorPool.sol";
  * @notice Responsible for collecting regenerators data
  */
 contract InspectorRules is Callable {
+  /// @notice Minimum inspections to be rewarded
   uint256 internal constant MINIMUM_INSPECTIONS_TO_POOL = 3;
 
+  /// @notice The relationship between address and inspector data
   mapping(address => Inspector) internal inspectors;
+
+  /// @notice The relationship between address and penalties received
   mapping(address => Penalty[]) public penalties;
+
+  /// @notice The relationship between id and inspector address
   mapping(uint256 => address) public inspectorsAddress;
 
+  /// @notice CommunityRules contract address
   CommunityRules internal communityRules;
+
+  /// @notice InspectorPool contract address
   InspectorPool internal inspectorPool;
+
+  /// @notice Inspector UserType
   UserType private constant USER_TYPE = UserType.INSPECTOR;
 
+  /// @notice Max allowed penalties before invalidation
   uint256 public immutable maxPenalties;
+
+  /// @notice Max allowed giveUps before block
   uint256 private constant MAX_GIVEUPS = 3;
 
   constructor(address communityRulesAddress, address inspectorPoolAddress, uint256 maxPenalties_) {

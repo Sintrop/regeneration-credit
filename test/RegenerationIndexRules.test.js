@@ -4,12 +4,12 @@ describe("RegenerationIndexRules", () => {
   let instance;
   let owner;
 
-  const carbonIndicatorValue = {
+  const biomassResultValue = {
     categoryId: 1,
     indicator: 100001,
   };
 
-  const biodiversityIndicatorValue = {
+  const biodiversityResultValue = {
     categoryId: 2,
     indicator: 1001,
   };
@@ -26,9 +26,9 @@ describe("RegenerationIndexRules", () => {
       const category = await instance.categories(1);
 
       expect(category.id).to.equal(1);
-      expect(category.name).to.equal("Carbon");
+      expect(category.name).to.equal("Biomass");
       expect(category.description).to.equal(
-        "Indicator to measure CO2 balance. Must evaluate carbon emissions and sequestration. Carbon balance = sequestration - emissions [tCO2]"
+        "Indicator to measure the total amount of biomass in the regenerating area. How much organic matter is there on the site? Estimate by including living biomass, such as trees, plants and roots, as well as dead biomass, which includes leaves, branches, wood and other types of organic matter covering the soil. The result should be expressed in tons [t]"
       );
     });
 
@@ -38,7 +38,7 @@ describe("RegenerationIndexRules", () => {
       expect(category.id).to.equal(2);
       expect(category.name).to.equal("Biodiversity");
       expect(category.description).to.equal(
-        "Indicator to measure the level of biodiversity. Our unit is 'unit of life', meaning one species of fauna and flora."
+        "Indicator to measure the level of plant biodiversity in the regenerating area. How many different species are there in the area? Each different species is equivalent to one point and only trees and plants managed or planted by the regenerator should be counted"
       );
     });
   });
@@ -73,7 +73,7 @@ describe("RegenerationIndexRules", () => {
 
       context("when category and regeneration index exists", () => {
         it("calculate regenerationScore", async () => {
-          const score = await instance.calculateScore(carbonIndicatorValue, biodiversityIndicatorValue);
+          const score = await instance.calculateScore(biomassResultValue, biodiversityResultValue);
 
           expect(score).to.equal(50);
         });

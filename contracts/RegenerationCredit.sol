@@ -16,9 +16,14 @@ contract RegenerationCredit is ERC20, Ownable {
   string public constant SYMBOL = "RC";
   uint8 public constant DECIMALS = 18;
 
+  /// @notice Relationship between address and token balance
   mapping(address => uint256) internal balances;
   mapping(address => mapping(address => uint256)) internal allowed;
+
+  /// @notice Relationship between address and burned tokens
   mapping(address => uint256) public certificate;
+
+  /// @notice Checks if an address is a contract pool
   mapping(address => bool) internal contractsPools;
 
   uint256 public totalSupply_;

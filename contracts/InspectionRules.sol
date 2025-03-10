@@ -25,22 +25,34 @@ import { Callable } from "./shared/Callable.sol";
 contract InspectionRules is Callable {
   using SafeMath for uint256;
 
+  /// @notice Checks if an inspector has already inspected a regenerator
   mapping(address => mapping(address => bool)) internal inspectorInspected;
+
   mapping(address => uint256[]) internal userInspections;
+
+  /// @notice The relationship between id and inspection data
   mapping(uint256 => Inspection) internal inspections;
   mapping(uint256 => mapping(uint256 => RegenerationInspection)) public regenerationInspection;
   mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
   InspectorRules private inspectorRules;
   RegeneratorRules private regeneratorRules;
+
+  /// @notice CommunityRules contract address
   CommunityRules private communityRules;
+
+  /// @notice ValidatorRules contract address
   ValidatorRules private validatorRules;
+
+  /// @notice ActivistRules contract address
   ActivistRules private activistRules;
+
+  /// @notice RegenerationIndexRules contract address
   RegenerationIndexRules private regenerationIndexRules;
 
   uint256 public inspectionsCount;
   uint256 public inspectionsTotalCount;
-  uint256 public inspectionsCarbonImpact;
+  uint256 public inspectionsBiomassImpact;
   uint256 public inspectionsBiodiversityImpact;
   uint256 public immutable timeBetweenInspections;
   uint256 public immutable blocksToExpireAcceptedInspection;
@@ -143,33 +155,33 @@ contract InspectionRules is Callable {
   /**
    * @dev Allow a inspector realize a inspection and mark as INSPECTED
    * @param inspectionId The id of the inspection to be realized
-   * @param carbonIndicator The RegenerationInspection[] of the inspection to be realized
-   * @param biodiversityIndicator The RegenerationInspection[] of the inspection to be realized
+   * @param biomassResult The RegenerationInspection[] of the inspection to be realized
+   * @param biodiversityResult The RegenerationInspection[] of the inspection to be realized
    */
   function realizeInspection(
     uint256 inspectionId,
     string memory proofPhoto,
     string memory report,
-    RegenerationInspection memory carbonIndicator,
-    RegenerationInspection memory biodiversityIndicator
+    RegenerationInspection memory biomassResult,
+    RegenerationInspection memory biodiversityResult
   ) public {
     Inspection memory inspection = inspections[inspectionId];
 
     require(
-      carbonIndicator.categoryId == 1 && biodiversityIndicator.categoryId == 2,
-      "Invalid carbonIndicator or biodiversityIndicator"
+      biomassResult.categoryId == 1 && biodiversityResult.categoryId == 2,
+      "Invalid biomassResult or biodiversityResult"
     );
     require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
     require(inspection.inspector == msg.sender, "You have not accepted this inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
 
-    markAsRealized(inspection, proofPhoto, report, carbonIndicator, biodiversityIndicator);
+    markAsRealized(inspection, proofPhoto, report, biomassResult, biodiversityResult);
 
     afterRealizeInspection(inspection);
 
-    inspectionsCarbonImpact += carbonIndicator.indicator;
-    inspectionsBiodiversityImpact += biodiversityIndicator.indicator;
+    inspectionsBiomassImpact += biomassResult.indicator;
+    inspectionsBiodiversityImpact += biodiversityResult.indicator;
     inspectorInspected[msg.sender][inspection.regenerator] = true;
   }
 
@@ -177,11 +189,11 @@ contract InspectionRules is Callable {
     Inspection memory inspection,
     string memory proofPhoto,
     string memory report,
-    RegenerationInspection memory carbonIndicator,
-    RegenerationInspection memory biodiversityIndicator
+    RegenerationInspection memory biomassResult,
+    RegenerationInspection memory biodiversityResult
   ) internal {
     inspection.status = InspectionStatus.INSPECTED;
-    inspection.regenerationScore = regenerationIndexRules.calculateScore(carbonIndicator, biodiversityIndicator);
+    inspection.regenerationScore = regenerationIndexRules.calculateScore(biomassResult, biodiversityResult);
     inspection.proofPhoto = proofPhoto;
     inspection.report = report;
     inspection.inspectedAt = block.number;
@@ -189,8 +201,8 @@ contract InspectionRules is Callable {
 
     inspections[inspection.id] = inspection;
 
-    regenerationInspection[inspection.id][1] = carbonIndicator;
-    regenerationInspection[inspection.id][2] = biodiversityIndicator;
+    regenerationInspection[inspection.id][1] = biomassResult;
+    regenerationInspection[inspection.id][2] = biodiversityResult;
   }
 
   /**
@@ -230,7 +242,7 @@ contract InspectionRules is Callable {
   }
 
   function invalidateInspection(Inspection memory inspection) internal {
-    inspectionsCarbonImpact -= regenerationInspection[inspection.id][1].indicator;
+    inspectionsBiomassImpact -= regenerationInspection[inspection.id][1].indicator;
     inspectionsBiodiversityImpact -= regenerationInspection[inspection.id][2].indicator;
     // Decrementar total de inpeções em 1
     inspectionsCount--;
