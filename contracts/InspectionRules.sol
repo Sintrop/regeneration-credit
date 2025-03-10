@@ -99,10 +99,7 @@ contract InspectionRules is Callable {
     require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Please register as regenerator");
     require(!regenerator.pendingInspection, "Request already OPEN");
     require(waitToRequest(regenerator), "Wait to request");
-    require(
-      !regenerator.regenerationScore.sustainable,
-      "You can't request inspections anymore, you have completed your mission"
-    );
+    require(regenerator.totalInspections < 12, "You have completed your mission");
 
     createInspection();
 
