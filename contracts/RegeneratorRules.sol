@@ -36,8 +36,6 @@ contract RegeneratorRules is Callable {
   /// @notice Regenerator UserType
   UserType private constant USER_TYPE = UserType.REGENERATOR;
 
-  uint256 public regeneratorsSustainable;
-
   /// @notice [ha] 1 ha = 10000m²
   uint256 public regenerationArea;
 
@@ -141,15 +139,6 @@ contract RegeneratorRules is Callable {
   }
 
   /**
-   * @dev Check if a specific regenerator reached the maximum score
-   * @param addr Regenerator address
-   * @return a bool that represent if a regenerator is sustainable or not
-   */
-  function isSustainable(address addr) public view returns (bool) {
-    return regenerators[addr].regenerationScore.sustainable;
-  }
-
-  /**
    * @dev Set the new regeneration score
    * @param addr Regenerator address
    * @param regenerationScore New score
@@ -160,7 +149,6 @@ contract RegeneratorRules is Callable {
     regenerator.regenerationScore.score += regenerationScore;
     regenerators[addr] = regenerator;
 
-    if (limitRegenerationScore(regenerator)) changeRegeneratorToSustainable(regenerator);
     if (!minimumInspections(regenerator.totalInspections)) return;
 
     uint256 levels = regenerationScore;
@@ -189,11 +177,6 @@ contract RegeneratorRules is Callable {
     }
 
     regeneratorPool.removePoolLevels(addr, regenerator.pool.currentEra, removeSomeLevels);
-  }
-
-  function changeRegeneratorToSustainable(Regenerator memory regenerator) internal {
-    regeneratorsSustainable++;
-    regenerators[regenerator.regeneratorWallet].regenerationScore.sustainable = true;
   }
 
   function incrementInspections(address addr) private returns (uint256) {

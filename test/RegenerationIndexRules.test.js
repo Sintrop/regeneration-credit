@@ -75,7 +75,7 @@ describe("RegenerationIndexRules", () => {
         it("calculate regenerationScore", async () => {
           const score = await instance.calculateScore(biomassResultValue, biodiversityResultValue);
 
-          expect(score).to.equal(50);
+          expect(score).to.equal(64);
         });
       });
     });

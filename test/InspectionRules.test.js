@@ -29,6 +29,15 @@ describe("InspectionRules", () => {
     inspectorAddress,
     inspector2Address,
     inspector3Address,
+    inspector4Address,
+    inspector5Address,
+    inspector6Address,
+    inspector7Address,
+    inspector8Address,
+    inspector9Address,
+    inspector10Address,
+    inspector11Address,
+    inspector12Address,
     resea1Address,
     validator1Address,
     validator2Address,
@@ -177,6 +186,15 @@ describe("InspectionRules", () => {
       inspectorAddress,
       inspector2Address,
       inspector3Address,
+      inspector4Address,
+      inspector5Address,
+      inspector6Address,
+      inspector7Address,
+      inspector8Address,
+      inspector9Address,
+      inspector10Address,
+      inspector11Address,
+      inspector12Address,
       resea1Address,
       validator1Address,
       validator2Address,
@@ -345,28 +363,37 @@ describe("InspectionRules", () => {
       await addInvitation(owner, regeneratorAddress, userTypes.Regenerator, owner);
       await addInvitation(owner, regenerator2Address, userTypes.Regenerator, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
+      await addInvitation(owner, inspector2Address, userTypes.Inspector, owner);
+      await addInvitation(owner, inspector3Address, userTypes.Inspector, owner);
+      await addInvitation(owner, inspector4Address, userTypes.Inspector, owner);
+      await addInvitation(owner, inspector5Address, userTypes.Inspector, owner);
+      await addInvitation(owner, inspector6Address, userTypes.Inspector, owner);
+      await addInvitation(owner, inspector7Address, userTypes.Inspector, owner);
+      await addInvitation(owner, inspector8Address, userTypes.Inspector, owner);
+      await addInvitation(owner, inspector9Address, userTypes.Inspector, owner);
+      await addInvitation(owner, inspector10Address, userTypes.Inspector, owner);
+      await addInvitation(owner, inspector11Address, userTypes.Inspector, owner);
+      await addInvitation(owner, inspector12Address, userTypes.Inspector, owner);
 
       await addRegenerator("Regenerator A", regeneratorAddress);
       await addInspector("Inspector A", inspectorAddress);
+      await addInspector("Inspector B", inspector2Address);
+      await addInspector("Inspector C", inspector3Address);
+      await addInspector("Inspector D", inspector4Address);
+      await addInspector("Inspector E", inspector5Address);
+      await addInspector("Inspector F", inspector6Address);
+      await addInspector("Inspector G", inspector7Address);
+      await addInspector("Inspector H", inspector8Address);
+      await addInspector("Inspector I", inspector9Address);
+      await addInspector("Inspector J", inspector10Address);
+      await addInspector("Inspector K", inspector11Address);
+      await addInspector("Inspector L", inspector12Address);
     });
 
     context("with regenerator", () => {
       beforeEach(async () => {
         await requestInspection(regeneratorAddress);
         await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-      });
-
-      context("when is sustainable", () => {
-        beforeEach(async () => {
-          await addRegenerator("Regenerator B", regenerator2Address);
-          await regeneratorRules.afterRealizeInspection(regenerator2Address, 1000);
-        });
-
-        it("should return error", async () => {
-          await expect(requestInspection(regenerator2Address)).to.be.revertedWith(
-            "You can't request inspections anymore, you have completed your mission"
-          );
-        });
       });
 
       context("when have less than ALLOWED_INITIAL_REQUESTS", () => {
@@ -417,6 +444,95 @@ describe("InspectionRules", () => {
               expect(inspection.regenerator).to.equal(regeneratorAddress.address);
             });
           });
+        });
+      });
+
+      context("when reached maximum inspections", () => {
+        beforeEach(async () => {
+          const biomassResultValue = {
+            categoryId: 1,
+            indicator: 15,
+          };
+
+          const biodiversityResultValue = {
+            categoryId: 2,
+            indicator: 51,
+          };
+
+          await acceptInspection(1, inspectorAddress);
+          await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
+
+          await advanceBlock(20);
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await acceptInspection(2, inspector2Address);
+          await realizeInspection(2, report, biomassResultValue, biodiversityResultValue, inspector2Address);
+
+          await advanceBlock(20);
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await acceptInspection(3, inspector3Address);
+          await realizeInspection(3, report, biomassResultValue, biodiversityResultValue, inspector3Address);
+
+          await advanceBlock(20);
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await acceptInspection(4, inspector4Address);
+          await realizeInspection(4, report, biomassResultValue, biodiversityResultValue, inspector4Address);
+
+          await advanceBlock(20);
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await acceptInspection(5, inspector5Address);
+          await realizeInspection(5, report, biomassResultValue, biodiversityResultValue, inspector5Address);
+
+          await advanceBlock(20);
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await acceptInspection(6, inspector6Address);
+          await realizeInspection(6, report, biomassResultValue, biodiversityResultValue, inspector6Address);
+
+          await advanceBlock(20);
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await acceptInspection(7, inspector7Address);
+          await realizeInspection(7, report, biomassResultValue, biodiversityResultValue, inspector7Address);
+
+          await advanceBlock(20);
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await acceptInspection(8, inspector8Address);
+          await realizeInspection(8, report, biomassResultValue, biodiversityResultValue, inspector8Address);
+
+          await advanceBlock(20);
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await acceptInspection(9, inspector9Address);
+          await realizeInspection(9, report, biomassResultValue, biodiversityResultValue, inspector9Address);
+
+          await advanceBlock(20);
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await acceptInspection(10, inspector10Address);
+          await realizeInspection(10, report, biomassResultValue, biodiversityResultValue, inspector10Address);
+
+          await advanceBlock(20);
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await acceptInspection(11, inspector11Address);
+          await realizeInspection(11, report, biomassResultValue, biodiversityResultValue, inspector11Address);
+
+          await advanceBlock(20);
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await advanceBlock(200);
+          await acceptInspection(12, inspector12Address);
+          await realizeInspection(12, report, biomassResultValue, biodiversityResultValue, inspector12Address);
+        });
+
+        it("should return error", async () => {
+          await advanceBlock(20);
+          await expect(requestInspection(regeneratorAddress)).to.be.revertedWith("You have completed your mission");
         });
       });
 
@@ -981,10 +1097,10 @@ describe("InspectionRules", () => {
                       await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
-                    it("should add 50 regenerationScore to inspection", async () => {
+                    it("should add 64 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
 
-                      expect(inspection.regenerationScore).to.equal(50);
+                      expect(inspection.regenerationScore).to.equal(64);
                     });
                   });
 
