@@ -19,6 +19,7 @@ contract InspectorPool is Poolable, Ownable, Blockable, Callable {
 
   RegenerationCreditInterface internal regenerationCredit;
 
+  /// @notice Total inspector pool tokens
   uint256 internal constant TOTAL_TOKENS_POOL = 180000000000000000000000000;
 
   constructor(

@@ -16,15 +16,28 @@ import { Invitable } from "./shared/Invitable.sol";
  */
 
 contract ActivistRules is Callable, Invitable {
+  /// @notice The relationship between address and activist data
   mapping(address => Activist) internal activists;
+
+  /// @notice Checks if an activist has received level from an invited user
   mapping(address => mapping(address => bool)) internal activistWonLevel;
+
+  /// @notice The relationship between id and activist address
   mapping(uint256 => address) public activistsAddress;
 
+  /// @notice CommunityRules contract address
   CommunityRules internal communityRules;
+
+  /// @notice ActivistPool contract address
   ActivistPool internal activistPool;
+
+  /// @notice Activist UserType
   UserType private constant USER_TYPE = UserType.ACTIVIST;
+
+  /// @notice Total approved invites
   uint256 public approvedInvites;
 
+  /// @notice Minimum 3 inspections to approve invite
   uint256 private constant MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS = 3;
 
   constructor(address communityRulesAddress, address activistPoolAddress) {
@@ -34,6 +47,7 @@ contract ActivistRules is Callable, Invitable {
 
   /**
    * @dev Allows a user to attempt to register as an activist
+   * @notice Attempt to register as an activist
    * @param name The name of the activist
    * @param proofPhoto Identity photo
    */
@@ -49,6 +63,11 @@ contract ActivistRules is Callable, Invitable {
     return activist;
   }
 
+  /**
+   * @dev Checks if an activist can send invite
+   * @notice True if activist can send invite
+   * @param addr The activist address
+   */
   function canSendInvite(address addr) public view returns (bool) {
     Activist memory activist = activists[addr];
 
@@ -138,7 +157,7 @@ contract ActivistRules is Callable, Invitable {
   }
 
   /**
-   * @dev Call withdraw function from activistPool to try to claim tokens
+   * @dev Call activistPool withdraw function to try to claim tokens
    * @notice Withdraw regeneration credit from activism service provided
    */
   function withdraw() public {

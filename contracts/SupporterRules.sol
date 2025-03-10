@@ -18,17 +18,34 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 contract SupporterRules {
   using SafeMath for uint256;
 
+  /// @notice The relationship between address and supporter data
   mapping(address => Supporter) internal supporters;
+
+  /// @notice The relationship between address and burned tokens per item
   mapping(address => mapping(uint256 => uint256)) public calculatorItemCertificates;
+
+  /// @notice The relationship between address and reduction commitment statements
   mapping(address => uint256[]) public reductionCommitments;
+
+  /// @notice The relationship between id and supporter address
   mapping(uint256 => address) public supportersAddress;
+
+  /// @notice The relationship between address and publications made
   mapping(address => Publication[]) public publications;
 
+  /// @notice Commission percentage on invited burn
   uint256 public constant INVITER_PERCENTAGE = 5;
 
+  /// @notice CommunityRules contract address
   CommunityRules internal communityRules;
+
+  /// @notice SupporterPool contract address
   SupporterPool internal supporterPool;
+
+  /// @notice ResearcherRules contract address
   ResearcherRules internal researcherRules;
+
+  /// @notice Supporter UserType
   UserType private constant USER_TYPE = UserType.SUPPORTER;
 
   constructor(address communityRulesAddress, address supporterPoolAddress, address researcherRulesAddress) {
@@ -38,8 +55,8 @@ contract SupporterRules {
   }
 
   /**
-   * @dev Allow new register of supporter
-   * @param name the name of the supporter
+   * @notice Allow new register of supporter
+   * @param name The name of the supporter
    * @return a supporter
    */
   function addSupporter(string memory name) public returns (Supporter memory) {
@@ -54,6 +71,11 @@ contract SupporterRules {
     return supporter;
   }
 
+  /**
+   * @notice Burn tokens to compensate for a specific item
+   * @param amount Tokens burned
+   * @param calculatorItemId Calculator item id
+   */
   function burnTokensCalculator(uint256 amount, uint256 calculatorItemId) public {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount > 0, "Amount invalid");
@@ -66,6 +88,12 @@ contract SupporterRules {
     }
   }
 
+  /**
+   * @notice Burn tokens to post
+   * @param amount Tokens burned
+   * @param description Post description
+   * @param content Post content
+   */
   function burnTokensPublication(uint256 amount, string memory description, string memory content) public {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount > 1, "Amount invalid");
@@ -87,6 +115,10 @@ contract SupporterRules {
     return amountBurn;
   }
 
+  /**
+   * @notice Declare reduction comitment for a specific item
+   * @param calculatorItemId Calculator item id
+   */
   function declareReductionCommitment(uint256 calculatorItemId) public {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
 

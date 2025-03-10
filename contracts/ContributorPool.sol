@@ -19,6 +19,7 @@ contract ContributorPool is Poolable, Ownable, Blockable, Callable {
 
   RegenerationCreditInterface internal regenerationCredit;
 
+  /// @notice Total contributor pool tokens
   uint256 internal constant TOTAL_TOKENS_POOL = 30000000000000000000000000;
 
   constructor(
