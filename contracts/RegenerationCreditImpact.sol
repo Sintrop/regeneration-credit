@@ -33,8 +33,8 @@ contract RegenerationCreditImpact {
     if(inspectionRules.inspectionsCount() == 0) return 0;
 
     return
-      (inspectionRules.inspectionsCarbonImpact() / inspectionRules.inspectionsCount()) *
-      userRules.userTypesTotalCount(UserType.REGENERATOR);
+      ((inspectionRules.inspectionsBiomassImpact()  / 2) / inspectionRules.inspectionsCount()) *
+      regeneratorRules.totalImpactRegenerators();
   }
 
   /**
@@ -45,7 +45,14 @@ contract RegenerationCreditImpact {
 
     return
       (inspectionRules.inspectionsBiodiversityImpact() / inspectionRules.inspectionsCount()) *
-      userRules.userTypesTotalCount(UserType.REGENERATOR);
+      regeneratorRules.totalImpactRegenerators();
+  }
+
+    /**
+   * @dev Called by the activist contract, this function calls the token contract to transfer the rewards
+   */
+  function totalSoilImpact() public view returns (uint256) {
+    return regeneratorRules.regenerationArea();
   }
 
   /**
@@ -63,6 +70,15 @@ contract RegenerationCreditImpact {
   function tokenBiodiversityImpact() public view returns (uint256) {
     return
       totalBiodiversityImpact() /
+      (regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_());
+  }
+
+    /**
+   * @dev Called by the activist contract, this function calls the token contract to transfer the rewards
+   */
+  function tokenSoilImpact() public view returns (uint256) {
+    return
+      totalSoilImpact() /
       (regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_());
   }
 }
