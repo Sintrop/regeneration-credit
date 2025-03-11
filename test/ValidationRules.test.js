@@ -4,12 +4,11 @@ const { regenerationCreditDeployed } = require("./shared/regeneration_credit_dep
 const { advanceBlock } = require("./shared/advance_block");
 const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 
-describe("ValidatorRules", () => {
+describe("ValidationRules", () => {
   let instance;
   let communityRules;
   let regeneratorRules;
   let regeneratorPool;
-  let validatorPool;
   let inspectorPool;
   let researcherPool;
   let activistPool;
@@ -56,12 +55,6 @@ describe("ValidatorRules", () => {
     blocksPerEra: 12,
   };
 
-  const validatorPoolArgs = {
-    totalTokens: "30000000000000000000000000",
-    halving: 12,
-    blocksPerEra: 80,
-  };
-
   const inspectorPoolArgs = {
     totalTokens: "180000000000000000000000000",
     halving: 12,
@@ -102,10 +95,6 @@ describe("ValidatorRules", () => {
 
   const addContributor = async (name, from) => {
     await contributorRules.connect(from).addContributor(name, "photoURL");
-  };
-
-  const addValidator = async (from) => {
-    await instance.connect(from).addValidator();
   };
 
   const addActivist = async (name, from) => {
@@ -231,13 +220,6 @@ describe("ValidatorRules", () => {
       regeneratorPoolArgs.blocksPerEra
     );
 
-    const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
-    validatorPool = await validatorPoolFactory.deploy(
-      regenerationCredit.target,
-      validatorPoolArgs.halving,
-      validatorPoolArgs.blocksPerEra
-    );
-
     const regeneratorRulesFactory = await ethers.getContractFactory("RegeneratorRules");
     regeneratorRules = await regeneratorRulesFactory.deploy(communityRules.target, regeneratorPool.target);
 
@@ -273,8 +255,8 @@ describe("ValidatorRules", () => {
     const inspectorRulesFactory = await ethers.getContractFactory("InspectorRules");
     inspectorRules = await inspectorRulesFactory.deploy(communityRules.target, inspectorPool.target, maxPenalties);
 
-    const validatorRulesFactory = await ethers.getContractFactory("ValidatorRules");
-    instance = await validatorRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
+    const validationRulesFactory = await ethers.getContractFactory("ValidationRules");
+    instance = await validationRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
     const developerMaxPenalties = 3;
     const developerSecuryBlocksToAnalysis = 10;
@@ -318,10 +300,9 @@ describe("ValidatorRules", () => {
     const activistRulesFactory = await ethers.getContractFactory("ActivistRules");
     activistRules = await activistRulesFactory.deploy(communityRules.target, activistPool.target);
 
-    const validatorRulesDependencies = {
+    const validationRulesDependencies = {
       communityRulesAddress: communityRules.target,
       regeneratorRulesAddress: regeneratorRules.target,
-      validatorPoolAddress: validatorPool.target,
       inspectorRulesAddress: inspectorRules.target,
       developerRulesAddress: developerRules.target,
       researcherRulesAddress: researcherRules.target,
@@ -348,7 +329,6 @@ describe("ValidatorRules", () => {
     await contributorRules.newAllowedCaller(instance.target);
     await regeneratorPool.newAllowedCaller(regeneratorRules.target);
     await regeneratorPool.newAllowedCaller(owner);
-    await validatorPool.newAllowedCaller(instance.target);
     await developerPool.newAllowedCaller(developerRules.target);
     await researcherPool.newAllowedCaller(researcherRules.target);
     await contributorPool.newAllowedCaller(contributorRules.target);
@@ -359,55 +339,11 @@ describe("ValidatorRules", () => {
     await instance.newAllowedCaller(owner);
     await instance.newAllowedCaller(developerRules);
 
-    await instance.setContractAddressDependencies(validatorRulesDependencies);
+    await instance.setContractAddressDependencies(validationRulesDependencies);
 
-    await regenerationCredit.addContractPool(validatorPool.target, validatorPoolArgs.totalTokens);
     await regenerationCredit.addContractPool(regeneratorRules.target, regeneratorPoolArgs.totalTokens);
 
-    await addInvitation(owner, validator1Address, userTypes.Validator, owner);
     await addInvitation(owner, inspector1Address, userTypes.Inspector, owner);
-  });
-
-  describe("#addValidator", () => {
-    context("when is not an allowed user", () => {
-      it("should return error message", async () => {
-        await expect(addValidator(validator2Address)).to.be.revertedWith("Invalid invitation");
-      });
-    });
-
-    context("when is an allowed user", () => {
-      context("when validator exists", () => {
-        it("should return error", async () => {
-          await addValidator(validator1Address);
-          await expect(addValidator(validator1Address)).to.be.revertedWith("User already exists");
-        });
-      });
-
-      context("when validator don't exist", () => {
-        it("should create validator", async () => {
-          await addValidator(validator1Address);
-          const validator = await instance.getValidator(validator1Address);
-
-          expect(validator.validatorWallet).to.equal(validator1Address.address);
-        });
-
-        it("should increment validatorCount after create validator", async () => {
-          await addValidator(validator1Address);
-          const validatorsCount = await communityRules.userTypesCount(userTypes.Validator);
-
-          expect(validatorsCount).to.equal(1);
-        });
-
-        it("should add created validator in userType contract as a VALIDATOR", async () => {
-          await addValidator(validator1Address);
-
-          const userType = await communityRules.getUser(validator1Address);
-          const VALIDATOR = 8;
-
-          expect(userType).to.equal(VALIDATOR);
-        });
-      });
-    });
   });
 
   describe("#addUserValidation", () => {
@@ -770,49 +706,6 @@ describe("ValidatorRules", () => {
                 const userTypesCount = await communityRules.userTypesCount(userTypes.Activist);
 
                 expect(userTypesCount).to.equal(1);
-              });
-            });
-
-            context("with validator", () => {
-              beforeEach(async () => {
-                await instance.connect(validator1Address).declareAlive();
-
-                await instance.connect(validator1Address).addUserValidation(validator1Address, "my justification");
-                await instance.connect(validator3Address).addUserValidation(validator1Address, "my justification");
-              });
-
-              it("should add validation", async () => {
-                const validations = await instance.getUserValidations(validator1Address);
-
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
-              });
-
-              it("user type must be denied", async () => {
-                const user = await communityRules.getUser(validator1Address);
-                const DENIED = 9;
-
-                expect(user).to.equal(DENIED);
-              });
-
-              it("remove user levels from pool", async () => {
-                const levelsEra1 = await validatorPool.eraLevels(1, validator1Address);
-                const levelsEra2 = await validatorPool.eraLevels(2, validator1Address);
-
-                expect(levelsEra1).to.equal(0);
-                expect(levelsEra2).to.equal(0);
-              });
-
-              it("remove user levels from validator", async () => {
-                const validator = await instance.getValidator(validator1Address);
-
-                expect(validator.pool.level).to.equal(0);
-              });
-
-              it("userTypesCount must be decremented", async () => {
-                const userTypesCount = await communityRules.userTypesCount(userTypes.Validator);
-
-                expect(userTypesCount).to.equal(3);
               });
             });
           });
@@ -1607,28 +1500,6 @@ describe("ValidatorRules", () => {
     });
   });
 
-  describe("#getValidator", () => {
-    context("when validator exists", () => {
-      beforeEach(async () => {
-        await addValidator(validator1Address);
-      });
-
-      it("should return a validator", async () => {
-        const validator = await instance.getValidator(validator1Address);
-
-        expect(validator.validatorWallet).to.equal(validator1Address.address);
-      });
-    });
-
-    context("when validator don't exists", () => {
-      it("should return a validator", async () => {
-        const validator = await instance.getValidator(validator2Address);
-
-        expect(validator.validatorWallet).to.equal("0x0000000000000000000000000000000000000000");
-      });
-    });
-  });
-
   describe("#majorityValidatorsCount", () => {
     context("when current era is 1", () => {
       context("when have 8 validators", () => {
@@ -1708,119 +1579,6 @@ describe("ValidatorRules", () => {
             expect(majorityValidatorsCount).to.equal(0);
           });
         });
-      });
-    });
-  });
-
-  describe("#declareAlive", () => {
-    context("when is not a validator", () => {
-      it("should return error", async () => {
-        await expect(instance.connect(regenerator1Address).declareAlive()).to.be.revertedWith(
-          "User must be a validator"
-        );
-      });
-    });
-
-    context("when is a validator", () => {
-      beforeEach(async () => {
-        await addValidator(validator1Address);
-      });
-
-      it("should add 1 level", async () => {
-        await instance.connect(validator1Address).declareAlive();
-
-        const validator = await instance.getValidator(validator1Address);
-
-        expect(validator.pool.level).to.equal(1);
-      });
-
-      context("when adding report to eras", () => {
-        beforeEach(async () => {
-          await instance.connect(validator1Address).declareAlive();
-
-          await advanceBlock(validatorPoolArgs.blocksPerEra);
-
-          await instance.connect(validator1Address).declareAlive();
-        });
-
-        it("eras 1 must have 1 level", async () => {
-          const eraLevels = await validatorPool.eraLevels(1, validator1Address);
-
-          expect(eraLevels).to.equal(1);
-        });
-
-        it("eras 2 must have 1 level", async () => {
-          const eraLevels = await validatorPool.eraLevels(2, validator1Address);
-
-          expect(eraLevels).to.equal(1);
-        });
-      });
-    });
-
-    context("when is a validator and has already added a level in that era", () => {
-      beforeEach(async () => {
-        await addValidator(validator1Address);
-        await instance.connect(validator1Address).declareAlive();
-      });
-
-      it("should return error", async () => {
-        await expect(instance.connect(validator1Address).declareAlive()).to.be.revertedWith("Only once per era");
-      });
-    });
-  });
-
-  describe("#withdraw", () => {
-    context("when is a validator", () => {
-      beforeEach(async () => {
-        await addValidator(validator1Address);
-        await instance.connect(validator1Address).declareAlive();
-      });
-
-      context("when validator is in era 1 and current era is 1", () => {
-        it("should return error", async () => {
-          await expect(instance.connect(validator1Address).withdraw()).to.be.revertedWith("Can't approve withdraw");
-        });
-      });
-
-      context("when validator is in era 1 and current era is 2", () => {
-        context("with one validator", () => {
-          beforeEach(async () => {
-            await advanceBlock(validatorPoolArgs.blocksPerEra);
-            await instance.connect(validator1Address).withdraw();
-          });
-
-          it("withdraw 1250000000000000000000000 tokens", async () => {
-            const balanceOf = await regenerationCredit.balanceOf(validator1Address);
-            const expectedBalance = 1250000000000000000000000n;
-
-            expect(balanceOf).to.equal(expectedBalance);
-          });
-        });
-
-        context("with two validators", () => {
-          beforeEach(async () => {
-            await addInvitation(owner, validator2Address, userTypes.Validator, owner);
-            await addValidator(validator2Address);
-            await instance.connect(validator2Address).declareAlive();
-
-            await advanceBlock(validatorPoolArgs.blocksPerEra);
-
-            await instance.connect(validator1Address).withdraw();
-          });
-
-          it("withdraw 625000000000000000000000 tokens", async () => {
-            const balanceOf = await regenerationCredit.balanceOf(validator1Address);
-            const expectedBalance = 625000000000000000000000n;
-
-            expect(balanceOf).to.equal(expectedBalance);
-          });
-        });
-      });
-    });
-
-    context("when is not a validator", () => {
-      it("should return error", async () => {
-        await expect(instance.connect(regenerator1Address).withdraw()).to.be.revertedWith("Pool only to validators");
       });
     });
   });

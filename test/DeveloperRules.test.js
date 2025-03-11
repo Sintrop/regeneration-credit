@@ -12,8 +12,7 @@ describe("DeveloperRules", (accounts) => {
   let communityRules;
   let developerPool;
   let regenerationCredit;
-  let validatorRules;
-  let validatorPool;
+  let validationRules;
   let owner,
     dev1Address,
     dev2Address,
@@ -29,12 +28,6 @@ describe("DeveloperRules", (accounts) => {
     blocksPerEra: 50,
   };
 
-  const validatorPoolargs = {
-    totalTokens: "30000000000000000000000000",
-    halving: 12,
-    blocksPerEra: 80,
-  };
-
   const addDeveloper = async (name, from) => {
     await instance.connect(from).addDeveloper(name, "photoURL");
   };
@@ -44,7 +37,7 @@ describe("DeveloperRules", (accounts) => {
   };
 
   const addValidator = async (from) => {
-    await validatorRules.connect(from).addValidator();
+    await validationRules.connect(from).addValidator();
   };
 
   const maxPenalties = 3;
@@ -74,29 +67,21 @@ describe("DeveloperRules", (accounts) => {
       developerPoolParams.blocksPerEra
     );
 
-    const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
-    validatorPool = await validatorPoolFactory.deploy(
-      regenerationCredit.target,
-      validatorPoolargs.halving,
-      validatorPoolargs.blocksPerEra
-    );
-
-    const validatorRulesFactory = await ethers.getContractFactory("ValidatorRules");
-    validatorRules = await validatorRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
+    const validationRulesFactory = await ethers.getContractFactory("ValidationRules");
+    validationRules = await validationRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
     developerRulesFactory = await ethers.getContractFactory("DeveloperRules");
     instance = await developerRulesFactory.deploy(
       communityRules.target,
       developerPool.target,
-      validatorRules.target,
+      validationRules.target,
       maxPenalties,
       securityBlocksToValidatorAnalysis
     );
 
-    const validatorRulesDependencies = {
+    const validationRulesDependencies = {
       communityRulesAddress: communityRules.target,
       regeneratorRulesAddress: ZERO_ADDRESS,
-      validatorPoolAddress: validatorPool.target,
       inspectorRulesAddress: communityRules.target,
       developerRulesAddress: instance.target,
       researcherRulesAddress: ZERO_ADDRESS,
@@ -106,15 +91,14 @@ describe("DeveloperRules", (accounts) => {
 
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(owner);
-    await communityRules.newAllowedCaller(validatorRules.target);
+    await communityRules.newAllowedCaller(validationRules.target);
     await developerPool.newAllowedCaller(instance.target);
-    await validatorPool.newAllowedCaller(validatorRules.target);
-    await validatorRules.newAllowedCaller(instance.target);
-    await validatorRules.newAllowedCaller(owner);
-    await instance.newAllowedCaller(validatorRules.target);
+    await validationRules.newAllowedCaller(instance.target);
+    await validationRules.newAllowedCaller(owner);
+    await instance.newAllowedCaller(validationRules.target);
     await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(developerPool.target, "30000000000000000000000000");
-    await validatorRules.setContractAddressDependencies(validatorRulesDependencies);
+    await validationRules.setContractAddressDependencies(validationRulesDependencies);
     await addInvitation(owner, dev1Address, userTypes.Developer, owner);
   });
 
@@ -414,8 +398,8 @@ describe("DeveloperRules", (accounts) => {
         beforeEach(async () => {
           await addValidator(validator2Address);
 
-          await validatorRules.connect(validator1Address).declareAlive();
-          await validatorRules.connect(validator2Address).declareAlive();
+          await validationRules.connect(validator1Address).declareAlive();
+          await validationRules.connect(validator2Address).declareAlive();
 
           await instance.connect(dev1Address).addReport("description", "report");
           await instance.connect(validator1Address).addReportValidation(1, "justification");
@@ -461,8 +445,8 @@ describe("DeveloperRules", (accounts) => {
             await addValidator(validator3Address);
             await addValidator(validator4Address);
 
-            await validatorRules.connect(validator1Address).declareAlive();
-            await validatorRules.connect(validator2Address).declareAlive();
+            await validationRules.connect(validator1Address).declareAlive();
+            await validationRules.connect(validator2Address).declareAlive();
 
             await instance.connect(validator1Address).addReportValidation(1, "justification");
             await instance.connect(validator2Address).addReportValidation(1, "justification");

@@ -4,7 +4,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 import { RegeneratorRules } from "./RegeneratorRules.sol";
 import { InspectorRules } from "./InspectorRules.sol";
 import { RegenerationIndexRules } from "./RegenerationIndexRules.sol";
-import { ValidatorRules } from "./ValidatorRules.sol";
+import { ValidationRules } from "./ValidationRules.sol";
 import { RegenerationIndexRules } from "./RegenerationIndexRules.sol";
 import { ActivistRules } from "./ActivistRules.sol";
 import { CommunityRules } from "./CommunityRules.sol";
@@ -41,8 +41,8 @@ contract InspectionRules is Callable {
   /// @notice CommunityRules contract address
   CommunityRules private communityRules;
 
-  /// @notice ValidatorRules contract address
-  ValidatorRules private validatorRules;
+  /// @notice ValidationRules contract address
+  ValidationRules private validationRules;
 
   /// @notice ActivistRules contract address
   ActivistRules private activistRules;
@@ -76,7 +76,7 @@ contract InspectionRules is Callable {
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
     communityRules = CommunityRules(contractDependency.communityRulesAddress);
     regeneratorRules = RegeneratorRules(contractDependency.regeneratorRulesAddress);
-    validatorRules = ValidatorRules(contractDependency.validatorRulesAddress);
+    validationRules = ValidationRules(contractDependency.validationRulesAddress);
     inspectorRules = InspectorRules(contractDependency.inspectorRulesAddress);
     regenerationIndexRules = RegenerationIndexRules(contractDependency.regenerationIndexRulesAddress);
     activistRules = ActivistRules(contractDependency.activistRulesAddress);
@@ -220,7 +220,7 @@ contract InspectionRules is Callable {
   }
 
   function addInspectionValidation(uint256 id, string memory justification) public {
-    require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+    //require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
     Inspection memory inspection = inspections[id];
 
@@ -229,11 +229,11 @@ contract InspectionRules is Callable {
     inspection.validationsCount += 1;
     inspections[inspection.id] = inspection;
 
-    bool mustInvalidateInspection = inspection.validationsCount >= validatorRules.majorityValidatorsCount();
+    bool mustInvalidateInspection = inspection.validationsCount >= validationRules.majorityValidatorsCount();
 
     if (mustInvalidateInspection) invalidateInspection(inspection);
 
-    validatorRules.addInspectionValidation(inspection, justification, msg.sender);
+    validationRules.addInspectionValidation(inspection, justification, msg.sender);
   }
 
   function invalidateInspection(Inspection memory inspection) internal {

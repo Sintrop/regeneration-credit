@@ -7,7 +7,7 @@ import { Invitable } from "./shared/Invitable.sol";
 import { CommunityRules } from "./CommunityRules.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { DeveloperPool } from "./DeveloperPool.sol";
-import { ValidatorRules } from "./ValidatorRules.sol";
+import { ValidationRules } from "./ValidationRules.sol";
 import { Developer, Pool, Report, Penalty } from "./types/DeveloperTypes.sol";
 
 /**
@@ -36,8 +36,8 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   /// @notice DeveloperPool contract address
   DeveloperPool internal developerPool;
 
-  /// @notice ValidatorRules contract address
-  ValidatorRules internal validatorRules;
+  /// @notice ValidationRules contract address
+  ValidationRules internal validationRules;
 
   /// @notice Developer UserType
   UserType private constant USER_TYPE = UserType.DEVELOPER;
@@ -57,13 +57,13 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   constructor(
     address communityRulesAddress,
     address developerPoolAddress,
-    address validatorRulesAddress,
+    address validationRulesAddress,
     uint256 maxPenalties_,
     uint256 securityBlocksToValidatorAnalysis
   ) {
     communityRules = CommunityRules(communityRulesAddress);
     developerPool = DeveloperPool(developerPoolAddress);
-    validatorRules = ValidatorRules(validatorRulesAddress);
+    validationRules = ValidationRules(validationRulesAddress);
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
@@ -151,7 +151,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @param justification String with invalidation explanation
    */
   function addReportValidation(uint256 id, string memory justification) public {
-    require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+    //require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
     Report memory report = reports[id];
 
@@ -160,11 +160,11 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     report.validationsCount += 1;
     reports[id] = report;
 
-    bool mustInvalidateReport = report.validationsCount >= validatorRules.majorityValidatorsCount();
+    bool mustInvalidateReport = report.validationsCount >= validationRules.majorityValidatorsCount();
 
     if (mustInvalidateReport) invalidateReport(report);
 
-    validatorRules.addDeveloperReportValidation(report, justification, msg.sender);
+    validationRules.addDeveloperReportValidation(report, justification, msg.sender);
   }
 
   /**

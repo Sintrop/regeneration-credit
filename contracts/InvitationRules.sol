@@ -7,7 +7,7 @@ import { ResearcherRules } from "./ResearcherRules.sol";
 import { DeveloperRules } from "./DeveloperRules.sol";
 import { ActivistRules } from "./ActivistRules.sol";
 import { ContributorRules } from "./ContributorRules.sol";
-import { ValidatorRules } from "./ValidatorRules.sol";
+import { ValidationRules } from "./ValidationRules.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 
 /**
@@ -37,8 +37,8 @@ contract InvitationRules is Ownable {
   /// @notice ContributorRules contract address
   ContributorRules internal contributorRules;
 
-  /// @notice ValidatorRules contract address
-  ValidatorRules internal validatorRules;
+  /// @notice ValidationRules contract address
+  ValidationRules internal validationRules;
 
   constructor(
     address communityRulesAddress,
@@ -46,14 +46,14 @@ contract InvitationRules is Ownable {
     address developerRulesAddress,
     address activistRulesAddress,
     address contributorRulesAddress,
-    address validatorRulesAddress
+    address validationRulesAddress
   ) {
     communityRules = CommunityRules(communityRulesAddress);
     researcherRules = ResearcherRules(researcherRulesAddress);
     developerRules = DeveloperRules(developerRulesAddress);
     activistRules = ActivistRules(activistRulesAddress);
     contributorRules = ContributorRules(contributorRulesAddress);
-    validatorRules = ValidatorRules(validatorRulesAddress);
+    validationRules = ValidationRules(validationRulesAddress);
 
     canBeInviteds[UserType.ACTIVIST] = UserType.ACTIVIST;
     canBeInviteds[UserType.INSPECTOR] = UserType.ACTIVIST;
@@ -62,7 +62,6 @@ contract InvitationRules is Ownable {
     canBeInviteds[UserType.RESEARCHER] = UserType.RESEARCHER;
     canBeInviteds[UserType.SUPPORTER] = UserType.SUPPORTER;
     canBeInviteds[UserType.CONTRIBUTOR] = UserType.CONTRIBUTOR;
-    canBeInviteds[UserType.VALIDATOR] = UserType.VALIDATOR;
   }
 
   /**
@@ -91,8 +90,6 @@ contract InvitationRules is Ownable {
       return developerRules.canSendInvite(msg.sender);
     } else if (userType == UserType.RESEARCHER) {
       return researcherRules.canSendInvite(msg.sender);
-    } else if (userType == UserType.VALIDATOR) {
-      return validatorRules.canSendInvite(msg.sender);
     } else {
       return true;
     }

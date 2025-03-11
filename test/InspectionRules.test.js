@@ -16,7 +16,6 @@ describe("InspectionRules", () => {
   let researcherPool;
   let inspectorPool;
   let regeneratorPool;
-  let validatorPool;
   let activistPool;
 
   const inspectorMaxPenalties = 2;
@@ -86,12 +85,6 @@ describe("InspectionRules", () => {
     blocksPerEra: 12,
   };
 
-  const validatorPoolargs = {
-    totalTokens: "30000000000000000000000000",
-    halving: 12,
-    blocksPerEra: 100,
-  };
-
   const activistPoolArgs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
@@ -136,7 +129,7 @@ describe("InspectionRules", () => {
   };
 
   const addValidator = async (from) => {
-    await validatorRules.connect(from).addValidator();
+    await validationRules.connect(from).addValidator();
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
@@ -227,13 +220,6 @@ describe("InspectionRules", () => {
       regeneratorPoolArgs.blocksPerEra
     );
 
-    const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
-    validatorPool = await validatorPoolFactory.deploy(
-      regenerationCredit.target,
-      validatorPoolargs.halving,
-      validatorPoolargs.blocksPerEra
-    );
-
     const activistPoolFactory = await ethers.getContractFactory("ActivistPool");
     activistPool = await activistPoolFactory.deploy(
       regenerationCredit.target,
@@ -246,8 +232,8 @@ describe("InspectionRules", () => {
     const regeneratorRulesFactory = await ethers.getContractFactory("RegeneratorRules");
     const activistRulesFactory = await ethers.getContractFactory("ActivistRules");
 
-    const validatorRulesFactory = await ethers.getContractFactory("ValidatorRules");
-    validatorRules = await validatorRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
+    const validationRulesFactory = await ethers.getContractFactory("ValidationRules");
+    validationRules = await validationRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
     inspectorRules = await inspectorRulesFactory.deploy(
       communityRules.target,
@@ -259,7 +245,7 @@ describe("InspectionRules", () => {
     researcherRules = await researcherRulesFactory.deploy(
       communityRules.target,
       researcherPool.target,
-      validatorRules.target,
+      validationRules.target,
       timeBetweenResearches,
       researcherMaxPenalties,
       researcherSecuryBlocksToAnalysis
@@ -271,10 +257,9 @@ describe("InspectionRules", () => {
     const regenerationIndexRulesFactory = await ethers.getContractFactory("RegenerationIndexRules");
     regenerationIndexRules = await regenerationIndexRulesFactory.deploy();
 
-    const validatorRulesDependencies = {
+    const validationRulesDependencies = {
       communityRulesAddress: communityRules.target,
       regeneratorRulesAddress: regeneratorRules.target,
-      validatorPoolAddress: validatorPool.target,
       inspectorRulesAddress: inspectorRules.target,
       developerRulesAddress: ZERO_ADDRESS,
       researcherRulesAddress: researcherRules.target,
@@ -285,7 +270,7 @@ describe("InspectionRules", () => {
     const sintropDependencies = {
       communityRulesAddress: communityRules.target,
       regeneratorRulesAddress: regeneratorRules.target,
-      validatorRulesAddress: validatorRules.target,
+      validationRulesAddress: validationRules.target,
       inspectorRulesAddress: inspectorRules.target,
       activistRulesAddress: activistRules.target,
       regenerationIndexRulesAddress: regenerationIndexRules.target,
@@ -302,25 +287,24 @@ describe("InspectionRules", () => {
 
     await instance.setContractAddressDependencies(sintropDependencies);
 
-    await validatorRules.setContractAddressDependencies(validatorRulesDependencies);
+    await validationRules.setContractAddressDependencies(validationRulesDependencies);
     await communityRules.newAllowedCaller(inspectorRules.target);
     await communityRules.newAllowedCaller(regeneratorRules.target);
     await communityRules.newAllowedCaller(researcherRules.target);
-    await communityRules.newAllowedCaller(validatorRules.target);
+    await communityRules.newAllowedCaller(validationRules.target);
     await communityRules.newAllowedCaller(activistRules.target);
     await communityRules.newAllowedCaller(owner);
     await inspectorRules.newAllowedCaller(instance.target);
     await inspectorRules.newAllowedCaller(owner);
-    await inspectorRules.newAllowedCaller(validatorRules.target);
-    await validatorRules.newAllowedCaller(instance.target);
+    await inspectorRules.newAllowedCaller(validationRules.target);
+    await validationRules.newAllowedCaller(instance.target);
     await activistRules.newAllowedCaller(instance.target);
     await activistPool.newAllowedCaller(activistRules.target);
     await regeneratorRules.newAllowedCaller(owner);
     await regeneratorRules.newAllowedCaller(instance.target);
-    await regeneratorRules.newAllowedCaller(validatorRules.target);
+    await regeneratorRules.newAllowedCaller(validationRules.target);
     await regeneratorPool.newAllowedCaller(regeneratorRules.target);
     await inspectorPool.newAllowedCaller(inspectorRules.target);
-    await validatorPool.newAllowedCaller(validatorRules.target);
     await regenerationIndexRules.newAllowedCaller(instance.target);
 
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
@@ -1339,7 +1323,7 @@ describe("InspectionRules", () => {
           });
 
           it("add validation", async () => {
-            const validation = await validatorRules.inspectionValidations(1, 0);
+            const validation = await validationRules.inspectionValidations(1, 0);
 
             expect(validation[0]).to.equal(validator1Address.address);
             expect(validation[1]).to.equal(1);
@@ -1356,8 +1340,8 @@ describe("InspectionRules", () => {
             });
 
             it("add validations", async () => {
-              const validation1 = await validatorRules.inspectionValidations(1, 0);
-              const validation2 = await validatorRules.inspectionValidations(1, 1);
+              const validation1 = await validationRules.inspectionValidations(1, 0);
+              const validation2 = await validationRules.inspectionValidations(1, 1);
 
               expect(validation1.validator).to.equal(validator1Address.address);
               expect(validation2.validator).to.equal(validator2Address.address);

@@ -44,7 +44,6 @@ contract CommunityRules is Ownable, Callable {
     uint256 activistProportionality,
     uint256 researcherProportionality,
     uint256 developerProportionality,
-    uint256 validatorProportionality,
     uint256 contributorProportionality
   ) {
     userTypeSettings[UserType.REGENERATOR] = UserTypeSetting(0, false, true, 0);
@@ -53,7 +52,6 @@ contract CommunityRules is Ownable, Callable {
     userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(researcherProportionality, false, true, 200000);
     userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(developerProportionality, false, true, 200000);
     userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(contributorProportionality, false, true, 100000);
-    userTypeSettings[UserType.VALIDATOR] = UserTypeSetting(validatorProportionality, false, true, 1000000);
   }
 
   event AddUserEvent(address addr, UserType userType);

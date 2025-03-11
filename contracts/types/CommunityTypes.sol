@@ -10,7 +10,6 @@ enum UserType {
   CONTRIBUTOR,
   ACTIVIST,
   SUPPORTER,
-  VALIDATOR,
   DENIED
 }
 

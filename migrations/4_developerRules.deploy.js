@@ -5,7 +5,7 @@ const verifyContract = require("../scripts/shared/verifyContract");
 async function developerRulesDeploy() {
   const communityRules = await getDeployedContract("CommunityRules");
   const developerPool = await getDeployedContract("DeveloperPool");
-  const validatorRules = await getDeployedContract("ValidatorRules");
+  const validationRules = await getDeployedContract("ValidationRules");
 
   const DeveloperRules = await ethers.getContractFactory("DeveloperRules");
 
@@ -15,7 +15,7 @@ async function developerRulesDeploy() {
   const args = [
     communityRules.target,
     developerPool.target,
-    validatorRules.target,
+    validationRules.target,
     developerMaxPenalties,
     securityBlocksToValidatorAnalysis,
   ];
@@ -26,7 +26,7 @@ async function developerRulesDeploy() {
 
   await developerPool.newAllowedCaller(developerRules.target);
   await communityRules.newAllowedCaller(developerRules.target);
-  await developerRules.newAllowedCaller(validatorRules.target);
+  await developerRules.newAllowedCaller(validationRules.target);
 
   console.log(`DeveloperRules address ${developerRules.target}`);
 

@@ -16,8 +16,7 @@ const regeneratorPoolDeploy = require("../migrations/7_regeneratorPool.deploy.js
 const regeneratorRulesDeploy = require("../migrations/8_regeneratorRules.deploy.js");
 const researcherPoolDeploy = require("../migrations/9_researcherPool.deploy.js");
 const researcherRulesDeploy = require("../migrations/10_researcherRules.deploy.js");
-const validatorPoolDeploy = require("../migrations/13_validatorPool.deploy.js");
-const validatorRulesDeploy = require("../migrations/14_validatorRules.deploy.js");
+const validationRulesDeploy = require("../migrations/14_validationRules.deploy.js");
 const activistPoolDeploy = require("../migrations/15_activistPool.deploy.js");
 const activistRulesDeploy = require("../migrations/16_activistRules.deploy.js");
 const supporterPoolDeploy = require("../migrations/17_supporterPool.deploy.js");
@@ -69,8 +68,7 @@ async function main() {
 
   await regenerationCreditDeploy();
   await communityRulesDeploy();
-  await validatorPoolDeploy();
-  await validatorRulesDeploy();
+  await validationRulesDeploy();
   await developerPoolDeploy();
   await developerRulesDeploy();
   await inspectorPoolDeploy();

@@ -5,7 +5,7 @@ const verifyContract = require("../scripts/shared/verifyContract");
 async function researcherRulesDeploy() {
   const communityRules = await getDeployedContract("CommunityRules");
   const researcherPool = await getDeployedContract("ResearcherPool");
-  const validatorRules = await getDeployedContract("ValidatorRules");
+  const validationRules = await getDeployedContract("ValidationRules");
 
   const ResearcherRules = await ethers.getContractFactory("ResearcherRules");
 
@@ -16,7 +16,7 @@ async function researcherRulesDeploy() {
   const args = [
     communityRules.target,
     researcherPool.target,
-    validatorRules.target,
+    validationRules.target,
     timeBetweenResearches,
     researcherMaxPenalties,
     securityBlocksToValidatorAnalysis,
@@ -28,7 +28,7 @@ async function researcherRulesDeploy() {
 
   await communityRules.newAllowedCaller(researcherRules.target);
   await researcherPool.newAllowedCaller(researcherRules.target);
-  await researcherRules.newAllowedCaller(validatorRules.target);
+  await researcherRules.newAllowedCaller(validationRules.target);
 
   console.log(`ReseacherContract address ${researcherRules.target}`);
 

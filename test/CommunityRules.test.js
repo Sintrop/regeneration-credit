@@ -11,7 +11,6 @@ describe("CommunityRules", function () {
     activistProportionality: 1,
     researcherProportionality: 1,
     developerProportionality: 1,
-    validatorProportionality: 1,
     contributorProportionality: 1,
   };
 
@@ -24,7 +23,6 @@ describe("CommunityRules", function () {
     "CONTRIBUTOR",
     "ACTIVIST",
     "SUPPORTER",
-    "VALIDATOR",
     "DENIED",
   ];
 
@@ -184,17 +182,6 @@ describe("CommunityRules", function () {
           });
         });
 
-        context("to validator", () => {
-          it("should add correct enum to validator", async () => {
-            await addInvitation(owner, user1Address, userTypes.Validator, owner);
-            await addUser(user1Address, userTypes.Validator, owner);
-
-            const user = await instance.getUser(user1Address);
-
-            expect(user).to.equal(userTypes.Validator);
-          });
-        });
-
         context("to denied", () => {
           it("should add correct enum to denied", async () => {
             await addUser(user1Address, userTypes.Denied, owner);
@@ -317,28 +304,6 @@ describe("CommunityRules", function () {
 
           it("should return error message", async () => {
             await expect(addUser(user7Address, userTypes.Contributor, owner)).to.be.revertedWith(
-              "Proportionality invalid"
-            );
-          });
-        });
-
-        context("to validator with proportionality 1", () => {
-          beforeEach(async () => {
-            await addInvitation(owner, user2Address, userTypes.Validator, owner);
-            await addInvitation(owner, user3Address, userTypes.Validator, owner);
-            await addInvitation(owner, user4Address, userTypes.Validator, owner);
-            await addInvitation(owner, user5Address, userTypes.Validator, owner);
-            await addInvitation(owner, user6Address, userTypes.Validator, owner);
-
-            await addUser(user2Address, userTypes.Validator, owner);
-            await addUser(user3Address, userTypes.Validator, owner);
-            await addUser(user4Address, userTypes.Validator, owner);
-            await addUser(user5Address, userTypes.Validator, owner);
-            await addUser(user6Address, userTypes.Validator, owner);
-          });
-
-          it("should return error message", async () => {
-            await expect(addUser(user7Address, userTypes.Validator, owner)).to.be.revertedWith(
               "Proportionality invalid"
             );
           });
@@ -618,14 +583,6 @@ describe("CommunityRules", function () {
         const settings = await instance.getUserTypeSettings(userTypes.Developer);
 
         expect(settings).deep.to.equal([1n, false, true, 200000n]);
-      });
-    });
-
-    context("when get to validator", () => {
-      it("", async () => {
-        const settings = await instance.getUserTypeSettings(userTypes.Validator);
-
-        expect(settings).deep.to.equal([1n, false, true, 1000000n]);
       });
     });
   });

@@ -7,7 +7,7 @@ const { regenerationCreditDeployed } = require("./shared/regeneration_credit_dep
 const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
 describe("InvitationRules", () => {
-  let instance, communityRules, researcherRules, validatorRules, activistRules, developerRules, contributorRules;
+  let instance, communityRules, researcherRules, validationRules, activistRules, developerRules, contributorRules;
   let owner, user1Address, user2Address, user3Address, user4Address;
 
   const addUser = async (address, userType, from) => {
@@ -19,7 +19,7 @@ describe("InvitationRules", () => {
   };
 
   const addValidator = async (from) => {
-    await validatorRules.connect(from).addValidator();
+    await validationRules.connect(from).addValidator();
   };
 
   const addActivist = async (name, from) => {
@@ -54,12 +54,6 @@ describe("InvitationRules", () => {
   const firstValidatorLimit = 8;
   const secondValidatorLimit = 14;
 
-  const validatorPoolArgs = {
-    totalTokens: "30000000000000000000000000",
-    halving: 12,
-    blocksPerEra: 60,
-  };
-
   const researcherPoolArgs = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
@@ -91,15 +85,8 @@ describe("InvitationRules", () => {
 
     const regenerationCredit = await regenerationCreditDeployed();
 
-    const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
-    const validatorPool = await validatorPoolFactory.deploy(
-      regenerationCredit.target,
-      validatorPoolArgs.halving,
-      validatorPoolArgs.blocksPerEra
-    );
-
-    const validatorRulesFactory = await ethers.getContractFactory("ValidatorRules");
-    validatorRules = await validatorRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
+    const validationRulesFactory = await ethers.getContractFactory("ValidationRules");
+    validationRules = await validationRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
     const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
     const researcherPool = await researcherPoolFactory.deploy(
@@ -112,7 +99,7 @@ describe("InvitationRules", () => {
     researcherRules = await researcherRulesFactory.deploy(
       communityRules.target,
       researcherPool.target,
-      validatorRules.target,
+      validationRules.target,
       timeBetweenResearches,
       maxPenalties,
       securityBlocksToValidatorAnalysis
@@ -129,7 +116,7 @@ describe("InvitationRules", () => {
     developerRules = await developerRulesFactory.deploy(
       communityRules.target,
       developerPool.target,
-      validatorRules.target,
+      validationRules.target,
       maxPenalties,
       securityBlocksToValidatorAnalysis
     );
@@ -158,10 +145,9 @@ describe("InvitationRules", () => {
       securityBlocksToValidatorAnalysis
     );
 
-    const validatorRulesDependencies = {
+    const validationRulesDependencies = {
       communityRulesAddress: communityRules.target,
       regeneratorRulesAddress: ZERO_ADDRESS,
-      validatorPoolAddress: validatorPool.target,
       inspectorRulesAddress: ZERO_ADDRESS,
       developerRulesAddress: developerRules.target,
       researcherRulesAddress: researcherRules.target,
@@ -176,21 +162,20 @@ describe("InvitationRules", () => {
       developerRules.target,
       activistRules.target,
       contributorRules.target,
-      validatorRules.target
+      validationRules.target
     );
 
-    await validatorRules.setContractAddressDependencies(validatorRulesDependencies);
+    await validationRules.setContractAddressDependencies(validationRulesDependencies);
 
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(researcherRules.target);
-    await communityRules.newAllowedCaller(validatorRules.target);
+    await communityRules.newAllowedCaller(validationRules.target);
     await communityRules.newAllowedCaller(activistRules.target);
     await communityRules.newAllowedCaller(developerRules.target);
     await communityRules.newAllowedCaller(contributorRules.target);
     await communityRules.newAllowedCaller(owner);
     await activistRules.newAllowedCaller(owner);
     await researcherPool.newAllowedCaller(researcherRules.target);
-    await validatorPool.newAllowedCaller(validatorRules.target);
     await activistPool.newAllowedCaller(activistRules.target);
     await developerPool.newAllowedCaller(developerRules.target);
     await contributorPool.newAllowedCaller(contributorRules.target);
@@ -558,72 +543,6 @@ describe("InvitationRules", () => {
         context("can not send invite", () => {
           it("returns message error", async () => {
             await expect(instance.connect(user2Address).invite(user4Address, userTypes.Researcher)).to.be.revertedWith(
-              "Only most active users allowed to invite"
-            );
-          });
-        });
-      });
-
-      context("when validator send invite", () => {
-        beforeEach(async () => {
-          await addInvitation(owner, user2Address, userTypes.Validator, owner);
-          await addInvitation(owner, user3Address, userTypes.Validator, owner);
-
-          await addValidator(user2Address);
-          await addValidator(user3Address);
-        });
-
-        context("when can send invite", () => {
-          beforeEach(async () => {
-            await validatorRules.connect(user2Address).declareAlive();
-          });
-
-          context("when send to validator", () => {
-            context("when have a previous invitation", () => {
-              context("when is not recent", () => {
-                beforeEach(async () => {
-                  const blocks = await userTypeDelayBlocks(userTypes.Validator);
-
-                  await advanceBlock(blocks);
-                });
-
-                it("invite with success", async () => {
-                  await instance.connect(user2Address).invite(user4Address, userTypes.Validator);
-
-                  const invitation = await communityRules.invitations(user4Address);
-
-                  expect(invitation.invited).to.equal(user4Address.address);
-                });
-              });
-
-              context("when is recent", () => {
-                beforeEach(async () => {
-                  await instance.connect(user2Address).invite(user4Address, userTypes.Validator);
-                });
-
-                it("revert", async () => {
-                  await expect(
-                    instance.connect(user2Address).invite(user4Address, userTypes.Validator)
-                  ).to.be.revertedWith("Invite delay not reached");
-                });
-              });
-            });
-
-            context("when do not have a previous invitation", () => {
-              it("invite with success", async () => {
-                await instance.connect(user2Address).invite(user4Address, userTypes.Validator);
-
-                const invitation = await communityRules.invitations(user3Address);
-
-                expect(invitation.invited).to.equal(user3Address.address);
-              });
-            });
-          });
-        });
-
-        context("can not send invite", () => {
-          it("returns message error", async () => {
-            await expect(instance.connect(user2Address).invite(user4Address, userTypes.Validator)).to.be.revertedWith(
               "Only most active users allowed to invite"
             );
           });

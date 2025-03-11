@@ -11,8 +11,7 @@ describe("ResearcherRules", () => {
   let regenerationCredit;
   let researcherPool;
   let communityRules;
-  let validatorRules;
-  let validatorPool;
+  let validationRules;
   let owner, resea1Address, resea2Address, validator1Address, validator2Address, validator3Address, validator4Address;
 
   const timeBetweenResearches = 10;
@@ -27,12 +26,6 @@ describe("ResearcherRules", () => {
     blocksPerEra: 60,
   };
 
-  const validatorPoolArgs = {
-    totalTokens: "30000000000000000000000000",
-    halving: 12,
-    blocksPerEra: 60,
-  };
-
   const addResearcher = async (name, from) => {
     await instance.connect(from).addResearcher(name, "photoURL");
   };
@@ -42,7 +35,7 @@ describe("ResearcherRules", () => {
   };
 
   const addValidator = async (from) => {
-    await validatorRules.connect(from).addValidator();
+    await validationRules.connect(from).addValidator();
   };
 
   const addResearch = async (from) => {
@@ -63,30 +56,22 @@ describe("ResearcherRules", () => {
     const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
     researcherPool = await researcherPoolFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra);
 
-    const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
-    validatorPool = await validatorPoolFactory.deploy(
-      regenerationCredit.target,
-      validatorPoolArgs.halving,
-      validatorPoolArgs.blocksPerEra
-    );
-
-    const validatorRulesFactory = await ethers.getContractFactory("ValidatorRules");
-    validatorRules = await validatorRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
+    const validationRulesFactory = await ethers.getContractFactory("ValidationRules");
+    validationRules = await validationRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
     const instanceFactory = await ethers.getContractFactory("ResearcherRules");
     instance = await instanceFactory.deploy(
       communityRules.target,
       researcherPool.target,
-      validatorRules.target,
+      validationRules.target,
       timeBetweenResearches,
       maxPenalties,
       securityBlocksToValidatorAnalysis
     );
 
-    const validatorRulesDependencies = {
+    const validationRulesDependencies = {
       communityRulesAddress: communityRules.target,
       regeneratorRulesAddress: ZERO_ADDRESS,
-      validatorPoolAddress: validatorPool.target,
       inspectorRulesAddress: ZERO_ADDRESS,
       developerRulesAddress: ZERO_ADDRESS,
       researcherRulesAddress: instance.target,
@@ -94,16 +79,15 @@ describe("ResearcherRules", () => {
       activistRulesAddress: ZERO_ADDRESS,
     };
 
-    await validatorRules.setContractAddressDependencies(validatorRulesDependencies);
+    await validationRules.setContractAddressDependencies(validationRulesDependencies);
 
-    await communityRules.newAllowedCaller(validatorRules.target);
+    await communityRules.newAllowedCaller(validationRules.target);
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(owner);
     await researcherPool.newAllowedCaller(instance.target);
-    await validatorPool.newAllowedCaller(validatorRules.target);
-    await validatorRules.newAllowedCaller(instance.target);
-    await validatorRules.newAllowedCaller(owner);
-    await instance.newAllowedCaller(validatorRules.target);
+    await validationRules.newAllowedCaller(instance.target);
+    await validationRules.newAllowedCaller(owner);
+    await instance.newAllowedCaller(validationRules.target);
     await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(researcherPool.target, args.totalTokens);
 
@@ -451,22 +435,22 @@ describe("ResearcherRules", () => {
         beforeEach(async () => {
           await addValidator(validator2Address);
 
-          await validatorRules.connect(validator1Address).declareAlive();
-          await validatorRules.connect(validator2Address).declareAlive();
+          await validationRules.connect(validator1Address).declareAlive();
+          await validationRules.connect(validator2Address).declareAlive();
 
           await addResearch(resea1Address);
           await instance.connect(validator1Address).addResearchValidation(1, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
-          await validatorRules.connect(validator1Address).declareAlive();
+          await validationRules.connect(validator1Address).declareAlive();
 
           await addResearch(resea1Address);
           await instance.connect(validator1Address).addResearchValidation(2, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
-          await validatorRules.connect(validator1Address).declareAlive();
+          await validationRules.connect(validator1Address).declareAlive();
 
           await addResearch(resea1Address);
 
@@ -501,9 +485,9 @@ describe("ResearcherRules", () => {
             await addValidator(validator3Address);
             await addValidator(validator4Address);
 
-            await validatorRules.connect(validator1Address).declareAlive();
-            await validatorRules.connect(validator2Address).declareAlive();
-            await validatorRules.connect(validator4Address).declareAlive();
+            await validationRules.connect(validator1Address).declareAlive();
+            await validationRules.connect(validator2Address).declareAlive();
+            await validationRules.connect(validator4Address).declareAlive();
 
             await advanceBlock(validatorPoolArgs.blocksPerEra);
 

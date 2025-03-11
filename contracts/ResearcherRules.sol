@@ -7,7 +7,7 @@ import { CommunityRules } from "./CommunityRules.sol";
 import { Researcher, Research, Pool, CalculatorItem, Penalty } from "./types/ResearcherTypes.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { ResearcherPool } from "./ResearcherPool.sol";
-import { ValidatorRules } from "./ValidatorRules.sol";
+import { ValidationRules } from "./ValidationRules.sol";
 
 /**
  * @author Sintrop
@@ -38,7 +38,7 @@ contract ResearcherRules is Callable, Invitable {
   ResearcherPool internal researcherPool;
 
   /// @notice ValidatorPool contract address
-  ValidatorRules internal validatorRules;
+  ValidationRules internal validationRules;
 
   /// @notice Researcher UserType
   UserType private constant USER_TYPE = UserType.RESEARCHER;
@@ -64,14 +64,14 @@ contract ResearcherRules is Callable, Invitable {
   constructor(
     address communityRulesAddress,
     address researcherPoolAddress,
-    address validatorRulesAddress,
+    address validationRulesAddress,
     uint256 timeBetweenResearches_,
     uint256 maxPenalties_,
     uint256 securityBlocksToValidatorAnalysis
   ) {
     communityRules = CommunityRules(communityRulesAddress);
     researcherPool = ResearcherPool(researcherPoolAddress);
-    validatorRules = ValidatorRules(validatorRulesAddress);
+    validationRules = ValidationRules(validationRulesAddress);
     timeBetweenResearches = timeBetweenResearches_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
@@ -173,7 +173,7 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   function addResearchValidation(uint256 id, string memory justification) public {
-    require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+    //require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
     Research memory research = researches[id];
 
@@ -182,11 +182,11 @@ contract ResearcherRules is Callable, Invitable {
     research.validationsCount += 1;
     researches[id] = research;
 
-    bool mustInvalidateResearch = research.validationsCount >= validatorRules.majorityValidatorsCount();
+    bool mustInvalidateResearch = research.validationsCount >= validationRules.majorityValidatorsCount();
 
     if (mustInvalidateResearch) invalidateResearch(research);
 
-    validatorRules.addResearcherResearchValidation(research, justification, msg.sender);
+    validationRules.addResearcherResearchValidation(research, justification, msg.sender);
   }
 
   function invalidateResearch(Research memory research) internal {
