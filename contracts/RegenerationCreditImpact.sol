@@ -3,8 +3,9 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { RegenerationCredit } from "./RegenerationCredit.sol";
 import { InspectionRules } from "./InspectionRules.sol";
-import { UserRules } from "./UserRules.sol";
-import { UserType } from "./types/UserTypes.sol";
+import { RegeneratorRules } from "./RegeneratorRules.sol";
+import { CommunityRules } from "./CommunityRules.sol";
+import { UserType } from "./types/CommunityTypes.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
@@ -18,12 +19,14 @@ contract RegenerationCreditImpact {
 
   RegenerationCredit internal regenerationCredit;
   InspectionRules internal inspectionRules;
-  UserRules internal userRules;
+  CommunityRules internal communityRules;
+  RegeneratorRules internal regeneratorRules;
 
-  constructor(address regenerationCreditAddress, address inspectionRulesAddress, address userRulesAddress) {
+  constructor(address regenerationCreditAddress, address inspectionRulesAddress, address communityRulesAddress, address regeneratorRulesAddress) {
     regenerationCredit = RegenerationCredit(regenerationCreditAddress);
     inspectionRules = InspectionRules(inspectionRulesAddress);
-    userRules = UserRules(userRulesAddress);
+    communityRules = CommunityRules(communityRulesAddress);
+    regeneratorRules = RegeneratorRules(regeneratorRulesAddress);
   }
 
   /**
@@ -33,8 +36,8 @@ contract RegenerationCreditImpact {
     if(inspectionRules.inspectionsCount() == 0) return 0;
 
     return
-      (inspectionRules.inspectionsCarbonImpact() / inspectionRules.inspectionsCount()) *
-      userRules.userTypesTotalCount(UserType.REGENERATOR);
+      ((inspectionRules.inspectionsBiomassImpact().div(2)) / inspectionRules.inspectionsCount()) *
+        regeneratorRules.totalImpactRegenerators();
   }
 
   /**
@@ -44,25 +47,41 @@ contract RegenerationCreditImpact {
     if(inspectionRules.inspectionsCount() == 0) return 0;
 
     return
-      (inspectionRules.inspectionsBiodiversityImpact() / inspectionRules.inspectionsCount()) *
-      userRules.userTypesTotalCount(UserType.REGENERATOR);
+      inspectionRules.inspectionsBiodiversityImpact().div(inspectionRules.inspectionsCount()).mul(regeneratorRules.totalImpactRegenerators());
+  }
+
+  /**
+   * @dev Called by the activist contract, this function calls the token contract to transfer the rewards
+   */
+  function totalSoilImpact() public view returns (uint256) {
+    return regeneratorRules.regenerationArea();
   }
 
   /**
    * @dev Called by the activist contract, this function calls the token contract to transfer the rewards
    */
   function tokenCarbonImpact() public view returns (uint256) {
-    return
-      totalCarbonImpact() /
-      (regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_());
+    return totalCarbonImpact().mul(10 ** 32).div(
+      regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
+    );
   }
 
   /**
    * @dev Called by the activist contract, this function calls the token contract to transfer the rewards
    */
   function tokenBiodiversityImpact() public view returns (uint256) {
-    return
-      totalBiodiversityImpact() /
-      (regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_());
+
+    return totalBiodiversityImpact().mul(10 ** 32).div(
+      regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
+    );
+  }
+
+  /**
+   * @dev Called by the activist contract, this function calls the token contract to transfer the rewards
+   */
+  function tokenSoilImpact() public view returns (uint256) {
+    return totalSoilImpact().mul(10 ** 32).div(
+      regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
+    );
   }
 }

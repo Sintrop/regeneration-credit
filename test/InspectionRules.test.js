@@ -20,7 +20,7 @@ describe("InspectionRules", () => {
   let validatorPool;
   let activistPool;
   let regenerationIndexRules;
-  
+
   const inspectorMaxPenalties = 2;
 
   let owner,
@@ -175,22 +175,22 @@ describe("InspectionRules", () => {
       activist1Address,
     ] = await ethers.getSigners();
 
-    const inspectionRulesDeployed = await inspectionRulesDeployed();
+    const deployed = await inspectionRulesDeployed(owner);
 
-    regenerationCredit = inspectionRulesDeployed.regenerationCredit;
-    userRules = inspectionRulesDeployed.userRules;
-    researcherPool = inspectionRulesDeployed.researcherPool;
-    inspectorPool = inspectionRulesDeployed.inspectorPool;
-    regeneratorPool = inspectionRulesDeployed.regeneratorPool;
-    validatorPool = inspectionRulesDeployed.validatorPool;
-    activistPool = inspectionRulesDeployed.activistPool;
-    validatorRules = inspectionRulesDeployed.validatorRules;
-    inspectorRules = inspectionRulesDeployed.inspectorRules;
-    researcherRules = inspectionRulesDeployed.researcherRules;
-    regeneratorRules = inspectionRulesDeployed.regeneratorRules;
-    activistRules = inspectionRulesDeployed.activistRules;
-    regenerationIndexRules = inspectionRulesDeployed.regenerationIndexRules;
-    instance = inspectionRulesDeployed.instance;
+    regenerationCredit = deployed.regenerationCredit;
+    communityRules = deployed.communityRules;
+    researcherPool = deployed.researcherPool;
+    inspectorPool = deployed.inspectorPool;
+    regeneratorPool = deployed.regeneratorPool;
+    validatorPool = deployed.validatorPool;
+    activistPool = deployed.activistPool;
+    validatorRules = deployed.validatorRules;
+    inspectorRules = deployed.inspectorRules;
+    researcherRules = deployed.researcherRules;
+    regeneratorRules = deployed.regeneratorRules;
+    activistRules = deployed.activistRules;
+    regenerationIndexRules = deployed.regenerationIndexRules;
+    instance = deployed.instance;
 
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
     await addResearcher("Researcher 1", resea1Address);

@@ -221,7 +221,7 @@ contract InspectionRules is Callable {
     userInspections[inspectorAddress].push(inspection.id);
   }
 
-  function addInspectionValidation(uint256 id, string memory justification) public {
+  function c(uint256 id, string memory justification) public {
     require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
     Inspection memory inspection = inspections[id];
@@ -241,7 +241,6 @@ contract InspectionRules is Callable {
   function invalidateInspection(Inspection memory inspection) internal {
     inspectionsBiomassImpact -= regenerationInspection[inspection.id][1].indicator;
     inspectionsBiodiversityImpact -= regenerationInspection[inspection.id][2].indicator;
-    // Decrementar total de inpeções em 1
     inspectionsCount--;
     inspection.status = InspectionStatus.INVALIDATED;
     inspection.invalidatedAt = block.number;

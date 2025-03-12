@@ -1,7 +1,8 @@
 const { regenerationCreditDeployed } = require("./regeneration_credit_deployed");
-const { userRulesDeployed } = require("./user_contract_deployed");
+const { communityRulesDeployed } = require("./user_contract_deployed");
+const { ZERO_ADDRESS } = require("./zeroAddress");
 
-const inspectionRulesDeployed = async () => {
+const inspectionRulesDeployed = async (owner) => {
   const firstValidatorLimit = 8;
   const secondValidatorLimit = 14;
   const timeBetweenResearches = 6;
@@ -17,7 +18,7 @@ const inspectionRulesDeployed = async () => {
   const sintropArgs = {
     timeBetweenInspections: 20,
     blocksToExpireAcceptedInspection: 50,
-    allowedInitialRequests: 1,
+    allowedInitialRequests: 3,
     acceptInspectionDelayBlocks: 5,
     securityBlocksToValidatorAnalysis: 100,
   };
@@ -46,39 +47,39 @@ const inspectionRulesDeployed = async () => {
     blocksPerEra: 13,
   };
 
-  regenerationCredit = await regenerationCreditDeployed();
-  userRules = await userRulesDeployed();
+  const regenerationCredit = await regenerationCreditDeployed();
+  const communityRules = await communityRulesDeployed();
 
   const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
-  researcherPool = await researcherPoolFactory.deploy(
+  const researcherPool = await researcherPoolFactory.deploy(
     regenerationCredit.target,
     researcherPoolargs.halving,
     researcherPoolargs.blocksPerEra
   );
 
   const inspectorPoolFactory = await ethers.getContractFactory("InspectorPool");
-  inspectorPool = await inspectorPoolFactory.deploy(
+  const inspectorPool = await inspectorPoolFactory.deploy(
     regenerationCredit.target,
     inspectorPoolargs.halving,
     inspectorPoolargs.blocksPerEra
   );
 
   const regeneratorPoolFactory = await ethers.getContractFactory("RegeneratorPool");
-  regeneratorPool = await regeneratorPoolFactory.deploy(
+  const regeneratorPool = await regeneratorPoolFactory.deploy(
     regenerationCredit.target,
     regeneratorPoolArgs.halving,
     regeneratorPoolArgs.blocksPerEra
   );
 
   const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
-  validatorPool = await validatorPoolFactory.deploy(
+  const validatorPool = await validatorPoolFactory.deploy(
     regenerationCredit.target,
     validatorPoolargs.halving,
     validatorPoolargs.blocksPerEra
   );
 
   const activistPoolFactory = await ethers.getContractFactory("ActivistPool");
-  activistPool = await activistPoolFactory.deploy(
+  const activistPool = await activistPoolFactory.deploy(
     regenerationCredit.target,
     activistPoolArgs.halving,
     activistPoolArgs.blocksPerEra
@@ -90,13 +91,17 @@ const inspectionRulesDeployed = async () => {
   const activistRulesFactory = await ethers.getContractFactory("ActivistRules");
 
   const validatorRulesFactory = await ethers.getContractFactory("ValidatorRules");
-  validatorRules = await validatorRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
+  const validatorRules = await validatorRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
-  inspectorRules = await inspectorRulesFactory.deploy(userRules.target, inspectorPool.target, inspectorMaxPenalties);
+  const inspectorRules = await inspectorRulesFactory.deploy(
+    communityRules.target,
+    inspectorPool.target,
+    inspectorMaxPenalties
+  );
 
   const researcherSecuryBlocksToAnalysis = 10;
-  researcherRules = await researcherRulesFactory.deploy(
-    userRules.target,
+  const researcherRules = await researcherRulesFactory.deploy(
+    communityRules.target,
     researcherPool.target,
     validatorRules.target,
     timeBetweenResearches,
@@ -104,14 +109,14 @@ const inspectionRulesDeployed = async () => {
     researcherSecuryBlocksToAnalysis
   );
 
-  regeneratorRules = await regeneratorRulesFactory.deploy(userRules.target, regeneratorPool.target);
-  activistRules = await activistRulesFactory.deploy(userRules.target, activistPool.target);
+  const regeneratorRules = await regeneratorRulesFactory.deploy(communityRules.target, regeneratorPool.target);
+  const activistRules = await activistRulesFactory.deploy(communityRules.target, activistPool.target);
 
   const regenerationIndexRulesFactory = await ethers.getContractFactory("RegenerationIndexRules");
   regenerationIndexRules = await regenerationIndexRulesFactory.deploy();
 
   const validatorRulesDependencies = {
-    userRulesAddress: userRules.target,
+    communityRulesAddress: communityRules.target,
     regeneratorRulesAddress: regeneratorRules.target,
     validatorPoolAddress: validatorPool.target,
     inspectorRulesAddress: inspectorRules.target,
@@ -122,7 +127,7 @@ const inspectionRulesDeployed = async () => {
   };
 
   const inspectionRulesDependencies = {
-    userRulesAddress: userRules.target,
+    communityRulesAddress: communityRules.target,
     regeneratorRulesAddress: regeneratorRules.target,
     validatorRulesAddress: validatorRules.target,
     inspectorRulesAddress: inspectorRules.target,
@@ -142,12 +147,12 @@ const inspectionRulesDeployed = async () => {
   await instance.setContractAddressDependencies(inspectionRulesDependencies);
   await validatorRules.setContractAddressDependencies(validatorRulesDependencies);
 
-  await userRules.newAllowedCaller(inspectorRules.target);
-  await userRules.newAllowedCaller(regeneratorRules.target);
-  await userRules.newAllowedCaller(researcherRules.target);
-  await userRules.newAllowedCaller(validatorRules.target);
-  await userRules.newAllowedCaller(activistRules.target);
-  await userRules.newAllowedCaller(owner);
+  await communityRules.newAllowedCaller(inspectorRules.target);
+  await communityRules.newAllowedCaller(regeneratorRules.target);
+  await communityRules.newAllowedCaller(researcherRules.target);
+  await communityRules.newAllowedCaller(validatorRules.target);
+  await communityRules.newAllowedCaller(activistRules.target);
+  await communityRules.newAllowedCaller(owner);
   await inspectorRules.newAllowedCaller(instance.target);
   await inspectorRules.newAllowedCaller(owner);
   await inspectorRules.newAllowedCaller(validatorRules.target);
@@ -164,10 +169,11 @@ const inspectionRulesDeployed = async () => {
 
   return {
     instance,
-    userRules,
+    communityRules,
     regenerationCredit,
     researcherPool,
     inspectorPool,
+    regeneratorRules,
     regeneratorPool,
     validatorPool,
     activistPool,

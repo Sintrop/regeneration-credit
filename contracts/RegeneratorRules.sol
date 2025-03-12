@@ -27,6 +27,8 @@ contract RegeneratorRules is Callable {
   /// @notice The relationship between address and coordinates array
   mapping(address => Coordinates[]) public coordinates;
 
+  mapping(address => bool) public impactRegenerators;
+
   /// @notice CommunityRules contract address
   CommunityRules internal communityRules;
 
@@ -35,6 +37,8 @@ contract RegeneratorRules is Callable {
 
   /// @notice Regenerator UserType
   UserType private constant USER_TYPE = UserType.REGENERATOR;
+
+  uint256 public totalImpactRegenerators;
 
   /// @notice [ha] 1 ha = 10000m²
   uint256 public regenerationArea;
@@ -182,11 +186,21 @@ contract RegeneratorRules is Callable {
   function incrementInspections(address addr) private returns (uint256) {
     regenerators[addr].totalInspections++;
 
+    if (!impactRegenerators[addr]) {
+      impactRegenerators[addr] = true;
+      totalImpactRegenerators++;
+    }
+
     return regenerators[addr].totalInspections;
   }
 
   function decrementInspections(address addr) public mustBeAllowedCaller {
     require(regenerators[addr].totalInspections > 0, "totalInspections invalid");
+
+    if  (regenerators[addr].totalInspections == 1) {
+      totalImpactRegenerators--;
+      impactRegenerators[addr] = false;
+    }
 
     regenerators[addr].totalInspections--;
   }
