@@ -5,7 +5,7 @@ const { userTypes } = require("./shared/user_types");
 const { advanceBlock } = require("./shared/advance_block");
 
 describe("RegenerationCreditImpact", () => {
-  let instance, inspectionRules, invitationRules, regeneratorRules, inspectorRules;
+  let instance, inspectionRules, invitationRules, regeneratorRules, inspectorRules, regenerationCredit;
   let owner,
     regeneratorAddress,
     regenerator2Address,
@@ -87,7 +87,7 @@ describe("RegenerationCreditImpact", () => {
 
     const deployed = await inspectionRulesDeployed(owner);
     const communityRules = deployed.communityRules;
-    const regenerationCredit = deployed.regenerationCredit;
+    regenerationCredit = deployed.regenerationCredit;
     inspectorRules = deployed.inspectorRules;
     inspectionRules = deployed.instance;
     regeneratorRules = deployed.regeneratorRules;
@@ -630,14 +630,37 @@ describe("RegenerationCreditImpact", () => {
           context("when inspection biomass impact is 10", () => {
             beforeEach(async () => {
               biomassIndicatorValue = 10;
-
-              await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
             });
 
-            it("must returns tokenCarbonImpact equal 3333", async () => {
-              const tokenCarbonImpact = await instance.tokenCarbonImpact();
+            context("when do not have tokens totalLocked_", () => {
+              beforeEach(async () => {
+                biomassIndicatorValue = 10;
 
-              expect(tokenCarbonImpact).to.equal(3333);
+                await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+              });
+
+              it("must returns tokenCarbonImpact equal 333333", async () => {
+                const tokenCarbonImpact = await instance.tokenCarbonImpact();
+
+                expect(tokenCarbonImpact).to.equal(333333);
+              });
+            });
+
+            context("when have token totalLocked_", () => {
+              beforeEach(async () => {
+                await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
+                await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
+
+                biomassIndicatorValue = 10;
+
+                await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+              });
+
+              it("must returns tokenCarbonImpact equal 555555", async () => {
+                const tokenCarbonImpact = await instance.tokenCarbonImpact();
+
+                expect(tokenCarbonImpact).to.equal(555555);
+              });
             });
           });
 
@@ -648,10 +671,10 @@ describe("RegenerationCreditImpact", () => {
               await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
             });
 
-            it("must returnstotalCarbonImpact equal 10666", async () => {
+            it("must returnstotalCarbonImpact equal 1066666", async () => {
               const tokenCarbonImpact = await instance.tokenCarbonImpact();
 
-              expect(tokenCarbonImpact).to.equal(10666);
+              expect(tokenCarbonImpact).to.equal(1066666);
             });
           });
         });
@@ -706,10 +729,10 @@ describe("RegenerationCreditImpact", () => {
             await realizeInspection(5, "report", biomassResultValue(), biodiversityResultValue(), inspector5Address);
           });
 
-          it("must returns tokenCarbonImpact equal 56666", async () => {
+          it("must returns tokenCarbonImpact equal 5666666", async () => {
             const tokenCarbonImpact = await instance.tokenCarbonImpact();
 
-            expect(tokenCarbonImpact).to.equal(56666);
+            expect(tokenCarbonImpact).to.equal(5666666);
           });
         });
 
@@ -745,10 +768,10 @@ describe("RegenerationCreditImpact", () => {
             await realizeInspection(3, "report", biomassResultValue(), biodiversityResultValue(), inspector3Address);
           });
 
-          it("must returns tokenCarbonImpact equal 29333", async () => {
+          it("must returns tokenCarbonImpact equal 2933333", async () => {
             const tokenCarbonImpact = await instance.tokenCarbonImpact();
 
-            expect(tokenCarbonImpact).to.equal(29333);
+            expect(tokenCarbonImpact).to.equal(2933333);
           });
         });
 
@@ -844,16 +867,35 @@ describe("RegenerationCreditImpact", () => {
 
         context("when have 1 inspection", () => {
           context("when inspection biodiversity impact is 10", () => {
-            beforeEach(async () => {
-              biodiversityIndicatorValue = 10;
+            context("when do not have tokens totalLocked_", () => {
+              beforeEach(async () => {
+                biodiversityIndicatorValue = 10;
 
-              await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+                await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+              });
+
+              it("must returns tokenBiodiversityImpact equal 666666", async () => {
+                const tokenBiodiversityImpact = await instance.tokenBiodiversityImpact();
+
+                expect(tokenBiodiversityImpact).to.equal(666666);
+              });
             });
 
-            it("must returns tokenBiodiversityImpact equal 6666", async () => {
-              const tokenBiodiversityImpact = await instance.tokenBiodiversityImpact();
+            context("when have tokens totalLocked_", () => {
+              beforeEach(async () => {
+                await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
+                await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
 
-              expect(tokenBiodiversityImpact).to.equal(6666);
+                biodiversityIndicatorValue = 10;
+
+                await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+              });
+
+              it("must returns tokenBiodiversityImpact equal 1111111", async () => {
+                const tokenBiodiversityImpact = await instance.tokenBiodiversityImpact();
+
+                expect(tokenBiodiversityImpact).to.equal(1111111);
+              });
             });
           });
 
@@ -864,10 +906,10 @@ describe("RegenerationCreditImpact", () => {
               await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
             });
 
-            it("must returns tokenBiodiversityImpact equal 21333", async () => {
+            it("must returns tokenBiodiversityImpact equal 2133333", async () => {
               const tokenBiodiversityImpact = await instance.tokenBiodiversityImpact();
 
-              expect(tokenBiodiversityImpact).to.equal(21333);
+              expect(tokenBiodiversityImpact).to.equal(2133333);
             });
           });
         });
@@ -922,10 +964,10 @@ describe("RegenerationCreditImpact", () => {
             await realizeInspection(5, "report", biomassResultValue(), biodiversityResultValue(), inspector5Address);
           });
 
-          it("must returns tokenBiodiversityImpact equal 113333", async () => {
+          it("must returns tokenBiodiversityImpact equal 11333333", async () => {
             const tokenBiodiversityImpact = await instance.tokenBiodiversityImpact();
 
-            expect(tokenBiodiversityImpact).to.equal(113333);
+            expect(tokenBiodiversityImpact).to.equal(11333333);
           });
         });
 
@@ -961,10 +1003,10 @@ describe("RegenerationCreditImpact", () => {
             await realizeInspection(3, "report", biomassResultValue(), biodiversityResultValue(), inspector3Address);
           });
 
-          it("must returns tokenBiodiversityImpact equal 58666", async () => {
+          it("must returns tokenBiodiversityImpact equal 5866666", async () => {
             const tokenBiodiversityImpact = await instance.tokenBiodiversityImpact();
 
-            expect(tokenBiodiversityImpact).to.equal(58666);
+            expect(tokenBiodiversityImpact).to.equal(5866666);
           });
         });
 
@@ -1022,10 +1064,25 @@ describe("RegenerationCreditImpact", () => {
 
     context("when have two regenerators", () => {
       context("when all regenerators are valids", async () => {
-        it("tokenSoilImpact must be 13333", async () => {
-          const tokenSoilImpact = await instance.tokenSoilImpact();
+        context("when do not have tokens totalLocked_", () => {
+          it("tokenSoilImpact must be 1333333", async () => {
+            const tokenSoilImpact = await instance.tokenSoilImpact();
 
-          expect(tokenSoilImpact).to.equal(13333);
+            expect(tokenSoilImpact).to.equal(1333333);
+          });
+        });
+
+        context("when have tokens totalLocked_", () => {
+          beforeEach(async () => {
+            await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
+            await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
+          });
+
+          it("tokenSoilImpact must be 2222222", async () => {
+            const tokenSoilImpact = await instance.tokenSoilImpact();
+
+            expect(tokenSoilImpact).to.equal(2222222);
+          });
         });
       });
 
@@ -1034,10 +1091,10 @@ describe("RegenerationCreditImpact", () => {
           await regeneratorRules.removePoolLevels(regenerator2Address, 0);
         });
 
-        it("tokenSoilImpact must be 6666", async () => {
+        it("tokenSoilImpact must be 666666", async () => {
           const tokenSoilImpact = await instance.tokenSoilImpact();
 
-          expect(tokenSoilImpact).to.equal(6666);
+          expect(tokenSoilImpact).to.equal(666666);
         });
       });
     });

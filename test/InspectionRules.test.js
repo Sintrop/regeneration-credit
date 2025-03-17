@@ -14,14 +14,8 @@ describe("InspectionRules", () => {
   let regeneratorRules;
   let researcherRules;
   let activistRules;
-  let researcherPool;
-  let inspectorPool;
   let regeneratorPool;
-  let validatorPool;
   let activistPool;
-  let regenerationIndexRules;
-
-  const inspectorMaxPenalties = 2;
 
   let owner,
     regeneratorAddress,
@@ -175,7 +169,9 @@ describe("InspectionRules", () => {
       activist1Address,
     ] = await ethers.getSigners();
 
-    const deployed = await inspectionRulesDeployed(owner);
+    const deployed = await inspectionRulesDeployed(owner, {
+      sintropArgs: sintropArgs,
+    });
 
     regenerationCredit = deployed.regenerationCredit;
     communityRules = deployed.communityRules;

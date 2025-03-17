@@ -2,7 +2,7 @@ const { regenerationCreditDeployed } = require("./regeneration_credit_deployed")
 const { communityRulesDeployed } = require("./user_contract_deployed");
 const { ZERO_ADDRESS } = require("./zeroAddress");
 
-const inspectionRulesDeployed = async (owner) => {
+const inspectionRulesDeployed = async (owner, args = {}) => {
   const firstValidatorLimit = 8;
   const secondValidatorLimit = 14;
   const timeBetweenResearches = 6;
@@ -15,7 +15,7 @@ const inspectionRulesDeployed = async (owner) => {
     blocksPerEra: 500,
   };
 
-  const sintropArgs = {
+  const sintropArgs = args.sintropArgs || {
     timeBetweenInspections: 20,
     blocksToExpireAcceptedInspection: 50,
     allowedInitialRequests: 3,

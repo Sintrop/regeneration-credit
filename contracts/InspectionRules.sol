@@ -221,7 +221,7 @@ contract InspectionRules is Callable {
     userInspections[inspectorAddress].push(inspection.id);
   }
 
-  function c(uint256 id, string memory justification) public {
+  function addInspectionValidation(uint256 id, string memory justification) public {
     require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
 
     Inspection memory inspection = inspections[id];
