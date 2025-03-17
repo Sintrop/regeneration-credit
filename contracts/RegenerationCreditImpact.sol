@@ -22,7 +22,12 @@ contract RegenerationCreditImpact {
   CommunityRules internal communityRules;
   RegeneratorRules internal regeneratorRules;
 
-  constructor(address regenerationCreditAddress, address inspectionRulesAddress, address communityRulesAddress, address regeneratorRulesAddress) {
+  constructor(
+    address regenerationCreditAddress,
+    address inspectionRulesAddress,
+    address communityRulesAddress,
+    address regeneratorRulesAddress
+  ) {
     regenerationCredit = RegenerationCredit(regenerationCreditAddress);
     inspectionRules = InspectionRules(inspectionRulesAddress);
     communityRules = CommunityRules(communityRulesAddress);
@@ -33,21 +38,23 @@ contract RegenerationCreditImpact {
    * @dev Called by the activist contract, this function calls the token contract to transfer the rewards
    */
   function totalCarbonImpact() public view returns (uint256) {
-    if(inspectionRules.inspectionsCount() == 0) return 0;
+    if (inspectionRules.inspectionsCount() == 0) return 0;
 
     return
       ((inspectionRules.inspectionsBiomassImpact().div(2)) / inspectionRules.inspectionsCount()) *
-        regeneratorRules.totalImpactRegenerators();
+      regeneratorRules.totalImpactRegenerators();
   }
 
   /**
    * @dev Called by the activist contract, this function calls the token contract to transfer the rewards
    */
   function totalBiodiversityImpact() public view returns (uint256) {
-    if(inspectionRules.inspectionsCount() == 0) return 0;
+    if (inspectionRules.inspectionsCount() == 0) return 0;
 
     return
-      inspectionRules.inspectionsBiodiversityImpact().div(inspectionRules.inspectionsCount()).mul(regeneratorRules.totalImpactRegenerators());
+      inspectionRules.inspectionsBiodiversityImpact().div(inspectionRules.inspectionsCount()).mul(
+        regeneratorRules.totalImpactRegenerators()
+      );
   }
 
   /**
@@ -61,27 +68,29 @@ contract RegenerationCreditImpact {
    * @dev Called by the activist contract, this function calls the token contract to transfer the rewards
    */
   function tokenCarbonImpact() public view returns (uint256) {
-    return totalCarbonImpact().mul(10 ** 32).div(
-      regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
-    );
+    return
+      totalCarbonImpact().mul(10 ** 32).div(
+        regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
+      );
   }
 
   /**
    * @dev Called by the activist contract, this function calls the token contract to transfer the rewards
    */
   function tokenBiodiversityImpact() public view returns (uint256) {
-
-    return totalBiodiversityImpact().mul(10 ** 32).div(
-      regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
-    );
+    return
+      totalBiodiversityImpact().mul(10 ** 32).div(
+        regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
+      );
   }
 
   /**
    * @dev Called by the activist contract, this function calls the token contract to transfer the rewards
    */
   function tokenSoilImpact() public view returns (uint256) {
-    return totalSoilImpact().mul(10 ** 32).div(
-      regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
-    );
+    return
+      totalSoilImpact().mul(10 ** 32).div(
+        regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
+      );
   }
 }

@@ -197,7 +197,7 @@ contract RegeneratorRules is Callable {
   function decrementInspections(address addr) public mustBeAllowedCaller {
     require(regenerators[addr].totalInspections > 0, "totalInspections invalid");
 
-    if  (regenerators[addr].totalInspections == 1) {
+    if (regenerators[addr].totalInspections == 1) {
       totalImpactRegenerators--;
       impactRegenerators[addr] = false;
     }
