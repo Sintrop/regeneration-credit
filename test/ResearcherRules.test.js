@@ -15,7 +15,7 @@ describe("ResearcherRules", () => {
   let validatorPool;
   let owner, resea1Address, resea2Address, validator1Address, validator2Address, validator3Address, validator4Address;
 
-  const timeBetweenResearches = 10;
+  const timeBetweenWorks = 10;
   const maxPenalties = 3;
   const securityBlocksToValidatorAnalysis = 10;
   const firstValidatorLimit = 8;
@@ -78,7 +78,7 @@ describe("ResearcherRules", () => {
       communityRules.target,
       researcherPool.target,
       validatorRules.target,
-      timeBetweenResearches,
+      timeBetweenWorks,
       maxPenalties,
       securityBlocksToValidatorAnalysis
     );
@@ -326,7 +326,7 @@ describe("ResearcherRules", () => {
           });
         });
 
-        context("when have not waited time between researches", () => {
+        context("when have not waited time between works", () => {
           it("should return error message", async () => {
             await expect(addResearch(resea1Address)).to.be.revertedWith("Can't publish yet");
           });
@@ -551,7 +551,7 @@ describe("ResearcherRules", () => {
 
       await addResearch(resea1Address);
 
-      await advanceBlock(timeBetweenResearches);
+      await advanceBlock(timeBetweenWorks);
 
       await addResearch(resea1Address);
 

@@ -48,7 +48,7 @@ describe("InvitationRules", () => {
     return settings.invitationDelayBlocks;
   };
 
-  const timeBetweenResearches = 10;
+  const timeBetweenWorks = 10;
   const maxPenalties = 3;
   const securityBlocksToValidatorAnalysis = 10;
   const firstValidatorLimit = 8;
@@ -113,7 +113,7 @@ describe("InvitationRules", () => {
       communityRules.target,
       researcherPool.target,
       validatorRules.target,
-      timeBetweenResearches,
+      timeBetweenWorks,
       maxPenalties,
       securityBlocksToValidatorAnalysis
     );
@@ -130,6 +130,7 @@ describe("InvitationRules", () => {
       communityRules.target,
       developerPool.target,
       validatorRules.target,
+      timeBetweenWorks,
       maxPenalties,
       securityBlocksToValidatorAnalysis
     );
@@ -155,6 +156,7 @@ describe("InvitationRules", () => {
     contributorRules = await contributorRulesFactory.deploy(
       communityRules.target,
       contributorPool.target,
+      timeBetweenWorks,
       securityBlocksToValidatorAnalysis
     );
 
@@ -443,7 +445,7 @@ describe("InvitationRules", () => {
 
         context("when can invite", () => {
           beforeEach(async () => {
-            await contributorRules.connect(user2Address).addContribution("report");
+            await contributorRules.connect(user2Address).addContribution("description", "report");
           });
 
           context("when send to contributor", () => {
