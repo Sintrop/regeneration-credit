@@ -27,6 +27,7 @@ contract RegeneratorRules is Callable {
   /// @notice The relationship between address and coordinates array
   mapping(address => Coordinates[]) public coordinates;
 
+  /// @notice Number of approved impact regenerators
   mapping(address => bool) public impactRegenerators;
 
   /// @notice CommunityRules contract address

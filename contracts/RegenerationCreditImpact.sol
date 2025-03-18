@@ -17,6 +17,7 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 contract RegenerationCreditImpact {
   using SafeMath for uint256;
 
+  /// @notice Constant of 32 decimals to calculate the impact. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
   uint256 public constant IMPACT_DECIMALS = 10 ** 32;
 
   RegenerationCredit internal regenerationCredit;
