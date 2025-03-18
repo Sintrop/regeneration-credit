@@ -11,11 +11,13 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 /**
  * @author Sintrop
  * @title RegenerationCreditImpact
- * @dev Manage reward to activists
- * @notice Receive tokens for invitation service provided
+ * @dev Total impact and total token impact functions
+ * @notice Manages and calculates Regeneration Credit system impact
  */
 contract RegenerationCreditImpact {
   using SafeMath for uint256;
+
+  uint256 public constant IMPACT_DECIMALS = 10 ** 32;
 
   RegenerationCredit internal regenerationCredit;
   InspectionRules internal inspectionRules;
@@ -35,7 +37,7 @@ contract RegenerationCreditImpact {
   }
 
   /**
-   * @dev Called by the activist contract, this function calls the token contract to transfer the rewards
+   * @dev Function to calculate the total carbon impact of the system. It is calculated by dividing the biomass impact by 2, which represents that half of the biomass weight is composed by carbon.
    */
   function totalCarbonImpact() public view returns (uint256) {
     if (inspectionRules.inspectionsCount() == 0) return 0;
@@ -46,7 +48,7 @@ contract RegenerationCreditImpact {
   }
 
   /**
-   * @dev Called by the activist contract, this function calls the token contract to transfer the rewards
+   * @dev Function to calculate the total biodiversity impact of the system.
    */
   function totalBiodiversityImpact() public view returns (uint256) {
     if (inspectionRules.inspectionsCount() == 0) return 0;
@@ -58,38 +60,41 @@ contract RegenerationCreditImpact {
   }
 
   /**
-   * @dev Called by the activist contract, this function calls the token contract to transfer the rewards
+   * @dev Function to calculate the total soil impact of the system.
    */
   function totalSoilImpact() public view returns (uint256) {
     return regeneratorRules.regenerationArea();
   }
 
   /**
-   * @dev Called by the activist contract, this function calls the token contract to transfer the rewards
+   * @dev 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
+   * @notice Function that calculates the carbon impact per regeneration credit.
    */
   function tokenCarbonImpact() public view returns (uint256) {
     return
-      totalCarbonImpact().mul(10 ** 32).div(
+      totalCarbonImpact().mul(IMPACT_DECIMALS).div(
         regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
       );
   }
 
   /**
-   * @dev Called by the activist contract, this function calls the token contract to transfer the rewards
+   * @dev 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
+   * @notice Function that calculates the biodiversity impact per regeneration credit.
    */
   function tokenBiodiversityImpact() public view returns (uint256) {
     return
-      totalBiodiversityImpact().mul(10 ** 32).div(
+      totalBiodiversityImpact().mul(IMPACT_DECIMALS).div(
         regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
       );
   }
 
   /**
-   * @dev Called by the activist contract, this function calls the token contract to transfer the rewards
+   * @dev 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
+   * @notice Function that calculates the soil impact per regeneration credit.
    */
   function tokenSoilImpact() public view returns (uint256) {
     return
-      totalSoilImpact().mul(10 ** 32).div(
+      totalSoilImpact().mul(IMPACT_DECIMALS).div(
         regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
       );
   }
