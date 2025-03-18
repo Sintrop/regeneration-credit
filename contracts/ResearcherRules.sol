@@ -53,7 +53,7 @@ contract ResearcherRules is Callable, Invitable {
   uint256 public calculatorItemsCount;
 
   /// @notice Waiting blocks to publish research
-  uint256 internal immutable timeBetweenResearches;
+  uint256 internal immutable timeBetweenWorks;
 
   /// @notice Max allowed penalties before invalidation
   uint256 public immutable MAX_PENALTIES;
@@ -65,14 +65,14 @@ contract ResearcherRules is Callable, Invitable {
     address communityRulesAddress,
     address researcherPoolAddress,
     address validatorRulesAddress,
-    uint256 timeBetweenResearches_,
+    uint256 timeBetweenWorks_,
     uint256 maxPenalties_,
     uint256 securityBlocksToValidatorAnalysis
   ) {
     communityRules = CommunityRules(communityRulesAddress);
     researcherPool = ResearcherPool(researcherPoolAddress);
     validatorRules = ValidatorRules(validatorRulesAddress);
-    timeBetweenResearches = timeBetweenResearches_;
+    timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
@@ -146,7 +146,6 @@ contract ResearcherRules is Callable, Invitable {
     require(canPublishResearch(msg.sender), "Can't publish yet");
 
     Researcher storage researcher = researchers[msg.sender];
-    researcher.pool.level++;
 
     uint256 id = researchesCount + 1;
 
@@ -169,6 +168,7 @@ contract ResearcherRules is Callable, Invitable {
     researcher.publishedResearches++;
     researcher.lastPublishedAt = block.number;
 
+    researcher.pool.level++;
     researcherPool.addLevel(msg.sender, 1);
   }
 
@@ -279,15 +279,14 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   /**
-   * @dev Checks if user can publish a research
+   * @notice Checks if user can publish a research
    * @return bool True if can
    * @param addr Msg.sender addresss
    */
   function canPublishResearch(address addr) internal view returns (bool) {
-    Researcher memory researcher = researchers[addr];
-    uint256 lastPublishedAt = researcher.lastPublishedAt;
+    uint256 lastPublishedAt = researchers[addr].lastPublishedAt;
 
-    bool canPublish = block.number > lastPublishedAt + timeBetweenResearches;
+    bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
     return canPublish || lastPublishedAt == 0;
   }
 
@@ -299,7 +298,7 @@ contract ResearcherRules is Callable, Invitable {
   function canPublishCalculatorItem(Researcher memory researcher) internal view returns (bool) {
     uint256 lastCalculatorItemAt = researcher.lastCalculatorItemAt;
 
-    bool canPublish = block.number > lastCalculatorItemAt + timeBetweenResearches;
+    bool canPublish = block.number > lastCalculatorItemAt + timeBetweenWorks;
     return canPublish || lastCalculatorItemAt == 0;
   }
 

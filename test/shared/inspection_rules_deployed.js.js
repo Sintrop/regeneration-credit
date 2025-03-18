@@ -5,7 +5,7 @@ const { ZERO_ADDRESS } = require("./zeroAddress");
 const inspectionRulesDeployed = async (owner, args = {}) => {
   const firstValidatorLimit = 8;
   const secondValidatorLimit = 14;
-  const timeBetweenResearches = 6;
+  const timeBetweenWorks = 6;
   const researcherMaxPenalties = 3;
   const inspectorMaxPenalties = 2;
 
@@ -104,7 +104,7 @@ const inspectionRulesDeployed = async (owner, args = {}) => {
     communityRules.target,
     researcherPool.target,
     validatorRules.target,
-    timeBetweenResearches,
+    timeBetweenWorks,
     researcherMaxPenalties,
     researcherSecuryBlocksToAnalysis
   );

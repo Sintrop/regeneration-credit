@@ -19,6 +19,7 @@ describe("ContributorRules", (accounts) => {
     blocksPerEra: 40,
   };
 
+  const timeBetweenWorks = 10;
   const securityBlocksToValidatorAnalysis = 10;
 
   const addContributor = async (name, from) => {
@@ -46,6 +47,7 @@ describe("ContributorRules", (accounts) => {
     instance = await contributorRulesFactory.deploy(
       communityRules.target,
       contributorPool.target,
+      timeBetweenWorks,
       securityBlocksToValidatorAnalysis
     );
 
@@ -138,21 +140,34 @@ describe("ContributorRules", (accounts) => {
 
     context("with contributor", () => {
       context("when have time to validator analysis", () => {
-        context("when already has contribution", () => {
+        context("when have not waited timeBetweenWorks", () => {
           beforeEach(async () => {
-            await instance.connect(contr1Address).addContribution("report");
+            await instance.connect(contr1Address).addContribution("description", "report");
           });
 
           it("should return error message", async () => {
-            await expect(instance.connect(contr1Address).addContribution("report")).to.be.revertedWith(
-              "Already has contribution"
+            await expect(instance.connect(contr1Address).addContribution("description", "report")).to.be.revertedWith(
+              "Can't publish yet"
             );
+          });
+        });
+
+        context("when have waited timeBetweenWorks", () => {
+          beforeEach(async () => {
+            await instance.connect(contr1Address).addContribution("description", "report");
+          });
+
+          it("should add contribution", async () => {
+            await advanceBlock(timeBetweenWorks);
+            await instance.connect(contr1Address).addContribution("description", "report");
+            const contribution = await instance.contributions(2);
+            expect(contribution.id).to.equal(2);
           });
         });
 
         context("when don't have contribution", () => {
           beforeEach(async () => {
-            await instance.connect(contr1Address).addContribution("report");
+            await instance.connect(contr1Address).addContribution("description", "report");
           });
 
           it("add contribution id", async () => {
@@ -195,7 +210,7 @@ describe("ContributorRules", (accounts) => {
             beforeEach(async () => {
               await advanceBlock(contributorPoolParams.blocksPerEra);
 
-              await instance.connect(contr1Address).addContribution("report");
+              await instance.connect(contr1Address).addContribution("description", "report");
             });
 
             it("eras 1 must have 1 level", async () => {
@@ -219,7 +234,7 @@ describe("ContributorRules", (accounts) => {
         });
 
         it("should return error message", async () => {
-          await expect(instance.connect(contr1Address).addContribution("report")).to.be.revertedWith(
+          await expect(instance.connect(contr1Address).addContribution("description", "report")).to.be.revertedWith(
             "Wait until next era to add contribution"
           );
         });
@@ -228,7 +243,9 @@ describe("ContributorRules", (accounts) => {
 
     context("without contributor", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(owner).addContribution("report")).to.be.revertedWith("Only Contributor");
+        await expect(instance.connect(owner).addContribution("description", "report")).to.be.revertedWith(
+          "Only Contributor"
+        );
       });
     });
   });
@@ -236,7 +253,7 @@ describe("ContributorRules", (accounts) => {
   describe("#getContribution", () => {
     beforeEach(async () => {
       await addContributor("Contributor A", contr1Address);
-      await instance.connect(contr1Address).addContribution("report");
+      await instance.connect(contr1Address).addContribution("description", "report");
     });
 
     it("should have fields", async () => {
@@ -285,7 +302,7 @@ describe("ContributorRules", (accounts) => {
         context("when is unique contributor in era with 1 level", () => {
           context("when Contributor is in era 1 and contract is in era 2", () => {
             beforeEach(async () => {
-              await instance.connect(contr1Address).addContribution("report");
+              await instance.connect(contr1Address).addContribution("description", "report");
 
               await advanceBlock(contributorPoolParams.blocksPerEra + 2);
               await instance.connect(contr1Address).withdraw();
@@ -316,8 +333,8 @@ describe("ContributorRules", (accounts) => {
           context("with same levels", () => {
             context("when Contributors is in era 1 and contract is in era 2", () => {
               beforeEach(async () => {
-                await instance.connect(contr1Address).addContribution("report");
-                await instance.connect(contr2Address).addContribution("report");
+                await instance.connect(contr1Address).addContribution("description", "report");
+                await instance.connect(contr2Address).addContribution("description", "report");
 
                 await advanceBlock(contributorPoolParams.blocksPerEra + 2);
                 await instance.connect(contr1Address).withdraw();
@@ -357,7 +374,7 @@ describe("ContributorRules", (accounts) => {
 
         context("when can withdraw only to one era and try withdraw again", () => {
           beforeEach(async () => {
-            await instance.connect(contr1Address).addContribution("report");
+            await instance.connect(contr1Address).addContribution("description", "report");
             await advanceBlock(contributorPoolParams.blocksPerEra + 2);
             await instance.connect(contr1Address).withdraw();
           });
@@ -369,10 +386,10 @@ describe("ContributorRules", (accounts) => {
 
         context("when can withdraw to two eras and try withdraw again", () => {
           beforeEach(async () => {
-            await instance.connect(contr1Address).addContribution("report");
+            await instance.connect(contr1Address).addContribution("description", "report");
             await advanceBlock(contributorPoolParams.blocksPerEra + 2);
 
-            await instance.connect(contr1Address).addContribution("report");
+            await instance.connect(contr1Address).addContribution("description", "report");
             await advanceBlock(contributorPoolParams.blocksPerEra + 2);
 
             await instance.connect(contr1Address).withdraw();
