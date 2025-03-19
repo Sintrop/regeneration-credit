@@ -40,6 +40,7 @@ describe("DeveloperRules", (accounts) => {
     await validationRules.connect(from).addValidator();
   };
 
+  const timeBetweenWorks = 10;
   const maxPenalties = 3;
   const securityBlocksToValidatorAnalysis = 10;
   const firstValidatorLimit = 8;
@@ -75,6 +76,7 @@ describe("DeveloperRules", (accounts) => {
       communityRules.target,
       developerPool.target,
       validationRules.target,
+      timeBetweenWorks,
       maxPenalties,
       securityBlocksToValidatorAnalysis
     );
@@ -182,15 +184,28 @@ describe("DeveloperRules", (accounts) => {
     });
 
     context("with developer", () => {
-      context("when already has report", () => {
+      context("when have not waited time between works", () => {
         beforeEach(async () => {
           await instance.connect(dev1Address).addReport("description", "report");
         });
 
         it("should return error message", async () => {
           await expect(instance.connect(dev1Address).addReport("description", "report")).to.be.revertedWith(
-            "Already has report"
+            "Can't publish yet"
           );
+        });
+      });
+
+      context("when have waited time between works", () => {
+        beforeEach(async () => {
+          await instance.connect(dev1Address).addReport("description", "report");
+        });
+
+        it("should add report", async () => {
+          await advanceBlock(timeBetweenWorks);
+          await instance.connect(dev1Address).addReport("description", "report");
+          const report = await instance.reports(2);
+          expect(report.id).to.equal(2);
         });
       });
 

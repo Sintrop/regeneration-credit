@@ -258,6 +258,7 @@ describe("ValidationRules", () => {
     const validationRulesFactory = await ethers.getContractFactory("ValidationRules");
     instance = await validationRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
 
+    const timeBetweenWorks = 10;
     const developerMaxPenalties = 3;
     const developerSecuryBlocksToAnalysis = 10;
     const developerRulesFactory = await ethers.getContractFactory("DeveloperRules");
@@ -265,6 +266,7 @@ describe("ValidationRules", () => {
       communityRules.target,
       developerPool.target,
       instance.target,
+      timeBetweenWorks,
       developerMaxPenalties,
       developerSecuryBlocksToAnalysis
     );
@@ -274,6 +276,7 @@ describe("ValidationRules", () => {
     contributorRules = await contributorRulesFactory.deploy(
       communityRules.target,
       contributorPool.target,
+      timeBetweenWorks,
       contributorSecuryBlocksToAnalysis
     );
 
@@ -522,7 +525,7 @@ describe("ValidationRules", () => {
                 await addContributor("Contributor  A", contributor1Address);
                 await addContributor("Contributor  B", contributor2Address);
 
-                await contributorRules.connect(contributor1Address).addContribution("contribution");
+                await contributorRules.connect(contributor1Address).addContribution("description", "contribution");
 
                 await instance.connect(validator1Address).addUserValidation(contributor1Address, "my justification");
                 await instance.connect(validator3Address).addUserValidation(contributor1Address, "my justification");

@@ -5,6 +5,7 @@ const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { ZERO_ADDRESS } = require("./shared/zeroAddress");
+const { inspectionRulesDeployed } = require("./shared/inspection_rules_deployed.js");
 
 describe("InspectionRules", () => {
   let instance;
@@ -13,12 +14,8 @@ describe("InspectionRules", () => {
   let regeneratorRules;
   let researcherRules;
   let activistRules;
-  let researcherPool;
-  let inspectorPool;
   let regeneratorPool;
   let activistPool;
-
-  const inspectorMaxPenalties = 2;
 
   let owner,
     regeneratorAddress,
@@ -56,9 +53,6 @@ describe("InspectionRules", () => {
     denied: 9,
   };
 
-  const timeBetweenResearches = 6;
-  const researcherMaxPenalties = 3;
-
   const regeneratorPoolArgs = {
     totalTokens: "750000000000000000000000000",
     halving: 50,
@@ -71,24 +65,6 @@ describe("InspectionRules", () => {
     allowedInitialRequests: 1,
     acceptInspectionDelayBlocks: 5,
     securityBlocksToValidatorAnalysis: 100,
-  };
-
-  const researcherPoolargs = {
-    totalTokens: "30000000000000000000000000",
-    halving: 12,
-    blocksPerEra: 12,
-  };
-
-  const inspectorPoolargs = {
-    totalTokens: "180000000000000000000000000",
-    halving: 12,
-    blocksPerEra: 12,
-  };
-
-  const activistPoolArgs = {
-    totalTokens: "30000000000000000000000000",
-    halving: 12,
-    blocksPerEra: 13,
   };
 
   const addRegenerator = async (name, from) => {
@@ -166,9 +142,6 @@ describe("InspectionRules", () => {
     await instance.connect(from).realizeInspection(id, proofPhoto, report, biomassResult, biodiversityResult);
   };
 
-  const firstValidatorLimit = 8;
-  const secondValidatorLimit = 14;
-
   beforeEach(async () => {
     [
       owner,
@@ -196,119 +169,25 @@ describe("InspectionRules", () => {
       activist1Address,
     ] = await ethers.getSigners();
 
-    regenerationCredit = await regenerationCreditDeployed();
-    communityRules = await communityRulesDeployed();
+    const deployed = await inspectionRulesDeployed(owner, {
+      sintropArgs: sintropArgs,
+    });
 
-    const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
-    researcherPool = await researcherPoolFactory.deploy(
-      regenerationCredit.target,
-      researcherPoolargs.halving,
-      researcherPoolargs.blocksPerEra
-    );
-
-    const inspectorPoolFactory = await ethers.getContractFactory("InspectorPool");
-    inspectorPool = await inspectorPoolFactory.deploy(
-      regenerationCredit.target,
-      inspectorPoolargs.halving,
-      inspectorPoolargs.blocksPerEra
-    );
-
-    const regeneratorPoolFactory = await ethers.getContractFactory("RegeneratorPool");
-    regeneratorPool = await regeneratorPoolFactory.deploy(
-      regenerationCredit.target,
-      regeneratorPoolArgs.halving,
-      regeneratorPoolArgs.blocksPerEra
-    );
-
-    const activistPoolFactory = await ethers.getContractFactory("ActivistPool");
-    activistPool = await activistPoolFactory.deploy(
-      regenerationCredit.target,
-      activistPoolArgs.halving,
-      activistPoolArgs.blocksPerEra
-    );
-
-    const inspectorRulesFactory = await ethers.getContractFactory("InspectorRules");
-    const researcherRulesFactory = await ethers.getContractFactory("ResearcherRules");
-    const regeneratorRulesFactory = await ethers.getContractFactory("RegeneratorRules");
-    const activistRulesFactory = await ethers.getContractFactory("ActivistRules");
-
-    const validationRulesFactory = await ethers.getContractFactory("ValidationRules");
-    validationRules = await validationRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
-
-    inspectorRules = await inspectorRulesFactory.deploy(
-      communityRules.target,
-      inspectorPool.target,
-      inspectorMaxPenalties
-    );
-
-    const researcherSecuryBlocksToAnalysis = 10;
-    researcherRules = await researcherRulesFactory.deploy(
-      communityRules.target,
-      researcherPool.target,
-      validationRules.target,
-      timeBetweenResearches,
-      researcherMaxPenalties,
-      researcherSecuryBlocksToAnalysis
-    );
-
-    regeneratorRules = await regeneratorRulesFactory.deploy(communityRules.target, regeneratorPool.target);
-    activistRules = await activistRulesFactory.deploy(communityRules.target, activistPool.target);
-
-    const regenerationIndexRulesFactory = await ethers.getContractFactory("RegenerationIndexRules");
-    regenerationIndexRules = await regenerationIndexRulesFactory.deploy();
-
-    const validationRulesDependencies = {
-      communityRulesAddress: communityRules.target,
-      regeneratorRulesAddress: regeneratorRules.target,
-      inspectorRulesAddress: inspectorRules.target,
-      developerRulesAddress: ZERO_ADDRESS,
-      researcherRulesAddress: researcherRules.target,
-      contributorRulesAddress: ZERO_ADDRESS,
-      activistRulesAddress: activistRules.target,
-    };
-
-    const sintropDependencies = {
-      communityRulesAddress: communityRules.target,
-      regeneratorRulesAddress: regeneratorRules.target,
-      validationRulesAddress: validationRules.target,
-      inspectorRulesAddress: inspectorRules.target,
-      activistRulesAddress: activistRules.target,
-      regenerationIndexRulesAddress: regenerationIndexRules.target,
-    };
-
-    const instanceFactory = await ethers.getContractFactory("InspectionRules");
-    instance = await instanceFactory.deploy(
-      sintropArgs.timeBetweenInspections,
-      sintropArgs.blocksToExpireAcceptedInspection,
-      sintropArgs.allowedInitialRequests,
-      sintropArgs.acceptInspectionDelayBlocks,
-      sintropArgs.securityBlocksToValidatorAnalysis
-    );
-
-    await instance.setContractAddressDependencies(sintropDependencies);
-
-    await validationRules.setContractAddressDependencies(validationRulesDependencies);
-    await communityRules.newAllowedCaller(inspectorRules.target);
-    await communityRules.newAllowedCaller(regeneratorRules.target);
-    await communityRules.newAllowedCaller(researcherRules.target);
-    await communityRules.newAllowedCaller(validationRules.target);
-    await communityRules.newAllowedCaller(activistRules.target);
-    await communityRules.newAllowedCaller(owner);
-    await inspectorRules.newAllowedCaller(instance.target);
-    await inspectorRules.newAllowedCaller(owner);
-    await inspectorRules.newAllowedCaller(validationRules.target);
-    await validationRules.newAllowedCaller(instance.target);
-    await activistRules.newAllowedCaller(instance.target);
-    await activistPool.newAllowedCaller(activistRules.target);
-    await regeneratorRules.newAllowedCaller(owner);
-    await regeneratorRules.newAllowedCaller(instance.target);
-    await regeneratorRules.newAllowedCaller(validationRules.target);
-    await regeneratorPool.newAllowedCaller(regeneratorRules.target);
-    await inspectorPool.newAllowedCaller(inspectorRules.target);
-    await regenerationIndexRules.newAllowedCaller(instance.target);
+    regenerationCredit = deployed.regenerationCredit;
+    communityRules = deployed.communityRules;
+    researcherPool = deployed.researcherPool;
+    inspectorPool = deployed.inspectorPool;
+    regeneratorPool = deployed.regeneratorPool;
+    activistPool = deployed.activistPool;
+    validationRules = deployed.validationRules;
+    inspectorRules = deployed.inspectorRules;
+    researcherRules = deployed.researcherRules;
+    regeneratorRules = deployed.regeneratorRules;
+    activistRules = deployed.activistRules;
+    regenerationIndexRules = deployed.regenerationIndexRules;
+    instance = deployed.instance;
 
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
-
     await addResearcher("Researcher 1", resea1Address);
   });
 

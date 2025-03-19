@@ -9,7 +9,7 @@ async function researcherRulesDeploy() {
 
   const ResearcherRules = await ethers.getContractFactory("ResearcherRules");
 
-  const timeBetweenResearches = process.env["RESEARCHER_TIME_BETWEEN_RESEARCHES"];
+  const timeBetweenWorks = process.env["TIME_BETWEEN_WORKS"];
   const researcherMaxPenalties = process.env["RESEARCHER_MAX_PENALTIES"];
   const securityBlocksToValidatorAnalysis = process.env["RESEARCHER_SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS"];
 
@@ -17,7 +17,7 @@ async function researcherRulesDeploy() {
     communityRules.target,
     researcherPool.target,
     validationRules.target,
-    timeBetweenResearches,
+    timeBetweenWorks,
     researcherMaxPenalties,
     securityBlocksToValidatorAnalysis,
   ];

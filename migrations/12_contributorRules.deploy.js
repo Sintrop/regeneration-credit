@@ -8,9 +8,10 @@ async function contributorRulesDeploy() {
 
   const ContributorRules = await ethers.getContractFactory("ContributorRules");
 
+  const timeBetweenWorks = process.env["TIME_BETWEEN_WORKS"];
   const securityBlocksToValidatorAnalysis = process.env["CONTRIBUTOR_SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS"];
 
-  const args = [communityRules.target, contributorPool.target, securityBlocksToValidatorAnalysis];
+  const args = [communityRules.target, contributorPool.target, timeBetweenWorks, securityBlocksToValidatorAnalysis];
 
   const contributorRules = await ContributorRules.deploy(...args);
 

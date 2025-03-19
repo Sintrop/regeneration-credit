@@ -27,6 +27,7 @@ const inspectionRulesDeploy = require("../migrations/21_inspectionRules.deploy.j
 const contributorPoolDeploy = require("../migrations/11_contributorPool.deploy.js");
 const contributorRulesDeploy = require("../migrations/12_contributorRules.deploy.js");
 const afterDeploy = require("../migrations/after_deploy.js");
+const regenerationCreditImpactDeploy = require("../migrations/22_regenerationCredImpact.deploy.js");
 
 const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -86,6 +87,7 @@ async function main() {
   await regenerationIndexRulesDeploy();
   await invitationRulesDeploy();
   await inspectionRulesDeploy();
+  await regenerationCreditImpactDeploy()
 
   await afterDeploy();
 
