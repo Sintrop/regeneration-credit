@@ -12,9 +12,14 @@ contract Blockable {
   using SafeMath for uint256;
 
   uint256 public constant BLOCKS_PRECISION = 5;
-  uint256 internal constant LIMIT_EPOCHS_SIZE = 8;
+
+  /// @notice Amount of blocks per ERA. 
   uint256 private immutable BLOCKS_PER_ERA;
+
+  /// @notice Contract deploy block.number. 
   uint256 private immutable DEPLOYED_AT;
+
+  /// @notice Blocks to reduce rewards. 
   uint256 internal immutable HALVING;
 
   constructor(uint256 blocksPerEra, uint256 _halving) {
@@ -23,14 +28,27 @@ contract Blockable {
     HALVING = _halving;
   }
 
+  /**
+   * @dev Checks if an user can withdraw rewards.
+   * @param currentUserEra Current user pool era, passed by pool contracts.
+   * @return bool True if currentUserEra is smaller than contractEra. False if not. 
+   */
   function canWithdraw(uint256 currentUserEra) public view returns (bool) {
     return currentUserEra < currentContractEra();
   }
 
+  /**
+   * @dev Function to calculate the contract current ERA.
+   * @return uint256 Current contract ERA. 
+   */
   function currentContractEra() public view returns (uint256) {
     return currentBlockNumber().sub(DEPLOYED_AT).div(BLOCKS_PER_ERA).add(1);
   }
 
+  /**
+   * @dev Function to calculate the contract current EPOCH.
+   * @return uint256 Current contract EPOCH. 
+   */
   function currentEpoch() public view returns (uint256) {
     return currentContractEra().div(HALVING).add(1);
   }
@@ -39,6 +57,10 @@ contract Blockable {
     return era.div(HALVING).add(1);
   }
 
+  /**
+   * @dev Function to calculate the amount of blocks remaining to change the contract ERA.
+   * @return int256 Amount of blocks to change ERA. 
+   */
   function nextEraIn(uint256 currentUserEra) public view returns (int256) {
     return int256(DEPLOYED_AT) + (int256(BLOCKS_PER_ERA) * int256(currentUserEra)) - int256(currentBlockNumber());
   }
