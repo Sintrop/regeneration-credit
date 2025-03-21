@@ -17,7 +17,7 @@ describe("RegenerationCreditImpact", () => {
     inspector3Address,
     inspector4Address,
     inspector5Address;
-  let biomassIndicatorValue = 10;
+  let treesIndicatorValue = 10;
   let biodiversityIndicatorValue = 10;
 
   const addRegenerator = async (name, from, _coordinates = []) => {
@@ -50,10 +50,10 @@ describe("RegenerationCreditImpact", () => {
     ];
   };
 
-  const biomassResultValue = () => {
+  const treesResultValue = () => {
     return {
       categoryId: 1,
-      indicator: biomassIndicatorValue,
+      indicator: treesIndicatorValue,
     };
   };
 
@@ -64,10 +64,10 @@ describe("RegenerationCreditImpact", () => {
     };
   };
 
-  const realizeInspection = async (id, report, biomassResult, biodiversityResult, from) => {
+  const realizeInspection = async (id, report, treesResult, biodiversityResult, from) => {
     const proofPhoto = "proofPhoto";
 
-    await inspectionRules.connect(from).realizeInspection(id, proofPhoto, report, biomassResult, biodiversityResult);
+    await inspectionRules.connect(from).realizeInspection(id, proofPhoto, report, treesResult, biodiversityResult);
   };
 
   beforeEach(async () => {
@@ -115,7 +115,7 @@ describe("RegenerationCreditImpact", () => {
     await regeneratorRules.newAllowedCaller(owner);
   });
 
-  describe("totalCarbonImpact", () => {
+  describe("totalTreesImpact", () => {
     beforeEach(async () => {
       await invitationRules.onlyOwnerInvite(regeneratorAddress, userTypes.Regenerator);
       await invitationRules.onlyOwnerInvite(inspectorAddress, userTypes.Inspector);
@@ -125,15 +125,15 @@ describe("RegenerationCreditImpact", () => {
     });
 
     context("when do not have inspections", async () => {
-      it("totalCarbonImpact must be 0", async () => {
-        const totalCarbonImpact = await instance.totalCarbonImpact();
+      it("totalTreesImpact must be 0", async () => {
+        const totalTreesImpact = await instance.totalTreesImpact();
 
-        expect(totalCarbonImpact).to.equal(0);
+        expect(totalTreesImpact).to.equal(0);
       });
     });
 
     context("when have inspections", () => {
-      context("when inspectionsBiomassImpact is 0", () => {
+      context("when inspectionsTreesImpact is 0", () => {
         beforeEach(async () => {
           await inspectionRules.connect(regeneratorAddress).requestInspection();
 
@@ -141,19 +141,19 @@ describe("RegenerationCreditImpact", () => {
 
           await inspectionRules.connect(inspectorAddress).acceptInspection(1);
 
-          biomassIndicatorValue = 0;
+          treesIndicatorValue = 0;
 
-          await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+          await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
         });
 
-        it("totalCarbonImpact must be 0", async () => {
-          const totalCarbonImpact = await instance.totalCarbonImpact();
+        it("totalTreesImpact must be 0", async () => {
+          const totalTreesImpact = await instance.totalTreesImpact();
 
-          expect(totalCarbonImpact).to.equal(0);
+          expect(totalTreesImpact).to.equal(0);
         });
       });
 
-      context("when inspectionsBiomassImpact is not 0", () => {
+      context("when inspectionsTreesImpact is not 0", () => {
         beforeEach(async () => {
           await inspectionRules.connect(regeneratorAddress).requestInspection();
 
@@ -163,31 +163,31 @@ describe("RegenerationCreditImpact", () => {
         });
 
         context("when have 1 inspection", () => {
-          context("when inspection biomass impact is 10", () => {
+          context("when inspection trees impact is 10", () => {
             beforeEach(async () => {
-              biomassIndicatorValue = 10;
+              treesIndicatorValue = 10;
 
-              await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+              await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
             });
 
-            it("must returnstotalCarbonImpact equal 5", async () => {
-              const totalCarbonImpact = await instance.totalCarbonImpact();
+            it("must returnstotalTreesImpact equal 10", async () => {
+              const totalTreesImpact = await instance.totalTreesImpact();
 
-              expect(totalCarbonImpact).to.equal(5);
+              expect(totalTreesImpact).to.equal(10);
             });
           });
 
           context("when inspection biomass impact is 25", () => {
             beforeEach(async () => {
-              biomassIndicatorValue = 32;
+              treesIndicatorValue = 32;
 
-              await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+              await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
             });
 
-            it("must returnstotalCarbonImpact equal 16", async () => {
-              const totalCarbonImpact = await instance.totalCarbonImpact();
+            it("must returnstotalTreesImpact equal 32", async () => {
+              const totalTreesImpact = await instance.totalTreesImpact();
 
-              expect(totalCarbonImpact).to.equal(16);
+              expect(totalTreesImpact).to.equal(32);
             });
           });
         });
@@ -226,26 +226,26 @@ describe("RegenerationCreditImpact", () => {
             await inspectionRules.connect(inspector4Address).acceptInspection(4);
             await inspectionRules.connect(inspector5Address).acceptInspection(5);
 
-            biomassIndicatorValue = 32;
-            await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+            treesIndicatorValue = 32;
+            await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
 
-            biomassIndicatorValue = 0;
-            await realizeInspection(2, "report", biomassResultValue(), biodiversityResultValue(), inspector2Address);
+            treesIndicatorValue = 0;
+            await realizeInspection(2, "report", treesResultValue(), biodiversityResultValue(), inspector2Address);
 
-            biomassIndicatorValue = 100;
-            await realizeInspection(3, "report", biomassResultValue(), biodiversityResultValue(), inspector3Address);
+            treesIndicatorValue = 100;
+            await realizeInspection(3, "report", treesResultValue(), biodiversityResultValue(), inspector3Address);
 
-            biomassIndicatorValue = 10;
-            await realizeInspection(4, "report", biomassResultValue(), biodiversityResultValue(), inspector4Address);
+            treesIndicatorValue = 10;
+            await realizeInspection(4, "report", treesResultValue(), biodiversityResultValue(), inspector4Address);
 
-            biomassIndicatorValue = 32;
-            await realizeInspection(5, "report", biomassResultValue(), biodiversityResultValue(), inspector5Address);
+            treesIndicatorValue = 32;
+            await realizeInspection(5, "report", treesResultValue(), biodiversityResultValue(), inspector5Address);
           });
 
-          it("must returnstotalCarbonImpact equal 85", async () => {
-            const totalCarbonImpact = await instance.totalCarbonImpact();
+          it("must returnstotalTreesImpact equal 170", async () => {
+            const totalTreesImpact = await instance.totalTreesImpact();
 
-            expect(totalCarbonImpact).to.equal(85);
+            expect(totalTreesImpact).to.equal(170);
           });
         });
 
@@ -263,8 +263,8 @@ describe("RegenerationCreditImpact", () => {
             await addInspector("Inspector B", inspector2Address);
             await addInspector("Inspector C", inspector3Address);
 
-            biomassIndicatorValue = 32;
-            await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+            treesIndicatorValue = 32;
+            await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
 
             await inspectionRules.connect(regeneratorAddress).requestInspection();
             await inspectionRules.connect(regenerator2Address).requestInspection();
@@ -274,17 +274,17 @@ describe("RegenerationCreditImpact", () => {
             await inspectionRules.connect(inspector2Address).acceptInspection(2);
             await inspectionRules.connect(inspector3Address).acceptInspection(3);
 
-            biomassIndicatorValue = 0;
-            await realizeInspection(2, "report", biomassResultValue(), biodiversityResultValue(), inspector2Address);
+            treesIndicatorValue = 0;
+            await realizeInspection(2, "report", treesResultValue(), biodiversityResultValue(), inspector2Address);
 
-            biomassIndicatorValue = 100;
-            await realizeInspection(3, "report", biomassResultValue(), biodiversityResultValue(), inspector3Address);
+            treesIndicatorValue = 100;
+            await realizeInspection(3, "report", treesResultValue(), biodiversityResultValue(), inspector3Address);
           });
 
-          it("must returnstotalCarbonImpact equal 44", async () => {
-            const totalCarbonImpact = await instance.totalCarbonImpact();
+          it("must returnstotalTreesImpact equal 88", async () => {
+            const totalTreesImpact = await instance.totalTreesImpact();
 
-            expect(totalCarbonImpact).to.equal(44);
+            expect(totalTreesImpact).to.equal(88);
           });
         });
 
@@ -303,8 +303,8 @@ describe("RegenerationCreditImpact", () => {
         //     await addInspector("Inspector B", inspector2Address);
         //     await addInspector("Inspector C", inspector3Address);
 
-        //     biomassIndicatorValue = 32;
-        //     await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+        //     treesIndicatorValue = 32;
+        //     await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
 
         //     await inspectionRules.connect(regeneratorAddress).requestInspection();
         //     await inspectionRules.connect(regenerator2Address).requestInspection();
@@ -314,17 +314,17 @@ describe("RegenerationCreditImpact", () => {
         //     await inspectionRules.connect(inspector2Address).acceptInspection(2);
         //     await inspectionRules.connect(inspector3Address).acceptInspection(3);
 
-        //     biomassIndicatorValue = 0;
-        //     await realizeInspection(2, "report", biomassResultValue(), biodiversityResultValue(), inspector2Address);
+        //     treesIndicatorValue = 0;
+        //     await realizeInspection(2, "report", treesResultValue(), biodiversityResultValue(), inspector2Address);
 
-        //     biomassIndicatorValue = 100;
-        //     await realizeInspection(3, "report", biomassResultValue(), biodiversityResultValue(), inspector3Address);
+        //     treesIndicatorValue = 100;
+        //     await realizeInspection(3, "report", treesResultValue(), biodiversityResultValue(), inspector3Address);
         //   });
 
-        //   it("must returnstotalCarbonImpact equal 44", async () => {
-        //     const totalCarbonImpact = await instance.totalCarbonImpact();
+        //   it("must returnstotalTreesImpact equal 44", async () => {
+        //     const totalTreesImpact = await instance.totalTreesImpact();
 
-        //     expect(totalCarbonImpact).to.equal(44);
+        //     expect(totalTreesImpact).to.equal(44);
         //   });
         // });
       });
@@ -359,7 +359,7 @@ describe("RegenerationCreditImpact", () => {
 
           biodiversityIndicatorValue = 0;
 
-          await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+          await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
         });
 
         it("totalBiodiversityImpact must be 0", async () => {
@@ -383,7 +383,7 @@ describe("RegenerationCreditImpact", () => {
             beforeEach(async () => {
               biodiversityIndicatorValue = 10;
 
-              await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+              await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
             });
 
             it("must returns totalBiodiversityImpact equal 10", async () => {
@@ -397,7 +397,7 @@ describe("RegenerationCreditImpact", () => {
             beforeEach(async () => {
               biodiversityIndicatorValue = 32;
 
-              await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+              await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
             });
 
             it("must returns totalBiodiversityImpact equal 32", async () => {
@@ -443,19 +443,19 @@ describe("RegenerationCreditImpact", () => {
             await inspectionRules.connect(inspector5Address).acceptInspection(5);
 
             biodiversityIndicatorValue = 32;
-            await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+            await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
 
             biodiversityIndicatorValue = 0;
-            await realizeInspection(2, "report", biomassResultValue(), biodiversityResultValue(), inspector2Address);
+            await realizeInspection(2, "report", treesResultValue(), biodiversityResultValue(), inspector2Address);
 
             biodiversityIndicatorValue = 100;
-            await realizeInspection(3, "report", biomassResultValue(), biodiversityResultValue(), inspector3Address);
+            await realizeInspection(3, "report", treesResultValue(), biodiversityResultValue(), inspector3Address);
 
             biodiversityIndicatorValue = 10;
-            await realizeInspection(4, "report", biomassResultValue(), biodiversityResultValue(), inspector4Address);
+            await realizeInspection(4, "report", treesResultValue(), biodiversityResultValue(), inspector4Address);
 
             biodiversityIndicatorValue = 32;
-            await realizeInspection(5, "report", biomassResultValue(), biodiversityResultValue(), inspector5Address);
+            await realizeInspection(5, "report", treesResultValue(), biodiversityResultValue(), inspector5Address);
           });
 
           it("must returns totalBiodiversityImpact equal 170", async () => {
@@ -480,7 +480,7 @@ describe("RegenerationCreditImpact", () => {
             await addInspector("Inspector C", inspector3Address);
 
             biodiversityIndicatorValue = 32;
-            await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+            await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
 
             await inspectionRules.connect(regeneratorAddress).requestInspection();
             await inspectionRules.connect(regenerator2Address).requestInspection();
@@ -491,10 +491,10 @@ describe("RegenerationCreditImpact", () => {
             await inspectionRules.connect(inspector3Address).acceptInspection(3);
 
             biodiversityIndicatorValue = 0;
-            await realizeInspection(2, "report", biomassResultValue(), biodiversityResultValue(), inspector2Address);
+            await realizeInspection(2, "report", treesResultValue(), biodiversityResultValue(), inspector2Address);
 
             biodiversityIndicatorValue = 100;
-            await realizeInspection(3, "report", biomassResultValue(), biodiversityResultValue(), inspector3Address);
+            await realizeInspection(3, "report", treesResultValue(), biodiversityResultValue(), inspector3Address);
           });
 
           it("must returns totalBiodiversityImpact equal 88", async () => {
@@ -520,7 +520,7 @@ describe("RegenerationCreditImpact", () => {
         //     await addInspector("Inspector C", inspector3Address);
 
         //     biodiversityIndicatorValue = 32;
-        //     await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+        //     await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
 
         //     await inspectionRules.connect(regeneratorAddress).requestInspection();
         //     await inspectionRules.connect(regenerator2Address).requestInspection();
@@ -531,16 +531,16 @@ describe("RegenerationCreditImpact", () => {
         //     await inspectionRules.connect(inspector3Address).acceptInspection(3);
 
         //     biodiversityIndicatorValue = 0;
-        //     await realizeInspection(2, "report", biomassResultValue(), biodiversityResultValue(), inspector2Address);
+        //     await realizeInspection(2, "report", treesResultValue(), biodiversityResultValue(), inspector2Address);
 
         //     biodiversityIndicatorValue = 100;
-        //     await realizeInspection(3, "report", biomassResultValue(), biodiversityResultValue(), inspector3Address);
+        //     await realizeInspection(3, "report", treesResultValue(), biodiversityResultValue(), inspector3Address);
         //   });
 
-        //   it("must returnstotalCarbonImpact equal 44", async () => {
-        //     const totalCarbonImpact = await instance.totalCarbonImpact();
+        //   it("must returnstotalTreesImpact equal 44", async () => {
+        //     const totalTreesImpact = await instance.totalTreesImpact();
 
-        //     expect(totalCarbonImpact).to.equal(44);
+        //     expect(totalTreesImpact).to.equal(44);
         //   });
         // });
       });
@@ -579,7 +579,7 @@ describe("RegenerationCreditImpact", () => {
     });
   });
 
-  describe("tokenCarbonImpact", () => {
+  describe("tokenTreesImpact", () => {
     beforeEach(async () => {
       await invitationRules.onlyOwnerInvite(regeneratorAddress, userTypes.Regenerator);
       await invitationRules.onlyOwnerInvite(inspectorAddress, userTypes.Inspector);
@@ -589,15 +589,15 @@ describe("RegenerationCreditImpact", () => {
     });
 
     context("when do not have inspections", async () => {
-      it("tokenCarbonImpact must be 0", async () => {
-        const tokenCarbonImpact = await instance.tokenCarbonImpact();
+      it("tokenTreesImpact must be 0", async () => {
+        const tokenTreesImpact = await instance.tokenTreesImpact();
 
-        expect(tokenCarbonImpact).to.equal(0);
+        expect(tokenTreesImpact).to.equal(0);
       });
     });
 
     context("when have inspections", () => {
-      context("when inspectionsBiomassImpact is 0", () => {
+      context("when inspectionsTreesImpact is 0", () => {
         beforeEach(async () => {
           await inspectionRules.connect(regeneratorAddress).requestInspection();
 
@@ -605,19 +605,19 @@ describe("RegenerationCreditImpact", () => {
 
           await inspectionRules.connect(inspectorAddress).acceptInspection(1);
 
-          biomassIndicatorValue = 0;
+          treesIndicatorValue = 0;
 
-          await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+          await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
         });
 
-        it("tokenCarbonImpact must be 0", async () => {
-          const tokenCarbonImpact = await instance.tokenCarbonImpact();
+        it("tokenTreesImpact must be 0", async () => {
+          const tokenTreesImpact = await instance.tokenTreesImpact();
 
-          expect(tokenCarbonImpact).to.equal(0);
+          expect(tokenTreesImpact).to.equal(0);
         });
       });
 
-      context("when inspectionsBiomassImpact is not 0", () => {
+      context("when inspectionsTreesImpact is not 0", () => {
         beforeEach(async () => {
           await inspectionRules.connect(regeneratorAddress).requestInspection();
 
@@ -629,20 +629,20 @@ describe("RegenerationCreditImpact", () => {
         context("when have 1 inspection", () => {
           context("when inspection biomass impact is 10", () => {
             beforeEach(async () => {
-              biomassIndicatorValue = 10;
+              treesIndicatorValue = 10;
             });
 
             context("when do not have tokens totalLocked_", () => {
               beforeEach(async () => {
-                biomassIndicatorValue = 10;
+                treesIndicatorValue = 10;
 
-                await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+                await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
               });
 
-              it("must returns tokenCarbonImpact equal 333333", async () => {
-                const tokenCarbonImpact = await instance.tokenCarbonImpact();
+              it("must returns tokenTreesImpact equal 666666", async () => {
+                const tokenTreesImpact = await instance.tokenTreesImpact();
 
-                expect(tokenCarbonImpact).to.equal(333333);
+                expect(tokenTreesImpact).to.equal(666666);
               });
             });
 
@@ -651,30 +651,30 @@ describe("RegenerationCreditImpact", () => {
                 await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
                 await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
 
-                biomassIndicatorValue = 10;
+                treesIndicatorValue = 10;
 
-                await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+                await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
               });
 
-              it("must returns tokenCarbonImpact equal 555555", async () => {
-                const tokenCarbonImpact = await instance.tokenCarbonImpact();
+              it("must returns tokenTreesImpact equal 1111111", async () => {
+                const tokenTreesImpact = await instance.tokenTreesImpact();
 
-                expect(tokenCarbonImpact).to.equal(555555);
+                expect(tokenTreesImpact).to.equal(1111111);
               });
             });
           });
 
           context("when inspection biomass impact is 25", () => {
             beforeEach(async () => {
-              biomassIndicatorValue = 32;
+              treesIndicatorValue = 32;
 
-              await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+              await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
             });
 
-            it("must returnstotalCarbonImpact equal 1066666", async () => {
-              const tokenCarbonImpact = await instance.tokenCarbonImpact();
+            it("must returnstotalTreesImpact equal 2133333", async () => {
+              const tokenTreesImpact = await instance.tokenTreesImpact();
 
-              expect(tokenCarbonImpact).to.equal(1066666);
+              expect(tokenTreesImpact).to.equal(2133333);
             });
           });
         });
@@ -713,26 +713,26 @@ describe("RegenerationCreditImpact", () => {
             await inspectionRules.connect(inspector4Address).acceptInspection(4);
             await inspectionRules.connect(inspector5Address).acceptInspection(5);
 
-            biomassIndicatorValue = 32;
-            await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+            treesIndicatorValue = 32;
+            await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
 
-            biomassIndicatorValue = 0;
-            await realizeInspection(2, "report", biomassResultValue(), biodiversityResultValue(), inspector2Address);
+            treesIndicatorValue = 0;
+            await realizeInspection(2, "report", treesResultValue(), biodiversityResultValue(), inspector2Address);
 
-            biomassIndicatorValue = 100;
-            await realizeInspection(3, "report", biomassResultValue(), biodiversityResultValue(), inspector3Address);
+            treesIndicatorValue = 100;
+            await realizeInspection(3, "report", treesResultValue(), biodiversityResultValue(), inspector3Address);
 
-            biomassIndicatorValue = 10;
-            await realizeInspection(4, "report", biomassResultValue(), biodiversityResultValue(), inspector4Address);
+            treesIndicatorValue = 10;
+            await realizeInspection(4, "report", treesResultValue(), biodiversityResultValue(), inspector4Address);
 
-            biomassIndicatorValue = 32;
-            await realizeInspection(5, "report", biomassResultValue(), biodiversityResultValue(), inspector5Address);
+            treesIndicatorValue = 32;
+            await realizeInspection(5, "report", treesResultValue(), biodiversityResultValue(), inspector5Address);
           });
 
-          it("must returns tokenCarbonImpact equal 5666666", async () => {
-            const tokenCarbonImpact = await instance.tokenCarbonImpact();
+          it("must returns tokenTreesImpact equal 11333333", async () => {
+            const tokenTreesImpact = await instance.tokenTreesImpact();
 
-            expect(tokenCarbonImpact).to.equal(5666666);
+            expect(tokenTreesImpact).to.equal(11333333);
           });
         });
 
@@ -750,8 +750,8 @@ describe("RegenerationCreditImpact", () => {
             await addInspector("Inspector B", inspector2Address);
             await addInspector("Inspector C", inspector3Address);
 
-            biomassIndicatorValue = 32;
-            await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+            treesIndicatorValue = 32;
+            await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
 
             await inspectionRules.connect(regeneratorAddress).requestInspection();
             await inspectionRules.connect(regenerator2Address).requestInspection();
@@ -761,17 +761,17 @@ describe("RegenerationCreditImpact", () => {
             await inspectionRules.connect(inspector2Address).acceptInspection(2);
             await inspectionRules.connect(inspector3Address).acceptInspection(3);
 
-            biomassIndicatorValue = 0;
-            await realizeInspection(2, "report", biomassResultValue(), biodiversityResultValue(), inspector2Address);
+            treesIndicatorValue = 0;
+            await realizeInspection(2, "report", treesResultValue(), biodiversityResultValue(), inspector2Address);
 
-            biomassIndicatorValue = 100;
-            await realizeInspection(3, "report", biomassResultValue(), biodiversityResultValue(), inspector3Address);
+            treesIndicatorValue = 100;
+            await realizeInspection(3, "report", treesResultValue(), biodiversityResultValue(), inspector3Address);
           });
 
-          it("must returns tokenCarbonImpact equal 2933333", async () => {
-            const tokenCarbonImpact = await instance.tokenCarbonImpact();
+          it("must returns tokenTreesImpact equal 5866666", async () => {
+            const tokenTreesImpact = await instance.tokenTreesImpact();
 
-            expect(tokenCarbonImpact).to.equal(2933333);
+            expect(tokenTreesImpact).to.equal(5866666);
           });
         });
 
@@ -790,8 +790,8 @@ describe("RegenerationCreditImpact", () => {
         //     await addInspector("Inspector B", inspector2Address);
         //     await addInspector("Inspector C", inspector3Address);
 
-        //     biomassIndicatorValue = 32;
-        //     await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+        //     treesIndicatorValue = 32;
+        //     await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
 
         //     await inspectionRules.connect(regeneratorAddress).requestInspection();
         //     await inspectionRules.connect(regenerator2Address).requestInspection();
@@ -801,17 +801,17 @@ describe("RegenerationCreditImpact", () => {
         //     await inspectionRules.connect(inspector2Address).acceptInspection(2);
         //     await inspectionRules.connect(inspector3Address).acceptInspection(3);
 
-        //     biomassIndicatorValue = 0;
-        //     await realizeInspection(2, "report", biomassResultValue(), biodiversityResultValue(), inspector2Address);
+        //     treesIndicatorValue = 0;
+        //     await realizeInspection(2, "report", treesResultValue(), biodiversityResultValue(), inspector2Address);
 
-        //     biomassIndicatorValue = 100;
-        //     await realizeInspection(3, "report", biomassResultValue(), biodiversityResultValue(), inspector3Address);
+        //     treesIndicatorValue = 100;
+        //     await realizeInspection(3, "report", treesResultValue(), biodiversityResultValue(), inspector3Address);
         //   });
 
-        //   it("must returnstotalCarbonImpact equal 44", async () => {
-        //     const totalCarbonImpact = await instance.totalCarbonImpact();
+        //   it("must returnstotalTreesImpact equal 44", async () => {
+        //     const totalTreesImpact = await instance.totalTreesImpact();
 
-        //     expect(totalCarbonImpact).to.equal(44);
+        //     expect(totalTreesImpact).to.equal(44);
         //   });
         // });
       });
@@ -846,7 +846,7 @@ describe("RegenerationCreditImpact", () => {
 
           biodiversityIndicatorValue = 0;
 
-          await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+          await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
         });
 
         it("tokenBiodiversityImpact must be 0", async () => {
@@ -871,7 +871,7 @@ describe("RegenerationCreditImpact", () => {
               beforeEach(async () => {
                 biodiversityIndicatorValue = 10;
 
-                await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+                await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
               });
 
               it("must returns tokenBiodiversityImpact equal 666666", async () => {
@@ -888,7 +888,7 @@ describe("RegenerationCreditImpact", () => {
 
                 biodiversityIndicatorValue = 10;
 
-                await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+                await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
               });
 
               it("must returns tokenBiodiversityImpact equal 1111111", async () => {
@@ -903,7 +903,7 @@ describe("RegenerationCreditImpact", () => {
             beforeEach(async () => {
               biodiversityIndicatorValue = 32;
 
-              await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+              await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
             });
 
             it("must returns tokenBiodiversityImpact equal 2133333", async () => {
@@ -949,19 +949,19 @@ describe("RegenerationCreditImpact", () => {
             await inspectionRules.connect(inspector5Address).acceptInspection(5);
 
             biodiversityIndicatorValue = 32;
-            await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+            await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
 
             biodiversityIndicatorValue = 0;
-            await realizeInspection(2, "report", biomassResultValue(), biodiversityResultValue(), inspector2Address);
+            await realizeInspection(2, "report", treesResultValue(), biodiversityResultValue(), inspector2Address);
 
             biodiversityIndicatorValue = 100;
-            await realizeInspection(3, "report", biomassResultValue(), biodiversityResultValue(), inspector3Address);
+            await realizeInspection(3, "report", treesResultValue(), biodiversityResultValue(), inspector3Address);
 
             biodiversityIndicatorValue = 10;
-            await realizeInspection(4, "report", biomassResultValue(), biodiversityResultValue(), inspector4Address);
+            await realizeInspection(4, "report", treesResultValue(), biodiversityResultValue(), inspector4Address);
 
             biodiversityIndicatorValue = 32;
-            await realizeInspection(5, "report", biomassResultValue(), biodiversityResultValue(), inspector5Address);
+            await realizeInspection(5, "report", treesResultValue(), biodiversityResultValue(), inspector5Address);
           });
 
           it("must returns tokenBiodiversityImpact equal 11333333", async () => {
@@ -986,7 +986,7 @@ describe("RegenerationCreditImpact", () => {
             await addInspector("Inspector C", inspector3Address);
 
             biodiversityIndicatorValue = 32;
-            await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+            await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
 
             await inspectionRules.connect(regeneratorAddress).requestInspection();
             await inspectionRules.connect(regenerator2Address).requestInspection();
@@ -997,10 +997,10 @@ describe("RegenerationCreditImpact", () => {
             await inspectionRules.connect(inspector3Address).acceptInspection(3);
 
             biodiversityIndicatorValue = 0;
-            await realizeInspection(2, "report", biomassResultValue(), biodiversityResultValue(), inspector2Address);
+            await realizeInspection(2, "report", treesResultValue(), biodiversityResultValue(), inspector2Address);
 
             biodiversityIndicatorValue = 100;
-            await realizeInspection(3, "report", biomassResultValue(), biodiversityResultValue(), inspector3Address);
+            await realizeInspection(3, "report", treesResultValue(), biodiversityResultValue(), inspector3Address);
           });
 
           it("must returns tokenBiodiversityImpact equal 5866666", async () => {
@@ -1026,7 +1026,7 @@ describe("RegenerationCreditImpact", () => {
         //     await addInspector("Inspector C", inspector3Address);
 
         //     biodiversityIndicatorValue = 32;
-        //     await realizeInspection(1, "report", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+        //     await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
 
         //     await inspectionRules.connect(regeneratorAddress).requestInspection();
         //     await inspectionRules.connect(regenerator2Address).requestInspection();
@@ -1037,16 +1037,16 @@ describe("RegenerationCreditImpact", () => {
         //     await inspectionRules.connect(inspector3Address).acceptInspection(3);
 
         //     biodiversityIndicatorValue = 0;
-        //     await realizeInspection(2, "report", biomassResultValue(), biodiversityResultValue(), inspector2Address);
+        //     await realizeInspection(2, "report", treesResultValue(), biodiversityResultValue(), inspector2Address);
 
         //     biodiversityIndicatorValue = 100;
-        //     await realizeInspection(3, "report", biomassResultValue(), biodiversityResultValue(), inspector3Address);
+        //     await realizeInspection(3, "report", treesResultValue(), biodiversityResultValue(), inspector3Address);
         //   });
 
-        //   it("must returnstotalCarbonImpact equal 44", async () => {
-        //     const totalCarbonImpact = await instance.totalCarbonImpact();
+        //   it("must returnstotalTreesImpact equal 44", async () => {
+        //     const totalTreesImpact = await instance.totalTreesImpact();
 
-        //     expect(totalCarbonImpact).to.equal(44);
+        //     expect(totalTreesImpact).to.equal(44);
         //   });
         // });
       });
