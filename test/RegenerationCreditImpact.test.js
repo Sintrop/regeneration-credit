@@ -22,7 +22,7 @@ describe("RegenerationCreditImpact", () => {
 
   const addRegenerator = async (name, from, _coordinates = []) => {
     const coordinatesParams = _coordinates.length > 0 ? _coordinates : coordinates();
-    await regeneratorRules.connect(from).addRegenerator(10, name, "photoURL", coordinatesParams);
+    await regeneratorRules.connect(from).addRegenerator(1000, name, "photoURL", coordinatesParams);
   };
 
   const addInspector = async (name, from) => {
@@ -558,10 +558,10 @@ describe("RegenerationCreditImpact", () => {
 
     context("when have two regenerators", () => {
       context("when all regenerators are valids", async () => {
-        it("totalSoilImpact must be 20", async () => {
+        it("totalSoilImpact must be 2000", async () => {
           const totalSoilImpact = await instance.totalSoilImpact();
 
-          expect(totalSoilImpact).to.equal(20);
+          expect(totalSoilImpact).to.equal(2000);
         });
       });
 
@@ -570,10 +570,10 @@ describe("RegenerationCreditImpact", () => {
           await regeneratorRules.removePoolLevels(regenerator2Address, 0);
         });
 
-        it("totalSoilImpact must be 10", async () => {
+        it("totalSoilImpact must be 1000", async () => {
           const totalSoilImpact = await instance.totalSoilImpact();
 
-          expect(totalSoilImpact).to.equal(10);
+          expect(totalSoilImpact).to.equal(1000);
         });
       });
     });
@@ -1065,10 +1065,10 @@ describe("RegenerationCreditImpact", () => {
     context("when have two regenerators", () => {
       context("when all regenerators are valids", async () => {
         context("when do not have tokens totalLocked_", () => {
-          it("tokenSoilImpact must be 1333333", async () => {
+          it("tokenSoilImpact must be 133333333", async () => {
             const tokenSoilImpact = await instance.tokenSoilImpact();
 
-            expect(tokenSoilImpact).to.equal(1333333);
+            expect(tokenSoilImpact).to.equal(133333333);
           });
         });
 
@@ -1078,10 +1078,10 @@ describe("RegenerationCreditImpact", () => {
             await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
           });
 
-          it("tokenSoilImpact must be 2222222", async () => {
+          it("tokenSoilImpact must be 222222222", async () => {
             const tokenSoilImpact = await instance.tokenSoilImpact();
 
-            expect(tokenSoilImpact).to.equal(2222222);
+            expect(tokenSoilImpact).to.equal(222222222);
           });
         });
       });
@@ -1091,10 +1091,10 @@ describe("RegenerationCreditImpact", () => {
           await regeneratorRules.removePoolLevels(regenerator2Address, 0);
         });
 
-        it("tokenSoilImpact must be 666666", async () => {
+        it("tokenSoilImpact must be 66666666", async () => {
           const tokenSoilImpact = await instance.tokenSoilImpact();
 
-          expect(tokenSoilImpact).to.equal(666666);
+          expect(tokenSoilImpact).to.equal(66666666);
         });
       });
     });
