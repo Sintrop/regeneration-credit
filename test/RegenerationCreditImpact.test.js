@@ -505,7 +505,7 @@ describe("RegenerationCreditImpact", () => {
         });
       });
     });
-  });  
+  });
 
   describe("totalBiodiversityImpact", () => {
     beforeEach(async () => {

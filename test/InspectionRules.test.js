@@ -860,13 +860,7 @@ describe("InspectionRules", () => {
 
                 context("when check inspection", () => {
                   beforeEach(async () => {
-                    await realizeInspection(
-                      1,
-                      report,
-                      treesResultValue(),
-                      biodiversityResultValue(),
-                      inspectorAddress
-                    );
+                    await realizeInspection(1, report, treesResultValue(), biodiversityResultValue(), inspectorAddress);
                   });
 
                   it("should change inspection status to INSPECTED", async () => {
