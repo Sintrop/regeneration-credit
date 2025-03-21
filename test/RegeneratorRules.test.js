@@ -245,7 +245,7 @@ describe("RegeneratorRules", () => {
 
   context("when totalArea is below 1000", () => {
     it("should return error", async () => {
-      await expect(addRegenerator2("Regenerator A", prod1Address)).to.be.revertedWith("Minimum 1000 square meters");
+      await expect(addRegenerator2("Regenerator A", prod1Address)).to.be.revertedWith("Minimum 500 square meters");
     });
   });
 
