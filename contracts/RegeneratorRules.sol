@@ -64,7 +64,7 @@ contract RegeneratorRules is Callable {
     Coordinates[] memory _coordinates
   ) public {
     require(_coordinates.length >= 3 && _coordinates.length <= 10, "Minimum 3 and maximum 10 coordinate points");
-    require(totalArea >= 1000, "Minimum 1000 square meters");
+    require(totalArea >= 500, "Minimum 500 square meters");
 
     Regenerator memory regenerator = regenerators[msg.sender];
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
