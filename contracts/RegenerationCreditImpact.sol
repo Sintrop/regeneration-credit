@@ -41,7 +41,7 @@ contract RegenerationCreditImpact {
   }
 
   /**
-   * @dev Function to calculate the total carbon impact of the system. It is calculated by dividing the biomass impact by 2, which represents that half of the biomass weight is composed by carbon.
+   * @dev Function to calculate the total trees impact of the system.
    */
   function totalTreesImpact() public view returns (uint256) {
     if (inspectionRules.inspectionsCount() == 0) return 0;
@@ -80,7 +80,7 @@ contract RegenerationCreditImpact {
 
   /**
    * @dev 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
-   * @notice Function that calculates the carbon impact per regeneration credit.
+   * @notice Function that calculates the trees impact per regeneration credit.
    */
   function tokenTreesImpact() public view returns (uint256) {
     return
@@ -109,7 +109,8 @@ contract RegenerationCreditImpact {
 
   /**
    * @dev 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
-   * @notice Function that calculates the soil impact per regeneration credit.
+   * @notice Function that calculates the soil impact per regeneration credit
+   * @return uint256 [m²]
    */
   function tokenSoilImpact() public view returns (uint256) {
     return

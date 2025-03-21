@@ -50,7 +50,7 @@ describe("RegenerationIndexRules", () => {
       categoryRegenerationIndexDescriptions = categoryRegenerationIndexDescriptions.toString();
 
       expect(categoryRegenerationIndexDescriptions).to.equal(
-        "1,Balance > 100.000,2,100.000 > Balance > 10.000,3,10.000 > Balance > 1000,4,1000 > Balance > 100,5,100 > Balance > 10,6,10 > Balance > 0,7,Not applicable"
+        "1,Trees > 10000,2,10000 > Trees > 4000,3,4000 > Trees > 2000,4,2000 > Trees > 500,5,500 > Trees > 100,6,100 > Trees > 10,7,Trees < 10"
       );
     });
 
@@ -60,7 +60,7 @@ describe("RegenerationIndexRules", () => {
       categoryRegenerationIndexDescriptions = categoryRegenerationIndexDescriptions.toString();
 
       expect(categoryRegenerationIndexDescriptions).to.equal(
-        "1,Biodiversity > 1000,2,1000 > Biodiversity > 500,3,500 > Biodiversity > 200,4,200 > Biodiversity > 100,5,100 > Biodiversity > 50,6,50 > Biodiversity > 25,7,Biodiversity < 25"
+        "1,Biodiversity > 240,2,240 > Biodiversity > 120,3,120 > Biodiversity > 60,4,60 > Biodiversity > 30,5,30 > Biodiversity > 15,6,15 > Biodiversity > 5,7,Biodiversity < 5"
       );
     });
   });

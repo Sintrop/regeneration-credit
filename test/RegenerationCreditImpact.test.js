@@ -177,7 +177,7 @@ describe("RegenerationCreditImpact", () => {
             });
           });
 
-          context("when inspection biomass impact is 25", () => {
+          context("when inspection trees impact is 25", () => {
             beforeEach(async () => {
               treesIndicatorValue = 32;
 
@@ -330,6 +330,182 @@ describe("RegenerationCreditImpact", () => {
       });
     });
   });
+
+  describe("totalCarbonImpact", () => {
+    beforeEach(async () => {
+      await invitationRules.onlyOwnerInvite(regeneratorAddress, userTypes.Regenerator);
+      await invitationRules.onlyOwnerInvite(inspectorAddress, userTypes.Inspector);
+
+      await addRegenerator("Regenerator A", regeneratorAddress);
+      await addInspector("Inspector A", inspectorAddress);
+    });
+
+    context("when do not have inspections", async () => {
+      it("totalCarbonImpact must be 0", async () => {
+        const totalCarbonImpact = await instance.totalCarbonImpact();
+
+        expect(totalCarbonImpact).to.equal(0);
+      });
+    });
+
+    context("when have inspections", () => {
+      context("when inspectionsTreesImpact is 0", () => {
+        beforeEach(async () => {
+          await inspectionRules.connect(regeneratorAddress).requestInspection();
+
+          await advanceBlock(5);
+
+          await inspectionRules.connect(inspectorAddress).acceptInspection(1);
+
+          treesIndicatorValue = 0;
+
+          await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
+        });
+
+        it("totalCarbonImpact must be 0", async () => {
+          const totalCarbonImpact = await instance.totalCarbonImpact();
+
+          expect(totalCarbonImpact).to.equal(0);
+        });
+      });
+
+      context("when inspectionsTreesImpact is not 0", () => {
+        beforeEach(async () => {
+          await inspectionRules.connect(regeneratorAddress).requestInspection();
+
+          await advanceBlock(5);
+
+          await inspectionRules.connect(inspectorAddress).acceptInspection(1);
+        });
+
+        context("when have 1 inspection", () => {
+          context("when inspection trees impact is 10", () => {
+            beforeEach(async () => {
+              treesIndicatorValue = 10;
+
+              await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
+            });
+
+            it("must returnstotalCarbonImpact equal 1000", async () => {
+              const totalCarbonImpact = await instance.totalCarbonImpact();
+
+              expect(totalCarbonImpact).to.equal(1000);
+            });
+          });
+
+          context("when inspection trees impact is 25", () => {
+            beforeEach(async () => {
+              treesIndicatorValue = 32;
+
+              await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
+            });
+
+            it("must returnstotalCarbonImpact equal 3200", async () => {
+              const totalCarbonImpact = await instance.totalCarbonImpact();
+
+              expect(totalCarbonImpact).to.equal(3200);
+            });
+          });
+        });
+
+        context("when have 5 inspections valid", () => {
+          beforeEach(async () => {
+            await invitationRules.onlyOwnerInvite(regenerator2Address, userTypes.Regenerator);
+            await invitationRules.onlyOwnerInvite(regenerator3Address, userTypes.Regenerator);
+            await invitationRules.onlyOwnerInvite(regenerator4Address, userTypes.Regenerator);
+            await invitationRules.onlyOwnerInvite(regenerator5Address, userTypes.Regenerator);
+
+            await invitationRules.onlyOwnerInvite(inspector2Address, userTypes.Inspector);
+            await invitationRules.onlyOwnerInvite(inspector3Address, userTypes.Inspector);
+            await invitationRules.onlyOwnerInvite(inspector4Address, userTypes.Inspector);
+            await invitationRules.onlyOwnerInvite(inspector5Address, userTypes.Inspector);
+
+            await addRegenerator("Regenerator B", regenerator2Address);
+            await addRegenerator("Regenerator C", regenerator3Address);
+            await addRegenerator("Regenerator D", regenerator4Address);
+            await addRegenerator("Regenerator E", regenerator5Address);
+
+            await addInspector("Inspector B", inspector2Address);
+            await addInspector("Inspector C", inspector3Address);
+            await addInspector("Inspector D", inspector4Address);
+            await addInspector("Inspector E", inspector5Address);
+
+            await inspectionRules.connect(regenerator2Address).requestInspection();
+            await inspectionRules.connect(regenerator3Address).requestInspection();
+            await inspectionRules.connect(regenerator4Address).requestInspection();
+            await inspectionRules.connect(regenerator5Address).requestInspection();
+
+            await advanceBlock(5);
+
+            await inspectionRules.connect(inspector2Address).acceptInspection(2);
+            await inspectionRules.connect(inspector3Address).acceptInspection(3);
+            await inspectionRules.connect(inspector4Address).acceptInspection(4);
+            await inspectionRules.connect(inspector5Address).acceptInspection(5);
+
+            treesIndicatorValue = 32;
+            await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
+
+            treesIndicatorValue = 0;
+            await realizeInspection(2, "report", treesResultValue(), biodiversityResultValue(), inspector2Address);
+
+            treesIndicatorValue = 100;
+            await realizeInspection(3, "report", treesResultValue(), biodiversityResultValue(), inspector3Address);
+
+            treesIndicatorValue = 10;
+            await realizeInspection(4, "report", treesResultValue(), biodiversityResultValue(), inspector4Address);
+
+            treesIndicatorValue = 32;
+            await realizeInspection(5, "report", treesResultValue(), biodiversityResultValue(), inspector5Address);
+          });
+
+          it("must returnstotalCarbonImpact equal 17000", async () => {
+            const totalCarbonImpact = await instance.totalCarbonImpact();
+
+            expect(totalCarbonImpact).to.equal(17000);
+          });
+        });
+
+        context("when have 3 inspections valids and two are of same regenerator", () => {
+          beforeEach(async () => {
+            await invitationRules.onlyOwnerInvite(regenerator2Address, userTypes.Regenerator);
+            await invitationRules.onlyOwnerInvite(regenerator3Address, userTypes.Regenerator);
+
+            await invitationRules.onlyOwnerInvite(inspector2Address, userTypes.Inspector);
+            await invitationRules.onlyOwnerInvite(inspector3Address, userTypes.Inspector);
+
+            await addRegenerator("Regenerator B", regenerator2Address);
+            await addRegenerator("Regenerator C", regenerator3Address);
+
+            await addInspector("Inspector B", inspector2Address);
+            await addInspector("Inspector C", inspector3Address);
+
+            treesIndicatorValue = 32;
+            await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
+
+            await inspectionRules.connect(regeneratorAddress).requestInspection();
+            await inspectionRules.connect(regenerator2Address).requestInspection();
+
+            await advanceBlock(5);
+
+            await inspectionRules.connect(inspector2Address).acceptInspection(2);
+            await inspectionRules.connect(inspector3Address).acceptInspection(3);
+
+            treesIndicatorValue = 0;
+            await realizeInspection(2, "report", treesResultValue(), biodiversityResultValue(), inspector2Address);
+
+            treesIndicatorValue = 100;
+            await realizeInspection(3, "report", treesResultValue(), biodiversityResultValue(), inspector3Address);
+          });
+
+          it("must returnstotalCarbonImpact equal 8800", async () => {
+            const totalCarbonImpact = await instance.totalCarbonImpact();
+
+            expect(totalCarbonImpact).to.equal(8800);
+          });
+        });
+      });
+    });
+  });  
 
   describe("totalBiodiversityImpact", () => {
     beforeEach(async () => {
@@ -627,7 +803,7 @@ describe("RegenerationCreditImpact", () => {
         });
 
         context("when have 1 inspection", () => {
-          context("when inspection biomass impact is 10", () => {
+          context("when inspection trees impact is 10", () => {
             beforeEach(async () => {
               treesIndicatorValue = 10;
             });
@@ -664,7 +840,7 @@ describe("RegenerationCreditImpact", () => {
             });
           });
 
-          context("when inspection biomass impact is 25", () => {
+          context("when inspection trees impact is 25", () => {
             beforeEach(async () => {
               treesIndicatorValue = 32;
 
@@ -814,6 +990,205 @@ describe("RegenerationCreditImpact", () => {
         //     expect(totalTreesImpact).to.equal(44);
         //   });
         // });
+      });
+    });
+  });
+
+  describe("tokenCarbonImpact", () => {
+    beforeEach(async () => {
+      await invitationRules.onlyOwnerInvite(regeneratorAddress, userTypes.Regenerator);
+      await invitationRules.onlyOwnerInvite(inspectorAddress, userTypes.Inspector);
+
+      await addRegenerator("Regenerator A", regeneratorAddress);
+      await addInspector("Inspector A", inspectorAddress);
+    });
+
+    context("when do not have inspections", async () => {
+      it("tokenCarbonImpact must be 0", async () => {
+        const tokenCarbonImpact = await instance.tokenCarbonImpact();
+
+        expect(tokenCarbonImpact).to.equal(0);
+      });
+    });
+
+    context("when have inspections", () => {
+      context("when inspectionsTreesImpact is 0", () => {
+        beforeEach(async () => {
+          await inspectionRules.connect(regeneratorAddress).requestInspection();
+
+          await advanceBlock(5);
+
+          await inspectionRules.connect(inspectorAddress).acceptInspection(1);
+
+          treesIndicatorValue = 0;
+
+          await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
+        });
+
+        it("tokenCarbonImpact must be 0", async () => {
+          const tokenCarbonImpact = await instance.tokenCarbonImpact();
+
+          expect(tokenCarbonImpact).to.equal(0);
+        });
+      });
+
+      context("when inspectionsTreesImpact is not 0", () => {
+        beforeEach(async () => {
+          await inspectionRules.connect(regeneratorAddress).requestInspection();
+
+          await advanceBlock(5);
+
+          await inspectionRules.connect(inspectorAddress).acceptInspection(1);
+        });
+
+        context("when have 1 inspection", () => {
+          context("when inspection trees impact is 10", () => {
+            beforeEach(async () => {
+              treesIndicatorValue = 10;
+            });
+
+            context("when do not have tokens totalLocked_", () => {
+              beforeEach(async () => {
+                treesIndicatorValue = 10;
+
+                await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
+              });
+
+              it("must returns tokenCarbonImpact equal 66666666", async () => {
+                const tokenCarbonImpact = await instance.tokenCarbonImpact();
+
+                expect(tokenCarbonImpact).to.equal(66666666);
+              });
+            });
+
+            context("when have token totalLocked_", () => {
+              beforeEach(async () => {
+                await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
+                await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
+
+                treesIndicatorValue = 10;
+
+                await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
+              });
+
+              it("must returns tokenCarbonImpact equal 111111111", async () => {
+                const tokenCarbonImpact = await instance.tokenCarbonImpact();
+
+                expect(tokenCarbonImpact).to.equal(111111111);
+              });
+            });
+          });
+
+          context("when inspection trees impact is 25", () => {
+            beforeEach(async () => {
+              treesIndicatorValue = 32;
+
+              await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
+            });
+
+            it("must returnstotalTreesImpact equal 213333333", async () => {
+              const tokenCarbonImpact = await instance.tokenCarbonImpact();
+
+              expect(tokenCarbonImpact).to.equal(213333333);
+            });
+          });
+        });
+
+        context("when have 5 inspections valid", () => {
+          beforeEach(async () => {
+            await invitationRules.onlyOwnerInvite(regenerator2Address, userTypes.Regenerator);
+            await invitationRules.onlyOwnerInvite(regenerator3Address, userTypes.Regenerator);
+            await invitationRules.onlyOwnerInvite(regenerator4Address, userTypes.Regenerator);
+            await invitationRules.onlyOwnerInvite(regenerator5Address, userTypes.Regenerator);
+
+            await invitationRules.onlyOwnerInvite(inspector2Address, userTypes.Inspector);
+            await invitationRules.onlyOwnerInvite(inspector3Address, userTypes.Inspector);
+            await invitationRules.onlyOwnerInvite(inspector4Address, userTypes.Inspector);
+            await invitationRules.onlyOwnerInvite(inspector5Address, userTypes.Inspector);
+
+            await addRegenerator("Regenerator B", regenerator2Address);
+            await addRegenerator("Regenerator C", regenerator3Address);
+            await addRegenerator("Regenerator D", regenerator4Address);
+            await addRegenerator("Regenerator E", regenerator5Address);
+
+            await addInspector("Inspector B", inspector2Address);
+            await addInspector("Inspector C", inspector3Address);
+            await addInspector("Inspector D", inspector4Address);
+            await addInspector("Inspector E", inspector5Address);
+
+            await inspectionRules.connect(regenerator2Address).requestInspection();
+            await inspectionRules.connect(regenerator3Address).requestInspection();
+            await inspectionRules.connect(regenerator4Address).requestInspection();
+            await inspectionRules.connect(regenerator5Address).requestInspection();
+
+            await advanceBlock(5);
+
+            await inspectionRules.connect(inspector2Address).acceptInspection(2);
+            await inspectionRules.connect(inspector3Address).acceptInspection(3);
+            await inspectionRules.connect(inspector4Address).acceptInspection(4);
+            await inspectionRules.connect(inspector5Address).acceptInspection(5);
+
+            treesIndicatorValue = 32;
+            await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
+
+            treesIndicatorValue = 0;
+            await realizeInspection(2, "report", treesResultValue(), biodiversityResultValue(), inspector2Address);
+
+            treesIndicatorValue = 100;
+            await realizeInspection(3, "report", treesResultValue(), biodiversityResultValue(), inspector3Address);
+
+            treesIndicatorValue = 10;
+            await realizeInspection(4, "report", treesResultValue(), biodiversityResultValue(), inspector4Address);
+
+            treesIndicatorValue = 32;
+            await realizeInspection(5, "report", treesResultValue(), biodiversityResultValue(), inspector5Address);
+          });
+
+          it("must returns tokenCarbonImpact equal 1133333333", async () => {
+            const tokenCarbonImpact = await instance.tokenCarbonImpact();
+
+            expect(tokenCarbonImpact).to.equal(1133333333);
+          });
+        });
+
+        context("when have 3 inspections valids and two are of same regenerator", () => {
+          beforeEach(async () => {
+            await invitationRules.onlyOwnerInvite(regenerator2Address, userTypes.Regenerator);
+            await invitationRules.onlyOwnerInvite(regenerator3Address, userTypes.Regenerator);
+
+            await invitationRules.onlyOwnerInvite(inspector2Address, userTypes.Inspector);
+            await invitationRules.onlyOwnerInvite(inspector3Address, userTypes.Inspector);
+
+            await addRegenerator("Regenerator B", regenerator2Address);
+            await addRegenerator("Regenerator C", regenerator3Address);
+
+            await addInspector("Inspector B", inspector2Address);
+            await addInspector("Inspector C", inspector3Address);
+
+            treesIndicatorValue = 32;
+            await realizeInspection(1, "report", treesResultValue(), biodiversityResultValue(), inspectorAddress);
+
+            await inspectionRules.connect(regeneratorAddress).requestInspection();
+            await inspectionRules.connect(regenerator2Address).requestInspection();
+
+            await advanceBlock(5);
+
+            await inspectionRules.connect(inspector2Address).acceptInspection(2);
+            await inspectionRules.connect(inspector3Address).acceptInspection(3);
+
+            treesIndicatorValue = 0;
+            await realizeInspection(2, "report", treesResultValue(), biodiversityResultValue(), inspector2Address);
+
+            treesIndicatorValue = 100;
+            await realizeInspection(3, "report", treesResultValue(), biodiversityResultValue(), inspector3Address);
+          });
+
+          it("must returns tokenCarbonImpact equal 586666666", async () => {
+            const tokenCarbonImpact = await instance.tokenCarbonImpact();
+
+            expect(tokenCarbonImpact).to.equal(586666666);
+          });
+        });
       });
     });
   });

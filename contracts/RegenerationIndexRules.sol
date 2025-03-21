@@ -91,20 +91,20 @@ contract RegenerationIndexRules is Ownable, Callable {
     RegenerationInspection memory treesResult,
     RegenerationInspection memory biodiversityResult
   ) public view returns (uint256) {
-    RegenerationIndex memory carbon = regenerationIndex[biomassRegenerationIndexId(treesResult.indicator)];
+    RegenerationIndex memory trees = regenerationIndex[treesRegenerationIndexId(treesResult.indicator)];
     RegenerationIndex memory biodiversity = regenerationIndex[
       biodiversityRegenerationIndexId(biodiversityResult.indicator)
     ];
 
-    return carbon.value + biodiversity.value;
+    return trees.value + biodiversity.value;
   }
 
   /**
-   * @dev Function to calculate the biomass inspection score
+   * @dev Function to calculate the trees inspection score
    * @param indicator The result provided by the inspector
    * @return The category regeneration score
    */
-  function biomassRegenerationIndexId(uint256 indicator) internal pure returns (uint256) {
+  function treesRegenerationIndexId(uint256 indicator) internal pure returns (uint256) {
     if (indicator > 100000) {
       return 1;
     } else if (indicator > 10000 && indicator < 100000) {
