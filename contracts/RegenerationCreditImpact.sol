@@ -20,7 +20,14 @@ contract RegenerationCreditImpact {
   /// @notice Constant of 32 decimals to calculate the impact. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
   uint256 public constant IMPACT_DECIMALS = 10 ** 32;
 
-  /// @notice [kg]
+  /**
+   * @notice [kg]
+   * This constant estimates an average carbon sequestration of 100 kg per tree, palm tree and other plants with more than 5cm in diameter recorded by inspectors. 
+   * In practice, it is not so simple to make this relationship, as the actual amount of carbon sequestered will vary from species to species,
+   * from biome to biome, from soil to soil, from management to management and from each geolocation.
+   * However, we need to standardize this value to simplify and allow the decentralized certification system to occur.
+   * This result was obtained by estimating that, on average, each tree/plant sequesters 10 kg of carbon per year, living an average of 10 years.
+   */  
   uint256 public constant CARBON_PER_TREE = 100;
 
   RegenerationCredit internal regenerationCredit;
@@ -41,7 +48,8 @@ contract RegenerationCreditImpact {
   }
 
   /**
-   * @dev Function to calculate the total trees impact of the system.
+   * @notice Function to calculate the total trees impact of the system.
+   * @return uint256 Amount of trees
    */
   function totalTreesImpact() public view returns (uint256) {
     if (inspectionRules.inspectionsCount() == 0) return 0;
@@ -52,6 +60,10 @@ contract RegenerationCreditImpact {
       );      
   }
 
+  /**
+   * @notice Function to calculate the total carbon impact of the system.
+   * @return uint256 Kg of carbon [kg]
+   */
   function totalCarbonImpact() public view returns (uint256) {
     if (inspectionRules.inspectionsCount() == 0) return 0;
 
@@ -60,7 +72,8 @@ contract RegenerationCreditImpact {
   }
 
   /**
-   * @dev Function to calculate the total biodiversity impact of the system.
+   * @notice Function to calculate the total biodiversity impact of the system.
+   * @return uint256 Amount of species 
    */
   function totalBiodiversityImpact() public view returns (uint256) {
     if (inspectionRules.inspectionsCount() == 0) return 0;
@@ -72,7 +85,8 @@ contract RegenerationCreditImpact {
   }
 
   /**
-   * @dev Function to calculate the total soil impact of the system.
+   * @notice Function to calculate the total soil impact of the system.
+   * @return uint256 Area under regeneration [m²]
    */
   function totalSoilImpact() public view returns (uint256) {
     return regeneratorRules.regenerationArea();
@@ -82,14 +96,19 @@ contract RegenerationCreditImpact {
    * @dev 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
    * @notice Function that calculates the trees impact per regeneration credit.
    */
-  function tokenTreesImpact() public view returns (uint256) {
+  function treesPerToken() public view returns (uint256) {
     return
       totalTreesImpact().mul(IMPACT_DECIMALS).div(
         regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
       );
   }
 
-  function tokenCarbonImpact() public view returns (uint256) {
+  /**
+   * @dev 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
+   * @notice Function that calculates the carbon impact per regeneration credit.
+   * @return uint256 Kg of carbon [kg]
+   */
+  function carbonPerToken() public view returns (uint256) {
     return
       totalCarbonImpact().mul(IMPACT_DECIMALS).div(
         regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
@@ -100,7 +119,7 @@ contract RegenerationCreditImpact {
    * @dev 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
    * @notice Function that calculates the biodiversity impact per regeneration credit.
    */
-  function tokenBiodiversityImpact() public view returns (uint256) {
+  function biodiversityPerToken() public view returns (uint256) {
     return
       totalBiodiversityImpact().mul(IMPACT_DECIMALS).div(
         regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
@@ -110,9 +129,9 @@ contract RegenerationCreditImpact {
   /**
    * @dev 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
    * @notice Function that calculates the soil impact per regeneration credit
-   * @return uint256 [m²]
+   * @return uint256 Area [m²]
    */
-  function tokenSoilImpact() public view returns (uint256) {
+  function soilPerToken() public view returns (uint256) {
     return
       totalSoilImpact().mul(IMPACT_DECIMALS).div(
         regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
