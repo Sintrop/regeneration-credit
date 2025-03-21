@@ -971,7 +971,7 @@ describe("InspectionRules", () => {
 
                       const biodiversityResultValue = {
                         categoryId: 2,
-                        indicator: 501,
+                        indicator: 130,
                       };
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
@@ -988,12 +988,12 @@ describe("InspectionRules", () => {
                     beforeEach(async () => {
                       const treesResultValue = {
                         categoryId: 1,
-                        indicator: 1001,
+                        indicator: 5801,
                       };
 
                       const biodiversityResultValue = {
                         categoryId: 2,
-                        indicator: 201,
+                        indicator: 101,
                       };
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
@@ -1010,12 +1010,12 @@ describe("InspectionRules", () => {
                     beforeEach(async () => {
                       const treesResultValue = {
                         categoryId: 1,
-                        indicator: 101,
+                        indicator: 1001,
                       };
 
                       const biodiversityResultValue = {
                         categoryId: 2,
-                        indicator: 101,
+                        indicator: 51,
                       };
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
@@ -1032,12 +1032,12 @@ describe("InspectionRules", () => {
                     beforeEach(async () => {
                       const treesResultValue = {
                         categoryId: 1,
-                        indicator: 15,
+                        indicator: 500,
                       };
 
                       const biodiversityResultValue = {
                         categoryId: 2,
-                        indicator: 51,
+                        indicator: 21,
                       };
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
@@ -1054,12 +1054,12 @@ describe("InspectionRules", () => {
                     beforeEach(async () => {
                       const treesResultValue = {
                         categoryId: 1,
-                        indicator: 5,
+                        indicator: 50,
                       };
 
                       const biodiversityResultValue = {
                         categoryId: 2,
-                        indicator: 30,
+                        indicator: 10,
                       };
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);

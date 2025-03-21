@@ -22,12 +22,12 @@ contract RegenerationIndexRules is Ownable, Callable {
   uint256 public categoryCounts;
 
   constructor() {
-    regenerationIndex[1] = RegenerationIndex("REGENERATIVO 6", 32);
-    regenerationIndex[2] = RegenerationIndex("REGENERATIVO 5", 16);
-    regenerationIndex[3] = RegenerationIndex("REGENERATIVO 4", 8);
-    regenerationIndex[4] = RegenerationIndex("REGENERATIVO 3", 4);
-    regenerationIndex[5] = RegenerationIndex("REGENERATIVO 2", 2);
-    regenerationIndex[6] = RegenerationIndex("REGENERATIVO 1", 1);
+    regenerationIndex[1] = RegenerationIndex("REGENERATIVE 6", 32);
+    regenerationIndex[2] = RegenerationIndex("REGENERATIVE 5", 16);
+    regenerationIndex[3] = RegenerationIndex("REGENERATIVE 4", 8);
+    regenerationIndex[4] = RegenerationIndex("REGENERATIVE 3", 4);
+    regenerationIndex[5] = RegenerationIndex("REGENERATIVE 2", 2);
+    regenerationIndex[6] = RegenerationIndex("REGENERATIVE 1", 1);
     regenerationIndex[7] = RegenerationIndex("NEUTRO", 0);
 
     addCategories();
@@ -45,11 +45,11 @@ contract RegenerationIndexRules is Ownable, Callable {
       "Indicator to measure the total amount of trees, palm trees and other plants over 5cm in diameter in the regenerating area. How many trees, palm trees and other plants with more than 5cm of diameters there is in the regenerating area? Justify your answer in the report."
     );
 
-    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(1, "Trees > 10000"));
-    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(2, "10000 > Trees > 4000"));
-    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(3, "4000 > Trees > 2000"));
-    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(4, "2000 > Trees > 500"));
-    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(5, "500 > Trees > 100"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(1, "Trees > 20000"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(2, "20000 > Trees > 10000"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(3, "10000 > Trees > 5000"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(4, "5000 > Trees > 1000"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(5, "1000 > Trees > 100"));
     categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(6, "100 > Trees > 10"));
     categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(7, "Trees < 10"));
 
@@ -105,17 +105,17 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @return The category regeneration score
    */
   function treesRegenerationIndexId(uint256 indicator) internal pure returns (uint256) {
-    if (indicator > 100000) {
+    if (indicator > 20000) {
       return 1;
-    } else if (indicator > 10000 && indicator < 100000) {
+    } else if (indicator > 10000 && indicator < 20000) {
       return 2;
-    } else if (indicator > 1000 && indicator < 10000) {
+    } else if (indicator > 5000 && indicator < 10000) {
       return 3;
-    } else if (indicator > 100 && indicator < 1000) {
+    } else if (indicator > 1000 && indicator < 5000) {
       return 4;
-    } else if (indicator > 10 && indicator < 100) {
+    } else if (indicator > 100 && indicator < 1000) {
       return 5;
-    } else if (indicator > 0 && indicator < 10) {
+    } else if (indicator > 10 && indicator < 100) {
       return 6;
     } else {
       return 7;
@@ -128,17 +128,17 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @return The category regeneration score
    */
   function biodiversityRegenerationIndexId(uint256 indicator) internal pure returns (uint256) {
-    if (indicator > 1000) {
+    if (indicator > 240) {
       return 1;
-    } else if (indicator > 500 && indicator < 1000) {
+    } else if (indicator > 120 && indicator < 240) {
       return 2;
-    } else if (indicator > 200 && indicator < 500) {
+    } else if (indicator > 60 && indicator < 120) {
       return 3;
-    } else if (indicator > 100 && indicator < 200) {
+    } else if (indicator > 30 && indicator < 60) {
       return 4;
-    } else if (indicator > 50 && indicator < 100) {
+    } else if (indicator > 15 && indicator < 30) {
       return 5;
-    } else if (indicator > 25 && indicator < 50) {
+    } else if (indicator > 5 && indicator < 15) {
       return 6;
     } else {
       return 7;

@@ -50,7 +50,7 @@ describe("RegenerationIndexRules", () => {
       categoryRegenerationIndexDescriptions = categoryRegenerationIndexDescriptions.toString();
 
       expect(categoryRegenerationIndexDescriptions).to.equal(
-        "1,Trees > 10000,2,10000 > Trees > 4000,3,4000 > Trees > 2000,4,2000 > Trees > 500,5,500 > Trees > 100,6,100 > Trees > 10,7,Trees < 10"
+        "1,Trees > 20000,2,20000 > Trees > 10000,3,10000 > Trees > 5000,4,5000 > Trees > 1000,5,1000 > Trees > 100,6,100 > Trees > 10,7,Trees < 10"
       );
     });
 
