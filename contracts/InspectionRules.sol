@@ -15,6 +15,7 @@ import { UserType } from "./types/CommunityTypes.sol";
 import { ContractsDependency } from "./types/SintropTypes.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Callable } from "./shared/Callable.sol";
+import { Votable } from "./shared/Votable.sol";
 
 /**
  * @author Sintrop
@@ -46,6 +47,9 @@ contract InspectionRules is Callable {
 
   /// @notice ActivistRules contract address
   ActivistRules private activistRules;
+
+  /// @notice ValidationRules contract address
+  Votable internal votable;
 
   /// @notice RegenerationIndexRules contract address
   RegenerationIndexRules private regenerationIndexRules;
@@ -81,6 +85,7 @@ contract InspectionRules is Callable {
     inspectorRules = InspectorRules(contractDependency.inspectorRulesAddress);
     regenerationIndexRules = RegenerationIndexRules(contractDependency.regenerationIndexRulesAddress);
     activistRules = ActivistRules(contractDependency.activistRulesAddress);
+    votable = Votable(contractDependency.votableAddress);
   }
 
   /**
@@ -222,7 +227,7 @@ contract InspectionRules is Callable {
   }
 
   function addInspectionValidation(uint256 id, string memory justification) public {
-    //require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+    require(votable.canVote(msg.sender), "User can not vote");
 
     Inspection memory inspection = inspections[id];
 

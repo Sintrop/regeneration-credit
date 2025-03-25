@@ -46,12 +46,12 @@ contract CommunityRules is Ownable, Callable {
     uint256 developerProportionality,
     uint256 contributorProportionality
   ) {
-    userTypeSettings[UserType.REGENERATOR] = UserTypeSetting(0, false, true, 0);
-    userTypeSettings[UserType.INSPECTOR] = UserTypeSetting(inspectorProportionality, true, true, 0);
-    userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(activistProportionality, false, true, 100000);
-    userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(researcherProportionality, false, true, 200000);
-    userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(developerProportionality, false, true, 200000);
-    userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(contributorProportionality, false, true, 100000);
+    userTypeSettings[UserType.REGENERATOR] = UserTypeSetting(0, false, true, 0, false);
+    userTypeSettings[UserType.INSPECTOR] = UserTypeSetting(inspectorProportionality, true, true, 0, false);
+    userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(activistProportionality, false, true, 100000, true);
+    userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(researcherProportionality, false, true, 200000, true);
+    userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(developerProportionality, false, true, 200000, true);
+    userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(contributorProportionality, false, true, 100000, true);
   }
 
   event AddUserEvent(address addr, UserType userType);
@@ -106,6 +106,22 @@ contract CommunityRules is Ownable, Callable {
 
     if (setting.directProportionalityRegistration) return registeredUserTypeCount < regeneratorsCount * proportionality;
     return registeredUserTypeCount < regeneratorsCount / proportionality;
+  }
+
+  /**
+   * @dev Get the total of users voters
+   */
+  function votersCount() public view returns (uint256) {
+    return userTypesCount[UserType.ACTIVIST] + userTypesCount[UserType.CONTRIBUTOR] +
+      userTypesCount[UserType.DEVELOPER] + userTypesCount[UserType.RESEARCHER];
+  }
+
+  /**
+   * @dev Check if user is a voter
+   * @param addr The user address
+   */
+  function isVoter(address addr) public view returns (bool) {
+    return userTypeSettings[users[addr]].isVoter;
   }
 
   /**

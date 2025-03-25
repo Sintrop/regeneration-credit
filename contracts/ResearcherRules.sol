@@ -3,6 +3,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
+import { Votable } from "./shared/Votable.sol";
 import { CommunityRules } from "./CommunityRules.sol";
 import { Researcher, Research, Pool, CalculatorItem, Penalty } from "./types/ResearcherTypes.sol";
 import { UserType } from "./types/CommunityTypes.sol";
@@ -40,6 +41,9 @@ contract ResearcherRules is Callable, Invitable {
   /// @notice ValidatorPool contract address
   ValidationRules internal validationRules;
 
+  /// @notice ValidationRules contract address
+  Votable internal votable;
+
   /// @notice Researcher UserType
   UserType private constant USER_TYPE = UserType.RESEARCHER;
 
@@ -65,6 +69,7 @@ contract ResearcherRules is Callable, Invitable {
     address communityRulesAddress,
     address researcherPoolAddress,
     address validationRulesAddress,
+    address votableAddress,
     uint256 timeBetweenWorks_,
     uint256 maxPenalties_,
     uint256 securityBlocksToValidatorAnalysis
@@ -72,6 +77,7 @@ contract ResearcherRules is Callable, Invitable {
     communityRules = CommunityRules(communityRulesAddress);
     researcherPool = ResearcherPool(researcherPoolAddress);
     validationRules = ValidationRules(validationRulesAddress);
+    votable = Votable(votableAddress);
     timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
@@ -173,7 +179,7 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   function addResearchValidation(uint256 id, string memory justification) public {
-    //require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+    require(votable.canVote(msg.sender), "User can not vote");
 
     Research memory research = researches[id];
 

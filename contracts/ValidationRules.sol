@@ -57,10 +57,7 @@ contract ValidationRules is Callable {
     activistRules = ActivistRules(contractDependency.activistRulesAddress);
   }
 
-  function addUserValidation(
-    address userAddress,
-    string memory justification
-  ) public {
+  function addUserValidation(address userAddress, string memory justification) public {
     //require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
     require(!communityRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
     require(!communityRules.userTypeIs(UserType.DENIED, userAddress), "User already denied");
@@ -193,7 +190,5 @@ contract ValidationRules is Callable {
     return userValidations[userAddress];
   }
 
-  function majorityValidatorsCount() public view returns (uint256) {
-
-  }
+  function majorityValidatorsCount() public view returns (uint256) {}
 }

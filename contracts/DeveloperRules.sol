@@ -4,6 +4,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
+import { Votable } from "./shared/Votable.sol";
 import { CommunityRules } from "./CommunityRules.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { DeveloperPool } from "./DeveloperPool.sol";
@@ -38,6 +39,9 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   /// @notice ValidationRules contract address
   ValidationRules internal validationRules;
 
+  /// @notice ValidationRules contract address
+  Votable internal votable;
+
   /// @notice Developer UserType
   UserType private constant USER_TYPE = UserType.DEVELOPER;
 
@@ -60,6 +64,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     address communityRulesAddress,
     address developerPoolAddress,
     address validationRulesAddress,
+    address votableAddress,
     uint256 timeBetweenWorks_,
     uint256 maxPenalties_,
     uint256 securityBlocksToValidatorAnalysis
@@ -67,6 +72,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     communityRules = CommunityRules(communityRulesAddress);
     developerPool = DeveloperPool(developerPoolAddress);
     validationRules = ValidationRules(validationRulesAddress);
+    votable = Votable(votableAddress);
     timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
@@ -149,7 +155,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @param justification String with invalidation explanation
    */
   function addReportValidation(uint256 id, string memory justification) public {
-    //require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+    require(votable.canVote(msg.sender), "User can not vote");
 
     Report memory report = reports[id];
 
