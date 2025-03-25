@@ -117,7 +117,7 @@ describe("ValidatorRules", () => {
   };
 
   const addRegenerator = async (name, from) => {
-    await regeneratorRules.connect(from).addRegenerator(10, name, "photoURL", coordinates());
+    await regeneratorRules.connect(from).addRegenerator(1000, name, "photoURL", coordinates());
   };
 
   const coordinates = () => {
@@ -521,7 +521,7 @@ describe("ValidatorRules", () => {
               it("regenerationArea should be decremented", async () => {
                 const decrementedArea = await regeneratorRules.regenerationArea();
 
-                expect(decrementedArea).to.equal(10);
+                expect(decrementedArea).to.equal(1000);
               });
 
               it("must emit DeniedUserEevent", async () => {
