@@ -112,8 +112,11 @@ contract CommunityRules is Ownable, Callable {
    * @dev Get the total of users voters
    */
   function votersCount() public view returns (uint256) {
-    return userTypesCount[UserType.ACTIVIST] + userTypesCount[UserType.CONTRIBUTOR] +
-      userTypesCount[UserType.DEVELOPER] + userTypesCount[UserType.RESEARCHER];
+    return
+      userTypesCount[UserType.ACTIVIST] +
+      userTypesCount[UserType.CONTRIBUTOR] +
+      userTypesCount[UserType.DEVELOPER] +
+      userTypesCount[UserType.RESEARCHER];
   }
 
   /**
