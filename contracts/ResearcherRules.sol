@@ -246,8 +246,9 @@ contract ResearcherRules is Callable, Invitable {
    * @dev Allows a researcher to attempt to publish an calculatorItem to users calculate their degradation
    * @notice One calculatorItem per research
    * @param title CalculatorItem title
+   * @param unit Unit of the item. Exapmle: liters, kwh, kg
    * @param justification Item result justification
-   * @param carbonImpact Tons of carbon [t]
+   * @param carbonImpact Kg of carbon [kg]
    */
   function addCalculatorItem(
     string memory title,

@@ -11,7 +11,7 @@ import { UserType } from "./types/CommunityTypes.sol";
  * @author Sintrop
  * @title RegeneratorRules
  * @dev Manage regenerator user logic.
- * @notice Person, family or a group of people that that are providing ecosystem regeneration services
+ * @notice Person, family or a group of people that are providing ecosystem regeneration services
  */
 contract RegeneratorRules is Callable {
   /// @notice Minimum inspections to regenerator receive tokens
