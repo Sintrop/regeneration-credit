@@ -4,7 +4,7 @@ describe("RegenerationIndexRules", () => {
   let instance;
   let owner;
 
-  const biomassResultValue = {
+  const treesResultValue = {
     categoryId: 1,
     indicator: 100001,
   };
@@ -26,9 +26,9 @@ describe("RegenerationIndexRules", () => {
       const category = await instance.categories(1);
 
       expect(category.id).to.equal(1);
-      expect(category.name).to.equal("Biomass");
+      expect(category.name).to.equal("Trees");
       expect(category.description).to.equal(
-        "Indicator to measure the total amount of biomass in the regenerating area. How much organic matter is there on the site? Estimate by including living biomass, such as trees, plants and roots, as well as dead biomass, which includes leaves, branches, wood and other types of organic matter covering the soil. The result should be expressed in tons [t]"
+        "Indicator to measure the total amount of trees, palm trees and other plants over 5cm in diameter in the regenerating area. How many trees, palm trees and other plants with more than 5cm of diameters there is in the regenerating area? Justify your answer in the report."
       );
     });
 
@@ -38,7 +38,7 @@ describe("RegenerationIndexRules", () => {
       expect(category.id).to.equal(2);
       expect(category.name).to.equal("Biodiversity");
       expect(category.description).to.equal(
-        "Indicator to measure the level of plant biodiversity in the regenerating area. How many different species are there in the area? Each different species is equivalent to one point and only trees and plants managed or planted by the regenerator should be counted"
+        "Indicator to measure the level of biodiversity of trees, palm trees and other plants over 5cm of diamater in the regenerating area. How many different species are there in the area? Each different species is equivalent to one point and only trees and plants managed or planted by the regenerator should be counted."
       );
     });
   });
@@ -50,7 +50,7 @@ describe("RegenerationIndexRules", () => {
       categoryRegenerationIndexDescriptions = categoryRegenerationIndexDescriptions.toString();
 
       expect(categoryRegenerationIndexDescriptions).to.equal(
-        "1,Balance > 100.000,2,100.000 > Balance > 10.000,3,10.000 > Balance > 1000,4,1000 > Balance > 100,5,100 > Balance > 10,6,10 > Balance > 0,7,Not applicable"
+        "1,Trees > 20000,2,20000 > Trees > 10000,3,10000 > Trees > 5000,4,5000 > Trees > 1000,5,1000 > Trees > 100,6,100 > Trees > 10,7,Trees < 10"
       );
     });
 
@@ -60,7 +60,7 @@ describe("RegenerationIndexRules", () => {
       categoryRegenerationIndexDescriptions = categoryRegenerationIndexDescriptions.toString();
 
       expect(categoryRegenerationIndexDescriptions).to.equal(
-        "1,Biodiversity > 1000,2,1000 > Biodiversity > 500,3,500 > Biodiversity > 200,4,200 > Biodiversity > 100,5,100 > Biodiversity > 50,6,50 > Biodiversity > 25,7,Biodiversity < 25"
+        "1,Biodiversity > 240,2,240 > Biodiversity > 120,3,120 > Biodiversity > 60,4,60 > Biodiversity > 30,5,30 > Biodiversity > 15,6,15 > Biodiversity > 5,7,Biodiversity < 5"
       );
     });
   });
@@ -73,7 +73,7 @@ describe("RegenerationIndexRules", () => {
 
       context("when category and regeneration index exists", () => {
         it("calculate regenerationScore", async () => {
-          const score = await instance.calculateScore(biomassResultValue, biodiversityResultValue);
+          const score = await instance.calculateScore(treesResultValue, biodiversityResultValue);
 
           expect(score).to.equal(64);
         });
