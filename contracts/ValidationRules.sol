@@ -14,6 +14,7 @@ import { ActivistRules } from "./ActivistRules.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
 import { Report } from "./types/DeveloperTypes.sol";
 import { Research } from "./types/ResearcherTypes.sol";
+import { Votable } from "./shared/Votable.sol";
 
 /**
  * @author Sintrop
@@ -39,12 +40,16 @@ contract ValidationRules is Callable {
   ContributorRules private contributorRules;
   ActivistRules private activistRules;
 
+  /// @notice ValidationRules contract address
+  Votable internal votable;
+
   uint256 private immutable firstValidatorLimit;
   uint256 private immutable secondValidatorLimit;
 
-  constructor(uint256 firstValidatorLimit_, uint256 secondValidatorLimit_) {
+  constructor(uint256 firstValidatorLimit_, uint256 secondValidatorLimit_, address votableAddress) {
     firstValidatorLimit = firstValidatorLimit_;
     secondValidatorLimit = secondValidatorLimit_;
+    votable = Votable(votableAddress);
   }
 
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
@@ -58,7 +63,7 @@ contract ValidationRules is Callable {
   }
 
   function addUserValidation(address userAddress, string memory justification) public {
-    //require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
+    require(votable.canVote(msg.sender), "User can not vote");
     require(!communityRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
     require(!communityRules.userTypeIs(UserType.DENIED, userAddress), "User already denied");
     require(!validatorUsersValidations[msg.sender][userAddress], "Already voted");
@@ -190,5 +195,13 @@ contract ValidationRules is Callable {
     return userValidations[userAddress];
   }
 
-  function majorityValidatorsCount() public view returns (uint256) {}
+  function majorityValidatorsCount() public view returns (uint256 count) {
+    uint256 voters = communityRules.votersCount();
+
+    if (voters <= 50) return 2;
+    if (voters > 50 && voters <= 100) return 5;
+    if (voters > 100 && voters <= 500) return 10;
+    if (voters > 500 && voters <= 1000) return 50;
+    if (voters > 1000) return 100;
+  }
 }
