@@ -3,6 +3,17 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { UserType } from "./CommunityTypes.sol";
 
+/**
+* @dev Developer user type data structure
+* @param id User id
+* @param developerWallet Developer wallet address
+* @param name User name
+* @param proofPhoto Hash of the identity photo
+* @param pool Pool data
+* @param totalReports Number of published reports
+* @param createdAt Block of user creation
+* @param lastPublishedAt Block of last report publication
+*/
 struct Developer {
   uint256 id;
   address developerWallet;
@@ -14,11 +25,17 @@ struct Developer {
   uint256 lastPublishedAt;
 }
 
+/**
+* @dev Developer pool data
+*/
 struct Pool {
   uint256 level;
   uint256 currentEra;
 }
 
+/**
+* @dev Report resource data structure
+*/
 struct Report {
   uint256 id;
   uint256 era;
@@ -33,6 +50,9 @@ struct Report {
   uint256 createdAtBlockNumber;
 }
 
+/**
+* @dev Invalidated report penalty
+*/
 struct Penalty {
   uint256 reportId;
 }

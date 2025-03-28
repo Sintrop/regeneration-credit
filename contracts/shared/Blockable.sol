@@ -53,6 +53,10 @@ contract Blockable {
     return currentContractEra().div(HALVING).add(1);
   }
 
+  /**
+   * @dev Function to calculate the epoch based on an era.
+   * @return uint256 Current era EPOCH. 
+   */
   function currentUserEpoch(uint256 era) public view returns (uint256) {
     return era.div(HALVING).add(1);
   }
