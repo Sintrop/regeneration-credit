@@ -345,6 +345,27 @@ describe("ResearcherRules", () => {
     });
   });
 
+  describe("#getResearch", () => {
+    beforeEach(async () => {
+      await addResearcher("Researcher A", resea1Address);
+      await addResearch(resea1Address);
+    });
+
+    it("should have fields", async () => {
+      const research = await instance.getResearch(1);
+
+      expect(research.id).to.equal("1");
+      expect(research.era).to.equal("1");
+      expect(research.createdBy).to.equal(resea1Address.address);
+      expect(research.title).to.equal("title");
+      expect(research.thesis).to.equal("thesis");
+      expect(research.file).to.equal("fileURL");
+      expect(research.validationsCount).to.equal("0");
+      expect(research.valid).to.equal(true);
+      expect(research.invalidatedAt).to.equal("0");
+    });
+  });
+
   describe("addResearchValidation", () => {
     context("with validator", () => {
       beforeEach(async () => {

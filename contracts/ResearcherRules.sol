@@ -126,6 +126,14 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   /**
+   * @dev Returns a research
+   * @param id researchId
+   */
+  function getResearch(uint256 id) public view returns (Research memory) {
+    return researches[id];
+  }
+
+  /**
    * @dev Check if a specific researcher exists
    * @return a bool that represent if a researcher exists or not
    */

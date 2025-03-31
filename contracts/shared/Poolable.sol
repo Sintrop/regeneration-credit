@@ -12,7 +12,7 @@ import { Era } from "contracts/types/PoolTypes.sol";
 contract Poolable {
   using SafeMath for uint256;
 
-  /// @dev Total pool tokens.   
+  /// @dev Total pool tokens.
   uint256 internal immutable TOTAL_TOKENS;
 
   mapping(uint256 => Era) public eras;
