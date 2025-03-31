@@ -3,6 +3,18 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import "./CommunityTypes.sol";
 
+/**
+* @dev Researcher user type data structure
+* @param id User id
+* @param researcherWallet Researcher wallet address
+* @param name User name
+* @param pool Pool data
+* @param proofPhoto Hash of the identity photo
+* @param publishedResearches Number of published researches
+* @param lastPublishedAt Block of last research publication
+* @param lastCalculatorItemAt Block of last calculator item publication
+* @param createdAt Block of user creation
+*/
 struct Researcher {
   uint256 id;
   address researcherWallet;
@@ -15,6 +27,9 @@ struct Researcher {
   uint256 createdAt;
 }
 
+/**
+* @dev Researcher pool data
+*/
 struct Pool {
   uint256 level;
   uint256 currentEra;

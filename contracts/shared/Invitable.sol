@@ -3,6 +3,11 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
+/**
+ * @author Sintrop
+ * @title Invitable
+ * @dev Contract to check if users can invite others
+ */
 contract Invitable {
   using SafeMath for uint256;
 
