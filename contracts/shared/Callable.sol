@@ -9,8 +9,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
  * @dev Contract to secure public functions to be called only by allowedCallers
  */
 contract Callable is Ownable {
-
-  /// @dev Addresses allowed to call.   
+  /// @dev Addresses allowed to call.
   mapping(address => bool) public allowedCallers;
 
   /**

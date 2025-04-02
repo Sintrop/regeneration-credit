@@ -98,6 +98,16 @@ contract InvitationRules is Ownable {
     }
   }
 
+  function inviteRegeneratorInspector(address invited, UserType userType) public {
+    require(communityRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Only to activists");
+    require(userType == UserType.REGENERATOR || userType == UserType.INSPECTOR, "Only regenerators or inspectors");
+    require(invitationDelayReached(UserType.ACTIVIST), "Invite delay not reached");
+
+    lastInviteBlocks[msg.sender] = block.number;
+
+    communityRules.addInvitation(msg.sender, invited, userType);
+  }
+
   /**
    * @dev Allows owner to invite another wallet to the community
    * @param invited Invited address
