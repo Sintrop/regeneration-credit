@@ -76,6 +76,7 @@ contract RegeneratorRules is Callable {
     regenerator.totalArea = totalArea;
     regenerator.pool = Pool(false, regeneratorPool.currentContractEra());
     regenerator.createdAt = block.number;
+    regenerator.coordinatesCount = _coordinates.length;
 
     regenerators[msg.sender] = regenerator;
     regeneratorsAddress[id] = msg.sender;

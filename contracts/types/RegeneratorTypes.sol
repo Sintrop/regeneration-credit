@@ -15,6 +15,7 @@ struct Regenerator {
   RegenerationScore regenerationScore;
   Pool pool;
   uint256 createdAt;
+  uint256 coordinatesCount;
 }
 
 struct Pool {
