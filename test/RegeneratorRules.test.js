@@ -95,6 +95,7 @@ describe("RegeneratorRules", () => {
       expect(regenerator.pendingInspection).to.equal(false);
       expect(regenerator.regenerationScore.average).to.equal("0");
       expect(regenerator.regenerationScore.score).to.equal("0");
+      expect(regenerator.coordinatesCount).to.equal("4");
 
       expect(regenerator.pool.currentEra).to.equal(1);
     });
