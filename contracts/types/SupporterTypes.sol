@@ -11,7 +11,12 @@ struct Supporter {
 }
 
 struct Publication {
+  address supporterAddress;
   uint256 amount;
   string description;
   string content;
+}
+
+struct PublicationId {
+  uint256 id;
 }
