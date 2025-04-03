@@ -134,7 +134,6 @@ contract DeveloperRules is Ownable, Callable, Invitable {
       report,
       0,
       true,
-      true,
       0,
       block.number
     );

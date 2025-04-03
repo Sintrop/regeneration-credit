@@ -44,7 +44,7 @@ struct Report {
   string description;
   string report;
   uint256 validationsCount;
-  bool contributed;
+  //bool contributed;
   bool valid;
   uint256 invalidatedAt;
   uint256 createdAtBlockNumber;
