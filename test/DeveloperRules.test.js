@@ -314,7 +314,6 @@ describe("DeveloperRules", (accounts) => {
       expect(report.id).to.equal("1");
       expect(report.era).to.equal("1");
       expect(report.developer).to.equal(dev1Address.address);
-      expect(report.level).to.equal("0"); // TODO: Remover esse campo pois não vai ser mais utilizado
       expect(report.report).to.equal("report");
       expect(report.validationsCount).to.equal("0");
       expect(report.valid).to.equal(true);

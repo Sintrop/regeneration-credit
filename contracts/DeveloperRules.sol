@@ -129,7 +129,6 @@ contract DeveloperRules is Ownable, Callable, Invitable {
       id,
       developerPoolEra(),
       msg.sender,
-      developers[msg.sender].pool.level,
       description,
       report,
       0,

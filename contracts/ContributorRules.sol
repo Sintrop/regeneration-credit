@@ -109,7 +109,6 @@ contract ContributorRules is Ownable, Callable, Invitable {
       id,
       contributorPoolEra(),
       msg.sender,
-      contributors[msg.sender].pool.level,
       description,
       report,
       block.number

@@ -35,7 +35,6 @@ struct Contribution {
   uint256 id;
   uint256 era;
   address user;
-  uint256 level;
   string description;
   string report;
   uint256 createdAtBlockNumber;

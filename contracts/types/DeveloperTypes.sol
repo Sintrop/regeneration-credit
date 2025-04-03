@@ -40,11 +40,9 @@ struct Report {
   uint256 id;
   uint256 era;
   address developer;
-  uint256 level;
   string description;
   string report;
   uint256 validationsCount;
-  //bool contributed;
   bool valid;
   uint256 invalidatedAt;
   uint256 createdAtBlockNumber;
