@@ -107,12 +107,7 @@ contract SupporterRules {
 
     uint256 id = publicationsCount + 1;
 
-    publications[id] = Publication(
-      msg.sender,
-      amountBurn,
-      description,
-      content
-    );
+    publications[id] = Publication(msg.sender, amountBurn, description, content);
 
     publicationIds[msg.sender].push(PublicationId(id));
     publicationsCount++;

@@ -318,7 +318,7 @@ describe("SupporterRules", () => {
               it("must add publication count", async () => {
                 const publicationsCount = await instance.publicationsCount();
                 expect(publicationsCount).to.equal(1);
-              });              
+              });
             });
 
             context("when burn 500000000000000000 tokens", () => {
