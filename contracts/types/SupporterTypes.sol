@@ -12,6 +12,7 @@ struct Supporter {
 
 struct Publication {
   address supporterAddress;
+  uint256 createdAt;
   uint256 amount;
   string description;
   string content;
