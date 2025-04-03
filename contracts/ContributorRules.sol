@@ -105,14 +105,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
     contributionsCount++;
     uint256 id = contributionsCount;
 
-    contributions[id] = Contribution(
-      id,
-      contributorPoolEra(),
-      msg.sender,
-      description,
-      report,
-      block.number
-    );
+    contributions[id] = Contribution(id, contributorPoolEra(), msg.sender, description, report, block.number);
 
     addPoolLevel(msg.sender);
   }
