@@ -159,7 +159,7 @@ contract CommunityRules is Ownable, Callable {
 
   /**
    * @dev Called by validationRules
-   * @notice Function to set an user to denied   
+   * @notice Function to set an user to denied
    * @param userAddress Denied user address
    */
   function setDeniedType(address userAddress) public mustBeAllowedCaller {
@@ -172,7 +172,7 @@ contract CommunityRules is Ownable, Callable {
 
   /**
    * @dev True if userAddress is equal userType
-   * @notice Function to check if an userAddress type is equal passed userType   
+   * @notice Function to check if an userAddress type is equal passed userType
    * @param userAddress Denied user address
    */
   function userTypeIs(UserType userType, address userAddress) public view returns (bool) {
@@ -188,7 +188,7 @@ contract CommunityRules is Ownable, Callable {
 
   /**
    * @dev Returns the invitation
-   * @notice Get the invitation of an user   
+   * @notice Get the invitation of an user
    * @param addr User address
    */
   function getInvitation(address addr) public view returns (Invitation memory) {

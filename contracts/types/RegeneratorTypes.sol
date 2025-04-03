@@ -14,7 +14,7 @@ import "./CommunityTypes.sol";
  * @param totalInspections Total user inspections
  * @param lastRequestAt Block of last inspection request
  * @param regenerationScore Regenerator score
- * @param pool Pool data 
+ * @param pool Pool data
  * @param createdAt Block of user creation
  * @param coordinatesCount Number of coordinate points
  */

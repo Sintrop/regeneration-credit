@@ -15,10 +15,10 @@ contract RegenerationCredit is ERC20, Ownable {
   /// @notice Token name
   string public constant NAME = "REGENERATION CREDIT";
 
-  /// @notice Token symbol  
+  /// @notice Token symbol
   string public constant SYMBOL = "RC";
 
-    /// @notice Token decimals
+  /// @notice Token decimals
   uint8 public constant DECIMALS = 18;
 
   /// @notice Relationship between address and token balance
@@ -34,10 +34,10 @@ contract RegenerationCredit is ERC20, Ownable {
   /// @notice Total token supply
   uint256 public totalSupply_;
 
-  /// @notice Amount of burned tokens  
+  /// @notice Amount of burned tokens
   uint256 public totalCertified_;
 
-  /// @notice Amount of pool locked tokens  
+  /// @notice Amount of pool locked tokens
   uint256 public totalLocked_;
 
   using SafeMath for uint256;
