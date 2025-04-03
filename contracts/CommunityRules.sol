@@ -57,7 +57,7 @@ contract CommunityRules is Ownable, Callable {
   }
 
   event AddUserEvent(address addr, UserType userType);
-  event DeniedUserEevent(address addr);
+  event DeniedUserEvent(address addr);
   event AddDelelationEvent(address informer, address reported);
   event AddInvitationEvent(address inviter, address invited, UserType userTypeTo);
 
@@ -162,7 +162,7 @@ contract CommunityRules is Ownable, Callable {
 
     users[userAddress] = UserType.DENIED;
 
-    emit DeniedUserEevent(userAddress);
+    emit DeniedUserEvent(userAddress);
   }
 
   function userTypeIs(UserType userType, address userAddress) public view returns (bool) {

@@ -524,8 +524,8 @@ describe("ValidatorRules", () => {
                 expect(decrementedArea).to.equal(1000);
               });
 
-              it("must emit DeniedUserEevent", async () => {
-                await expect(receipt).to.emit(communityRules, "DeniedUserEevent").withArgs(regenerator1Address);
+              it("must emit DeniedUserEvent", async () => {
+                await expect(receipt).to.emit(communityRules, "DeniedUserEvent").withArgs(regenerator1Address);
               });
             });
 
