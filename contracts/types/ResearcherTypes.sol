@@ -35,6 +35,19 @@ struct Pool {
   uint256 currentEra;
 }
 
+/**
+ * @dev Research data structure
+ * @param id Research id
+ * @param era Era of creation
+ * @param createdBy Researcher wallet address
+ * @param title Research title
+ * @param thesis Research thesis
+ * @param file Hash of the research publication
+ * @param validationsCount Number of invalidation votes
+ * @param valid True if valid, false if invalid
+ * @param invalidateAt Block of invalidation
+ * @param createdAtBlock Block of research creation
+ */
 struct Research {
   uint256 id;
   uint256 era;
@@ -48,6 +61,15 @@ struct Research {
   uint256 createdAtBlock;
 }
 
+/**
+ * @dev Calculator item data structure
+ * @param id Item id
+ * @param createdBy Researcher wallet address
+ * @param title Item title
+ * @param unit Item unit. [Example: Kg, L, kwh]
+ * @param justification Justification of the result provided
+ * @param carbonImpact Impact of each item unit in carbon. [kg]
+ */
 struct CalculatorItem {
   uint256 id;
   address createdBy;
@@ -57,6 +79,9 @@ struct CalculatorItem {
   uint256 carbonImpact;
 }
 
+/**
+ * @dev Research penalty
+ */
 struct Penalty {
   uint256 researchId;
 }

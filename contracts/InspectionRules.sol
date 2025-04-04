@@ -107,6 +107,9 @@ contract InspectionRules is Callable {
     afterRequestInspection();
   }
 
+  /**
+   * @dev Function that creates a new inspection
+   */
   function createInspection() internal {
     Inspection memory inspection;
 
@@ -271,12 +274,20 @@ contract InspectionRules is Callable {
     return regenerationInspection[inspectionId][categoryId];
   }
 
+  /**
+   * @notice Checks if regenerator waited timeBetweenInspections
+   * @return bool True if can request
+   */
   function waitToRequest(Regenerator memory regenerator) public view returns (bool) {
     if (regenerator.totalInspections < allowedInitialRequests) return true;
 
     return block.number > regenerator.lastRequestAt + timeBetweenInspections;
   }
 
+  /**
+   * @notice Function to calculate amount of blocks to expire an inspection
+   * @return uint256 Return amount of blocks to expire an inspection
+   */
   function calculateBlocksToExpire(uint256 inspectionId) public view returns (uint256) {
     return inspections[inspectionId].acceptedAt + blocksToExpireAcceptedInspection - block.number;
   }

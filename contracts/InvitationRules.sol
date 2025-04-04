@@ -67,6 +67,7 @@ contract InvitationRules is Ownable {
 
   /**
    * @dev Allows a user to attempt to invite another wallet to the community
+   * @notice Most active users can invite new users to the system
    * @param invited Invited address
    * @param userType Invited type
    */
@@ -82,6 +83,10 @@ contract InvitationRules is Ownable {
     communityRules.addInvitation(msg.sender, invited, userType);
   }
 
+  /**
+   * @dev Based on the inviter userType, this function sends to the correct contract to check if user can invite
+   * @param userType Inviter userType
+   */
   function canSendInvite(UserType userType) internal view returns (bool) {
     if (userType == UserType.ACTIVIST) {
       return activistRules.canSendInvite(msg.sender);
@@ -98,6 +103,12 @@ contract InvitationRules is Ownable {
     }
   }
 
+  /**
+   * @dev Allows an activist to invite others to the community
+   * @notice Activists can invite regenerators or inspectors to the system
+   * @param invited Invited address
+   * @param userType Invited type
+   */
   function inviteRegeneratorInspector(address invited, UserType userType) public {
     require(communityRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Only to activists");
     require(userType == UserType.REGENERATOR || userType == UserType.INSPECTOR, "Only regenerators or inspectors");

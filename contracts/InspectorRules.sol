@@ -75,6 +75,9 @@ contract InspectorRules is Callable {
     return inspector;
   }
 
+  /**
+   * @dev Function called by validation rules to add an inspection penalty
+   */
   function addPenalty(address addr, uint256 inspectionId) public mustBeAllowedCaller returns (uint256) {
     penalties[addr].push(Penalty(inspectionId));
 

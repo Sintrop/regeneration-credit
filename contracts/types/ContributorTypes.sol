@@ -31,6 +31,15 @@ struct Pool {
   uint256 currentEra;
 }
 
+/**
+ * @dev Contribution data structure
+ * @param id Contribution id
+ * @param era Contribution era
+ * @param user Contributor wallet address
+ * @param description Contribution description
+ * @param report Hash of the justification report file
+ * @param createdAtBlockNumber Block of contribution creation
+ */
 struct Contribution {
   uint256 id;
   uint256 era;

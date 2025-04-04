@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
+/**
+ * @dev Inspection posible status
+ */
 enum InspectionStatus {
   OPEN,
   ACCEPTED,
@@ -9,11 +12,30 @@ enum InspectionStatus {
   INVALIDATED
 }
 
+/**
+ * @dev CategoryId and result of inspections data structure
+ */
 struct RegenerationInspection {
   uint256 categoryId;
   uint256 indicator;
 }
 
+/**
+ * @dev Inspection data structure
+ * @param id Inspection id
+ * @param status Inspection status
+ * @param regenerator Address of the regenerator
+ * @param inspector Address of the inspection inspector
+ * @param regenerationScore Inspection regeneration score
+ * @param proofPhoto Hash of the inspection proofPhoto
+ * @param report Report data and justification of the result
+ * @param validationsCount Number of invalidations vote received
+ * @param createdAt Creation block.number
+ * @param acceptedAt Accepted block.number
+ * @param inspectedAt Realize inspection block.number
+ * @param inspectedAtEra Era that inspection was realized
+ * @param invalidateAt Block of inspection invalidation
+ */
 struct Inspection {
   uint256 id;
   InspectionStatus status;
