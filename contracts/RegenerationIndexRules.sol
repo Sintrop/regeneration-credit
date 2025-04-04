@@ -36,7 +36,7 @@ contract RegenerationIndexRules is Ownable, Callable {
   }
 
   /**
-   * @dev Function that creates system categories 
+   * @dev Function that creates system categories
    */
   function addCategories() internal {
     Category memory treesCategory = Category(
