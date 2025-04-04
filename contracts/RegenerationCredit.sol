@@ -145,12 +145,18 @@ contract RegenerationCredit is ERC20, Ownable {
     burnTokensInternal(tokenOwner, amount);
   }
 
+  /**
+   * @dev Internal function to add burned tokens to the certificate
+   */
   function burnTokensInternal(address tokenOwner, uint256 amount) internal {
     _burn(tokenOwner, amount);
     certificate[tokenOwner] += amount;
     totalCertified_ += amount;
   }
 
+  /**
+   * @dev Burn the tokens
+   */
   function _burn(address account, uint256 amount) internal override {
     require(account != address(0), "Burn from the zero address");
 
