@@ -33,6 +33,9 @@ struct Publication {
   string content;
 }
 
+/**
+ * @dev PublicationId data structure
+ */
 struct PublicationId {
   uint256 id;
 }

@@ -38,6 +38,9 @@ struct Invitation {
   uint256 createdAtBlock;
 }
 
+/**
+ * @dev Settings and configuration of each userType
+ */
 struct UserTypeSetting {
   uint256 proportionalityOnRegister;
   bool directProportionalityRegistration;
