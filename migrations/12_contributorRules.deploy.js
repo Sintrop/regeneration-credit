@@ -18,7 +18,7 @@ async function contributorRulesDeploy() {
   saveContractAddress("ContributorRules", contributorRules.target);
 
   await communityRules.newAllowedCaller(contributorRules.target);
-  await contributorRules.newAllowedCaller(contributorPool.target);
+  await contributorPool.newAllowedCaller(contributorRules.target);
 
   console.log(`ContributorRules address ${contributorRules.target}`);
 
