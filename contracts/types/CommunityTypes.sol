@@ -46,4 +46,5 @@ struct UserTypeSetting {
   bool directProportionalityRegistration;
   bool needInvitationOnRegister;
   uint256 invitationDelayBlocks;
+  bool isVoter;
 }

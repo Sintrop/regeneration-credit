@@ -6,10 +6,11 @@ async function validatorRulesDeploy() {
   const communityRules = await getDeployedContract("CommunityRules");
   const firstValidatorLimit = process.env["FIRST_VALIDATOR_LIMIT"];
   const secondValidatorLimit = process.env["SECOND_VALIDATOR_LIMIT"];
+  const votable = await getDeployedContract("Votable");
 
   const ValidatorRules = await ethers.getContractFactory("ValidatorRules");
 
-  const args = [firstValidatorLimit, secondValidatorLimit];
+  const args = [firstValidatorLimit, secondValidatorLimit, votable.target];
 
   const validatorRules = await ValidatorRules.deploy(...args);
 

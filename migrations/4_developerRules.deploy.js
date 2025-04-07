@@ -6,6 +6,7 @@ async function developerRulesDeploy() {
   const communityRules = await getDeployedContract("CommunityRules");
   const developerPool = await getDeployedContract("DeveloperPool");
   const validatorRules = await getDeployedContract("ValidatorRules");
+  const votable = await getDeployedContract("Votable");
 
   const DeveloperRules = await ethers.getContractFactory("DeveloperRules");
 
@@ -17,6 +18,7 @@ async function developerRulesDeploy() {
     communityRules.target,
     developerPool.target,
     validatorRules.target,
+    votable.target,
     timeBetweenWorks,
     developerMaxPenalties,
     securityBlocksToValidatorAnalysis,

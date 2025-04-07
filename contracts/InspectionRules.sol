@@ -5,6 +5,7 @@ import { RegeneratorRules } from "./RegeneratorRules.sol";
 import { InspectorRules } from "./InspectorRules.sol";
 import { RegenerationIndexRules } from "./RegenerationIndexRules.sol";
 import { ValidatorRules } from "./ValidatorRules.sol";
+import { Votable } from "./shared/Votable.sol";
 import { RegenerationIndexRules } from "./RegenerationIndexRules.sol";
 import { ActivistRules } from "./ActivistRules.sol";
 import { CommunityRules } from "./CommunityRules.sol";
@@ -50,6 +51,9 @@ contract InspectionRules is Callable {
   /// @notice RegenerationIndexRules contract address
   RegenerationIndexRules private regenerationIndexRules;
 
+  /// @notice Votable contract address
+  Votable internal votable;  
+
   uint256 public inspectionsCount;
   uint256 public inspectionsTotalCount;
   uint256 public inspectionsTreesImpact;
@@ -81,6 +85,7 @@ contract InspectionRules is Callable {
     inspectorRules = InspectorRules(contractDependency.inspectorRulesAddress);
     regenerationIndexRules = RegenerationIndexRules(contractDependency.regenerationIndexRulesAddress);
     activistRules = ActivistRules(contractDependency.activistRulesAddress);
+    votable = Votable(contractDependency.votableAddress);
   }
 
   /**
@@ -230,7 +235,7 @@ contract InspectionRules is Callable {
   }
 
   function addInspectionValidation(uint256 id, string memory justification) public {
-    require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+    require(votable.canVote(msg.sender), "User cannot vote");
 
     Inspection memory inspection = inspections[id];
 

@@ -16,6 +16,7 @@ import { Inspection } from "./types/InspectionTypes.sol";
 import { Report } from "./types/DeveloperTypes.sol";
 import { Research } from "./types/ResearcherTypes.sol";
 import { Invitable } from "./shared/Invitable.sol";
+import { Votable } from "./shared/Votable.sol";
 
 /**
  * @author Sintrop
@@ -44,14 +45,18 @@ contract ValidatorRules is Callable, Invitable {
   ContributorRules private contributorRules;
   ActivistRules private activistRules;
 
+  /// @notice Votable contract address
+  Votable internal votable; 
+
   UserType private constant USER_TYPE = UserType.VALIDATOR;
   uint256 private immutable firstValidatorLimit;
   uint256 private immutable secondValidatorLimit;
   uint256 internal totalDeclaredAlives;
 
-  constructor(uint256 firstValidatorLimit_, uint256 secondValidatorLimit_) {
+  constructor(uint256 firstValidatorLimit_, uint256 secondValidatorLimit_, address votableAddress) {
     firstValidatorLimit = firstValidatorLimit_;
     secondValidatorLimit = secondValidatorLimit_;
+    votable = Votable(votableAddress);    
   }
 
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
@@ -88,8 +93,8 @@ contract ValidatorRules is Callable, Invitable {
   function addUserValidation(
     address userAddress,
     string memory justification
-  ) public canAddValidationModifier(msg.sender) {
-    require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "User must be a validator");
+  ) public {
+    require(votable.canVote(msg.sender), "User cannot vote");
     require(!communityRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
     require(!communityRules.userTypeIs(UserType.DENIED, userAddress), "User already denied");
     require(!validatorUsersValidations[msg.sender][userAddress], "Already voted");
@@ -110,7 +115,7 @@ contract ValidatorRules is Callable, Invitable {
     Inspection memory inspection,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller canAddValidationModifier(validatorAddress) {
+  ) public mustBeAllowedCaller {
     require(!validatorInspectionsValidations[validatorAddress][inspection.id], "Already voted");
 
     validatorInspectionsValidations[validatorAddress][inspection.id] = true;
@@ -226,17 +231,14 @@ contract ValidatorRules is Callable, Invitable {
     return validators[addr];
   }
 
-  function majorityValidatorsCount() public view returns (uint256) {
-    uint256 currentEra = validatorPoolEra();
+  function majorityValidatorsCount() public view returns (uint256 count) {
+    uint256 voters = communityRules.votersCount();
 
-    if (currentEra == 1) {
-      uint256 _validatorsCount = communityRules.userTypesCount(USER_TYPE);
-      return _validatorsCount / 2;
-    } else {
-      uint256 levels = validatorPool.getEra(currentEra - 1).levels;
-
-      return levels / 2;
-    }
+    if (voters <= 50) return 2;
+    if (voters > 50 && voters <= 100) return 5;
+    if (voters > 100 && voters <= 500) return 10;
+    if (voters > 500 && voters <= 1000) return 50;
+    if (voters > 1000) return 100;
   }
 
   function declareAlive() public {

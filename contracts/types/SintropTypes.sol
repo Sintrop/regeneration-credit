@@ -8,4 +8,5 @@ struct ContractsDependency {
   address inspectorRulesAddress;
   address regenerationIndexRulesAddress;
   address activistRulesAddress;
+  address votableAddress;  
 }
