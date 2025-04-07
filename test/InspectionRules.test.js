@@ -68,7 +68,7 @@ describe("InspectionRules", () => {
   };
 
   const addRegenerator = async (name, from) => {
-    await regeneratorRules.connect(from).addRegenerator(10, name, "photoURL", coordinates());
+    await regeneratorRules.connect(from).addRegenerator(1000, name, "photoURL", coordinates());
   };
 
   const coordinates = () => {
@@ -112,7 +112,7 @@ describe("InspectionRules", () => {
     await communityRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
-  const biomassResultValue = () => {
+  const treesResultValue = () => {
     return {
       categoryId: 1,
       indicator: 10,
@@ -136,10 +136,10 @@ describe("InspectionRules", () => {
     await instance.connect(from).acceptInspection(inspectionId);
   };
 
-  const realizeInspection = async (id, report, biomassResult, biodiversityResult, from) => {
+  const realizeInspection = async (id, report, treesResult, biodiversityResult, from) => {
     const proofPhoto = "proofPhoto";
 
-    await instance.connect(from).realizeInspection(id, proofPhoto, report, biomassResult, biodiversityResult);
+    await instance.connect(from).realizeInspection(id, proofPhoto, report, treesResult, biodiversityResult);
   };
 
   beforeEach(async () => {
@@ -278,7 +278,7 @@ describe("InspectionRules", () => {
           beforeEach(async () => {
             await acceptInspection(1, inspectorAddress);
 
-            const biomassResultValue = {
+            const treesResultValue = {
               categoryId: 1,
               indicator: 15,
             };
@@ -288,7 +288,7 @@ describe("InspectionRules", () => {
               indicator: 51,
             };
 
-            await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
+            await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
           });
 
           context("when last request is recent", () => {
@@ -312,7 +312,7 @@ describe("InspectionRules", () => {
 
       context("when reached maximum inspections", () => {
         beforeEach(async () => {
-          const biomassResultValue = {
+          const treesResultValue = {
             categoryId: 1,
             indicator: 15,
           };
@@ -323,74 +323,74 @@ describe("InspectionRules", () => {
           };
 
           await acceptInspection(1, inspectorAddress);
-          await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
+          await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
 
           await advanceBlock(20);
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(2, inspector2Address);
-          await realizeInspection(2, report, biomassResultValue, biodiversityResultValue, inspector2Address);
+          await realizeInspection(2, report, treesResultValue, biodiversityResultValue, inspector2Address);
 
           await advanceBlock(20);
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(3, inspector3Address);
-          await realizeInspection(3, report, biomassResultValue, biodiversityResultValue, inspector3Address);
+          await realizeInspection(3, report, treesResultValue, biodiversityResultValue, inspector3Address);
 
           await advanceBlock(20);
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(4, inspector4Address);
-          await realizeInspection(4, report, biomassResultValue, biodiversityResultValue, inspector4Address);
+          await realizeInspection(4, report, treesResultValue, biodiversityResultValue, inspector4Address);
 
           await advanceBlock(20);
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(5, inspector5Address);
-          await realizeInspection(5, report, biomassResultValue, biodiversityResultValue, inspector5Address);
+          await realizeInspection(5, report, treesResultValue, biodiversityResultValue, inspector5Address);
 
           await advanceBlock(20);
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(6, inspector6Address);
-          await realizeInspection(6, report, biomassResultValue, biodiversityResultValue, inspector6Address);
+          await realizeInspection(6, report, treesResultValue, biodiversityResultValue, inspector6Address);
 
           await advanceBlock(20);
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(7, inspector7Address);
-          await realizeInspection(7, report, biomassResultValue, biodiversityResultValue, inspector7Address);
+          await realizeInspection(7, report, treesResultValue, biodiversityResultValue, inspector7Address);
 
           await advanceBlock(20);
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(8, inspector8Address);
-          await realizeInspection(8, report, biomassResultValue, biodiversityResultValue, inspector8Address);
+          await realizeInspection(8, report, treesResultValue, biodiversityResultValue, inspector8Address);
 
           await advanceBlock(20);
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(9, inspector9Address);
-          await realizeInspection(9, report, biomassResultValue, biodiversityResultValue, inspector9Address);
+          await realizeInspection(9, report, treesResultValue, biodiversityResultValue, inspector9Address);
 
           await advanceBlock(20);
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(10, inspector10Address);
-          await realizeInspection(10, report, biomassResultValue, biodiversityResultValue, inspector10Address);
+          await realizeInspection(10, report, treesResultValue, biodiversityResultValue, inspector10Address);
 
           await advanceBlock(20);
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(11, inspector11Address);
-          await realizeInspection(11, report, biomassResultValue, biodiversityResultValue, inspector11Address);
+          await realizeInspection(11, report, treesResultValue, biodiversityResultValue, inspector11Address);
 
           await advanceBlock(20);
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await advanceBlock(200);
           await acceptInspection(12, inspector12Address);
-          await realizeInspection(12, report, biomassResultValue, biodiversityResultValue, inspector12Address);
+          await realizeInspection(12, report, treesResultValue, biodiversityResultValue, inspector12Address);
         });
 
         it("should return error", async () => {
@@ -625,7 +625,7 @@ describe("InspectionRules", () => {
             context("when have finished last inspection", () => {
               beforeEach(async () => {
                 await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-                await realizeInspection(1, "", biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+                await realizeInspection(1, "", treesResultValue(), biodiversityResultValue(), inspectorAddress);
                 await acceptInspection(2, inspectorAddress);
               });
 
@@ -650,7 +650,7 @@ describe("InspectionRules", () => {
           beforeEach(async () => {
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
             await acceptInspection(1, inspectorAddress);
-            await realizeInspection(1, report, biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+            await realizeInspection(1, report, treesResultValue(), biodiversityResultValue(), inspectorAddress);
 
             await advanceBlock(20);
 
@@ -712,7 +712,7 @@ describe("InspectionRules", () => {
 
               it("should return error message", async () => {
                 await expect(
-                  realizeInspection(1, report, biomassResultValue(), biodiversityResultValue(), inspectorAddress)
+                  realizeInspection(1, report, treesResultValue(), biodiversityResultValue(), inspectorAddress)
                 ).to.be.revertedWith("Inspection Expired");
               });
             });
@@ -725,7 +725,7 @@ describe("InspectionRules", () => {
                       await realizeInspection(
                         1,
                         report,
-                        biomassResultValue(),
+                        treesResultValue(),
                         biodiversityResultValue(),
                         inspectorAddress
                       );
@@ -749,7 +749,7 @@ describe("InspectionRules", () => {
                       await realizeInspection(
                         1,
                         report,
-                        biomassResultValue(),
+                        treesResultValue(),
                         biodiversityResultValue(),
                         inspectorAddress
                       );
@@ -775,7 +775,7 @@ describe("InspectionRules", () => {
                       await realizeInspection(
                         1,
                         report,
-                        biomassResultValue(),
+                        treesResultValue(),
                         biodiversityResultValue(),
                         inspectorAddress
                       );
@@ -805,7 +805,7 @@ describe("InspectionRules", () => {
                       await realizeInspection(
                         1,
                         report,
-                        biomassResultValue(),
+                        treesResultValue(),
                         biodiversityResultValue(),
                         inspectorAddress
                       );
@@ -837,7 +837,7 @@ describe("InspectionRules", () => {
                       await realizeInspection(
                         1,
                         report,
-                        biomassResultValue(),
+                        treesResultValue(),
                         biodiversityResultValue(),
                         inspectorAddress
                       );
@@ -859,13 +859,7 @@ describe("InspectionRules", () => {
 
                 context("when check inspection", () => {
                   beforeEach(async () => {
-                    await realizeInspection(
-                      1,
-                      report,
-                      biomassResultValue(),
-                      biodiversityResultValue(),
-                      inspectorAddress
-                    );
+                    await realizeInspection(1, report, treesResultValue(), biodiversityResultValue(), inspectorAddress);
                   });
 
                   it("should change inspection status to INSPECTED", async () => {
@@ -874,10 +868,10 @@ describe("InspectionRules", () => {
                     expect(inspection.status).to.equal(STATUS.inspected);
                   });
 
-                  it("should set inspectionsBiomassImpact", async () => {
-                    const inspectionsBiomassImpact = await instance.inspectionsBiomassImpact();
+                  it("should set inspectionsTreesImpact", async () => {
+                    const inspectionsTreesImpact = await instance.inspectionsTreesImpact();
 
-                    expect(inspectionsBiomassImpact).to.equal(10);
+                    expect(inspectionsTreesImpact).to.equal(10);
                   });
 
                   it("should set inspectionsBiodiversityImpact", async () => {
@@ -947,7 +941,7 @@ describe("InspectionRules", () => {
                 context("when check inspection regenerationIndex", () => {
                   context("when select REGENERATIVE_6", () => {
                     beforeEach(async () => {
-                      const biomassResultValue = {
+                      const treesResultValue = {
                         categoryId: 1,
                         indicator: 100001,
                       };
@@ -957,7 +951,7 @@ describe("InspectionRules", () => {
                         indicator: 1001,
                       };
 
-                      await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
+                      await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
                     it("should add 64 regenerationScore to inspection", async () => {
@@ -969,17 +963,17 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_5", () => {
                     beforeEach(async () => {
-                      const biomassResultValue = {
+                      const treesResultValue = {
                         categoryId: 1,
                         indicator: 10001,
                       };
 
                       const biodiversityResultValue = {
                         categoryId: 2,
-                        indicator: 501,
+                        indicator: 130,
                       };
 
-                      await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
+                      await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
                     it("should add 32 regenerationScore to inspection", async () => {
@@ -991,17 +985,17 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_4", () => {
                     beforeEach(async () => {
-                      const biomassResultValue = {
+                      const treesResultValue = {
                         categoryId: 1,
-                        indicator: 1001,
+                        indicator: 5801,
                       };
 
                       const biodiversityResultValue = {
                         categoryId: 2,
-                        indicator: 201,
+                        indicator: 101,
                       };
 
-                      await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
+                      await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
                     it("should add 16 regenerationScore to inspection", async () => {
@@ -1013,17 +1007,17 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_3", () => {
                     beforeEach(async () => {
-                      const biomassResultValue = {
+                      const treesResultValue = {
                         categoryId: 1,
-                        indicator: 101,
+                        indicator: 1001,
                       };
 
                       const biodiversityResultValue = {
                         categoryId: 2,
-                        indicator: 101,
+                        indicator: 51,
                       };
 
-                      await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
+                      await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
                     it("should add 4 regenerationScore to inspection", async () => {
@@ -1035,17 +1029,17 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_2", () => {
                     beforeEach(async () => {
-                      const biomassResultValue = {
+                      const treesResultValue = {
                         categoryId: 1,
-                        indicator: 15,
+                        indicator: 500,
                       };
 
                       const biodiversityResultValue = {
                         categoryId: 2,
-                        indicator: 51,
+                        indicator: 21,
                       };
 
-                      await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
+                      await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
                     it("should add 2 regenerationScore to inspection", async () => {
@@ -1057,17 +1051,17 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_1", () => {
                     beforeEach(async () => {
-                      const biomassResultValue = {
+                      const treesResultValue = {
                         categoryId: 1,
-                        indicator: 5,
+                        indicator: 50,
                       };
 
                       const biodiversityResultValue = {
                         categoryId: 2,
-                        indicator: 30,
+                        indicator: 10,
                       };
 
-                      await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
+                      await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
                     it("should add 1 regenerationScore to inspection", async () => {
@@ -1079,7 +1073,7 @@ describe("InspectionRules", () => {
 
                   context("when select NEUTRO", () => {
                     beforeEach(async () => {
-                      const biomassResultValue = {
+                      const treesResultValue = {
                         categoryId: 1,
                         indicator: 0,
                       };
@@ -1089,7 +1083,7 @@ describe("InspectionRules", () => {
                         indicator: 0,
                       };
 
-                      await realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress);
+                      await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
                     it("should add 0 regenerationScore to inspection", async () => {
@@ -1101,8 +1095,8 @@ describe("InspectionRules", () => {
                 });
               });
 
-              context("when pass wrong biomassResult or biodiversity", () => {
-                const biomassResultValue = {
+              context("when pass wrong treesResult or biodiversity", () => {
+                const treesResultValue = {
                   categoryId: 10,
                   indicator: 1001,
                 };
@@ -1114,8 +1108,8 @@ describe("InspectionRules", () => {
 
                 it("should return error message", async () => {
                   await expect(
-                    realizeInspection(1, report, biomassResultValue, biodiversityResultValue, inspectorAddress)
-                  ).to.be.revertedWith("Invalid biomassResult or biodiversityResult");
+                    realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress)
+                  ).to.be.revertedWith("Invalid treesResult or biodiversityResult");
                 });
               });
             });
@@ -1129,7 +1123,7 @@ describe("InspectionRules", () => {
 
             it("should return error message", async () => {
               await expect(
-                realizeInspection(1, report, biomassResultValue(), biodiversityResultValue(), inspector2Address)
+                realizeInspection(1, report, treesResultValue(), biodiversityResultValue(), inspector2Address)
               ).to.be.revertedWith("You have not accepted this inspection");
             });
           });
@@ -1138,7 +1132,7 @@ describe("InspectionRules", () => {
         context("when inspection is not accepted", () => {
           it("should return error message", async () => {
             await expect(
-              realizeInspection(1, report, biomassResultValue(), biodiversityResultValue(), inspectorAddress)
+              realizeInspection(1, report, treesResultValue(), biodiversityResultValue(), inspectorAddress)
             ).to.be.revertedWith("Accept this inspection before");
           });
         });
@@ -1147,7 +1141,7 @@ describe("InspectionRules", () => {
       context("when inspection dont exists", () => {
         it("should return error message", async () => {
           await expect(
-            realizeInspection(1, report, biomassResultValue(), biodiversityResultValue(), inspectorAddress)
+            realizeInspection(1, report, treesResultValue(), biodiversityResultValue(), inspectorAddress)
           ).to.be.revertedWith("Accept this inspection before");
         });
       });
@@ -1160,7 +1154,7 @@ describe("InspectionRules", () => {
         await acceptInspection(1, inspectorAddress);
 
         await expect(
-          realizeInspection(1, report, biomassResultValue(), biodiversityResultValue(), regeneratorAddress)
+          realizeInspection(1, report, treesResultValue(), biodiversityResultValue(), regeneratorAddress)
         ).to.be.revertedWith("Please register as inspector");
       });
     });
@@ -1193,7 +1187,7 @@ describe("InspectionRules", () => {
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(1, inspectorAddress);
-          await realizeInspection(1, report, biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+          await realizeInspection(1, report, treesResultValue(), biodiversityResultValue(), inspectorAddress);
         });
 
         context("when receive 1 validation", () => {
@@ -1226,13 +1220,13 @@ describe("InspectionRules", () => {
               expect(validation2.validator).to.equal(validator2Address.address);
             });
 
-            it("decrement inspectionsBiomassImpact", async () => {
-              const inspectionsBiomassImpact = await instance.inspectionsBiomassImpact();
+            it("decrement inspectionsTreesImpact", async () => {
+              const inspectionsTreesImpact = await instance.inspectionsTreesImpact();
 
-              expect(inspectionsBiomassImpact).to.equal(0);
+              expect(inspectionsTreesImpact).to.equal(0);
             });
 
-            it("decrement inspectionsBiomassImpact", async () => {
+            it("decrement inspectionsTreesImpact", async () => {
               const inspectionsBiodiversityImpact = await instance.inspectionsBiodiversityImpact();
 
               expect(inspectionsBiodiversityImpact).to.equal(0);
@@ -1309,7 +1303,7 @@ describe("InspectionRules", () => {
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(1, inspectorAddress);
-          await realizeInspection(1, report, biomassResultValue(), biodiversityResultValue(), inspectorAddress);
+          await realizeInspection(1, report, treesResultValue(), biodiversityResultValue(), inspectorAddress);
 
           await advanceBlock(regeneratorPoolArgs.blocksPerEra);
         });

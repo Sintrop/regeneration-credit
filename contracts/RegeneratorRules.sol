@@ -11,12 +11,11 @@ import { UserType } from "./types/CommunityTypes.sol";
  * @author Sintrop
  * @title RegeneratorRules
  * @dev Manage regenerator user logic.
- * @notice Person, family or a group of peolpe that are restoring nature
+ * @notice Person, family or a group of people that are providing ecosystem regeneration services
  */
 contract RegeneratorRules is Callable {
   /// @notice Minimum inspections to regenerator receive tokens
   uint256 internal constant MINIMUM_INSPECTION_TO_POOL = 3;
-  uint256 internal constant LIMIT_REGENERATION_SCORE_TO_POOL = 1000;
 
   /// @notice The relationship between address and regenerator data
   mapping(address => Regenerator) public regenerators;
@@ -39,9 +38,10 @@ contract RegeneratorRules is Callable {
   /// @notice Regenerator UserType
   UserType private constant USER_TYPE = UserType.REGENERATOR;
 
+  /// @notice Valid impact regenerators
   uint256 public totalImpactRegenerators;
 
-  /// @notice [ha] 1 ha = 10000m²
+  /// @notice [m²]
   uint256 public regenerationArea;
 
   constructor(address communityRulesAddress, address regeneratorPoolAddress) {
@@ -51,9 +51,10 @@ contract RegeneratorRules is Callable {
 
   /**
    * @dev Allows a user to attempt to register as a regenerator
+   * @notice Register as a regenerator to add to the system an area under your supervision that is in process of regeneration
    * @param name The name of the regenerator
    * @param proofPhoto Identity photo
-   * @param totalArea in hectares = 1 ha = 10.000 m2
+   * @param totalArea in square meters [m²]
    * @param _coordinates the coordinates of the regenerator area
    */
   function addRegenerator(
@@ -63,6 +64,7 @@ contract RegeneratorRules is Callable {
     Coordinates[] memory _coordinates
   ) public {
     require(_coordinates.length >= 3 && _coordinates.length <= 10, "Minimum 3 and maximum 10 coordinate points");
+    require(totalArea >= 500, "Minimum 500 square meters");
 
     Regenerator memory regenerator = regenerators[msg.sender];
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
@@ -74,6 +76,7 @@ contract RegeneratorRules is Callable {
     regenerator.totalArea = totalArea;
     regenerator.pool = Pool(false, regeneratorPool.currentContractEra());
     regenerator.createdAt = block.number;
+    regenerator.coordinatesCount = _coordinates.length;
 
     regenerators[msg.sender] = regenerator;
     regeneratorsAddress[id] = msg.sender;
@@ -116,15 +119,6 @@ contract RegeneratorRules is Callable {
    */
   function minimumInspections(uint256 totalInspections) private pure returns (bool) {
     return totalInspections >= MINIMUM_INSPECTION_TO_POOL;
-  }
-
-  /**
-   * @dev Checks if regenerator reached maxiumum score
-   * @param regenerator The regenerator
-   * @return bool True if reached
-   */
-  function limitRegenerationScore(Regenerator memory regenerator) private pure returns (bool) {
-    return regenerator.regenerationScore.score >= LIMIT_REGENERATION_SCORE_TO_POOL;
   }
 
   /**
@@ -236,13 +230,17 @@ contract RegeneratorRules is Callable {
   }
 
   /**
-   * @dev Calculate blocks to next era
+   * @notice Calculate blocks to next era
    * @return uint256 Return the amount of blocks to next era
    */
   function nextEraIn() public view returns (uint256) {
     return uint256(regeneratorPool.nextEraIn(regeneratorPoolEra()));
   }
 
+  /**
+   * @notice Total regeneration area
+   * @return uint256 Return the regeneration area [m²]
+   */
   function regenerationTotalArea() public view returns (uint256) {
     return regenerationArea;
   }

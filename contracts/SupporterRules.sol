@@ -4,7 +4,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 import { CommunityRules } from "./CommunityRules.sol";
 import { ResearcherRules } from "./ResearcherRules.sol";
 import { CalculatorItem } from "./types/ResearcherTypes.sol";
-import { Supporter, Publication } from "./types/SupporterTypes.sol";
+import { Supporter, Publication, PublicationId } from "./types/SupporterTypes.sol";
 import { UserType, Invitation } from "./types/CommunityTypes.sol";
 import { SupporterPool } from "./SupporterPool.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -31,7 +31,12 @@ contract SupporterRules {
   mapping(uint256 => address) public supportersAddress;
 
   /// @notice The relationship between address and publications made
-  mapping(address => Publication[]) public publications;
+  mapping(uint256 => Publication) public publications;
+
+  /// @notice The relationship between address and publications made
+  mapping(address => PublicationId[]) public publicationIds;
+
+  uint256 public publicationsCount;
 
   /// @notice Commission percentage on invited burn
   uint256 public constant INVITER_PERCENTAGE = 5;
@@ -100,7 +105,12 @@ contract SupporterRules {
 
     uint256 amountBurn = burnTokens(amount);
 
-    publications[msg.sender].push(Publication(amountBurn, description, content));
+    uint256 id = publicationsCount + 1;
+
+    publications[id] = Publication(msg.sender, block.number, amountBurn, description, content);
+
+    publicationIds[msg.sender].push(PublicationId(id));
+    publicationsCount++;
   }
 
   function burnTokens(uint256 amount) internal returns (uint256) {

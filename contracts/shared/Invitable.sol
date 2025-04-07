@@ -3,6 +3,11 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
+/**
+ * @author Sintrop
+ * @title Invitable
+ * @dev Contract to check if users can invite others
+ */
 contract Invitable {
   using SafeMath for uint256;
 
@@ -13,6 +18,8 @@ contract Invitable {
    * @param userLevels total levels of the user
    */
   function canInvite(uint256 totalLevels, uint256 totalUsers, uint256 userLevels) public pure returns (bool) {
+    if (totalUsers <= 5) return true;
+
     uint256 avg = totalLevels.div(totalUsers).add(1);
 
     return userLevels >= avg;

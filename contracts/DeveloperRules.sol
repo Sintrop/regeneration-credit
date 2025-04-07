@@ -131,19 +131,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
 
     developers[msg.sender].totalReports++;
 
-    reports[id] = Report(
-      id,
-      developerPoolEra(),
-      msg.sender,
-      developers[msg.sender].pool.level,
-      description,
-      report,
-      0,
-      true,
-      true,
-      0,
-      block.number
-    );
+    reports[id] = Report(id, developerPoolEra(), msg.sender, description, report, 0, true, 0, block.number);
 
     updateLevel(msg.sender);
   }

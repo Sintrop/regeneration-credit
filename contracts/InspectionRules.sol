@@ -56,7 +56,7 @@ contract InspectionRules is Callable {
 
   uint256 public inspectionsCount;
   uint256 public inspectionsTotalCount;
-  uint256 public inspectionsBiomassImpact;
+  uint256 public inspectionsTreesImpact;
   uint256 public inspectionsBiodiversityImpact;
   uint256 public immutable timeBetweenInspections;
   uint256 public immutable blocksToExpireAcceptedInspection;
@@ -96,7 +96,8 @@ contract InspectionRules is Callable {
   }
 
   /**
-   * @dev Allows the current user (regenerator) request a inspection.
+   * @dev Allows the current user (regenerator) request a inspection
+   * @notice When requesting an inspection, the regenerator agrees to receive an inspector to assess the area under regeneration
    */
   function requestInspection() public {
     Regenerator memory regenerator = regeneratorRules.getRegenerator(msg.sender);
@@ -111,6 +112,9 @@ contract InspectionRules is Callable {
     afterRequestInspection();
   }
 
+  /**
+   * @dev Function that creates a new inspection
+   */
   function createInspection() internal {
     Inspection memory inspection;
 
@@ -130,6 +134,7 @@ contract InspectionRules is Callable {
 
   /**
    * @dev Allows the current user (inspector) accept a inspection.
+   * @notice Inspectors must only accept inspections that they can perform
    * @param inspectionId The id of the inspection that the inspector want accept.
    */
   function acceptInspection(uint256 inspectionId) public {
@@ -156,33 +161,36 @@ contract InspectionRules is Callable {
 
   /**
    * @dev Allow a inspector realize a inspection and mark as INSPECTED
+   * @notice Inspectors must evaluate the amount of trees and species of the regeneration area
    * @param inspectionId The id of the inspection to be realized
-   * @param biomassResult The RegenerationInspection[] of the inspection to be realized
-   * @param biodiversityResult The RegenerationInspection[] of the inspection to be realized
+   * @param proofPhoto The string of a photo with the regenerator or at the regeneration area
+   * @param treesResult The number of trees, palm trees and other plants larger than 5cm in diamater found in the regeneration area. Only plants managed or planted by the regenerator must be counted
+   * @param biodiversityResult The number of different species of trees, palm trees and other plants larger than 5 cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
+   * @param report The justification of the result found
    */
   function realizeInspection(
     uint256 inspectionId,
     string memory proofPhoto,
     string memory report,
-    RegenerationInspection memory biomassResult,
+    RegenerationInspection memory treesResult,
     RegenerationInspection memory biodiversityResult
   ) public {
     Inspection memory inspection = inspections[inspectionId];
 
     require(
-      biomassResult.categoryId == 1 && biodiversityResult.categoryId == 2,
-      "Invalid biomassResult or biodiversityResult"
+      treesResult.categoryId == 1 && biodiversityResult.categoryId == 2,
+      "Invalid treesResult or biodiversityResult"
     );
     require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
     require(inspection.inspector == msg.sender, "You have not accepted this inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
 
-    markAsRealized(inspection, proofPhoto, report, biomassResult, biodiversityResult);
+    markAsRealized(inspection, proofPhoto, report, treesResult, biodiversityResult);
 
     afterRealizeInspection(inspection);
 
-    inspectionsBiomassImpact += biomassResult.indicator;
+    inspectionsTreesImpact += treesResult.indicator;
     inspectionsBiodiversityImpact += biodiversityResult.indicator;
     inspectorInspected[msg.sender][inspection.regenerator] = true;
   }
@@ -191,11 +199,11 @@ contract InspectionRules is Callable {
     Inspection memory inspection,
     string memory proofPhoto,
     string memory report,
-    RegenerationInspection memory biomassResult,
+    RegenerationInspection memory treesResult,
     RegenerationInspection memory biodiversityResult
   ) internal {
     inspection.status = InspectionStatus.INSPECTED;
-    inspection.regenerationScore = regenerationIndexRules.calculateScore(biomassResult, biodiversityResult);
+    inspection.regenerationScore = regenerationIndexRules.calculateScore(treesResult, biodiversityResult);
     inspection.proofPhoto = proofPhoto;
     inspection.report = report;
     inspection.inspectedAt = block.number;
@@ -203,7 +211,7 @@ contract InspectionRules is Callable {
 
     inspections[inspection.id] = inspection;
 
-    regenerationInspection[inspection.id][1] = biomassResult;
+    regenerationInspection[inspection.id][1] = treesResult;
     regenerationInspection[inspection.id][2] = biodiversityResult;
   }
 
@@ -244,7 +252,7 @@ contract InspectionRules is Callable {
   }
 
   function invalidateInspection(Inspection memory inspection) internal {
-    inspectionsBiomassImpact -= regenerationInspection[inspection.id][1].indicator;
+    inspectionsTreesImpact -= regenerationInspection[inspection.id][1].indicator;
     inspectionsBiodiversityImpact -= regenerationInspection[inspection.id][2].indicator;
     inspectionsCount--;
     inspection.status = InspectionStatus.INVALIDATED;
@@ -271,12 +279,20 @@ contract InspectionRules is Callable {
     return regenerationInspection[inspectionId][categoryId];
   }
 
+  /**
+   * @notice Checks if regenerator waited timeBetweenInspections
+   * @return bool True if can request
+   */
   function waitToRequest(Regenerator memory regenerator) public view returns (bool) {
     if (regenerator.totalInspections < allowedInitialRequests) return true;
 
     return block.number > regenerator.lastRequestAt + timeBetweenInspections;
   }
 
+  /**
+   * @notice Function to calculate amount of blocks to expire an inspection
+   * @return uint256 Return amount of blocks to expire an inspection
+   */
   function calculateBlocksToExpire(uint256 inspectionId) public view returns (uint256) {
     return inspections[inspectionId].acceptedAt + blocksToExpireAcceptedInspection - block.number;
   }

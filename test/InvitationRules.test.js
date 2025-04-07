@@ -8,7 +8,15 @@ const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
 describe("InvitationRules", () => {
   let instance, communityRules, researcherRules, validationRules, activistRules, developerRules, contributorRules;
-  let owner, user1Address, user2Address, user3Address, user4Address;
+  let owner,
+    user1Address,
+    user2Address,
+    user3Address,
+    user4Address,
+    user5Address,
+    user6Address,
+    user7Address,
+    user8Address;
 
   const addUser = async (address, userType, from) => {
     await communityRules.connect(from).addUser(address, userType);
@@ -75,7 +83,17 @@ describe("InvitationRules", () => {
   };
 
   beforeEach(async () => {
-    [owner, user1Address, user2Address, user3Address, user4Address] = await ethers.getSigners();
+    [
+      owner,
+      user1Address,
+      user2Address,
+      user3Address,
+      user4Address,
+      user5Address,
+      user6Address,
+      user7Address,
+      user8Address,
+    ] = await ethers.getSigners();
 
     communityRules = await communityRulesDeployed();
 
@@ -342,6 +360,16 @@ describe("InvitationRules", () => {
 
         context("can not send invite", () => {
           it("returns message error", async () => {
+            await addInvitation(owner, user5Address, userTypes.Activist, owner);
+            await addInvitation(owner, user6Address, userTypes.Activist, owner);
+            await addInvitation(owner, user7Address, userTypes.Activist, owner);
+            await addInvitation(owner, user8Address, userTypes.Activist, owner);
+
+            await addActivist("Activist C", user5Address);
+            await addActivist("Activist D", user6Address);
+            await addActivist("Activist E", user7Address);
+            await addActivist("Activist E", user8Address);
+
             await expect(instance.connect(user2Address).invite(user4Address, userTypes.Regenerator)).to.be.revertedWith(
               "Only most active users allowed to invite"
             );
@@ -353,9 +381,16 @@ describe("InvitationRules", () => {
         beforeEach(async () => {
           await addInvitation(owner, user2Address, userTypes.Developer, owner);
           await addInvitation(owner, user3Address, userTypes.Developer, owner);
+          await addInvitation(owner, user5Address, userTypes.Developer, owner);
+          await addInvitation(owner, user6Address, userTypes.Developer, owner);
+          await addInvitation(owner, user7Address, userTypes.Developer, owner);
+          await addInvitation(owner, user8Address, userTypes.Developer, owner);
 
           await addDeveloper("Developer A", user2Address);
           await addDeveloper("Developer B", user3Address);
+          await addDeveloper("Developer C", user5Address);
+          await addDeveloper("Developer D", user6Address);
+          await addDeveloper("Developer E", user7Address);
         });
 
         context("when can invite", () => {
@@ -408,6 +443,8 @@ describe("InvitationRules", () => {
 
         context("can not send invite", () => {
           it("returns message error", async () => {
+            await addDeveloper("Developer F", user8Address);
+
             await expect(instance.connect(user2Address).invite(user4Address, userTypes.Developer)).to.be.revertedWith(
               "Only most active users allowed to invite"
             );
@@ -419,13 +456,21 @@ describe("InvitationRules", () => {
         beforeEach(async () => {
           await addInvitation(owner, user2Address, userTypes.Contributor, owner);
           await addInvitation(owner, user3Address, userTypes.Contributor, owner);
+          await addInvitation(owner, user5Address, userTypes.Contributor, owner);
+          await addInvitation(owner, user6Address, userTypes.Contributor, owner);
+          await addInvitation(owner, user7Address, userTypes.Contributor, owner);
+          await addInvitation(owner, user8Address, userTypes.Contributor, owner);
 
           await addContributor("Contributor A", user2Address);
           await addContributor("Contributor B", user3Address);
+          await addContributor("Contributor C", user5Address);
+          await addContributor("Contributor D", user6Address);
+          await addContributor("Contributor E", user7Address);
         });
 
         context("when can invite", () => {
           beforeEach(async () => {
+            await advanceBlock(10);
             await contributorRules.connect(user2Address).addContribution("description", "report");
           });
 
@@ -474,6 +519,8 @@ describe("InvitationRules", () => {
 
         context("can not send invite", () => {
           it("returns message error", async () => {
+            await addContributor("Contributor F", user8Address);
+
             await expect(instance.connect(user2Address).invite(user4Address, userTypes.Contributor)).to.be.revertedWith(
               "Only most active users allowed to invite"
             );
@@ -485,9 +532,16 @@ describe("InvitationRules", () => {
         beforeEach(async () => {
           await addInvitation(owner, user2Address, userTypes.Researcher, owner);
           await addInvitation(owner, user3Address, userTypes.Researcher, owner);
+          await addInvitation(owner, user5Address, userTypes.Researcher, owner);
+          await addInvitation(owner, user6Address, userTypes.Researcher, owner);
+          await addInvitation(owner, user7Address, userTypes.Researcher, owner);
+          await addInvitation(owner, user8Address, userTypes.Researcher, owner);
 
           await addResearcher("Researcher A", user2Address);
           await addResearcher("Researcher B", user3Address);
+          await addResearcher("Researcher C", user5Address);
+          await addResearcher("Researcher D", user6Address);
+          await addResearcher("Researcher E", user7Address);
         });
 
         context("when can invite", () => {
@@ -540,6 +594,8 @@ describe("InvitationRules", () => {
 
         context("can not send invite", () => {
           it("returns message error", async () => {
+            await addResearcher("Researcher F", user8Address);
+
             await expect(instance.connect(user2Address).invite(user4Address, userTypes.Researcher)).to.be.revertedWith(
               "Only most active users allowed to invite"
             );
@@ -597,6 +653,64 @@ describe("InvitationRules", () => {
             });
           });
         });
+      });
+    });
+  });
+
+  describe("#inviteRegeneratorInspector", () => {
+    beforeEach(async () => {
+      await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+      await addUser(user1Address, userTypes.Regenerator, owner);
+
+      await addInvitation(owner, user2Address, userTypes.Activist, owner);
+      await addUser(user2Address, userTypes.Activist, owner);
+    });
+
+    context("when invite regenerator or inspector", () => {
+      context("with activist", () => {
+        it("should invite regenerator with success", async () => {
+          await instance.connect(user2Address).inviteRegeneratorInspector(user4Address, userTypes.Regenerator);
+
+          const invitation = await communityRules.invitations(user4Address);
+
+          expect(invitation.invited).to.equal(user4Address.address);
+        });
+
+        it("should invite inspector with success", async () => {
+          await instance.connect(user2Address).inviteRegeneratorInspector(user4Address, userTypes.Inspector);
+
+          const invitation = await communityRules.invitations(user4Address);
+
+          expect(invitation.invited).to.equal(user4Address.address);
+        });
+      });
+
+      context("without activist", () => {
+        it("revert", async () => {
+          await expect(
+            instance.connect(user1Address).inviteRegeneratorInspector(user4Address, userTypes.Activist)
+          ).to.be.revertedWith("Only to activists");
+        });
+      });
+    });
+
+    context("when invite other types", () => {
+      it("should revert", async () => {
+        await expect(
+          instance.connect(user2Address).inviteRegeneratorInspector(user4Address, userTypes.Activist)
+        ).to.be.revertedWith("Only regenerators or inspectors");
+      });
+    });
+
+    context("when is recent", () => {
+      beforeEach(async () => {
+        await instance.connect(user2Address).inviteRegeneratorInspector(user4Address, userTypes.Regenerator);
+      });
+
+      it("should revert", async () => {
+        await expect(
+          instance.connect(user2Address).inviteRegeneratorInspector(user5Address, userTypes.Regenerator)
+        ).to.be.revertedWith("Invite delay not reached");
       });
     });
   });

@@ -13,6 +13,11 @@ describe("RegeneratorRules", () => {
 
   const addRegenerator = async (name, from, _coordinates = []) => {
     const test = _coordinates.length > 0 ? _coordinates : coordinates();
+    await instance.connect(from).addRegenerator(1000, name, "photoURL", test);
+  };
+
+  const addRegenerator2 = async (name, from, _coordinates = []) => {
+    const test = _coordinates.length > 0 ? _coordinates : coordinates();
     await instance.connect(from).addRegenerator(10, name, "photoURL", test);
   };
 
@@ -85,11 +90,12 @@ describe("RegeneratorRules", () => {
       expect(regenerator.regeneratorWallet).to.equal(prod1Address.address);
       expect(regenerator.name).to.equal("Regenerator A");
       expect(regenerator.proofPhoto).to.equal("photoURL");
-      expect(regenerator.totalArea).to.equal("10");
+      expect(regenerator.totalArea).to.equal("1000");
       expect(regenerator.totalInspections).to.equal(0);
       expect(regenerator.pendingInspection).to.equal(false);
       expect(regenerator.regenerationScore.average).to.equal("0");
       expect(regenerator.regenerationScore.score).to.equal("0");
+      expect(regenerator.coordinatesCount).to.equal("4");
 
       expect(regenerator.pool.currentEra).to.equal(1);
     });
@@ -164,7 +170,7 @@ describe("RegeneratorRules", () => {
       await addRegenerator("Regenerator B", prod2Address);
 
       const newRegenerationArea = await instance.regenerationArea();
-      expect(newRegenerationArea).to.equal(20);
+      expect(newRegenerationArea).to.equal(2000);
     });
   });
 
@@ -235,6 +241,12 @@ describe("RegeneratorRules", () => {
           "Minimum 3 and maximum 10 coordinate points"
         );
       });
+    });
+  });
+
+  context("when totalArea is below 1000", () => {
+    it("should return error", async () => {
+      await expect(addRegenerator2("Regenerator A", prod1Address)).to.be.revertedWith("Minimum 500 square meters");
     });
   });
 
@@ -331,7 +343,7 @@ describe("RegeneratorRules", () => {
             });
           });
 
-          context("when have more tha one regenerator", () => {
+          context("when have more than one regenerator", () => {
             beforeEach(async () => {
               await instance.afterRealizeInspection(prod1Address, 600);
               await addRegenerator("Regenerator B", prod2Address);

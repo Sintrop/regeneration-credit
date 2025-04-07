@@ -262,7 +262,6 @@ describe("ContributorRules", (accounts) => {
       expect(contribution.id).to.equal("1");
       expect(contribution.era).to.equal("1");
       expect(contribution.user).to.equal(contr1Address.address);
-      expect(contribution.level).to.equal("0");
       expect(contribution.report).to.equal("report");
     });
   });

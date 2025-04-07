@@ -55,7 +55,7 @@ contract CommunityRules is Ownable, Callable {
   }
 
   event AddUserEvent(address addr, UserType userType);
-  event DeniedUserEevent(address addr);
+  event DeniedUserEvent(address addr);
   event AddDelelationEvent(address informer, address reported);
   event AddInvitationEvent(address inviter, address invited, UserType userTypeTo);
 
@@ -174,14 +174,24 @@ contract CommunityRules is Ownable, Callable {
     emit AddInvitationEvent(inviter, invited, userType);
   }
 
+  /**
+   * @dev Called by validationRules
+   * @notice Function to set an user to denied
+   * @param userAddress Denied user address
+   */
   function setDeniedType(address userAddress) public mustBeAllowedCaller {
     userTypesCount[users[userAddress]]--;
 
     users[userAddress] = UserType.DENIED;
 
-    emit DeniedUserEevent(userAddress);
+    emit DeniedUserEvent(userAddress);
   }
 
+  /**
+   * @dev True if userAddress is equal userType
+   * @notice Function to check if an userAddress type is equal passed userType
+   * @param userAddress Denied user address
+   */
   function userTypeIs(UserType userType, address userAddress) public view returns (bool) {
     return users[userAddress] == userType;
   }
@@ -193,6 +203,11 @@ contract CommunityRules is Ownable, Callable {
     return delations[addr];
   }
 
+  /**
+   * @dev Returns the invitation
+   * @notice Get the invitation of an user
+   * @param addr User address
+   */
   function getInvitation(address addr) public view returns (Invitation memory) {
     return invitations[addr];
   }

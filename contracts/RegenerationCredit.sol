@@ -12,8 +12,13 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * @notice Token backed by the regeneration impact of the community
  */
 contract RegenerationCredit is ERC20, Ownable {
+  /// @notice Token name
   string public constant NAME = "REGENERATION CREDIT";
+
+  /// @notice Token symbol
   string public constant SYMBOL = "RC";
+
+  /// @notice Token decimals
   uint8 public constant DECIMALS = 18;
 
   /// @notice Relationship between address and token balance
@@ -26,8 +31,13 @@ contract RegenerationCredit is ERC20, Ownable {
   /// @notice Checks if an address is a contract pool
   mapping(address => bool) internal contractsPools;
 
+  /// @notice Total token supply
   uint256 public totalSupply_;
+
+  /// @notice Amount of burned tokens
   uint256 public totalCertified_;
+
+  /// @notice Amount of pool locked tokens
   uint256 public totalLocked_;
 
   using SafeMath for uint256;
@@ -74,6 +84,9 @@ contract RegenerationCredit is ERC20, Ownable {
     return true;
   }
 
+  /**
+   * @notice Checks if an address is a contract pool
+   */
   function contractPool(address contractFundsAddress) public view returns (bool) {
     return contractsPools[contractFundsAddress];
   }
@@ -119,6 +132,11 @@ contract RegenerationCredit is ERC20, Ownable {
     return true;
   }
 
+  /**
+   * @dev Allows any user to burn tokens
+   * @notice Compensate degradation by burning tokens and receive a certificate
+   * @param amount Tokens burned
+   */
   function burnTokens(uint256 amount) public {
     burnTokensInternal(msg.sender, amount);
   }
@@ -127,12 +145,18 @@ contract RegenerationCredit is ERC20, Ownable {
     burnTokensInternal(tokenOwner, amount);
   }
 
+  /**
+   * @dev Internal function to add burned tokens to the certificate
+   */
   function burnTokensInternal(address tokenOwner, uint256 amount) internal {
     _burn(tokenOwner, amount);
     certificate[tokenOwner] += amount;
     totalCertified_ += amount;
   }
 
+  /**
+   * @dev Burn the tokens
+   */
   function _burn(address account, uint256 amount) internal override {
     require(account != address(0), "Burn from the zero address");
 
@@ -146,14 +170,23 @@ contract RegenerationCredit is ERC20, Ownable {
     emit Transfer(account, address(0), amount);
   }
 
+  /**
+   * @notice Total certified tokens
+   */
   function totalCertified() public view returns (uint256) {
     return totalCertified_;
   }
 
+  /**
+   * @notice Total tokens locked at pools
+   */
   function totalLocked() public view returns (uint256) {
     return totalLocked_;
   }
 
+  /**
+   * @dev Modifier to only contract pools
+   */
   modifier mustBeContractPool() {
     require(contractPool(msg.sender), "Not a contract pool");
     _;

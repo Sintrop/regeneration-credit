@@ -18,6 +18,9 @@ contract SupporterPool is Callable {
     regenerationCredit = RegenerationCredit(regenerationCreditAddress);
   }
 
+  /**
+   * @dev Burn tokens event
+   */
   event PoolBurnTokensEvent(
     address indexed _tokenOwner,
     uint256 _amountBurned,
@@ -25,10 +28,16 @@ contract SupporterPool is Callable {
     uint256 _inviterTotalTokens
   );
 
+  /**
+   * @dev Checks the regeneration credit balance of an address
+   */
   function balanceOf(address addr) public view returns (uint256) {
     return regenerationCredit.balanceOf(addr);
   }
 
+  /**
+   * @dev Called by supporterRules, burn tokens function that pays reward for inviter
+   */
   function burnTokens(
     address tokenOwner,
     address inviter,

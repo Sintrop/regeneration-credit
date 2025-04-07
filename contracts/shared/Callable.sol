@@ -3,7 +3,13 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
+/**
+ * @author Sintrop
+ * @title Callable
+ * @dev Contract to secure public functions to be called only by allowedCallers
+ */
 contract Callable is Ownable {
+  /// @dev Addresses allowed to call.
   mapping(address => bool) public allowedCallers;
 
   /**
