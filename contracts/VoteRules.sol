@@ -2,18 +2,18 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import { CommunityRules } from "../CommunityRules.sol";
-import { ActivistRules } from "../ActivistRules.sol";
-import { ContributorRules } from "../ContributorRules.sol";
-import { DeveloperRules } from "../DeveloperRules.sol";
-import { ResearcherRules } from "../ResearcherRules.sol";
-import { UserType } from "../types/CommunityTypes.sol";
-import { Activist } from "../types/ActivistTypes.sol";
-import { Contributor } from "../types/ContributorTypes.sol";
-import { Developer } from "../types/DeveloperTypes.sol";
-import { Researcher } from "../types/ResearcherTypes.sol";
+import { CommunityRules } from "./CommunityRules.sol";
+import { ActivistRules } from "./ActivistRules.sol";
+import { ContributorRules } from "./ContributorRules.sol";
+import { DeveloperRules } from "./DeveloperRules.sol";
+import { ResearcherRules } from "./ResearcherRules.sol";
+import { UserType } from "./types/CommunityTypes.sol";
+import { Activist } from "./types/ActivistTypes.sol";
+import { Contributor } from "./types/ContributorTypes.sol";
+import { Developer } from "./types/DeveloperTypes.sol";
+import { Researcher } from "./types/ResearcherTypes.sol";
 
-contract Votable {
+contract VoteRules {
   using SafeMath for uint256;
 
   /// @notice CommunityRules contract address
@@ -55,7 +55,7 @@ contract Votable {
     UserType userType = communityRules.getUser(addr);
     uint256 totalUsers = communityRules.userTypesTotalCount(userType);
 
-    return canVote(totalLevels(userType), totalUsers, totalUserLevels(addr, userType));
+    return canVote2(totalLevels(userType), totalUsers, totalUserLevels(addr, userType));
   }
 
   function totalUserLevels(address addr, UserType userType) public view returns (uint256) {
@@ -96,12 +96,14 @@ contract Votable {
 
   /**
    * @dev Calculate if a user can send vote
-   * @param totalLevels total levels on the system
+   * @param totalTypeLevels total type levels on the system
    * @param totalUsers total of user of specific type registered in the system
    * @param userLevels total levels of the user
    */
-  function canVote(uint256 totalLevels, uint256 totalUsers, uint256 userLevels) public pure returns (bool) {
-    uint256 avg = totalLevels.div(totalUsers).add(1);
+  function canVote2(uint256 totalTypeLevels, uint256 totalUsers, uint256 userLevels) public pure returns (bool) {
+    if (totalUsers <= 5) return true;
+    
+    uint256 avg = totalTypeLevels.div(totalUsers).add(1);
 
     return userLevels >= avg.mul(15).div(10);
   }

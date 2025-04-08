@@ -7,6 +7,7 @@ import { UserType, Invitation } from "./types/CommunityTypes.sol";
 import { ActivistPool } from "./ActivistPool.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
+import { VoteRules } from "./VoteRules.sol";
 
 /**
  * @author Sintrop
@@ -30,6 +31,9 @@ contract ActivistRules is Callable, Invitable {
 
   /// @notice ActivistPool contract address
   ActivistPool internal activistPool;
+
+  /// @notice VoteRules contract address
+  VoteRules internal voteRules;  
 
   /// @notice Activist UserType
   UserType private constant USER_TYPE = UserType.ACTIVIST;

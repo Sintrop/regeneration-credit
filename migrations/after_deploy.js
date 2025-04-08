@@ -3,6 +3,7 @@ const getDeployedContract = require("../scripts/shared/getDeployedContract");
 async function afterDeploy() {
   await configureValidationRules();
   await configureInspectionRules();
+  await configureVoteRules();
   await renounceOwnership();
   await inviteUsers();
   await transferTokens();
@@ -20,6 +21,7 @@ async function configureValidationRules() {
   const researcherRules = await getDeployedContract("ResearcherRules");
   const activistRules = await getDeployedContract("ActivistRules");
   const contributorRules = await getDeployedContract("ContributorRules");
+  const voteRules = await getDeployedContract("VoteRules");
 
   const contractDependencies = {
     communityRulesAddress: communityRules.target,
@@ -28,7 +30,8 @@ async function configureValidationRules() {
     developerRulesAddress: developerRules.target,
     researcherRulesAddress: researcherRules.target,
     activistRulesAddress: activistRules.target,
-    contributorRulesAddress: contributorRules
+    contributorRulesAddress: contributorRules,
+    voteRulesAddress: voteRules
   };
 
   await validationRules.setContractAddressDependencies(contractDependencies);
@@ -67,6 +70,19 @@ async function configureInspectionRules() {
   await regenerationIndexRules.newAllowedCaller(inspectionRules.target);
 
   console.log("After InspectionRules deploy is OK");
+}
+
+async function configureVoteRules() {
+  const voteRules = await getDeployedContract("VoteRules");
+  const developerRules = await getDeployedContract("DeveloperRules");
+  const researcherRules = await getDeployedContract("ResearcherRules");
+  const activistRules = await getDeployedContract("ActivistRules");
+  const contributorRules = await getDeployedContract("ContributorRules");
+
+  await developerRules.setVoteRules(voteRules.target);
+  await researcherRules.setVoteRules(voteRules.target);
+
+  console.log("After configureVoteRules is OK");
 }
 
 async function renounceOwnership() {

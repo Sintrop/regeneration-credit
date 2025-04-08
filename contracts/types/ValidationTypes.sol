@@ -27,4 +27,5 @@ struct ContractsDependency {
   address researcherRulesAddress;
   address contributorRulesAddress;
   address activistRulesAddress;
+  address voteRulesAddress;
 }

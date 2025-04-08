@@ -14,7 +14,7 @@ import { ActivistRules } from "./ActivistRules.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
 import { Report } from "./types/DeveloperTypes.sol";
 import { Research } from "./types/ResearcherTypes.sol";
-import { Votable } from "./shared/Votable.sol";
+import { VoteRules } from "./VoteRules.sol";
 
 /**
  * @author Sintrop
@@ -40,16 +40,15 @@ contract ValidationRules is Callable {
   ContributorRules private contributorRules;
   ActivistRules private activistRules;
 
-  /// @notice ValidationRules contract address
-  Votable internal votable;
+  /// @notice VoteRules contract address
+  VoteRules internal voteRules;
 
   uint256 private immutable firstValidatorLimit;
   uint256 private immutable secondValidatorLimit;
 
-  constructor(uint256 firstValidatorLimit_, uint256 secondValidatorLimit_, address votableAddress) {
+  constructor(uint256 firstValidatorLimit_, uint256 secondValidatorLimit_) {
     firstValidatorLimit = firstValidatorLimit_;
     secondValidatorLimit = secondValidatorLimit_;
-    votable = Votable(votableAddress);
   }
 
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
@@ -60,10 +59,11 @@ contract ValidationRules is Callable {
     researcherRules = ResearcherRules(contractDependency.researcherRulesAddress);
     contributorRules = ContributorRules(contractDependency.contributorRulesAddress);
     activistRules = ActivistRules(contractDependency.activistRulesAddress);
+    voteRules = VoteRules(contractDependency.voteRulesAddress);    
   }
 
   function addUserValidation(address userAddress, string memory justification) public {
-    require(votable.canVote(msg.sender), "User can not vote");
+    require(voteRules.canVote(msg.sender), "User cannot vote");
     require(!communityRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
     require(!communityRules.userTypeIs(UserType.DENIED, userAddress), "User already denied");
     require(!validatorUsersValidations[msg.sender][userAddress], "Already voted");
