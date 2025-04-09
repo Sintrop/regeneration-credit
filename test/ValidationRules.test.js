@@ -24,21 +24,21 @@ describe("ValidationRules", () => {
     regenerator2Address,
     inspector1Address,
     inspector2Address,
-    validator1Address,
-    validator2Address,
-    validator3Address,
-    validator4Address,
-    validator5Address,
-    validator6Address,
-    validator7Address,
-    validator8Address,
-    validator9Address,
-    validator10Address,
-    validator11Address,
-    validator12Address,
-    validator13Address,
-    validator14Address,
-    validator15Address,
+    user1Address,
+    user2Address,
+    user3Address,
+    user4Address,
+    user5Address,
+    user6Address,
+    user7Address,
+    user8Address,
+    user9Address,
+    user10Address,
+    user11Address,
+    user12Address,
+    user13Address,
+    user14Address,
+    user15Address,
     contributor1Address,
     contributor2Address,
     dev1Address,
@@ -182,21 +182,21 @@ describe("ValidationRules", () => {
       regenerator2Address,
       inspector1Address,
       inspector2Address,
-      validator1Address,
-      validator2Address,
-      validator3Address,
-      validator4Address,
-      validator5Address,
-      validator6Address,
-      validator7Address,
-      validator8Address,
-      validator9Address,
-      validator10Address,
-      validator11Address,
-      validator12Address,
-      validator13Address,
-      validator14Address,
-      validator15Address,
+      user1Address,
+      user2Address,
+      user3Address,
+      user4Address,
+      user5Address,
+      user6Address,
+      user7Address,
+      user8Address,
+      user9Address,
+      user10Address,
+      user11Address,
+      user12Address,
+      user13Address,
+      user14Address,
+      user15Address,
       contributor1Address,
       contributor2Address,
       dev1Address,
@@ -302,6 +302,15 @@ describe("ValidationRules", () => {
     const activistRulesFactory = await ethers.getContractFactory("ActivistRules");
     activistRules = await activistRulesFactory.deploy(communityRules.target, activistPool.target);
 
+    const voteRulesFactory = await ethers.getContractFactory("VoteRules");
+    voteRules = await voteRulesFactory.deploy(
+      communityRules.target,
+      activistRules.target,
+      contributorRules.target,
+      developerRules.target,
+      researcherRules.target
+    );
+
     const validationRulesDependencies = {
       communityRulesAddress: communityRules.target,
       regeneratorRulesAddress: regeneratorRules.target,
@@ -310,6 +319,7 @@ describe("ValidationRules", () => {
       researcherRulesAddress: researcherRules.target,
       contributorRulesAddress: contributorRules.target,
       activistRulesAddress: activistRules.target,
+      voteRulesAddress: voteRules.target,
     };
 
     await communityRules.newAllowedCaller(instance.target);
@@ -352,59 +362,352 @@ describe("ValidationRules", () => {
     context("when caller is validator", () => {
       context("when user already is denied", () => {
         beforeEach(async () => {
-          await addInvitation(owner, validator2Address, userTypes.Validator, owner);
-          await addValidator(validator1Address);
-          await addValidator(validator2Address);
-          await denyUser(validator2Address);
+          await addInvitation(owner, dev1Address, userTypes.Developer, owner);
+          await addInvitation(owner, dev2Address, userTypes.Developer, owner);
+
+          await addDeveloper("Developer  A", dev1Address);
+          await addDeveloper("Developer  B", dev2Address);
+
+          await denyUser(dev2Address);
         });
 
         it("should return error", async () => {
           await expect(
-            instance.connect(validator1Address).addUserValidation(validator2Address, "justification")
+            instance.connect(dev1Address).addUserValidation(dev2Address, "justification")
           ).to.be.revertedWith("User already denied");
         });
       });
 
       context("when user is not denied", () => {
-        context("when user validations count is not equal majorityValidatorsCount", () => {
-          beforeEach(async () => {
-            await addInvitation(owner, validator2Address, userTypes.Validator, owner);
-            await addInvitation(owner, validator3Address, userTypes.Validator, owner);
-            await addInvitation(owner, validator4Address, userTypes.Validator, owner);
+        context("when user validations count is less than majorityValidatorsCount", () => {
+          context("with developer", () => {
+            context("when total users is less than 5", () => {
+              beforeEach(async () => {
+                await addInvitation(owner, dev1Address, userTypes.Developer, owner);
+                await addInvitation(owner, dev2Address, userTypes.Developer, owner);
 
-            await addValidator(validator1Address);
-            await addValidator(validator2Address);
-            await addValidator(validator3Address);
-            await addValidator(validator4Address);
+                await addDeveloper("Developer  A", dev1Address);
+                await addDeveloper("Developer  B", dev2Address);
 
-            await instance.connect(validator1Address).addUserValidation(validator2Address, "my justification");
+                await instance.connect(dev1Address).addUserValidation(dev2Address, "my justification");
+              });
+
+              it("should add validation", async () => {
+                const validations = await instance.getUserValidations(dev2Address);
+
+                expect(validations[0].justification).to.equal("my justification");
+                expect(validations.length).to.equal(1);
+              });
+
+              it("user type must be the same", async () => {
+                const user = await communityRules.getUser(dev2Address);
+                const DEVELOPER = 4;
+
+                expect(user).to.equal(DEVELOPER);
+              });
+            });
+
+            context("when total users is bigger than 5", () => {
+              beforeEach(async () => {
+                await addInvitation(owner, dev1Address, userTypes.Developer, owner);
+                await addInvitation(owner, dev2Address, userTypes.Developer, owner);
+                await addInvitation(owner, user1Address, userTypes.Developer, owner);
+                await addInvitation(owner, user2Address, userTypes.Developer, owner);
+                await addInvitation(owner, user3Address, userTypes.Developer, owner);
+                await addInvitation(owner, user4Address, userTypes.Developer, owner);
+
+                await addDeveloper("Developer  A", dev1Address);
+                await addDeveloper("Developer  B", dev2Address);
+                await addDeveloper("Developer  C", user1Address);
+                await addDeveloper("Developer  D", user2Address);
+                await addDeveloper("Developer  E", user3Address);
+                await addDeveloper("Developer  F", user4Address);
+              });
+
+              context("when user levels is less than total users levels avg", () => {
+                it("should return error", async () => {
+                  await expect(
+                    instance.connect(dev1Address).addUserValidation(dev2Address, "my justification")
+                  ).to.be.revertedWith("User can not vote");
+                });
+              });
+
+              context("when user levels is bigger than total users levels avg", () => {
+                beforeEach(async () => {
+                  await developerRules.connect(dev1Address).addReport("description", "report");
+
+                  await instance.connect(dev1Address).addUserValidation(dev2Address, "my justification");
+                });
+
+                it("should add validation", async () => {
+                  const validations = await instance.getUserValidations(dev2Address);
+
+                  expect(validations[0].justification).to.equal("my justification");
+                  expect(validations.length).to.equal(1);
+                });
+
+                it("user type must be the same", async () => {
+                  const user = await communityRules.getUser(dev2Address);
+                  const DEVELOPER = 4;
+
+                  expect(user).to.equal(DEVELOPER);
+                });
+              });
+            });
           });
 
-          it("should add validation", async () => {
-            const validations = await instance.getUserValidations(validator2Address);
+          context("with contributor", () => {
+            context("when total users is less than 5", () => {
+              beforeEach(async () => {
+                await addInvitation(owner, user1Address, userTypes.Contributor, owner);
+                await addInvitation(owner, user2Address, userTypes.Contributor, owner);
 
-            expect(validations[0].justification).to.equal("my justification");
-            expect(validations.length).to.equal(1);
+                await addContributor("Contributor A", user1Address);
+                await addContributor("Contributor  B", user2Address);
+
+                await instance.connect(user1Address).addUserValidation(user2Address, "my justification");
+              });
+
+              it("should add validation", async () => {
+                const validations = await instance.getUserValidations(user2Address);
+
+                expect(validations[0].justification).to.equal("my justification");
+                expect(validations.length).to.equal(1);
+              });
+
+              it("user type must be the same", async () => {
+                const user = await communityRules.getUser(user2Address);
+                const CONTRIBUTOR = 5;
+
+                expect(user).to.equal(CONTRIBUTOR);
+              });
+            });
+
+            context("when total users is bigger than 5", () => {
+              beforeEach(async () => {
+                await addInvitation(owner, user1Address, userTypes.Contributor, owner);
+                await addInvitation(owner, user2Address, userTypes.Contributor, owner);
+                await addInvitation(owner, user3Address, userTypes.Contributor, owner);
+                await addInvitation(owner, user4Address, userTypes.Contributor, owner);
+                await addInvitation(owner, user5Address, userTypes.Contributor, owner);
+                await addInvitation(owner, user6Address, userTypes.Contributor, owner);
+
+                await addContributor("User  A", user1Address);
+                await addContributor("User  B", user2Address);
+                await addContributor("User  C", user3Address);
+                await addContributor("User  D", user4Address);
+                await addContributor("User  E", user5Address);
+                await addContributor("User  F", user6Address);
+              });
+
+              context("when user levels is less than total users levels avg", () => {
+                it("should return error", async () => {
+                  await expect(
+                    instance.connect(user1Address).addUserValidation(user2Address, "my justification")
+                  ).to.be.revertedWith("User can not vote");
+                });
+              });
+
+              context("when user levels is bigger than total users levels avg", () => {
+                beforeEach(async () => {
+                  await contributorRules.connect(user1Address).addContribution("description", "report");
+
+                  await instance.connect(user1Address).addUserValidation(user2Address, "my justification");
+                });
+
+                it("should add validation", async () => {
+                  const validations = await instance.getUserValidations(user2Address);
+
+                  expect(validations[0].justification).to.equal("my justification");
+                  expect(validations.length).to.equal(1);
+                });
+
+                it("user type must be the same", async () => {
+                  const user = await communityRules.getUser(user2Address);
+                  const USER_TYPE = 5;
+
+                  expect(user).to.equal(USER_TYPE);
+                });
+              });
+            });
           });
 
-          it("user type must be the same", async () => {
-            const user = await communityRules.getUser(validator2Address);
-            const VALIDATOR = 8;
+          context("with researcher", () => {
+            context("when total users is less than 5", () => {
+              beforeEach(async () => {
+                await addInvitation(owner, user1Address, userTypes.Researcher, owner);
+                await addInvitation(owner, user2Address, userTypes.Researcher, owner);
 
-            expect(user).to.equal(VALIDATOR);
+                await addResearcher("User A", user1Address);
+                await addResearcher("User  B", user2Address);
+
+                await instance.connect(user1Address).addUserValidation(user2Address, "my justification");
+              });
+
+              it("should add validation", async () => {
+                const validations = await instance.getUserValidations(user2Address);
+
+                expect(validations[0].justification).to.equal("my justification");
+                expect(validations.length).to.equal(1);
+              });
+
+              it("user type must be the same", async () => {
+                const user = await communityRules.getUser(user2Address);
+                const USER_TYPE = 3;
+
+                expect(user).to.equal(USER_TYPE);
+              });
+            });
+
+            context("when total users is bigger than 5", () => {
+              beforeEach(async () => {
+                await addInvitation(owner, user1Address, userTypes.Researcher, owner);
+                await addInvitation(owner, user2Address, userTypes.Researcher, owner);
+                await addInvitation(owner, user3Address, userTypes.Researcher, owner);
+                await addInvitation(owner, user4Address, userTypes.Researcher, owner);
+                await addInvitation(owner, user5Address, userTypes.Researcher, owner);
+                await addInvitation(owner, user6Address, userTypes.Researcher, owner);
+
+                await addResearcher("User  A", user1Address);
+                await addResearcher("User  B", user2Address);
+                await addResearcher("User  C", user3Address);
+                await addResearcher("User  D", user4Address);
+                await addResearcher("User  E", user5Address);
+                await addResearcher("User  F", user6Address);
+              });
+
+              context("when user levels is less than total users levels avg", () => {
+                it("should return error", async () => {
+                  await expect(
+                    instance.connect(user1Address).addUserValidation(user2Address, "my justification")
+                  ).to.be.revertedWith("User can not vote");
+                });
+              });
+
+              context("when user levels is bigger than total users levels avg", () => {
+                beforeEach(async () => {
+                  await researcherRules.connect(user1Address).addResearch("title", "thesis", "fileURL");
+
+                  await instance.connect(user1Address).addUserValidation(user2Address, "my justification");
+                });
+
+                it("should add validation", async () => {
+                  const validations = await instance.getUserValidations(user2Address);
+
+                  expect(validations[0].justification).to.equal("my justification");
+                  expect(validations.length).to.equal(1);
+                });
+
+                it("user type must be the same", async () => {
+                  const user = await communityRules.getUser(user2Address);
+                  const USER_TYPE = 3;
+
+                  expect(user).to.equal(USER_TYPE);
+                });
+              });
+            });
+          });
+
+          context("with activist", () => {
+            context("when total users is less than 5", () => {
+              beforeEach(async () => {
+                await addInvitation(owner, user1Address, userTypes.Activist, owner);
+                await addInvitation(owner, user2Address, userTypes.Activist, owner);
+
+                await addActivist("User A", user1Address);
+                await addActivist("User  B", user2Address);
+
+                await instance.connect(user1Address).addUserValidation(user2Address, "my justification");
+              });
+
+              it("should add validation", async () => {
+                const validations = await instance.getUserValidations(user2Address);
+
+                expect(validations[0].justification).to.equal("my justification");
+                expect(validations.length).to.equal(1);
+              });
+
+              it("user type must be the same", async () => {
+                const user = await communityRules.getUser(user2Address);
+                const USER_TYPE = 6;
+
+                expect(user).to.equal(USER_TYPE);
+              });
+            });
+
+            context("when total users is bigger than 5", () => {
+              beforeEach(async () => {
+                await addInvitation(owner, user1Address, userTypes.Activist, owner);
+                await addInvitation(owner, user2Address, userTypes.Activist, owner);
+                await addInvitation(owner, user3Address, userTypes.Activist, owner);
+                await addInvitation(owner, user4Address, userTypes.Activist, owner);
+                await addInvitation(owner, user5Address, userTypes.Activist, owner);
+                await addInvitation(owner, user6Address, userTypes.Activist, owner);
+
+                await addActivist("User  A", user1Address);
+                await addActivist("User  B", user2Address);
+                await addActivist("User  C", user3Address);
+                await addActivist("User  D", user4Address);
+                await addActivist("User  E", user5Address);
+                await addActivist("User  F", user6Address);
+              });
+
+              context("when user levels is less than total users levels avg", () => {
+                it("should return error", async () => {
+                  await expect(
+                    instance.connect(user1Address).addUserValidation(user2Address, "my justification")
+                  ).to.be.revertedWith("User can not vote");
+                });
+              });
+
+              context("when user levels is bigger than total users levels avg", () => {
+                beforeEach(async () => {
+                  await communityRules.newAllowedCaller(user1Address);
+
+                  await addInvitation(user1Address, user7Address, userTypes.Regenerator, user1Address);
+                  await addInvitation(user1Address, user8Address, userTypes.Regenerator, user1Address);
+
+                  await activistRules.addLevel(user7Address, 3, user8Address, 3);
+
+                  await instance.connect(user1Address).addUserValidation(user2Address, "my justification");
+                });
+
+                it("should add validation", async () => {
+                  const validations = await instance.getUserValidations(user2Address);
+
+                  expect(validations[0].justification).to.equal("my justification");
+                  expect(validations.length).to.equal(1);
+                });
+
+                it("user type must be the same", async () => {
+                  const user = await communityRules.getUser(user2Address);
+                  const USER_TYPE = 6;
+
+                  expect(user).to.equal(USER_TYPE);
+                });
+              });
+            });
           });
         });
 
         context("when user validations count is equal or bigger than majorityValidatorsCount", () => {
           beforeEach(async () => {
-            await addInvitation(owner, validator2Address, userTypes.Validator, owner);
-            await addInvitation(owner, validator3Address, userTypes.Validator, owner);
-            await addInvitation(owner, validator4Address, userTypes.Validator, owner);
+            await addInvitation(owner, user1Address, userTypes.Developer, owner);
+            await addInvitation(owner, user2Address, userTypes.Developer, owner);
+            await addInvitation(owner, user3Address, userTypes.Developer, owner);
+            await addInvitation(owner, user4Address, userTypes.Developer, owner);
+            await addInvitation(owner, user5Address, userTypes.Developer, owner);
+            await addInvitation(owner, user6Address, userTypes.Developer, owner);
 
-            await addValidator(validator1Address);
-            await addValidator(validator2Address);
-            await addValidator(validator3Address);
-            await addValidator(validator4Address);
+            await addDeveloper("User  A", user1Address);
+            await addDeveloper("User  B", user2Address);
+            await addDeveloper("User  C", user3Address);
+            await addDeveloper("User  F", user4Address);
+            await addDeveloper("User  D", user5Address);
+            await addDeveloper("User  E", user6Address);
+
+            await developerRules.connect(user1Address).addReport("description", "report");
+            await developerRules.connect(user2Address).addReport("description", "report");
           });
 
           context("when current era is 1", () => {
@@ -412,12 +715,14 @@ describe("ValidationRules", () => {
               beforeEach(async () => {
                 await addInvitation(owner, regenerator1Address, userTypes.Regenerator, owner);
                 await addInvitation(owner, regenerator2Address, userTypes.Regenerator, owner);
+
                 await addRegenerator("Regenerator A", regenerator1Address);
                 await addRegenerator("Regenerator B", regenerator2Address);
 
-                await instance.connect(validator1Address).addUserValidation(regenerator1Address, "my justification");
+                await instance.connect(user1Address).addUserValidation(regenerator1Address, "my justification");
+
                 receipt = await instance
-                  .connect(validator3Address)
+                  .connect(user2Address)
                   .addUserValidation(regenerator1Address, "my justification");
               });
 
@@ -430,7 +735,7 @@ describe("ValidationRules", () => {
 
               it("user type must be denied", async () => {
                 const user = await communityRules.getUser(regenerator1Address);
-                const DENIED = 9;
+                const DENIED = 8;
 
                 expect(user).to.equal(DENIED);
               });
@@ -478,8 +783,8 @@ describe("ValidationRules", () => {
                 await inspectorRules.afterRealizeInspection(inspector1Address);
                 await inspectorRules.afterRealizeInspection(inspector1Address);
 
-                await instance.connect(validator1Address).addUserValidation(inspector1Address, "my justification");
-                await instance.connect(validator3Address).addUserValidation(inspector1Address, "my justification");
+                await instance.connect(user1Address).addUserValidation(inspector1Address, "my justification");
+                await instance.connect(user2Address).addUserValidation(inspector1Address, "my justification");
               });
 
               it("should add validation", async () => {
@@ -491,7 +796,7 @@ describe("ValidationRules", () => {
 
               it("user type must be denied", async () => {
                 const user = await communityRules.getUser(inspector1Address);
-                const DENIED = 9;
+                const DENIED = 8;
 
                 expect(user).to.equal(DENIED);
               });
@@ -526,8 +831,8 @@ describe("ValidationRules", () => {
 
                 await contributorRules.connect(contributor1Address).addContribution("description", "contribution");
 
-                await instance.connect(validator1Address).addUserValidation(contributor1Address, "my justification");
-                await instance.connect(validator3Address).addUserValidation(contributor1Address, "my justification");
+                await instance.connect(user1Address).addUserValidation(contributor1Address, "my justification");
+                await instance.connect(user2Address).addUserValidation(contributor1Address, "my justification");
               });
 
               it("should add validation", async () => {
@@ -539,7 +844,7 @@ describe("ValidationRules", () => {
 
               it("user type must be denied", async () => {
                 const user = await communityRules.getUser(contributor1Address);
-                const DENIED = 9;
+                const DENIED = 8;
 
                 expect(user).to.equal(DENIED);
               });
@@ -574,8 +879,8 @@ describe("ValidationRules", () => {
 
                 await developerRules.connect(dev1Address).addReport("description", "report");
 
-                await instance.connect(validator1Address).addUserValidation(dev1Address, "my justification");
-                await instance.connect(validator3Address).addUserValidation(dev1Address, "my justification");
+                await instance.connect(user1Address).addUserValidation(dev1Address, "my justification");
+                await instance.connect(user2Address).addUserValidation(dev1Address, "my justification");
               });
 
               it("should add validation", async () => {
@@ -587,7 +892,7 @@ describe("ValidationRules", () => {
 
               it("user type must be denied", async () => {
                 const user = await communityRules.getUser(dev1Address);
-                const DENIED = 9;
+                const DENIED = 8;
 
                 expect(user).to.equal(DENIED);
               });
@@ -609,7 +914,7 @@ describe("ValidationRules", () => {
               it("userTypesCount must be decremented", async () => {
                 const userTypesCount = await communityRules.userTypesCount(userTypes.Developer);
 
-                expect(userTypesCount).to.equal(1);
+                expect(userTypesCount).to.equal(7);
               });
             });
 
@@ -622,8 +927,8 @@ describe("ValidationRules", () => {
 
                 await addResearch(resea1Address);
 
-                await instance.connect(validator1Address).addUserValidation(resea1Address, "my justification");
-                await instance.connect(validator3Address).addUserValidation(resea1Address, "my justification");
+                await instance.connect(user1Address).addUserValidation(resea1Address, "my justification");
+                await instance.connect(user2Address).addUserValidation(resea1Address, "my justification");
               });
 
               it("should add validation", async () => {
@@ -635,7 +940,7 @@ describe("ValidationRules", () => {
 
               it("user type must be denied", async () => {
                 const user = await communityRules.getUser(resea1Address);
-                const DENIED = 9;
+                const DENIED = 8;
 
                 expect(user).to.equal(DENIED);
               });
@@ -672,8 +977,8 @@ describe("ValidationRules", () => {
 
                 await activistRules.addLevel(regenerator1Address, 0, inspector2Address, 3);
 
-                await instance.connect(validator1Address).addUserValidation(activist1Address, "my justification");
-                await instance.connect(validator3Address).addUserValidation(activist1Address, "my justification");
+                await instance.connect(user1Address).addUserValidation(activist1Address, "my justification");
+                await instance.connect(user2Address).addUserValidation(activist1Address, "my justification");
               });
 
               it("should add validation", async () => {
@@ -685,7 +990,7 @@ describe("ValidationRules", () => {
 
               it("user type must be denied", async () => {
                 const user = await communityRules.getUser(activist1Address);
-                const DENIED = 9;
+                const DENIED = 8;
 
                 expect(user).to.equal(DENIED);
               });
@@ -714,14 +1019,7 @@ describe("ValidationRules", () => {
 
           context("when current era is 2", () => {
             context("when validators have contributed to last era", () => {
-              beforeEach(async () => {
-                await instance.connect(validator1Address).declareAlive();
-                await instance.connect(validator2Address).declareAlive();
-                await instance.connect(validator3Address).declareAlive();
-                await instance.connect(validator4Address).declareAlive();
-
-                await advanceBlock(validatorPoolArgs.blocksPerEra);
-              });
+              beforeEach(async () => {});
 
               context("when add validation", () => {
                 beforeEach(async () => {
@@ -730,10 +1028,8 @@ describe("ValidationRules", () => {
                   await addRegenerator("Regenerator A", regenerator1Address);
                   await addRegenerator("Regenerator B", regenerator2Address);
 
-                  await instance.connect(validator1Address).addUserValidation(regenerator1Address, "my justification");
-                  receipt = await instance
-                    .connect(validator3Address)
-                    .addUserValidation(regenerator1Address, "my justification");
+                  await instance.connect(user1Address).addUserValidation(regenerator1Address, "my justification");
+                  await instance.connect(user2Address).addUserValidation(regenerator1Address, "my justification");
                 });
 
                 it("should add validation", async () => {
@@ -741,31 +1037,6 @@ describe("ValidationRules", () => {
 
                   expect(validations[0].justification).to.equal("my justification");
                   expect(validations.length).to.equal(2);
-                });
-              });
-            });
-
-            context("when validator does not have contributed to last era", () => {
-              beforeEach(async () => {
-                await instance.connect(validator2Address).declareAlive();
-                await instance.connect(validator3Address).declareAlive();
-                await instance.connect(validator4Address).declareAlive();
-
-                await advanceBlock(validatorPoolArgs.blocksPerEra);
-              });
-
-              context("when add validation", () => {
-                beforeEach(async () => {
-                  await addInvitation(owner, regenerator1Address, userTypes.Regenerator, owner);
-                  await addInvitation(owner, regenerator2Address, userTypes.Regenerator, owner);
-                  await addRegenerator("Regenerator A", regenerator1Address);
-                  await addRegenerator("Regenerator B", regenerator2Address);
-                });
-
-                it("should return error", async () => {
-                  await expect(
-                    instance.connect(validator1Address).addUserValidation(regenerator1Address, "my justification")
-                  ).to.be.revertedWith("You did not contribute in the last era");
                 });
               });
             });
@@ -777,37 +1048,36 @@ describe("ValidationRules", () => {
     context("when caller is not validator", () => {
       it("should return error", async () => {
         await expect(
-          instance.connect(otherAddress).addUserValidation(validator5Address, "justification")
-        ).to.be.revertedWith("User must be a validator");
+          instance.connect(otherAddress).addUserValidation(user1Address, "justification")
+        ).to.be.revertedWith("Not a voter user");
       });
     });
 
-    context("when validator already voted to inspection", () => {
+    context("when validator already voted to user", () => {
       beforeEach(async () => {
-        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
-        await addInvitation(owner, validator3Address, userTypes.Validator, owner);
-        await addInvitation(owner, validator4Address, userTypes.Validator, owner);
-        await addValidator(validator1Address);
-        await addValidator(validator2Address);
-        await addValidator(validator3Address);
-        await addValidator(validator4Address);
-        await instance.connect(validator1Address).addUserValidation(validator4Address, "justification");
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
+
+        await addDeveloper("User  A", user1Address);
+        await addDeveloper("User  B", user2Address);
+
+        await instance.connect(user1Address).addUserValidation(user2Address, "justification");
       });
 
       it("should return error", async () => {
         await expect(
-          instance.connect(validator1Address).addUserValidation(validator4Address, "justification")
+          instance.connect(user1Address).addUserValidation(user2Address, "justification")
         ).to.be.revertedWith("Already voted");
       });
     });
 
     context("when is not a registered user", () => {
       it("should return error", async () => {
-        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
-        await addValidator(validator1Address);
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addDeveloper("User  A", user1Address);
 
         await expect(
-          instance.connect(validator1Address).addUserValidation(undefinedAddress, "justification")
+          instance.connect(user1Address).addUserValidation(undefinedAddress, "justification")
         ).to.be.revertedWith("User not registered");
       });
     });
@@ -816,14 +1086,11 @@ describe("ValidationRules", () => {
   describe("#addInspectionValidation", () => {
     context("with allowed caller", () => {
       beforeEach(async () => {
-        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
-        await addInvitation(owner, validator3Address, userTypes.Validator, owner);
-        await addInvitation(owner, validator4Address, userTypes.Validator, owner);
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
 
-        await addValidator(validator1Address);
-        await addValidator(validator2Address);
-        await addValidator(validator3Address);
-        await addValidator(validator4Address);
+        await addDeveloper("User  A", user1Address);
+        await addDeveloper("User  B", user2Address);
       });
 
       context("when validator already voted to inspection", () => {
@@ -844,12 +1111,12 @@ describe("ValidationRules", () => {
             invalidatedAt: 0,
           };
 
-          await instance.connect(owner).addInspectionValidation(inspectionMock, "justification", validator1Address);
+          await instance.connect(owner).addInspectionValidation(inspectionMock, "justification", user1Address);
         });
 
         it("should return error", async () => {
           await expect(
-            instance.connect(owner).addInspectionValidation(inspectionMock, "justification", validator1Address)
+            instance.connect(owner).addInspectionValidation(inspectionMock, "justification", user1Address)
           ).to.be.revertedWith("Already voted");
         });
       });
@@ -891,13 +1158,13 @@ describe("ValidationRules", () => {
                 await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 30);
 
                 await inspectorRules.addPenalty(inspectionMock.inspector, 2);
-                await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", validator1Address);
+                await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", user1Address);
               });
 
               it("deny inspector", async () => {
                 const newInspectorType = await communityRules.getUser(inspectionMock.inspector);
 
-                expect(newInspectorType).to.equal(9);
+                expect(newInspectorType).to.equal(8);
               });
 
               it("all inspector contract levels is removed", async () => {
@@ -964,7 +1231,7 @@ describe("ValidationRules", () => {
                 await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 10);
                 await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 30);
 
-                await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", validator1Address);
+                await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", user1Address);
               });
 
               it("inspector is the same", async () => {
@@ -1023,13 +1290,13 @@ describe("ValidationRules", () => {
                 invalidatedAt: 0,
               };
 
-              await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", validator1Address);
+              await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", user1Address);
             });
 
             it("add inspection validation", async () => {
               const validation = await instance.inspectionValidations(1, 0);
 
-              expect(validation[0]).to.equal(validator1Address.address);
+              expect(validation[0]).to.equal(user1Address.address);
               expect(validation[1]).to.equal(1);
               expect(validation[2]).to.equal("foo");
               expect(validation[3]).to.equal(2);
@@ -1056,51 +1323,16 @@ describe("ValidationRules", () => {
                 invalidatedAt: 0,
               };
 
-              await instance.connect(validator1Address).declareAlive();
-              await instance.connect(validator2Address).declareAlive();
-              await instance.connect(validator3Address).declareAlive();
-              await instance.connect(validator4Address).declareAlive();
-
-              await advanceBlock(validatorPoolArgs.blocksPerEra);
-
-              await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", validator1Address);
+              await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", user1Address);
             });
 
             it("add inspection validation", async () => {
               const validation = await instance.inspectionValidations(1, 0);
 
-              expect(validation[0]).to.equal(validator1Address.address);
+              expect(validation[0]).to.equal(user1Address.address);
               expect(validation[1]).to.equal(1);
               expect(validation[2]).to.equal("foo");
               expect(validation[3]).to.equal(2);
-            });
-          });
-
-          context("when validator does not have contributed to last era", () => {
-            beforeEach(async () => {
-              inspectionMock = {
-                id: 1,
-                status: 3,
-                regenerator: regenerator1Address,
-                inspector: inspector1Address,
-                regenerationScore: 20,
-                proofPhoto: "",
-                report: "",
-                validationsCount: 0,
-                createdAt: 100,
-                acceptedAt: 100,
-                inspectedAt: 100,
-                inspectedAtEra: 10,
-                invalidatedAt: 0,
-              };
-
-              await advanceBlock(validatorPoolArgs.blocksPerEra);
-            });
-
-            it("should return error", async () => {
-              await expect(
-                instance.connect(owner).addInspectionValidation(inspectionMock, "foo", validator1Address)
-              ).to.be.revertedWith("You did not contribute in the last era");
             });
           });
         });
@@ -1126,7 +1358,7 @@ describe("ValidationRules", () => {
         };
 
         await expect(
-          instance.connect(dev1Address).addInspectionValidation(inspectionMock, "justification", validator1Address)
+          instance.connect(dev1Address).addInspectionValidation(inspectionMock, "justification", user1Address)
         ).to.be.revertedWith("Not allowed caller");
       });
     });
@@ -1136,15 +1368,12 @@ describe("ValidationRules", () => {
     context("with allowed caller", () => {
       beforeEach(async () => {
         await addInvitation(owner, dev1Address, userTypes.Developer, owner);
-        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
-        await addInvitation(owner, validator3Address, userTypes.Validator, owner);
-        await addInvitation(owner, validator4Address, userTypes.Validator, owner);
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
 
-        await addDeveloper("Developer A", dev1Address);
-        await addValidator(validator1Address);
-        await addValidator(validator2Address);
-        await addValidator(validator3Address);
-        await addValidator(validator4Address);
+        await addDeveloper("User  A", user1Address);
+        await addDeveloper("User  B", user2Address);
+        await addDeveloper("User C", dev1Address);
 
         await developerRules.connect(dev1Address).addReport("description", "report");
       });
@@ -1154,7 +1383,7 @@ describe("ValidationRules", () => {
           let report = await developerRules.getReport(1);
           report = generateReportObject(report);
 
-          await instance.connect(owner).addDeveloperReportValidation(report, "justification", validator1Address);
+          await instance.connect(owner).addDeveloperReportValidation(report, "justification", user1Address);
         });
 
         it("should return error", async () => {
@@ -1162,7 +1391,7 @@ describe("ValidationRules", () => {
           report = generateReportObject(report);
 
           await expect(
-            instance.connect(owner).addDeveloperReportValidation(report, "justification", validator1Address)
+            instance.connect(owner).addDeveloperReportValidation(report, "justification", user1Address)
           ).to.be.revertedWith("Already voted");
         });
       });
@@ -1179,16 +1408,16 @@ describe("ValidationRules", () => {
                 await developerRules.addPenalty(dev1Address, report.id);
                 await developerRules.addPenalty(dev1Address, report.id);
 
-                await instance.connect(owner).addDeveloperReportValidation(report, "justification", validator1Address);
+                await instance.connect(owner).addDeveloperReportValidation(report, "justification", user1Address);
 
                 report.validationsCount = 2;
-                await instance.connect(owner).addDeveloperReportValidation(report, "justification", validator2Address);
+                await instance.connect(owner).addDeveloperReportValidation(report, "justification", user2Address);
               });
 
               it("should add research validation", async () => {
                 const validation = await instance.reportValidations(1, 0);
 
-                expect(validation[0]).to.equal(validator1Address.address);
+                expect(validation[0]).to.equal(user1Address.address);
                 expect(validation[1]).to.equal(1);
                 expect(validation[2]).to.equal("justification");
                 expect(validation[3]).to.equal(2);
@@ -1197,7 +1426,7 @@ describe("ValidationRules", () => {
               it("deny developer", async () => {
                 const newDeveloperType = await communityRules.getUser(dev1Address);
 
-                expect(newDeveloperType).to.equal(9);
+                expect(newDeveloperType).to.equal(8);
               });
 
               it("remove report regeneration score level from developer pool", async () => {
@@ -1213,13 +1442,13 @@ describe("ValidationRules", () => {
                 report = generateReportObject(report);
                 report.validationsCount = 1;
 
-                await instance.connect(owner).addDeveloperReportValidation(report, "justification", validator1Address);
+                await instance.connect(owner).addDeveloperReportValidation(report, "justification", user1Address);
 
                 report = await developerRules.getReport(1);
                 report = generateReportObject(report);
                 report.validationsCount = 2;
 
-                await instance.connect(owner).addDeveloperReportValidation(report, "justification", validator2Address);
+                await instance.connect(owner).addDeveloperReportValidation(report, "justification", user2Address);
               });
 
               it("developer is the same", async () => {
@@ -1242,56 +1471,13 @@ describe("ValidationRules", () => {
               report = generateReportObject(report);
               report.validationsCount = 1;
 
-              await instance.connect(owner).addDeveloperReportValidation(report, "justification", validator1Address);
+              await instance.connect(owner).addDeveloperReportValidation(report, "justification", user1Address);
             });
 
             it("total penalties is zero", async () => {
               const totalPenalties = await developerRules.totalPenalties(dev1Address);
 
               expect(totalPenalties).to.equal(0);
-            });
-          });
-        });
-
-        context("when current era is 2", () => {
-          context("when validators have contributed to last era", () => {
-            beforeEach(async () => {
-              let report = await developerRules.getReport(1);
-              report = generateReportObject(report);
-
-              await instance.connect(validator1Address).declareAlive();
-              await instance.connect(validator2Address).declareAlive();
-              await instance.connect(validator3Address).declareAlive();
-              await instance.connect(validator4Address).declareAlive();
-
-              await advanceBlock(validatorPoolArgs.blocksPerEra);
-
-              report.validationsCount = 1;
-              await instance.connect(owner).addDeveloperReportValidation(report, "foo", validator1Address);
-            });
-
-            it("add inspection validation", async () => {
-              const validation = await instance.reportValidations(1, 0);
-
-              expect(validation[0]).to.equal(validator1Address.address);
-              expect(validation[1]).to.equal(1);
-              expect(validation[2]).to.equal("foo");
-              expect(validation[3]).to.equal(2);
-            });
-          });
-
-          context("when validator does not have contributed to last era", () => {
-            beforeEach(async () => {
-              report = await developerRules.getReport(1);
-              report = generateReportObject(report);
-
-              await advanceBlock(validatorPoolArgs.blocksPerEra);
-            });
-
-            it("should return error", async () => {
-              await expect(
-                instance.connect(owner).addDeveloperReportValidation(report, "foo", validator1Address)
-              ).to.be.revertedWith("You did not contribute in the last era");
             });
           });
         });
@@ -1304,7 +1490,7 @@ describe("ValidationRules", () => {
         report = generateReportObject(report);
 
         await expect(
-          instance.connect(validator1Address).addDeveloperReportValidation(report, "justification", validator1Address)
+          instance.connect(user1Address).addDeveloperReportValidation(report, "justification", user2Address)
         ).to.be.revertedWith("Not allowed caller");
       });
     });
@@ -1314,15 +1500,13 @@ describe("ValidationRules", () => {
     context("with allowed caller", () => {
       beforeEach(async () => {
         await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
-        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
-        await addInvitation(owner, validator3Address, userTypes.Validator, owner);
-        await addInvitation(owner, validator4Address, userTypes.Validator, owner);
-
         await addResearcher("Researcher A", resea1Address);
-        await addValidator(validator1Address);
-        await addValidator(validator2Address);
-        await addValidator(validator3Address);
-        await addValidator(validator4Address);
+
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
+
+        await addDeveloper("User  A", user1Address);
+        await addDeveloper("User  B", user2Address);
 
         await addResearch(resea1Address);
       });
@@ -1332,13 +1516,13 @@ describe("ValidationRules", () => {
           let research = await researcherRules.researches(1);
           research = generateResearchObject(research);
 
-          await instance.connect(owner).addResearcherResearchValidation(research, "justification", validator1Address);
+          await instance.connect(owner).addResearcherResearchValidation(research, "justification", user1Address);
         });
 
         it("should add research validation", async () => {
           const validation = await instance.researchValidations(1, 0);
 
-          expect(validation[0]).to.equal(validator1Address.address);
+          expect(validation[0]).to.equal(user1Address.address);
           expect(validation[1]).to.equal(1);
           expect(validation[2]).to.equal("justification");
           expect(validation[3]).to.equal(2);
@@ -1349,7 +1533,7 @@ describe("ValidationRules", () => {
           research = generateResearchObject(research);
 
           await expect(
-            instance.connect(owner).addResearcherResearchValidation(research, "justification", validator1Address)
+            instance.connect(owner).addResearcherResearchValidation(research, "justification", user1Address)
           ).to.be.revertedWith("Already voted");
         });
       });
@@ -1368,18 +1552,18 @@ describe("ValidationRules", () => {
 
                 await instance
                   .connect(owner)
-                  .addResearcherResearchValidation(research, "justification", validator1Address);
+                  .addResearcherResearchValidation(research, "justification", user1Address);
 
                 research.validationsCount = 2;
                 await instance
                   .connect(owner)
-                  .addResearcherResearchValidation(research, "justification", validator2Address);
+                  .addResearcherResearchValidation(research, "justification", user2Address);
               });
 
               it("deny researcher", async () => {
                 const newResearcherType = await communityRules.getUser(resea1Address);
 
-                expect(newResearcherType).to.equal(9);
+                expect(newResearcherType).to.equal(8);
               });
 
               it("remove research regeneration score level from researcher pool", async () => {
@@ -1397,7 +1581,7 @@ describe("ValidationRules", () => {
 
                 await instance
                   .connect(owner)
-                  .addResearcherResearchValidation(research, "justification", validator1Address);
+                  .addResearcherResearchValidation(research, "justification", user1Address);
 
                 research = await researcherRules.researches(1);
                 research = generateResearchObject(research);
@@ -1405,7 +1589,7 @@ describe("ValidationRules", () => {
 
                 await instance
                   .connect(owner)
-                  .addResearcherResearchValidation(research, "justification", validator2Address);
+                  .addResearcherResearchValidation(research, "justification", user2Address);
               });
 
               it("researcher is the same", async () => {
@@ -1431,57 +1615,13 @@ describe("ValidationRules", () => {
 
               await instance
                 .connect(owner)
-                .addResearcherResearchValidation(research, "justification", validator1Address);
+                .addResearcherResearchValidation(research, "justification", user1Address);
             });
 
             it("total penalties is zero", async () => {
               const totalPenalties = await researcherRules.totalPenalties(resea1Address);
 
               expect(totalPenalties).to.equal(0);
-            });
-          });
-        });
-
-        context("when current era is 2", () => {
-          context("when validators have contributed to last era", () => {
-            beforeEach(async () => {
-              let research = await researcherRules.researches(1);
-              research = generateResearchObject(research);
-              research.validationsCount = 1;
-
-              await instance.connect(validator1Address).declareAlive();
-              await instance.connect(validator2Address).declareAlive();
-              await instance.connect(validator3Address).declareAlive();
-              await instance.connect(validator4Address).declareAlive();
-
-              await advanceBlock(validatorPoolArgs.blocksPerEra);
-
-              research.validationsCount = 1;
-              await instance.connect(owner).addResearcherResearchValidation(research, "foo", validator1Address);
-            });
-
-            it("add inspection validation", async () => {
-              const validation = await instance.researchValidations(1, 0);
-
-              expect(validation[0]).to.equal(validator1Address.address);
-              expect(validation[1]).to.equal(1);
-              expect(validation[2]).to.equal("foo");
-              expect(validation[3]).to.equal(2);
-            });
-          });
-
-          context("when validator does not have contributed to last era", () => {
-            beforeEach(async () => {
-              research = await researcherRules.researches(1);
-              research = generateResearchObject(research);
-
-              await advanceBlock(validatorPoolArgs.blocksPerEra);
-            });
-
-            it("should return error", async () => {
-              await expect(
-                instance.connect(owner).addResearcherResearchValidation(research, "justification", validator1Address)
-              ).to.be.revertedWith("You did not contribute in the last era");
             });
           });
         });
@@ -1495,8 +1635,8 @@ describe("ValidationRules", () => {
 
         await expect(
           instance
-            .connect(validator1Address)
-            .addResearcherResearchValidation(research, "justification", validator1Address)
+            .connect(user1Address)
+            .addResearcherResearchValidation(research, "justification", user2Address)
         ).to.be.revertedWith("Not allowed caller");
       });
     });

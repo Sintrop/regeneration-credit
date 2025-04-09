@@ -124,7 +124,7 @@ contract CommunityRules is Ownable, Callable {
    * @param addr The user address
    */
   function isVoter(address addr) public view returns (bool) {
-    return userTypeSettings[users[addr]].isVoter;
+    return getUserTypeSettings(users[addr]).isVoter;
   }
 
   /**

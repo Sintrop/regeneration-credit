@@ -62,7 +62,7 @@ contract ValidationRules is Callable {
   }
 
   function addUserValidation(address userAddress, string memory justification) public {
-    require(voteRules.canVote(msg.sender), "User cannot vote");
+    require(voteRules.canVote(msg.sender), "User can not vote");
     require(!communityRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
     require(!communityRules.userTypeIs(UserType.DENIED, userAddress), "User already denied");
     require(!validatorUsersValidations[msg.sender][userAddress], "Already voted");

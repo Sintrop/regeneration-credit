@@ -50,12 +50,26 @@ contract VoteRules {
    * @param addr The user address
    */
   function canVote(address addr) public view returns (bool) {
-    require(communityRules.isVoter(msg.sender), "Not a voter user");
+    require(communityRules.isVoter(addr), "Not a voter user");
 
     UserType userType = communityRules.getUser(addr);
     uint256 totalUsers = communityRules.userTypesTotalCount(userType);
 
-    return canVote2(totalLevels(userType), totalUsers, totalUserLevels(addr, userType));
+    return canVoteRules(totalLevels(userType), totalUsers, totalUserLevels(addr, userType));
+  }
+
+    /**
+   * @dev Calculate if a user can send vote
+   * @param totalTypeLevels total type levels on the system
+   * @param totalUsers total of user of specific type registered in the system
+   * @param userLevels total levels of the user
+   */
+  function canVoteRules(uint256 totalTypeLevels, uint256 totalUsers, uint256 userLevels) internal pure returns (bool) {
+    if (totalUsers <= 5) return true;
+    
+    uint256 avg = totalTypeLevels.div(totalUsers).add(1);
+
+    return userLevels >= avg.mul(15).div(10);
   }
 
   function totalUserLevels(address addr, UserType userType) public view returns (uint256) {
@@ -92,19 +106,5 @@ contract VoteRules {
     } else {
       return 0;
     }
-  }
-
-  /**
-   * @dev Calculate if a user can send vote
-   * @param totalTypeLevels total type levels on the system
-   * @param totalUsers total of user of specific type registered in the system
-   * @param userLevels total levels of the user
-   */
-  function canVote2(uint256 totalTypeLevels, uint256 totalUsers, uint256 userLevels) public pure returns (bool) {
-    if (totalUsers <= 5) return true;
-    
-    uint256 avg = totalTypeLevels.div(totalUsers).add(1);
-
-    return userLevels >= avg.mul(15).div(10);
   }
 }
