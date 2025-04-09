@@ -55,8 +55,7 @@ describe("InvitationRules", () => {
   const timeBetweenWorks = 10;
   const maxPenalties = 3;
   const securityBlocksToValidatorAnalysis = 10;
-  const firstValidatorLimit = 8;
-  const secondValidatorLimit = 14;
+  const timeBetweenVotes = 10;
 
   const researcherPoolArgs = {
     totalTokens: "30000000000000000000000000",
@@ -100,7 +99,7 @@ describe("InvitationRules", () => {
     const regenerationCredit = await regenerationCreditDeployed();
 
     const validationRulesFactory = await ethers.getContractFactory("ValidationRules");
-    validationRules = await validationRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
+    validationRules = await validationRulesFactory.deploy(timeBetweenVotes);
 
     const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
     const researcherPool = await researcherPoolFactory.deploy(

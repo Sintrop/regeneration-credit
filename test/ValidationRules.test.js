@@ -173,8 +173,7 @@ describe("ValidationRules", () => {
     };
   };
 
-  const firstValidatorLimit = 8;
-  const secondValidatorLimit = 14;
+  const timeBetweenVotes = 10;
 
   beforeEach(async () => {
     [
@@ -256,7 +255,7 @@ describe("ValidationRules", () => {
     inspectorRules = await inspectorRulesFactory.deploy(communityRules.target, inspectorPool.target, maxPenalties);
 
     const validationRulesFactory = await ethers.getContractFactory("ValidationRules");
-    instance = await validationRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
+    instance = await validationRulesFactory.deploy(timeBetweenVotes);
 
     const timeBetweenWorks = 10;
     const developerMaxPenalties = 3;

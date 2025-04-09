@@ -4,14 +4,11 @@ const verifyContract = require("../scripts/shared/verifyContract");
 
 async function validationRulesDeploy() {
   const communityRules = await getDeployedContract("CommunityRules");
-  const firstValidatorLimit = process.env["FIRST_VALIDATOR_LIMIT"];
-  const secondValidatorLimit = process.env["SECOND_VALIDATOR_LIMIT"];
+  const timeBetweenVotes = process.env["TIME_BETWEEN_VOTES"];
 
   const ValidationRules = await ethers.getContractFactory("ValidationRules");
 
-  const args = [firstValidatorLimit, secondValidatorLimit];
-
-  const validationRules = await ValidationRules.deploy(...args);
+  const validationRules = await ValidationRules.deploy(timeBetweenVotes);
 
   saveContractAddress("ValidationRules", validationRules.target);
 

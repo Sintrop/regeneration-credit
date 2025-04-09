@@ -3,8 +3,7 @@ const { communityRulesDeployed } = require("./user_contract_deployed");
 const { ZERO_ADDRESS } = require("./zeroAddress");
 
 const inspectionRulesDeployed = async (owner, args = {}) => {
-  const firstValidatorLimit = 8;
-  const secondValidatorLimit = 14;
+  const timeBetweenVotes = 10;
   const timeBetweenWorks = 6;
   const researcherMaxPenalties = 3;
   const inspectorMaxPenalties = 2;
@@ -78,7 +77,7 @@ const inspectionRulesDeployed = async (owner, args = {}) => {
   const activistRulesFactory = await ethers.getContractFactory("ActivistRules");
 
   const validationRulesFactory = await ethers.getContractFactory("ValidationRules");
-  validationRules = await validationRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
+  validationRules = await validationRulesFactory.deploy(timeBetweenVotes);
 
   const inspectorRules = await inspectorRulesFactory.deploy(
     communityRules.target,

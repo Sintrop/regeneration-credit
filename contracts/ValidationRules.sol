@@ -31,6 +31,7 @@ contract ValidationRules is Callable {
   mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
   mapping(address => mapping(uint256 => bool)) private validatorResearchesValidations;
   mapping(address => mapping(address => bool)) private validatorUsersValidations;
+  mapping(address => uint256) private validatorLastVoteAt;
 
   CommunityRules private communityRules;
   RegeneratorRules private regeneratorRules;
@@ -43,12 +44,10 @@ contract ValidationRules is Callable {
   /// @notice VoteRules contract address
   VoteRules internal voteRules;
 
-  uint256 private immutable firstValidatorLimit;
-  uint256 private immutable secondValidatorLimit;
+  uint256 private immutable timeBetweenVotes;
 
-  constructor(uint256 firstValidatorLimit_, uint256 secondValidatorLimit_) {
-    firstValidatorLimit = firstValidatorLimit_;
-    secondValidatorLimit = secondValidatorLimit_;
+  constructor(uint256 timeBetweenVotes_) {
+    timeBetweenVotes = timeBetweenVotes_;
   }
 
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
@@ -67,8 +66,10 @@ contract ValidationRules is Callable {
     require(!communityRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
     require(!communityRules.userTypeIs(UserType.DENIED, userAddress), "User already denied");
     require(!validatorUsersValidations[msg.sender][userAddress], "Already voted");
+    require(waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
     validatorUsersValidations[msg.sender][userAddress] = true;
+    validatorLastVoteAt[msg.sender] = block.number;
 
     uint256 majorityValidatorsCount_ = majorityValidatorsCount();
     uint256 validationsCount = userValidations[userAddress].length + 1;
@@ -86,8 +87,10 @@ contract ValidationRules is Callable {
     address validatorAddress
   ) public mustBeAllowedCaller {
     require(!validatorInspectionsValidations[validatorAddress][inspection.id], "Already voted");
+    require(waitedTimeBetweenVotes(validatorAddress), "Wait timeBetweenVotes");
 
     validatorInspectionsValidations[validatorAddress][inspection.id] = true;
+    validatorLastVoteAt[validatorAddress] = block.number;
 
     uint256 majorityValidatorsCount_ = majorityValidatorsCount();
 
@@ -111,8 +114,10 @@ contract ValidationRules is Callable {
     address validatorAddress
   ) public mustBeAllowedCaller {
     require(!validatorReportsValidations[validatorAddress][report.id], "Already voted");
+    require(waitedTimeBetweenVotes(validatorAddress), "Wait timeBetweenVotes");
 
     validatorReportsValidations[validatorAddress][report.id] = true;
+    validatorLastVoteAt[validatorAddress] = block.number;
 
     uint256 majorityValidatorsCount_ = majorityValidatorsCount();
 
@@ -136,8 +141,10 @@ contract ValidationRules is Callable {
     address validatorAddress
   ) public mustBeAllowedCaller {
     require(!validatorResearchesValidations[validatorAddress][research.id], "Already voted");
+    require(waitedTimeBetweenVotes(validatorAddress), "Wait timeBetweenVotes");
 
     validatorResearchesValidations[validatorAddress][research.id] = true;
+    validatorLastVoteAt[validatorAddress] = block.number;
 
     uint256 majorityValidatorsCount_ = majorityValidatorsCount();
 
@@ -204,4 +211,11 @@ contract ValidationRules is Callable {
     if (voters > 500 && voters <= 1000) return 50;
     if (voters > 1000) return 100;
   }
+  
+  function waitedTimeBetweenVotes(address validatorAddress) internal view returns (bool) {
+    uint256 lastVoteAt = validatorLastVoteAt[validatorAddress];
+
+    bool canVote = block.number > lastVoteAt + timeBetweenVotes;
+    return canVote || lastVoteAt == 0;
+  }  
 }

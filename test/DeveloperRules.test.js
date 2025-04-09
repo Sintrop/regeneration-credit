@@ -43,8 +43,7 @@ describe("DeveloperRules", (accounts) => {
   const timeBetweenWorks = 10;
   const maxPenalties = 3;
   const securityBlocksToValidatorAnalysis = 10;
-  const firstValidatorLimit = 8;
-  const secondValidatorLimit = 14;
+  const timeBetweenVotes = 10;
 
   beforeEach(async () => {
     [
@@ -69,7 +68,7 @@ describe("DeveloperRules", (accounts) => {
     );
 
     const validationRulesFactory = await ethers.getContractFactory("ValidationRules");
-    validationRules = await validationRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
+    validationRules = await validationRulesFactory.deploy(timeBetweenVotes);
 
     developerRulesFactory = await ethers.getContractFactory("DeveloperRules");
     instance = await developerRulesFactory.deploy(
