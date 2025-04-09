@@ -121,7 +121,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
 
     reportsCount++;
     reportsTotalCount++;
-    uint256 id = reportsCount;
+    uint256 id = reportsTotalCount;
 
     developers[msg.sender].totalReports++;
 
@@ -158,7 +158,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @param report Report id
    */
   function invalidateReport(Report memory report) internal {
-    reportsTotalCount--;
+    reportsCount--;
     report.valid = false;
     report.invalidatedAt = block.number;
     reports[report.id] = report;
