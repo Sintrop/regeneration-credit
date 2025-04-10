@@ -379,7 +379,7 @@ describe("ValidationRules", () => {
       });
 
       context("when user is not denied", () => {
-        context("when user validations count is less than majorityValidatorsCount", () => {
+        context("when user validations count is less than votesToInvalidate", () => {
           context("with developer", () => {
             context("when total users is less than 5", () => {
               beforeEach(async () => {
@@ -690,7 +690,7 @@ describe("ValidationRules", () => {
           });
         });
 
-        context("when user validations count is equal or bigger than majorityValidatorsCount", () => {
+        context("when user validations count is equal or bigger than votesToInvalidate", () => {
           beforeEach(async () => {
             await addInvitation(owner, user1Address, userTypes.Developer, owner);
             await addInvitation(owner, user2Address, userTypes.Developer, owner);
@@ -1123,7 +1123,7 @@ describe("ValidationRules", () => {
 
       context("when validator did not voted to inspection", () => {
         context("when current era is 1", () => {
-          context("when inspection validations is => majorityValidatorsCount (addPenalty == true)", () => {
+          context("when inspection validations is => votesToInvalidate (addPenalty == true)", () => {
             context("when inspector total penalties is >= inspectorRules.maxPenalties", () => {
               beforeEach(async () => {
                 inspectionMock = {
@@ -1272,7 +1272,7 @@ describe("ValidationRules", () => {
             });
           });
 
-          context("when inspection validations is < majorityValidatorsCount (addPenalty == false)", () => {
+          context("when inspection validations is < votesToInvalidate (addPenalty == false)", () => {
             beforeEach(async () => {
               inspectionMock = {
                 id: 1,
@@ -1398,7 +1398,7 @@ describe("ValidationRules", () => {
 
       context("when validator did not voted to report", () => {
         context("when current era is 1", () => {
-          context("when report validations is => majorityValidatorsCount (addPenalty == true)", () => {
+          context("when report validations is => votesToInvalidate (addPenalty == true)", () => {
             context("when developer total penalties is >= developerRules.maxPenalties", () => {
               beforeEach(async () => {
                 let report = await developerRules.getReport(1);
@@ -1465,7 +1465,7 @@ describe("ValidationRules", () => {
             });
           });
 
-          context("when report validations is < majorityValidatorsCount (addPenalty == false)", () => {
+          context("when report validations is < votesToInvalidate (addPenalty == false)", () => {
             beforeEach(async () => {
               let report = await developerRules.getReport(1);
               report = generateReportObject(report);
@@ -1540,7 +1540,7 @@ describe("ValidationRules", () => {
 
       context("when validator did not voted to research", () => {
         context("when current era is 1", () => {
-          context("when research validations is => majorityValidatorsCount (addPenalty == true)", () => {
+          context("when research validations is => votesToInvalidate (addPenalty == true)", () => {
             context("when researcher total penalties is >= researcherRules.maxPenalties", () => {
               beforeEach(async () => {
                 let research = await researcherRules.researches(1);
@@ -1607,7 +1607,7 @@ describe("ValidationRules", () => {
             });
           });
 
-          context("when research validations is < majorityValidatorsCount (addPenalty == false)", () => {
+          context("when research validations is < votesToInvalidate (addPenalty == false)", () => {
             beforeEach(async () => {
               let research = await researcherRules.researches(1);
               research = generateResearchObject(research);
@@ -1642,7 +1642,7 @@ describe("ValidationRules", () => {
     });
   });
 
-  describe("#majorityValidatorsCount", () => {
+  describe("#votesToInvalidate", () => {
     context("when current era is 1", () => {
       context("when have 8 validators", () => {
         beforeEach(async () => {
@@ -1665,9 +1665,9 @@ describe("ValidationRules", () => {
         });
 
         it("returns 4", async () => {
-          const majorityValidatorsCount = await instance.majorityValidatorsCount();
+          const votesToInvalidate = await instance.votesToInvalidate();
 
-          expect(majorityValidatorsCount).to.equal(4);
+          expect(votesToInvalidate).to.equal(4);
         });
       });
     });
@@ -1704,9 +1704,9 @@ describe("ValidationRules", () => {
           });
 
           it("returns 2", async () => {
-            const majorityValidatorsCount = await instance.majorityValidatorsCount();
+            const votesToInvalidate = await instance.votesToInvalidate();
 
-            expect(majorityValidatorsCount).to.equal(2);
+            expect(votesToInvalidate).to.equal(2);
           });
         });
 
@@ -1716,9 +1716,9 @@ describe("ValidationRules", () => {
           });
 
           it("returns 0", async () => {
-            const majorityValidatorsCount = await instance.majorityValidatorsCount();
+            const votesToInvalidate = await instance.votesToInvalidate();
 
-            expect(majorityValidatorsCount).to.equal(0);
+            expect(votesToInvalidate).to.equal(0);
           });
         });
       });

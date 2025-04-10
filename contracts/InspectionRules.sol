@@ -244,7 +244,7 @@ contract InspectionRules is Callable {
     inspection.validationsCount += 1;
     inspections[inspection.id] = inspection;
 
-    bool mustInvalidateInspection = inspection.validationsCount >= validationRules.majorityValidatorsCount();
+    bool mustInvalidateInspection = inspection.validationsCount >= validationRules.votesToInvalidate();
 
     if (mustInvalidateInspection) invalidateInspection(inspection);
 

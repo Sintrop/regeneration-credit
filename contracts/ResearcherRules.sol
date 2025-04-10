@@ -198,7 +198,7 @@ contract ResearcherRules is Callable, Invitable {
     research.validationsCount += 1;
     researches[id] = research;
 
-    bool mustInvalidateResearch = research.validationsCount >= validationRules.majorityValidatorsCount();
+    bool mustInvalidateResearch = research.validationsCount >= validationRules.votesToInvalidate();
 
     if (mustInvalidateResearch) invalidateResearch(research);
 

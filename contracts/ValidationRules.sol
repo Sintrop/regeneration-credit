@@ -71,7 +71,7 @@ contract ValidationRules is Callable {
     validatorUsersValidations[msg.sender][userAddress] = true;
     validatorLastVoteAt[msg.sender] = block.number;
 
-    uint256 majorityValidatorsCount_ = majorityValidatorsCount();
+    uint256 majorityValidatorsCount_ = votesToInvalidate();
     uint256 validationsCount = userValidations[userAddress].length + 1;
 
     userValidations[userAddress].push(
@@ -92,7 +92,7 @@ contract ValidationRules is Callable {
     validatorInspectionsValidations[validatorAddress][inspection.id] = true;
     validatorLastVoteAt[validatorAddress] = block.number;
 
-    uint256 majorityValidatorsCount_ = majorityValidatorsCount();
+    uint256 majorityValidatorsCount_ = votesToInvalidate();
 
     bool addPenalty = inspection.validationsCount >= majorityValidatorsCount_;
 
@@ -119,7 +119,7 @@ contract ValidationRules is Callable {
     validatorReportsValidations[validatorAddress][report.id] = true;
     validatorLastVoteAt[validatorAddress] = block.number;
 
-    uint256 majorityValidatorsCount_ = majorityValidatorsCount();
+    uint256 majorityValidatorsCount_ = votesToInvalidate();
 
     bool addPenalty = report.validationsCount >= majorityValidatorsCount_;
 
@@ -146,7 +146,7 @@ contract ValidationRules is Callable {
     validatorResearchesValidations[validatorAddress][research.id] = true;
     validatorLastVoteAt[validatorAddress] = block.number;
 
-    uint256 majorityValidatorsCount_ = majorityValidatorsCount();
+    uint256 majorityValidatorsCount_ = votesToInvalidate();
 
     bool addPenalty = research.validationsCount >= majorityValidatorsCount_;
 
@@ -202,14 +202,18 @@ contract ValidationRules is Callable {
     return userValidations[userAddress];
   }
 
-  function majorityValidatorsCount() public view returns (uint256 count) {
+  function votesToInvalidate() public view returns (uint256 count) {
     uint256 voters = communityRules.votersCount();
 
     if (voters <= 50) return 2;
-    if (voters > 50 && voters <= 100) return 5;
-    if (voters > 100 && voters <= 500) return 10;
-    if (voters > 500 && voters <= 1000) return 50;
-    if (voters > 1000) return 100;
+    if (voters > 50 && voters <= 500) return 5;
+    if (voters > 500 && voters <= 1000) return 10;
+    if (voters > 1000 && voters <= 2000) return 20;
+    if (voters > 2000 && voters <= 4000) return 40;
+    if (voters > 4000 && voters <= 8000) return 80;
+    if (voters > 8000 && voters <= 16000) return 160;        
+    if (voters > 16000 && voters <= 32000) return 320;        
+    if (voters > 32000) return 500;
   }
   
   function waitedTimeBetweenVotes(address validatorAddress) internal view returns (bool) {

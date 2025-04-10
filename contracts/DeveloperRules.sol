@@ -154,7 +154,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     report.validationsCount += 1;
     reports[id] = report;
 
-    bool mustInvalidateReport = report.validationsCount >= validationRules.majorityValidatorsCount();
+    bool mustInvalidateReport = report.validationsCount >= validationRules.votesToInvalidate();
 
     if (mustInvalidateReport) invalidateReport(report);
 
