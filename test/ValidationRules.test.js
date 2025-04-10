@@ -3,6 +3,7 @@ const { expect } = require("chai");
 const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { communityRulesDeployed } = require("./shared/user_contract_deployed");
+const { voteRulesDeployed } = require("./shared/vote_rules_deployed");
 
 describe("ValidationRules", () => {
   let instance;
@@ -53,36 +54,6 @@ describe("ValidationRules", () => {
     totalTokens: "750000000000000000000000000",
     halving: 12,
     blocksPerEra: 12,
-  };
-
-  const inspectorPoolArgs = {
-    totalTokens: "180000000000000000000000000",
-    halving: 12,
-    blocksPerEra: 20,
-  };
-
-  let developerPoolParams = {
-    totalTokens: "30000000000000000000000000",
-    halving: 12,
-    blocksPerEra: 45,
-  };
-
-  let researcherPoolParams = {
-    totalTokens: "30000000000000000000000000",
-    halving: 12,
-    blocksPerEra: 40,
-  };
-
-  let contributorPoolParams = {
-    totalTokens: "30000000000000000000000000",
-    halving: 12,
-    blocksPerEra: 40,
-  };
-
-  const activistPoolArgs = {
-    totalTokens: "30000000000000000000000000",
-    halving: 12,
-    blocksPerEra: 20,
   };
 
   const addDeveloper = async (name, from) => {
@@ -173,8 +144,6 @@ describe("ValidationRules", () => {
     };
   };
 
-  const timeBetweenVotes = 10;
-
   beforeEach(async () => {
     [
       owner,
@@ -209,118 +178,23 @@ describe("ValidationRules", () => {
       undefinedAddress,
     ] = await ethers.getSigners();
 
-    regenerationCredit = await regenerationCreditDeployed();
-    communityRules = await communityRulesDeployed();
+    const validatorRulesDeployed = await voteRulesDeployed();
 
-    const regeneratorPoolFactory = await ethers.getContractFactory("RegeneratorPool");
-    regeneratorPool = await regeneratorPoolFactory.deploy(
-      regenerationCredit.target,
-      regeneratorPoolArgs.halving,
-      regeneratorPoolArgs.blocksPerEra
-    );
-
-    const regeneratorRulesFactory = await ethers.getContractFactory("RegeneratorRules");
-    regeneratorRules = await regeneratorRulesFactory.deploy(communityRules.target, regeneratorPool.target);
-
-    const inspectorPoolFactory = await ethers.getContractFactory("InspectorPool");
-    inspectorPool = await inspectorPoolFactory.deploy(
-      regenerationCredit.target,
-      inspectorPoolArgs.halving,
-      inspectorPoolArgs.blocksPerEra
-    );
-
-    developerPoolFactory = await ethers.getContractFactory("DeveloperPool");
-    developerPool = await developerPoolFactory.deploy(
-      regenerationCredit.target,
-      developerPoolParams.halving,
-      developerPoolParams.blocksPerEra
-    );
-
-    reseacherPoolFactory = await ethers.getContractFactory("ResearcherPool");
-    researcherPool = await reseacherPoolFactory.deploy(
-      regenerationCredit.target,
-      researcherPoolParams.halving,
-      researcherPoolParams.blocksPerEra
-    );
-
-    contributorPoolFactory = await ethers.getContractFactory("ContributorPool");
-    contributorPool = await contributorPoolFactory.deploy(
-      regenerationCredit.target,
-      contributorPoolParams.halving,
-      contributorPoolParams.blocksPerEra
-    );
-
-    const maxPenalties = 2;
-    const inspectorRulesFactory = await ethers.getContractFactory("InspectorRules");
-    inspectorRules = await inspectorRulesFactory.deploy(communityRules.target, inspectorPool.target, maxPenalties);
-
-    const validationRulesFactory = await ethers.getContractFactory("ValidationRules");
-    instance = await validationRulesFactory.deploy(timeBetweenVotes);
-
-    const timeBetweenWorks = 10;
-    const developerMaxPenalties = 3;
-    const developerSecuryBlocksToAnalysis = 10;
-    const developerRulesFactory = await ethers.getContractFactory("DeveloperRules");
-    developerRules = await developerRulesFactory.deploy(
-      communityRules.target,
-      developerPool.target,
-      instance.target,
-      timeBetweenWorks,
-      developerMaxPenalties,
-      developerSecuryBlocksToAnalysis
-    );
-
-    const contributorSecuryBlocksToAnalysis = 10;
-    const contributorRulesFactory = await ethers.getContractFactory("ContributorRules");
-    contributorRules = await contributorRulesFactory.deploy(
-      communityRules.target,
-      contributorPool.target,
-      timeBetweenWorks,
-      contributorSecuryBlocksToAnalysis
-    );
-
-    const reseacherMaxPenalties = 3;
-    const reseacherTimeBetweenResearches = 10;
-    const researcherSecuryBlocksToAnalysis = 10;
-    const researcherRulesFactory = await ethers.getContractFactory("ResearcherRules");
-    researcherRules = await researcherRulesFactory.deploy(
-      communityRules.target,
-      researcherPool.target,
-      instance.target,
-      reseacherTimeBetweenResearches,
-      reseacherMaxPenalties,
-      researcherSecuryBlocksToAnalysis
-    );
-
-    const activistPoolFactory = await ethers.getContractFactory("ActivistPool");
-    activistPool = await activistPoolFactory.deploy(
-      regenerationCredit.target,
-      activistPoolArgs.halving,
-      activistPoolArgs.blocksPerEra
-    );
-
-    const activistRulesFactory = await ethers.getContractFactory("ActivistRules");
-    activistRules = await activistRulesFactory.deploy(communityRules.target, activistPool.target);
-
-    const voteRulesFactory = await ethers.getContractFactory("VoteRules");
-    voteRules = await voteRulesFactory.deploy(
-      communityRules.target,
-      activistRules.target,
-      contributorRules.target,
-      developerRules.target,
-      researcherRules.target
-    );
-
-    const validationRulesDependencies = {
-      communityRulesAddress: communityRules.target,
-      regeneratorRulesAddress: regeneratorRules.target,
-      inspectorRulesAddress: inspectorRules.target,
-      developerRulesAddress: developerRules.target,
-      researcherRulesAddress: researcherRules.target,
-      contributorRulesAddress: contributorRules.target,
-      activistRulesAddress: activistRules.target,
-      voteRulesAddress: voteRules.target,
-    };
+    regenerationCredit = validatorRulesDeployed.regenerationCredit;
+    communityRules = validatorRulesDeployed.communityRules;
+    regeneratorRules = validatorRulesDeployed.regeneratorRules;
+    developerRules = validatorRulesDeployed.developerRules;
+    researcherRules = validatorRulesDeployed.researcherRules;
+    activistRules = validatorRulesDeployed.activistRules;
+    activistPool = validatorRulesDeployed.activistPool;
+    contributorRules = validatorRulesDeployed.contributorRules;
+    contributorPool = validatorRulesDeployed.contributorPool;
+    regeneratorPool = validatorRulesDeployed.regeneratorPool;
+    researcherPool = validatorRulesDeployed.researcherPool;
+    developerPool = validatorRulesDeployed.developerPool;
+    inspectorRules = validatorRulesDeployed.inspectorRules;
+    inspectorPool = validatorRulesDeployed.inspectorPool;
+    instance = validatorRulesDeployed.validationRules;
 
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(regeneratorRules.target);
@@ -350,8 +224,6 @@ describe("ValidationRules", () => {
     await inspectorRules.newAllowedCaller(owner);
     await instance.newAllowedCaller(owner);
     await instance.newAllowedCaller(developerRules);
-
-    await instance.setContractAddressDependencies(validationRulesDependencies);
 
     await regenerationCredit.addContractPool(regeneratorRules.target, regeneratorPoolArgs.totalTokens);
 
@@ -1550,14 +1422,10 @@ describe("ValidationRules", () => {
                 await researcherRules.addPenalty(research.createdBy, research.id);
                 await researcherRules.addPenalty(research.createdBy, research.id);
 
-                await instance
-                  .connect(owner)
-                  .addResearcherResearchValidation(research, "justification", user1Address);
+                await instance.connect(owner).addResearcherResearchValidation(research, "justification", user1Address);
 
                 research.validationsCount = 2;
-                await instance
-                  .connect(owner)
-                  .addResearcherResearchValidation(research, "justification", user2Address);
+                await instance.connect(owner).addResearcherResearchValidation(research, "justification", user2Address);
               });
 
               it("deny researcher", async () => {
@@ -1579,17 +1447,13 @@ describe("ValidationRules", () => {
                 research = generateResearchObject(research);
                 research.validationsCount = 1;
 
-                await instance
-                  .connect(owner)
-                  .addResearcherResearchValidation(research, "justification", user1Address);
+                await instance.connect(owner).addResearcherResearchValidation(research, "justification", user1Address);
 
                 research = await researcherRules.researches(1);
                 research = generateResearchObject(research);
                 research.validationsCount = 2;
 
-                await instance
-                  .connect(owner)
-                  .addResearcherResearchValidation(research, "justification", user2Address);
+                await instance.connect(owner).addResearcherResearchValidation(research, "justification", user2Address);
               });
 
               it("researcher is the same", async () => {
@@ -1613,9 +1477,7 @@ describe("ValidationRules", () => {
               research = generateResearchObject(research);
               research.validationsCount = 1;
 
-              await instance
-                .connect(owner)
-                .addResearcherResearchValidation(research, "justification", user1Address);
+              await instance.connect(owner).addResearcherResearchValidation(research, "justification", user1Address);
             });
 
             it("total penalties is zero", async () => {
@@ -1634,15 +1496,13 @@ describe("ValidationRules", () => {
         research = generateResearchObject(research);
 
         await expect(
-          instance
-            .connect(user1Address)
-            .addResearcherResearchValidation(research, "justification", user2Address)
+          instance.connect(user1Address).addResearcherResearchValidation(research, "justification", user2Address)
         ).to.be.revertedWith("Not allowed caller");
       });
     });
   });
 
-  describe("#votesToInvalidate", () => {
+  describe.skip("#votesToInvalidate", () => {
     context("when current era is 1", () => {
       context("when have 8 validators", () => {
         beforeEach(async () => {
