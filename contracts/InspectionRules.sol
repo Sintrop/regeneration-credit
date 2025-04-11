@@ -8,7 +8,7 @@ import { ValidatorRules } from "./ValidatorRules.sol";
 import { RegenerationIndexRules } from "./RegenerationIndexRules.sol";
 import { ActivistRules } from "./ActivistRules.sol";
 import { CommunityRules } from "./CommunityRules.sol";
-import { InspectionStatus, RegenerationInspection, Inspection } from "./types/InspectionTypes.sol";
+import { InspectionStatus, Inspection } from "./types/InspectionTypes.sol";
 import { Regenerator } from "./types/RegeneratorTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
 import { UserType } from "./types/CommunityTypes.sol";
@@ -32,7 +32,6 @@ contract InspectionRules is Callable {
 
   /// @notice The relationship between id and inspection data
   mapping(uint256 => Inspection) internal inspections;
-  mapping(uint256 => mapping(uint256 => RegenerationInspection)) public regenerationInspection;
   mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
   InspectorRules private inspectorRules;
@@ -167,15 +166,11 @@ contract InspectionRules is Callable {
     uint256 inspectionId,
     string memory proofPhoto,
     string memory report,
-    RegenerationInspection memory treesResult,
-    RegenerationInspection memory biodiversityResult
+    uint256 treesResult,
+    uint256 biodiversityResult
   ) public {
     Inspection memory inspection = inspections[inspectionId];
 
-    require(
-      treesResult.categoryId == 1 && biodiversityResult.categoryId == 2,
-      "Invalid treesResult or biodiversityResult"
-    );
     require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
     require(inspection.inspector == msg.sender, "You have not accepted this inspection");
@@ -185,8 +180,8 @@ contract InspectionRules is Callable {
 
     afterRealizeInspection(inspection);
 
-    inspectionsTreesImpact += treesResult.indicator;
-    inspectionsBiodiversityImpact += biodiversityResult.indicator;
+    inspectionsTreesImpact += treesResult;
+    inspectionsBiodiversityImpact += biodiversityResult;
     inspectorInspected[msg.sender][inspection.regenerator] = true;
   }
 
@@ -194,10 +189,12 @@ contract InspectionRules is Callable {
     Inspection memory inspection,
     string memory proofPhoto,
     string memory report,
-    RegenerationInspection memory treesResult,
-    RegenerationInspection memory biodiversityResult
+    uint256 treesResult,
+    uint256 biodiversityResult
   ) internal {
     inspection.status = InspectionStatus.INSPECTED;
+    inspection.treesResult = treesResult;
+    inspection.biodiversityResult = biodiversityResult;
     inspection.regenerationScore = regenerationIndexRules.calculateScore(treesResult, biodiversityResult);
     inspection.proofPhoto = proofPhoto;
     inspection.report = report;
@@ -205,9 +202,6 @@ contract InspectionRules is Callable {
     inspection.inspectedAtEra = regeneratorRules.regeneratorPoolEra();
 
     inspections[inspection.id] = inspection;
-
-    regenerationInspection[inspection.id][1] = treesResult;
-    regenerationInspection[inspection.id][2] = biodiversityResult;
   }
 
   /**
@@ -247,8 +241,8 @@ contract InspectionRules is Callable {
   }
 
   function invalidateInspection(Inspection memory inspection) internal {
-    inspectionsTreesImpact -= regenerationInspection[inspection.id][1].indicator;
-    inspectionsBiodiversityImpact -= regenerationInspection[inspection.id][2].indicator;
+    inspectionsTreesImpact -= inspection.treesResult;
+    inspectionsBiodiversityImpact -= inspection.biodiversityResult;
     inspectionsCount--;
     inspection.status = InspectionStatus.INVALIDATED;
     inspection.invalidatedAt = block.number;
@@ -261,17 +255,6 @@ contract InspectionRules is Callable {
    */
   function getInspection(uint256 id) public view returns (Inspection memory) {
     return inspections[id];
-  }
-
-  /**
-   * @dev List RegenerationInspection from inspection
-   * @param inspectionId The id of the inspection to get RegenerationInspection
-   */
-  function getRegenerationInspection(
-    uint256 inspectionId,
-    uint256 categoryId
-  ) public view returns (RegenerationInspection memory) {
-    return regenerationInspection[inspectionId][categoryId];
   }
 
   /**

@@ -3,7 +3,6 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { Category, RegenerationIndex, RegenerationIndexDescription } from "./types/IndexTypes.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { RegenerationInspection } from "./types/InspectionTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 
 /**
@@ -87,14 +86,9 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @param biodiversityResult Inspection result provided by inspector
    * @return int256 Inspection score
    */
-  function calculateScore(
-    RegenerationInspection memory treesResult,
-    RegenerationInspection memory biodiversityResult
-  ) public view returns (uint256) {
-    RegenerationIndex memory trees = regenerationIndex[treesRegenerationIndexId(treesResult.indicator)];
-    RegenerationIndex memory biodiversity = regenerationIndex[
-      biodiversityRegenerationIndexId(biodiversityResult.indicator)
-    ];
+  function calculateScore(uint256 treesResult, uint256 biodiversityResult) public view returns (uint256) {
+    RegenerationIndex memory trees = regenerationIndex[treesRegenerationIndexId(treesResult)];
+    RegenerationIndex memory biodiversity = regenerationIndex[biodiversityRegenerationIndexId(biodiversityResult)];
 
     return trees.value + biodiversity.value;
   }
