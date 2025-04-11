@@ -101,7 +101,7 @@ contract SupporterRules {
    */
   function burnTokensPublication(uint256 amount, string memory description, string memory content) public {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
-    require(amount > 1, "Amount invalid");
+    require(amount >= 1000000000000000000, "Amount invalid");
 
     uint256 amountBurn = burnTokens(amount);
 
