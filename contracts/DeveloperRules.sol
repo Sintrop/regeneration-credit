@@ -156,7 +156,9 @@ contract DeveloperRules is Ownable, Callable, Invitable {
 
     bool mustInvalidateReport = report.validationsCount >= validationRules.votesToInvalidate();
 
-    if (mustInvalidateReport) invalidateReport(report);
+    if (mustInvalidateReport) {
+      report = invalidateReport(report);
+    }
 
     validationRules.addDeveloperReportValidation(report, justification, msg.sender);
   }
@@ -165,11 +167,13 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @dev Executes invalidation
    * @param report Report id
    */
-  function invalidateReport(Report memory report) internal {
+  function invalidateReport(Report memory report) internal returns (Report memory){
     reportsTotalCount--;
     report.valid = false;
     report.invalidatedAt = block.number;
     reports[report.id] = report;
+
+    return report;
   }
 
   /**

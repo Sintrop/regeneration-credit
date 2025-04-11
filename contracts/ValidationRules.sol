@@ -119,17 +119,14 @@ contract ValidationRules is Callable {
     validatorReportsValidations[validatorAddress][report.id] = true;
     validatorLastVoteAt[validatorAddress] = block.number;
 
-    uint256 majorityValidatorsCount_ = votesToInvalidate();
-
-    bool addPenalty = report.validationsCount >= majorityValidatorsCount_;
-
     reportValidations[report.id].push(
-      ResourceValidation(validatorAddress, report.id, justification, majorityValidatorsCount_, block.number)
+      ResourceValidation(validatorAddress, report.id, justification, votesToInvalidate(), block.number)
     );
 
-    if (!addPenalty) return;
+    if (report.valid) return;
 
     uint256 developerTotalPenalties = developerRules.addPenalty(report.developer, report.id);
+
     removeDeveloperReport(report);
 
     if (developerTotalPenalties >= developerRules.MAX_PENALTIES()) externalDenieUser(report.developer);

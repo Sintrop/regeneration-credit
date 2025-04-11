@@ -19,7 +19,7 @@ const voteRulesDeployed = async () => {
   let developerPoolParams = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    blocksPerEra: 45,
+    blocksPerEra: 100,
   };
 
   let researcherPoolParams = {
@@ -154,6 +154,7 @@ const voteRulesDeployed = async () => {
   };
 
   await validationRules.setContractAddressDependencies(validationRulesDependencies);
+  await developerRules.setVoteRules(voteRules.target);
 
   return {
     activistRules,

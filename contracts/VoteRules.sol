@@ -69,7 +69,7 @@ contract VoteRules {
     
     uint256 avg = totalTypeLevels.div(totalUsers).add(1);
 
-    return userLevels >= avg.mul(15).div(10);
+    return userLevels >= avg;
   }
 
   function totalUserLevels(address addr, UserType userType) public view returns (uint256) {
