@@ -4,7 +4,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
 import { CommunityRules } from "./CommunityRules.sol";
-import { Researcher, Research, Pool, CalculatorItem, Penalty } from "./types/ResearcherTypes.sol";
+import { Researcher, Research, Pool, CalculatorItem, Plant, Penalty } from "./types/ResearcherTypes.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { ResearcherPool } from "./ResearcherPool.sol";
 import { ValidatorRules } from "./ValidatorRules.sol";
@@ -24,6 +24,9 @@ contract ResearcherRules is Callable, Invitable {
 
   /// @notice The relationship between id and calculatorItem data
   mapping(uint256 => CalculatorItem) public calculatorItems;
+
+  /// @notice The relationship between id and plant catalog data
+  mapping(uint256 => Plant) public plantCatalog;
 
   /// @notice The relationship between address and penalties received
   mapping(address => Penalty[]) public penalties;
@@ -51,6 +54,9 @@ contract ResearcherRules is Callable, Invitable {
 
   /// @notice Total calculatorItems count
   uint256 public calculatorItemsCount;
+
+  /// @notice Total catalog plants count
+  uint256 public plantsCount;
 
   /// @notice Waiting blocks to publish research
   uint256 internal immutable timeBetweenWorks;
@@ -256,7 +262,7 @@ contract ResearcherRules is Callable, Invitable {
    * @param title CalculatorItem title
    * @param unit Unit of the item. Exapmle: liters, kwh, kg
    * @param justification Item result justification
-   * @param carbonImpact Kg of carbon [kg]
+   * @param carbonImpact Kg of carbon per unit [kg]
    */
   function addCalculatorItem(
     string memory title,
@@ -285,6 +291,54 @@ contract ResearcherRules is Callable, Invitable {
    */
   function getCalculatorItem(uint256 id) public view returns (CalculatorItem memory) {
     return calculatorItems[id];
+  }
+
+  /**
+   * @dev Allows a researcher to publish a plant to system catalog
+   * @notice Add a plant to catalog
+   * @param photo Plant identification photo
+   * @param popularName Plant popular name
+   * @param scientificName Plant scientific name
+   * @param family Family or taxonomy description
+   * @param botanicalDescription Plant botanical information, such as biologic form, leafs, wood, flowers, seeds, roots and any other botanical information.
+   * @param biome Biomes that the plant can be found
+   * @param extraInfo Any other relevant information
+   */
+  function addPlant(
+    string memory photo,
+    string memory popularName,
+    string memory scientificName,
+    string memory family,
+    string memory botanicalDescription,
+    string memory biome,
+    string memory extraInfo
+  ) public {
+    require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
+
+    uint256 id = plantsCount + 1;
+
+    Plant memory plant = Plant(
+      id,
+      msg.sender,
+      photo,
+      popularName,
+      scientificName,
+      family,
+      botanicalDescription,
+      biome,
+      extraInfo
+    );
+
+    plantCatalog[id] = plant;
+    plantsCount++;
+  }
+
+  /**
+   * @dev Return a specific plant
+   * @param id of the plant
+   */
+  function getPlant(uint256 id) public view returns (Plant memory) {
+    return plantCatalog[id];
   }
 
   /**
