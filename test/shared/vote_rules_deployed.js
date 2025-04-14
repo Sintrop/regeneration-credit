@@ -19,13 +19,13 @@ const voteRulesDeployed = async () => {
   let developerPoolParams = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    blocksPerEra: 100,
+    blocksPerEra: 140,
   };
 
   let researcherPoolParams = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    blocksPerEra: 40,
+    blocksPerEra: 140,
   };
 
   let contributorPoolParams = {
@@ -152,6 +152,9 @@ const voteRulesDeployed = async () => {
     activistRulesAddress: activistRules.target,
     voteRulesAddress: voteRules.target,
   };
+
+  await activistPool.newAllowedCaller(activistRules.target);
+  await researcherPool.newAllowedCaller(researcherRules.target);
 
   await validationRules.setContractAddressDependencies(validationRulesDependencies);
   await developerRules.setVoteRules(voteRules.target);
