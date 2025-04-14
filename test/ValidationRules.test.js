@@ -300,7 +300,7 @@ describe("ValidationRules", () => {
                 it("should return error", async () => {
                   await expect(
                     instance.connect(dev1Address).addUserValidation(dev2Address, "my justification")
-                  ).to.be.revertedWith("User can not vote");
+                  ).to.be.revertedWith("User cannot vote");
                 });
               });
 
@@ -376,7 +376,7 @@ describe("ValidationRules", () => {
                 it("should return error", async () => {
                   await expect(
                     instance.connect(user1Address).addUserValidation(user2Address, "my justification")
-                  ).to.be.revertedWith("User can not vote");
+                  ).to.be.revertedWith("User cannot vote");
                 });
               });
 
@@ -452,7 +452,7 @@ describe("ValidationRules", () => {
                 it("should return error", async () => {
                   await expect(
                     instance.connect(user1Address).addUserValidation(user2Address, "my justification")
-                  ).to.be.revertedWith("User can not vote");
+                  ).to.be.revertedWith("User cannot vote");
                 });
               });
 
@@ -528,7 +528,7 @@ describe("ValidationRules", () => {
                 it("should return error", async () => {
                   await expect(
                     instance.connect(user1Address).addUserValidation(user2Address, "my justification")
-                  ).to.be.revertedWith("User can not vote");
+                  ).to.be.revertedWith("User cannot vote");
                 });
               });
 

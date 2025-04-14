@@ -190,6 +190,7 @@ contract ResearcherRules is Callable, Invitable {
 
   function addResearchValidation(uint256 id, string memory justification) public {
     require(voteRules.canVote(msg.sender), "User cannot vote");
+    require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
     Research memory research = researches[id];
 

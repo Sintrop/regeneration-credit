@@ -236,6 +236,7 @@ contract InspectionRules is Callable {
 
   function addInspectionValidation(uint256 id, string memory justification) public {
     require(voteRules.canVote(msg.sender), "User cannot vote");
+    require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
     Inspection memory inspection = inspections[id];
 

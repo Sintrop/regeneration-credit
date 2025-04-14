@@ -62,7 +62,7 @@ contract ValidationRules is Callable {
   }
 
   function addUserValidation(address userAddress, string memory justification) public {
-    require(voteRules.canVote(msg.sender), "User can not vote");
+    require(voteRules.canVote(msg.sender), "User cannot vote");
     require(!communityRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
     require(!communityRules.userTypeIs(UserType.DENIED, userAddress), "User already denied");
     require(!validatorUsersValidations[msg.sender][userAddress], "Already voted");
@@ -87,7 +87,6 @@ contract ValidationRules is Callable {
     address validatorAddress
   ) public mustBeAllowedCaller {
     require(!validatorInspectionsValidations[validatorAddress][inspection.id], "Already voted");
-    require(waitedTimeBetweenVotes(validatorAddress), "Wait timeBetweenVotes");
 
     validatorInspectionsValidations[validatorAddress][inspection.id] = true;
     validatorLastVoteAt[validatorAddress] = block.number;
@@ -114,7 +113,6 @@ contract ValidationRules is Callable {
     address validatorAddress
   ) public mustBeAllowedCaller {
     require(!validatorReportsValidations[validatorAddress][report.id], "Already voted");
-    require(waitedTimeBetweenVotes(validatorAddress), "Wait timeBetweenVotes");
 
     validatorReportsValidations[validatorAddress][report.id] = true;
     validatorLastVoteAt[validatorAddress] = block.number;
@@ -138,7 +136,6 @@ contract ValidationRules is Callable {
     address validatorAddress
   ) public mustBeAllowedCaller {
     require(!validatorResearchesValidations[validatorAddress][research.id], "Already voted");
-    require(waitedTimeBetweenVotes(validatorAddress), "Wait timeBetweenVotes");
 
     validatorResearchesValidations[validatorAddress][research.id] = true;
     validatorLastVoteAt[validatorAddress] = block.number;
@@ -213,7 +210,7 @@ contract ValidationRules is Callable {
     if (voters > 32000) return 500;
   }
   
-  function waitedTimeBetweenVotes(address validatorAddress) internal view returns (bool) {
+  function waitedTimeBetweenVotes(address validatorAddress) public view returns (bool) {
     uint256 lastVoteAt = validatorLastVoteAt[validatorAddress];
 
     bool canVote = block.number > lastVoteAt + timeBetweenVotes;

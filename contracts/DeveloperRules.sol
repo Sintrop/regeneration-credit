@@ -146,6 +146,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    */
   function addReportValidation(uint256 id, string memory justification) public {
     require(voteRules.canVote(msg.sender), "User cannot vote");
+    require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
     Report memory report = reports[id];
 
