@@ -87,6 +87,7 @@ struct Plant {
   string scientificName;
   string family;
   string botanicalDescription;
+  string sunLight;
   string biome;
   string extraInfo;
 }

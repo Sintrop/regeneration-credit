@@ -56,7 +56,16 @@ describe("ResearcherRules", () => {
   const addPlant = async (from) => {
     await instance
       .connect(from)
-      .addPlant("photo", "popularName", "scientificName", "family", "botanicalDescription", "biome", "extraInfo");
+      .addPlant(
+        "photo",
+        "popularName",
+        "scientificName",
+        "family",
+        "botanicalDescription",
+        "stratum",
+        "biome",
+        "extraInfo"
+      );
   };
 
   beforeEach(async () => {

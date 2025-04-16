@@ -301,6 +301,7 @@ contract ResearcherRules is Callable, Invitable {
    * @param scientificName Plant scientific name
    * @param family Family or taxonomy description
    * @param botanicalDescription Plant botanical information, such as biologic form, leafs, wood, flowers, seeds, roots and any other botanical information.
+   * @param sunLight The sun light necessity by the plant, or stratum.
    * @param biome Biomes that the plant can be found
    * @param extraInfo Any other relevant information
    */
@@ -310,6 +311,7 @@ contract ResearcherRules is Callable, Invitable {
     string memory scientificName,
     string memory family,
     string memory botanicalDescription,
+    string memory sunLight,
     string memory biome,
     string memory extraInfo
   ) public {
@@ -325,6 +327,7 @@ contract ResearcherRules is Callable, Invitable {
       scientificName,
       family,
       botanicalDescription,
+      sunLight,
       biome,
       extraInfo
     );
