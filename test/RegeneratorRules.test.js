@@ -93,7 +93,6 @@ describe("RegeneratorRules", () => {
       expect(regenerator.totalArea).to.equal("1000");
       expect(regenerator.totalInspections).to.equal(0);
       expect(regenerator.pendingInspection).to.equal(false);
-      expect(regenerator.regenerationScore.average).to.equal("0");
       expect(regenerator.regenerationScore.score).to.equal("0");
       expect(regenerator.coordinatesCount).to.equal("4");
 
@@ -116,13 +115,6 @@ describe("RegeneratorRules", () => {
       const regenerator = await instance.getRegenerator(prod1Address);
 
       expect(regenerator.totalInspections).to.equal(0);
-    });
-
-    it("should be created with avarage equal zero", async () => {
-      await addRegenerator("Regenerator A", prod1Address);
-      const regenerator = await instance.getRegenerator(prod1Address);
-
-      expect(regenerator.regenerationScore.average).to.equal("0");
     });
 
     it("should be created with regenerationScore equal zero", async () => {
