@@ -64,16 +64,22 @@ contract SupporterRules {
    * @param name The name of the supporter
    * @return a supporter
    */
-  function addSupporter(string memory name) public returns (Supporter memory) {
+  function addSupporter(string memory name, string memory profilePhoto) public returns (Supporter memory) {
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
-    Supporter memory supporter = Supporter(id, msg.sender, name, block.number);
+    Supporter memory supporter = Supporter(id, msg.sender, name, profilePhoto, block.number);
 
     supporters[msg.sender] = supporter;
     supportersAddress[id] = msg.sender;
     communityRules.addUser(msg.sender, USER_TYPE);
 
     return supporter;
+  }
+
+  function updateProfilePhoto(string memory newPhoto) public {
+    require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
+
+    supporters[msg.sender].profilePhoto = newPhoto;
   }
 
   /**
