@@ -24,6 +24,9 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   /// @notice The relationship between id and report data
   mapping(uint256 => Report) public reports;
 
+  /// @notice The relationship between address and reports ids
+  mapping(address => uint256[]) public reportsIds;
+
   /// @notice The relationship between address and penalties received
   mapping(address => Penalty[]) public penalties;
 
@@ -129,13 +132,19 @@ contract DeveloperRules is Ownable, Callable, Invitable {
 
     reportsCount++;
     reportsTotalCount++;
-    uint256 id = reportsCount;
+    uint256 id = reportsTotalCount;
 
     developers[msg.sender].totalReports++;
 
     reports[id] = Report(id, developerPoolEra(), msg.sender, description, report, 0, true, 0, block.number);
 
+    reportsIds[msg.sender].push(id);
+
     updateLevel(msg.sender);
+  }
+
+  function getReportsIds(address addr) public view returns (uint256[] memory) {
+    return reportsIds[addr];
   }
 
   /**
@@ -168,8 +177,8 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @dev Executes invalidation
    * @param report Report id
    */
-  function invalidateReport(Report memory report) internal returns (Report memory){
-    reportsTotalCount--;
+  function invalidateReport(Report memory report) internal returns (Report memory) {
+    reportsCount--;
     report.valid = false;
     report.invalidatedAt = block.number;
     reports[report.id] = report;

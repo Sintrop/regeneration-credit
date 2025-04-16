@@ -46,7 +46,6 @@ struct Pool {
  */
 struct RegenerationScore {
   uint256 score;
-  uint256 average;
 }
 
 /**

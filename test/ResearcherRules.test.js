@@ -45,6 +45,21 @@ describe("ResearcherRules", () => {
     await instance.connect(from).addCalculatorItem("title", "kg", "justification", 1);
   };
 
+  const addPlant = async (from) => {
+    await instance
+      .connect(from)
+      .addPlant(
+        "photo",
+        "popularName",
+        "scientificName",
+        "family",
+        "botanicalDescription",
+        "stratum",
+        "biome",
+        "extraInfo"
+      );
+  };
+
   beforeEach(async () => {
     [owner, resea1Address, resea2Address, validator1Address, validator2Address, validator3Address, validator4Address] =
       await ethers.getSigners();
@@ -349,6 +364,19 @@ describe("ResearcherRules", () => {
     });
   });
 
+  describe("#getResearchesIds", () => {
+    beforeEach(async () => {
+      await addResearcher("Researcher A", resea1Address);
+      await addResearch(resea1Address);
+    });
+
+    it("should have id associated", async () => {
+      const userIds = await instance.connect(resea2Address).getResearchesIds(resea1Address);
+
+      expect(userIds.length).to.equal(1);
+    });
+  });
+
   describe("addResearchValidation", () => {
     context("with validator", () => {
       beforeEach(async () => {
@@ -599,6 +627,29 @@ describe("ResearcherRules", () => {
       context("when have not waited time between calculatorItems", () => {
         it("should return error message", async () => {
           await expect(addCalculatorItem(resea1Address)).to.be.revertedWith("Can't publish yet");
+        });
+      });
+    });
+  });
+
+  describe("#addPlant", () => {
+    context("when is not a researcher", () => {
+      it("should return error", async () => {
+        await expect(addPlant(owner)).to.be.revertedWith("Only allowed to researchers");
+      });
+    });
+
+    context("when is a researcher", () => {
+      beforeEach(async () => {
+        await addResearcher("Researcher A", resea1Address);
+        await addPlant(resea1Address);
+      });
+
+      context("when add a plant", () => {
+        it("add an plant", async () => {
+          const firstPlant = await instance.plantsCount();
+
+          expect(firstPlant).to.equal(1);
         });
       });
     });

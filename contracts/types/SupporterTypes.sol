@@ -14,6 +14,7 @@ struct Supporter {
   uint256 id;
   address supporterWallet;
   string name;
+  string profilePhoto;
   uint256 createdAt;
 }
 
@@ -33,9 +34,23 @@ struct Publication {
   string content;
 }
 
+struct Offset {
+  address supporterAddress;
+  uint256 createdAt;
+  uint256 amountBurn;
+  uint256 calculatorItemId;
+}
+
 /**
  * @dev PublicationId data structure
  */
 struct PublicationId {
+  uint256 id;
+}
+
+/**
+ * @dev OffsetId data structure
+ */
+struct OffsetId {
   uint256 id;
 }

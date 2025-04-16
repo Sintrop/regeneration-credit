@@ -266,6 +266,19 @@ describe("ContributorRules", (accounts) => {
     });
   });
 
+  describe("#getContributionsIds", () => {
+    beforeEach(async () => {
+      await addContributor("Contributor A", contr1Address);
+      await instance.connect(contr1Address).addContribution("description", "report");
+    });
+
+    it("should have id associated", async () => {
+      const userIds = await instance.connect(contr2Address).getContributionsIds(contr1Address);
+
+      expect(userIds.length).to.equal(1);
+    });
+  });
+
   describe("#getContributor", () => {
     it("should return a contributor", async () => {
       await addContributor("Contributor A", contr1Address);

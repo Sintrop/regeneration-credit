@@ -296,6 +296,19 @@ describe("DeveloperRules", (accounts) => {
     });
   });
 
+  describe("#getReportsIds", () => {
+    beforeEach(async () => {
+      await addDeveloper("Developer A", dev1Address);
+      await instance.connect(dev1Address).addReport("description", "report");
+    });
+
+    it("should have id associated", async () => {
+      const userIds = await instance.connect(dev2Address).getReportsIds(dev1Address);
+
+      expect(userIds.length).to.equal(1);
+    });
+  });
+
   describe("addReportValidation", () => {
     context("with developer", () => {
       beforeEach(async () => {
@@ -357,10 +370,10 @@ describe("DeveloperRules", (accounts) => {
             expect(eraLevels).to.eq(0);
           });
 
-          it("must decrement reportsTotalCount in one", async () => {
-            const reportsTotalCount = await instance.reportsTotalCount();
+          it("must decrement reportsCount in one", async () => {
+            const reportsCount = await instance.reportsCount();
 
-            expect(reportsTotalCount).to.eq(0);
+            expect(reportsCount).to.eq(0);
           });
         });
 

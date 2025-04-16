@@ -4,7 +4,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 import { CommunityRules } from "./CommunityRules.sol";
 import { ResearcherRules } from "./ResearcherRules.sol";
 import { CalculatorItem } from "./types/ResearcherTypes.sol";
-import { Supporter, Publication, PublicationId } from "./types/SupporterTypes.sol";
+import { Supporter, Publication, PublicationId, Offset, OffsetId } from "./types/SupporterTypes.sol";
 import { UserType, Invitation } from "./types/CommunityTypes.sol";
 import { SupporterPool } from "./SupporterPool.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -38,6 +38,12 @@ contract SupporterRules {
 
   uint256 public publicationsCount;
 
+  mapping(uint256 => Offset) public offsets;
+
+  mapping(address => OffsetId[]) public offsetIds;
+
+  uint256 public offsetsCount;
+
   /// @notice Commission percentage on invited burn
   uint256 public constant INVITER_PERCENTAGE = 5;
 
@@ -64,10 +70,10 @@ contract SupporterRules {
    * @param name The name of the supporter
    * @return a supporter
    */
-  function addSupporter(string memory name) public returns (Supporter memory) {
+  function addSupporter(string memory name, string memory profilePhoto) public returns (Supporter memory) {
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
-    Supporter memory supporter = Supporter(id, msg.sender, name, block.number);
+    Supporter memory supporter = Supporter(id, msg.sender, name, profilePhoto, block.number);
 
     supporters[msg.sender] = supporter;
     supportersAddress[id] = msg.sender;
@@ -76,21 +82,34 @@ contract SupporterRules {
     return supporter;
   }
 
+  function updateProfilePhoto(string memory newPhoto) public {
+    require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
+
+    supporters[msg.sender].profilePhoto = newPhoto;
+  }
+
   /**
    * @notice Burn tokens to compensate for a specific item
    * @param amount Tokens burned
    * @param calculatorItemId Calculator item id
    */
-  function burnTokensCalculator(uint256 amount, uint256 calculatorItemId) public {
+  function offset(uint256 amount, uint256 calculatorItemId) public {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount > 0, "Amount invalid");
 
     uint256 amountBurn = burnTokens(amount);
 
+    uint256 id = offsetsCount + 1;
+
     if (calculatorItemId > 0) {
       CalculatorItem memory calculatorItem = researcherRules.getCalculatorItem(calculatorItemId);
       if (calculatorItem.id > 0) calculatorItemCertificates[msg.sender][calculatorItemId] = amountBurn;
     }
+
+    offsets[id] = Offset(msg.sender, block.number, amountBurn, calculatorItemId);
+
+    offsetIds[msg.sender].push(OffsetId(id));
+    offsetsCount++;
   }
 
   /**
@@ -99,7 +118,7 @@ contract SupporterRules {
    * @param description Post description
    * @param content Post content
    */
-  function burnTokensPublication(uint256 amount, string memory description, string memory content) public {
+  function publish(uint256 amount, string memory description, string memory content) public {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount > 1, "Amount invalid");
 

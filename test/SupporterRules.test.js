@@ -9,8 +9,12 @@ describe("SupporterRules", () => {
   let instance, communityRules, regenerationCredit, supporterPool, researcherRules;
   let ownerAddress, inv1Address, inv2Address, user1Address;
 
-  const addSupporter = async (name, from) => {
-    await instance.connect(from).addSupporter(name);
+  const addSupporter = async (name, profilePhoto, from) => {
+    await instance.connect(from).addSupporter(name, profilePhoto);
+  };
+
+  const updateProfilePhoto = async (newPhoto, from) => {
+    await instance.connect(from).updateProfilePhoto(newPhoto);
   };
 
   const transferTokensTo = async (userAddress, tokens) => {
@@ -71,30 +75,33 @@ describe("SupporterRules", () => {
   describe("#addSupporter", () => {
     context("when supporter exists", () => {
       it("should return error", async () => {
-        await addSupporter("Supporter A", inv1Address);
-        await expect(addSupporter("Supporter A", inv1Address)).to.be.revertedWith("User already exists");
+        await addSupporter("Supporter A", "profilePhoto", inv1Address);
+        await expect(addSupporter("Supporter A", "profilePhoto", inv1Address)).to.be.revertedWith(
+          "User already exists"
+        );
       });
     });
 
     context("when supporter don't exist", () => {
       it("create supporter", async () => {
-        await addSupporter("Supporter A", inv1Address);
-        await addSupporter("Supporter B", inv2Address);
+        await addSupporter("Supporter A", "profilePhoto", inv1Address);
+        await addSupporter("Supporter B", "profilePhoto", inv2Address);
         const supporter = await instance.getSupporter(inv1Address);
 
         expect(supporter.supporterWallet).to.equal(inv1Address.address);
+        expect(supporter.profilePhoto).to.equal("profilePhoto");
       });
 
       it("increment supporterCount", async () => {
-        await addSupporter("Supporter A", inv1Address);
-        await addSupporter("Supporter B", inv2Address);
+        await addSupporter("Supporter A", "profilePhoto", inv1Address);
+        await addSupporter("Supporter B", "profilePhoto", inv2Address);
         const supportersCount = await communityRules.userTypesCount(userTypes.Supporter);
 
         expect(supportersCount).to.equal(2);
       });
 
       it("add created supporter in userType contract as a SUPPORTER", async () => {
-        await addSupporter("Supporter A", inv1Address);
+        await addSupporter("Supporter A", "profilePhoto", inv1Address);
 
         const userType = await communityRules.getUser(inv1Address);
         const SUPPORTER = 7;
@@ -104,20 +111,41 @@ describe("SupporterRules", () => {
     });
   });
 
+  describe("#updateProfilePhoto", () => {
+    context("without supporter", () => {
+      it("should return error", async () => {
+        await addSupporter("Supporter A", "profilePhoto", inv1Address);
+        await expect(updateProfilePhoto("newPhoto", inv2Address)).to.be.revertedWith("Only supporters");
+      });
+    });
+
+    context("with supporter", () => {
+      it("should update photo", async () => {
+        await addSupporter("Supporter A", "profilePhoto", inv1Address);
+        await updateProfilePhoto("newPhoto", inv1Address);
+        const supporter = await instance.getSupporter(inv1Address);
+
+        expect(supporter.supporterWallet).to.equal(inv1Address.address);
+        expect(supporter.profilePhoto).to.equal("newPhoto");
+      });
+    });
+  });
+
   describe("#getSupporter", () => {
     it("return a supporter", async () => {
-      await addSupporter("Supporter A", inv1Address);
+      await addSupporter("Supporter A", "profilePhoto", inv1Address);
 
       const supporter = await instance.getSupporter(inv1Address);
 
       expect(supporter.supporterWallet).to.equal(inv1Address.address);
+      expect(supporter.profilePhoto).to.equal("profilePhoto");
     });
   });
 
-  describe("#burnTokensCalculator", () => {
+  describe("#offset", () => {
     context("when msg.sender is SUPPORTER", () => {
       beforeEach(async () => {
-        await addSupporter("Supporter A", inv1Address);
+        await addSupporter("Supporter A", "profilePhoto", inv1Address);
       });
 
       context("when amount is greater than zero", () => {
@@ -132,13 +160,13 @@ describe("SupporterRules", () => {
           context("when SUPPORTER was invited", () => {
             beforeEach(async () => {
               await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
-              await addSupporter("Supporter B", inv2Address);
+              await addSupporter("Supporter B", "profilePhoto", inv2Address);
               await transferTokensTo(inv2Address, 100000000000000000000n);
             });
 
             context("when burn 1000000000000000000 tokens", () => {
               beforeEach(async () => {
-                await instance.connect(inv2Address).burnTokensCalculator(1000000000000000000n, 1);
+                await instance.connect(inv2Address).offset(1000000000000000000n, 1);
               });
 
               it("Supporter balance must be 99000000000000000000", async () => {
@@ -161,11 +189,23 @@ describe("SupporterRules", () => {
 
                 expect(value).to.equal(950000000000000000n);
               });
+
+              it("must add offset amount", async () => {
+                const offset = await instance.offsets(1);
+                expect(offset.supporterAddress).to.equal(inv2Address);
+                expect(offset.amountBurn).to.equal("950000000000000000");
+                expect(offset.calculatorItemId).to.equal(1);
+              });
+
+              it("must add offset count", async () => {
+                const offsetsCount = await instance.offsetsCount();
+                expect(offsetsCount).to.equal(1);
+              });
             });
 
             context("when burn 500000000000000000 tokens", () => {
               beforeEach(async () => {
-                await instance.connect(inv2Address).burnTokensCalculator(500000000000000000n, 1);
+                await instance.connect(inv2Address).offset(500000000000000000n, 1);
               });
 
               it("Supporter balance must be 99500000000000000000", async () => {
@@ -192,7 +232,7 @@ describe("SupporterRules", () => {
 
             context("when burn 1000000000000000000 tokens", () => {
               beforeEach(async () => {
-                await instance.connect(inv1Address).burnTokensCalculator(1000000000000000000n, 1);
+                await instance.connect(inv1Address).offset(1000000000000000000n, 1);
               });
 
               it("Supporter balance must be 99000000000000000000", async () => {
@@ -216,7 +256,7 @@ describe("SupporterRules", () => {
 
             context("when burn 500000000000000000 tokens", () => {
               beforeEach(async () => {
-                await instance.connect(inv1Address).burnTokensCalculator(500000000000000000n, 1);
+                await instance.connect(inv1Address).offset(500000000000000000n, 1);
               });
 
               it("Supporter balance must be 99500000000000000000", async () => {
@@ -243,9 +283,9 @@ describe("SupporterRules", () => {
         context("when calculatorItemId does not exists", () => {
           beforeEach(async () => {
             await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
-            await addSupporter("Supporter B", inv2Address);
+            await addSupporter("Supporter B", "profilePhoto", inv2Address);
             await transferTokensTo(inv2Address, 100000000000000000000n);
-            await instance.connect(inv2Address).burnTokensCalculator(1000000000000000000n, 10);
+            await instance.connect(inv2Address).offset(1000000000000000000n, 10);
           });
 
           context("when burn 1000000000000000000 tokens", () => {
@@ -260,22 +300,22 @@ describe("SupporterRules", () => {
 
       context("when amount is equal zero", () => {
         it("should return error", async () => {
-          await expect(instance.connect(inv1Address).burnTokensCalculator(0, 0)).to.be.revertedWith("Amount invalid");
+          await expect(instance.connect(inv1Address).offset(0, 0)).to.be.revertedWith("Amount invalid");
         });
       });
     });
 
     context("when msg.sender is not SUPPORTER", () => {
       it("should return error", async () => {
-        await expect(instance.connect(inv1Address).burnTokensCalculator(1, 0)).to.be.revertedWith("Only supporters");
+        await expect(instance.connect(inv1Address).offset(1, 0)).to.be.revertedWith("Only supporters");
       });
     });
   });
 
-  describe("#burnTokensPublication", () => {
+  describe("#publish", () => {
     context("when msg.sender is SUPPORTER", () => {
       beforeEach(async () => {
-        await addSupporter("Supporter A", inv1Address);
+        await addSupporter("Supporter A", "profilePhoto", inv1Address);
       });
 
       context("when amount is greater than zero", () => {
@@ -283,13 +323,13 @@ describe("SupporterRules", () => {
           context("when SUPPORTER was invited", () => {
             beforeEach(async () => {
               await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
-              await addSupporter("Supporter B", inv2Address);
+              await addSupporter("Supporter B", "profilePhoto", inv2Address);
               await transferTokensTo(inv2Address, 100000000000000000000n);
             });
 
             context("when burn 1000000000000000000 tokens", () => {
               beforeEach(async () => {
-                await instance.connect(inv2Address).burnTokensPublication("1000000000000000000", "text", "text");
+                await instance.connect(inv2Address).publish("1000000000000000000", "text", "text");
               });
 
               it("Supporter balance must be 99000000000000000000", async () => {
@@ -323,7 +363,7 @@ describe("SupporterRules", () => {
 
             context("when burn 500000000000000000 tokens", () => {
               beforeEach(async () => {
-                await instance.connect(inv2Address).burnTokensPublication(500000000000000000n, "text", "text");
+                await instance.connect(inv2Address).publish(500000000000000000n, "text", "text");
               });
 
               it("Supporter balance must be 99500000000000000000", async () => {
@@ -350,7 +390,7 @@ describe("SupporterRules", () => {
 
             context("when burn 1000000000000000000 tokens", () => {
               beforeEach(async () => {
-                await instance.connect(inv1Address).burnTokensPublication(1000000000000000000n, "text", "text");
+                await instance.connect(inv1Address).publish(1000000000000000000n, "text", "text");
               });
 
               it("Supporter balance must be 99000000000000000000", async () => {
@@ -368,7 +408,7 @@ describe("SupporterRules", () => {
 
             context("when burn 500000000000000000 tokens", () => {
               beforeEach(async () => {
-                await instance.connect(inv1Address).burnTokensPublication(500000000000000000n, "text", "text");
+                await instance.connect(inv1Address).publish(500000000000000000n, "text", "text");
               });
 
               it("Supporter balance must be 99500000000000000000", async () => {
@@ -389,34 +429,28 @@ describe("SupporterRules", () => {
 
       context("when amount is equal zero", () => {
         it("should return error", async () => {
-          await expect(instance.connect(inv1Address).burnTokensPublication(0, "text", "text")).to.be.revertedWith(
-            "Amount invalid"
-          );
+          await expect(instance.connect(inv1Address).publish(0, "text", "text")).to.be.revertedWith("Amount invalid");
         });
       });
 
       context("when amount is below one and more than zero", () => {
         it("should return error", async () => {
           await transferTokensTo(inv1Address, "100000000000000000000");
-          await expect(instance.connect(inv1Address).burnTokensPublication(1, "text", "text")).to.be.revertedWith(
-            "Amount invalid"
-          );
+          await expect(instance.connect(inv1Address).publish(1, "text", "text")).to.be.revertedWith("Amount invalid");
         });
       });
     });
 
     context("when msg.sender is not SUPPORTER", () => {
       it("should return error", async () => {
-        await expect(instance.connect(inv1Address).burnTokensPublication(1, "text", "text")).to.be.revertedWith(
-          "Only supporters"
-        );
+        await expect(instance.connect(inv1Address).publish(1, "text", "text")).to.be.revertedWith("Only supporters");
       });
     });
   });
 
   describe("#declareReductionCommitment", () => {
     beforeEach(async () => {
-      await addSupporter("Supporter A", inv1Address);
+      await addSupporter("Supporter A", "profilePhoto", inv1Address);
     });
 
     context("when is supporter", () => {
