@@ -381,6 +381,19 @@ describe("ResearcherRules", () => {
     });
   });
 
+  describe("#getResearchesIds", () => {
+    beforeEach(async () => {
+      await addResearcher("Researcher A", resea1Address);
+      await addResearch(resea1Address);
+    });
+
+    it("should have id associated", async () => {
+      const userIds = await instance.connect(resea2Address).getResearchesIds(resea1Address);
+
+      expect(userIds.length).to.equal(1);
+    });
+  });
+
   describe("addResearchValidation", () => {
     context("with validator", () => {
       beforeEach(async () => {

@@ -22,6 +22,9 @@ contract ResearcherRules is Callable, Invitable {
   /// @notice The relationship between id and research data
   mapping(uint256 => Research) public researches;
 
+  /// @notice The relationship between address and researches ids
+  mapping(address => uint256[]) public researchesIds;
+
   /// @notice The relationship between id and calculatorItem data
   mapping(uint256 => CalculatorItem) public calculatorItems;
 
@@ -182,8 +185,14 @@ contract ResearcherRules is Callable, Invitable {
     researcher.publishedResearches++;
     researcher.lastPublishedAt = block.number;
 
+    researchesIds[msg.sender].push(id);
+
     researcher.pool.level++;
     researcherPool.addLevel(msg.sender, 1);
+  }
+
+  function getResearchesIds(address addr) public view returns (uint256[] memory) {
+    return researchesIds[addr];
   }
 
   function addResearchValidation(uint256 id, string memory justification) public {

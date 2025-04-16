@@ -83,10 +83,10 @@ contract InspectionRules is Callable {
   }
 
   /**
-   * @dev Allows the current user regenerator/inspector get all yours inspections with status INSPECTED
+   * @dev Allows to get all regenerator/inspector inspections with status INSPECTED
    */
-  function getInspectionsHistory() public view returns (uint256[] memory) {
-    return userInspections[msg.sender];
+  function getInspectionsHistory(address addr) public view returns (uint256[] memory) {
+    return userInspections[addr];
   }
 
   /**

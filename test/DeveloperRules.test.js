@@ -321,6 +321,19 @@ describe("DeveloperRules", (accounts) => {
     });
   });
 
+  describe("#getReportsIds", () => {
+    beforeEach(async () => {
+      await addDeveloper("Developer A", dev1Address);
+      await instance.connect(dev1Address).addReport("description", "report");
+    });
+
+    it("should have id associated", async () => {
+      const userIds = await instance.connect(dev2Address).getReportsIds(dev1Address);
+
+      expect(userIds.length).to.equal(1);
+    });
+  });
+
   describe("addReportValidation", () => {
     context("with validator", () => {
       beforeEach(async () => {
