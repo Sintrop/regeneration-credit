@@ -5,6 +5,7 @@ const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { ZERO_ADDRESS } = require("./shared/zeroAddress");
+const { voteRulesDeployed } = require("./shared/vote_rules_deployed");
 
 describe("ResearcherRules", () => {
   let instance;
@@ -12,7 +13,7 @@ describe("ResearcherRules", () => {
   let researcherPool;
   let communityRules;
   let validationRules;
-  let owner, resea1Address, resea2Address, validator1Address, validator2Address, validator3Address, validator4Address;
+  let owner, resea1Address, resea2Address, user1Address, user2Address, user3Address, user4Address;
 
   const timeBetweenWorks = 10;
   const maxPenalties = 3;
@@ -22,7 +23,7 @@ describe("ResearcherRules", () => {
   const args = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    blocksPerEra: 60,
+    blocksPerEra: 140,
   };
 
   const addResearcher = async (name, from) => {
@@ -61,39 +62,16 @@ describe("ResearcherRules", () => {
   };
 
   beforeEach(async () => {
-    [owner, resea1Address, resea2Address, validator1Address, validator2Address, validator3Address, validator4Address] =
+    [owner, resea1Address, resea2Address, user1Address, user2Address, user3Address, user4Address] =
       await ethers.getSigners();
 
-    regenerationCredit = await regenerationCreditDeployed();
-    communityRules = await communityRulesDeployed();
+    const validatorRulesDeployed = await voteRulesDeployed();
 
-    const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
-    researcherPool = await researcherPoolFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra);
-
-    const validationRulesFactory = await ethers.getContractFactory("ValidationRules");
-    validationRules = await validationRulesFactory.deploy(timeBetweenVotes);
-
-    const instanceFactory = await ethers.getContractFactory("ResearcherRules");
-    instance = await instanceFactory.deploy(
-      communityRules.target,
-      researcherPool.target,
-      validationRules.target,
-      timeBetweenWorks,
-      maxPenalties,
-      securityBlocksToValidatorAnalysis
-    );
-
-    const validationRulesDependencies = {
-      communityRulesAddress: communityRules.target,
-      regeneratorRulesAddress: ZERO_ADDRESS,
-      inspectorRulesAddress: ZERO_ADDRESS,
-      developerRulesAddress: ZERO_ADDRESS,
-      researcherRulesAddress: instance.target,
-      contributorRulesAddress: ZERO_ADDRESS,
-      activistRulesAddress: ZERO_ADDRESS,
-    };
-
-    await validationRules.setContractAddressDependencies(validationRulesDependencies);
+    regenerationCredit = validatorRulesDeployed.regenerationCredit;
+    communityRules = validatorRulesDeployed.communityRules;
+    validationRules = validatorRulesDeployed.validationRules;
+    instance = validatorRulesDeployed.researcherRules;
+    researcherPool = validatorRulesDeployed.researcherPool;
 
     await communityRules.newAllowedCaller(validationRules.target);
     await communityRules.newAllowedCaller(instance.target);
@@ -378,14 +356,14 @@ describe("ResearcherRules", () => {
   });
 
   describe("addResearchValidation", () => {
-    context("with validator", () => {
+    context("with researcher", () => {
       beforeEach(async () => {
-        await addInvitation(owner, validator1Address, userTypes.Validator, owner);
-        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
-        await addInvitation(owner, validator3Address, userTypes.Validator, owner);
-        await addInvitation(owner, validator4Address, userTypes.Validator, owner);
+        await addInvitation(owner, user1Address, userTypes.Researcher, owner);
+        await addInvitation(owner, user2Address, userTypes.Researcher, owner);
+        await addInvitation(owner, user3Address, userTypes.Researcher, owner);
+        await addInvitation(owner, user4Address, userTypes.Researcher, owner);
 
-        await addValidator(validator1Address);
+        await addResearcher("User A", user1Address);
         await addResearcher("Researcher A", resea1Address);
       });
 
@@ -394,11 +372,12 @@ describe("ResearcherRules", () => {
           beforeEach(async () => {
             await addResearch(resea1Address);
 
-            await addValidator(validator2Address);
-            await addValidator(validator3Address);
-            await addValidator(validator4Address);
-            await instance.connect(validator1Address).addResearchValidation(1, "justification");
-            await instance.connect(validator2Address).addResearchValidation(1, "justification");
+            await addResearcher("User B", user2Address);
+            await addResearcher("User C", user3Address);
+            await addResearcher("User D", user4Address);
+
+            await instance.connect(user1Address).addResearchValidation(1, "justification");
+            await instance.connect(user2Address).addResearchValidation(1, "justification");
           });
 
           it("set valid field to false", async () => {
@@ -444,11 +423,11 @@ describe("ResearcherRules", () => {
           beforeEach(async () => {
             await addResearch(resea1Address);
 
-            await addValidator(validator2Address);
-            await addValidator(validator3Address);
-            await addValidator(validator4Address);
+            await addResearcher("User B", user2Address);
+            await addResearcher("User C", user3Address);
+            await addResearcher("User D", user4Address);
 
-            await instance.connect(validator1Address).addResearchValidation(1, "justification");
+            await instance.connect(user1Address).addResearchValidation(1, "justification");
           });
 
           it("valid field is true", async () => {
@@ -481,28 +460,24 @@ describe("ResearcherRules", () => {
 
       context("when researcher reach max maxPenalties", () => {
         beforeEach(async () => {
-          await addValidator(validator2Address);
-
-          await validationRules.connect(validator1Address).declareAlive();
-          await validationRules.connect(validator2Address).declareAlive();
+          await addResearcher("User B", user2Address);
+          await addResearcher("User C", user3Address);
 
           await addResearch(resea1Address);
-          await instance.connect(validator1Address).addResearchValidation(1, "justification");
+          await instance.connect(user1Address).addResearchValidation(1, "justification");
+          await instance.connect(user2Address).addResearchValidation(1, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
-          await validationRules.connect(validator1Address).declareAlive();
-
           await addResearch(resea1Address);
-          await instance.connect(validator1Address).addResearchValidation(2, "justification");
+          await instance.connect(user1Address).addResearchValidation(2, "justification");
+          await instance.connect(user3Address).addResearchValidation(2, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
-          await validationRules.connect(validator1Address).declareAlive();
-
           await addResearch(resea1Address);
-
-          await instance.connect(validator1Address).addResearchValidation(3, "justification");
+          await instance.connect(user1Address).addResearchValidation(3, "justification");
+          await instance.connect(user2Address).addResearchValidation(3, "justification");
         });
 
         it("user type must be DENIED", async () => {
@@ -517,45 +492,39 @@ describe("ResearcherRules", () => {
           beforeEach(async () => {
             await addResearch(resea1Address);
 
-            await advanceBlock(args.blocksPerEra + 1);
+            await advanceBlock(args.blocksPerEra);
           });
 
           it("should return error message", async () => {
-            await expect(
-              instance.connect(validator1Address).addResearchValidation(1, "justification")
-            ).to.be.revertedWith("This research is not VALID");
+            await expect(instance.connect(user1Address).addResearchValidation(1, "justification")).to.be.revertedWith(
+              "This research is not VALID"
+            );
           });
         });
 
         context("when contribution is invalidated", () => {
           beforeEach(async () => {
-            await addValidator(validator2Address);
-            await addValidator(validator3Address);
-            await addValidator(validator4Address);
-
-            await validationRules.connect(validator1Address).declareAlive();
-            await validationRules.connect(validator2Address).declareAlive();
-            await validationRules.connect(validator4Address).declareAlive();
-
-            await advanceBlock(validatorPoolArgs.blocksPerEra);
+            await addResearcher("User B", user2Address);
+            await addResearcher("User C", user3Address);
 
             await addResearch(resea1Address);
 
-            await instance.connect(validator1Address).addResearchValidation(1, "justification");
+            await instance.connect(user1Address).addResearchValidation(1, "justification");
+            await instance.connect(user2Address).addResearchValidation(1, "justification");
           });
 
           it("should return error message", async () => {
-            await expect(
-              instance.connect(validator3Address).addResearchValidation(1, "justification")
-            ).to.be.revertedWith("This research is not VALID");
+            await expect(instance.connect(user3Address).addResearchValidation(1, "justification")).to.be.revertedWith(
+              "This research is not VALID"
+            );
           });
         });
 
         context("when contribution do not exists", () => {
           it("should return error message", async () => {
-            await expect(
-              instance.connect(validator1Address).addResearchValidation(0, "justification")
-            ).to.be.revertedWith("This research is not VALID");
+            await expect(instance.connect(user1Address).addResearchValidation(0, "justification")).to.be.revertedWith(
+              "This research is not VALID"
+            );
           });
         });
       });
@@ -564,7 +533,7 @@ describe("ResearcherRules", () => {
     context("without validator", () => {
       it("should return error message", async () => {
         await expect(instance.connect(owner).addResearchValidation(1, "justification")).to.be.revertedWith(
-          "Please register as validator"
+          "Not a voter user"
         );
       });
     });

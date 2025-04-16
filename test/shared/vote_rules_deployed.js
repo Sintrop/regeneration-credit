@@ -158,6 +158,8 @@ const voteRulesDeployed = async () => {
 
   await validationRules.setContractAddressDependencies(validationRulesDependencies);
   await developerRules.setVoteRules(voteRules.target);
+  await researcherRules.setVoteRules(voteRules.target);
+  // await contributorRules.setVoteRules(voteRules.target);
 
   return {
     activistRules,
