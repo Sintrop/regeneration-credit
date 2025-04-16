@@ -102,11 +102,13 @@ const voteRulesDeployed = async () => {
   );
 
   const contributorSecuryBlocksToAnalysis = 10;
+  const contributorMaxPenalties = 3;
   const contributorRulesFactory = await ethers.getContractFactory("ContributorRules");
   const contributorRules = await contributorRulesFactory.deploy(
     communityRules.target,
     contributorPool.target,
     timeBetweenWorks,
+    contributorMaxPenalties,
     contributorSecuryBlocksToAnalysis
   );
 
