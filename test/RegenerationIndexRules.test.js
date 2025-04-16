@@ -4,15 +4,9 @@ describe("RegenerationIndexRules", () => {
   let instance;
   let owner;
 
-  const treesResultValue = {
-    categoryId: 1,
-    indicator: 100001,
-  };
+  const treesResultValue = 100001;
 
-  const biodiversityResultValue = {
-    categoryId: 2,
-    indicator: 1001,
-  };
+  const biodiversityResultValue = 1001;
 
   beforeEach(async () => {
     [owner, user1Address] = await ethers.getSigners();

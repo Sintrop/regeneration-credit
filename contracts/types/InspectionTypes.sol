@@ -13,14 +13,6 @@ enum InspectionStatus {
 }
 
 /**
- * @dev CategoryId and result of inspections data structure
- */
-struct RegenerationInspection {
-  uint256 categoryId;
-  uint256 indicator;
-}
-
-/**
  * @dev Inspection data structure
  * @param id Inspection id
  * @param status Inspection status
@@ -41,6 +33,8 @@ struct Inspection {
   InspectionStatus status;
   address regenerator;
   address inspector;
+  uint256 treesResult;
+  uint256 biodiversityResult;
   uint256 regenerationScore;
   string proofPhoto;
   string report;
