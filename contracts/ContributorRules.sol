@@ -25,6 +25,9 @@ contract ContributorRules is Ownable, Callable, Invitable {
   /// @notice The relationship between id and contributor address
   mapping(uint256 => address) public contributorsAddress;
 
+  /// @notice The relationship between address and contributions ids
+  mapping(address => uint256[]) public contributionsIds;
+
   /// @notice CommunityRules contract address
   CommunityRules internal communityRules;
 
@@ -107,7 +110,13 @@ contract ContributorRules is Ownable, Callable, Invitable {
 
     contributions[id] = Contribution(id, contributorPoolEra(), msg.sender, description, report, block.number);
 
+    contributionsIds[msg.sender].push(id);
+
     addPoolLevel(msg.sender);
+  }
+
+  function getContributionsIds(address addr) public view returns (uint256[] memory) {
+    return contributionsIds[addr];
   }
 
   /**

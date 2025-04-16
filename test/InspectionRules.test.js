@@ -865,13 +865,17 @@ describe("InspectionRules", () => {
                   });
 
                   it("should add inspection to inspector in userInspections", async () => {
-                    const userInspections = await instance.connect(inspectorAddress).getInspectionsHistory();
+                    const userInspections = await instance
+                      .connect(inspectorAddress)
+                      .getInspectionsHistory(inspectorAddress);
 
                     expect(userInspections.length).to.equal(1);
                   });
 
                   it("should add inspection to regenerator in userInspections", async () => {
-                    const userInspections = await instance.connect(regeneratorAddress).getInspectionsHistory();
+                    const userInspections = await instance
+                      .connect(regeneratorAddress)
+                      .getInspectionsHistory(regeneratorAddress);
 
                     expect(userInspections.length).to.equal(1);
                   });
