@@ -5,9 +5,11 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { CommunityRules } from "./CommunityRules.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { ContributorPool } from "./ContributorPool.sol";
-import { Contributor, Pool, Contribution } from "./types/ContributorTypes.sol";
+import { Contributor, Pool, Contribution, Penalty } from "./types/ContributorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
+import { VoteRules } from "./VoteRules.sol";
+import { ValidationRules } from "./ValidationRules.sol";
 
 /**
  * @author Sintrop
@@ -31,11 +33,20 @@ contract ContributorRules is Ownable, Callable, Invitable {
   /// @notice ContributorPool contract address
   ContributorPool internal contributorPool;
 
+  /// @notice ValidationRules contract address
+  ValidationRules internal validationRules;  
+
+  /// @notice VoteRules contract address
+  VoteRules internal voteRules;
+
   /// @notice Contributor UserType
   UserType private constant USER_TYPE = UserType.CONTRIBUTOR;
 
-  /// @notice Total contributions count
+  /// @notice Total valid contributions count
   uint256 public contributionsCount;
+
+  /// @notice Total contributions count
+  uint256 public contributionsTotalCount;  
 
   /// @notice Waiting blocks to publish contribution
   uint256 internal immutable timeBetweenWorks;
@@ -43,16 +54,30 @@ contract ContributorRules is Ownable, Callable, Invitable {
   /// @notice Number of blocks to block addContribution before the end of an era
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
+  /// @notice Max allowed penalties before user invalidation
+  uint256 public immutable MAX_PENALTIES;  
+
+  /// @notice The relationship between address and penalties received
+  mapping(address => Penalty[]) public penalties;  
+
   constructor(
     address communityRulesAddress,
     address contributorPoolAddress,
+    address validationRulesAddress,
     uint256 timeBetweenWorks_,
+    uint256 maxPenalties_,
     uint256 securityBlocksToValidatorAnalysis
   ) {
     communityRules = CommunityRules(communityRulesAddress);
     contributorPool = ContributorPool(contributorPoolAddress);
+    validationRules = ValidationRules(validationRulesAddress);
     timeBetweenWorks = timeBetweenWorks_;
+    MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
+  }
+
+  function setVoteRules(address votableAddress) public onlyOwner() {
+    voteRules = VoteRules(votableAddress);
   }
 
   /**
@@ -88,7 +113,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
 
     if (contributor.id <= 0) return false;
 
-    return canInvite(contributionsCount, communityRules.userTypesTotalCount(USER_TYPE), contributor.pool.level);
+    return canInvite(contributionsTotalCount, communityRules.userTypesTotalCount(USER_TYPE), contributor.pool.level);
   }
 
   /**
@@ -103,12 +128,52 @@ contract ContributorRules is Ownable, Callable, Invitable {
     require(canPublishContribution(msg.sender), "Can't publish yet");
 
     contributionsCount++;
-    uint256 id = contributionsCount;
+    contributionsTotalCount++;
+    uint256 id = contributionsTotalCount;
 
-    contributions[id] = Contribution(id, contributorPoolEra(), msg.sender, description, report, block.number);
+    contributions[id] = Contribution(id, contributorPoolEra(), msg.sender, description, report, 0, true, 0, block.number);
 
     addPoolLevel(msg.sender);
   }
+
+  /**
+   * @dev Allows a validator to vote to invalidate a contribution 
+   * @notice Publish contributions before security blocks
+   * @param id Contribution id
+   * @param justification String with invalidation explanation
+   */
+  function addContributionValidation(uint256 id, string memory justification) public {
+    require(voteRules.canVote(msg.sender), "User cannot vote");
+    require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
+
+    Contribution memory contribution = contributions[id];
+
+    require(contribution.valid && contribution.era == contributorPoolEra(), "This contribution is not VALID");
+
+    contribution.validationsCount += 1;
+    contributions[id] = contribution;
+
+    bool mustInvalidateContribution = contribution.validationsCount >= validationRules.votesToInvalidate();
+
+    if (mustInvalidateContribution) {
+      contribution = invalidateContribution(contribution);
+    }
+
+    validationRules.addContributionValidation(contribution, justification, msg.sender);
+  }
+
+  /**
+   * @dev Executes invalidation
+   * @param contribution Contribution id
+   */
+  function invalidateContribution(Contribution memory contribution) internal returns (Contribution memory){
+    contributionsCount--;
+    contribution.valid = false;
+    contribution.invalidatedAt = block.number;
+    contributions[contribution.id] = contribution;
+
+    return contribution;
+  }  
 
   /**
    * @dev Returns a contributor
@@ -173,6 +238,16 @@ contract ContributorRules is Ownable, Callable, Invitable {
 
     contributorPool.removePoolLevels(addr, contributor.pool.currentEra, removeSomeLevels);
   }
+
+  function addPenalty(address addr, uint256 contributionId) public mustBeAllowedCaller returns (uint256) {
+    penalties[addr].push(Penalty(contributionId));
+
+    return totalPenalties(addr);
+  }
+
+  function totalPenalties(address addr) public view returns (uint256) {
+    return penalties[addr].length;
+  }  
 
   /**
    * @dev Current contributorPool era

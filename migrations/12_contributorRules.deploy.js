@@ -7,6 +7,7 @@ async function contributorRulesDeploy() {
   const contributorPool = await getDeployedContract("ContributorPool");
 
   const ContributorRules = await ethers.getContractFactory("ContributorRules");
+  const validationRules = await getDeployedContract("ValidationRules");
 
   const timeBetweenWorks = process.env["TIME_BETWEEN_WORKS"];
   const securityBlocksToValidatorAnalysis = process.env["CONTRIBUTOR_SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS"];
