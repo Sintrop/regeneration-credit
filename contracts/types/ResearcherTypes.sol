@@ -79,19 +79,6 @@ struct CalculatorItem {
   uint256 carbonImpact;
 }
 
-struct Plant {
-  uint256 id;
-  address createdBy;
-  string photo;
-  string popularName;
-  string scientificName;
-  string family;
-  string botanicalDescription;
-  string sunLight;
-  string biome;
-  string extraInfo;
-}
-
 /**
  * @dev Research penalty
  */
