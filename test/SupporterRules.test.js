@@ -90,6 +90,9 @@ describe("SupporterRules", () => {
 
         expect(supporter.supporterWallet).to.equal(inv1Address.address);
         expect(supporter.profilePhoto).to.equal("profilePhoto");
+        expect(supporter.publicationsCount).to.equal(0);
+        expect(supporter.offsetsCount).to.equal(0);
+        expect(supporter.reductionItemsCount).to.equal(0);
       });
 
       it("increment supporterCount", async () => {
@@ -197,9 +200,14 @@ describe("SupporterRules", () => {
                 expect(offset.calculatorItemId).to.equal(1);
               });
 
-              it("must add offset count", async () => {
+              it("must add offset total count", async () => {
                 const offsetsCount = await instance.offsetsCount();
                 expect(offsetsCount).to.equal(1);
+              });
+
+              it("must add offset supporter count", async () => {
+                const supporter = await instance.getSupporter(inv2Address);
+                expect(supporter.offsetsCount).to.equal(1);
               });
             });
 
@@ -359,6 +367,11 @@ describe("SupporterRules", () => {
                 const publicationsCount = await instance.publicationsCount();
                 expect(publicationsCount).to.equal(1);
               });
+
+              it("must add publication supporter count", async () => {
+                const supporter = await instance.getSupporter(inv2Address);
+                expect(supporter.publicationsCount).to.equal(1);
+              });
             });
 
             context("when burn 500000000000000000 tokens", () => {
@@ -468,6 +481,11 @@ describe("SupporterRules", () => {
           const reductionCommitments = await instance.getReductionCommitments(inv1Address);
 
           expect(reductionCommitments[0]).to.eq(1);
+        });
+
+        it("must add reduction item supporter count", async () => {
+          const supporter = await instance.getSupporter(inv1Address);
+          expect(supporter.reductionItemsCount).to.equal(1);
         });
       });
 

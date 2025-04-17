@@ -73,7 +73,7 @@ contract SupporterRules {
   function addSupporter(string memory name, string memory profilePhoto) public returns (Supporter memory) {
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
-    Supporter memory supporter = Supporter(id, msg.sender, name, profilePhoto, block.number);
+    Supporter memory supporter = Supporter(id, msg.sender, name, profilePhoto, 0, 0, 0, block.number);
 
     supporters[msg.sender] = supporter;
     supportersAddress[id] = msg.sender;
@@ -110,6 +110,7 @@ contract SupporterRules {
 
     offsetIds[msg.sender].push(OffsetId(id));
     offsetsCount++;
+    supporters[msg.sender].offsetsCount++;
   }
 
   /**
@@ -130,6 +131,7 @@ contract SupporterRules {
 
     publicationIds[msg.sender].push(PublicationId(id));
     publicationsCount++;
+    supporters[msg.sender].publicationsCount++;
   }
 
   function burnTokens(uint256 amount) internal returns (uint256) {
@@ -156,9 +158,14 @@ contract SupporterRules {
     require(calculatorItem.id > 0, "Calculator item does not exist");
 
     reductionCommitments[msg.sender].push(calculatorItemId);
+    supporters[msg.sender].reductionItemsCount++;
   }
 
   function getReductionCommitments(address addr) public view returns (uint256[] memory) {
+    return reductionCommitments[addr];
+  }
+
+  function getPublications(address addr) public view returns (uint256[] memory) {
     return reductionCommitments[addr];
   }
 
