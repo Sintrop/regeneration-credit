@@ -19,9 +19,6 @@ describe("ResearcherRules", () => {
   let owner, resea1Address, resea2Address, user1Address, user2Address, user3Address, user4Address;
 
   const timeBetweenWorks = 10;
-  const maxPenalties = 3;
-  const securityBlocksToValidatorAnalysis = 10;
-  const timeBetweenVotes = 10;
 
   const args = {
     totalTokens: "30000000000000000000000000",

@@ -1292,13 +1292,12 @@ describe("ValidationRules", () => {
                 await developerRules.addPenalty(dev1Address, report.id);
                 await developerRules.addPenalty(dev1Address, report.id);
 
-                await instance.connect(owner).addDeveloperReportValidation(report, "justification", user1Address);
-
                 report.validationsCount = 2;
-                await instance.connect(owner).addDeveloperReportValidation(report, "justification", user2Address);
+                report.valid = false;
+                await instance.connect(owner).addDeveloperReportValidation(report, "justification", user1Address);
               });
 
-              it("should add research validation", async () => {
+              it("should add report validation", async () => {
                 const validation = await instance.reportValidations(1, 0);
 
                 expect(validation[0]).to.equal(user1Address.address);
@@ -1310,7 +1309,7 @@ describe("ValidationRules", () => {
               it("deny developer", async () => {
                 const newDeveloperType = await communityRules.getUser(dev1Address);
 
-                expect(newDeveloperType).to.equal(8);
+                expect(newDeveloperType).to.equal(userTypes.Denied);
               });
 
               it("remove report regeneration score level from developer pool", async () => {

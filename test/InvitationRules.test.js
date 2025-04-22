@@ -5,9 +5,20 @@ const { expect } = require("chai");
 const { advanceBlock } = require("./shared/advance_block");
 const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { ZERO_ADDRESS } = require("./shared/zeroAddress");
+const { voteRulesDeployed } = require("./shared/vote_rules_deployed");
 
 describe("InvitationRules", () => {
-  let instance, communityRules, researcherRules, validationRules, activistRules, developerRules, contributorRules;
+  let instance,
+    communityRules,
+    researcherRules,
+    validationRules,
+    activistRules,
+    developerRules,
+    contributorRules,
+    activistPool,
+    developerPool,
+    contributorPool;
+
   let owner,
     user1Address,
     user2Address,
@@ -52,35 +63,6 @@ describe("InvitationRules", () => {
     return settings.invitationDelayBlocks;
   };
 
-  const timeBetweenWorks = 10;
-  const maxPenalties = 3;
-  const securityBlocksToValidatorAnalysis = 10;
-  const timeBetweenVotes = 10;
-
-  const researcherPoolArgs = {
-    totalTokens: "30000000000000000000000000",
-    halving: 12,
-    blocksPerEra: 60,
-  };
-
-  const developerPoolArgs = {
-    totalTokens: "30000000000000000000000000",
-    halving: 12,
-    blocksPerEra: 50,
-  };
-
-  const activistPoolArgs = {
-    totalTokens: "30000000000000000000000000",
-    halving: 12,
-    blocksPerEra: 20,
-  };
-
-  const contributorPoolArgs = {
-    totalTokens: "7500000000000000000000000",
-    halving: 12,
-    blocksPerEra: 40,
-  };
-
   beforeEach(async () => {
     [
       owner,
@@ -94,81 +76,19 @@ describe("InvitationRules", () => {
       user8Address,
     ] = await ethers.getSigners();
 
-    communityRules = await communityRulesDeployed();
+    const validatorRulesDeployed = await voteRulesDeployed();
 
-    const regenerationCredit = await regenerationCreditDeployed();
-
-    const validationRulesFactory = await ethers.getContractFactory("ValidationRules");
-    validationRules = await validationRulesFactory.deploy(timeBetweenVotes);
-
-    const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
-    const researcherPool = await researcherPoolFactory.deploy(
-      regenerationCredit.target,
-      researcherPoolArgs.halving,
-      researcherPoolArgs.blocksPerEra
-    );
-
-    const researcherRulesFactory = await ethers.getContractFactory("ResearcherRules");
-    researcherRules = await researcherRulesFactory.deploy(
-      communityRules.target,
-      researcherPool.target,
-      validationRules.target,
-      timeBetweenWorks,
-      maxPenalties,
-      securityBlocksToValidatorAnalysis
-    );
-
-    const developerPoolFactory = await ethers.getContractFactory("DeveloperPool");
-    const developerPool = await developerPoolFactory.deploy(
-      regenerationCredit.target,
-      developerPoolArgs.halving,
-      developerPoolArgs.blocksPerEra
-    );
-
-    const developerRulesFactory = await ethers.getContractFactory("DeveloperRules");
-    developerRules = await developerRulesFactory.deploy(
-      communityRules.target,
-      developerPool.target,
-      validationRules.target,
-      timeBetweenWorks,
-      maxPenalties,
-      securityBlocksToValidatorAnalysis
-    );
-
-    const activistPoolFactory = await ethers.getContractFactory("ActivistPool");
-    const activistPool = await activistPoolFactory.deploy(
-      regenerationCredit.target,
-      activistPoolArgs.halving,
-      activistPoolArgs.blocksPerEra
-    );
-
-    const activistRulesFactory = await ethers.getContractFactory("ActivistRules");
-    activistRules = await activistRulesFactory.deploy(communityRules.target, activistPool.target);
-
-    const contributorPoolFactory = await ethers.getContractFactory("ContributorPool");
-    const contributorPool = await contributorPoolFactory.deploy(
-      regenerationCredit.target,
-      contributorPoolArgs.halving,
-      contributorPoolArgs.blocksPerEra
-    );
-
-    const contributorRulesFactory = await ethers.getContractFactory("ContributorRules");
-    contributorRules = await contributorRulesFactory.deploy(
-      communityRules.target,
-      contributorPool.target,
-      timeBetweenWorks,
-      securityBlocksToValidatorAnalysis
-    );
-
-    const validationRulesDependencies = {
-      communityRulesAddress: communityRules.target,
-      regeneratorRulesAddress: ZERO_ADDRESS,
-      inspectorRulesAddress: ZERO_ADDRESS,
-      developerRulesAddress: developerRules.target,
-      researcherRulesAddress: researcherRules.target,
-      contributorRulesAddress: contributorRules.target,
-      activistRulesAddress: activistRules.target,
-    };
+    regenerationCredit = validatorRulesDeployed.regenerationCredit;
+    communityRules = validatorRulesDeployed.communityRules;
+    validationRules = validatorRulesDeployed.validationRules;
+    researcherRules = validatorRulesDeployed.researcherRules;
+    researcherPool = validatorRulesDeployed.researcherPool;
+    developerRules = validatorRulesDeployed.developerRules;
+    developerPool = validatorRulesDeployed.developerPool;
+    contributorRules = validatorRulesDeployed.contributorRules;
+    contributorPool = validatorRulesDeployed.contributorPool;
+    activistRules = validatorRulesDeployed.activistRules;
+    activistPool = validatorRulesDeployed.activistRules;
 
     const instanceFactory = await ethers.getContractFactory("InvitationRules");
     instance = await instanceFactory.deploy(
@@ -179,8 +99,6 @@ describe("InvitationRules", () => {
       contributorRules.target,
       validationRules.target
     );
-
-    await validationRules.setContractAddressDependencies(validationRulesDependencies);
 
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(researcherRules.target);

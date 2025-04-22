@@ -237,7 +237,7 @@ describe("DeveloperRules", (accounts) => {
 
       context("when do not have security blocks to validator analysis", () => {
         beforeEach(async () => {
-          await advanceBlock(110);
+          await advanceBlock(100);
         });
 
         it("should return error message", async () => {
@@ -776,10 +776,16 @@ describe("DeveloperRules", (accounts) => {
             expect(eraLevels).to.eq(0);
           });
 
-          it("must decrement reportsTotalCount in one", async () => {
+          it("do not must decrement reportsTotalCount", async () => {
             const reportsTotalCount = await instance.reportsTotalCount();
 
-            expect(reportsTotalCount).to.eq(0);
+            expect(reportsTotalCount).to.eq(1);
+          });
+
+          it("must decrement reportsCount in one", async () => {
+            const reportsCount = await instance.reportsCount();
+
+            expect(reportsCount).to.eq(0);
           });
         });
 
@@ -994,10 +1000,16 @@ describe("DeveloperRules", (accounts) => {
             expect(eraLevels).to.eq(0);
           });
 
-          it("must decrement reportsTotalCount in one", async () => {
+          it("do not must decrement reportsTotalCount", async () => {
             const reportsTotalCount = await instance.reportsTotalCount();
 
-            expect(reportsTotalCount).to.eq(0);
+            expect(reportsTotalCount).to.eq(1);
+          });
+
+          it("must decrement reportsCount in one", async () => {
+            const reportsCount = await instance.reportsCount();
+
+            expect(reportsCount).to.eq(0);
           });
         });
 

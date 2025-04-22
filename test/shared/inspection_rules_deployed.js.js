@@ -104,12 +104,12 @@ const inspectionRulesDeployed = async (owner, args = {}) => {
   const validationRulesDependencies = {
     communityRulesAddress: communityRules.target,
     regeneratorRulesAddress: regeneratorRules.target,
-    validatorPoolAddress: validatorPool.target,
     inspectorRulesAddress: inspectorRules.target,
     developerRulesAddress: ZERO_ADDRESS,
     researcherRulesAddress: researcherRules.target,
     contributorRulesAddress: ZERO_ADDRESS,
     activistRulesAddress: activistRules.target,
+    voteRulesAddress: ZERO_ADDRESS,
   };
 
   const inspectionRulesDependencies = {
@@ -119,6 +119,7 @@ const inspectionRulesDeployed = async (owner, args = {}) => {
     inspectorRulesAddress: inspectorRules.target,
     activistRulesAddress: activistRules.target,
     regenerationIndexRulesAddress: regenerationIndexRules.target,
+    voteRulesAddress: ZERO_ADDRESS,
   };
 
   const instanceFactory = await ethers.getContractFactory("InspectionRules");
@@ -150,7 +151,6 @@ const inspectionRulesDeployed = async (owner, args = {}) => {
   await regeneratorRules.newAllowedCaller(validationRules.target);
   await regeneratorPool.newAllowedCaller(regeneratorRules.target);
   await inspectorPool.newAllowedCaller(inspectorRules.target);
-  await validatorPool.newAllowedCaller(validationRules.target);
   await regenerationIndexRules.newAllowedCaller(instance.target);
 
   return {
@@ -161,7 +161,6 @@ const inspectionRulesDeployed = async (owner, args = {}) => {
     inspectorPool,
     regeneratorRules,
     regeneratorPool,
-    validatorPool,
     activistPool,
     validationRules,
     inspectorRules,
