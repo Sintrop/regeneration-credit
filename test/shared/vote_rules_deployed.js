@@ -31,7 +31,7 @@ const voteRulesDeployed = async () => {
   let contributorPoolParams = {
     totalTokens: "30000000000000000000000000",
     halving: 12,
-    blocksPerEra: 40,
+    blocksPerEra: 140,
   };
 
   const activistPoolArgs = {
@@ -101,12 +101,15 @@ const voteRulesDeployed = async () => {
     developerSecuryBlocksToAnalysis
   );
 
+  const contributorMaxPenalties = 3;
   const contributorSecuryBlocksToAnalysis = 10;
   const contributorRulesFactory = await ethers.getContractFactory("ContributorRules");
   const contributorRules = await contributorRulesFactory.deploy(
     communityRules.target,
     contributorPool.target,
+    validationRules.target,
     timeBetweenWorks,
+    contributorMaxPenalties,
     contributorSecuryBlocksToAnalysis
   );
 
@@ -159,7 +162,7 @@ const voteRulesDeployed = async () => {
   await validationRules.setContractAddressDependencies(validationRulesDependencies);
   await developerRules.setVoteRules(voteRules.target);
   await researcherRules.setVoteRules(voteRules.target);
-  // await contributorRules.setVoteRules(voteRules.target);
+  await contributorRules.setVoteRules(voteRules.target);
 
   return {
     activistRules,

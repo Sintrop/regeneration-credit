@@ -1,26 +1,40 @@
-const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 
-const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { ethers } = require("hardhat");
+const { voteRulesDeployed } = require("./shared/vote_rules_deployed");
 
 describe("ContributorRules", (accounts) => {
   let instance;
   let communityRules;
   let contributorPool;
   let regenerationCredit;
-  let owner, contr1Address, contr2Address, contr3Address;
+  let validationRules;
+  let researcherRules;
+  let developerRules;
+  let owner,
+    contr1Address,
+    contr2Address,
+    contr3Address,
+    user1Address,
+    user2Address,
+    user3Address,
+    user4Address,
+    user5Address,
+    user6Address,
+    user7Address,
+    user8Address,
+    user9Address,
+    anyAddress;
 
   let contributorPoolParams = {
     totalTokens: "7500000000000000000000000",
     halving: 12,
-    blocksPerEra: 40,
+    blocksPerEra: 140,
   };
 
   const timeBetweenWorks = 10;
-  const securityBlocksToValidatorAnalysis = 10;
 
   const addContributor = async (name, from) => {
     await instance.connect(from).addContributor(name, "photoURL");
@@ -30,30 +44,58 @@ describe("ContributorRules", (accounts) => {
     await communityRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
+  const addResearcher = async (name, from) => {
+    await researcherRules.connect(from).addResearcher(name, "photoURL");
+  };
+
+  const addDeveloper = async (name, from) => {
+    await developerRules.connect(from).addDeveloper(name, "photoURL");
+  };
+
+  const addActivist = async (name, from) => {
+    await activistRules.connect(from).addActivist(name, "photoURL");
+  };
+
   beforeEach(async () => {
-    [owner, contr1Address, contr2Address, contr3Address] = await ethers.getSigners();
+    [
+      owner,
+      contr1Address,
+      contr2Address,
+      contr3Address,
+      user1Address,
+      user2Address,
+      user3Address,
+      user4Address,
+      user5Address,
+      user6Address,
+      user7Address,
+      user8Address,
+      user9Address,
+      anyAddress,
+    ] = await ethers.getSigners();
 
-    regenerationCredit = await regenerationCreditDeployed();
-    communityRules = await communityRulesDeployed();
+    const validatorRulesDeployed = await voteRulesDeployed();
 
-    contributorPoolFactory = await ethers.getContractFactory("ContributorPool");
-    contributorPool = await contributorPoolFactory.deploy(
-      regenerationCredit.target,
-      contributorPoolParams.halving,
-      contributorPoolParams.blocksPerEra
-    );
-
-    contributorRulesFactory = await ethers.getContractFactory("ContributorRules");
-    instance = await contributorRulesFactory.deploy(
-      communityRules.target,
-      contributorPool.target,
-      timeBetweenWorks,
-      securityBlocksToValidatorAnalysis
-    );
+    regenerationCredit = validatorRulesDeployed.regenerationCredit;
+    communityRules = validatorRulesDeployed.communityRules;
+    instance = validatorRulesDeployed.contributorRules;
+    validationRules = validatorRulesDeployed.validationRules;
+    contributorPool = validatorRulesDeployed.contributorPool;
+    developerRules = validatorRulesDeployed.developerRules;
+    researcherRules = validatorRulesDeployed.researcherRules;
+    activistRules = validatorRulesDeployed.activistRules;
 
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(owner);
+    await communityRules.newAllowedCaller(validationRules.target);
+    await communityRules.newAllowedCaller(developerRules.target);
+    await communityRules.newAllowedCaller(researcherRules.target);
+    await communityRules.newAllowedCaller(activistRules.target);
     await contributorPool.newAllowedCaller(instance.target);
+    await validationRules.newAllowedCaller(instance.target);
+    await validationRules.newAllowedCaller(owner);
+    await instance.newAllowedCaller(validationRules.target);
+    await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(contributorPool.target, "30000000000000000000000000");
 
     await addInvitation(owner, contr1Address, userTypes.Contributor, owner);
@@ -230,7 +272,7 @@ describe("ContributorRules", (accounts) => {
 
       context("when do not have time to validator analysis", () => {
         beforeEach(async () => {
-          await advanceBlock(25);
+          await advanceBlock(102);
         });
 
         it("should return error message", async () => {

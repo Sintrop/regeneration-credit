@@ -120,8 +120,8 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   }
 
   /**
-   * @dev Allows a developer to attempt to publish a development report report
-   * @notice Publish one development report per era before security blocks
+   * @dev Allows a developer to attempt to publish a development report
+   * @notice Publish development reports before security blocks
    * @param description Title or description of the report
    * @param report Hash of the report file
    */

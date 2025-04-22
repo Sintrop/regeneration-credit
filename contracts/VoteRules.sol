@@ -98,7 +98,7 @@ contract VoteRules {
     if (userType == UserType.ACTIVIST) {
       return activistRules.approvedInvites();
     } else if (userType == UserType.CONTRIBUTOR) {
-      return contributorRules.contributionsCount();
+      return contributorRules.contributionsTotalCount();
     } else if (userType == UserType.DEVELOPER) {
       return developerRules.reportsTotalCount();
     } else if (userType == UserType.RESEARCHER) {

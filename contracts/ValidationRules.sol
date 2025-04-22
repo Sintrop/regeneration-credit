@@ -14,6 +14,7 @@ import { ActivistRules } from "./ActivistRules.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
 import { Report } from "./types/DeveloperTypes.sol";
 import { Research } from "./types/ResearcherTypes.sol";
+import { Contribution } from "./types/ContributorTypes.sol";
 import { VoteRules } from "./VoteRules.sol";
 
 /**
@@ -26,8 +27,10 @@ contract ValidationRules is Callable {
   mapping(address => UserValidation[]) private userValidations;
   mapping(uint256 => ResourceValidation[]) public inspectionValidations;
   mapping(uint256 => ResourceValidation[]) public reportValidations;
+  mapping(uint256 => ResourceValidation[]) public contributionValidations;
   mapping(uint256 => ResourceValidation[]) public researchValidations;
   mapping(address => mapping(uint256 => bool)) private validatorReportsValidations;
+  mapping(address => mapping(uint256 => bool)) private validatorContributionsValidations;
   mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
   mapping(address => mapping(uint256 => bool)) private validatorResearchesValidations;
   mapping(address => mapping(address => bool)) private validatorUsersValidations;
@@ -130,6 +133,29 @@ contract ValidationRules is Callable {
     if (developerTotalPenalties >= developerRules.MAX_PENALTIES()) externalDenieUser(report.developer);
   }
 
+  function addContributionValidation(
+    Contribution memory contribution,
+    string memory justification,
+    address validatorAddress
+  ) public mustBeAllowedCaller {
+    require(!validatorContributionsValidations[validatorAddress][contribution.id], "Already voted");
+
+    validatorContributionsValidations[validatorAddress][contribution.id] = true;
+    validatorLastVoteAt[validatorAddress] = block.number;
+
+    contributionValidations[contribution.id].push(
+      ResourceValidation(validatorAddress, contribution.id, justification, votesToInvalidate(), block.number)
+    );
+
+    if (contribution.valid) return;
+
+    uint256 contributorTotalPenalties = contributorRules.addPenalty(contribution.user, contribution.id);
+
+    removeContributorContribution(contribution);
+
+    if (contributorTotalPenalties >= contributorRules.MAX_PENALTIES()) externalDenieUser(contribution.user);
+  }
+
   function addResearcherResearchValidation(
     Research memory research,
     string memory justification,
@@ -158,6 +184,10 @@ contract ValidationRules is Callable {
 
   function removeDeveloperReport(Report memory report) internal {
     removeLevelsFromPool(report.developer, 1);
+  }
+
+  function removeContributorContribution(Contribution memory contribution) internal {
+    removeLevelsFromPool(contribution.user, 1);
   }
 
   function removeReseacherResearch(Research memory research) internal {

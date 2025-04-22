@@ -81,6 +81,7 @@ async function configureVoteRules() {
 
   await developerRules.setVoteRules(voteRules.target);
   await researcherRules.setVoteRules(voteRules.target);
+  await contributorRules.setVoteRules(voteRules.target);
 
   console.log("After configureVoteRules is OK");
 }
