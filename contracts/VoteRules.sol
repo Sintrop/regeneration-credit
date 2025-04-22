@@ -58,7 +58,7 @@ contract VoteRules {
     return canVoteRules(totalLevels(userType), totalUsers, totalUserLevels(addr, userType));
   }
 
-    /**
+  /**
    * @dev Calculate if a user can send vote
    * @param totalTypeLevels total type levels on the system
    * @param totalUsers total of user of specific type registered in the system
@@ -66,7 +66,7 @@ contract VoteRules {
    */
   function canVoteRules(uint256 totalTypeLevels, uint256 totalUsers, uint256 userLevels) internal pure returns (bool) {
     if (totalUsers <= 5) return true;
-    
+
     uint256 avg = totalTypeLevels.div(totalUsers).add(1);
 
     return userLevels >= avg;

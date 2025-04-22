@@ -79,7 +79,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
 
-  function setVoteRules(address votableAddress) public onlyOwner() {
+  function setVoteRules(address votableAddress) public onlyOwner {
     voteRules = VoteRules(votableAddress);
   }
 

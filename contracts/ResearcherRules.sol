@@ -90,10 +90,10 @@ contract ResearcherRules is Callable, Invitable {
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
 
-  function setVoteRules(address votableAddress) public onlyOwner() {
+  function setVoteRules(address votableAddress) public onlyOwner {
     voteRules = VoteRules(votableAddress);
   }
-  
+
   /**
    * @dev Allows a user to attempt to register as a researcher
    * @param name The name of the researcher

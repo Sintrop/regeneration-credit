@@ -33,7 +33,7 @@ contract ActivistRules is Callable, Invitable {
   ActivistPool internal activistPool;
 
   /// @notice VoteRules contract address
-  VoteRules internal voteRules;  
+  VoteRules internal voteRules;
 
   /// @notice Activist UserType
   UserType private constant USER_TYPE = UserType.ACTIVIST;

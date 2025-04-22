@@ -58,7 +58,7 @@ contract ValidationRules is Callable {
     researcherRules = ResearcherRules(contractDependency.researcherRulesAddress);
     contributorRules = ContributorRules(contractDependency.contributorRulesAddress);
     activistRules = ActivistRules(contractDependency.activistRulesAddress);
-    voteRules = VoteRules(contractDependency.voteRulesAddress);    
+    voteRules = VoteRules(contractDependency.voteRulesAddress);
   }
 
   function addUserValidation(address userAddress, string memory justification) public {
@@ -205,15 +205,15 @@ contract ValidationRules is Callable {
     if (voters > 1000 && voters <= 2000) return 20;
     if (voters > 2000 && voters <= 4000) return 40;
     if (voters > 4000 && voters <= 8000) return 80;
-    if (voters > 8000 && voters <= 16000) return 160;        
-    if (voters > 16000 && voters <= 32000) return 320;        
+    if (voters > 8000 && voters <= 16000) return 160;
+    if (voters > 16000 && voters <= 32000) return 320;
     if (voters > 32000) return 500;
   }
-  
+
   function waitedTimeBetweenVotes(address validatorAddress) public view returns (bool) {
     uint256 lastVoteAt = validatorLastVoteAt[validatorAddress];
 
     bool canVote = block.number > lastVoteAt + timeBetweenVotes;
     return canVote || lastVoteAt == 0;
-  }  
+  }
 }
