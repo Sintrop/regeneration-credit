@@ -38,6 +38,8 @@ contract SupporterRules {
 
   uint256 public publicationsCount;
 
+  uint constant MAX_CHARACTERS = 1000;
+
   mapping(uint256 => Offset) public offsets;
 
   mapping(address => OffsetId[]) public offsetIds;
@@ -122,6 +124,10 @@ contract SupporterRules {
   function publish(uint256 amount, string memory description, string memory content) public {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount > 1, "Amount invalid");
+    require(
+      bytes(description).length <= MAX_CHARACTERS && bytes(content).length <= MAX_CHARACTERS,
+      "Max 500 carachteres"
+    );
 
     uint256 amountBurn = burnTokens(amount);
 
