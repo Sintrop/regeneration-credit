@@ -84,7 +84,7 @@ contract InspectionRules is Callable {
     inspectorRules = InspectorRules(contractDependency.inspectorRulesAddress);
     regenerationIndexRules = RegenerationIndexRules(contractDependency.regenerationIndexRulesAddress);
     activistRules = ActivistRules(contractDependency.activistRulesAddress);
-    voteRules = VoteRules(contractDependency.votableAddress);
+    voteRules = VoteRules(contractDependency.voteRulesAddress);
   }
 
   /**

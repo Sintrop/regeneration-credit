@@ -79,8 +79,8 @@ contract ContributorRules is Ownable, Callable, Invitable {
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
 
-  function setVoteRules(address votableAddress) public onlyOwner {
-    voteRules = VoteRules(votableAddress);
+  function setVoteRules(address voteRulesAddress) public onlyOwner {
+    voteRules = VoteRules(voteRulesAddress);
   }
 
   /**
