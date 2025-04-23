@@ -103,7 +103,7 @@ contract SupporterRules {
 
     if (calculatorItemId > 0) {
       CalculatorItem memory calculatorItem = researcherRules.getCalculatorItem(calculatorItemId);
-      if (calculatorItem.id > 0) calculatorItemCertificates[msg.sender][calculatorItemId] = amountBurn;
+      if (calculatorItem.id > 0) calculatorItemCertificates[msg.sender][calculatorItemId] += amountBurn;
     }
 
     offsets[id] = Offset(msg.sender, block.number, amountBurn, calculatorItemId);
