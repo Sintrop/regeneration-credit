@@ -340,15 +340,15 @@ describe("DeveloperRules", (accounts) => {
           });
 
           it("set valid field to false", async () => {
-            const construbution = await instance.reports(1);
+            const contribution = await instance.reports(1);
 
-            expect(construbution.valid).to.eq(false);
+            expect(contribution.valid).to.eq(false);
           });
 
           it("populate invalidatedAt field", async () => {
-            const construbution = await instance.reports(1);
+            const contribution = await instance.reports(1);
 
-            expect(construbution.invalidatedAt).to.above(0);
+            expect(contribution.invalidatedAt).to.above(0);
           });
 
           it("set maxPenalties to developer", async () => {
@@ -364,8 +364,8 @@ describe("DeveloperRules", (accounts) => {
           });
 
           it("must remove one pool level from current era", async () => {
-            const construbution = await instance.reports(1);
-            const eraLevels = await developerPool.eraLevels(construbution.era, dev1Address);
+            const contribution = await instance.reports(1);
+            const eraLevels = await developerPool.eraLevels(contribution.era, dev1Address);
 
             expect(eraLevels).to.eq(0);
           });
@@ -513,8 +513,9 @@ describe("DeveloperRules", (accounts) => {
       });
     });
 
-    context.skip("with contributor", () => {
+    context("with contributor", () => {
       beforeEach(async () => {
+        await addInvitation(owner, anyAddress, userTypes.Developer, owner);
         await addInvitation(owner, user1Address, userTypes.Contributor, owner);
         await addInvitation(owner, user2Address, userTypes.Contributor, owner);
         await addInvitation(owner, user3Address, userTypes.Contributor, owner);
@@ -526,7 +527,7 @@ describe("DeveloperRules", (accounts) => {
         await addInvitation(owner, user9Address, userTypes.Contributor, owner);
 
         await addContributor("User A", user1Address);
-        await addContributor("User", anyAddress);
+        await addDeveloper("User", anyAddress);
       });
 
       context("with valid report", () => {
@@ -543,15 +544,15 @@ describe("DeveloperRules", (accounts) => {
           });
 
           it("set valid field to false", async () => {
-            const construbution = await instance.reports(1);
+            const contribution = await instance.reports(1);
 
-            expect(construbution.valid).to.eq(false);
+            expect(contribution.valid).to.eq(false);
           });
 
           it("populate invalidatedAt field", async () => {
-            const construbution = await instance.reports(1);
+            const contribution = await instance.reports(1);
 
-            expect(construbution.invalidatedAt).to.above(0);
+            expect(contribution.invalidatedAt).to.above(0);
           });
 
           it("set maxPenalties to contributor", async () => {
@@ -560,23 +561,23 @@ describe("DeveloperRules", (accounts) => {
             expect(totalPenalties).to.eq(1);
           });
 
-          it("user type must be CONTRIBUTOR yet", async () => {
+          it("user type must be DEVELOPER yet", async () => {
             const userType = await communityRules.getUser(anyAddress);
 
-            expect(userType).to.eq(userTypes.Contributor);
+            expect(userType).to.eq(userTypes.Developer);
           });
 
           it("must remove one pool level from current era", async () => {
-            const construbution = await instance.reports(1);
-            const eraLevels = await developerPool.eraLevels(construbution.era, anyAddress);
+            const contribution = await instance.reports(1);
+            const eraLevels = await developerPool.eraLevels(contribution.era, anyAddress);
 
             expect(eraLevels).to.eq(0);
           });
 
-          it("must decrement reportsTotalCount in one", async () => {
-            const reportsTotalCount = await instance.reportsTotalCount();
+          it("must decrement reportsCount in one", async () => {
+            const reportsCount = await instance.reportsCount();
 
-            expect(reportsTotalCount).to.eq(0);
+            expect(reportsCount).to.eq(0);
           });
         });
 
@@ -616,57 +617,30 @@ describe("DeveloperRules", (accounts) => {
         });
       });
 
-      context("when contributor reach max maxPenalties", () => {
+      context("when developer reach maxPenalties", () => {
         beforeEach(async () => {
           await addContributor("User B", user2Address);
           await addContributor("User C", user3Address);
-          await addContributor("User D", user4Address);
-          await addContributor("User E", user5Address);
-          await addContributor("User F", user6Address);
-          await addContributor("User G", user7Address);
-          await addContributor("User H", user8Address);
-          await addContributor("User I", user9Address);
 
-          await instance.connect(user1Address).addReport("description", "report");
-          await instance.connect(user2Address).addReport("description", "report");
-          await instance.connect(user3Address).addReport("description", "report");
-          await instance.connect(user4Address).addReport("description", "report");
-          await instance.connect(user5Address).addReport("description", "report");
-          await instance.connect(user6Address).addReport("description", "report");
-          await instance.connect(user7Address).addReport("description", "report");
-          await instance.connect(user8Address).addReport("description", "report");
-          await instance.connect(user9Address).addReport("description", "report");
-
-          await advanceBlock(10);
-
-          await instance.connect(user1Address).addReport("description", "report");
-          await instance.connect(user2Address).addReport("description", "report");
-          await instance.connect(user3Address).addReport("description", "report");
-          await instance.connect(user4Address).addReport("description", "report");
-          await instance.connect(user5Address).addReport("description", "report");
-
-          await advanceBlock(10);
-
-          await instance.connect(user1Address).addReport("description", "report");
-          await instance.connect(user2Address).addReport("description", "report");
-          await instance.connect(user3Address).addReport("description", "report");
-          await instance.connect(user4Address).addReport("description", "report");
-          await instance.connect(user5Address).addReport("description", "report");
-
+          await instance.connect(anyAddress).addReport("description", "report");
+          await instance.connect(user1Address).addReportValidation(1, "justification");
           await instance.connect(user2Address).addReportValidation(1, "justification");
-          await instance.connect(user3Address).addReportValidation(1, "justification");
-
-          await instance.connect(user1Address).addReportValidation(10, "justification");
-          await instance.connect(user4Address).addReportValidation(10, "justification");
 
           await advanceBlock(10);
 
-          await instance.connect(user5Address).addReportValidation(15, "justification");
-          await instance.connect(user2Address).addReportValidation(15, "justification");
+          await instance.connect(anyAddress).addReport("description", "report");
+          await instance.connect(user1Address).addReportValidation(2, "justification");
+          await instance.connect(user3Address).addReportValidation(2, "justification");
+
+          await advanceBlock(10);
+
+          await instance.connect(anyAddress).addReport("description", "report");
+          await instance.connect(user1Address).addReportValidation(3, "justification");
+          await instance.connect(user2Address).addReportValidation(3, "justification");
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await communityRules.getUser(user1Address);
+          const userType = await communityRules.getUser(anyAddress);
 
           expect(userType).to.eq(userTypes.Denied);
         });
@@ -691,9 +665,9 @@ describe("DeveloperRules", (accounts) => {
           beforeEach(async () => {
             await instance.connect(anyAddress).addReport("description", "report");
 
-            await addDeveloper("User B", user2Address);
-            await addDeveloper("User C", user3Address);
-            await addDeveloper("User D", user4Address);
+            await addContributor("User B", user2Address);
+            await addContributor("User C", user3Address);
+            await addContributor("User D", user4Address);
 
             await instance.connect(user1Address).addReportValidation(1, "justification");
             await instance.connect(user2Address).addReportValidation(1, "justification");
@@ -746,15 +720,15 @@ describe("DeveloperRules", (accounts) => {
           });
 
           it("set valid field to false", async () => {
-            const construbution = await instance.reports(1);
+            const contribution = await instance.reports(1);
 
-            expect(construbution.valid).to.eq(false);
+            expect(contribution.valid).to.eq(false);
           });
 
           it("populate invalidatedAt field", async () => {
-            const construbution = await instance.reports(1);
+            const contribution = await instance.reports(1);
 
-            expect(construbution.invalidatedAt).to.above(0);
+            expect(contribution.invalidatedAt).to.above(0);
           });
 
           it("set maxPenalties to developer", async () => {
@@ -770,8 +744,8 @@ describe("DeveloperRules", (accounts) => {
           });
 
           it("must remove one pool level from current era", async () => {
-            const construbution = await instance.reports(1);
-            const eraLevels = await developerPool.eraLevels(construbution.era, dev1Address);
+            const contribution = await instance.reports(1);
+            const eraLevels = await developerPool.eraLevels(contribution.era, dev1Address);
 
             expect(eraLevels).to.eq(0);
           });
@@ -825,7 +799,7 @@ describe("DeveloperRules", (accounts) => {
         });
       });
 
-      context("when contributor reach max maxPenalties", () => {
+      context("when developer reach max maxPenalties", () => {
         beforeEach(async () => {
           await addResearcher("User B", user2Address);
           await addResearcher("User C", user3Address);
@@ -970,15 +944,15 @@ describe("DeveloperRules", (accounts) => {
           });
 
           it("set valid field to false", async () => {
-            const construbution = await instance.reports(1);
+            const contribution = await instance.reports(1);
 
-            expect(construbution.valid).to.eq(false);
+            expect(contribution.valid).to.eq(false);
           });
 
           it("populate invalidatedAt field", async () => {
-            const construbution = await instance.reports(1);
+            const contribution = await instance.reports(1);
 
-            expect(construbution.invalidatedAt).to.above(0);
+            expect(contribution.invalidatedAt).to.above(0);
           });
 
           it("set maxPenalties to developer", async () => {
@@ -994,8 +968,8 @@ describe("DeveloperRules", (accounts) => {
           });
 
           it("must remove one pool level from current era", async () => {
-            const construbution = await instance.reports(1);
-            const eraLevels = await developerPool.eraLevels(construbution.era, dev1Address);
+            const contribution = await instance.reports(1);
+            const eraLevels = await developerPool.eraLevels(contribution.era, dev1Address);
 
             expect(eraLevels).to.eq(0);
           });

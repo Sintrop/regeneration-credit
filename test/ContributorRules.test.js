@@ -213,15 +213,15 @@ describe("ContributorRules", (accounts) => {
           });
 
           it("add contribution id", async () => {
-            const construbution = await instance.contributions(1, contr1Address);
+            const contribution = await instance.contributions(1, contr1Address);
 
-            expect(construbution.id).to.equal(1);
+            expect(contribution.id).to.equal(1);
           });
 
           it("add contribution", async () => {
-            const construbution = await instance.contributions(1, contr1Address);
+            const contribution = await instance.contributions(1, contr1Address);
 
-            expect(construbution.report).to.equal("report");
+            expect(contribution.report).to.equal("report");
           });
 
           it("add level to contributor", async () => {
@@ -237,9 +237,9 @@ describe("ContributorRules", (accounts) => {
           });
 
           it("add user to contribution", async () => {
-            const construbution = await instance.contributions(1, contr1Address);
+            const contribution = await instance.contributions(1, contr1Address);
 
-            expect(construbution.user).to.equal(contr1Address.address);
+            expect(contribution.user).to.equal(contr1Address.address);
           });
 
           it("increment contributiosCount", async () => {
@@ -320,7 +320,7 @@ describe("ContributorRules", (accounts) => {
       expect(userIds.length).to.equal(1);
     });
   });
-
+  
   describe("#getContributor", () => {
     it("should return a contributor", async () => {
       await addContributor("Contributor A", contr1Address);

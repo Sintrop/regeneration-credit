@@ -820,7 +820,7 @@ describe("ResearcherRules", () => {
         });
       });
 
-      context("when researcher reach max maxPenalties", () => {
+      context("when researcher reach maxPenalties", () => {
         beforeEach(async () => {
           await addContributor("User B", user2Address);
           await addContributor("User C", user3Address);
