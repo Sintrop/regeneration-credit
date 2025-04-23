@@ -97,6 +97,7 @@ contract SupporterRules {
    */
   function offset(uint256 amount, uint256 calculatorItemId) public {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
+    require(amount >= 1000000000000000000, "Amount invalid");
     require(amount > 0, "Amount invalid");
 
     uint256 amountBurn = burnTokens(amount);
@@ -123,7 +124,7 @@ contract SupporterRules {
    */
   function publish(uint256 amount, string memory description, string memory content) public {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
-    require(amount > 1, "Amount invalid");
+    require(amount >= 1000000000000000000, "Amount invalid");
     require(
       bytes(description).length <= MAX_CHARACTERS && bytes(content).length <= MAX_CHARACTERS,
       "Max 500 carachteres"
