@@ -97,6 +97,7 @@ contract ResearcherRules is Callable, Invitable {
       0,
       0,
       0,
+      0,
       block.number
     );
 
@@ -286,6 +287,7 @@ contract ResearcherRules is Callable, Invitable {
     calculatorItems[id] = calculatorItem;
     calculatorItemsCount++;
     researchers[msg.sender].lastCalculatorItemAt = block.number;
+    researchers[msg.sender].publishedItems++;
   }
 
   /**
