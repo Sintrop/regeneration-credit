@@ -25,6 +25,7 @@ struct Researcher {
   uint256 lastPublishedAt;
   uint256 lastCalculatorItemAt;
   uint256 createdAt;
+  bool canPublishMethod;
 }
 
 /**
@@ -77,6 +78,14 @@ struct CalculatorItem {
   string unit;
   string justification;
   uint256 carbonImpact;
+}
+
+struct EvaluationMethod {
+  uint256 id;
+  address createdBy;
+  string title;
+  string research;
+  string projectURL;
 }
 
 /**

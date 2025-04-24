@@ -53,6 +53,10 @@ describe("ResearcherRules", () => {
     await instance.connect(from).addCalculatorItem("title", "kg", "justification", 1);
   };
 
+  const addEvaluationMethod = async (from) => {
+    await instance.connect(from).addEvaluationMethod("title", "research", "projectURL");
+  };
+
   beforeEach(async () => {
     [owner, resea1Address, resea2Address, validator1Address, validator2Address, validator3Address, validator4Address] =
       await ethers.getSigners();
@@ -153,6 +157,12 @@ describe("ResearcherRules", () => {
           const researcher = await instance.getResearcher(resea1Address);
 
           expect(researcher.publishedResearches).to.equal(0);
+        });
+
+        it("add created researcher with publishedMethod = true", async () => {
+          const researcher = await instance.getResearcher(resea1Address);
+
+          expect(researcher.canPublishMethod).to.equal(true);
         });
       });
     });
@@ -629,6 +639,42 @@ describe("ResearcherRules", () => {
       context("when have not waited time between calculatorItems", () => {
         it("should return error message", async () => {
           await expect(addCalculatorItem(resea1Address)).to.be.revertedWith("Can't publish yet");
+        });
+      });
+    });
+  });
+
+  describe("#addEvaluationMethod", () => {
+    context("when is not a researcher", () => {
+      it("should return error", async () => {
+        await expect(addEvaluationMethod(owner)).to.be.revertedWith("Only allowed to researchers");
+      });
+    });
+
+    context("when is a researcher", () => {
+      beforeEach(async () => {
+        await addResearcher("Researcher A", resea1Address);
+        await addEvaluationMethod(resea1Address);
+      });
+
+      context("when did not publish a method before", () => {
+        it("add an evaluationMethod", async () => {
+          const firstEvaluationMethod = await instance.evaluationMethodsCount();
+
+          expect(firstEvaluationMethod).to.equal(1);
+        });
+
+        it("must set researcher bool to false", async () => {
+          const researcher = await instance.getResearcher(resea1Address);
+          const canPublishMethod = await researcher.canPublishMethod;
+
+          expect(canPublishMethod).to.equal(false);
+        });
+      });
+
+      context("when publish second method", () => {
+        it("should return error message", async () => {
+          await expect(addEvaluationMethod(resea1Address)).to.be.revertedWith("Only one method allowed");
         });
       });
     });
