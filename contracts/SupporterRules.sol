@@ -127,7 +127,7 @@ contract SupporterRules {
     require(amount >= 1000000000000000000, "Amount invalid");
     require(
       bytes(description).length <= MAX_CHARACTERS && bytes(content).length <= MAX_CHARACTERS,
-      "Max 500 carachteres"
+      "Max 1000 characters"
     );
 
     uint256 amountBurn = burnTokens(amount);
