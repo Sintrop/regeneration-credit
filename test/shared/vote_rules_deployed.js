@@ -7,7 +7,7 @@ const voteRulesDeployed = async () => {
   const regeneratorPoolArgs = {
     totalTokens: "750000000000000000000000000",
     halving: 12,
-    blocksPerEra: 12,
+    blocksPerEra: 750,
   };
 
   const inspectorPoolArgs = {
@@ -136,6 +136,9 @@ const voteRulesDeployed = async () => {
   const activistRulesFactory = await ethers.getContractFactory("ActivistRules");
   const activistRules = await activistRulesFactory.deploy(communityRules.target, activistPool.target);
 
+  const regenerationIndexRulesFactory = await ethers.getContractFactory("RegenerationIndexRules");
+  regenerationIndexRules = await regenerationIndexRulesFactory.deploy();
+
   const voteRulesFactory = await ethers.getContractFactory("VoteRules");
   const voteRules = await voteRulesFactory.deploy(
     communityRules.target,
@@ -182,6 +185,7 @@ const voteRulesDeployed = async () => {
     regeneratorPool,
     voteRules,
     validationRules,
+    regenerationIndexRules,
   };
 };
 
