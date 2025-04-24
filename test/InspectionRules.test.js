@@ -107,6 +107,10 @@ describe("InspectionRules", () => {
     await developerRules.connect(from).addDeveloper(name, "photoURL");
   };
 
+  const addContributor = async (name, from) => {
+    await contributorRules.connect(from).addContributor(name, "photoURL");
+  };
+
   const addInvitation = async (inviter, invited, userType, from) => {
     await communityRules.connect(from).addInvitation(inviter, invited, userType);
   };
@@ -1100,7 +1104,7 @@ describe("InspectionRules", () => {
       await addInspector("Inspector A", inspectorAddress);
     });
 
-    context("with validator", () => {
+    context("with developer", () => {
       beforeEach(async () => {
         await addInvitation(owner, user1Address, userTypes.Developer, owner);
         await addInvitation(owner, user2Address, userTypes.Developer, owner);
@@ -1137,6 +1141,477 @@ describe("InspectionRules", () => {
         });
 
         context("when have 2 validations (half of the validators)", () => {
+          context("when inspection score is positive", () => {
+            beforeEach(async () => {
+              await instance.connect(user1Address).addInspectionValidation(1, "justification");
+              await instance.connect(user2Address).addInspectionValidation(1, "justification");
+            });
+
+            it("add validations", async () => {
+              const validation1 = await validationRules.inspectionValidations(1, 0);
+              const validation2 = await validationRules.inspectionValidations(1, 1);
+
+              expect(validation1.validator).to.equal(user1Address.address);
+              expect(validation2.validator).to.equal(user2Address.address);
+            });
+
+            it("decrement inspectionsTreesImpact", async () => {
+              const inspectionsTreesImpact = await instance.inspectionsTreesImpact();
+
+              expect(inspectionsTreesImpact).to.equal(0);
+            });
+
+            it("decrement inspectionsTreesImpact", async () => {
+              const inspectionsBiodiversityImpact = await instance.inspectionsBiodiversityImpact();
+
+              expect(inspectionsBiodiversityImpact).to.equal(0);
+            });
+
+            it("inspection status INVALIDATED", async () => {
+              const inspection = await instance.getInspection(1);
+
+              expect(inspection.status).to.equal(STATUS.invalidated);
+            });
+
+            it("inspector receive 1 penalty", async () => {
+              const totalPenalties = await inspectorRules.totalPenalties(inspectorAddress);
+
+              expect(totalPenalties).to.equal(1);
+            });
+
+            it("remove regenerator regenerationScore", async () => {
+              const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+
+              expect(regenerator.regenerationScore.score).to.equal(0);
+            });
+
+            it("decrement regenerator totalInspections", async () => {
+              const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+
+              expect(regenerator.totalInspections).to.equal(0);
+            });
+
+            it("decrement inspector totalInspections", async () => {
+              const inspector = await inspectorRules.getInspector(inspectorAddress);
+
+              expect(inspector.totalInspections).to.equal(0);
+            });
+
+            it("zero regeneratorPool era level score", async () => {
+              const levels = await regeneratorPool.eraLevels(1, regeneratorAddress);
+
+              expect(levels).to.equal(0);
+            });
+          });
+        });
+
+        context("when inspector receive max penalties alloweds", () => {
+          beforeEach(async () => {
+            await inspectorRules.addPenalty(inspectorAddress, 1);
+
+            await instance.connect(user1Address).addInspectionValidation(1, "justification");
+            await instance.connect(user2Address).addInspectionValidation(1, "justification");
+          });
+
+          it("inspector type to DENIED", async () => {
+            const userType = await communityRules.getUser(inspectorAddress);
+
+            expect(userType).to.equal(USER_TYPES.denied);
+          });
+        });
+
+        context("when already voted in this inspection", () => {
+          beforeEach(async () => {
+            await instance.connect(user1Address).addInspectionValidation(1, "justification");
+
+            await advanceBlock(10);
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
+              "Already voted"
+            );
+          });
+        });
+      });
+
+      context("when inspection inspectedAtEra is passed", () => {
+        beforeEach(async () => {
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await acceptInspection(1, inspectorAddress);
+          await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
+
+          await advanceBlock(regeneratorPoolArgs.blocksPerEra);
+        });
+
+        it("should return error message", async () => {
+          await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
+            "Can not add validation anymore"
+          );
+        });
+      });
+
+      context("when inspection is not inspected", () => {
+        it("should return error message", async () => {
+          await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
+            "Can not add validation anymore"
+          );
+        });
+      });
+    });
+
+    context("with contributor", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Contributor, owner);
+        await addInvitation(owner, user2Address, userTypes.Contributor, owner);
+        await addInvitation(owner, user3Address, userTypes.Contributor, owner);
+        await addInvitation(owner, user4Address, userTypes.Contributor, owner);
+
+        await addContributor("User 1", user1Address);
+        await addContributor("User 2", user2Address);
+        await addContributor("User 3", user3Address);
+        await addContributor("User 4", user4Address);
+      });
+
+      context("with valid inspection", () => {
+        beforeEach(async () => {
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await acceptInspection(1, inspectorAddress);
+          await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
+        });
+
+        context("when receive 1 validation", () => {
+          beforeEach(async () => {
+            await instance.connect(user1Address).addInspectionValidation(1, "justification");
+          });
+
+          it("add validation", async () => {
+            const validation = await validationRules.inspectionValidations(1, 0);
+
+            expect(validation[0]).to.equal(user1Address.address);
+            expect(validation[1]).to.equal(1);
+            expect(validation[2]).to.equal("justification");
+            expect(validation[3]).to.equal(2);
+          });
+        });
+
+        context("when have 2 validations (half of the validators)", () => {
+          context("when inspection score is positive", () => {
+            beforeEach(async () => {
+              await instance.connect(user1Address).addInspectionValidation(1, "justification");
+              await instance.connect(user2Address).addInspectionValidation(1, "justification");
+            });
+
+            it("add validations", async () => {
+              const validation1 = await validationRules.inspectionValidations(1, 0);
+              const validation2 = await validationRules.inspectionValidations(1, 1);
+
+              expect(validation1.validator).to.equal(user1Address.address);
+              expect(validation2.validator).to.equal(user2Address.address);
+            });
+
+            it("decrement inspectionsTreesImpact", async () => {
+              const inspectionsTreesImpact = await instance.inspectionsTreesImpact();
+
+              expect(inspectionsTreesImpact).to.equal(0);
+            });
+
+            it("decrement inspectionsTreesImpact", async () => {
+              const inspectionsBiodiversityImpact = await instance.inspectionsBiodiversityImpact();
+
+              expect(inspectionsBiodiversityImpact).to.equal(0);
+            });
+
+            it("inspection status INVALIDATED", async () => {
+              const inspection = await instance.getInspection(1);
+
+              expect(inspection.status).to.equal(STATUS.invalidated);
+            });
+
+            it("inspector receive 1 penalty", async () => {
+              const totalPenalties = await inspectorRules.totalPenalties(inspectorAddress);
+
+              expect(totalPenalties).to.equal(1);
+            });
+
+            it("remove regenerator regenerationScore", async () => {
+              const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+
+              expect(regenerator.regenerationScore.score).to.equal(0);
+            });
+
+            it("decrement regenerator totalInspections", async () => {
+              const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+
+              expect(regenerator.totalInspections).to.equal(0);
+            });
+
+            it("decrement inspector totalInspections", async () => {
+              const inspector = await inspectorRules.getInspector(inspectorAddress);
+
+              expect(inspector.totalInspections).to.equal(0);
+            });
+
+            it("zero regeneratorPool era level score", async () => {
+              const levels = await regeneratorPool.eraLevels(1, regeneratorAddress);
+
+              expect(levels).to.equal(0);
+            });
+          });
+        });
+
+        context("when inspector receive max penalties alloweds", () => {
+          beforeEach(async () => {
+            await inspectorRules.addPenalty(inspectorAddress, 1);
+
+            await instance.connect(user1Address).addInspectionValidation(1, "justification");
+            await instance.connect(user2Address).addInspectionValidation(1, "justification");
+          });
+
+          it("inspector type to DENIED", async () => {
+            const userType = await communityRules.getUser(inspectorAddress);
+
+            expect(userType).to.equal(USER_TYPES.denied);
+          });
+        });
+
+        context("when already voted in this inspection", () => {
+          beforeEach(async () => {
+            await instance.connect(user1Address).addInspectionValidation(1, "justification");
+
+            await advanceBlock(10);
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
+              "Already voted"
+            );
+          });
+        });
+      });
+
+      context("when inspection inspectedAtEra is passed", () => {
+        beforeEach(async () => {
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await acceptInspection(1, inspectorAddress);
+          await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
+
+          await advanceBlock(regeneratorPoolArgs.blocksPerEra);
+        });
+
+        it("should return error message", async () => {
+          await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
+            "Can not add validation anymore"
+          );
+        });
+      });
+
+      context("when inspection is not inspected", () => {
+        it("should return error message", async () => {
+          await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
+            "Can not add validation anymore"
+          );
+        });
+      });
+    });
+
+    context("with activist", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Activist, owner);
+        await addInvitation(owner, user2Address, userTypes.Activist, owner);
+        await addInvitation(owner, user3Address, userTypes.Activist, owner);
+        await addInvitation(owner, user4Address, userTypes.Activist, owner);
+
+        await addActivist("User 1", user1Address);
+        await addActivist("User 2", user2Address);
+        await addActivist("User 3", user3Address);
+        await addActivist("User 4", user4Address);
+      });
+
+      context("with valid inspection", () => {
+        beforeEach(async () => {
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await acceptInspection(1, inspectorAddress);
+          await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
+        });
+
+        context("when receive 1 validation", () => {
+          beforeEach(async () => {
+            await instance.connect(user1Address).addInspectionValidation(1, "justification");
+          });
+
+          it("add validation", async () => {
+            const validation = await validationRules.inspectionValidations(1, 0);
+
+            expect(validation[0]).to.equal(user1Address.address);
+            expect(validation[1]).to.equal(1);
+            expect(validation[2]).to.equal("justification");
+            expect(validation[3]).to.equal(2);
+          });
+        });
+
+        context("when have 2 validations (half of the validators)", () => {
+          context("when inspection score is positive", () => {
+            beforeEach(async () => {
+              await instance.connect(user1Address).addInspectionValidation(1, "justification");
+              await instance.connect(user2Address).addInspectionValidation(1, "justification");
+            });
+
+            it("add validations", async () => {
+              const validation1 = await validationRules.inspectionValidations(1, 0);
+              const validation2 = await validationRules.inspectionValidations(1, 1);
+
+              expect(validation1.validator).to.equal(user1Address.address);
+              expect(validation2.validator).to.equal(user2Address.address);
+            });
+
+            it("decrement inspectionsTreesImpact", async () => {
+              const inspectionsTreesImpact = await instance.inspectionsTreesImpact();
+
+              expect(inspectionsTreesImpact).to.equal(0);
+            });
+
+            it("decrement inspectionsTreesImpact", async () => {
+              const inspectionsBiodiversityImpact = await instance.inspectionsBiodiversityImpact();
+
+              expect(inspectionsBiodiversityImpact).to.equal(0);
+            });
+
+            it("inspection status INVALIDATED", async () => {
+              const inspection = await instance.getInspection(1);
+
+              expect(inspection.status).to.equal(STATUS.invalidated);
+            });
+
+            it("inspector receive 1 penalty", async () => {
+              const totalPenalties = await inspectorRules.totalPenalties(inspectorAddress);
+
+              expect(totalPenalties).to.equal(1);
+            });
+
+            it("remove regenerator regenerationScore", async () => {
+              const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+
+              expect(regenerator.regenerationScore.score).to.equal(0);
+            });
+
+            it("decrement regenerator totalInspections", async () => {
+              const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+
+              expect(regenerator.totalInspections).to.equal(0);
+            });
+
+            it("decrement inspector totalInspections", async () => {
+              const inspector = await inspectorRules.getInspector(inspectorAddress);
+
+              expect(inspector.totalInspections).to.equal(0);
+            });
+
+            it("zero regeneratorPool era level score", async () => {
+              const levels = await regeneratorPool.eraLevels(1, regeneratorAddress);
+
+              expect(levels).to.equal(0);
+            });
+          });
+        });
+
+        context("when inspector receive max penalties alloweds", () => {
+          beforeEach(async () => {
+            await inspectorRules.addPenalty(inspectorAddress, 1);
+
+            await instance.connect(user1Address).addInspectionValidation(1, "justification");
+            await instance.connect(user2Address).addInspectionValidation(1, "justification");
+          });
+
+          it("inspector type to DENIED", async () => {
+            const userType = await communityRules.getUser(inspectorAddress);
+
+            expect(userType).to.equal(USER_TYPES.denied);
+          });
+        });
+
+        context("when already voted in this inspection", () => {
+          beforeEach(async () => {
+            await instance.connect(user1Address).addInspectionValidation(1, "justification");
+
+            await advanceBlock(10);
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
+              "Already voted"
+            );
+          });
+        });
+      });
+
+      context("when inspection inspectedAtEra is passed", () => {
+        beforeEach(async () => {
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await acceptInspection(1, inspectorAddress);
+          await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
+
+          await advanceBlock(regeneratorPoolArgs.blocksPerEra);
+        });
+
+        it("should return error message", async () => {
+          await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
+            "Can not add validation anymore"
+          );
+        });
+      });
+
+      context("when inspection is not inspected", () => {
+        it("should return error message", async () => {
+          await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
+            "Can not add validation anymore"
+          );
+        });
+      });
+    });
+
+    context("with researcher", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Researcher, owner);
+        await addInvitation(owner, user2Address, userTypes.Researcher, owner);
+        await addInvitation(owner, user3Address, userTypes.Researcher, owner);
+        await addInvitation(owner, user4Address, userTypes.Researcher, owner);
+
+        await addResearcher("User 1", user1Address);
+        await addResearcher("User 2", user2Address);
+        await addResearcher("User 3", user3Address);
+        await addResearcher("User 4", user4Address);
+      });
+
+      context("with valid inspection", () => {
+        beforeEach(async () => {
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+          await acceptInspection(1, inspectorAddress);
+          await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
+        });
+
+        context("when receive 1 validation", () => {
+          beforeEach(async () => {
+            await instance.connect(user1Address).addInspectionValidation(1, "justification");
+          });
+
+          it("add validation", async () => {
+            const validation = await validationRules.inspectionValidations(1, 0);
+
+            expect(validation[0]).to.equal(user1Address.address);
+            expect(validation[1]).to.equal(1);
+            expect(validation[2]).to.equal("justification");
+            expect(validation[3]).to.equal(2);
+          });
+        });
+
+        context("when have 2 validations (votesToInvalidate)", () => {
           context("when inspection score is positive", () => {
             beforeEach(async () => {
               await instance.connect(user1Address).addInspectionValidation(1, "justification");

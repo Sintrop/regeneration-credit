@@ -44,18 +44,6 @@ describe("ContributorRules", (accounts) => {
     await communityRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
-  const addResearcher = async (name, from) => {
-    await researcherRules.connect(from).addResearcher(name, "photoURL");
-  };
-
-  const addDeveloper = async (name, from) => {
-    await developerRules.connect(from).addDeveloper(name, "photoURL");
-  };
-
-  const addActivist = async (name, from) => {
-    await activistRules.connect(from).addActivist(name, "photoURL");
-  };
-
   beforeEach(async () => {
     [
       owner,
