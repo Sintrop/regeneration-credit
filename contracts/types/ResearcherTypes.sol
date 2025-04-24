@@ -12,6 +12,7 @@ import "./CommunityTypes.sol";
  * @param proofPhoto Hash of the identity photo
  * @param publishedResearches Number of published researches
  * @param lastPublishedAt Block of last research publication
+ * @param publishedItems Number of published researches
  * @param lastCalculatorItemAt Block of last calculator item publication
  * @param createdAt Block of user creation
  */
@@ -23,6 +24,7 @@ struct Researcher {
   string proofPhoto;
   uint256 publishedResearches;
   uint256 lastPublishedAt;
+  uint256 publishedItems;
   uint256 lastCalculatorItemAt;
   uint256 createdAt;
 }

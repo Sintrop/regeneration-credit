@@ -154,6 +154,12 @@ describe("ResearcherRules", () => {
 
           expect(researcher.publishedResearches).to.equal(0);
         });
+
+        it("add created researcher with 0 published items", async () => {
+          const researcher = await instance.getResearcher(resea1Address);
+
+          expect(researcher.publishedItems).to.equal(0);
+        });
       });
     });
   });
@@ -623,6 +629,13 @@ describe("ResearcherRules", () => {
           const firstCalculatorItem = await instance.calculatorItemsCount();
 
           expect(firstCalculatorItem).to.equal(1);
+        });
+
+        it("should add researcher publishedItems", async () => {
+          const researcher = await instance.getResearcher(resea1Address);
+          const publishedItems = await researcher.publishedItems;
+
+          expect(publishedItems).to.equal(1);
         });
       });
 
