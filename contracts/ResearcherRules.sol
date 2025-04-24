@@ -313,14 +313,7 @@ contract ResearcherRules is Callable, Invitable {
 
     evaluationMethods[id] = evaluationMethod;
     evaluationMethodsCount++;
-    updateMethodState(msg.sender, false);
-  }
-
-  /**
-   * @dev Update researcher canPublishMethod bool
-   */
-  function updateMethodState(address addr, bool state) private {
-    researchers[addr].canPublishMethod = state;
+    researchers[msg.sender].canPublishMethod = false;
   }
 
   /**
