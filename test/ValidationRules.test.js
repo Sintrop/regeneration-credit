@@ -962,6 +962,47 @@ describe("ValidationRules", () => {
       });
     });
 
+    context("when do not wait waitedTimeBetweenVotes", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
+        await addInvitation(owner, user3Address, userTypes.Developer, owner);
+
+        await addDeveloper("User  A", user1Address);
+        await addDeveloper("User  B", user2Address);
+        await addDeveloper("User  C", user3Address);
+
+        await instance.connect(user1Address).addUserValidation(user2Address, "justification");
+      });
+
+      it("should return error", async () => {
+        await expect(
+          instance.connect(user1Address).addUserValidation(user3Address, "justification")
+        ).to.be.revertedWith("Wait timeBetweenVotes");
+      });
+    });
+
+    context("when do not wait waitedTimeBetweenVotes", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
+        await addInvitation(owner, user3Address, userTypes.Developer, owner);
+
+        await addDeveloper("User  A", user1Address);
+        await addDeveloper("User  B", user2Address);
+        await addDeveloper("User  C", user3Address);
+
+        await instance.connect(user1Address).addUserValidation(user2Address, "justification");
+        await advanceBlock(10);
+      });
+
+      it("should return error", async () => {
+        await expect(
+          instance.connect(user1Address).addUserValidation(user3Address, "justification")
+        ).not.be.revertedWith("Wait timeBetweenVotes");
+      });
+    });
+
     context("when is not a registered user", () => {
       it("should return error", async () => {
         await addInvitation(owner, user1Address, userTypes.Developer, owner);

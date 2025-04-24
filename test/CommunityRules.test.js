@@ -574,4 +574,98 @@ describe("CommunityRules", function () {
       });
     });
   });
+
+  describe("#votersCount", () => {
+    beforeEach(async () => {
+      await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user2Address, userTypes.Activist, owner);
+      await addInvitation(owner, user3Address, userTypes.Developer, owner);
+      await addInvitation(owner, user4Address, userTypes.Contributor, owner);
+      await addInvitation(owner, user5Address, userTypes.Researcher, owner);
+
+      await addUser(user1Address, userTypes.Regenerator, owner);
+      await addUser(user2Address, userTypes.Activist, owner);
+      await addUser(user3Address, userTypes.Developer, owner);
+      await addUser(user4Address, userTypes.Contributor, owner);
+      await addUser(user5Address, userTypes.Researcher, owner);
+    });
+
+    context("when have 4 voters", () => {
+      context("when all voters is not denied", () => {
+        it("must returns 4 voters", async () => {
+          const votersCount = await instance.votersCount();
+
+          expect(votersCount).to.equal(4);
+        });
+      });
+
+      context("when some voters is  denied", () => {
+        beforeEach(async () => {
+          await instance.setDeniedType(user2Address);
+        });
+
+        it("must return only valid voters", async () => {
+          const votersCount = await instance.votersCount();
+
+          expect(votersCount).to.equal(3);
+        });
+      });
+    });
+  });
+
+  describe("#isVoter", () => {
+    beforeEach(async () => {
+      await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user2Address, userTypes.Activist, owner);
+      await addInvitation(owner, user3Address, userTypes.Developer, owner);
+      await addInvitation(owner, user4Address, userTypes.Contributor, owner);
+      await addInvitation(owner, user5Address, userTypes.Researcher, owner);
+
+      await addUser(user1Address, userTypes.Regenerator, owner);
+      await addUser(user2Address, userTypes.Activist, owner);
+      await addUser(user3Address, userTypes.Developer, owner);
+      await addUser(user4Address, userTypes.Contributor, owner);
+      await addUser(user5Address, userTypes.Researcher, owner);
+    });
+
+    context("when is regenerator", () => {
+      it("must returns false", async () => {
+        const isVoter = await instance.isVoter(user1Address);
+
+        expect(isVoter).to.equal(false);
+      });
+    });
+
+    context("when is activist", () => {
+      it("must returns true", async () => {
+        const isVoter = await instance.isVoter(user2Address);
+
+        expect(isVoter).to.equal(true);
+      });
+    });
+
+    context("when is developer", () => {
+      it("must returns true", async () => {
+        const isVoter = await instance.isVoter(user3Address);
+
+        expect(isVoter).to.equal(true);
+      });
+    });
+
+    context("when is contributor", () => {
+      it("must returns true", async () => {
+        const isVoter = await instance.isVoter(user4Address);
+
+        expect(isVoter).to.equal(true);
+      });
+    });
+
+    context("when is researcher", () => {
+      it("must returns true", async () => {
+        const isVoter = await instance.isVoter(user5Address);
+
+        expect(isVoter).to.equal(true);
+      });
+    });
+  });
 });

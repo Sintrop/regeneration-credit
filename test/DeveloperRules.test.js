@@ -503,6 +503,45 @@ describe("DeveloperRules", (accounts) => {
           });
         });
 
+        context("when do not wait waitedTimeBetweenVotes", () => {
+          beforeEach(async () => {
+            await addDeveloper("User B", user2Address);
+
+            await instance.connect(dev1Address).addReport("description", "report");
+            await instance.connect(user2Address).addReport("description", "report");
+
+            await addDeveloper("User C", user3Address);
+
+            await instance.connect(user3Address).addReportValidation(1, "justification");
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user3Address).addReportValidation(2, "justification")).to.be.revertedWith(
+              "Wait timeBetweenVotes"
+            );
+          });
+        });
+
+        context("when wait waitedTimeBetweenVotes", () => {
+          beforeEach(async () => {
+            await addDeveloper("User B", user2Address);
+
+            await instance.connect(dev1Address).addReport("description", "report");
+            await instance.connect(user2Address).addReport("description", "report");
+
+            await addDeveloper("User C", user3Address);
+
+            await instance.connect(user3Address).addReportValidation(1, "justification");
+            await advanceBlock(10);
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user3Address).addReportValidation(2, "justification")).not.be.revertedWith(
+              "Wait timeBetweenVotes"
+            );
+          });
+        });
+
         context("when report do not exists", () => {
           it("should return error message", async () => {
             await expect(instance.connect(user1Address).addReportValidation(0, "justification")).to.be.revertedWith(

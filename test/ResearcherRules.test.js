@@ -519,6 +519,42 @@ describe("ResearcherRules", () => {
           });
         });
 
+        context("wwhen do not wait waitedTimeBetweenVotes", () => {
+          beforeEach(async () => {
+            await addResearcher("User B", user2Address);
+            await addResearcher("User C", user3Address);
+
+            await addResearch(resea1Address);
+
+            await instance.connect(user2Address).addResearchValidation(1, "justification");
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user2Address).addResearchValidation(1, "justification")).to.be.revertedWith(
+              "Wait timeBetweenVotes"
+            );
+          });
+        });
+
+        context("wwhen wait waitedTimeBetweenVotes", () => {
+          beforeEach(async () => {
+            await addResearcher("User B", user2Address);
+            await addResearcher("User C", user3Address);
+
+            await addResearch(resea1Address);
+            await addResearch(user3Address);
+
+            await instance.connect(user2Address).addResearchValidation(1, "justification");
+            await advanceBlock(10);
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user2Address).addResearchValidation(2, "justification")).not.be.revertedWith(
+              "Wait timeBetweenVotes"
+            );
+          });
+        });
+
         context("when contribution do not exists", () => {
           it("should return error message", async () => {
             await expect(instance.connect(user1Address).addResearchValidation(0, "justification")).to.be.revertedWith(
