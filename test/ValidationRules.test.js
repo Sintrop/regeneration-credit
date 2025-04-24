@@ -109,6 +109,10 @@ describe("ValidationRules", () => {
     await researcherRules.connect(from).addResearch("title", "thesis", "fileURL");
   };
 
+  const addContribution = async (from) => {
+    await contributorRules.connect(from).addContribution("description", "report");
+  };
+
   const denyUser = async (userAddress) => {
     await communityRules.setDeniedType(userAddress);
   };
@@ -141,6 +145,20 @@ describe("ValidationRules", () => {
       valid: research.valid,
       invalidatedAt: research.invalidatedAt,
       createdAtBlock: research.createdAtBlock,
+    };
+  };
+
+  const generateContributionObject = (contribution) => {
+    return {
+      id: contribution.id,
+      era: contribution.era,
+      user: contribution.user,
+      description: contribution.description,
+      report: contribution.report,
+      validationsCount: contribution.validationsCount,
+      valid: contribution.valid,
+      invalidatedAt: contribution.invalidatedAt,
+      createdAtBlockNumber: contribution.createdAtBlockNumber,
     };
   };
 
@@ -213,6 +231,7 @@ describe("ValidationRules", () => {
     await activistRules.newAllowedCaller(instance.target);
     await activistRules.newAllowedCaller(owner);
     await contributorRules.newAllowedCaller(instance.target);
+    await contributorRules.newAllowedCaller(owner);
     await regeneratorPool.newAllowedCaller(regeneratorRules.target);
     await regeneratorPool.newAllowedCaller(owner);
     await developerPool.newAllowedCaller(developerRules.target);
@@ -1508,6 +1527,141 @@ describe("ValidationRules", () => {
 
         await expect(
           instance.connect(user1Address).addResearcherResearchValidation(research, "justification", user2Address)
+        ).to.be.revertedWith("Not allowed caller");
+      });
+    });
+  });
+
+  describe("#addContributionValidation", () => {
+    context("with allowed caller", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, contributor1Address, userTypes.Contributor, owner);
+        await addContributor("Contributor A", contributor1Address);
+
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
+
+        await addDeveloper("User  A", user1Address);
+        await addDeveloper("User  B", user2Address);
+
+        await addContribution(contributor1Address);
+      });
+
+      context("when validator already voted to contribution", () => {
+        beforeEach(async () => {
+          let contribution = await contributorRules.contributions(1);
+          contribution = generateContributionObject(contribution);
+
+          await instance.connect(owner).addContributionValidation(contribution, "justification", user1Address);
+        });
+
+        it("should add contribution validation", async () => {
+          const validation = await instance.contributionValidations(1, 0);
+
+          expect(validation[0]).to.equal(user1Address.address);
+          expect(validation[1]).to.equal(1);
+          expect(validation[2]).to.equal("justification");
+          expect(validation[3]).to.equal(2);
+        });
+
+        it("should return error", async () => {
+          let contribution = await contributorRules.contributions(1);
+          contribution = generateContributionObject(contribution);
+
+          await expect(
+            instance.connect(owner).addContributionValidation(contribution, "justification", user1Address)
+          ).to.be.revertedWith("Already voted");
+        });
+      });
+
+      context("when validator did not voted to contribution", () => {
+        context("when current era is 1", () => {
+          context("when contribution validations is => votesToInvalidate (addPenalty == true)", () => {
+            context("when contributor total penalties is >= contributorRules.maxPenalties", () => {
+              beforeEach(async () => {
+                let contribution = await contributorRules.contributions(1);
+                contribution = generateContributionObject(contribution);
+                contribution.validationsCount = 1;
+
+                await contributorRules.addPenalty(contribution.user, contribution.id);
+                await contributorRules.addPenalty(contribution.user, contribution.id);
+
+                contribution.validationsCount = 2;
+                contribution.valid = false;
+
+                await instance.connect(owner).addContributionValidation(contribution, "justification", user2Address);
+              });
+
+              it("deny contributor", async () => {
+                const newContributorType = await communityRules.getUser(contributor1Address);
+
+                expect(newContributorType).to.equal(8);
+              });
+
+              it("remove contribution regeneration score level from contributor pool", async () => {
+                const levels = await contributorPool.eraLevels(4, contributor1Address);
+
+                expect(levels).to.equal(0);
+              });
+            });
+
+            context("when contributor total penalties is < contributorRules.maxPenalties", () => {
+              beforeEach(async () => {
+                let contribution = await contributorRules.contributions(1);
+                contribution = generateContributionObject(contribution);
+                contribution.validationsCount = 1;
+
+                await instance.connect(owner).addContributionValidation(contribution, "justification", user1Address);
+
+                contribution = await contributorRules.contributions(1);
+                contribution = generateContributionObject(contribution);
+                contribution.validationsCount = 2;
+                contribution.valid = false;
+
+                await instance.connect(owner).addContributionValidation(contribution, "justification", user2Address);
+              });
+
+              it("contributor is the same", async () => {
+                const userType = await communityRules.getUser(contributor1Address);
+
+                expect(userType).to.equal(5);
+              });
+
+              it("remove contribution level from contributor pool", async () => {
+                let contribution = await contributorRules.contributions(1);
+                const levels = await contributorPool.eraLevels(contribution.era, contributor1Address);
+
+                expect(levels).to.equal(0);
+              });
+            });
+          });
+
+          context("when contribution validations is < votesToInvalidate (addPenalty == false)", () => {
+            beforeEach(async () => {
+              let contribution = await contributorRules.contributions(1);
+              contribution = generateContributionObject(contribution);
+              contribution.validationsCount = 1;
+
+              await instance.connect(owner).addContributionValidation(contribution, "justification", user1Address);
+            });
+
+            it("total penalties is zero", async () => {
+              const totalPenalties = await contributorRules.totalPenalties(contributor1Address);
+
+              expect(totalPenalties).to.equal(0);
+            });
+          });
+        });
+      });
+    });
+
+    context("without allowed caller", () => {
+      it("should return error", async () => {
+        let contribution = await contributorRules.contributions(1);
+        contribution = generateContributionObject(contribution);
+
+        await expect(
+          instance.connect(user1Address).addContributionValidation(contribution, "justification", user2Address)
         ).to.be.revertedWith("Not allowed caller");
       });
     });

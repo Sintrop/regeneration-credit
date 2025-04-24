@@ -320,7 +320,7 @@ describe("ContributorRules", (accounts) => {
       expect(userIds.length).to.equal(1);
     });
   });
-  
+
   describe("#getContributor", () => {
     it("should return a contributor", async () => {
       await addContributor("Contributor A", contr1Address);
