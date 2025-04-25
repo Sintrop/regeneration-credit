@@ -290,13 +290,13 @@ describe("SupporterRules", () => {
               beforeEach(async () => {
                 await instance.connect(inv1Address).offset(1000000000000000000n, 1);
                 await instance.connect(inv1Address).offset(1000000000000000000n, 1);
-                await instance.connect(inv1Address).offset(500000000000000000n, 1);
+                await instance.connect(inv1Address).offset(1500000000000000000n, 1);
               });
 
               it("calculatorItemCertificates must sum all offsets", async () => {
                 const value = await instance.calculatorItemCertificates(inv1Address, 1);
 
-                expect(value).to.equal(2500000000000000000n);
+                expect(value).to.equal(3500000000000000000n);
               });
             });
           });
