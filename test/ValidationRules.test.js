@@ -1,9 +1,10 @@
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
-const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
-const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 const { voteRulesDeployed } = require("./shared/vote_rules_deployed");
+const { deployMockContract } = require("@clrfund/waffle-mock-contract");
+const hre = require("hardhat");
+const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
 describe("ValidationRules", () => {
   let instance;
@@ -1708,85 +1709,133 @@ describe("ValidationRules", () => {
     });
   });
 
-  describe.skip("#votesToInvalidate", () => {
-    context("when current era is 1", () => {
-      context("when have 8 validators", () => {
-        beforeEach(async () => {
-          await addInvitation(owner, validator2Address, userTypes.Validator, owner);
-          await addInvitation(owner, validator3Address, userTypes.Validator, owner);
-          await addInvitation(owner, validator4Address, userTypes.Validator, owner);
-          await addInvitation(owner, validator5Address, userTypes.Validator, owner);
-          await addInvitation(owner, validator6Address, userTypes.Validator, owner);
-          await addInvitation(owner, validator7Address, userTypes.Validator, owner);
-          await addInvitation(owner, validator8Address, userTypes.Validator, owner);
+  describe("#votesToInvalidate", () => {
+    beforeEach(async () => {
+      const myContractArtifact = await hre.artifacts.readArtifact("CommunityRules");
 
-          await addValidator(validator1Address);
-          await addValidator(validator2Address);
-          await addValidator(validator3Address);
-          await addValidator(validator4Address);
-          await addValidator(validator5Address);
-          await addValidator(validator6Address);
-          await addValidator(validator7Address);
-          await addValidator(validator8Address);
-        });
+      const { _, abi } = myContractArtifact;
 
-        it("returns 4", async () => {
-          const votesToInvalidate = await instance.votesToInvalidate();
+      mockContract = await deployMockContract(owner, abi);
 
-          expect(votesToInvalidate).to.equal(4);
-        });
+      const validationRulesDependencies = {
+        communityRulesAddress: mockContract.target,
+        regeneratorRulesAddress: regeneratorRules.target,
+        inspectorRulesAddress: inspectorRules.target,
+        developerRulesAddress: developerRules.target,
+        researcherRulesAddress: researcherRules.target,
+        contributorRulesAddress: contributorRules.target,
+        activistRulesAddress: activistRules.target,
+        voteRulesAddress: ZERO_ADDRESS,
+      };
+
+      await instance.setContractAddressDependencies(validationRulesDependencies);
+    });
+
+    context("when votersCount is less than 50", () => {
+      beforeEach(async () => {
+        await mockContract.mock.votersCount.returns(49);
+      });
+
+      it("returns 2", async () => {
+        const votesToInvalidate = await instance.votesToInvalidate();
+
+        expect(votesToInvalidate).to.equal(2);
       });
     });
 
-    context("when current era is 2", () => {
-      context("when have 8 validators", () => {
-        beforeEach(async () => {
-          await addInvitation(owner, validator2Address, userTypes.Validator, owner);
-          await addInvitation(owner, validator3Address, userTypes.Validator, owner);
-          await addInvitation(owner, validator4Address, userTypes.Validator, owner);
-          await addInvitation(owner, validator5Address, userTypes.Validator, owner);
-          await addInvitation(owner, validator6Address, userTypes.Validator, owner);
-          await addInvitation(owner, validator7Address, userTypes.Validator, owner);
-          await addInvitation(owner, validator8Address, userTypes.Validator, owner);
+    context("when votersCount is bigger than 50 and less than 500", () => {
+      beforeEach(async () => {
+        await mockContract.mock.votersCount.returns(400);
+      });
 
-          await addValidator(validator1Address);
-          await addValidator(validator2Address);
-          await addValidator(validator3Address);
-          await addValidator(validator4Address);
-          await addValidator(validator5Address);
-          await addValidator(validator6Address);
-          await addValidator(validator7Address);
-          await addValidator(validator8Address);
-        });
+      it("returns 5", async () => {
+        const votesToInvalidate = await instance.votesToInvalidate();
 
-        context("when 4 validators have contributed in era 1", () => {
-          beforeEach(async () => {
-            await instance.connect(validator1Address).declareAlive();
-            await instance.connect(validator2Address).declareAlive();
-            await instance.connect(validator3Address).declareAlive();
-            await instance.connect(validator4Address).declareAlive();
+        expect(votesToInvalidate).to.equal(5);
+      });
+    });
 
-            await advanceBlock(validatorPoolArgs.blocksPerEra);
-          });
+    context("when votersCount votersCount is bigger than 500 and less than 1000", () => {
+      beforeEach(async () => {
+        await mockContract.mock.votersCount.returns(600);
+      });
 
-          it("returns 2", async () => {
-            const votesToInvalidate = await instance.votesToInvalidate();
+      it("returns 10", async () => {
+        const votesToInvalidate = await instance.votesToInvalidate();
 
-            expect(votesToInvalidate).to.equal(2);
-          });
-        });
+        expect(votesToInvalidate).to.equal(10);
+      });
+    });
 
-        context("when no validators have contributed in era 1", () => {
-          beforeEach(async () => {
-            await advanceBlock(validatorPoolArgs.blocksPerEra);
-          });
+    context("when votersCount is bigger than 1000 and less than 2000", () => {
+      beforeEach(async () => {
+        await mockContract.mock.votersCount.returns(1200);
+      });
 
-          it("returns 0", async () => {
-            const votesToInvalidate = await instance.votesToInvalidate();
+      it("returns 20", async () => {
+        const votesToInvalidate = await instance.votesToInvalidate();
 
-            expect(votesToInvalidate).to.equal(0);
-          });
-        });
+        expect(votesToInvalidate).to.equal(20);
+      });
+    });
+
+    context("when votersCount is bigger than 2000 and less than 4000", () => {
+      beforeEach(async () => {
+        await mockContract.mock.votersCount.returns(2500);
+      });
+
+      it("returns 40", async () => {
+        const votesToInvalidate = await instance.votesToInvalidate();
+
+        expect(votesToInvalidate).to.equal(40);
+      });
+    });
+
+    context("when votersCount is bigger than 4000 and less than 8000", () => {
+      beforeEach(async () => {
+        await mockContract.mock.votersCount.returns(5000);
+      });
+
+      it("returns 80", async () => {
+        const votesToInvalidate = await instance.votesToInvalidate();
+
+        expect(votesToInvalidate).to.equal(80);
+      });
+    });
+
+    context("when votersCount is bigger than 8000 and less than 16000", () => {
+      beforeEach(async () => {
+        await mockContract.mock.votersCount.returns(10000);
+      });
+
+      it("returns 160", async () => {
+        const votesToInvalidate = await instance.votesToInvalidate();
+
+        expect(votesToInvalidate).to.equal(160);
+      });
+    });
+
+    context("when votersCount is bigger than 16000 and less than 32000", () => {
+      beforeEach(async () => {
+        await mockContract.mock.votersCount.returns(20000);
+      });
+
+      it("returns 320", async () => {
+        const votesToInvalidate = await instance.votesToInvalidate();
+
+        expect(votesToInvalidate).to.equal(320);
+      });
+    });
+
+    context("when votersCounts bigger than 32000", () => {
+      beforeEach(async () => {
+        await mockContract.mock.votersCount.returns(35000);
+      });
+
+      it("returns 500", async () => {
+        const votesToInvalidate = await instance.votesToInvalidate();
+
+        expect(votesToInvalidate).to.equal(500);
       });
     });
   });
