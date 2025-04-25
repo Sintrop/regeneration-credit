@@ -565,7 +565,7 @@ describe("ResearcherRules", () => {
       });
     });
 
-    context("with develoepr", () => {
+    context("with developer", () => {
       beforeEach(async () => {
         await addInvitation(owner, user1Address, userTypes.Developer, owner);
         await addInvitation(owner, user2Address, userTypes.Developer, owner);
