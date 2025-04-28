@@ -23,7 +23,7 @@ describe("DeveloperRules", (accounts) => {
     anyAddress;
 
   let developerPoolParams = {
-    totalTokens: "30000000000000000000000000",
+    totalTokens: "40000000000000000000000000",
     halving: 12,
     blocksPerEra: 140,
   };
@@ -90,7 +90,7 @@ describe("DeveloperRules", (accounts) => {
     await validationRules.newAllowedCaller(owner);
     await instance.newAllowedCaller(validationRules.target);
     await instance.newAllowedCaller(owner);
-    await regenerationCredit.addContractPool(developerPool.target, "30000000000000000000000000");
+    await regenerationCredit.addContractPool(developerPool.target, "40000000000000000000000000");
 
     await addInvitation(owner, dev1Address, userTypes.Developer, owner);
   });
@@ -1220,7 +1220,7 @@ describe("DeveloperRules", (accounts) => {
             it("should withdraw all tokens from era", async () => {
               let balanceOf = await regenerationCredit.balanceOf(dev1Address);
 
-              let tokensBalance = 1250000000000000000000000n;
+              let tokensBalance = 1666666666666666666666666n;
 
               expect(balanceOf).to.equal(tokensBalance);
             });
@@ -1256,18 +1256,18 @@ describe("DeveloperRules", (accounts) => {
                 expect(developer.pool.currentEra).to.equal(2);
               });
 
-              it("developer1 balance must be 625000000000000000000000", async () => {
+              it("developer1 balance must be 833333333333333333333333", async () => {
                 let balanceOf = await regenerationCredit.balanceOf(dev1Address);
 
-                let tokensPerEra = 625000000000000000000000n;
+                let tokensPerEra = 833333333333333333333333n;
 
                 expect(balanceOf).to.equal(tokensPerEra);
               });
 
-              it("developer2 balance must be 625000000000000000000000", async () => {
+              it("developer2 balance must be 833333333333333333333333", async () => {
                 let balanceOf = await regenerationCredit.balanceOf(dev2Address);
 
-                let tokensPerEra = 625000000000000000000000n;
+                let tokensPerEra = 833333333333333333333333n;
 
                 expect(balanceOf).to.equal(tokensPerEra);
               });
@@ -1301,7 +1301,7 @@ describe("DeveloperRules", (accounts) => {
 
           it("should can withdraw in two eras", async () => {
             let balanceOf = await regenerationCredit.balanceOf(dev1Address);
-            let balance = 2500000000000000000000000n;
+            let balance = 3333333333333333333333332n;
 
             expect(balanceOf).to.equal(balance);
           });

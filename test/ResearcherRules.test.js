@@ -21,7 +21,7 @@ describe("ResearcherRules", () => {
   const timeBetweenWorks = 10;
 
   const args = {
-    totalTokens: "30000000000000000000000000",
+    totalTokens: "40000000000000000000000000",
     halving: 12,
     blocksPerEra: 140,
   };
@@ -189,9 +189,9 @@ describe("ResearcherRules", () => {
             await instance.connect(resea1Address).withdraw();
           });
 
-          it("withdraw 1250000000000000000000000 tokens", async () => {
+          it("withdraw 1666666666666666666666666 tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(resea1Address);
-            const expectedBalance = 1250000000000000000000000n;
+            const expectedBalance = 1666666666666666666666666n;
 
             expect(balanceOf).to.equal(expectedBalance);
           });
@@ -209,9 +209,9 @@ describe("ResearcherRules", () => {
             await instance.connect(resea1Address).withdraw();
           });
 
-          it("withdraw 625000000000000000000000 tokens", async () => {
+          it("withdraw 833333333333333333333333 tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(resea1Address);
-            const expectedBalance = 625000000000000000000000n;
+            const expectedBalance = 833333333333333333333333n;
 
             expect(balanceOf).to.equal(expectedBalance);
           });

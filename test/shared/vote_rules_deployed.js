@@ -17,25 +17,25 @@ const voteRulesDeployed = async () => {
   };
 
   let developerPoolParams = {
-    totalTokens: "30000000000000000000000000",
+    totalTokens: "40000000000000000000000000",
     halving: 12,
     blocksPerEra: 140,
   };
 
   let researcherPoolParams = {
-    totalTokens: "30000000000000000000000000",
+    totalTokens: "40000000000000000000000000",
     halving: 12,
     blocksPerEra: 140,
   };
 
   let contributorPoolParams = {
-    totalTokens: "30000000000000000000000000",
+    totalTokens: "40000000000000000000000000",
     halving: 12,
     blocksPerEra: 140,
   };
 
   const activistPoolArgs = {
-    totalTokens: "30000000000000000000000000",
+    totalTokens: "40000000000000000000000000",
     halving: 12,
     blocksPerEra: 20,
   };
