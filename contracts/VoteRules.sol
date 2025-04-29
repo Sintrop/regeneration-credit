@@ -72,7 +72,7 @@ contract VoteRules {
     return userLevels >= avg;
   }
 
-  function totalUserLevels(address addr, UserType userType) public view returns (uint256) {
+  function totalUserLevels(address addr, UserType userType) internal view returns (uint256) {
     if (userType == UserType.ACTIVIST) {
       Activist memory user = activistRules.getActivist(addr);
 
@@ -94,7 +94,7 @@ contract VoteRules {
     }
   }
 
-  function totalLevels(UserType userType) public view returns (uint256) {
+  function totalLevels(UserType userType) internal view returns (uint256) {
     if (userType == UserType.ACTIVIST) {
       return activistRules.approvedInvites();
     } else if (userType == UserType.CONTRIBUTOR) {
