@@ -20,13 +20,13 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
   RegenerationCreditInterface internal regenerationCredit;
 
   /// @notice Total developer pool tokens
-  uint256 internal constant TOTAL_TOKENS_POOL = 30000000000000000000000000;
+  uint256 internal constant TOTAL_POOL_TOKENS = 40000000000000000000000000;
 
   constructor(
     address regenerationCreditAddress,
     uint256 _halving,
     uint256 _blocksPerEra
-  ) Blockable(_blocksPerEra, _halving) Poolable(TOTAL_TOKENS_POOL) {
+  ) Blockable(_blocksPerEra, _halving) Poolable(TOTAL_POOL_TOKENS) {
     regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
   }
 

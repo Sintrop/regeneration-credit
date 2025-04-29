@@ -26,7 +26,7 @@ describe("SupporterRules", () => {
   };
 
   const reseacherPoolArgs = {
-    totalResearcherPoolTokens: "30000000000000000000000000",
+    totalResearcherPoolTokens: "40000000000000000000000000",
     halving: 12,
     blocksPerEra: 12,
   };

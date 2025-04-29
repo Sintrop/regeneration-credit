@@ -23,7 +23,7 @@ const inspectionRulesDeployed = async (owner, args = {}) => {
   };
 
   const researcherPoolargs = {
-    totalTokens: "30000000000000000000000000",
+    totalTokens: "40000000000000000000000000",
     halving: 12,
     blocksPerEra: 12,
   };
@@ -35,7 +35,7 @@ const inspectionRulesDeployed = async (owner, args = {}) => {
   };
 
   const activistPoolArgs = {
-    totalTokens: "30000000000000000000000000",
+    totalTokens: "40000000000000000000000000",
     halving: 12,
     blocksPerEra: 13,
   };

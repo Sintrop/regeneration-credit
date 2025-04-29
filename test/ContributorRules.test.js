@@ -100,7 +100,7 @@ describe("ContributorRules", (accounts) => {
     await validationRules.newAllowedCaller(owner);
     await instance.newAllowedCaller(validationRules.target);
     await instance.newAllowedCaller(owner);
-    await regenerationCredit.addContractPool(contributorPool.target, "30000000000000000000000000");
+    await regenerationCredit.addContractPool(contributorPool.target, "40000000000000000000000000");
 
     await addInvitation(owner, contr1Address, userTypes.Contributor, owner);
   });
@@ -375,7 +375,7 @@ describe("ContributorRules", (accounts) => {
             it("should withdraw all tokens from era", async () => {
               let balanceOf = await regenerationCredit.balanceOf(contr1Address);
 
-              let tokensBalance = 1250000000000000000000000n;
+              let tokensBalance = 1666666666666666666666666n;
 
               expect(balanceOf).to.equal(tokensBalance);
             });
@@ -411,18 +411,18 @@ describe("ContributorRules", (accounts) => {
                 expect(contributor.pool.currentEra).to.equal(2);
               });
 
-              it("contributor1 balance must be 625000000000000000000000", async () => {
+              it("contributor1 balance must be 833333333333333333333333", async () => {
                 let balanceOf = await regenerationCredit.balanceOf(contr1Address);
 
-                let tokensPerEra = 625000000000000000000000n;
+                let tokensPerEra = 833333333333333333333333n;
 
                 expect(balanceOf).to.equal(tokensPerEra);
               });
 
-              it("contributor2 balance must be 625000000000000000000000", async () => {
+              it("contributor2 balance must be 833333333333333333333333", async () => {
                 let balanceOf = await regenerationCredit.balanceOf(contr2Address);
 
-                let tokensPerEra = 625000000000000000000000n;
+                let tokensPerEra = 833333333333333333333333n;
 
                 expect(balanceOf).to.equal(tokensPerEra);
               });
@@ -456,7 +456,7 @@ describe("ContributorRules", (accounts) => {
 
           it("should can withdraw in two eras", async () => {
             let balanceOf = await regenerationCredit.balanceOf(contr1Address);
-            let tokensPerEra = 2500000000000000000000000n;
+            let tokensPerEra = 3333333333333333333333332n;
 
             expect(balanceOf).to.equal(tokensPerEra);
           });

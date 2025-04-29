@@ -290,7 +290,7 @@ async function inviteUsers() {
 async function offsetEnergy() {
   const regenerationCredit = await getDeployedContract("RegenerationCredit");
 
-  await regenerationCredit.burnTokens("124500000000000000000000000");
+  await regenerationCredit.burnTokens("30000000000000000000000000");
 
   console.log("After offset is OK");
 }
