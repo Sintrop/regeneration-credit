@@ -83,7 +83,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
    *
    * - the caller must have been invited before
    * - vacancies according to the number of regenerators
-   *      
+   *
    * @param name The name of the contributor
    * @param proofPhoto Identity photo
    */
@@ -230,7 +230,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
    *
    * - only to contributors
    * - to be eligible to withdraw tokens, you must have published at least one contribution in the era
-   *   
+   *
    */
   function withdraw() public {
     require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Pool only to contributor");

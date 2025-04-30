@@ -59,7 +59,7 @@ contract ActivistRules is Callable, Invitable {
    *
    * - the caller must have been invited before
    * - vacancies according to the number of regenerators
-   *   
+   *
    * @param name The name of the activist
    * @param proofPhoto Identity photo
    */

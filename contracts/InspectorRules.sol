@@ -54,7 +54,7 @@ contract InspectorRules is Callable {
    *
    * - the caller must have been invited before
    * - vacancies according to the number of regenerators
-   *      
+   *
    * @param name The name of the inspector
    * @param proofPhoto Identity photo
    */

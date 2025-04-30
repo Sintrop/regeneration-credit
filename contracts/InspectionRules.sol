@@ -236,7 +236,7 @@ contract InspectionRules is Callable {
    * - the caller must be a voter user
    * - caller level must be above average
    * - caller must have waited timeBetweenVotes
-   *      
+   *
    * @param id Resource id
    * @param justification Invalidation justification
    */

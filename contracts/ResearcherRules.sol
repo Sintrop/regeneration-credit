@@ -94,7 +94,7 @@ contract ResearcherRules is Callable, Invitable {
    *
    * - the caller must have been invited before
    * - vacancies according to the number of regenerators
-   *      
+   *
    * @param name The name of the researcher
    * @param proofPhoto Identity photo
    */
@@ -212,7 +212,7 @@ contract ResearcherRules is Callable, Invitable {
    * - the caller must be a voter user
    * - caller level must be above average
    * - caller must have waited timeBetweenVotes
-   *      
+   *
    * @param id Resource id
    * @param justification Invalidation justification
    */
@@ -284,7 +284,7 @@ contract ResearcherRules is Callable, Invitable {
    *
    * - only to researchers
    * - to be eligible to withdraw tokens, you must have publisehd at least one research in the era
-   *      
+   *
    */
   function withdraw() public {
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Pool only to researchers");

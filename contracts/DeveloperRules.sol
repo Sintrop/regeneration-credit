@@ -83,7 +83,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    *
    * - the caller must have been invited before
    * - vacancies according to the number of regenerator
-   *   
+   *
    * @param name The name of the developer
    * @param proofPhoto Identity photo
    */
@@ -228,7 +228,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    *
    * - only to developers
    * - to be eligible to withdraw tokens, you must have publisehd at least one report in the era
-   *      
+   *
    */
   function withdraw() public {
     require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Pool only to developer");

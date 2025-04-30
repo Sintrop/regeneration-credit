@@ -74,7 +74,7 @@ contract ValidationRules is Callable {
    * - caller level must be above average
    * - caller must have waited timeBetweenVotes
    * - caller must vote only once per user
-   *      
+   *
    * @param userAddress Invalidation user address
    * @param justification Invalidation justification
    */
@@ -105,7 +105,7 @@ contract ValidationRules is Callable {
    * Requirements:
    *
    * - voter must vote only once per user
-   *      
+   *
    * @param inspection Inspection data
    * @param justification Invalidation justification
    * @param validatorAddress Address of the voter
@@ -143,7 +143,7 @@ contract ValidationRules is Callable {
    * Requirements:
    *
    * - voter must vote only once per report
-   *      
+   *
    * @param report Report data
    * @param justification Invalidation justification
    * @param validatorAddress Address of the voter
@@ -178,7 +178,7 @@ contract ValidationRules is Callable {
    * Requirements:
    *
    * - voter must vote only once per resource
-   *      
+   *
    * @param contribution Contribution data
    * @param justification Invalidation justification
    * @param validatorAddress Address of the voter
@@ -213,7 +213,7 @@ contract ValidationRules is Callable {
    * Requirements:
    *
    * - voter must vote only once per resource
-   *      
+   *
    * @param research Research data
    * @param justification Invalidation justification
    * @param validatorAddress Address of the voter

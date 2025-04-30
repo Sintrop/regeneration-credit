@@ -56,7 +56,7 @@ contract RegeneratorRules is Callable {
    *
    * - the caller must have been invited before
    * - vacancies according to the number of regenerators
-   *      
+   *
    * @notice Register as a regenerator to add to the system an area under your supervision that is in process of regeneration
    * @param name The name of the regenerator
    * @param proofPhoto Identity photo

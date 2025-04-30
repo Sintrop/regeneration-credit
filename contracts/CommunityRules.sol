@@ -159,7 +159,7 @@ contract CommunityRules is Ownable, Callable {
    * - Inspections without valid justification report
    * - Resources without valid justifications report
    * - Inactive users
-   *  
+   *
    * @param addr The address of the user
    * @param title Title the delation
    * @param testimony Delation justification
