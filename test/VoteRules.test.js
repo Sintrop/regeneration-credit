@@ -600,6 +600,10 @@ describe("VoteRules", () => {
     });
 
     context("when is not a voter", () => {
+      beforeEach(async () => {
+        await communityRules.mock.isVoter.returns(false);
+      });
+
       it("should return error message", async () => {
         await expect(instance.canVote(user1Address)).to.be.revertedWith("Not a voter user");
       });
