@@ -4,6 +4,7 @@ const { regenerationCreditDeployed } = require("./shared/regeneration_credit_dep
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { ZERO_ADDRESS } = require("./shared/zeroAddress");
+const { voteRulesDeployed } = require("./shared/vote_rules_deployed");
 
 describe("SupporterRules", () => {
   let instance, communityRules, regenerationCredit, supporterPool, researcherRules;
@@ -34,33 +35,14 @@ describe("SupporterRules", () => {
   beforeEach(async () => {
     [ownerAddress, inv1Address, inv2Address, user1Address] = await ethers.getSigners();
 
-    communityRules = await communityRulesDeployed();
+    const validatorRulesDeployed = await voteRulesDeployed();
 
-    regenerationCredit = await regenerationCreditDeployed();
+    regenerationCredit = validatorRulesDeployed.regenerationCredit;
+    communityRules = validatorRulesDeployed.communityRules;
+    researcherRules = validatorRulesDeployed.researcherRules;
 
     const supporterPoolFactory = await ethers.getContractFactory("SupporterPool");
     supporterPool = await supporterPoolFactory.deploy(regenerationCredit.target);
-
-    const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
-    const researcherPool = await researcherPoolFactory.deploy(
-      regenerationCredit.target,
-      reseacherPoolArgs.halving,
-      reseacherPoolArgs.blocksPerEra
-    );
-
-    const reseacherMaxPenalties = 3;
-    const reseacherTimeBetweenResearches = 10;
-    const researcherSecuryBlocksToAnalysis = 10;
-    const researcherRulesFactory = await ethers.getContractFactory("ResearcherRules");
-
-    researcherRules = await researcherRulesFactory.deploy(
-      communityRules.target,
-      researcherPool.target,
-      ZERO_ADDRESS,
-      reseacherTimeBetweenResearches,
-      reseacherMaxPenalties,
-      researcherSecuryBlocksToAnalysis
-    );
 
     const instanceFactory = await ethers.getContractFactory("SupporterRules");
     instance = await instanceFactory.deploy(communityRules.target, supporterPool.target, researcherRules.target);

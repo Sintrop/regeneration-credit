@@ -87,9 +87,6 @@ const inspectionRulesDeployed = async (owner, args = {}) => {
 
   const researcherSecuryBlocksToAnalysis = 10;
   const researcherRules = await researcherRulesFactory.deploy(
-    communityRules.target,
-    researcherPool.target,
-    validationRules.target,
     timeBetweenWorks,
     researcherMaxPenalties,
     researcherSecuryBlocksToAnalysis

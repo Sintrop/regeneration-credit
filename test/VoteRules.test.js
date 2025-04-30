@@ -7,23 +7,7 @@ const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 describe("VoteRules", () => {
   let instance, activistRules, communityRules, developerRules, researcherRules, contributorRules;
   let communityRulesMock, activistRulesMock, contributorRulesMock, developerRulesMock, researcherRulesMock;
-  let owner,
-    user1Address,
-    user2Address,
-    user3Address,
-    user4Address,
-    user5Address,
-    user6Address,
-    user7Address,
-    user8Address;
-
-  const addInvitation = async (inviter, invited, userType, from) => {
-    await communityRules.connect(from).addInvitation(inviter, invited, userType);
-  };
-
-  const addActivist = async (name, from) => {
-    await activistRules.connect(from).addActivist(name, "photoURL");
-  };
+  let owner, user1Address;
 
   const activistMockLevels = (levels) => {
     return {
@@ -67,30 +51,19 @@ describe("VoteRules", () => {
       researcherWallet: ZERO_ADDRESS,
       name: "AAA",
       proofPhoto: "AAAA",
+      publishedItems: 10,
       publishedResearches: 123,
       lastCalculatorItemAt: 123,
       pool: { level: levels, currentEra: 1 },
       totalReports: 1,
       lastPublishedAt: 123,
       createdAt: 123,
+      canPublishMethod: true,
     };
   };
 
   beforeEach(async () => {
-    [
-      owner,
-      dev1Address,
-      dev2Address,
-      dev3Address,
-      user1Address,
-      user2Address,
-      user3Address,
-      user4Address,
-      user5Address,
-      user6Address,
-      user7Address,
-      user8Address,
-    ] = await ethers.getSigners();
+    [owner, user1Address] = await ethers.getSigners();
   });
 
   describe("#canVote", () => {
@@ -122,6 +95,8 @@ describe("VoteRules", () => {
           developerRules.target,
           researcherRules.target
         );
+
+        console.log(researcherRules.target);
 
         await communityRules.mock.isVoter.returns(true);
       });
@@ -362,7 +337,7 @@ describe("VoteRules", () => {
         });
       });
 
-      context("with contributor", () => {
+      context("with developer", () => {
         beforeEach(async () => {
           await communityRules.mock.getUser.returns(userTypes.Developer);
         });
