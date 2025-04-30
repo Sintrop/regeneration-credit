@@ -49,6 +49,12 @@ contract InspectorRules is Callable {
 
   /**
    * @dev Allows a user to attempt to register as an inspector
+   *
+   * Requirements:
+   *
+   * - the caller must have been invited before
+   * - vacancies according to the number of regenerators
+   *      
    * @param name The name of the inspector
    * @param proofPhoto Identity photo
    */
@@ -84,6 +90,11 @@ contract InspectorRules is Callable {
     return totalPenalties(addr);
   }
 
+  /**
+   * @dev Returns addr number of penalties
+   * @notice Number of penalties of an user
+   * @param addr Inspector wallet
+   */
   function totalPenalties(address addr) public view returns (uint256) {
     return penalties[addr].length;
   }

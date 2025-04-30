@@ -36,14 +36,19 @@ contract SupporterRules {
   /// @notice The relationship between address and publications made
   mapping(address => PublicationId[]) public publicationIds;
 
+  /// @notice Total number of publications made
   uint256 public publicationsCount;
 
+  /// @notice Max characters lenght of a publication
   uint constant MAX_CHARACTERS = 1000;
 
+  /// @notice The relationship between offset id and its data
   mapping(uint256 => Offset) public offsets;
 
+  /// @notice The relationship between a supporter and its publication ids
   mapping(address => OffsetId[]) public offsetIds;
 
+  /// @notice Offsets total count
   uint256 public offsetsCount;
 
   /// @notice Commission percentage on invited burn
@@ -70,6 +75,7 @@ contract SupporterRules {
   /**
    * @notice Allow new register of supporter
    * @param name The name of the supporter
+   * @param profilePhoto User profilePhoto
    * @return a supporter
    */
   function addSupporter(string memory name, string memory profilePhoto) public returns (Supporter memory) {
@@ -84,6 +90,11 @@ contract SupporterRules {
     return supporter;
   }
 
+  /**
+   * @dev Allows a supporter to update the profilePhoto
+   * @notice Update your user profilePhoto
+   * @param newPhoto User new profilePhoto
+   */
   function updateProfilePhoto(string memory newPhoto) public {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
 
@@ -91,7 +102,7 @@ contract SupporterRules {
   }
 
   /**
-   * @notice Burn tokens to compensate for a specific item
+   * @notice Burn tokens to compensate for a specific item degradation
    * @param amount Tokens burned
    * @param calculatorItemId Calculator item id
    */
@@ -168,10 +179,20 @@ contract SupporterRules {
     supporters[msg.sender].reductionItemsCount++;
   }
 
+  /**
+   * @notice Get reduction comitments for a specific address
+   * @param addr Supporter address
+   * @return array Of items ids
+   */
   function getReductionCommitments(address addr) public view returns (uint256[] memory) {
     return reductionCommitments[addr];
   }
 
+  /**
+   * @notice Get publications for a specific address
+   * @param addr Supporter address
+   * @return array Of publication ids
+   */
   function getPublications(address addr) public view returns (uint256[] memory) {
     return reductionCommitments[addr];
   }

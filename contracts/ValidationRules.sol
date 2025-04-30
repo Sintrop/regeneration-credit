@@ -64,6 +64,20 @@ contract ValidationRules is Callable {
     voteRules = VoteRules(contractDependency.voteRulesAddress);
   }
 
+  /**
+   * @dev Allows users to attempt to vote to invalidate an user
+   * @notice Vote to invalidate users with unwanted behavior
+   *
+   * Requirements:
+   *
+   * - the caller must be a voter user
+   * - caller level must be above average
+   * - caller must have waited timeBetweenVotes
+   * - caller must vote only once per user
+   *      
+   * @param userAddress Invalidation user address
+   * @param justification Invalidation justification
+   */
   function addUserValidation(address userAddress, string memory justification) public {
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(!communityRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
@@ -84,6 +98,18 @@ contract ValidationRules is Callable {
     if (validationsCount >= majorityValidatorsCount_) denieUser(userAddress);
   }
 
+  /**
+   * @dev Called only by the inspectionRules contract
+   * @notice Allows users to attempt to vote to invalidate an inspection
+   *
+   * Requirements:
+   *
+   * - voter must vote only once per user
+   *      
+   * @param inspection Inspection data
+   * @param justification Invalidation justification
+   * @param validatorAddress Address of the voter
+   */
   function addInspectionValidation(
     Inspection memory inspection,
     string memory justification,
@@ -110,6 +136,18 @@ contract ValidationRules is Callable {
     if (inspectorTotalPenalties >= inspectorRules.maxPenalties()) externalDenieUser(inspection.inspector);
   }
 
+  /**
+   * @dev Called only by the developerRules contract
+   * @notice Allows users to attempt to vote to invalidate a report
+   *
+   * Requirements:
+   *
+   * - voter must vote only once per report
+   *      
+   * @param report Report data
+   * @param justification Invalidation justification
+   * @param validatorAddress Address of the voter
+   */
   function addDeveloperReportValidation(
     Report memory report,
     string memory justification,
@@ -133,6 +171,18 @@ contract ValidationRules is Callable {
     if (developerTotalPenalties >= developerRules.MAX_PENALTIES()) externalDenieUser(report.developer);
   }
 
+  /**
+   * @dev Called only by the contributorRules contract
+   * @notice Allows users to attempt to vote to invalidate a contribution
+   *
+   * Requirements:
+   *
+   * - voter must vote only once per resource
+   *      
+   * @param contribution Contribution data
+   * @param justification Invalidation justification
+   * @param validatorAddress Address of the voter
+   */
   function addContributionValidation(
     Contribution memory contribution,
     string memory justification,
@@ -156,6 +206,18 @@ contract ValidationRules is Callable {
     if (contributorTotalPenalties >= contributorRules.MAX_PENALTIES()) externalDenieUser(contribution.user);
   }
 
+  /**
+   * @dev Called only by the researcherRules contract
+   * @notice Allows users to attempt to vote to invalidate a research
+   *
+   * Requirements:
+   *
+   * - voter must vote only once per resource
+   *      
+   * @param research Research data
+   * @param justification Invalidation justification
+   * @param validatorAddress Address of the voter
+   */
   function addResearcherResearchValidation(
     Research memory research,
     string memory justification,

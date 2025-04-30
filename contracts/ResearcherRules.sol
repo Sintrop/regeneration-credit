@@ -88,7 +88,13 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   /**
-   * @dev Allows a user to attempt to register as a researcher
+   * @notice Allows a user to attempt to register as a researcher
+   *
+   * Requirements:
+   *
+   * - the caller must have been invited before
+   * - vacancies according to the number of regenerators
+   *      
    * @param name The name of the researcher
    * @param proofPhoto Identity photo
    */
@@ -198,6 +204,18 @@ contract ResearcherRules is Callable, Invitable {
     return researchesIds[addr];
   }
 
+  /**
+   * @notice Allows a voter to attempt to vote to invalidate a research
+   *
+   * Requirements:
+   *
+   * - the caller must be a voter user
+   * - caller level must be above average
+   * - caller must have waited timeBetweenVotes
+   *      
+   * @param id Resource id
+   * @param justification Invalidation justification
+   */
   function addResearchValidation(uint256 id, string memory justification) public {
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
@@ -216,6 +234,10 @@ contract ResearcherRules is Callable, Invitable {
     validationRules.addResearcherResearchValidation(research, justification, msg.sender);
   }
 
+  /**
+   * @dev Function that invalidates a research
+   * @param research Invalidated research
+   */
   function invalidateResearch(Research memory research) internal {
     researchesTotalCount--;
     research.valid = false;
@@ -234,12 +256,22 @@ contract ResearcherRules is Callable, Invitable {
     researcherPool.removePoolLevels(addr, researcherPoolEra(), removeSomeLevels);
   }
 
+  /**
+   * @dev Add researcher penalty when invalidating a research
+   * @param addr Researcher wallet
+   * @param researchId Research id
+   */
   function addPenalty(address addr, uint256 researchId) public mustBeAllowedCaller returns (uint256) {
     penalties[addr].push(Penalty(researchId));
 
     return totalPenalties(addr);
   }
 
+  /**
+   * @dev Returns addr number of penalties
+   * @notice Number of penalties of an user
+   * @param addr Researcher wallet
+   */
   function totalPenalties(address addr) public view returns (uint256) {
     return penalties[addr].length;
   }
@@ -247,6 +279,12 @@ contract ResearcherRules is Callable, Invitable {
   /**
    * @dev Call withdraw function from researcherPool to try to claim tokens
    * @notice Withdraw regeneration credit from research service provided
+   *
+   * Requirements:
+   *
+   * - only to researchers
+   * - to be eligible to withdraw tokens, you must have publisehd at least one research in the era
+   *      
    */
   function withdraw() public {
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Pool only to researchers");

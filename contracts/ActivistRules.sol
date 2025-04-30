@@ -54,6 +54,12 @@ contract ActivistRules is Callable, Invitable {
   /**
    * @dev Allows a user to attempt to register as an activist
    * @notice Attempt to register as an activist
+   *
+   * Requirements:
+   *
+   * - the caller must have been invited before
+   * - vacancies according to the number of regenerators
+   *   
    * @param name The name of the activist
    * @param proofPhoto Identity photo
    */
@@ -168,7 +174,16 @@ contract ActivistRules is Callable, Invitable {
 
   /**
    * @dev Call activistPool withdraw function to try to claim tokens
-   * @notice Withdraw regeneration credit from activism service provided
+   * @notice Withdraw regeneration credits from activism service provided
+   *
+   * An approved user is when a regenerator or an inspector reach 3 valid inspection
+   * the token distribution is proportional to the amount of approved users in the era
+   *
+   * Requirements:
+   *
+   * - only to activists
+   * - to be eligible to withdraw tokens, you must have approved users in the era
+   * - vacancies according to the number of regenerators
    */
   function withdraw() public {
     require(communityRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Pool only to activist");

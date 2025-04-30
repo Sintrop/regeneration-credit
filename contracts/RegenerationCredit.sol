@@ -91,14 +91,23 @@ contract RegenerationCredit is ERC20, Ownable {
     return contractsPools[contractFundsAddress];
   }
 
+  /**
+   * @notice Returns the Regeneration Credit totalSupply
+   */
   function totalSupply() public view override returns (uint256) {
     return totalSupply_;
   }
 
+  /**
+   * @notice Returns the Regeneration Credit name
+   */
   function name() public pure override returns (string memory) {
     return NAME;
   }
 
+  /**
+   * @notice Returns the Regeneration Credit balance of an user
+   */
   function balanceOf(address tokenOwner) public view override returns (uint256) {
     return balances[tokenOwner];
   }

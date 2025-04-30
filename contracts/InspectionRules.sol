@@ -228,6 +228,18 @@ contract InspectionRules is Callable {
     userInspections[inspectorAddress].push(inspection.id);
   }
 
+  /**
+   * @notice Allows a voter to attempt to vote to invalidate an inspection
+   *
+   * Requirements:
+   *
+   * - the caller must be a voter user
+   * - caller level must be above average
+   * - caller must have waited timeBetweenVotes
+   *      
+   * @param id Resource id
+   * @param justification Invalidation justification
+   */
   function addInspectionValidation(uint256 id, string memory justification) public {
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");

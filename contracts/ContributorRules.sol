@@ -78,6 +78,12 @@ contract ContributorRules is Ownable, Callable, Invitable {
 
   /**
    * @dev Allows a user to attempt to register as a contributor
+   *
+   * Requirements:
+   *
+   * - the caller must have been invited before
+   * - vacancies according to the number of regenerators
+   *      
    * @param name The name of the contributor
    * @param proofPhoto Identity photo
    */
@@ -144,6 +150,11 @@ contract ContributorRules is Ownable, Callable, Invitable {
     addPoolLevel(msg.sender);
   }
 
+  /**
+   * @dev Returns an array of ids of the contributions made by the addr
+   * @notice Get the contribution id of an user
+   * @param addr Checked address
+   */
   function getContributionsIds(address addr) public view returns (uint256[] memory) {
     return contributionsIds[addr];
   }
@@ -214,6 +225,12 @@ contract ContributorRules is Ownable, Callable, Invitable {
   /**
    * @dev Call withdraw function from contributorPool to try to claim tokens
    * @notice Withdraw regeneration credit from contribution service provided
+   *
+   * Requirements:
+   *
+   * - only to contributors
+   * - to be eligible to withdraw tokens, you must have published at least one contribution in the era
+   *   
    */
   function withdraw() public {
     require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Pool only to contributor");
@@ -251,12 +268,22 @@ contract ContributorRules is Ownable, Callable, Invitable {
     contributorPool.removePoolLevels(addr, contributor.pool.currentEra, removeSomeLevels);
   }
 
+  /**
+   * @dev Add contributor penalty when invalidating a contribution
+   * @param addr Contributor wallet
+   * @param contributionId Contribution id
+   */
   function addPenalty(address addr, uint256 contributionId) public mustBeAllowedCaller returns (uint256) {
     penalties[addr].push(Penalty(contributionId));
 
     return totalPenalties(addr);
   }
 
+  /**
+   * @dev Returns addr number of penalties
+   * @notice Number of penalties of an user
+   * @param addr Contributor wallet
+   */
   function totalPenalties(address addr) public view returns (uint256) {
     return penalties[addr].length;
   }

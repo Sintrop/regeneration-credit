@@ -78,6 +78,12 @@ contract DeveloperRules is Ownable, Callable, Invitable {
 
   /**
    * @dev Allows a user to attempt to register as a developer
+   *
+   * Requirements:
+   *
+   * - the caller must have been invited before
+   * - vacancies according to the number of regenerator
+   *   
    * @param name The name of the developer
    * @param proofPhoto Identity photo
    */
@@ -168,7 +174,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
 
   /**
    * @dev Executes invalidation
-   * @param report Report id
+   * @param report Invalidated report
    */
   function invalidateReport(Report memory report) internal returns (Report memory) {
     reportsCount--;
@@ -217,6 +223,12 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   /**
    * @dev Call withdraw function from developerPool to try to claim tokens
    * @notice Withdraw regeneration credit from development service provided
+   *
+   * Requirements:
+   *
+   * - only to developers
+   * - to be eligible to withdraw tokens, you must have publisehd at least one report in the era
+   *      
    */
   function withdraw() public {
     require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Pool only to developer");
@@ -244,12 +256,22 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     developerPool.addLevel(addr, 1);
   }
 
+  /**
+   * @dev Add developer penalty when invalidating a report
+   * @param addr Developer wallet
+   * @param reportId Report id
+   */
   function addPenalty(address addr, uint256 reportId) public mustBeAllowedCaller returns (uint256) {
     penalties[addr].push(Penalty(reportId));
 
     return totalPenalties(addr);
   }
 
+  /**
+   * @dev Returns addr number of penalties
+   * @notice Number of penalties of an user
+   * @param addr Developer wallet
+   */
   function totalPenalties(address addr) public view returns (uint256) {
     return penalties[addr].length;
   }
