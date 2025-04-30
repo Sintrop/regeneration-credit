@@ -28,18 +28,18 @@ const contributorPoolDeploy = require("../migrations/11_contributorPool.deploy.j
 const contributorRulesDeploy = require("../migrations/12_contributorRules.deploy.js");
 const afterDeploy = require("../migrations/after_deploy.js");
 const regenerationCreditImpactDeploy = require("../migrations/22_regenerationCredImpact.deploy.js");
+const voteRulesDeploy = require("../migrations/23_voteRules.deploy.js");
 
 const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function startDeployAlert() {
   const etherscanVerificationEnabled = process.env["ETHERSCAN_VERIFICATION_ENABLED"];
-  const etherscanVerifyEnabledText = etherscanVerificationEnabled == 'true' ? "HABILITADA" : 'DESABILITADA'
+  const etherscanVerifyEnabledText = etherscanVerificationEnabled == "true" ? "HABILITADA" : "DESABILITADA";
   const deployStartSeconds = process.env["DEPLOY_START_SECONDS"] || 1;
 
   console.log(`-------------------  REDE ${hre.network.name} (CTRL + C para cancelar) -------------------`);
 
   console.log(`VERIFICAÇÃO DOS CONTRATOS ESTÁ ${etherscanVerifyEnabledText}`);
-  
 
   for (let i = deployStartSeconds; i > 0; i--) {
     await sleep(1000);
@@ -69,7 +69,6 @@ async function main() {
 
   await regenerationCreditDeploy();
   await communityRulesDeploy();
-  await validationRulesDeploy();
   await developerPoolDeploy();
   await developerRulesDeploy();
   await inspectorPoolDeploy();
@@ -85,9 +84,11 @@ async function main() {
   await supporterPoolDeploy();
   await supporterRulesDeploy();
   await regenerationIndexRulesDeploy();
-  await invitationRulesDeploy();
   await inspectionRulesDeploy();
-  await regenerationCreditImpactDeploy()
+  await regenerationCreditImpactDeploy();
+  await validationRulesDeploy();
+  await voteRulesDeploy();
+  await invitationRulesDeploy();
 
   await afterDeploy();
 

@@ -6,9 +6,11 @@ async function validationRulesDeploy() {
   const communityRules = await getDeployedContract("CommunityRules");
   const timeBetweenVotes = process.env["TIME_BETWEEN_VOTES"];
 
+  const args = [timeBetweenVotes];
+
   const ValidationRules = await ethers.getContractFactory("ValidationRules");
 
-  const validationRules = await ValidationRules.deploy(timeBetweenVotes);
+  const validationRules = await ValidationRules.deploy(...args);
 
   saveContractAddress("ValidationRules", validationRules.target);
 

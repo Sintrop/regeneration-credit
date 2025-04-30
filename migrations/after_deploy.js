@@ -3,11 +3,13 @@ const getDeployedContract = require("../scripts/shared/getDeployedContract");
 async function afterDeploy() {
   await configureValidationRules();
   await configureInspectionRules();
-  await configureVoteRules();
-  await renounceOwnership();
+  await configureDeveloperRules();
+  await configureContributorRules();
+  await configureResearcherRules();
   await inviteUsers();
   await transferTokens();
   await offsetEnergy();
+  await renounceOwnership();
 
   console.log("After Deploy OK");
 }
@@ -30,8 +32,8 @@ async function configureValidationRules() {
     developerRulesAddress: developerRules.target,
     researcherRulesAddress: researcherRules.target,
     activistRulesAddress: activistRules.target,
-    contributorRulesAddress: contributorRules,
-    voteRulesAddress: voteRules
+    contributorRulesAddress: contributorRules.target,
+    voteRulesAddress: voteRules.target,
   };
 
   await validationRules.setContractAddressDependencies(contractDependencies);
@@ -41,6 +43,65 @@ async function configureValidationRules() {
   console.log("After ValidationRules deploy is OK");
 }
 
+async function configureDeveloperRules() {
+  const developerRules = await getDeployedContract("DeveloperRules");
+  const validationRules = await getDeployedContract("ValidationRules");
+  const communityRules = await getDeployedContract("CommunityRules");
+  const developerPool = await getDeployedContract("DeveloperPool");
+  const voteRules = await getDeployedContract("VoteRules");
+
+  const contractDependencies = {
+    communityRulesAddress: communityRules.target,
+    validationRulesAddress: validationRules.target,
+    developerPoolAddress: developerPool.target,
+    voteRulesAddress: voteRules.target,
+  };
+
+  await developerRules.setContractAddressDependencies(contractDependencies);
+  await developerRules.newAllowedCaller(validationRules.target);
+
+  console.log("After DeveloperRules deploy is OK");
+}
+
+async function configureContributorRules() {
+  const contributorRules = await getDeployedContract("ContributorRules");
+  const validationRules = await getDeployedContract("ValidationRules");
+  const communityRules = await getDeployedContract("CommunityRules");
+  const contributorPool = await getDeployedContract("ContributorPool");
+  const voteRules = await getDeployedContract("VoteRules");
+
+  const contractDependencies = {
+    communityRulesAddress: communityRules.target,
+    validationRulesAddress: validationRules.target,
+    contributorPoolAddress: contributorPool.target,
+    voteRulesAddress: voteRules.target,
+  };
+
+  await contributorRules.setContractAddressDependencies(contractDependencies);
+  await contributorRules.newAllowedCaller(validationRules.target);
+
+  console.log("After ContributorRules deploy is OK");
+}
+
+async function configureResearcherRules() {
+  const researcherRules = await getDeployedContract("ResearcherRules");
+  const validationRules = await getDeployedContract("ValidationRules");
+  const communityRules = await getDeployedContract("CommunityRules");
+  const researcherPool = await getDeployedContract("ResearcherPool");
+  const voteRules = await getDeployedContract("VoteRules");
+
+  const contractDependencies = {
+    communityRulesAddress: communityRules.target,
+    validationRulesAddress: validationRules.target,
+    researcherPoolAddress: researcherPool.target,
+    voteRulesAddress: voteRules.target,
+  };
+
+  await researcherRules.setContractAddressDependencies(contractDependencies);
+  await researcherRules.newAllowedCaller(validationRules.target);
+
+  console.log("After ResearcherRules deploy is OK");
+}
 
 async function configureInspectionRules() {
   const inspectionRules = await getDeployedContract("InspectionRules");
@@ -50,6 +111,7 @@ async function configureInspectionRules() {
   const regeneratorRules = await getDeployedContract("RegeneratorRules");
   const validationRules = await getDeployedContract("ValidationRules");
   const regenerationIndexRules = await getDeployedContract("RegenerationIndexRules");
+  const voteRules = await getDeployedContract("VoteRules");
 
   const contractDependencies = {
     communityRulesAddress: communityRules.target,
@@ -57,7 +119,8 @@ async function configureInspectionRules() {
     validationRulesAddress: validationRules.target,
     inspectorRulesAddress: inspectorRules.target,
     activistRulesAddress: activistRules.target,
-    regenerationIndexRulesAddress: regenerationIndexRules.target
+    regenerationIndexRulesAddress: regenerationIndexRules.target,
+    voteRulesAddress: voteRules.target,
   };
 
   await inspectionRules.setContractAddressDependencies(contractDependencies);
@@ -70,20 +133,6 @@ async function configureInspectionRules() {
   await regenerationIndexRules.newAllowedCaller(inspectionRules.target);
 
   console.log("After InspectionRules deploy is OK");
-}
-
-async function configureVoteRules() {
-  const voteRules = await getDeployedContract("VoteRules");
-  const developerRules = await getDeployedContract("DeveloperRules");
-  const researcherRules = await getDeployedContract("ResearcherRules");
-  const activistRules = await getDeployedContract("ActivistRules");
-  const contributorRules = await getDeployedContract("ContributorRules");
-
-  await developerRules.setVoteRules(voteRules.target);
-  await researcherRules.setVoteRules(voteRules.target);
-  await contributorRules.setVoteRules(voteRules.target);
-
-  console.log("After configureVoteRules is OK");
 }
 
 async function renounceOwnership() {
@@ -162,7 +211,7 @@ async function inviteUsers() {
   const invitationRules = await getDeployedContract("InvitationRules");
 
   //testnet - v8 users
-  await invitationRules.onlyOwnerInvite("0x9D89B8562B00713a034DEb7A867D5d3Bc45e19E6", 1);  
+  await invitationRules.onlyOwnerInvite("0x9D89B8562B00713a034DEb7A867D5d3Bc45e19E6", 1);
   await invitationRules.onlyOwnerInvite("0x49B85E2D9F48252BF32BA35221B361DA77AAC683", 4);
   await invitationRules.onlyOwnerInvite("0x219ADF489CF316EA2392827097C5196C437D2C2B", 4);
   await invitationRules.onlyOwnerInvite("0x591900D674AB61C4F69F7D8D81690DBA36608A3C", 3);
@@ -191,7 +240,7 @@ async function inviteUsers() {
   await invitationRules.onlyOwnerInvite("0xA6926DC9AF4E639741CED9ABA23FD6879364787B", 8);
   await invitationRules.onlyOwnerInvite("0x44730EE06B2C7A56378F57A93D35136FA610BB91", 8);
   await invitationRules.onlyOwnerInvite("0x900BD2ED98BE55299928AD1DA36B50021EC1856D", 4);
-  
+
   //mainnet - v6 users
   await invitationRules.onlyOwnerInvite("0xAA863C3B4A0AAF54F42ABE0F627A6F73133003B3", 2);
   await invitationRules.onlyOwnerInvite("0x8D95EB224D5D136726EDFB7C40EA1AD9D03C9FE1", 2);
@@ -285,7 +334,7 @@ async function inviteUsers() {
   await invitationRules.onlyOwnerInvite("0xE9CB014CEEEDCD55FAB7C42202D393CCDE93E41B", 1);
 
   // await invitationRules.renounceOwnership();
-} 
+}
 
 async function offsetEnergy() {
   const regenerationCredit = await getDeployedContract("RegenerationCredit");
