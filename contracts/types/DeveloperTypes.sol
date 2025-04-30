@@ -54,3 +54,10 @@ struct Report {
 struct Penalty {
   uint256 reportId;
 }
+
+struct ContractsDependency {
+  address communityRulesAddress;
+  address developerPoolAddress;
+  address validationRulesAddress;
+  address voteRulesAddress;
+}

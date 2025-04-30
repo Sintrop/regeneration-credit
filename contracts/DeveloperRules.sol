@@ -9,7 +9,7 @@ import { CommunityRules } from "./CommunityRules.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { DeveloperPool } from "./DeveloperPool.sol";
 import { ValidationRules } from "./ValidationRules.sol";
-import { Developer, Pool, Report, Penalty } from "./types/DeveloperTypes.sol";
+import { Developer, Pool, Report, Penalty, ContractsDependency } from "./types/DeveloperTypes.sol";
 
 /**
  * @author Sintrop
@@ -63,24 +63,17 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   /// @notice Number of blocks to block addReport before the end of an era
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
-  constructor(
-    address communityRulesAddress,
-    address developerPoolAddress,
-    address validationRulesAddress,
-    uint256 timeBetweenWorks_,
-    uint256 maxPenalties_,
-    uint256 securityBlocksToValidatorAnalysis
-  ) {
-    communityRules = CommunityRules(communityRulesAddress);
-    developerPool = DeveloperPool(developerPoolAddress);
-    validationRules = ValidationRules(validationRulesAddress);
+  constructor(uint256 timeBetweenWorks_, uint256 maxPenalties_, uint256 securityBlocksToValidatorAnalysis) {
     timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
 
-  function setVoteRules(address voteRulesAddress) public onlyOwner {
-    voteRules = VoteRules(voteRulesAddress);
+  function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+    communityRules = CommunityRules(contractDependency.communityRulesAddress);
+    developerPool = DeveloperPool(contractDependency.developerPoolAddress);
+    validationRules = ValidationRules(contractDependency.validationRulesAddress);
+    voteRules = VoteRules(contractDependency.voteRulesAddress);
   }
 
   /**

@@ -93,9 +93,6 @@ const voteRulesDeployed = async () => {
   const developerSecuryBlocksToAnalysis = 10;
   const developerRulesFactory = await ethers.getContractFactory("DeveloperRules");
   const developerRules = await developerRulesFactory.deploy(
-    communityRules.target,
-    developerPool.target,
-    validationRules.target,
     timeBetweenWorks,
     developerMaxPenalties,
     developerSecuryBlocksToAnalysis
@@ -163,9 +160,18 @@ const voteRulesDeployed = async () => {
   await researcherPool.newAllowedCaller(researcherRules.target);
 
   await validationRules.setContractAddressDependencies(validationRulesDependencies);
-  await developerRules.setVoteRules(voteRules.target);
+
   await researcherRules.setVoteRules(voteRules.target);
   await contributorRules.setVoteRules(voteRules.target);
+
+  const developerRulesContractDependencies = {
+    communityRulesAddress: communityRules.target,
+    developerPoolAddress: developerPool.target,
+    validationRulesAddress: validationRules.target,
+    voteRulesAddress: voteRules.target,
+  };
+
+  await developerRules.setContractAddressDependencies(developerRulesContractDependencies);
 
   return {
     activistRules,
