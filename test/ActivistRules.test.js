@@ -146,6 +146,20 @@ describe("ActivistRules", () => {
 
             expect(approvedInvites).to.equal(2);
           });
+
+          it("must increment activistApprovedInvites", async () => {
+            const activistApprovedInvites = await instance.activistApprovedInvites(activ1Address);
+
+            expect(activistApprovedInvites).to.equal(2);
+          });
+
+          it("must increment activistApprovedUsers", async () => {
+            const activistApprovedRegenerator = await instance.activistApprovedUsers(activ1Address, 0);
+            const activistApprovedInspector = await instance.activistApprovedUsers(activ1Address, 1);
+
+            expect(activistApprovedRegenerator).to.equal(regenerator1Address);
+            expect(activistApprovedInspector).to.equal(inspector1Address);
+          });
         });
 
         context("when current era of pool is 2", () => {

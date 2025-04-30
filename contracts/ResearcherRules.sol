@@ -5,7 +5,7 @@ import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
 import { VoteRules } from "./VoteRules.sol";
 import { CommunityRules } from "./CommunityRules.sol";
-import { Researcher, Research, Pool, CalculatorItem, Penalty } from "./types/ResearcherTypes.sol";
+import { Researcher, Research, Pool, CalculatorItem, EvaluationMethod, Penalty } from "./types/ResearcherTypes.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { ResearcherPool } from "./ResearcherPool.sol";
 import { ValidationRules } from "./ValidationRules.sol";
@@ -28,6 +28,9 @@ contract ResearcherRules is Callable, Invitable {
 
   /// @notice The relationship between id and calculatorItem data
   mapping(uint256 => CalculatorItem) public calculatorItems;
+
+  /// @notice The relationship between id and evaluationMethods data
+  mapping(uint256 => EvaluationMethod) public evaluationMethods;
 
   /// @notice The relationship between address and penalties received
   mapping(address => Penalty[]) public penalties;
@@ -58,6 +61,9 @@ contract ResearcherRules is Callable, Invitable {
 
   /// @notice Total calculatorItems count
   uint256 public calculatorItemsCount;
+
+  /// @notice Total methods count
+  uint256 public evaluationMethodsCount;
 
   /// @notice Waiting blocks to publish research
   uint256 internal immutable timeBetweenWorks;
@@ -105,7 +111,9 @@ contract ResearcherRules is Callable, Invitable {
       0,
       0,
       0,
-      block.number
+      0,
+      block.number,
+      true
     );
 
     researchers[msg.sender] = researcher;
@@ -290,11 +298,10 @@ contract ResearcherRules is Callable, Invitable {
 
     uint256 id = calculatorItemsCount + 1;
 
-    CalculatorItem memory calculatorItem = CalculatorItem(id, msg.sender, title, unit, justification, carbonImpact);
-
-    calculatorItems[id] = calculatorItem;
+    calculatorItems[id] = CalculatorItem(id, msg.sender, title, unit, justification, carbonImpact);
     calculatorItemsCount++;
     researchers[msg.sender].lastCalculatorItemAt = block.number;
+    researchers[msg.sender].publishedItems++;
   }
 
   /**
@@ -303,6 +310,24 @@ contract ResearcherRules is Callable, Invitable {
    */
   function getCalculatorItem(uint256 id) public view returns (CalculatorItem memory) {
     return calculatorItems[id];
+  }
+
+  /**
+   * @dev Allows a researcher to pulish an off-chain evaluation method or project
+   * @notice Publish a project or application that can help inspectors analyze a regeneration area. Only one method allowed per researcher
+   * @param title Method title
+   * @param research Method paper or research
+   * @param projectURL Project url or code repository
+   */
+  function addEvaluationMethod(string memory title, string memory research, string memory projectURL) public {
+    require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
+    require(researchers[msg.sender].canPublishMethod, "Only one method allowed");
+
+    uint256 id = evaluationMethodsCount + 1;
+
+    evaluationMethods[id] = EvaluationMethod(id, msg.sender, title, research, projectURL);
+    evaluationMethodsCount++;
+    researchers[msg.sender].canPublishMethod = false;
   }
 
   /**

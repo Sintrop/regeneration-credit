@@ -38,6 +38,8 @@ contract SupporterRules {
 
   uint256 public publicationsCount;
 
+  uint constant MAX_CHARACTERS = 1000;
+
   mapping(uint256 => Offset) public offsets;
 
   mapping(address => OffsetId[]) public offsetIds;
@@ -95,6 +97,7 @@ contract SupporterRules {
    */
   function offset(uint256 amount, uint256 calculatorItemId) public {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
+    require(amount >= 1000000000000000000, "Amount invalid");
     require(amount > 0, "Amount invalid");
 
     uint256 amountBurn = burnTokens(amount);
@@ -103,7 +106,7 @@ contract SupporterRules {
 
     if (calculatorItemId > 0) {
       CalculatorItem memory calculatorItem = researcherRules.getCalculatorItem(calculatorItemId);
-      if (calculatorItem.id > 0) calculatorItemCertificates[msg.sender][calculatorItemId] = amountBurn;
+      if (calculatorItem.id > 0) calculatorItemCertificates[msg.sender][calculatorItemId] += amountBurn;
     }
 
     offsets[id] = Offset(msg.sender, block.number, amountBurn, calculatorItemId);
@@ -121,7 +124,11 @@ contract SupporterRules {
    */
   function publish(uint256 amount, string memory description, string memory content) public {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
-    require(amount > 1, "Amount invalid");
+    require(amount >= 1000000000000000000, "Amount invalid");
+    require(
+      bytes(description).length <= MAX_CHARACTERS && bytes(content).length <= MAX_CHARACTERS,
+      "Max 1000 characters"
+    );
 
     uint256 amountBurn = burnTokens(amount);
 
