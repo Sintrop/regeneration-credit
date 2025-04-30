@@ -5,7 +5,7 @@ import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
 import { VoteRules } from "./VoteRules.sol";
 import { CommunityRules } from "./CommunityRules.sol";
-import { Researcher, Research, Pool, CalculatorItem, EvaluationMethod, Penalty } from "./types/ResearcherTypes.sol";
+import { Researcher, Research, Pool, CalculatorItem, EvaluationMethod, Penalty, ContractsDependency } from "./types/ResearcherTypes.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { ResearcherPool } from "./ResearcherPool.sol";
 import { ValidationRules } from "./ValidationRules.sol";
@@ -74,24 +74,17 @@ contract ResearcherRules is Callable, Invitable {
   /// @notice Number of blocks to block addResearch before the end of an era
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
-  constructor(
-    address communityRulesAddress,
-    address researcherPoolAddress,
-    address validationRulesAddress,
-    uint256 timeBetweenWorks_,
-    uint256 maxPenalties_,
-    uint256 securityBlocksToValidatorAnalysis
-  ) {
-    communityRules = CommunityRules(communityRulesAddress);
-    researcherPool = ResearcherPool(researcherPoolAddress);
-    validationRules = ValidationRules(validationRulesAddress);
+  constructor(uint256 timeBetweenWorks_, uint256 maxPenalties_, uint256 securityBlocksToValidatorAnalysis) {
     timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
 
-  function setVoteRules(address voteRulesAddress) public onlyOwner {
-    voteRules = VoteRules(voteRulesAddress);
+  function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+    communityRules = CommunityRules(contractDependency.communityRulesAddress);
+    researcherPool = ResearcherPool(contractDependency.researcherPoolAddress);
+    validationRules = ValidationRules(contractDependency.validationRulesAddress);
+    voteRules = VoteRules(contractDependency.voteRulesAddress);
   }
 
   /**
