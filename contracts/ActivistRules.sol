@@ -22,6 +22,12 @@ contract ActivistRules is Callable, Invitable {
   /// @notice Checks if an activist has received level from an invited user
   mapping(address => mapping(address => bool)) internal activistWonLevel;
 
+  /// @notice Activist approved invited users
+  mapping(address => address[]) public activistApprovedUsers;
+
+  /// @notice Activist approved invites
+  mapping(address => uint256) public activistApprovedInvites;
+
   /// @notice The relationship between id and activist address
   mapping(uint256 => address) public activistsAddress;
 
@@ -119,6 +125,8 @@ contract ActivistRules is Callable, Invitable {
       activistWonLevel[activistAddress][regeneratorAddress] = true;
       approvedInvites++;
       setActivistLevel(activistAddress);
+      activistApprovedInvites[activistAddress]++;
+      activistApprovedUsers[activistAddress].push(regeneratorAddress);
     }
   }
 
@@ -138,6 +146,8 @@ contract ActivistRules is Callable, Invitable {
       activistWonLevel[activistAddress][inspectorAddress] = true;
       approvedInvites++;
       setActivistLevel(activistAddress);
+      activistApprovedInvites[activistAddress]++;
+      activistApprovedUsers[activistAddress].push(inspectorAddress);
     }
   }
 
