@@ -58,3 +58,10 @@ struct Contribution {
 struct Penalty {
   uint256 contributionId;
 }
+
+struct ContractsDependency {
+  address communityRulesAddress;
+  address contributorPoolAddress;
+  address validationRulesAddress;
+  address voteRulesAddress;
+}

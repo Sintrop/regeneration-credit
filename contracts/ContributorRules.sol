@@ -5,7 +5,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { CommunityRules } from "./CommunityRules.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { ContributorPool } from "./ContributorPool.sol";
-import { Contributor, Pool, Contribution, Penalty } from "./types/ContributorTypes.sol";
+import { Contributor, Pool, Contribution, Penalty, ContractsDependency } from "./types/ContributorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
 import { VoteRules } from "./VoteRules.sol";
@@ -63,24 +63,17 @@ contract ContributorRules is Ownable, Callable, Invitable {
   /// @notice The relationship between address and penalties received
   mapping(address => Penalty[]) public penalties;
 
-  constructor(
-    address communityRulesAddress,
-    address contributorPoolAddress,
-    address validationRulesAddress,
-    uint256 timeBetweenWorks_,
-    uint256 maxPenalties_,
-    uint256 securityBlocksToValidatorAnalysis
-  ) {
-    communityRules = CommunityRules(communityRulesAddress);
-    contributorPool = ContributorPool(contributorPoolAddress);
-    validationRules = ValidationRules(validationRulesAddress);
+  constructor(uint256 timeBetweenWorks_, uint256 maxPenalties_, uint256 securityBlocksToValidatorAnalysis) {
     timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
 
-  function setVoteRules(address voteRulesAddress) public onlyOwner {
-    voteRules = VoteRules(voteRulesAddress);
+  function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+    communityRules = CommunityRules(contractDependency.communityRulesAddress);
+    contributorPool = ContributorPool(contractDependency.contributorPoolAddress);
+    validationRules = ValidationRules(contractDependency.validationRulesAddress);
+    voteRules = VoteRules(contractDependency.voteRulesAddress);
   }
 
   /**
