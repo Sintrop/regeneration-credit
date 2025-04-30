@@ -96,8 +96,6 @@ describe("VoteRules", () => {
           researcherRules.target
         );
 
-        console.log(researcherRules.target);
-
         await communityRules.mock.isVoter.returns(true);
       });
 
