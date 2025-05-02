@@ -52,7 +52,7 @@ contract InspectorRules is Callable {
    * @param name The name of the inspector
    * @param proofPhoto Identity photo
    */
-  function addInspector(string memory name, string memory proofPhoto) public returns (Inspector memory) {
+  function addInspector(string memory name, string memory proofPhoto) public {
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Inspector memory inspector = Inspector(
@@ -71,8 +71,6 @@ contract InspectorRules is Callable {
     inspectors[msg.sender] = inspector;
     inspectorsAddress[id] = msg.sender;
     communityRules.addUser(msg.sender, USER_TYPE);
-
-    return inspector;
   }
 
   /**
