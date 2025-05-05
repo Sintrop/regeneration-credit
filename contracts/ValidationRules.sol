@@ -84,7 +84,10 @@ contract ValidationRules is Callable {
     require(!communityRules.userTypeIs(UserType.DENIED, userAddress), "User already denied");
     require(!validatorUsersValidations[msg.sender][userAddress], "Already voted");
     require(waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
-
+    require(
+      bytes(justification).length <= 300,
+      "Max 300 characters reached"
+    );  
     validatorUsersValidations[msg.sender][userAddress] = true;
     validatorLastVoteAt[msg.sender] = block.number;
 

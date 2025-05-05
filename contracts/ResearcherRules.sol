@@ -99,6 +99,10 @@ contract ResearcherRules is Callable, Invitable {
    * @param proofPhoto Identity photo
    */
   function addResearcher(string memory name, string memory proofPhoto) public {
+    require(
+      bytes(name).length <= 100 && bytes(proofPhoto).length <= 100,
+      "Max 100 characters"
+    );       
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Researcher memory researcher = Researcher(
@@ -168,7 +172,10 @@ contract ResearcherRules is Callable, Invitable {
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add research");
     require(canPublishResearch(msg.sender), "Can't publish yet");
-
+    require(
+      bytes(title).length <= 100 && bytes(thesis).length <= 500 && bytes(file).length <= 100,
+      "Max characters reached"
+    );  
     Researcher storage researcher = researchers[msg.sender];
 
     uint256 id = researchesCount + 1;
@@ -217,7 +224,10 @@ contract ResearcherRules is Callable, Invitable {
   function addResearchValidation(uint256 id, string memory justification) public {
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
-
+    require(
+      bytes(justification).length <= 300,
+      "Max 300 characters reached"
+    );  
     Research memory research = researches[id];
 
     require(research.valid && research.era == researcherPoolEra(), "This research is not VALID");
