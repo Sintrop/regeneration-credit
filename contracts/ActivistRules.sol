@@ -63,7 +63,7 @@ contract ActivistRules is Callable, Invitable {
    * @param name The name of the activist
    * @param proofPhoto Identity photo
    */
-  function addActivist(string memory name, string memory proofPhoto) public returns (Activist memory) {
+  function addActivist(string memory name, string memory proofPhoto) public {
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Activist memory activist = Activist(id, msg.sender, name, proofPhoto, Pool(0, activistPoolEra()), block.number);
@@ -71,8 +71,6 @@ contract ActivistRules is Callable, Invitable {
     activists[msg.sender] = activist;
     activistsAddress[id] = msg.sender;
     communityRules.addUser(msg.sender, USER_TYPE);
-
-    return activist;
   }
 
   /**

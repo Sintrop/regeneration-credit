@@ -75,10 +75,8 @@ contract SupporterRules {
   /**
    * @notice Allow new register of supporter
    * @param name The name of the supporter
-   * @param profilePhoto User profilePhoto
-   * @return a supporter
    */
-  function addSupporter(string memory name, string memory profilePhoto) public returns (Supporter memory) {
+  function addSupporter(string memory name, string memory profilePhoto) public {
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Supporter memory supporter = Supporter(id, msg.sender, name, profilePhoto, 0, 0, 0, block.number);
@@ -86,8 +84,6 @@ contract SupporterRules {
     supporters[msg.sender] = supporter;
     supportersAddress[id] = msg.sender;
     communityRules.addUser(msg.sender, USER_TYPE);
-
-    return supporter;
   }
 
   /**

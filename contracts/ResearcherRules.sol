@@ -98,7 +98,7 @@ contract ResearcherRules is Callable, Invitable {
    * @param name The name of the researcher
    * @param proofPhoto Identity photo
    */
-  function addResearcher(string memory name, string memory proofPhoto) public returns (Researcher memory) {
+  function addResearcher(string memory name, string memory proofPhoto) public {
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Researcher memory researcher = Researcher(
@@ -118,8 +118,6 @@ contract ResearcherRules is Callable, Invitable {
     researchers[msg.sender] = researcher;
     researchersAddress[id] = msg.sender;
     communityRules.addUser(msg.sender, USER_TYPE);
-
-    return researcher;
   }
 
   /**
