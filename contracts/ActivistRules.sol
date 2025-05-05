@@ -65,7 +65,7 @@ contract ActivistRules is Callable, Invitable {
    */
   function addActivist(string memory name, string memory proofPhoto) public {
     require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
-    
+
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Activist memory activist = Activist(id, msg.sender, name, proofPhoto, Pool(0, activistPoolEra()), block.number);
