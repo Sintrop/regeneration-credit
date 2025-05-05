@@ -174,10 +174,7 @@ contract InspectionRules is Callable {
     uint256 treesResult,
     uint256 biodiversityResult
   ) public {
-    require(
-      bytes(report).length <= 1000 && bytes(proofPhoto).length <= 100,
-      "Max characters reached"
-    );           
+    require(bytes(report).length <= 1000 && bytes(proofPhoto).length <= 100, "Max characters reached");
     Inspection memory inspection = inspections[inspectionId];
 
     require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
@@ -247,10 +244,7 @@ contract InspectionRules is Callable {
   function addInspectionValidation(uint256 id, string memory justification) public {
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
-    require(
-      bytes(justification).length <= 300,
-      "Max 300 characters reached"
-    );  
+    require(bytes(justification).length <= 300, "Max 300 characters reached");
     Inspection memory inspection = inspections[id];
 
     require(inspection.inspectedAtEra == regeneratorRules.regeneratorPoolEra(), "Can not add validation anymore");

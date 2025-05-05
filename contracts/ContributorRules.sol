@@ -88,10 +88,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
    * @param proofPhoto Identity photo
    */
   function addContributor(string memory name, string memory proofPhoto) public {
-    require(
-      bytes(name).length <= 100 && bytes(proofPhoto).length <= 100,
-      "Max 100 characters"
-    );       
+    require(bytes(name).length <= 100 && bytes(proofPhoto).length <= 100, "Max 100 characters");
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     contributors[msg.sender] = Contributor(
@@ -132,10 +129,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
     require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Only Contributor");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add contribution");
     require(canPublishContribution(msg.sender), "Can't publish yet");
-    require(
-      bytes(description).length <= 500 && bytes(report).length <= 100,
-      "Max characters reached"
-    );  
+    require(bytes(description).length <= 500 && bytes(report).length <= 100, "Max characters reached");
     contributionsCount++;
     contributionsTotalCount++;
     uint256 id = contributionsTotalCount;
@@ -175,10 +169,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
   function addContributionValidation(uint256 id, string memory justification) public {
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
-    require(
-      bytes(justification).length <= 300,
-      "Max 300 characters reached"
-    );   
+    require(bytes(justification).length <= 300, "Max 300 characters reached");
     Contribution memory contribution = contributions[id];
 
     require(contribution.valid && contribution.era == contributorPoolEra(), "This contribution is not VALID");

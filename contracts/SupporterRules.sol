@@ -77,10 +77,7 @@ contract SupporterRules {
    * @param name The name of the supporter
    */
   function addSupporter(string memory name, string memory profilePhoto) public {
-    require(
-      bytes(name).length <= 100 && bytes(profilePhoto).length <= 100,
-      "Max 100 characters"
-    );    
+    require(bytes(name).length <= 100 && bytes(profilePhoto).length <= 100, "Max 100 characters");
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Supporter memory supporter = Supporter(id, msg.sender, name, profilePhoto, 0, 0, 0, block.number);
@@ -96,10 +93,7 @@ contract SupporterRules {
    * @param newPhoto User new profilePhoto
    */
   function updateProfilePhoto(string memory newPhoto) public {
-    require(
-      bytes(newPhoto).length <= 100,
-      "Max 100 characters"
-    );      
+    require(bytes(newPhoto).length <= 100, "Max 100 characters");
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
 
     supporters[msg.sender].profilePhoto = newPhoto;

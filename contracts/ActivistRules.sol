@@ -64,10 +64,7 @@ contract ActivistRules is Callable, Invitable {
    * @param proofPhoto Identity photo
    */
   function addActivist(string memory name, string memory proofPhoto) public {
-    require(
-      bytes(name).length <= 100 && bytes(proofPhoto).length <= 100,
-      "Max 100 characters"
-    );       
+    require(bytes(name).length <= 100 && bytes(proofPhoto).length <= 100, "Max 100 characters");
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Activist memory activist = Activist(id, msg.sender, name, proofPhoto, Pool(0, activistPoolEra()), block.number);
