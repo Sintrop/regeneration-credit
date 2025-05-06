@@ -297,6 +297,12 @@ describe("ValidationRules", () => {
 
                 expect(user).to.equal(DEVELOPER);
               });
+
+              it("must update user validations count", async () => {
+                const userValidationsCount = await instance.userValidationsCount(dev2Address);
+
+                expect(userValidationsCount).to.equal(1);
+              });             
             });
 
             context("when total users is bigger than 5", () => {

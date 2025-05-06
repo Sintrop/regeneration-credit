@@ -24,7 +24,8 @@ import { VoteRules } from "./VoteRules.sol";
  * @notice Responsible for reviewing and voting to invalidate wrong or corrupted actions
  */
 contract ValidationRules is Callable {
-  mapping(address => UserValidation[]) private userValidations;
+  mapping(address => UserValidation[]) public userValidations;
+  mapping(address => uint256) public userValidationsCount;
   mapping(uint256 => ResourceValidation[]) public inspectionValidations;
   mapping(uint256 => ResourceValidation[]) public reportValidations;
   mapping(uint256 => ResourceValidation[]) public contributionValidations;
@@ -90,6 +91,8 @@ contract ValidationRules is Callable {
 
     uint256 majorityValidatorsCount_ = votesToInvalidate();
     uint256 validationsCount = userValidations[userAddress].length + 1;
+
+    userValidationsCount[userAddress] = validationsCount;
 
     userValidations[userAddress].push(
       UserValidation(msg.sender, userAddress, justification, majorityValidatorsCount_, block.number)
