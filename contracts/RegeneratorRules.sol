@@ -261,5 +261,5 @@ contract RegeneratorRules is Callable {
     require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
 
     areaPhoto[msg.sender] = newPhoto;
-  }  
+  }
 }
