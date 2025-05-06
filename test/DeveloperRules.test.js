@@ -4,6 +4,8 @@ const { expect } = require("chai");
 const { advanceBlock } = require("./shared/advance_block");
 const { ethers } = require("hardhat");
 const { voteRulesDeployed } = require("./shared/vote_rules_deployed");
+const { deployMockContract } = require("@clrfund/waffle-mock-contract");
+const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
 describe("DeveloperRules", (accounts) => {
   let instance, communityRules, developerPool, regenerationCredit, validationRules, researcherRules, contributorRules;
@@ -127,43 +129,69 @@ describe("DeveloperRules", (accounts) => {
       });
 
       context("when developer does not exist", () => {
-        it("should add developer", async () => {
-          await addDeveloper("Developer A", dev1Address);
-          const developer = await instance.getDeveloper(dev1Address);
+        context("when max limit is not reached", () => {
+          it("should add developer", async () => {
+            await addDeveloper("Developer A", dev1Address);
+            const developer = await instance.getDeveloper(dev1Address);
 
-          expect(developer.developerWallet).to.equal(dev1Address.address);
+            expect(developer.developerWallet).to.equal(dev1Address.address);
+          });
+
+          it("should increment developersCount after create developer", async () => {
+            await addDeveloper("Developer A", dev1Address);
+            const developersCount = await communityRules.userTypesCount(userTypes.Developer);
+
+            expect(developersCount).to.equal(1);
+          });
+
+          it("should add created developer in userType contract as a DEVELOPER", async () => {
+            await addDeveloper("Developer A", dev1Address);
+
+            const userType = await communityRules.getUser(dev1Address);
+            const DEVELOPER = 4;
+
+            expect(userType).to.equal(DEVELOPER);
+          });
+
+          it("should add created developer with initial level equal 0", async () => {
+            await addDeveloper("Developer A", dev1Address);
+
+            const developer = await instance.getDeveloper(dev1Address);
+
+            expect(developer.pool.level).to.equal(0);
+          });
+
+          it("should add created developer with initial currentEra equal currentContractEra", async () => {
+            await addDeveloper("Developer A", dev1Address);
+
+            const developer = await instance.getDeveloper(dev1Address);
+
+            expect(developer.pool.currentEra).to.equal(1);
+          });
         });
 
-        it("should increment developersCount after create developer", async () => {
-          await addDeveloper("Developer A", dev1Address);
-          const developersCount = await communityRules.userTypesCount(userTypes.Developer);
+        context("when max limit is reached", () => {
+          beforeEach(async () => {
+            const communityRulesMock = await hre.artifacts.readArtifact("CommunityRules");
+            let { _, abi: communityRulesAbi } = communityRulesMock;
 
-          expect(developersCount).to.equal(1);
-        });
+            communityRules = await deployMockContract(owner, communityRulesAbi);
 
-        it("should add created developer in userType contract as a DEVELOPER", async () => {
-          await addDeveloper("Developer A", dev1Address);
+            const developerRulesContractDependencies = {
+              communityRulesAddress: communityRules.target,
+              developerPoolAddress: developerPool.target,
+              validationRulesAddress: validationRules.target,
+              voteRulesAddress: ZERO_ADDRESS,
+            };
 
-          const userType = await communityRules.getUser(dev1Address);
-          const DEVELOPER = 4;
+            await instance.setContractAddressDependencies(developerRulesContractDependencies);
 
-          expect(userType).to.equal(DEVELOPER);
-        });
+            await communityRules.mock.userTypesCount.returns(16001);
+          });
 
-        it("should add created developer with initial level equal 0", async () => {
-          await addDeveloper("Developer A", dev1Address);
-
-          const developer = await instance.getDeveloper(dev1Address);
-
-          expect(developer.pool.level).to.equal(0);
-        });
-
-        it("should add created developer with initial currentEra equal currentContractEra", async () => {
-          await addDeveloper("Developer A", dev1Address);
-
-          const developer = await instance.getDeveloper(dev1Address);
-
-          expect(developer.pool.currentEra).to.equal(1);
+          it("should return error message", async () => {
+            await expect(addDeveloper("Developer A", dev1Address)).to.be.revertedWith("Max limit reached");
+          });
         });
       });
     });

@@ -3,9 +3,11 @@ const { userTypes } = require("./shared/user_types");
 const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { expect } = require("chai");
 const { advanceBlock } = require("./shared/advance_block");
+const { deployMockContract } = require("@clrfund/waffle-mock-contract");
+const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
 describe("ActivistRules", () => {
-  let instance, communityRules, activistPool, regenerationCredit;
+  let instance, communityRules, activistPool, regenerationCredit, instanceContractFactory;
   let owner, activ1Address, activ2Address, activ3Address, regenerator1Address, inspector1Address, inspector2Address;
 
   const activistPoolArgs = {
@@ -36,7 +38,7 @@ describe("ActivistRules", () => {
       activistPoolArgs.blocksPerEra
     );
 
-    const instanceContractFactory = await ethers.getContractFactory("ActivistRules");
+    instanceContractFactory = await ethers.getContractFactory("ActivistRules");
     instance = await instanceContractFactory.deploy(communityRules.target, activistPool.target);
 
     await communityRules.newAllowedCaller(activ1Address);
@@ -66,29 +68,48 @@ describe("ActivistRules", () => {
       });
 
       context("when activist don't exist", () => {
-        it("should create activist", async () => {
-          await addActivist("Activist A", activ1Address);
-          await addActivist("Activist C", activ3Address);
-          const activist = await instance.getActivist(activ1Address);
+        context("when max limit is not reached", () => {
+          it("should create activist", async () => {
+            await addActivist("Activist A", activ1Address);
+            await addActivist("Activist C", activ3Address);
+            const activist = await instance.getActivist(activ1Address);
 
-          expect(activist.activistWallet).to.equal(activ1Address.address);
+            expect(activist.activistWallet).to.equal(activ1Address.address);
+          });
+
+          it("should increment activistCount", async () => {
+            await addActivist("Activist A", activ1Address);
+            await addActivist("Activist C", activ3Address);
+            const activistsCount = await communityRules.userTypesCount(userTypes.Activist);
+
+            expect(activistsCount).to.equal(2);
+          });
+
+          it("should add created activist in userType contract as a ACTIVIST", async () => {
+            await addActivist("Activist A", activ1Address);
+
+            const userType = await communityRules.getUser(activ1Address);
+            const ACTIVIST = 6;
+
+            expect(userType).to.equal(ACTIVIST);
+          });
         });
 
-        it("should increment activistCount", async () => {
-          await addActivist("Activist A", activ1Address);
-          await addActivist("Activist C", activ3Address);
-          const activistsCount = await communityRules.userTypesCount(userTypes.Activist);
+        context("when max limit is reached", () => {
+          beforeEach(async () => {
+            const communityRulesMock = await hre.artifacts.readArtifact("CommunityRules");
+            let { _, abi: communityRulesAbi } = communityRulesMock;
 
-          expect(activistsCount).to.equal(2);
-        });
+            communityRules = await deployMockContract(owner, communityRulesAbi);
 
-        it("should add created activist in userType contract as a ACTIVIST", async () => {
-          await addActivist("Activist A", activ1Address);
+            instance = await instanceContractFactory.deploy(communityRules.target, activistPool.target);
 
-          const userType = await communityRules.getUser(activ1Address);
-          const ACTIVIST = 6;
+            await communityRules.mock.userTypesCount.returns(16001);
+          });
 
-          expect(userType).to.equal(ACTIVIST);
+          it("should return error message", async () => {
+            await expect(addActivist("Activist A", activ1Address)).to.be.revertedWith("Max limit reached");
+          });
         });
       });
     });

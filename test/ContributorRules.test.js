@@ -4,6 +4,8 @@ const { expect } = require("chai");
 const { advanceBlock } = require("./shared/advance_block");
 const { ethers } = require("hardhat");
 const { voteRulesDeployed } = require("./shared/vote_rules_deployed");
+const { deployMockContract } = require("@clrfund/waffle-mock-contract");
+const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
 describe("ContributorRules", (accounts) => {
   let instance;
@@ -137,43 +139,69 @@ describe("ContributorRules", (accounts) => {
       });
 
       context("when contributor does not exist", () => {
-        it("should add contributor", async () => {
-          await addContributor("Contributor A", contr1Address);
-          const contributor = await instance.getContributor(contr1Address);
+        context("when max limit is not reached", () => {
+          it("should add contributor", async () => {
+            await addContributor("Contributor A", contr1Address);
+            const contributor = await instance.getContributor(contr1Address);
 
-          expect(contributor.contributorWallet).to.equal(contr1Address.address);
+            expect(contributor.contributorWallet).to.equal(contr1Address.address);
+          });
+
+          it("should increment contributorsCount after create contributor", async () => {
+            await addContributor("Contributor A", contr1Address);
+            const contributorsCount = await communityRules.userTypesCount(userTypes.Contributor);
+
+            expect(contributorsCount).to.equal(1);
+          });
+
+          it("should add created contributor in userType contract as a CONTRIBUTOR", async () => {
+            await addContributor("Contributor A", contr1Address);
+
+            const userType = await communityRules.getUser(contr1Address);
+            const CONTRIBUTOR = 5;
+
+            expect(userType).to.equal(CONTRIBUTOR);
+          });
+
+          it("should add created contributor with initial level equal 0", async () => {
+            await addContributor("Contributor A", contr1Address);
+
+            const contributor = await instance.getContributor(contr1Address);
+
+            expect(contributor.pool.level).to.equal(0);
+          });
+
+          it("should add created contributor with initial currentEra equal currentContractEra", async () => {
+            await addContributor("Contributor A", contr1Address);
+
+            const contributor = await instance.getContributor(contr1Address);
+
+            expect(contributor.pool.currentEra).to.equal(1);
+          });
         });
 
-        it("should increment contributorsCount after create contributor", async () => {
-          await addContributor("Contributor A", contr1Address);
-          const contributorsCount = await communityRules.userTypesCount(userTypes.Contributor);
+        context("when max limit is reached", () => {
+          beforeEach(async () => {
+            const communityRulesMock = await hre.artifacts.readArtifact("CommunityRules");
+            let { _, abi: communityRulesAbi } = communityRulesMock;
 
-          expect(contributorsCount).to.equal(1);
-        });
+            communityRules = await deployMockContract(owner, communityRulesAbi);
 
-        it("should add created contributor in userType contract as a CONTRIBUTOR", async () => {
-          await addContributor("Contributor A", contr1Address);
+            const contributorRulesContractDependencies = {
+              communityRulesAddress: communityRules.target,
+              contributorPoolAddress: contributorPool.target,
+              validationRulesAddress: validationRules.target,
+              voteRulesAddress: ZERO_ADDRESS,
+            };
 
-          const userType = await communityRules.getUser(contr1Address);
-          const CONTRIBUTOR = 5;
+            await instance.setContractAddressDependencies(contributorRulesContractDependencies);
 
-          expect(userType).to.equal(CONTRIBUTOR);
-        });
+            await communityRules.mock.userTypesCount.returns(16001);
+          });
 
-        it("should add created contributor with initial level equal 0", async () => {
-          await addContributor("Contributor A", contr1Address);
-
-          const contributor = await instance.getContributor(contr1Address);
-
-          expect(contributor.pool.level).to.equal(0);
-        });
-
-        it("should add created contributor with initial currentEra equal currentContractEra", async () => {
-          await addContributor("Contributor A", contr1Address);
-
-          const contributor = await instance.getContributor(contr1Address);
-
-          expect(contributor.pool.currentEra).to.equal(1);
+          it("should return error message", async () => {
+            await expect(addContributor("Contributor A", contr1Address)).to.be.revertedWith("Max limit reached");
+          });
         });
       });
     });

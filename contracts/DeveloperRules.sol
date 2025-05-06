@@ -88,6 +88,8 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @param proofPhoto Identity photo
    */
   function addDeveloper(string memory name, string memory proofPhoto) public {
+    require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
+
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     developers[msg.sender] = Developer(
