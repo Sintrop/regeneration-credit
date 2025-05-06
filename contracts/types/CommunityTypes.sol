@@ -13,7 +13,6 @@ enum UserType {
   CONTRIBUTOR,
   ACTIVIST,
   SUPPORTER,
-  VALIDATOR,
   DENIED
 }
 
@@ -46,4 +45,5 @@ struct UserTypeSetting {
   bool directProportionalityRegistration;
   bool needInvitationOnRegister;
   uint256 invitationDelayBlocks;
+  bool isVoter;
 }

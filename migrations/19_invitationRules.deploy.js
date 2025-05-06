@@ -8,7 +8,7 @@ async function invitationRulesDeploy() {
   const developerRules = await getDeployedContract("DeveloperRules");
   const activistRules = await getDeployedContract("ActivistRules");
   const contributorRules = await getDeployedContract("ContributorRules");
-  const validatorRules = await getDeployedContract("ValidatorRules");
+  const validationRules = await getDeployedContract("ValidationRules");
 
   const InvitationRules = await ethers.getContractFactory("InvitationRules");
 
@@ -18,7 +18,7 @@ async function invitationRulesDeploy() {
     developerRules.target,
     activistRules.target,
     contributorRules.target,
-    validatorRules.target,
+    validationRules.target,
   ];
 
   const invitationRules = await InvitationRules.deploy(...args);

@@ -16,8 +16,7 @@ const regeneratorPoolDeploy = require("../migrations/7_regeneratorPool.deploy.js
 const regeneratorRulesDeploy = require("../migrations/8_regeneratorRules.deploy.js");
 const researcherPoolDeploy = require("../migrations/9_researcherPool.deploy.js");
 const researcherRulesDeploy = require("../migrations/10_researcherRules.deploy.js");
-const validatorPoolDeploy = require("../migrations/13_validatorPool.deploy.js");
-const validatorRulesDeploy = require("../migrations/14_validatorRules.deploy.js");
+const validationRulesDeploy = require("../migrations/14_validationRules.deploy.js");
 const activistPoolDeploy = require("../migrations/15_activistPool.deploy.js");
 const activistRulesDeploy = require("../migrations/16_activistRules.deploy.js");
 const supporterPoolDeploy = require("../migrations/17_supporterPool.deploy.js");
@@ -29,18 +28,18 @@ const contributorPoolDeploy = require("../migrations/11_contributorPool.deploy.j
 const contributorRulesDeploy = require("../migrations/12_contributorRules.deploy.js");
 const afterDeploy = require("../migrations/after_deploy.js");
 const regenerationCreditImpactDeploy = require("../migrations/22_regenerationCredImpact.deploy.js");
+const voteRulesDeploy = require("../migrations/23_voteRules.deploy.js");
 
 const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function startDeployAlert() {
   const etherscanVerificationEnabled = process.env["ETHERSCAN_VERIFICATION_ENABLED"];
-  const etherscanVerifyEnabledText = etherscanVerificationEnabled == 'true' ? "HABILITADA" : 'DESABILITADA'
+  const etherscanVerifyEnabledText = etherscanVerificationEnabled == "true" ? "HABILITADA" : "DESABILITADA";
   const deployStartSeconds = process.env["DEPLOY_START_SECONDS"] || 1;
 
   console.log(`-------------------  REDE ${hre.network.name} (CTRL + C para cancelar) -------------------`);
 
   console.log(`VERIFICAÇÃO DOS CONTRATOS ESTÁ ${etherscanVerifyEnabledText}`);
-  
 
   for (let i = deployStartSeconds; i > 0; i--) {
     await sleep(1000);
@@ -70,8 +69,6 @@ async function main() {
 
   await regenerationCreditDeploy();
   await communityRulesDeploy();
-  await validatorPoolDeploy();
-  await validatorRulesDeploy();
   await developerPoolDeploy();
   await developerRulesDeploy();
   await inspectorPoolDeploy();
@@ -87,9 +84,11 @@ async function main() {
   await supporterPoolDeploy();
   await supporterRulesDeploy();
   await regenerationIndexRulesDeploy();
-  await invitationRulesDeploy();
   await inspectionRulesDeploy();
-  await regenerationCreditImpactDeploy()
+  await regenerationCreditImpactDeploy();
+  await validationRulesDeploy();
+  await voteRulesDeploy();
+  await invitationRulesDeploy();
 
   await afterDeploy();
 

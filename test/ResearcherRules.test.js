@@ -5,32 +5,25 @@ const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { ZERO_ADDRESS } = require("./shared/zeroAddress");
+const { voteRulesDeployed } = require("./shared/vote_rules_deployed");
 
 describe("ResearcherRules", () => {
   let instance;
   let regenerationCredit;
   let researcherPool;
   let communityRules;
-  let validatorRules;
-  let validatorPool;
-  let owner, resea1Address, resea2Address, validator1Address, validator2Address, validator3Address, validator4Address;
+  let validationRules;
+  let developerRules;
+  let contributorRules;
+  let activistRules;
+  let owner, resea1Address, resea2Address, user1Address, user2Address, user3Address, user4Address;
 
   const timeBetweenWorks = 10;
-  const maxPenalties = 3;
-  const securityBlocksToValidatorAnalysis = 10;
-  const firstValidatorLimit = 8;
-  const secondValidatorLimit = 14;
 
   const args = {
-    totalTokens: "30000000000000000000000000",
+    totalTokens: "40000000000000000000000000",
     halving: 12,
-    blocksPerEra: 60,
-  };
-
-  const validatorPoolArgs = {
-    totalTokens: "30000000000000000000000000",
-    halving: 12,
-    blocksPerEra: 60,
+    blocksPerEra: 140,
   };
 
   const addResearcher = async (name, from) => {
@@ -41,8 +34,16 @@ describe("ResearcherRules", () => {
     await communityRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
-  const addValidator = async (from) => {
-    await validatorRules.connect(from).addValidator();
+  const addDeveloper = async (name, from) => {
+    await developerRules.connect(from).addDeveloper(name, "photoURL");
+  };
+
+  const addContributor = async (name, from) => {
+    await contributorRules.connect(from).addContributor(name, "photoURL");
+  };
+
+  const addActivist = async (name, from) => {
+    await activistRules.connect(from).addActivist(name, "photoURL");
   };
 
   const addResearch = async (from) => {
@@ -58,56 +59,30 @@ describe("ResearcherRules", () => {
   };
 
   beforeEach(async () => {
-    [owner, resea1Address, resea2Address, validator1Address, validator2Address, validator3Address, validator4Address] =
+    [owner, resea1Address, resea2Address, user1Address, user2Address, user3Address, user4Address] =
       await ethers.getSigners();
 
-    regenerationCredit = await regenerationCreditDeployed();
-    communityRules = await communityRulesDeployed();
+    const validatorRulesDeployed = await voteRulesDeployed();
 
-    const researcherPoolFactory = await ethers.getContractFactory("ResearcherPool");
-    researcherPool = await researcherPoolFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra);
+    regenerationCredit = validatorRulesDeployed.regenerationCredit;
+    communityRules = validatorRulesDeployed.communityRules;
+    validationRules = validatorRulesDeployed.validationRules;
+    instance = validatorRulesDeployed.researcherRules;
+    researcherPool = validatorRulesDeployed.researcherPool;
+    developerRules = validatorRulesDeployed.developerRules;
+    contributorRules = validatorRulesDeployed.contributorRules;
+    activistRules = validatorRulesDeployed.activistRules;
 
-    const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
-    validatorPool = await validatorPoolFactory.deploy(
-      regenerationCredit.target,
-      validatorPoolArgs.halving,
-      validatorPoolArgs.blocksPerEra
-    );
-
-    const validatorRulesFactory = await ethers.getContractFactory("ValidatorRules");
-    validatorRules = await validatorRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
-
-    const instanceFactory = await ethers.getContractFactory("ResearcherRules");
-    instance = await instanceFactory.deploy(
-      communityRules.target,
-      researcherPool.target,
-      validatorRules.target,
-      timeBetweenWorks,
-      maxPenalties,
-      securityBlocksToValidatorAnalysis
-    );
-
-    const validatorRulesDependencies = {
-      communityRulesAddress: communityRules.target,
-      regeneratorRulesAddress: ZERO_ADDRESS,
-      validatorPoolAddress: validatorPool.target,
-      inspectorRulesAddress: ZERO_ADDRESS,
-      developerRulesAddress: ZERO_ADDRESS,
-      researcherRulesAddress: instance.target,
-      contributorRulesAddress: ZERO_ADDRESS,
-      activistRulesAddress: ZERO_ADDRESS,
-    };
-
-    await validatorRules.setContractAddressDependencies(validatorRulesDependencies);
-
-    await communityRules.newAllowedCaller(validatorRules.target);
+    await communityRules.newAllowedCaller(validationRules.target);
+    await communityRules.newAllowedCaller(developerRules.target);
+    await communityRules.newAllowedCaller(contributorRules.target);
+    await communityRules.newAllowedCaller(activistRules.target);
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(owner);
     await researcherPool.newAllowedCaller(instance.target);
-    await validatorPool.newAllowedCaller(validatorRules.target);
-    await validatorRules.newAllowedCaller(instance.target);
-    await validatorRules.newAllowedCaller(owner);
-    await instance.newAllowedCaller(validatorRules.target);
+    await validationRules.newAllowedCaller(instance.target);
+    await validationRules.newAllowedCaller(owner);
+    await instance.newAllowedCaller(validationRules.target);
     await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(researcherPool.target, args.totalTokens);
 
@@ -230,9 +205,9 @@ describe("ResearcherRules", () => {
             await instance.connect(resea1Address).withdraw();
           });
 
-          it("withdraw 1250000000000000000000000 tokens", async () => {
+          it("withdraw 1666666666666666666666666 tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(resea1Address);
-            const expectedBalance = 1250000000000000000000000n;
+            const expectedBalance = 1666666666666666666666666n;
 
             expect(balanceOf).to.equal(expectedBalance);
           });
@@ -250,9 +225,9 @@ describe("ResearcherRules", () => {
             await instance.connect(resea1Address).withdraw();
           });
 
-          it("withdraw 625000000000000000000000 tokens", async () => {
+          it("withdraw 833333333333333333333333 tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(resea1Address);
-            const expectedBalance = 625000000000000000000000n;
+            const expectedBalance = 833333333333333333333333n;
 
             expect(balanceOf).to.equal(expectedBalance);
           });
@@ -351,7 +326,7 @@ describe("ResearcherRules", () => {
 
       context("when do not have time to validator analysis", () => {
         beforeEach(async () => {
-          await advanceBlock(40);
+          await advanceBlock(102);
         });
 
         it("should return error message", async () => {
@@ -396,14 +371,14 @@ describe("ResearcherRules", () => {
   });
 
   describe("addResearchValidation", () => {
-    context("with validator", () => {
+    context("with researcher", () => {
       beforeEach(async () => {
-        await addInvitation(owner, validator1Address, userTypes.Validator, owner);
-        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
-        await addInvitation(owner, validator3Address, userTypes.Validator, owner);
-        await addInvitation(owner, validator4Address, userTypes.Validator, owner);
+        await addInvitation(owner, user1Address, userTypes.Researcher, owner);
+        await addInvitation(owner, user2Address, userTypes.Researcher, owner);
+        await addInvitation(owner, user3Address, userTypes.Researcher, owner);
+        await addInvitation(owner, user4Address, userTypes.Researcher, owner);
 
-        await addValidator(validator1Address);
+        await addResearcher("User A", user1Address);
         await addResearcher("Researcher A", resea1Address);
       });
 
@@ -412,11 +387,12 @@ describe("ResearcherRules", () => {
           beforeEach(async () => {
             await addResearch(resea1Address);
 
-            await addValidator(validator2Address);
-            await addValidator(validator3Address);
-            await addValidator(validator4Address);
-            await instance.connect(validator1Address).addResearchValidation(1, "justification");
-            await instance.connect(validator2Address).addResearchValidation(1, "justification");
+            await addResearcher("User B", user2Address);
+            await addResearcher("User C", user3Address);
+            await addResearcher("User D", user4Address);
+
+            await instance.connect(user1Address).addResearchValidation(1, "justification");
+            await instance.connect(user2Address).addResearchValidation(1, "justification");
           });
 
           it("set valid field to false", async () => {
@@ -462,11 +438,11 @@ describe("ResearcherRules", () => {
           beforeEach(async () => {
             await addResearch(resea1Address);
 
-            await addValidator(validator2Address);
-            await addValidator(validator3Address);
-            await addValidator(validator4Address);
+            await addResearcher("User B", user2Address);
+            await addResearcher("User C", user3Address);
+            await addResearcher("User D", user4Address);
 
-            await instance.connect(validator1Address).addResearchValidation(1, "justification");
+            await instance.connect(user1Address).addResearchValidation(1, "justification");
           });
 
           it("valid field is true", async () => {
@@ -499,28 +475,24 @@ describe("ResearcherRules", () => {
 
       context("when researcher reach max maxPenalties", () => {
         beforeEach(async () => {
-          await addValidator(validator2Address);
-
-          await validatorRules.connect(validator1Address).declareAlive();
-          await validatorRules.connect(validator2Address).declareAlive();
+          await addResearcher("User B", user2Address);
+          await addResearcher("User C", user3Address);
 
           await addResearch(resea1Address);
-          await instance.connect(validator1Address).addResearchValidation(1, "justification");
+          await instance.connect(user1Address).addResearchValidation(1, "justification");
+          await instance.connect(user2Address).addResearchValidation(1, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
-          await validatorRules.connect(validator1Address).declareAlive();
-
           await addResearch(resea1Address);
-          await instance.connect(validator1Address).addResearchValidation(2, "justification");
+          await instance.connect(user1Address).addResearchValidation(2, "justification");
+          await instance.connect(user3Address).addResearchValidation(2, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
-          await validatorRules.connect(validator1Address).declareAlive();
-
           await addResearch(resea1Address);
-
-          await instance.connect(validator1Address).addResearchValidation(3, "justification");
+          await instance.connect(user1Address).addResearchValidation(3, "justification");
+          await instance.connect(user2Address).addResearchValidation(3, "justification");
         });
 
         it("user type must be DENIED", async () => {
@@ -535,45 +507,597 @@ describe("ResearcherRules", () => {
           beforeEach(async () => {
             await addResearch(resea1Address);
 
-            await advanceBlock(args.blocksPerEra + 1);
+            await advanceBlock(args.blocksPerEra);
           });
 
           it("should return error message", async () => {
-            await expect(
-              instance.connect(validator1Address).addResearchValidation(1, "justification")
-            ).to.be.revertedWith("This research is not VALID");
+            await expect(instance.connect(user1Address).addResearchValidation(1, "justification")).to.be.revertedWith(
+              "This research is not VALID"
+            );
           });
         });
 
         context("when contribution is invalidated", () => {
           beforeEach(async () => {
-            await addValidator(validator2Address);
-            await addValidator(validator3Address);
-            await addValidator(validator4Address);
-
-            await validatorRules.connect(validator1Address).declareAlive();
-            await validatorRules.connect(validator2Address).declareAlive();
-            await validatorRules.connect(validator4Address).declareAlive();
-
-            await advanceBlock(validatorPoolArgs.blocksPerEra);
+            await addResearcher("User B", user2Address);
+            await addResearcher("User C", user3Address);
 
             await addResearch(resea1Address);
 
-            await instance.connect(validator1Address).addResearchValidation(1, "justification");
+            await instance.connect(user1Address).addResearchValidation(1, "justification");
+            await instance.connect(user2Address).addResearchValidation(1, "justification");
           });
 
           it("should return error message", async () => {
-            await expect(
-              instance.connect(validator3Address).addResearchValidation(1, "justification")
-            ).to.be.revertedWith("This research is not VALID");
+            await expect(instance.connect(user3Address).addResearchValidation(1, "justification")).to.be.revertedWith(
+              "This research is not VALID"
+            );
+          });
+        });
+
+        context("wwhen do not wait waitedTimeBetweenVotes", () => {
+          beforeEach(async () => {
+            await addResearcher("User B", user2Address);
+            await addResearcher("User C", user3Address);
+
+            await addResearch(resea1Address);
+
+            await instance.connect(user2Address).addResearchValidation(1, "justification");
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user2Address).addResearchValidation(1, "justification")).to.be.revertedWith(
+              "Wait timeBetweenVotes"
+            );
+          });
+        });
+
+        context("wwhen wait waitedTimeBetweenVotes", () => {
+          beforeEach(async () => {
+            await addResearcher("User B", user2Address);
+            await addResearcher("User C", user3Address);
+
+            await addResearch(resea1Address);
+            await addResearch(user3Address);
+
+            await instance.connect(user2Address).addResearchValidation(1, "justification");
+            await advanceBlock(10);
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user2Address).addResearchValidation(2, "justification")).not.be.revertedWith(
+              "Wait timeBetweenVotes"
+            );
           });
         });
 
         context("when contribution do not exists", () => {
           it("should return error message", async () => {
-            await expect(
-              instance.connect(validator1Address).addResearchValidation(0, "justification")
-            ).to.be.revertedWith("This research is not VALID");
+            await expect(instance.connect(user1Address).addResearchValidation(0, "justification")).to.be.revertedWith(
+              "This research is not VALID"
+            );
+          });
+        });
+      });
+    });
+
+    context("with developer", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
+        await addInvitation(owner, user3Address, userTypes.Developer, owner);
+        await addInvitation(owner, user4Address, userTypes.Developer, owner);
+
+        await addDeveloper("User A", user1Address);
+        await addResearcher("Researcher A", resea1Address);
+      });
+
+      context("with valid contribution", () => {
+        context("when research must be invalidated", () => {
+          beforeEach(async () => {
+            await addResearch(resea1Address);
+
+            await addDeveloper("User B", user2Address);
+            await addDeveloper("User C", user3Address);
+            await addDeveloper("User D", user4Address);
+
+            await instance.connect(user1Address).addResearchValidation(1, "justification");
+            await instance.connect(user2Address).addResearchValidation(1, "justification");
+          });
+
+          it("set valid field to false", async () => {
+            const research = await instance.researches(1);
+
+            expect(research.valid).to.eq(false);
+          });
+
+          it("populate invalidatedAt field", async () => {
+            const research = await instance.researches(1);
+
+            expect(research.invalidatedAt).to.above(0);
+          });
+
+          it("set maxPenalties to reseacher", async () => {
+            const totalPenalties = await instance.totalPenalties(resea1Address);
+
+            expect(totalPenalties).to.eq(1);
+          });
+
+          it("user type must be RESEARCHER yet", async () => {
+            const userType = await communityRules.getUser(resea1Address);
+
+            expect(userType).to.eq(userTypes.Researcher);
+          });
+
+          it("must remove one pool level from current era", async () => {
+            const research = await instance.researches(1);
+
+            const eraLevels = await researcherPool.eraLevels(research.era, resea1Address);
+
+            expect(eraLevels).to.eq(0);
+          });
+
+          it("must decrement researchesCount in one", async () => {
+            const researchesTotalCount = await instance.researchesTotalCount();
+
+            expect(researchesTotalCount).to.eq(0);
+          });
+        });
+
+        context("when research must not be invalidated", () => {
+          beforeEach(async () => {
+            await addResearch(resea1Address);
+
+            await addDeveloper("User B", user2Address);
+            await addDeveloper("User C", user3Address);
+            await addDeveloper("User D", user4Address);
+
+            await instance.connect(user1Address).addResearchValidation(1, "justification");
+          });
+
+          it("valid field is true", async () => {
+            const research = await instance.researches(1);
+
+            expect(research.valid).to.eq(true);
+          });
+
+          it("invalidatedAt is equal 0", async () => {
+            const research = await instance.researches(1);
+
+            expect(research.invalidatedAt).to.eq(0);
+          });
+
+          it("researcher totalPenalties is 0", async () => {
+            const totalPenalties = await instance.totalPenalties(resea1Address);
+
+            expect(totalPenalties).to.eq(0);
+          });
+
+          it("reseacher pool level is 1", async () => {
+            const research = await instance.researches(1);
+
+            const eraLevels = await researcherPool.eraLevels(research.era, resea1Address);
+
+            expect(eraLevels).to.eq(1);
+          });
+        });
+      });
+
+      context("when researcher reach max maxPenalties", () => {
+        beforeEach(async () => {
+          await addDeveloper("User B", user2Address);
+          await addDeveloper("User C", user3Address);
+
+          await addResearch(resea1Address);
+          await instance.connect(user1Address).addResearchValidation(1, "justification");
+          await instance.connect(user2Address).addResearchValidation(1, "justification");
+
+          await advanceBlock(args.blocksPerEra);
+
+          await addResearch(resea1Address);
+          await instance.connect(user1Address).addResearchValidation(2, "justification");
+          await instance.connect(user3Address).addResearchValidation(2, "justification");
+
+          await advanceBlock(args.blocksPerEra);
+
+          await addResearch(resea1Address);
+          await instance.connect(user1Address).addResearchValidation(3, "justification");
+          await instance.connect(user2Address).addResearchValidation(3, "justification");
+        });
+
+        it("user type must be DENIED", async () => {
+          const userType = await communityRules.getUser(resea1Address);
+
+          expect(userType).to.eq(userTypes.Denied);
+        });
+      });
+
+      context("with invalid research", () => {
+        context("when current era is different from contribution created era", () => {
+          beforeEach(async () => {
+            await addResearch(resea1Address);
+
+            await advanceBlock(args.blocksPerEra);
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user1Address).addResearchValidation(1, "justification")).to.be.revertedWith(
+              "This research is not VALID"
+            );
+          });
+        });
+
+        context("when contribution is invalidated", () => {
+          beforeEach(async () => {
+            await addDeveloper("User B", user2Address);
+            await addDeveloper("User C", user3Address);
+
+            await addResearch(resea1Address);
+
+            await instance.connect(user1Address).addResearchValidation(1, "justification");
+            await instance.connect(user2Address).addResearchValidation(1, "justification");
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user3Address).addResearchValidation(1, "justification")).to.be.revertedWith(
+              "This research is not VALID"
+            );
+          });
+        });
+
+        context("when contribution do not exists", () => {
+          it("should return error message", async () => {
+            await expect(instance.connect(user1Address).addResearchValidation(0, "justification")).to.be.revertedWith(
+              "This research is not VALID"
+            );
+          });
+        });
+      });
+    });
+
+    context("with contributor", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Contributor, owner);
+        await addInvitation(owner, user2Address, userTypes.Contributor, owner);
+        await addInvitation(owner, user3Address, userTypes.Contributor, owner);
+        await addInvitation(owner, user4Address, userTypes.Contributor, owner);
+
+        await addContributor("User A", user1Address);
+        await addResearcher("Researcher A", resea1Address);
+      });
+
+      context("with valid contribution", () => {
+        context("when research must be invalidated", () => {
+          beforeEach(async () => {
+            await addResearch(resea1Address);
+
+            await addContributor("User B", user2Address);
+            await addContributor("User C", user3Address);
+            await addContributor("User D", user4Address);
+
+            await instance.connect(user1Address).addResearchValidation(1, "justification");
+            await instance.connect(user2Address).addResearchValidation(1, "justification");
+          });
+
+          it("set valid field to false", async () => {
+            const research = await instance.researches(1);
+
+            expect(research.valid).to.eq(false);
+          });
+
+          it("populate invalidatedAt field", async () => {
+            const research = await instance.researches(1);
+
+            expect(research.invalidatedAt).to.above(0);
+          });
+
+          it("set maxPenalties to reseacher", async () => {
+            const totalPenalties = await instance.totalPenalties(resea1Address);
+
+            expect(totalPenalties).to.eq(1);
+          });
+
+          it("user type must be RESEARCHER yet", async () => {
+            const userType = await communityRules.getUser(resea1Address);
+
+            expect(userType).to.eq(userTypes.Researcher);
+          });
+
+          it("must remove one pool level from current era", async () => {
+            const research = await instance.researches(1);
+
+            const eraLevels = await researcherPool.eraLevels(research.era, resea1Address);
+
+            expect(eraLevels).to.eq(0);
+          });
+
+          it("must decrement researchesCount in one", async () => {
+            const researchesTotalCount = await instance.researchesTotalCount();
+
+            expect(researchesTotalCount).to.eq(0);
+          });
+        });
+
+        context("when research must not be invalidated", () => {
+          beforeEach(async () => {
+            await addResearch(resea1Address);
+
+            await addContributor("User B", user2Address);
+            await addContributor("User C", user3Address);
+            await addContributor("User D", user4Address);
+
+            await instance.connect(user1Address).addResearchValidation(1, "justification");
+          });
+
+          it("valid field is true", async () => {
+            const research = await instance.researches(1);
+
+            expect(research.valid).to.eq(true);
+          });
+
+          it("invalidatedAt is equal 0", async () => {
+            const research = await instance.researches(1);
+
+            expect(research.invalidatedAt).to.eq(0);
+          });
+
+          it("researcher totalPenalties is 0", async () => {
+            const totalPenalties = await instance.totalPenalties(resea1Address);
+
+            expect(totalPenalties).to.eq(0);
+          });
+
+          it("reseacher pool level is 1", async () => {
+            const research = await instance.researches(1);
+
+            const eraLevels = await researcherPool.eraLevels(research.era, resea1Address);
+
+            expect(eraLevels).to.eq(1);
+          });
+        });
+      });
+
+      context("when researcher reach maxPenalties", () => {
+        beforeEach(async () => {
+          await addContributor("User B", user2Address);
+          await addContributor("User C", user3Address);
+
+          await addResearch(resea1Address);
+          await instance.connect(user1Address).addResearchValidation(1, "justification");
+          await instance.connect(user2Address).addResearchValidation(1, "justification");
+
+          await advanceBlock(args.blocksPerEra);
+
+          await addResearch(resea1Address);
+          await instance.connect(user1Address).addResearchValidation(2, "justification");
+          await instance.connect(user3Address).addResearchValidation(2, "justification");
+
+          await advanceBlock(args.blocksPerEra);
+
+          await addResearch(resea1Address);
+          await instance.connect(user1Address).addResearchValidation(3, "justification");
+          await instance.connect(user2Address).addResearchValidation(3, "justification");
+        });
+
+        it("user type must be DENIED", async () => {
+          const userType = await communityRules.getUser(resea1Address);
+
+          expect(userType).to.eq(userTypes.Denied);
+        });
+      });
+
+      context("with invalid research", () => {
+        context("when current era is different from contribution created era", () => {
+          beforeEach(async () => {
+            await addResearch(resea1Address);
+
+            await advanceBlock(args.blocksPerEra);
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user1Address).addResearchValidation(1, "justification")).to.be.revertedWith(
+              "This research is not VALID"
+            );
+          });
+        });
+
+        context("when contribution is invalidated", () => {
+          beforeEach(async () => {
+            await addContributor("User B", user2Address);
+            await addContributor("User C", user3Address);
+
+            await addResearch(resea1Address);
+
+            await instance.connect(user1Address).addResearchValidation(1, "justification");
+            await instance.connect(user2Address).addResearchValidation(1, "justification");
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user3Address).addResearchValidation(1, "justification")).to.be.revertedWith(
+              "This research is not VALID"
+            );
+          });
+        });
+
+        context("when contribution do not exists", () => {
+          it("should return error message", async () => {
+            await expect(instance.connect(user1Address).addResearchValidation(0, "justification")).to.be.revertedWith(
+              "This research is not VALID"
+            );
+          });
+        });
+      });
+    });
+
+    context("with activist", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Activist, owner);
+        await addInvitation(owner, user2Address, userTypes.Activist, owner);
+        await addInvitation(owner, user3Address, userTypes.Activist, owner);
+        await addInvitation(owner, user4Address, userTypes.Activist, owner);
+
+        await addActivist("User A", user1Address);
+        await addResearcher("Researcher A", resea1Address);
+      });
+
+      context("with valid contribution", () => {
+        context("when research must be invalidated", () => {
+          beforeEach(async () => {
+            await addResearch(resea1Address);
+
+            await addActivist("User B", user2Address);
+            await addActivist("User C", user3Address);
+            await addActivist("User D", user4Address);
+
+            await instance.connect(user1Address).addResearchValidation(1, "justification");
+            await instance.connect(user2Address).addResearchValidation(1, "justification");
+          });
+
+          it("set valid field to false", async () => {
+            const research = await instance.researches(1);
+
+            expect(research.valid).to.eq(false);
+          });
+
+          it("populate invalidatedAt field", async () => {
+            const research = await instance.researches(1);
+
+            expect(research.invalidatedAt).to.above(0);
+          });
+
+          it("set maxPenalties to reseacher", async () => {
+            const totalPenalties = await instance.totalPenalties(resea1Address);
+
+            expect(totalPenalties).to.eq(1);
+          });
+
+          it("user type must be RESEARCHER yet", async () => {
+            const userType = await communityRules.getUser(resea1Address);
+
+            expect(userType).to.eq(userTypes.Researcher);
+          });
+
+          it("must remove one pool level from current era", async () => {
+            const research = await instance.researches(1);
+
+            const eraLevels = await researcherPool.eraLevels(research.era, resea1Address);
+
+            expect(eraLevels).to.eq(0);
+          });
+
+          it("must decrement researchesCount in one", async () => {
+            const researchesTotalCount = await instance.researchesTotalCount();
+
+            expect(researchesTotalCount).to.eq(0);
+          });
+        });
+
+        context("when research must not be invalidated", () => {
+          beforeEach(async () => {
+            await addResearch(resea1Address);
+
+            await addActivist("User B", user2Address);
+            await addActivist("User C", user3Address);
+            await addActivist("User D", user4Address);
+
+            await instance.connect(user1Address).addResearchValidation(1, "justification");
+          });
+
+          it("valid field is true", async () => {
+            const research = await instance.researches(1);
+
+            expect(research.valid).to.eq(true);
+          });
+
+          it("invalidatedAt is equal 0", async () => {
+            const research = await instance.researches(1);
+
+            expect(research.invalidatedAt).to.eq(0);
+          });
+
+          it("researcher totalPenalties is 0", async () => {
+            const totalPenalties = await instance.totalPenalties(resea1Address);
+
+            expect(totalPenalties).to.eq(0);
+          });
+
+          it("reseacher pool level is 1", async () => {
+            const research = await instance.researches(1);
+
+            const eraLevels = await researcherPool.eraLevels(research.era, resea1Address);
+
+            expect(eraLevels).to.eq(1);
+          });
+        });
+      });
+
+      context("when researcher reach max maxPenalties", () => {
+        beforeEach(async () => {
+          await addActivist("User B", user2Address);
+          await addActivist("User C", user3Address);
+
+          await addResearch(resea1Address);
+          await instance.connect(user1Address).addResearchValidation(1, "justification");
+          await instance.connect(user2Address).addResearchValidation(1, "justification");
+
+          await advanceBlock(args.blocksPerEra);
+
+          await addResearch(resea1Address);
+          await instance.connect(user1Address).addResearchValidation(2, "justification");
+          await instance.connect(user3Address).addResearchValidation(2, "justification");
+
+          await advanceBlock(args.blocksPerEra);
+
+          await addResearch(resea1Address);
+          await instance.connect(user1Address).addResearchValidation(3, "justification");
+          await instance.connect(user2Address).addResearchValidation(3, "justification");
+        });
+
+        it("user type must be DENIED", async () => {
+          const userType = await communityRules.getUser(resea1Address);
+
+          expect(userType).to.eq(userTypes.Denied);
+        });
+      });
+
+      context("with invalid research", () => {
+        context("when current era is different from contribution created era", () => {
+          beforeEach(async () => {
+            await addResearch(resea1Address);
+
+            await advanceBlock(args.blocksPerEra);
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user1Address).addResearchValidation(1, "justification")).to.be.revertedWith(
+              "This research is not VALID"
+            );
+          });
+        });
+
+        context("when contribution is invalidated", () => {
+          beforeEach(async () => {
+            await addActivist("User B", user2Address);
+            await addActivist("User C", user3Address);
+
+            await addResearch(resea1Address);
+
+            await instance.connect(user1Address).addResearchValidation(1, "justification");
+            await instance.connect(user2Address).addResearchValidation(1, "justification");
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user3Address).addResearchValidation(1, "justification")).to.be.revertedWith(
+              "This research is not VALID"
+            );
+          });
+        });
+
+        context("when contribution do not exists", () => {
+          it("should return error message", async () => {
+            await expect(instance.connect(user1Address).addResearchValidation(0, "justification")).to.be.revertedWith(
+              "This research is not VALID"
+            );
           });
         });
       });
@@ -582,7 +1106,7 @@ describe("ResearcherRules", () => {
     context("without validator", () => {
       it("should return error message", async () => {
         await expect(instance.connect(owner).addResearchValidation(1, "justification")).to.be.revertedWith(
-          "Please register as validator"
+          "Not a voter user"
         );
       });
     });

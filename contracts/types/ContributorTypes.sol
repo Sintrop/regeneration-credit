@@ -46,5 +46,22 @@ struct Contribution {
   address user;
   string description;
   string report;
+  uint256 validationsCount;
+  bool valid;
+  uint256 invalidatedAt;
   uint256 createdAtBlockNumber;
+}
+
+/**
+ * @dev Contribution penalty
+ */
+struct Penalty {
+  uint256 contributionId;
+}
+
+struct ContractsDependency {
+  address communityRulesAddress;
+  address contributorPoolAddress;
+  address validationRulesAddress;
+  address voteRulesAddress;
 }

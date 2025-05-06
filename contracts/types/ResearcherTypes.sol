@@ -96,3 +96,10 @@ struct EvaluationMethod {
 struct Penalty {
   uint256 researchId;
 }
+
+struct ContractsDependency {
+  address communityRulesAddress;
+  address researcherPoolAddress;
+  address validationRulesAddress;
+  address voteRulesAddress;
+}

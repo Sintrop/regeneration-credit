@@ -4,11 +4,12 @@ pragma solidity >=0.7.0 <=0.9.0;
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
+import { VoteRules } from "./VoteRules.sol";
 import { CommunityRules } from "./CommunityRules.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { DeveloperPool } from "./DeveloperPool.sol";
-import { ValidatorRules } from "./ValidatorRules.sol";
-import { Developer, Pool, Report, Penalty } from "./types/DeveloperTypes.sol";
+import { ValidationRules } from "./ValidationRules.sol";
+import { Developer, Pool, Report, Penalty, ContractsDependency } from "./types/DeveloperTypes.sol";
 
 /**
  * @author Sintrop
@@ -38,8 +39,11 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   /// @notice DeveloperPool contract address
   DeveloperPool internal developerPool;
 
-  /// @notice ValidatorRules contract address
-  ValidatorRules internal validatorRules;
+  /// @notice ValidationRules contract address
+  ValidationRules internal validationRules;
+
+  /// @notice VoteRules contract address
+  VoteRules internal voteRules;
 
   /// @notice Developer UserType
   UserType private constant USER_TYPE = UserType.DEVELOPER;
@@ -59,24 +63,27 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   /// @notice Number of blocks to block addReport before the end of an era
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
-  constructor(
-    address communityRulesAddress,
-    address developerPoolAddress,
-    address validatorRulesAddress,
-    uint256 timeBetweenWorks_,
-    uint256 maxPenalties_,
-    uint256 securityBlocksToValidatorAnalysis
-  ) {
-    communityRules = CommunityRules(communityRulesAddress);
-    developerPool = DeveloperPool(developerPoolAddress);
-    validatorRules = ValidatorRules(validatorRulesAddress);
+  constructor(uint256 timeBetweenWorks_, uint256 maxPenalties_, uint256 securityBlocksToValidatorAnalysis) {
     timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
 
+  function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+    communityRules = CommunityRules(contractDependency.communityRulesAddress);
+    developerPool = DeveloperPool(contractDependency.developerPoolAddress);
+    validationRules = ValidationRules(contractDependency.validationRulesAddress);
+    voteRules = VoteRules(contractDependency.voteRulesAddress);
+  }
+
   /**
    * @dev Allows a user to attempt to register as a developer
+   *
+   * Requirements:
+   *
+   * - the caller must have been invited before
+   * - vacancies according to the number of regenerator
+   *
    * @param name The name of the developer
    * @param proofPhoto Identity photo
    */
@@ -112,8 +119,8 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   }
 
   /**
-   * @dev Allows a developer to attempt to publish a development report report
-   * @notice Publish one development report per era before security blocks
+   * @dev Allows a developer to attempt to publish a development report
+   * @notice Publish development reports before security blocks
    * @param description Title or description of the report
    * @param report Hash of the report file
    */
@@ -146,7 +153,8 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @param justification String with invalidation explanation
    */
   function addReportValidation(uint256 id, string memory justification) public {
-    require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+    require(voteRules.canVote(msg.sender), "User cannot vote");
+    require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
     Report memory report = reports[id];
 
@@ -155,22 +163,26 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     report.validationsCount += 1;
     reports[id] = report;
 
-    bool mustInvalidateReport = report.validationsCount >= validatorRules.majorityValidatorsCount();
+    bool mustInvalidateReport = report.validationsCount >= validationRules.votesToInvalidate();
 
-    if (mustInvalidateReport) invalidateReport(report);
+    if (mustInvalidateReport) {
+      report = invalidateReport(report);
+    }
 
-    validatorRules.addDeveloperReportValidation(report, justification, msg.sender);
+    validationRules.addDeveloperReportValidation(report, justification, msg.sender);
   }
 
   /**
    * @dev Executes invalidation
-   * @param report Report id
+   * @param report Invalidated report
    */
-  function invalidateReport(Report memory report) internal {
+  function invalidateReport(Report memory report) internal returns (Report memory) {
     reportsCount--;
     report.valid = false;
     report.invalidatedAt = block.number;
     reports[report.id] = report;
+
+    return report;
   }
 
   /**
@@ -211,6 +223,12 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   /**
    * @dev Call withdraw function from developerPool to try to claim tokens
    * @notice Withdraw regeneration credit from development service provided
+   *
+   * Requirements:
+   *
+   * - only to developers
+   * - to be eligible to withdraw tokens, you must have publisehd at least one report in the era
+   *
    */
   function withdraw() public {
     require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Pool only to developer");
@@ -238,12 +256,22 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     developerPool.addLevel(addr, 1);
   }
 
+  /**
+   * @dev Add developer penalty when invalidating a report
+   * @param addr Developer wallet
+   * @param reportId Report id
+   */
   function addPenalty(address addr, uint256 reportId) public mustBeAllowedCaller returns (uint256) {
     penalties[addr].push(Penalty(reportId));
 
     return totalPenalties(addr);
   }
 
+  /**
+   * @dev Returns addr number of penalties
+   * @notice Number of penalties of an user
+   * @param addr Developer wallet
+   */
   function totalPenalties(address addr) public view returns (uint256) {
     return penalties[addr].length;
   }

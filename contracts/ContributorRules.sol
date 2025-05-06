@@ -5,9 +5,11 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { CommunityRules } from "./CommunityRules.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { ContributorPool } from "./ContributorPool.sol";
-import { Contributor, Pool, Contribution } from "./types/ContributorTypes.sol";
+import { Contributor, Pool, Contribution, Penalty, ContractsDependency } from "./types/ContributorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
+import { VoteRules } from "./VoteRules.sol";
+import { ValidationRules } from "./ValidationRules.sol";
 
 /**
  * @author Sintrop
@@ -34,11 +36,20 @@ contract ContributorRules is Ownable, Callable, Invitable {
   /// @notice ContributorPool contract address
   ContributorPool internal contributorPool;
 
+  /// @notice ValidationRules contract address
+  ValidationRules internal validationRules;
+
+  /// @notice VoteRules contract address
+  VoteRules internal voteRules;
+
   /// @notice Contributor UserType
   UserType private constant USER_TYPE = UserType.CONTRIBUTOR;
 
-  /// @notice Total contributions count
+  /// @notice Total valid contributions count
   uint256 public contributionsCount;
+
+  /// @notice Total contributions count
+  uint256 public contributionsTotalCount;
 
   /// @notice Waiting blocks to publish contribution
   uint256 internal immutable timeBetweenWorks;
@@ -46,20 +57,33 @@ contract ContributorRules is Ownable, Callable, Invitable {
   /// @notice Number of blocks to block addContribution before the end of an era
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
-  constructor(
-    address communityRulesAddress,
-    address contributorPoolAddress,
-    uint256 timeBetweenWorks_,
-    uint256 securityBlocksToValidatorAnalysis
-  ) {
-    communityRules = CommunityRules(communityRulesAddress);
-    contributorPool = ContributorPool(contributorPoolAddress);
+  /// @notice Max allowed penalties before user invalidation
+  uint256 public immutable MAX_PENALTIES;
+
+  /// @notice The relationship between address and penalties received
+  mapping(address => Penalty[]) public penalties;
+
+  constructor(uint256 timeBetweenWorks_, uint256 maxPenalties_, uint256 securityBlocksToValidatorAnalysis) {
     timeBetweenWorks = timeBetweenWorks_;
+    MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
+  }
+
+  function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+    communityRules = CommunityRules(contractDependency.communityRulesAddress);
+    contributorPool = ContributorPool(contractDependency.contributorPoolAddress);
+    validationRules = ValidationRules(contractDependency.validationRulesAddress);
+    voteRules = VoteRules(contractDependency.voteRulesAddress);
   }
 
   /**
    * @dev Allows a user to attempt to register as a contributor
+   *
+   * Requirements:
+   *
+   * - the caller must have been invited before
+   * - vacancies according to the number of regenerators
+   *
    * @param name The name of the contributor
    * @param proofPhoto Identity photo
    */
@@ -91,7 +115,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
 
     if (contributor.id <= 0) return false;
 
-    return canInvite(contributionsCount, communityRules.userTypesTotalCount(USER_TYPE), contributor.pool.level);
+    return canInvite(contributionsTotalCount, communityRules.userTypesTotalCount(USER_TYPE), contributor.pool.level);
   }
 
   /**
@@ -106,17 +130,72 @@ contract ContributorRules is Ownable, Callable, Invitable {
     require(canPublishContribution(msg.sender), "Can't publish yet");
 
     contributionsCount++;
-    uint256 id = contributionsCount;
+    contributionsTotalCount++;
+    uint256 id = contributionsTotalCount;
 
-    contributions[id] = Contribution(id, contributorPoolEra(), msg.sender, description, report, block.number);
+    contributions[id] = Contribution(
+      id,
+      contributorPoolEra(),
+      msg.sender,
+      description,
+      report,
+      0,
+      true,
+      0,
+      block.number
+    );
 
     contributionsIds[msg.sender].push(id);
 
     addPoolLevel(msg.sender);
   }
 
+  /**
+   * @dev Returns an array of ids of the contributions made by the addr
+   * @notice Get the contribution id of an user
+   * @param addr Checked address
+   */
   function getContributionsIds(address addr) public view returns (uint256[] memory) {
     return contributionsIds[addr];
+  }
+
+  /**
+   * @dev Allows a validator to vote to invalidate a contribution
+   * @notice Publish contributions before security blocks
+   * @param id Contribution id
+   * @param justification String with invalidation explanation
+   */
+  function addContributionValidation(uint256 id, string memory justification) public {
+    require(voteRules.canVote(msg.sender), "User cannot vote");
+    require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
+
+    Contribution memory contribution = contributions[id];
+
+    require(contribution.valid && contribution.era == contributorPoolEra(), "This contribution is not VALID");
+
+    contribution.validationsCount += 1;
+    contributions[id] = contribution;
+
+    bool mustInvalidateContribution = contribution.validationsCount >= validationRules.votesToInvalidate();
+
+    if (mustInvalidateContribution) {
+      contribution = invalidateContribution(contribution);
+    }
+
+    validationRules.addContributionValidation(contribution, justification, msg.sender);
+  }
+
+  /**
+   * @dev Executes invalidation
+   * @param contribution Contribution id
+   */
+  function invalidateContribution(Contribution memory contribution) internal returns (Contribution memory) {
+    contributionsCount--;
+    contribution.valid = false;
+    contribution.invalidatedAt = block.number;
+    contributions[contribution.id] = contribution;
+
+    return contribution;
   }
 
   /**
@@ -146,6 +225,12 @@ contract ContributorRules is Ownable, Callable, Invitable {
   /**
    * @dev Call withdraw function from contributorPool to try to claim tokens
    * @notice Withdraw regeneration credit from contribution service provided
+   *
+   * Requirements:
+   *
+   * - only to contributors
+   * - to be eligible to withdraw tokens, you must have published at least one contribution in the era
+   *
    */
   function withdraw() public {
     require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Pool only to contributor");
@@ -181,6 +266,26 @@ contract ContributorRules is Ownable, Callable, Invitable {
     Contributor memory contributor = contributors[addr];
 
     contributorPool.removePoolLevels(addr, contributor.pool.currentEra, removeSomeLevels);
+  }
+
+  /**
+   * @dev Add contributor penalty when invalidating a contribution
+   * @param addr Contributor wallet
+   * @param contributionId Contribution id
+   */
+  function addPenalty(address addr, uint256 contributionId) public mustBeAllowedCaller returns (uint256) {
+    penalties[addr].push(Penalty(contributionId));
+
+    return totalPenalties(addr);
+  }
+
+  /**
+   * @dev Returns addr number of penalties
+   * @notice Number of penalties of an user
+   * @param addr Contributor wallet
+   */
+  function totalPenalties(address addr) public view returns (uint256) {
+    return penalties[addr].length;
   }
 
   /**

@@ -44,16 +44,14 @@ contract CommunityRules is Ownable, Callable {
     uint256 activistProportionality,
     uint256 researcherProportionality,
     uint256 developerProportionality,
-    uint256 validatorProportionality,
     uint256 contributorProportionality
   ) {
-    userTypeSettings[UserType.REGENERATOR] = UserTypeSetting(0, false, true, 0);
-    userTypeSettings[UserType.INSPECTOR] = UserTypeSetting(inspectorProportionality, true, true, 0);
-    userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(activistProportionality, false, true, 100000);
-    userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(researcherProportionality, false, true, 200000);
-    userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(developerProportionality, false, true, 200000);
-    userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(contributorProportionality, false, true, 100000);
-    userTypeSettings[UserType.VALIDATOR] = UserTypeSetting(validatorProportionality, false, true, 1000000);
+    userTypeSettings[UserType.REGENERATOR] = UserTypeSetting(0, false, true, 0, false);
+    userTypeSettings[UserType.INSPECTOR] = UserTypeSetting(inspectorProportionality, true, true, 0, false);
+    userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(activistProportionality, false, true, 100000, true);
+    userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(researcherProportionality, false, true, 200000, true);
+    userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(developerProportionality, false, true, 200000, true);
+    userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(contributorProportionality, false, true, 100000, true);
   }
 
   event AddUserEvent(address addr, UserType userType);
@@ -67,9 +65,13 @@ contract CommunityRules is Ownable, Callable {
    * @param userType The type of the user - enum UserType
    */
   function addUser(address addr, UserType userType) public mustBeAllowedCaller {
+    // Only one registration per address
     require(users[addr] == UserType.UNDEFINED, "User already exists");
+    // Must selected the appropriate userType
     require(userType != UserType.UNDEFINED, "Invalid user type");
+    // Vacancies according to the number of regenerators
     require(registrationProportionalityAllowed(userType), "Proportionality invalid");
+    // Only with valid invitation
     require(invitedTypeOnRegister(addr, userType), "Invalid invitation");
 
     users[addr] = userType;
@@ -111,7 +113,26 @@ contract CommunityRules is Ownable, Callable {
   }
 
   /**
-   * @dev Get the type of a user
+   * @notice Get the total of voters
+   */
+  function votersCount() public view returns (uint256) {
+    return
+      userTypesCount[UserType.ACTIVIST] +
+      userTypesCount[UserType.CONTRIBUTOR] +
+      userTypesCount[UserType.DEVELOPER] +
+      userTypesCount[UserType.RESEARCHER];
+  }
+
+  /**
+   * @notice Checks if the user is a voter
+   * @param addr The user address
+   */
+  function isVoter(address addr) public view returns (bool) {
+    return getUserTypeSettings(users[addr]).isVoter;
+  }
+
+  /**
+   * @notice Get the type of a user
    * @param addr Checked address
    */
   function getUser(address addr) public view returns (UserType) {
@@ -119,7 +140,7 @@ contract CommunityRules is Ownable, Callable {
   }
 
   /**
-   * @dev Get the userType settings of a userType
+   * @notice Get the userType settings of a userType
    * @param userType Checked userType
    */
   function getUserTypeSettings(UserType userType) public view returns (UserTypeSetting memory) {
@@ -128,6 +149,17 @@ contract CommunityRules is Ownable, Callable {
 
   /**
    * @dev Add new delation in the system
+   * @notice Users should add delations to report users or resources that should be invalidated
+   *
+   * Examples of unwanted behavior:
+   *
+   * - A user voting to invalidate a valid resource
+   * - User without valid proofPhoto
+   * - Inspections without valid proofPhoto
+   * - Inspections without valid justification report
+   * - Resources without valid justifications report
+   * - Inactive users
+   *
    * @param addr The address of the user
    * @param title Title the delation
    * @param testimony Delation justification

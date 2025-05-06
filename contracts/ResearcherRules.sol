@@ -3,11 +3,12 @@ pragma solidity >=0.7.0 <=0.9.0;
 
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
+import { VoteRules } from "./VoteRules.sol";
 import { CommunityRules } from "./CommunityRules.sol";
-import { Researcher, Research, Pool, CalculatorItem, EvaluationMethod, Penalty } from "./types/ResearcherTypes.sol";
+import { Researcher, Research, Pool, CalculatorItem, EvaluationMethod, Penalty, ContractsDependency } from "./types/ResearcherTypes.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { ResearcherPool } from "./ResearcherPool.sol";
-import { ValidatorRules } from "./ValidatorRules.sol";
+import { ValidationRules } from "./ValidationRules.sol";
 
 /**
  * @author Sintrop
@@ -44,7 +45,10 @@ contract ResearcherRules is Callable, Invitable {
   ResearcherPool internal researcherPool;
 
   /// @notice ValidatorPool contract address
-  ValidatorRules internal validatorRules;
+  ValidationRules internal validationRules;
+
+  /// @notice ValidationRules contract address
+  VoteRules internal voteRules;
 
   /// @notice Researcher UserType
   UserType private constant USER_TYPE = UserType.RESEARCHER;
@@ -70,24 +74,27 @@ contract ResearcherRules is Callable, Invitable {
   /// @notice Number of blocks to block addResearch before the end of an era
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
-  constructor(
-    address communityRulesAddress,
-    address researcherPoolAddress,
-    address validatorRulesAddress,
-    uint256 timeBetweenWorks_,
-    uint256 maxPenalties_,
-    uint256 securityBlocksToValidatorAnalysis
-  ) {
-    communityRules = CommunityRules(communityRulesAddress);
-    researcherPool = ResearcherPool(researcherPoolAddress);
-    validatorRules = ValidatorRules(validatorRulesAddress);
+  constructor(uint256 timeBetweenWorks_, uint256 maxPenalties_, uint256 securityBlocksToValidatorAnalysis) {
     timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
 
+  function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+    communityRules = CommunityRules(contractDependency.communityRulesAddress);
+    researcherPool = ResearcherPool(contractDependency.researcherPoolAddress);
+    validationRules = ValidationRules(contractDependency.validationRulesAddress);
+    voteRules = VoteRules(contractDependency.voteRulesAddress);
+  }
+
   /**
-   * @dev Allows a user to attempt to register as a researcher
+   * @notice Allows a user to attempt to register as a researcher
+   *
+   * Requirements:
+   *
+   * - the caller must have been invited before
+   * - vacancies according to the number of regenerators
+   *
    * @param name The name of the researcher
    * @param proofPhoto Identity photo
    */
@@ -195,8 +202,21 @@ contract ResearcherRules is Callable, Invitable {
     return researchesIds[addr];
   }
 
+  /**
+   * @notice Allows a voter to attempt to vote to invalidate a research
+   *
+   * Requirements:
+   *
+   * - the caller must be a voter user
+   * - caller level must be above average
+   * - caller must have waited timeBetweenVotes
+   *
+   * @param id Resource id
+   * @param justification Invalidation justification
+   */
   function addResearchValidation(uint256 id, string memory justification) public {
-    require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+    require(voteRules.canVote(msg.sender), "User cannot vote");
+    require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
     Research memory research = researches[id];
 
@@ -205,13 +225,17 @@ contract ResearcherRules is Callable, Invitable {
     research.validationsCount += 1;
     researches[id] = research;
 
-    bool mustInvalidateResearch = research.validationsCount >= validatorRules.majorityValidatorsCount();
+    bool mustInvalidateResearch = research.validationsCount >= validationRules.votesToInvalidate();
 
     if (mustInvalidateResearch) invalidateResearch(research);
 
-    validatorRules.addResearcherResearchValidation(research, justification, msg.sender);
+    validationRules.addResearcherResearchValidation(research, justification, msg.sender);
   }
 
+  /**
+   * @dev Function that invalidates a research
+   * @param research Invalidated research
+   */
   function invalidateResearch(Research memory research) internal {
     researchesTotalCount--;
     research.valid = false;
@@ -230,12 +254,22 @@ contract ResearcherRules is Callable, Invitable {
     researcherPool.removePoolLevels(addr, researcherPoolEra(), removeSomeLevels);
   }
 
+  /**
+   * @dev Add researcher penalty when invalidating a research
+   * @param addr Researcher wallet
+   * @param researchId Research id
+   */
   function addPenalty(address addr, uint256 researchId) public mustBeAllowedCaller returns (uint256) {
     penalties[addr].push(Penalty(researchId));
 
     return totalPenalties(addr);
   }
 
+  /**
+   * @dev Returns addr number of penalties
+   * @notice Number of penalties of an user
+   * @param addr Researcher wallet
+   */
   function totalPenalties(address addr) public view returns (uint256) {
     return penalties[addr].length;
   }
@@ -243,6 +277,12 @@ contract ResearcherRules is Callable, Invitable {
   /**
    * @dev Call withdraw function from researcherPool to try to claim tokens
    * @notice Withdraw regeneration credit from research service provided
+   *
+   * Requirements:
+   *
+   * - only to researchers
+   * - to be eligible to withdraw tokens, you must have publisehd at least one research in the era
+   *
    */
   function withdraw() public {
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Pool only to researchers");

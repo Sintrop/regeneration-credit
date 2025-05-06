@@ -35,7 +35,7 @@ fuzz:
         - "contracts/SupporterPool"
         - "contracts/SupporterRules"
         - "contracts/ValidatorPool"
-        - "contracts/ValidatorRules"
+        - "contracts/ValidationRules"
         - "contracts/DeveloperPool.sol"
         - "contracts/DeveloperRules"
         - "contracts/RegeneratorPool"

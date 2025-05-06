@@ -7,8 +7,7 @@ const userTypes = {
   Contributor: 5,
   Activist: 6,
   Supporter: 7,
-  Validator: 8,
-  Denied: 9,
+  Denied: 8,
 };
 
 module.exports = { userTypes };

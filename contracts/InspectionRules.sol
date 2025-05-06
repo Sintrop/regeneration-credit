@@ -4,7 +4,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 import { RegeneratorRules } from "./RegeneratorRules.sol";
 import { InspectorRules } from "./InspectorRules.sol";
 import { RegenerationIndexRules } from "./RegenerationIndexRules.sol";
-import { ValidatorRules } from "./ValidatorRules.sol";
+import { ValidationRules } from "./ValidationRules.sol";
 import { RegenerationIndexRules } from "./RegenerationIndexRules.sol";
 import { ActivistRules } from "./ActivistRules.sol";
 import { CommunityRules } from "./CommunityRules.sol";
@@ -15,6 +15,7 @@ import { UserType } from "./types/CommunityTypes.sol";
 import { ContractsDependency } from "./types/SintropTypes.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Callable } from "./shared/Callable.sol";
+import { VoteRules } from "./VoteRules.sol";
 
 /**
  * @author Sintrop
@@ -40,11 +41,14 @@ contract InspectionRules is Callable {
   /// @notice CommunityRules contract address
   CommunityRules private communityRules;
 
-  /// @notice ValidatorRules contract address
-  ValidatorRules private validatorRules;
+  /// @notice ValidationRules contract address
+  ValidationRules private validationRules;
 
   /// @notice ActivistRules contract address
   ActivistRules private activistRules;
+
+  /// @notice ValidationRules contract address
+  VoteRules internal voteRules;
 
   /// @notice RegenerationIndexRules contract address
   RegenerationIndexRules private regenerationIndexRules;
@@ -76,10 +80,11 @@ contract InspectionRules is Callable {
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
     communityRules = CommunityRules(contractDependency.communityRulesAddress);
     regeneratorRules = RegeneratorRules(contractDependency.regeneratorRulesAddress);
-    validatorRules = ValidatorRules(contractDependency.validatorRulesAddress);
+    validationRules = ValidationRules(contractDependency.validationRulesAddress);
     inspectorRules = InspectorRules(contractDependency.inspectorRulesAddress);
     regenerationIndexRules = RegenerationIndexRules(contractDependency.regenerationIndexRulesAddress);
     activistRules = ActivistRules(contractDependency.activistRulesAddress);
+    voteRules = VoteRules(contractDependency.voteRulesAddress);
   }
 
   /**
@@ -223,8 +228,21 @@ contract InspectionRules is Callable {
     userInspections[inspectorAddress].push(inspection.id);
   }
 
+  /**
+   * @notice Allows a voter to attempt to vote to invalidate an inspection
+   *
+   * Requirements:
+   *
+   * - the caller must be a voter user
+   * - caller level must be above average
+   * - caller must have waited timeBetweenVotes
+   *
+   * @param id Resource id
+   * @param justification Invalidation justification
+   */
   function addInspectionValidation(uint256 id, string memory justification) public {
-    require(communityRules.userTypeIs(UserType.VALIDATOR, msg.sender), "Please register as validator");
+    require(voteRules.canVote(msg.sender), "User cannot vote");
+    require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
     Inspection memory inspection = inspections[id];
 
@@ -233,11 +251,11 @@ contract InspectionRules is Callable {
     inspection.validationsCount += 1;
     inspections[inspection.id] = inspection;
 
-    bool mustInvalidateInspection = inspection.validationsCount >= validatorRules.majorityValidatorsCount();
+    bool mustInvalidateInspection = inspection.validationsCount >= validationRules.votesToInvalidate();
 
     if (mustInvalidateInspection) invalidateInspection(inspection);
 
-    validatorRules.addInspectionValidation(inspection, justification, msg.sender);
+    validationRules.addInspectionValidation(inspection, justification, msg.sender);
   }
 
   function invalidateInspection(Inspection memory inspection) internal {

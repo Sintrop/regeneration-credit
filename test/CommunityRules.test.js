@@ -11,22 +11,8 @@ describe("CommunityRules", function () {
     activistProportionality: 1,
     researcherProportionality: 1,
     developerProportionality: 1,
-    validatorProportionality: 1,
     contributorProportionality: 1,
   };
-
-  const definedTypes = [
-    "UNDEFINED",
-    "REGENERATOR",
-    "INSPECTOR",
-    "RESEARCHER",
-    "DEVELOPER",
-    "CONTRIBUTOR",
-    "ACTIVIST",
-    "SUPPORTER",
-    "VALIDATOR",
-    "DENIED",
-  ];
 
   const addUser = async (address, userType, from) => {
     return await instance.connect(from).addUser(address, userType);
@@ -184,17 +170,6 @@ describe("CommunityRules", function () {
           });
         });
 
-        context("to validator", () => {
-          it("should add correct enum to validator", async () => {
-            await addInvitation(owner, user1Address, userTypes.Validator, owner);
-            await addUser(user1Address, userTypes.Validator, owner);
-
-            const user = await instance.getUser(user1Address);
-
-            expect(user).to.equal(userTypes.Validator);
-          });
-        });
-
         context("to denied", () => {
           it("should add correct enum to denied", async () => {
             await addUser(user1Address, userTypes.Denied, owner);
@@ -317,28 +292,6 @@ describe("CommunityRules", function () {
 
           it("should return error message", async () => {
             await expect(addUser(user7Address, userTypes.Contributor, owner)).to.be.revertedWith(
-              "Proportionality invalid"
-            );
-          });
-        });
-
-        context("to validator with proportionality 1", () => {
-          beforeEach(async () => {
-            await addInvitation(owner, user2Address, userTypes.Validator, owner);
-            await addInvitation(owner, user3Address, userTypes.Validator, owner);
-            await addInvitation(owner, user4Address, userTypes.Validator, owner);
-            await addInvitation(owner, user5Address, userTypes.Validator, owner);
-            await addInvitation(owner, user6Address, userTypes.Validator, owner);
-
-            await addUser(user2Address, userTypes.Validator, owner);
-            await addUser(user3Address, userTypes.Validator, owner);
-            await addUser(user4Address, userTypes.Validator, owner);
-            await addUser(user5Address, userTypes.Validator, owner);
-            await addUser(user6Address, userTypes.Validator, owner);
-          });
-
-          it("should return error message", async () => {
-            await expect(addUser(user7Address, userTypes.Validator, owner)).to.be.revertedWith(
               "Proportionality invalid"
             );
           });
@@ -577,7 +530,7 @@ describe("CommunityRules", function () {
       it("", async () => {
         const settings = await instance.getUserTypeSettings(userTypes.Regenerator);
 
-        expect(settings).deep.to.equal([0n, false, true, 0]);
+        expect(settings).deep.to.equal([0n, false, true, 0, false]);
       });
     });
 
@@ -585,7 +538,7 @@ describe("CommunityRules", function () {
       it("returns settings", async () => {
         const settings = await instance.getUserTypeSettings(userTypes.Contributor);
 
-        expect(settings).deep.to.equal([1n, false, true, 100000n]);
+        expect(settings).deep.to.equal([1n, false, true, 100000n, true]);
       });
     });
 
@@ -593,7 +546,7 @@ describe("CommunityRules", function () {
       it("returns settings", async () => {
         const settings = await instance.getUserTypeSettings(userTypes.Inspector);
 
-        expect(settings).deep.to.equal([2n, true, true, 0]);
+        expect(settings).deep.to.equal([2n, true, true, 0, false]);
       });
     });
 
@@ -601,7 +554,7 @@ describe("CommunityRules", function () {
       it("returns settings", async () => {
         const settings = await instance.getUserTypeSettings(userTypes.Activist);
 
-        expect(settings).deep.to.equal([1n, false, true, 100000n]);
+        expect(settings).deep.to.equal([1n, false, true, 100000n, true]);
       });
     });
 
@@ -609,7 +562,7 @@ describe("CommunityRules", function () {
       it("returns settings", async () => {
         const settings = await instance.getUserTypeSettings(userTypes.Researcher);
 
-        expect(settings).deep.to.equal([1n, false, true, 200000n]);
+        expect(settings).deep.to.equal([1n, false, true, 200000n, true]);
       });
     });
 
@@ -617,15 +570,101 @@ describe("CommunityRules", function () {
       it("returns settings", async () => {
         const settings = await instance.getUserTypeSettings(userTypes.Developer);
 
-        expect(settings).deep.to.equal([1n, false, true, 200000n]);
+        expect(settings).deep.to.equal([1n, false, true, 200000n, true]);
+      });
+    });
+  });
+
+  describe("#votersCount", () => {
+    beforeEach(async () => {
+      await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user2Address, userTypes.Activist, owner);
+      await addInvitation(owner, user3Address, userTypes.Developer, owner);
+      await addInvitation(owner, user4Address, userTypes.Contributor, owner);
+      await addInvitation(owner, user5Address, userTypes.Researcher, owner);
+
+      await addUser(user1Address, userTypes.Regenerator, owner);
+      await addUser(user2Address, userTypes.Activist, owner);
+      await addUser(user3Address, userTypes.Developer, owner);
+      await addUser(user4Address, userTypes.Contributor, owner);
+      await addUser(user5Address, userTypes.Researcher, owner);
+    });
+
+    context("when have 4 voters", () => {
+      context("when all voters is not denied", () => {
+        it("must returns 4 voters", async () => {
+          const votersCount = await instance.votersCount();
+
+          expect(votersCount).to.equal(4);
+        });
+      });
+
+      context("when some voters is  denied", () => {
+        beforeEach(async () => {
+          await instance.setDeniedType(user2Address);
+        });
+
+        it("must return only valid voters", async () => {
+          const votersCount = await instance.votersCount();
+
+          expect(votersCount).to.equal(3);
+        });
+      });
+    });
+  });
+
+  describe("#isVoter", () => {
+    beforeEach(async () => {
+      await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user2Address, userTypes.Activist, owner);
+      await addInvitation(owner, user3Address, userTypes.Developer, owner);
+      await addInvitation(owner, user4Address, userTypes.Contributor, owner);
+      await addInvitation(owner, user5Address, userTypes.Researcher, owner);
+
+      await addUser(user1Address, userTypes.Regenerator, owner);
+      await addUser(user2Address, userTypes.Activist, owner);
+      await addUser(user3Address, userTypes.Developer, owner);
+      await addUser(user4Address, userTypes.Contributor, owner);
+      await addUser(user5Address, userTypes.Researcher, owner);
+    });
+
+    context("when is regenerator", () => {
+      it("must returns false", async () => {
+        const isVoter = await instance.isVoter(user1Address);
+
+        expect(isVoter).to.equal(false);
       });
     });
 
-    context("when get to validator", () => {
-      it("", async () => {
-        const settings = await instance.getUserTypeSettings(userTypes.Validator);
+    context("when is activist", () => {
+      it("must returns true", async () => {
+        const isVoter = await instance.isVoter(user2Address);
 
-        expect(settings).deep.to.equal([1n, false, true, 1000000n]);
+        expect(isVoter).to.equal(true);
+      });
+    });
+
+    context("when is developer", () => {
+      it("must returns true", async () => {
+        const isVoter = await instance.isVoter(user3Address);
+
+        expect(isVoter).to.equal(true);
+      });
+    });
+
+    context("when is contributor", () => {
+      it("must returns true", async () => {
+        const isVoter = await instance.isVoter(user4Address);
+
+        expect(isVoter).to.equal(true);
+      });
+    });
+
+    context("when is researcher", () => {
+      it("must returns true", async () => {
+        const isVoter = await instance.isVoter(user5Address);
+
+        expect(isVoter).to.equal(true);
       });
     });
   });

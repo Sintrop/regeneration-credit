@@ -9,7 +9,7 @@ describe("ActivistRules", () => {
   let owner, activ1Address, activ2Address, activ3Address, regenerator1Address, inspector1Address, inspector2Address;
 
   const activistPoolArgs = {
-    totalTokens: "30000000000000000000000000",
+    totalTokens: "40000000000000000000000000",
     halving: 12,
     blocksPerEra: 20,
   };
@@ -266,7 +266,7 @@ describe("ActivistRules", () => {
             it("activist balance must be", async () => {
               const balance = await regenerationCredit.balanceOf(activ1Address);
 
-              expect(balance).to.equal(1250000000000000000000000n);
+              expect(balance).to.equal(1666666666666666666666666n);
             });
           });
 
@@ -294,7 +294,7 @@ describe("ActivistRules", () => {
             it("activist1 balance must be", async () => {
               const balance = await regenerationCredit.balanceOf(activ1Address);
 
-              expect(balance).to.equal(625000000000000000000000n);
+              expect(balance).to.equal(833333333333333333333333n);
             });
 
             it("activist3 to era 2", async () => {
@@ -306,7 +306,7 @@ describe("ActivistRules", () => {
             it("activist3 balance must be", async () => {
               const balance = await regenerationCredit.balanceOf(activ3Address);
 
-              expect(balance).to.equal(625000000000000000000000n);
+              expect(balance).to.equal(833333333333333333333333n);
             });
           });
         });

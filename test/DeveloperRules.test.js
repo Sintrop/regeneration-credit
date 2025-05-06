@@ -1,38 +1,31 @@
-const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 
-const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { ethers } = require("hardhat");
-const { ZERO_ADDRESS } = require("./shared/zeroAddress");
+const { voteRulesDeployed } = require("./shared/vote_rules_deployed");
 
 describe("DeveloperRules", (accounts) => {
-  let instance;
-  let communityRules;
-  let developerPool;
-  let regenerationCredit;
-  let validatorRules;
-  let validatorPool;
+  let instance, communityRules, developerPool, regenerationCredit, validationRules, researcherRules, contributorRules;
   let owner,
     dev1Address,
     dev2Address,
     dev3Address,
-    validator1Address,
-    validator2Address,
-    validator3Address,
-    validator4Address;
+    user1Address,
+    user2Address,
+    user3Address,
+    user4Address,
+    user5Address,
+    user6Address,
+    user7Address,
+    user8Address,
+    user9Address,
+    anyAddress;
 
   let developerPoolParams = {
-    totalTokens: "30000000000000000000000000",
+    totalTokens: "40000000000000000000000000",
     halving: 12,
-    blocksPerEra: 50,
-  };
-
-  const validatorPoolargs = {
-    totalTokens: "30000000000000000000000000",
-    halving: 12,
-    blocksPerEra: 80,
+    blocksPerEra: 140,
   };
 
   const addDeveloper = async (name, from) => {
@@ -43,15 +36,19 @@ describe("DeveloperRules", (accounts) => {
     await communityRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
-  const addValidator = async (from) => {
-    await validatorRules.connect(from).addValidator();
+  const addResearcher = async (name, from) => {
+    await researcherRules.connect(from).addResearcher(name, "photoURL");
+  };
+
+  const addContributor = async (name, from) => {
+    await contributorRules.connect(from).addContributor(name, "photoURL");
+  };
+
+  const addActivist = async (name, from) => {
+    await activistRules.connect(from).addActivist(name, "photoURL");
   };
 
   const timeBetweenWorks = 10;
-  const maxPenalties = 3;
-  const securityBlocksToValidatorAnalysis = 10;
-  const firstValidatorLimit = 8;
-  const secondValidatorLimit = 14;
 
   beforeEach(async () => {
     [
@@ -59,64 +56,42 @@ describe("DeveloperRules", (accounts) => {
       dev1Address,
       dev2Address,
       dev3Address,
-      validator1Address,
-      validator2Address,
-      validator3Address,
-      validator4Address,
+      user1Address,
+      user2Address,
+      user3Address,
+      user4Address,
+      user5Address,
+      user6Address,
+      user7Address,
+      user8Address,
+      user9Address,
+      anyAddress,
     ] = await ethers.getSigners();
 
-    regenerationCredit = await regenerationCreditDeployed();
-    communityRules = await communityRulesDeployed();
+    const validatorRulesDeployed = await voteRulesDeployed();
 
-    developerPoolFactory = await ethers.getContractFactory("DeveloperPool");
-    developerPool = await developerPoolFactory.deploy(
-      regenerationCredit.target,
-      developerPoolParams.halving,
-      developerPoolParams.blocksPerEra
-    );
-
-    const validatorPoolFactory = await ethers.getContractFactory("ValidatorPool");
-    validatorPool = await validatorPoolFactory.deploy(
-      regenerationCredit.target,
-      validatorPoolargs.halving,
-      validatorPoolargs.blocksPerEra
-    );
-
-    const validatorRulesFactory = await ethers.getContractFactory("ValidatorRules");
-    validatorRules = await validatorRulesFactory.deploy(firstValidatorLimit, secondValidatorLimit);
-
-    developerRulesFactory = await ethers.getContractFactory("DeveloperRules");
-    instance = await developerRulesFactory.deploy(
-      communityRules.target,
-      developerPool.target,
-      validatorRules.target,
-      timeBetweenWorks,
-      maxPenalties,
-      securityBlocksToValidatorAnalysis
-    );
-
-    const validatorRulesDependencies = {
-      communityRulesAddress: communityRules.target,
-      regeneratorRulesAddress: ZERO_ADDRESS,
-      validatorPoolAddress: validatorPool.target,
-      inspectorRulesAddress: communityRules.target,
-      developerRulesAddress: instance.target,
-      researcherRulesAddress: ZERO_ADDRESS,
-      contributorRulesAddress: ZERO_ADDRESS,
-      activistRulesAddress: ZERO_ADDRESS,
-    };
+    regenerationCredit = validatorRulesDeployed.regenerationCredit;
+    communityRules = validatorRulesDeployed.communityRules;
+    instance = validatorRulesDeployed.developerRules;
+    validationRules = validatorRulesDeployed.validationRules;
+    developerPool = validatorRulesDeployed.developerPool;
+    contributorRules = validatorRulesDeployed.contributorRules;
+    researcherRules = validatorRulesDeployed.researcherRules;
+    activistRules = validatorRulesDeployed.activistRules;
 
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(owner);
-    await communityRules.newAllowedCaller(validatorRules.target);
+    await communityRules.newAllowedCaller(validationRules.target);
+    await communityRules.newAllowedCaller(contributorRules.target);
+    await communityRules.newAllowedCaller(researcherRules.target);
+    await communityRules.newAllowedCaller(activistRules.target);
     await developerPool.newAllowedCaller(instance.target);
-    await validatorPool.newAllowedCaller(validatorRules.target);
-    await validatorRules.newAllowedCaller(instance.target);
-    await validatorRules.newAllowedCaller(owner);
-    await instance.newAllowedCaller(validatorRules.target);
+    await validationRules.newAllowedCaller(instance.target);
+    await validationRules.newAllowedCaller(owner);
+    await instance.newAllowedCaller(validationRules.target);
     await instance.newAllowedCaller(owner);
-    await regenerationCredit.addContractPool(developerPool.target, "30000000000000000000000000");
-    await validatorRules.setContractAddressDependencies(validatorRulesDependencies);
+    await regenerationCredit.addContractPool(developerPool.target, "40000000000000000000000000");
+
     await addInvitation(owner, dev1Address, userTypes.Developer, owner);
   });
 
@@ -218,7 +193,7 @@ describe("DeveloperRules", (accounts) => {
         });
 
         it("should add report", async () => {
-          await advanceBlock(timeBetweenWorks);
+          await advanceBlock(timeBetweenWorks * 2);
           await instance.connect(dev1Address).addReport("description", "report");
           const report = await instance.reports(2);
           expect(report.id).to.equal(2);
@@ -262,7 +237,7 @@ describe("DeveloperRules", (accounts) => {
 
       context("when do not have security blocks to validator analysis", () => {
         beforeEach(async () => {
-          await advanceBlock(25);
+          await advanceBlock(100);
         });
 
         it("should return error message", async () => {
@@ -335,14 +310,19 @@ describe("DeveloperRules", (accounts) => {
   });
 
   describe("addReportValidation", () => {
-    context("with validator", () => {
+    context("with developer", () => {
       beforeEach(async () => {
-        await addInvitation(owner, validator1Address, userTypes.Validator, owner);
-        await addInvitation(owner, validator2Address, userTypes.Validator, owner);
-        await addInvitation(owner, validator3Address, userTypes.Validator, owner);
-        await addInvitation(owner, validator4Address, userTypes.Validator, owner);
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
+        await addInvitation(owner, user3Address, userTypes.Developer, owner);
+        await addInvitation(owner, user4Address, userTypes.Developer, owner);
+        await addInvitation(owner, user5Address, userTypes.Developer, owner);
+        await addInvitation(owner, user6Address, userTypes.Developer, owner);
+        await addInvitation(owner, user7Address, userTypes.Developer, owner);
+        await addInvitation(owner, user8Address, userTypes.Developer, owner);
+        await addInvitation(owner, user9Address, userTypes.Developer, owner);
 
-        await addValidator(validator1Address);
+        await addDeveloper("User A", user1Address);
         await addDeveloper("Developer A", dev1Address);
       });
 
@@ -351,24 +331,24 @@ describe("DeveloperRules", (accounts) => {
           beforeEach(async () => {
             await instance.connect(dev1Address).addReport("description", "report");
 
-            await addValidator(validator2Address);
-            await addValidator(validator3Address);
-            await addValidator(validator4Address);
+            await addDeveloper("User B", user2Address);
+            await addDeveloper("User C", user3Address);
+            await addDeveloper("User D", user4Address);
 
-            await instance.connect(validator1Address).addReportValidation(1, "justification");
-            await instance.connect(validator2Address).addReportValidation(1, "justification");
+            await instance.connect(user1Address).addReportValidation(1, "justification");
+            await instance.connect(user2Address).addReportValidation(1, "justification");
           });
 
           it("set valid field to false", async () => {
-            const construbution = await instance.reports(1);
+            const contribution = await instance.reports(1);
 
-            expect(construbution.valid).to.eq(false);
+            expect(contribution.valid).to.eq(false);
           });
 
           it("populate invalidatedAt field", async () => {
-            const construbution = await instance.reports(1);
+            const contribution = await instance.reports(1);
 
-            expect(construbution.invalidatedAt).to.above(0);
+            expect(contribution.invalidatedAt).to.above(0);
           });
 
           it("set maxPenalties to developer", async () => {
@@ -384,8 +364,8 @@ describe("DeveloperRules", (accounts) => {
           });
 
           it("must remove one pool level from current era", async () => {
-            const construbution = await instance.reports(1);
-            const eraLevels = await developerPool.eraLevels(construbution.era, dev1Address);
+            const contribution = await instance.reports(1);
+            const eraLevels = await developerPool.eraLevels(contribution.era, dev1Address);
 
             expect(eraLevels).to.eq(0);
           });
@@ -401,23 +381,21 @@ describe("DeveloperRules", (accounts) => {
           beforeEach(async () => {
             await instance.connect(dev1Address).addReport("description", "report");
 
-            await addValidator(validator2Address);
-            await addValidator(validator3Address);
-            await addValidator(validator4Address);
+            await addDeveloper("User B", user2Address);
 
-            await instance.connect(validator1Address).addReportValidation(1, "justification");
+            await instance.connect(user1Address).addReportValidation(1, "justification");
           });
 
           it("valid field is true", async () => {
-            const construbution = await instance.reports(1);
+            const report = await instance.reports(1);
 
-            expect(construbution.valid).to.eq(true);
+            expect(report.valid).to.eq(true);
           });
 
           it("invalidatedAt is equal 0", async () => {
-            const construbution = await instance.reports(1);
+            const report = await instance.reports(1);
 
-            expect(construbution.invalidatedAt).to.eq(0);
+            expect(report.invalidatedAt).to.eq(0);
           });
 
           it("developer totalPenalties is 0", async () => {
@@ -427,8 +405,8 @@ describe("DeveloperRules", (accounts) => {
           });
 
           it("developer pool level is 1", async () => {
-            const construbution = await instance.reports(1);
-            const eraLevels = await developerPool.eraLevels(construbution.era, dev1Address);
+            const report = await instance.reports(1);
+            const eraLevels = await developerPool.eraLevels(report.era, dev1Address);
 
             expect(eraLevels).to.eq(1);
           });
@@ -437,23 +415,486 @@ describe("DeveloperRules", (accounts) => {
 
       context("when developer reach max maxPenalties", () => {
         beforeEach(async () => {
-          await addValidator(validator2Address);
+          await addDeveloper("User B", user2Address);
+          await addDeveloper("User C", user3Address);
+          await addDeveloper("User D", user4Address);
+          await addDeveloper("User E", user5Address);
+          await addDeveloper("User F", user6Address);
+          await addDeveloper("User G", user7Address);
+          await addDeveloper("User H", user8Address);
+          await addDeveloper("User I", user9Address);
 
-          await validatorRules.connect(validator1Address).declareAlive();
-          await validatorRules.connect(validator2Address).declareAlive();
+          await instance.connect(user1Address).addReport("description", "report");
+          await instance.connect(user2Address).addReport("description", "report");
+          await instance.connect(user3Address).addReport("description", "report");
+          await instance.connect(user4Address).addReport("description", "report");
+          await instance.connect(user5Address).addReport("description", "report");
+          await instance.connect(user6Address).addReport("description", "report");
+          await instance.connect(user7Address).addReport("description", "report");
+          await instance.connect(user8Address).addReport("description", "report");
+          await instance.connect(user9Address).addReport("description", "report");
+
+          await advanceBlock(10);
+
+          await instance.connect(user1Address).addReport("description", "report");
+          await instance.connect(user2Address).addReport("description", "report");
+          await instance.connect(user3Address).addReport("description", "report");
+          await instance.connect(user4Address).addReport("description", "report");
+          await instance.connect(user5Address).addReport("description", "report");
+
+          await advanceBlock(10);
+
+          await instance.connect(user1Address).addReport("description", "report");
+          await instance.connect(user2Address).addReport("description", "report");
+          await instance.connect(user3Address).addReport("description", "report");
+          await instance.connect(user4Address).addReport("description", "report");
+          await instance.connect(user5Address).addReport("description", "report");
+
+          await instance.connect(user2Address).addReportValidation(1, "justification");
+          await instance.connect(user3Address).addReportValidation(1, "justification");
+
+          await instance.connect(user1Address).addReportValidation(10, "justification");
+          await instance.connect(user4Address).addReportValidation(10, "justification");
+
+          await advanceBlock(10);
+
+          await instance.connect(user5Address).addReportValidation(15, "justification");
+          await instance.connect(user2Address).addReportValidation(15, "justification");
+        });
+
+        it("user type must be DENIED", async () => {
+          const userType = await communityRules.getUser(user1Address);
+
+          expect(userType).to.eq(userTypes.Denied);
+        });
+      });
+
+      context("with invalid report", () => {
+        context("when current era is different from report created era", () => {
+          beforeEach(async () => {
+            await instance.connect(dev1Address).addReport("description", "report");
+
+            await advanceBlock(developerPoolParams.blocksPerEra);
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user1Address).addReportValidation(1, "justification")).to.be.revertedWith(
+              "This report is not VALID"
+            );
+          });
+        });
+
+        context("when report is invalidated", () => {
+          beforeEach(async () => {
+            await instance.connect(dev1Address).addReport("description", "report");
+
+            await addDeveloper("User B", user2Address);
+            await addDeveloper("User C", user3Address);
+            await addDeveloper("User D", user4Address);
+
+            await instance.connect(user1Address).addReportValidation(1, "justification");
+            await instance.connect(user2Address).addReportValidation(1, "justification");
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user3Address).addReportValidation(1, "justification")).to.be.revertedWith(
+              "This report is not VALID"
+            );
+          });
+        });
+
+        context("when do not wait waitedTimeBetweenVotes", () => {
+          beforeEach(async () => {
+            await addDeveloper("User B", user2Address);
+
+            await instance.connect(dev1Address).addReport("description", "report");
+            await instance.connect(user2Address).addReport("description", "report");
+
+            await addDeveloper("User C", user3Address);
+
+            await instance.connect(user3Address).addReportValidation(1, "justification");
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user3Address).addReportValidation(2, "justification")).to.be.revertedWith(
+              "Wait timeBetweenVotes"
+            );
+          });
+        });
+
+        context("when wait waitedTimeBetweenVotes", () => {
+          beforeEach(async () => {
+            await addDeveloper("User B", user2Address);
+
+            await instance.connect(dev1Address).addReport("description", "report");
+            await instance.connect(user2Address).addReport("description", "report");
+
+            await addDeveloper("User C", user3Address);
+
+            await instance.connect(user3Address).addReportValidation(1, "justification");
+            await advanceBlock(10);
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user3Address).addReportValidation(2, "justification")).not.be.revertedWith(
+              "Wait timeBetweenVotes"
+            );
+          });
+        });
+
+        context("when report do not exists", () => {
+          it("should return error message", async () => {
+            await expect(instance.connect(user1Address).addReportValidation(0, "justification")).to.be.revertedWith(
+              "This report is not VALID"
+            );
+          });
+        });
+      });
+    });
+
+    context("with contributor", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, anyAddress, userTypes.Developer, owner);
+        await addInvitation(owner, user1Address, userTypes.Contributor, owner);
+        await addInvitation(owner, user2Address, userTypes.Contributor, owner);
+        await addInvitation(owner, user3Address, userTypes.Contributor, owner);
+        await addInvitation(owner, user4Address, userTypes.Contributor, owner);
+        await addInvitation(owner, user5Address, userTypes.Contributor, owner);
+        await addInvitation(owner, user6Address, userTypes.Contributor, owner);
+        await addInvitation(owner, user7Address, userTypes.Contributor, owner);
+        await addInvitation(owner, user8Address, userTypes.Contributor, owner);
+        await addInvitation(owner, user9Address, userTypes.Contributor, owner);
+
+        await addContributor("User A", user1Address);
+        await addDeveloper("User", anyAddress);
+      });
+
+      context("with valid report", () => {
+        context("when report must be invalidated", () => {
+          beforeEach(async () => {
+            await instance.connect(anyAddress).addReport("description", "report");
+
+            await addContributor("User B", user2Address);
+            await addContributor("User C", user3Address);
+            await addContributor("User D", user4Address);
+
+            await instance.connect(user1Address).addReportValidation(1, "justification");
+            await instance.connect(user2Address).addReportValidation(1, "justification");
+          });
+
+          it("set valid field to false", async () => {
+            const contribution = await instance.reports(1);
+
+            expect(contribution.valid).to.eq(false);
+          });
+
+          it("populate invalidatedAt field", async () => {
+            const contribution = await instance.reports(1);
+
+            expect(contribution.invalidatedAt).to.above(0);
+          });
+
+          it("set maxPenalties to contributor", async () => {
+            const totalPenalties = await instance.totalPenalties(anyAddress);
+
+            expect(totalPenalties).to.eq(1);
+          });
+
+          it("user type must be DEVELOPER yet", async () => {
+            const userType = await communityRules.getUser(anyAddress);
+
+            expect(userType).to.eq(userTypes.Developer);
+          });
+
+          it("must remove one pool level from current era", async () => {
+            const contribution = await instance.reports(1);
+            const eraLevels = await developerPool.eraLevels(contribution.era, anyAddress);
+
+            expect(eraLevels).to.eq(0);
+          });
+
+          it("must decrement reportsCount in one", async () => {
+            const reportsCount = await instance.reportsCount();
+
+            expect(reportsCount).to.eq(0);
+          });
+        });
+
+        context("when report must not be invalidated", () => {
+          beforeEach(async () => {
+            await instance.connect(anyAddress).addReport("description", "report");
+
+            await addContributor("User B", user2Address);
+
+            await instance.connect(user1Address).addReportValidation(1, "justification");
+          });
+
+          it("valid field is true", async () => {
+            const report = await instance.reports(1);
+
+            expect(report.valid).to.eq(true);
+          });
+
+          it("invalidatedAt is equal 0", async () => {
+            const report = await instance.reports(1);
+
+            expect(report.invalidatedAt).to.eq(0);
+          });
+
+          it("contributor totalPenalties is 0", async () => {
+            const totalPenalties = await instance.totalPenalties(anyAddress);
+
+            expect(totalPenalties).to.eq(0);
+          });
+
+          it("contributor pool level is 1", async () => {
+            const report = await instance.reports(1);
+            const eraLevels = await developerPool.eraLevels(report.era, anyAddress);
+
+            expect(eraLevels).to.eq(1);
+          });
+        });
+      });
+
+      context("when developer reach maxPenalties", () => {
+        beforeEach(async () => {
+          await addContributor("User B", user2Address);
+          await addContributor("User C", user3Address);
+
+          await instance.connect(anyAddress).addReport("description", "report");
+          await instance.connect(user1Address).addReportValidation(1, "justification");
+          await instance.connect(user2Address).addReportValidation(1, "justification");
+
+          await advanceBlock(10);
+
+          await instance.connect(anyAddress).addReport("description", "report");
+          await instance.connect(user1Address).addReportValidation(2, "justification");
+          await instance.connect(user3Address).addReportValidation(2, "justification");
+
+          await advanceBlock(10);
+
+          await instance.connect(anyAddress).addReport("description", "report");
+          await instance.connect(user1Address).addReportValidation(3, "justification");
+          await instance.connect(user2Address).addReportValidation(3, "justification");
+        });
+
+        it("user type must be DENIED", async () => {
+          const userType = await communityRules.getUser(anyAddress);
+
+          expect(userType).to.eq(userTypes.Denied);
+        });
+      });
+
+      context("with invalid report", () => {
+        context("when current era is different from report created era", () => {
+          beforeEach(async () => {
+            await instance.connect(anyAddress).addReport("description", "report");
+
+            await advanceBlock(developerPoolParams.blocksPerEra);
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user1Address).addReportValidation(1, "justification")).to.be.revertedWith(
+              "This report is not VALID"
+            );
+          });
+        });
+
+        context("when report is invalidated", () => {
+          beforeEach(async () => {
+            await instance.connect(anyAddress).addReport("description", "report");
+
+            await addContributor("User B", user2Address);
+            await addContributor("User C", user3Address);
+            await addContributor("User D", user4Address);
+
+            await instance.connect(user1Address).addReportValidation(1, "justification");
+            await instance.connect(user2Address).addReportValidation(1, "justification");
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user3Address).addReportValidation(1, "justification")).to.be.revertedWith(
+              "This report is not VALID"
+            );
+          });
+        });
+
+        context("when report do not exists", () => {
+          it("should return error message", async () => {
+            await expect(instance.connect(user1Address).addReportValidation(0, "justification")).to.be.revertedWith(
+              "This report is not VALID"
+            );
+          });
+        });
+      });
+    });
+
+    context("with researcher", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Researcher, owner);
+        await addInvitation(owner, user2Address, userTypes.Researcher, owner);
+        await addInvitation(owner, user3Address, userTypes.Researcher, owner);
+        await addInvitation(owner, user4Address, userTypes.Researcher, owner);
+        await addInvitation(owner, user5Address, userTypes.Researcher, owner);
+        await addInvitation(owner, user6Address, userTypes.Researcher, owner);
+        await addInvitation(owner, user7Address, userTypes.Researcher, owner);
+        await addInvitation(owner, user8Address, userTypes.Researcher, owner);
+        await addInvitation(owner, user9Address, userTypes.Researcher, owner);
+
+        await addResearcher("User A", user1Address);
+        await addDeveloper("User", dev1Address);
+      });
+
+      context("with valid report", () => {
+        context("when report must be invalidated", () => {
+          beforeEach(async () => {
+            await instance.connect(dev1Address).addReport("description", "report");
+
+            await addResearcher("User B", user2Address);
+            await addResearcher("User C", user3Address);
+            await addResearcher("User D", user4Address);
+
+            await instance.connect(user1Address).addReportValidation(1, "justification");
+            await instance.connect(user2Address).addReportValidation(1, "justification");
+          });
+
+          it("set valid field to false", async () => {
+            const contribution = await instance.reports(1);
+
+            expect(contribution.valid).to.eq(false);
+          });
+
+          it("populate invalidatedAt field", async () => {
+            const contribution = await instance.reports(1);
+
+            expect(contribution.invalidatedAt).to.above(0);
+          });
+
+          it("set maxPenalties to developer", async () => {
+            const totalPenalties = await instance.totalPenalties(dev1Address);
+
+            expect(totalPenalties).to.eq(1);
+          });
+
+          it("user type must be DEVELOPER yet", async () => {
+            const userType = await communityRules.getUser(dev1Address);
+
+            expect(userType).to.eq(userTypes.Developer);
+          });
+
+          it("must remove one pool level from current era", async () => {
+            const contribution = await instance.reports(1);
+            const eraLevels = await developerPool.eraLevels(contribution.era, dev1Address);
+
+            expect(eraLevels).to.eq(0);
+          });
+
+          it("do not must decrement reportsTotalCount", async () => {
+            const reportsTotalCount = await instance.reportsTotalCount();
+
+            expect(reportsTotalCount).to.eq(1);
+          });
+
+          it("must decrement reportsCount in one", async () => {
+            const reportsCount = await instance.reportsCount();
+
+            expect(reportsCount).to.eq(0);
+          });
+        });
+
+        context("when report must not be invalidated", () => {
+          beforeEach(async () => {
+            await instance.connect(dev1Address).addReport("description", "report");
+
+            await addResearcher("User B", user2Address);
+
+            await instance.connect(user1Address).addReportValidation(1, "justification");
+          });
+
+          it("valid field is true", async () => {
+            const report = await instance.reports(1);
+
+            expect(report.valid).to.eq(true);
+          });
+
+          it("invalidatedAt is equal 0", async () => {
+            const report = await instance.reports(1);
+
+            expect(report.invalidatedAt).to.eq(0);
+          });
+
+          it("contributor totalPenalties is 0", async () => {
+            const totalPenalties = await instance.totalPenalties(dev1Address);
+
+            expect(totalPenalties).to.eq(0);
+          });
+
+          it("contributor pool level is 1", async () => {
+            const report = await instance.reports(1);
+            const eraLevels = await developerPool.eraLevels(report.era, dev1Address);
+
+            expect(eraLevels).to.eq(1);
+          });
+        });
+      });
+
+      context("when developer reach max maxPenalties", () => {
+        beforeEach(async () => {
+          await addResearcher("User B", user2Address);
+          await addResearcher("User C", user3Address);
+          await addResearcher("User D", user4Address);
+          await addResearcher("User E", user5Address);
+          await addResearcher("User F", user6Address);
+          await addResearcher("User G", user7Address);
+          await addResearcher("User H", user8Address);
+          await addResearcher("User I", user9Address);
 
           await instance.connect(dev1Address).addReport("description", "report");
-          await instance.connect(validator1Address).addReportValidation(1, "justification");
 
-          await advanceBlock(developerPoolParams.blocksPerEra);
-
-          await instance.connect(dev1Address).addReport("description", "report");
-          await instance.connect(validator1Address).addReportValidation(2, "justification");
-
-          await advanceBlock(developerPoolParams.blocksPerEra);
+          await advanceBlock(10);
 
           await instance.connect(dev1Address).addReport("description", "report");
-          await instance.connect(validator1Address).addReportValidation(3, "justification");
+
+          await advanceBlock(10);
+
+          await instance.connect(dev1Address).addReport("description", "report");
+
+          await researcherRules.connect(user1Address).addResearch("description", "report", "file");
+          await researcherRules.connect(user2Address).addResearch("description", "report", "file");
+          await researcherRules.connect(user3Address).addResearch("description", "report", "file");
+          await researcherRules.connect(user4Address).addResearch("description", "report", "file");
+          await researcherRules.connect(user5Address).addResearch("description", "report", "file");
+          await researcherRules.connect(user6Address).addResearch("description", "report", "file");
+          await researcherRules.connect(user7Address).addResearch("description", "report", "file");
+          await researcherRules.connect(user8Address).addResearch("description", "report", "file");
+          await researcherRules.connect(user9Address).addResearch("description", "report", "file");
+
+          await advanceBlock(10);
+
+          await researcherRules.connect(user1Address).addResearch("description", "report", "file");
+          await researcherRules.connect(user2Address).addResearch("description", "report", "file");
+          await researcherRules.connect(user3Address).addResearch("description", "report", "file");
+          await researcherRules.connect(user4Address).addResearch("description", "report", "file");
+          await researcherRules.connect(user5Address).addResearch("description", "report", "file");
+
+          await advanceBlock(10);
+
+          await researcherRules.connect(user1Address).addResearch("description", "report", "file");
+          await researcherRules.connect(user2Address).addResearch("description", "report", "file");
+          await researcherRules.connect(user3Address).addResearch("description", "report", "file");
+          await researcherRules.connect(user4Address).addResearch("description", "report", "file");
+          await researcherRules.connect(user5Address).addResearch("description", "report", "file");
+
+          await instance.connect(user2Address).addReportValidation(1, "justification");
+          await instance.connect(user3Address).addReportValidation(1, "justification");
+
+          await instance.connect(user1Address).addReportValidation(2, "justification");
+          await instance.connect(user4Address).addReportValidation(2, "justification");
+
+          await advanceBlock(10);
+
+          await instance.connect(user5Address).addReportValidation(3, "justification");
+          await instance.connect(user2Address).addReportValidation(3, "justification");
         });
 
         it("user type must be DENIED", async () => {
@@ -468,13 +909,13 @@ describe("DeveloperRules", (accounts) => {
           beforeEach(async () => {
             await instance.connect(dev1Address).addReport("description", "report");
 
-            await advanceBlock(developerPoolParams.blocksPerEra + 1);
+            await advanceBlock(developerPoolParams.blocksPerEra);
           });
 
           it("should return error message", async () => {
-            await expect(
-              instance.connect(validator1Address).addReportValidation(1, "justification")
-            ).to.be.revertedWith("This report is not VALID");
+            await expect(instance.connect(user1Address).addReportValidation(1, "justification")).to.be.revertedWith(
+              "This report is not VALID"
+            );
           });
         });
 
@@ -482,29 +923,239 @@ describe("DeveloperRules", (accounts) => {
           beforeEach(async () => {
             await instance.connect(dev1Address).addReport("description", "report");
 
-            await addValidator(validator2Address);
-            await addValidator(validator3Address);
-            await addValidator(validator4Address);
+            await addResearcher("User B", user2Address);
+            await addResearcher("User C", user3Address);
+            await addResearcher("User D", user4Address);
 
-            await validatorRules.connect(validator1Address).declareAlive();
-            await validatorRules.connect(validator2Address).declareAlive();
-
-            await instance.connect(validator1Address).addReportValidation(1, "justification");
-            await instance.connect(validator2Address).addReportValidation(1, "justification");
+            await instance.connect(user1Address).addReportValidation(1, "justification");
+            await instance.connect(user2Address).addReportValidation(1, "justification");
           });
 
           it("should return error message", async () => {
-            await expect(
-              instance.connect(validator3Address).addReportValidation(1, "justification")
-            ).to.be.revertedWith("This report is not VALID");
+            await expect(instance.connect(user3Address).addReportValidation(1, "justification")).to.be.revertedWith(
+              "This report is not VALID"
+            );
           });
         });
 
         context("when report do not exists", () => {
           it("should return error message", async () => {
-            await expect(
-              instance.connect(validator1Address).addReportValidation(0, "justification")
-            ).to.be.revertedWith("This report is not VALID");
+            await expect(instance.connect(user1Address).addReportValidation(0, "justification")).to.be.revertedWith(
+              "This report is not VALID"
+            );
+          });
+        });
+      });
+    });
+
+    context("with activist", () => {
+      beforeEach(async () => {
+        await activistRules.newAllowedCaller(owner);
+
+        await addInvitation(owner, user1Address, userTypes.Activist, owner);
+        await addInvitation(owner, user4Address, userTypes.Activist, owner);
+        await addInvitation(owner, user7Address, userTypes.Activist, owner);
+
+        await addActivist("User A", user1Address);
+        await addDeveloper("User", dev1Address);
+      });
+
+      context("with valid report", () => {
+        beforeEach(async () => {
+          await addInvitation(owner, user2Address, userTypes.Activist, owner);
+          await addInvitation(owner, user3Address, userTypes.Activist, owner);
+          await addInvitation(owner, user5Address, userTypes.Activist, owner);
+          await addInvitation(owner, user6Address, userTypes.Activist, owner);
+          await addInvitation(owner, user8Address, userTypes.Activist, owner);
+          await addInvitation(owner, user9Address, userTypes.Activist, owner);
+        });
+
+        context("when report must be invalidated", () => {
+          beforeEach(async () => {
+            await instance.connect(dev1Address).addReport("description", "report");
+
+            await addActivist("User B", user2Address);
+            await addActivist("User C", user3Address);
+            await addActivist("User D", user4Address);
+
+            await instance.connect(user1Address).addReportValidation(1, "justification");
+            await instance.connect(user2Address).addReportValidation(1, "justification");
+          });
+
+          it("set valid field to false", async () => {
+            const contribution = await instance.reports(1);
+
+            expect(contribution.valid).to.eq(false);
+          });
+
+          it("populate invalidatedAt field", async () => {
+            const contribution = await instance.reports(1);
+
+            expect(contribution.invalidatedAt).to.above(0);
+          });
+
+          it("set maxPenalties to developer", async () => {
+            const totalPenalties = await instance.totalPenalties(dev1Address);
+
+            expect(totalPenalties).to.eq(1);
+          });
+
+          it("user type must be DEVELOPER yet", async () => {
+            const userType = await communityRules.getUser(dev1Address);
+
+            expect(userType).to.eq(userTypes.Developer);
+          });
+
+          it("must remove one pool level from current era", async () => {
+            const contribution = await instance.reports(1);
+            const eraLevels = await developerPool.eraLevels(contribution.era, dev1Address);
+
+            expect(eraLevels).to.eq(0);
+          });
+
+          it("do not must decrement reportsTotalCount", async () => {
+            const reportsTotalCount = await instance.reportsTotalCount();
+
+            expect(reportsTotalCount).to.eq(1);
+          });
+
+          it("must decrement reportsCount in one", async () => {
+            const reportsCount = await instance.reportsCount();
+
+            expect(reportsCount).to.eq(0);
+          });
+        });
+
+        context("when report must not be invalidated", () => {
+          beforeEach(async () => {
+            await instance.connect(dev1Address).addReport("description", "report");
+
+            await addActivist("User B", user2Address);
+
+            await instance.connect(user1Address).addReportValidation(1, "justification");
+          });
+
+          it("valid field is true", async () => {
+            const report = await instance.reports(1);
+
+            expect(report.valid).to.eq(true);
+          });
+
+          it("invalidatedAt is equal 0", async () => {
+            const report = await instance.reports(1);
+
+            expect(report.invalidatedAt).to.eq(0);
+          });
+
+          it("contributor totalPenalties is 0", async () => {
+            const totalPenalties = await instance.totalPenalties(dev1Address);
+
+            expect(totalPenalties).to.eq(0);
+          });
+
+          it("contributor pool level is 1", async () => {
+            const report = await instance.reports(1);
+            const eraLevels = await developerPool.eraLevels(report.era, dev1Address);
+
+            expect(eraLevels).to.eq(1);
+          });
+        });
+      });
+
+      context("when contributor reach max maxPenalties", () => {
+        beforeEach(async () => {
+          await communityRules.newAllowedCaller(user1Address);
+          await communityRules.newAllowedCaller(user4Address);
+          await communityRules.newAllowedCaller(user7Address);
+
+          await addActivist("User D", user4Address);
+          await addActivist("User G", user7Address);
+
+          await instance.connect(dev1Address).addReport("description", "report");
+
+          await advanceBlock(10);
+
+          await instance.connect(dev1Address).addReport("description", "report");
+
+          await advanceBlock(10);
+
+          await instance.connect(dev1Address).addReport("description", "report");
+
+          await addInvitation(user1Address, user2Address, userTypes.Regenerator, user1Address);
+          await addInvitation(user1Address, user3Address, userTypes.Inspector, user1Address);
+          await activistRules.addLevel(user2Address, 3, user3Address, 3);
+
+          await addInvitation(user4Address, user5Address, userTypes.Regenerator, user4Address);
+          await addInvitation(user4Address, user6Address, userTypes.Inspector, user4Address);
+          await activistRules.addLevel(user5Address, 3, user6Address, 3);
+
+          await addInvitation(user7Address, user8Address, userTypes.Regenerator, user7Address);
+          await addInvitation(user7Address, user9Address, userTypes.Inspector, user7Address);
+          await activistRules.addLevel(user8Address, 3, user9Address, 3);
+
+          await instance.connect(user1Address).addReportValidation(1, "justification");
+          await instance.connect(user4Address).addReportValidation(1, "justification");
+
+          await advanceBlock(10);
+
+          await instance.connect(user7Address).addReportValidation(2, "justification");
+          await instance.connect(user1Address).addReportValidation(2, "justification");
+
+          await advanceBlock(10);
+
+          await instance.connect(user4Address).addReportValidation(3, "justification");
+          await instance.connect(user7Address).addReportValidation(3, "justification");
+        });
+
+        it("user type must be DENIED", async () => {
+          const userType = await communityRules.getUser(dev1Address);
+
+          expect(userType).to.eq(userTypes.Denied);
+        });
+      });
+
+      context("with invalid report", () => {
+        context("when current era is different from report created era", () => {
+          beforeEach(async () => {
+            await instance.connect(dev1Address).addReport("description", "report");
+
+            await advanceBlock(developerPoolParams.blocksPerEra);
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user1Address).addReportValidation(1, "justification")).to.be.revertedWith(
+              "This report is not VALID"
+            );
+          });
+        });
+
+        context("when report is invalidated", () => {
+          beforeEach(async () => {
+            await addInvitation(owner, user2Address, userTypes.Activist, owner);
+            await addInvitation(owner, user3Address, userTypes.Activist, owner);
+
+            await instance.connect(dev1Address).addReport("description", "report");
+
+            await addActivist("User B", user2Address);
+            await addActivist("User C", user3Address);
+            await addActivist("User D", user4Address);
+
+            await instance.connect(user1Address).addReportValidation(1, "justification");
+            await instance.connect(user2Address).addReportValidation(1, "justification");
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(user3Address).addReportValidation(1, "justification")).to.be.revertedWith(
+              "This report is not VALID"
+            );
+          });
+        });
+
+        context("when report do not exists", () => {
+          it("should return error message", async () => {
+            await expect(instance.connect(user1Address).addReportValidation(0, "justification")).to.be.revertedWith(
+              "This report is not VALID"
+            );
           });
         });
       });
@@ -513,7 +1164,7 @@ describe("DeveloperRules", (accounts) => {
     context("without validator", () => {
       it("should return error message", async () => {
         await expect(instance.connect(owner).addReportValidation(1, "justification")).to.be.revertedWith(
-          "Please register as validator"
+          "Not a voter user"
         );
       });
     });
@@ -569,7 +1220,7 @@ describe("DeveloperRules", (accounts) => {
             it("should withdraw all tokens from era", async () => {
               let balanceOf = await regenerationCredit.balanceOf(dev1Address);
 
-              let tokensBalance = 1250000000000000000000000n;
+              let tokensBalance = 1666666666666666666666666n;
 
               expect(balanceOf).to.equal(tokensBalance);
             });
@@ -605,18 +1256,18 @@ describe("DeveloperRules", (accounts) => {
                 expect(developer.pool.currentEra).to.equal(2);
               });
 
-              it("developer1 balance must be 625000000000000000000000", async () => {
+              it("developer1 balance must be 833333333333333333333333", async () => {
                 let balanceOf = await regenerationCredit.balanceOf(dev1Address);
 
-                let tokensPerEra = 625000000000000000000000n;
+                let tokensPerEra = 833333333333333333333333n;
 
                 expect(balanceOf).to.equal(tokensPerEra);
               });
 
-              it("developer2 balance must be 625000000000000000000000", async () => {
+              it("developer2 balance must be 833333333333333333333333", async () => {
                 let balanceOf = await regenerationCredit.balanceOf(dev2Address);
 
-                let tokensPerEra = 625000000000000000000000n;
+                let tokensPerEra = 833333333333333333333333n;
 
                 expect(balanceOf).to.equal(tokensPerEra);
               });
@@ -650,7 +1301,7 @@ describe("DeveloperRules", (accounts) => {
 
           it("should can withdraw in two eras", async () => {
             let balanceOf = await regenerationCredit.balanceOf(dev1Address);
-            let balance = 2500000000000000000000000n;
+            let balance = 3333333333333333333333332n;
 
             expect(balanceOf).to.equal(balance);
           });
