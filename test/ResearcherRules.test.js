@@ -6,6 +6,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 const { voteRulesDeployed } = require("./shared/vote_rules_deployed");
+const { deployMockContract } = require("@clrfund/waffle-mock-contract");
 
 describe("ResearcherRules", () => {
   let instance;
@@ -105,45 +106,71 @@ describe("ResearcherRules", () => {
       });
 
       context("when researcher don't exist", () => {
-        beforeEach(async () => {
-          await addResearcher("Researcher A", resea1Address);
+        context("when max limit is not reached", () => {
+          beforeEach(async () => {
+            await addResearcher("Researcher A", resea1Address);
+          });
+
+          it("create researcher", async () => {
+            const researcher = await instance.getResearcher(resea1Address);
+
+            expect(researcher.researcherWallet).to.equal(resea1Address.address);
+          });
+
+          it("increment researcherCount after create researcher", async () => {
+            const researchersCount = await communityRules.userTypesCount(userTypes.Researcher);
+
+            expect(researchersCount).to.equal(1);
+          });
+
+          it("add created researcher in userType contract as a RESEARCHER", async () => {
+            const userType = await communityRules.getUser(resea1Address);
+            const RESEARCHER = 3;
+
+            expect(userType).to.equal(RESEARCHER);
+          });
+
+          it("add created researcher with 0 published researches", async () => {
+            const researcher = await instance.getResearcher(resea1Address);
+
+            expect(researcher.publishedResearches).to.equal(0);
+          });
+
+          it("add created researcher with 0 published items", async () => {
+            const researcher = await instance.getResearcher(resea1Address);
+
+            expect(researcher.publishedItems).to.equal(0);
+          });
+
+          it("add created researcher with publishedMethod = true", async () => {
+            const researcher = await instance.getResearcher(resea1Address);
+
+            expect(researcher.canPublishMethod).to.equal(true);
+          });
         });
 
-        it("create researcher", async () => {
-          const researcher = await instance.getResearcher(resea1Address);
+        context("when max limit is reached", () => {
+          beforeEach(async () => {
+            const communityRulesMock = await hre.artifacts.readArtifact("CommunityRules");
+            let { _, abi: communityRulesAbi } = communityRulesMock;
 
-          expect(researcher.researcherWallet).to.equal(resea1Address.address);
-        });
+            communityRules = await deployMockContract(owner, communityRulesAbi);
 
-        it("increment researcherCount after create researcher", async () => {
-          const researchersCount = await communityRules.userTypesCount(userTypes.Researcher);
+            const researcherRulesContractDependencies = {
+              communityRulesAddress: communityRules.target,
+              researcherPoolAddress: researcherPool.target,
+              validationRulesAddress: validationRules.target,
+              voteRulesAddress: ZERO_ADDRESS,
+            };
 
-          expect(researchersCount).to.equal(1);
-        });
+            await instance.setContractAddressDependencies(researcherRulesContractDependencies);
 
-        it("add created researcher in userType contract as a RESEARCHER", async () => {
-          const userType = await communityRules.getUser(resea1Address);
-          const RESEARCHER = 3;
+            await communityRules.mock.userTypesCount.returns(16001);
+          });
 
-          expect(userType).to.equal(RESEARCHER);
-        });
-
-        it("add created researcher with 0 published researches", async () => {
-          const researcher = await instance.getResearcher(resea1Address);
-
-          expect(researcher.publishedResearches).to.equal(0);
-        });
-
-        it("add created researcher with 0 published items", async () => {
-          const researcher = await instance.getResearcher(resea1Address);
-
-          expect(researcher.publishedItems).to.equal(0);
-        });
-
-        it("add created researcher with publishedMethod = true", async () => {
-          const researcher = await instance.getResearcher(resea1Address);
-
-          expect(researcher.canPublishMethod).to.equal(true);
+          it("should return error message", async () => {
+            await expect(addResearcher("Researcher A", resea1Address)).to.be.revertedWith("Max limit reached");
+          });
         });
       });
     });
