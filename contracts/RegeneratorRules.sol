@@ -29,6 +29,8 @@ contract RegeneratorRules is Callable {
   /// @notice Number of approved impact regenerators
   mapping(address => bool) public impactRegenerators;
 
+  mapping(address => string) public areaPhoto;
+
   /// @notice CommunityRules contract address
   CommunityRules internal communityRules;
 
@@ -254,4 +256,10 @@ contract RegeneratorRules is Callable {
   function decrementArea(address addr) internal {
     regenerationArea -= regenerators[addr].totalArea;
   }
+
+  function updateAreaPhoto(string memory newPhoto) public {
+    require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
+
+    areaPhoto[msg.sender] = newPhoto;
+  }  
 }
