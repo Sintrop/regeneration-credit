@@ -46,6 +46,10 @@ describe("RegeneratorRules", () => {
     await communityRules.connect(from).addInvitation(inviter, invited, userType);
   };
 
+  const updateAreaPhoto = async (newPhoto, from) => {
+    await instance.connect(from).updateAreaPhoto(newPhoto);
+  };
+
   const regeneratorPoolArgs = {
     totalTokens: "750000000000000000000000000",
     halving: 50,
@@ -638,6 +642,25 @@ describe("RegeneratorRules", () => {
         const currentEra = await instance.regeneratorPoolEra();
 
         expect(currentEra).to.equal(2);
+      });
+    });
+  });
+
+  describe.only("#updateAreaPhoto", () => {
+    context("without regenerator", () => {
+      it("should return error", async () => {
+        await addRegenerator("Regenerator A", prod1Address);
+        await expect(updateAreaPhoto("newPhoto", prod2Address)).to.be.revertedWith("Only regenerators");
+      });
+    });
+
+    context("with regenerator", () => {
+      it("should update photo", async () => {
+        await addRegenerator("Regenerator A", prod1Address);
+        await updateAreaPhoto("newPhoto", prod1Address);
+        const areaPhoto = await instance.areaPhoto(prod1Address);
+
+        expect(areaPhoto).to.equal("newPhoto");
       });
     });
   });
