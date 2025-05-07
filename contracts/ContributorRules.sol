@@ -128,7 +128,8 @@ contract ContributorRules is Ownable, Callable, Invitable {
    * @param report Hash of the report file
    */
   function addContribution(string memory description, string memory report) public {
-    require(bytes(description).length <= 500 && bytes(report).length <= 100, "Max characters reached");    require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Only Contributor");
+    require(bytes(description).length <= 500 && bytes(report).length <= 100, "Max characters reached");
+    require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Only Contributor");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add contribution");
     require(canPublishContribution(msg.sender), "Can't publish yet");
 
@@ -172,7 +173,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
     require(bytes(justification).length <= 300, "Max 300 characters reached");
-    
+
     Contribution memory contribution = contributions[id];
 
     require(contribution.valid && contribution.era == contributorPoolEra(), "This contribution is not VALID");

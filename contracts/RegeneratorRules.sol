@@ -261,7 +261,7 @@ contract RegeneratorRules is Callable {
   function updateAreaPhoto(string memory newPhoto) public {
     require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
     require(bytes(newPhoto).length <= 100, "Max 100 characters");
-    
+
     areaPhoto[msg.sender] = newPhoto;
   }
 }

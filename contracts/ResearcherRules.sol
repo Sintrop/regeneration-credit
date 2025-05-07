@@ -175,7 +175,7 @@ contract ResearcherRules is Callable, Invitable {
       bytes(title).length <= 100 && bytes(thesis).length <= 500 && bytes(file).length <= 100,
       "Max characters reached"
     );
-    
+
     Researcher storage researcher = researchers[msg.sender];
 
     uint256 id = researchesCount + 1;

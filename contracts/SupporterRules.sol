@@ -95,7 +95,7 @@ contract SupporterRules {
   function updateProfilePhoto(string memory newPhoto) public {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(bytes(newPhoto).length <= 100, "Max 100 characters");
-    
+
     supporters[msg.sender].profilePhoto = newPhoto;
   }
 

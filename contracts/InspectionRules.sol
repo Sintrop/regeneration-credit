@@ -244,7 +244,7 @@ contract InspectionRules is Callable {
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
     require(bytes(justification).length <= 300, "Max 300 characters reached");
-    
+
     Inspection memory inspection = inspections[id];
 
     require(inspection.inspectedAtEra == regeneratorRules.regeneratorPoolEra(), "Can not add validation anymore");
