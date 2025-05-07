@@ -646,7 +646,7 @@ describe("RegeneratorRules", () => {
     });
   });
 
-  describe.only("#updateAreaPhoto", () => {
+  describe("#updateAreaPhoto", () => {
     context("without regenerator", () => {
       it("should return error", async () => {
         await addRegenerator("Regenerator A", prod1Address);
