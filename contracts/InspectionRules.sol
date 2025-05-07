@@ -33,7 +33,6 @@ contract InspectionRules is Callable {
 
   /// @notice The relationship between id and inspection data
   mapping(uint256 => Inspection) internal inspections;
-  mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
   InspectorRules private inspectorRules;
   RegeneratorRules private regeneratorRules;
