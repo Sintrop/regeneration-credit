@@ -64,6 +64,7 @@ contract ActivistRules is Callable, Invitable {
    * @param proofPhoto Identity photo
    */
   function addActivist(string memory name, string memory proofPhoto) public {
+    require(bytes(name).length <= 100 && bytes(proofPhoto).length <= 100, "Max 100 characters");
     require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
 
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
