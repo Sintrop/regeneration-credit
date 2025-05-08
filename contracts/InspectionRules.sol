@@ -33,7 +33,6 @@ contract InspectionRules is Callable {
 
   /// @notice The relationship between id and inspection data
   mapping(uint256 => Inspection) internal inspections;
-  mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
   InspectorRules private inspectorRules;
   RegeneratorRules private regeneratorRules;
@@ -115,9 +114,10 @@ contract InspectionRules is Callable {
    * @dev Function that creates a new inspection
    */
   function createInspection() internal {
-    Inspection memory inspection;
+    uint256 id = inspectionsTotalCount + 1;
+    Inspection memory inspection = inspections[id];
 
-    inspection.id = inspectionsTotalCount + 1;
+    inspection.id = id;
     inspection.status = InspectionStatus.OPEN;
     inspection.regenerator = msg.sender;
     inspection.inspector = address(0);
@@ -217,12 +217,12 @@ contract InspectionRules is Callable {
     address regeneratorAddress = inspection.regenerator;
     address inspectorAddress = inspection.inspector;
 
-    activistRules.addLevel(
+    activistRules.addRegeneratorLevel(
       regeneratorAddress,
-      regeneratorRules.afterRealizeInspection(regeneratorAddress, inspection.regenerationScore),
-      inspectorAddress,
-      inspectorRules.afterRealizeInspection(inspectorAddress)
+      regeneratorRules.afterRealizeInspection(regeneratorAddress, inspection.regenerationScore)
     );
+
+    activistRules.addInspectorLevel(inspectorAddress, inspectorRules.afterRealizeInspection(inspectorAddress));
 
     userInspections[regeneratorAddress].push(inspection.id);
     userInspections[inspectorAddress].push(inspection.id);
@@ -247,7 +247,7 @@ contract InspectionRules is Callable {
 
     Inspection memory inspection = inspections[id];
 
-    require(inspection.inspectedAtEra == regeneratorRules.regeneratorPoolEra(), "Can not add validation anymore");
+    require(regeneratorRules.regeneratorPoolEra() <= inspection.inspectedAtEra, "Can not add validation anymore");
 
     inspection.validationsCount += 1;
     inspections[inspection.id] = inspection;

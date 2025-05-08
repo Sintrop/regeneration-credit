@@ -99,20 +99,26 @@ contract ActivistRules is Callable, Invitable {
   }
 
   /**
-   * @dev Allow an activist to receive pool levels
+   * @dev Allow an activist to receive pool levels from invited regenerators
    * @notice Receive level when invited users complete three inspections
    * @param regeneratorAddress Invited regenerator wallet
    * @param regeneratorTotalInspections Invited regenerator total inspections
+
+   */
+  function addRegeneratorLevel(
+    address regeneratorAddress,
+    uint256 regeneratorTotalInspections
+  ) external mustBeAllowedCaller {
+    addLevelFromRegenerator(regeneratorAddress, regeneratorTotalInspections);
+  }
+
+  /**
+   * @dev Allow an activist to receive pool levels from invited inspectors
+   * @notice Receive level when invited users complete three inspections
    * @param inspectorAddress Invited inspector wallet
    * @param inspectorTotalInspections Invited inspector total inspections
    */
-  function addLevel(
-    address regeneratorAddress,
-    uint256 regeneratorTotalInspections,
-    address inspectorAddress,
-    uint256 inspectorTotalInspections
-  ) external mustBeAllowedCaller {
-    addLevelFromRegenerator(regeneratorAddress, regeneratorTotalInspections);
+  function addInspectorLevel(address inspectorAddress, uint256 inspectorTotalInspections) external mustBeAllowedCaller {
     addLevelFromInspector(inspectorAddress, inspectorTotalInspections);
   }
 
@@ -131,9 +137,10 @@ contract ActivistRules is Callable, Invitable {
     ) {
       activistWonLevel[activistAddress][regeneratorAddress] = true;
       approvedInvites++;
-      setActivistLevel(activistAddress);
       activistApprovedInvites[activistAddress]++;
       activistApprovedUsers[activistAddress].push(regeneratorAddress);
+
+      setActivistLevel(activistAddress);
     }
   }
 
@@ -152,9 +159,10 @@ contract ActivistRules is Callable, Invitable {
     ) {
       activistWonLevel[activistAddress][inspectorAddress] = true;
       approvedInvites++;
-      setActivistLevel(activistAddress);
       activistApprovedInvites[activistAddress]++;
       activistApprovedUsers[activistAddress].push(inspectorAddress);
+
+      setActivistLevel(activistAddress);
     }
   }
 
@@ -165,7 +173,7 @@ contract ActivistRules is Callable, Invitable {
   function setActivistLevel(address activistAddress) internal {
     Activist memory activist = activists[activistAddress];
 
-    if (activist.id == 0) return;
+    if (activist.id <= 0) return;
 
     activist.pool.level++;
     activists[activistAddress] = activist;

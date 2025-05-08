@@ -176,7 +176,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
 
     Contribution memory contribution = contributions[id];
 
-    require(contribution.valid && contribution.era == contributorPoolEra(), "This contribution is not VALID");
+    require(contribution.valid && contributorPoolEra() <= contribution.era, "This contribution is not VALID");
 
     contribution.validationsCount += 1;
     contributions[id] = contribution;
@@ -310,7 +310,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
     uint256 lastPublishedAt = contributors[addr].lastPublishedAt;
 
     bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
-    return canPublish || lastPublishedAt == 0;
+    return canPublish || lastPublishedAt <= 0;
   }
 
   /**

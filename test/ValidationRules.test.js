@@ -559,8 +559,11 @@ describe("ValidationRules", () => {
                   await addInvitation(user1Address, user7Address, userTypes.Regenerator, user1Address);
                   await addInvitation(user1Address, user8Address, userTypes.Regenerator, user1Address);
 
-                  await activistRules.addLevel(user7Address, 3, user8Address, 3);
+                  await activistRules.addRegeneratorLevel(user7Address, 3);
+                  await activistRules.addInspectorLevel(user8Address, 3);
 
+                  await activistRules.addRegeneratorLevel(user7Address, 3);
+                  await activistRules.addInspectorLevel(user8Address, 3);
                   await instance.connect(user1Address).addUserValidation(user2Address, "my justification");
                 });
 
@@ -867,7 +870,8 @@ describe("ValidationRules", () => {
 
                 await addInvitation(activist1Address, inspector2Address, userTypes.Inspector, owner);
 
-                await activistRules.addLevel(regenerator1Address, 0, inspector2Address, 3);
+                await activistRules.addRegeneratorLevel(regenerator1Address, 0);
+                await activistRules.addInspectorLevel(inspector2Address, 3);
 
                 await instance.connect(user1Address).addUserValidation(activist1Address, "my justification");
                 await instance.connect(user2Address).addUserValidation(activist1Address, "my justification");

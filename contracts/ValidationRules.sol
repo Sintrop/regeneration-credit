@@ -306,6 +306,6 @@ contract ValidationRules is Callable {
     uint256 lastVoteAt = validatorLastVoteAt[validatorAddress];
 
     bool canVote = block.number > lastVoteAt + timeBetweenVotes;
-    return canVote || lastVoteAt == 0;
+    return canVote || lastVoteAt <= 0;
   }
 }

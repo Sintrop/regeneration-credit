@@ -79,10 +79,6 @@ contract Blockable {
 
   // PRIVATE FUNCTIONS
 
-  function currentUserBlockNumber(uint256 currentUserEra) internal view returns (uint256) {
-    return DEPLOYED_AT.add(BLOCKS_PER_ERA.mul(currentUserEra));
-  }
-
   function currentBlockNumber() internal view returns (uint256) {
     return block.number;
   }

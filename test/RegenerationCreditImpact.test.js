@@ -228,10 +228,10 @@ describe("RegenerationCreditImpact", () => {
             await realizeInspection(5, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector5Address);
           });
 
-          it("must returnstotalTreesImpact equal 170", async () => {
+          it("must returnstotalTreesImpact equal 174", async () => {
             const totalTreesImpact = await instance.totalTreesImpact();
 
-            expect(totalTreesImpact).to.equal(170);
+            expect(totalTreesImpact).to.equal(174);
           });
         });
 
@@ -444,10 +444,10 @@ describe("RegenerationCreditImpact", () => {
             await realizeInspection(5, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector5Address);
           });
 
-          it("must returnstotalCarbonImpact equal 17000", async () => {
+          it("must returnstotalCarbonImpact equal 17400", async () => {
             const totalCarbonImpact = await instance.totalCarbonImpact();
 
-            expect(totalCarbonImpact).to.equal(17000);
+            expect(totalCarbonImpact).to.equal(17400);
           });
         });
 
@@ -620,10 +620,10 @@ describe("RegenerationCreditImpact", () => {
             await realizeInspection(5, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector5Address);
           });
 
-          it("must returns totalBiodiversityImpact equal 170", async () => {
+          it("must returns totalBiodiversityImpact equal 174", async () => {
             const totalBiodiversityImpact = await instance.totalBiodiversityImpact();
 
-            expect(totalBiodiversityImpact).to.equal(170);
+            expect(totalBiodiversityImpact).to.equal(174);
           });
         });
 
@@ -891,10 +891,10 @@ describe("RegenerationCreditImpact", () => {
             await realizeInspection(5, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector5Address);
           });
 
-          it("must returns treesPerToken equal 11333333", async () => {
+          it("must returns treesPerToken equal 11600000", async () => {
             const treesPerToken = await instance.treesPerToken();
 
-            expect(treesPerToken).to.equal(11333333);
+            expect(treesPerToken).to.equal(11600000);
           });
         });
 
@@ -1130,10 +1130,10 @@ describe("RegenerationCreditImpact", () => {
             await realizeInspection(5, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector5Address);
           });
 
-          it("must returns carbonPerToken equal 1133333333", async () => {
+          it("must returns carbonPerToken equal 1160000000", async () => {
             const carbonPerToken = await instance.carbonPerToken();
 
-            expect(carbonPerToken).to.equal(1133333333);
+            expect(carbonPerToken).to.equal(1160000000);
           });
         });
 
@@ -1325,10 +1325,10 @@ describe("RegenerationCreditImpact", () => {
             await realizeInspection(5, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector5Address);
           });
 
-          it("must returns biodiversityPerToken equal 11333333", async () => {
+          it("must returns biodiversityPerToken equal 11600000", async () => {
             const biodiversityPerToken = await instance.biodiversityPerToken();
 
-            expect(biodiversityPerToken).to.equal(11333333);
+            expect(biodiversityPerToken).to.equal(11600000);
           });
         });
 
