@@ -216,12 +216,12 @@ contract InspectionRules is Callable {
     address regeneratorAddress = inspection.regenerator;
     address inspectorAddress = inspection.inspector;
 
-    activistRules.addLevel(
+    activistRules.addRegeneratorLevel(
       regeneratorAddress,
-      regeneratorRules.afterRealizeInspection(regeneratorAddress, inspection.regenerationScore),
-      inspectorAddress,
-      inspectorRules.afterRealizeInspection(inspectorAddress)
+      regeneratorRules.afterRealizeInspection(regeneratorAddress, inspection.regenerationScore)
     );
+
+    activistRules.addInspectorLevel(inspectorAddress, inspectorRules.afterRealizeInspection(inspectorAddress));
 
     userInspections[regeneratorAddress].push(inspection.id);
     userInspections[inspectorAddress].push(inspection.id);
