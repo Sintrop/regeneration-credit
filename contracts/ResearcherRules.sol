@@ -222,7 +222,7 @@ contract ResearcherRules is Callable, Invitable {
 
     Research memory research = researches[id];
 
-    require(research.valid && research.era == researcherPoolEra(), "This research is not VALID");
+    require(research.valid && researcherPoolEra() <= research.era, "This research is not VALID");
 
     research.validationsCount += 1;
     researches[id] = research;
@@ -370,7 +370,7 @@ contract ResearcherRules is Callable, Invitable {
     uint256 lastPublishedAt = researchers[addr].lastPublishedAt;
 
     bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
-    return canPublish || lastPublishedAt == 0;
+    return canPublish || lastPublishedAt <= 0;
   }
 
   /**
@@ -382,7 +382,7 @@ contract ResearcherRules is Callable, Invitable {
     uint256 lastCalculatorItemAt = researcher.lastCalculatorItemAt;
 
     bool canPublish = block.number > lastCalculatorItemAt + timeBetweenWorks;
-    return canPublish || lastCalculatorItemAt == 0;
+    return canPublish || lastCalculatorItemAt <= 0;
   }
 
   /**

@@ -172,7 +172,7 @@ contract ActivistRules is Callable, Invitable {
   function setActivistLevel(address activistAddress) internal {
     Activist memory activist = activists[activistAddress];
 
-    if (activist.id == 0) return;
+    if (activist.id <= 0) return;
 
     activist.pool.level++;
     activists[activistAddress] = activist;

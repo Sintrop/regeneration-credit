@@ -66,11 +66,7 @@ contract RegenerationCredit is ERC20, Ownable {
    * @param receiver Address to receive the tokens
    * @param numTokens Amount of tokens
    */
-  function transferWith(
-    address tokenOwner,
-    address receiver,
-    uint256 numTokens
-  ) public mustBeContractPool returns (bool) {
+  function transferWith(address tokenOwner, address receiver, uint256 numTokens) public mustBeContractPool {
     require(numTokens <= balances[tokenOwner], "You don't have RC Tokens");
 
     balances[tokenOwner] = balances[tokenOwner].sub(numTokens);
@@ -80,8 +76,6 @@ contract RegenerationCredit is ERC20, Ownable {
     unchecked {
       if (contractsPools[tokenOwner]) totalLocked_ -= numTokens;
     }
-
-    return true;
   }
 
   /**

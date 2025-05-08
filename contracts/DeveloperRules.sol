@@ -160,7 +160,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
 
     Report memory report = reports[id];
 
-    require(report.valid && report.era == developerPoolEra(), "This report is not VALID");
+    require(report.valid && developerPoolEra() <= report.era, "This report is not VALID");
 
     report.validationsCount += 1;
     reports[id] = report;
@@ -295,7 +295,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     uint256 lastPublishedAt = developers[addr].lastPublishedAt;
 
     bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
-    return canPublish || lastPublishedAt == 0;
+    return canPublish || lastPublishedAt <= 0;
   }
 
   /**

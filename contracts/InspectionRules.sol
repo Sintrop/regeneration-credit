@@ -114,9 +114,10 @@ contract InspectionRules is Callable {
    * @dev Function that creates a new inspection
    */
   function createInspection() internal {
-    Inspection memory inspection;
+    uint256 id = inspectionsTotalCount + 1;
+    Inspection memory inspection = inspections[id];
 
-    inspection.id = inspectionsTotalCount + 1;
+    inspection.id = id;
     inspection.status = InspectionStatus.OPEN;
     inspection.regenerator = msg.sender;
     inspection.inspector = address(0);
@@ -245,7 +246,7 @@ contract InspectionRules is Callable {
 
     Inspection memory inspection = inspections[id];
 
-    require(inspection.inspectedAtEra == regeneratorRules.regeneratorPoolEra(), "Can not add validation anymore");
+    require(regeneratorRules.regeneratorPoolEra() <= inspection.inspectedAtEra, "Can not add validation anymore");
 
     inspection.validationsCount += 1;
     inspections[inspection.id] = inspection;

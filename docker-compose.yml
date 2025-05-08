@@ -18,6 +18,8 @@ services:
   eth-security-toolbox:
     container_name: ETH-SECURITY-TOOLBOX
     image: trailofbits/eth-security-toolbox
+    volumes: 
+      - ./:/app
     networks: 
       - app-tunnel
 networks: 

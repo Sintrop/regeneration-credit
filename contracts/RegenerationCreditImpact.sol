@@ -55,8 +55,8 @@ contract RegenerationCreditImpact {
     if (inspectionRules.inspectionsCount() == 0) return 0;
 
     return
-      inspectionRules.inspectionsTreesImpact().div(inspectionRules.inspectionsCount()).mul(
-        regeneratorRules.totalImpactRegenerators()
+      inspectionRules.inspectionsTreesImpact().mul(regeneratorRules.totalImpactRegenerators()).div(
+        inspectionRules.inspectionsCount()
       );
   }
 
@@ -78,8 +78,8 @@ contract RegenerationCreditImpact {
     if (inspectionRules.inspectionsCount() == 0) return 0;
 
     return
-      inspectionRules.inspectionsBiodiversityImpact().div(inspectionRules.inspectionsCount()).mul(
-        regeneratorRules.totalImpactRegenerators()
+      inspectionRules.inspectionsBiodiversityImpact().mul(regeneratorRules.totalImpactRegenerators()).div(
+        inspectionRules.inspectionsCount()
       );
   }
 
