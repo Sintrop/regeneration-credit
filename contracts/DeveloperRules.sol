@@ -88,6 +88,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @param proofPhoto Identity photo
    */
   function addDeveloper(string memory name, string memory proofPhoto) public {
+    require(bytes(name).length <= 100 && bytes(proofPhoto).length <= 100, "Max 100 characters");
     require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
 
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
@@ -130,6 +131,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add report");
     require(canPublishReport(msg.sender), "Can't publish yet");
+    require(bytes(description).length <= 500 && bytes(report).length <= 100, "Max characters reached");
 
     reportsCount++;
     reportsTotalCount++;
@@ -157,10 +159,11 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   function addReportValidation(uint256 id, string memory justification) public {
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
+    require(bytes(justification).length <= 300, "Max 300 characters reached");
 
     Report memory report = reports[id];
 
-    require(report.valid && report.era == developerPoolEra(), "This report is not VALID");
+    require(report.valid && developerPoolEra() <= report.era, "This report is not VALID");
 
     report.validationsCount += 1;
     reports[id] = report;
@@ -295,7 +298,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     uint256 lastPublishedAt = developers[addr].lastPublishedAt;
 
     bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
-    return canPublish || lastPublishedAt == 0;
+    return canPublish || lastPublishedAt <= 0;
   }
 
   /**

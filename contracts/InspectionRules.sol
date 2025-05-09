@@ -33,7 +33,6 @@ contract InspectionRules is Callable {
 
   /// @notice The relationship between id and inspection data
   mapping(uint256 => Inspection) internal inspections;
-  mapping(address => mapping(uint256 => bool)) internal validatorValidations;
 
   InspectorRules private inspectorRules;
   RegeneratorRules private regeneratorRules;
@@ -115,9 +114,10 @@ contract InspectionRules is Callable {
    * @dev Function that creates a new inspection
    */
   function createInspection() internal {
-    Inspection memory inspection;
+    uint256 id = inspectionsTotalCount + 1;
+    Inspection memory inspection = inspections[id];
 
-    inspection.id = inspectionsTotalCount + 1;
+    inspection.id = id;
     inspection.status = InspectionStatus.OPEN;
     inspection.regenerator = msg.sender;
     inspection.inspector = address(0);
@@ -163,8 +163,8 @@ contract InspectionRules is Callable {
    * @notice Inspectors must evaluate the amount of trees and species of the regeneration area
    * @param inspectionId The id of the inspection to be realized
    * @param proofPhoto The string of a photo with the regenerator or at the regeneration area
-   * @param treesResult The number of trees, palm trees and other plants larger than 5cm in diamater found in the regeneration area. Only plants managed or planted by the regenerator must be counted
-   * @param biodiversityResult The number of different species of trees, palm trees and other plants larger than 5 cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
+   * @param treesResult The number of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
+   * @param biodiversityResult The number of different species of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
    * @param report The justification of the result found
    */
   function realizeInspection(
@@ -225,12 +225,12 @@ contract InspectionRules is Callable {
     address regeneratorAddress = inspection.regenerator;
     address inspectorAddress = inspection.inspector;
 
-    activistRules.addLevel(
+    activistRules.addRegeneratorLevel(
       regeneratorAddress,
-      regeneratorRules.afterRealizeInspection(regeneratorAddress, inspection.regenerationScore),
-      inspectorAddress,
-      inspectorRules.afterRealizeInspection(inspectorAddress)
+      regeneratorRules.afterRealizeInspection(regeneratorAddress, inspection.regenerationScore)
     );
+
+    activistRules.addInspectorLevel(inspectorAddress, inspectorRules.afterRealizeInspection(inspectorAddress));
 
     userInspections[regeneratorAddress].push(inspection.id);
     userInspections[inspectorAddress].push(inspection.id);
@@ -251,10 +251,11 @@ contract InspectionRules is Callable {
   function addInspectionValidation(uint256 id, string memory justification) public {
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
+    require(bytes(justification).length <= 300, "Max 300 characters reached");
 
     Inspection memory inspection = inspections[id];
 
-    require(inspection.inspectedAtEra == regeneratorRules.regeneratorPoolEra(), "Can not add validation anymore");
+    require(regeneratorRules.regeneratorPoolEra() <= inspection.inspectedAtEra, "Can not add validation anymore");
 
     inspection.validationsCount += 1;
     inspections[inspection.id] = inspection;

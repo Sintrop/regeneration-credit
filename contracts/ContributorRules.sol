@@ -88,6 +88,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
    * @param proofPhoto Identity photo
    */
   function addContributor(string memory name, string memory proofPhoto) public {
+    require(bytes(name).length <= 100 && bytes(proofPhoto).length <= 100, "Max 100 characters");
     require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
 
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
@@ -127,6 +128,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
    * @param report Hash of the report file
    */
   function addContribution(string memory description, string memory report) public {
+    require(bytes(description).length <= 500 && bytes(report).length <= 100, "Max characters reached");
     require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Only Contributor");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add contribution");
     require(canPublishContribution(msg.sender), "Can't publish yet");
@@ -170,10 +172,11 @@ contract ContributorRules is Ownable, Callable, Invitable {
   function addContributionValidation(uint256 id, string memory justification) public {
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
+    require(bytes(justification).length <= 300, "Max 300 characters reached");
 
     Contribution memory contribution = contributions[id];
 
-    require(contribution.valid && contribution.era == contributorPoolEra(), "This contribution is not VALID");
+    require(contribution.valid && contributorPoolEra() <= contribution.era, "This contribution is not VALID");
 
     contribution.validationsCount += 1;
     contributions[id] = contribution;
@@ -307,7 +310,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
     uint256 lastPublishedAt = contributors[addr].lastPublishedAt;
 
     bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
-    return canPublish || lastPublishedAt == 0;
+    return canPublish || lastPublishedAt <= 0;
   }
 
   /**

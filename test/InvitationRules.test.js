@@ -151,7 +151,8 @@ describe("InvitationRules", () => {
 
         context("when can invite", () => {
           beforeEach(async () => {
-            await activistRules.addLevel(owner, 3, owner, 1);
+            await activistRules.addRegeneratorLevel(owner, 3);
+            await activistRules.addInspectorLevel(owner, 1);
           });
 
           context("when send to activist", () => {

@@ -41,7 +41,7 @@ contract RegenerationIndexRules is Ownable, Callable {
     Category memory treesCategory = Category(
       1,
       "Trees",
-      "Indicator to measure the total amount of trees, palm trees and other plants over 5cm in diameter in the regenerating area. How many trees, palm trees and other plants with more than 5cm of diameters there is in the regenerating area? Justify your answer in the report."
+      "Indicator to measure the total amount of trees, palm trees and other plants over 1m high and 3cm in diameter in the regenerating area. How many trees, palm trees and other plants with more than 5cm of diameters there is in the regenerating area? Justify your answer in the report."
     );
 
     categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(1, "Trees > 20000"));
@@ -55,7 +55,7 @@ contract RegenerationIndexRules is Ownable, Callable {
     Category memory biodiversityCategory = Category(
       2,
       "Biodiversity",
-      "Indicator to measure the level of biodiversity of trees, palm trees and other plants over 5cm of diamater in the regenerating area. How many different species are there in the area? Each different species is equivalent to one point and only trees and plants managed or planted by the regenerator should be counted."
+      "Indicator to measure the level of biodiversity of trees, palm trees and other plants over 1m high and 3cm in diameter in the regenerating area. How many different species are there in the area? Each different species is equivalent to one point and only trees and plants managed or planted by the regenerator should be counted."
     );
 
     categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(1, "Biodiversity > 240"));
