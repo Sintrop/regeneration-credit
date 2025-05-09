@@ -244,18 +244,34 @@ contract ValidationRules is Callable {
     if (totalPenalties >= researcherRules.MAX_PENALTIES()) externalDenieUser(research.createdBy);
   }
 
+  /**
+   * @dev Calls the fuction that removes the resource level from pool
+   * @param report Invalidated report
+   */
   function removeDeveloperReport(Report memory report) internal {
     removeLevelsFromPool(report.developer, 1);
   }
 
+  /**
+   * @dev Calls the fuction that removes the resource level from pool
+   * @param contribution Invalidated contribution
+   */
   function removeContributorContribution(Contribution memory contribution) internal {
     removeLevelsFromPool(contribution.user, 1);
   }
 
+  /**
+   * @dev Calls the fuction that removes the resource level from pool
+   * @param research Invalidated research
+   */
   function removeReseacherResearch(Research memory research) internal {
     removeLevelsFromPool(research.createdBy, 1);
   }
 
+  /**
+   * @dev Calls the fuction that removes the resource level from pool
+   * @param inspection Invalidated inspection
+   */
   function removeUserInspection(Inspection memory inspection) internal {
     inspectorRules.decrementInspections(inspection.inspector);
     regeneratorRules.decrementInspections(inspection.regenerator);

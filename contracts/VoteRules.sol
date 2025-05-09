@@ -72,6 +72,12 @@ contract VoteRules {
     return userLevels >= avg;
   }
 
+  /**
+   * @dev Function to calculate the total user pool levels
+   * @param addr Checked address
+   * @param userType Checked userType
+   * @return levels Total addr levels
+   */
   function totalUserLevels(address addr, UserType userType) internal view returns (uint256) {
     if (userType == UserType.ACTIVIST) {
       Activist memory user = activistRules.getActivist(addr);
@@ -94,6 +100,11 @@ contract VoteRules {
     }
   }
 
+  /**
+   * @dev Function to calculate the total pool levels
+   * @param userType Checked userType
+   * @return levels Total userType levels
+   */
   function totalLevels(UserType userType) internal view returns (uint256) {
     if (userType == UserType.ACTIVIST) {
       return activistRules.approvedInvites();
