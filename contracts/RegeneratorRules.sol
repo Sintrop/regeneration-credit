@@ -254,10 +254,18 @@ contract RegeneratorRules is Callable {
     return regenerationArea;
   }
 
+  /**
+   * @dev Function to decrement invalidated regenerator area
+   * @param addr Regenerator address
+   */
   function decrementArea(address addr) internal {
     regenerationArea -= regenerators[addr].totalArea;
   }
 
+  /**
+   * @notice Update your profile photo
+   * @param newPhoto newPhoto hash
+   */
   function updateAreaPhoto(string memory newPhoto) public {
     require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
     require(bytes(newPhoto).length <= 100, "Max 100 characters");
