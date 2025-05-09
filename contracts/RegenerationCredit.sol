@@ -143,7 +143,7 @@ contract RegenerationCredit is ERC20, Ownable {
 
   /**
    * @dev Allows any user to burn tokens
-   * @notice Compensate degradation by burning tokens and receive a certificate
+   * @notice Compensate your environmental degradation by burning Regeneration Credit tokens.  Receive a certificate with your offset impact.
    * @param amount Tokens burned
    */
   function burnTokens(uint256 amount) public {

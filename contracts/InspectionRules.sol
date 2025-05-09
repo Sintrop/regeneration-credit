@@ -190,6 +190,14 @@ contract InspectionRules is Callable {
     inspectorInspected[msg.sender][inspection.regenerator] = true;
   }
 
+  /**
+   * @dev Update the inspection data
+   * @param inspection The current inspection
+   * @param proofPhoto The string of a photo with the regenerator or at the regeneration area
+   * @param treesResult The number of trees, palm trees and other plants larger than 5cm in diamater found in the regeneration area. Only plants managed or planted by the regenerator must be counted
+   * @param biodiversityResult The number of different species of trees, palm trees and other plants larger than 5 cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
+   * @param report The justification of the result found
+   */
   function markAsRealized(
     Inspection memory inspection,
     string memory proofPhoto,
@@ -258,6 +266,10 @@ contract InspectionRules is Callable {
     validationRules.addInspectionValidation(inspection, justification, msg.sender);
   }
 
+  /**
+   * @dev Function to invalidate an inspection
+   * @param inspection The invalidated inspection
+   */
   function invalidateInspection(Inspection memory inspection) internal {
     inspectionsTreesImpact -= inspection.treesResult;
     inspectionsBiodiversityImpact -= inspection.biodiversityResult;
@@ -293,6 +305,10 @@ contract InspectionRules is Callable {
     return inspections[inspectionId].acceptedAt + blocksToExpireAcceptedInspection - block.number;
   }
 
+  /**
+   * @dev Function that checks if an inspector already have an open inspection
+   * @return bool inspection The invalidated inspection
+   */
   function alreadyHaveInspectionAccepted() private view returns (bool) {
     Inspector memory inspector = inspectorRules.getInspector(msg.sender);
     Inspection memory lastInspection = inspections[inspector.lastInspection];
