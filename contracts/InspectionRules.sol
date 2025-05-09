@@ -194,8 +194,8 @@ contract InspectionRules is Callable {
    * @dev Update the inspection data
    * @param inspection The current inspection
    * @param proofPhoto The string of a photo with the regenerator or at the regeneration area
-   * @param treesResult The number of trees, palm trees and other plants larger than 5cm in diamater found in the regeneration area. Only plants managed or planted by the regenerator must be counted
-   * @param biodiversityResult The number of different species of trees, palm trees and other plants larger than 5 cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
+   * @param treesResult The number of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
+   * @param biodiversityResult The number of different species of trees, palm trees and other plants lover 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
    * @param report The justification of the result found
    */
   function markAsRealized(
