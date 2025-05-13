@@ -52,11 +52,11 @@ contract RegenerationCreditImpact {
    * @return uint256 Amount of trees
    */
   function totalTreesImpact() public view returns (uint256) {
-    if (inspectionRules.inspectionsCount() == 0) return 0;
+    if (inspectionRules.realizedInspectionsCount() == 0) return 0;
 
     return
       inspectionRules.inspectionsTreesImpact().mul(regeneratorRules.totalImpactRegenerators()).div(
-        inspectionRules.inspectionsCount()
+        inspectionRules.realizedInspectionsCount()
       );
   }
 
@@ -65,7 +65,7 @@ contract RegenerationCreditImpact {
    * @return uint256 Kg of carbon [kg]
    */
   function totalCarbonImpact() public view returns (uint256) {
-    if (inspectionRules.inspectionsCount() == 0) return 0;
+    if (inspectionRules.realizedInspectionsCount() == 0) return 0;
 
     return totalTreesImpact().mul(CARBON_PER_TREE);
   }
@@ -75,11 +75,11 @@ contract RegenerationCreditImpact {
    * @return uint256 Amount of species
    */
   function totalBiodiversityImpact() public view returns (uint256) {
-    if (inspectionRules.inspectionsCount() == 0) return 0;
+    if (inspectionRules.realizedInspectionsCount() == 0) return 0;
 
     return
       inspectionRules.inspectionsBiodiversityImpact().mul(regeneratorRules.totalImpactRegenerators()).div(
-        inspectionRules.inspectionsCount()
+        inspectionRules.realizedInspectionsCount()
       );
   }
 

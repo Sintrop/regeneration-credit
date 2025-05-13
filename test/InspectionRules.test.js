@@ -938,6 +938,12 @@ describe("InspectionRules", () => {
 
                     expect(userInspections.length).to.equal(1);
                   });
+
+                  it("should increment realizedInspectionsCount", async () => {
+                    const realizedInspectionsCount = await instance.realizedInspectionsCount();
+
+                    expect(realizedInspectionsCount).to.equal(1);
+                  });
                 });
 
                 context("when check inspection regenerationIndex", () => {
@@ -1202,6 +1208,12 @@ describe("InspectionRules", () => {
 
               expect(levels).to.equal(0);
             });
+
+            it("should decrement realizedInspectionsCount", async () => {
+              const realizedInspectionsCount = await instance.realizedInspectionsCount();
+
+              expect(realizedInspectionsCount).to.equal(0);
+            });
           });
         });
 
@@ -1358,6 +1370,12 @@ describe("InspectionRules", () => {
               const levels = await regeneratorPool.eraLevels(1, regeneratorAddress);
 
               expect(levels).to.equal(0);
+            });
+
+            it("should decrement realizedInspectionsCount", async () => {
+              const realizedInspectionsCount = await instance.realizedInspectionsCount();
+
+              expect(realizedInspectionsCount).to.equal(0);
             });
           });
         });
@@ -1516,6 +1534,12 @@ describe("InspectionRules", () => {
 
               expect(levels).to.equal(0);
             });
+
+            it("should decrement realizedInspectionsCount", async () => {
+              const realizedInspectionsCount = await instance.realizedInspectionsCount();
+
+              expect(realizedInspectionsCount).to.equal(0);
+            });
           });
         });
 
@@ -1672,6 +1696,12 @@ describe("InspectionRules", () => {
               const levels = await regeneratorPool.eraLevels(1, regeneratorAddress);
 
               expect(levels).to.equal(0);
+            });
+
+            it("should decrement realizedInspectionsCount", async () => {
+              const realizedInspectionsCount = await instance.realizedInspectionsCount();
+
+              expect(realizedInspectionsCount).to.equal(0);
             });
           });
         });
