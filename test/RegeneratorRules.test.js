@@ -664,4 +664,22 @@ describe("RegeneratorRules", () => {
       });
     });
   });
+
+  describe("#getCoordinates", () => {
+    context("without regenerator", () => {
+      it("should return coordinates arrayList", async () => {
+        await addRegenerator("Regenerator A", prod1Address);
+
+        const coordinatesList = await instance.getCoordinates(prod1Address);
+        const expectedCoordinatesList = JSON.stringify([
+          ["-22.912554", "-44.4925355"],
+          ["-22.912553", "-44.4925354"],
+          ["-22.912555", "-44.4925354"],
+          ["-22.912553", "-44.4925373"],
+        ]);
+
+        expect(JSON.stringify(coordinatesList)).to.equal(expectedCoordinatesList);
+      });
+    });
+  });
 });
