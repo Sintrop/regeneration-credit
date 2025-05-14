@@ -234,7 +234,7 @@ contract RegeneratorRules is Callable {
    * @dev Current regeneratorPool era
    * @return uint256 Return the current contract pool era
    */
-  function regeneratorPoolEra() public view returns (uint256) {
+  function poolCurrentEra() public view returns (uint256) {
     return regeneratorPool.currentContractEra();
   }
 
@@ -243,7 +243,7 @@ contract RegeneratorRules is Callable {
    * @return uint256 Return the amount of blocks to next era
    */
   function nextEraIn() public view returns (uint256) {
-    return uint256(regeneratorPool.nextEraIn(regeneratorPoolEra()));
+    return uint256(regeneratorPool.nextEraIn(poolCurrentEra()));
   }
 
   /**

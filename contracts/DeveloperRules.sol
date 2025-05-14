@@ -93,16 +93,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
 
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
-    developers[msg.sender] = Developer(
-      id,
-      msg.sender,
-      name,
-      proofPhoto,
-      Pool(0, developerPoolEra()),
-      0,
-      block.number,
-      0
-    );
+    developers[msg.sender] = Developer(id, msg.sender, name, proofPhoto, Pool(0, poolCurrentEra()), 0, block.number, 0);
 
     developersAddress[id] = msg.sender;
     communityRules.addUser(msg.sender, USER_TYPE);
@@ -139,7 +130,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
 
     developers[msg.sender].totalReports++;
 
-    reports[id] = Report(id, developerPoolEra(), msg.sender, description, report, 0, true, 0, block.number);
+    reports[id] = Report(id, poolCurrentEra(), msg.sender, description, report, 0, true, 0, block.number);
 
     reportsIds[msg.sender].push(id);
 
@@ -163,7 +154,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
 
     Report memory report = reports[id];
 
-    require(report.valid && developerPoolEra() <= report.era, "This report is not VALID");
+    require(report.valid && poolCurrentEra() <= report.era, "This report is not VALID");
 
     report.validationsCount += 1;
     reports[id] = report;
@@ -198,7 +189,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     Developer memory developer = developers[addr];
 
     developers[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : developer.pool.level;
-    developerPool.removePoolLevels(addr, developerPoolEra(), removeSomeLevels);
+    developerPool.removePoolLevels(addr, poolCurrentEra(), removeSomeLevels);
   }
 
   /**
@@ -285,7 +276,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @dev Current developerPool era
    * @return uint256 Return the current contract pool era
    */
-  function developerPoolEra() internal view returns (uint256) {
+  function poolCurrentEra() public view returns (uint256) {
     return developerPool.currentContractEra();
   }
 
@@ -306,6 +297,6 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @return uint256 Return the amount of blocks to next era
    */
   function nextEraIn() public view returns (uint256) {
-    return uint256(developerPool.nextEraIn(developerPoolEra()));
+    return uint256(developerPool.nextEraIn(poolCurrentEra()));
   }
 }

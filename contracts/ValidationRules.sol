@@ -24,7 +24,7 @@ import { VoteRules } from "./VoteRules.sol";
  * @notice Responsible for reviewing and voting to invalidate wrong or corrupted actions
  */
 contract ValidationRules is Callable {
-  mapping(address => UserValidation[]) public userValidations;
+  mapping(address => mapping(uint256 => UserValidation[])) public userValidations;
   mapping(uint256 => ResourceValidation[]) public inspectionValidations;
   mapping(uint256 => ResourceValidation[]) public reportValidations;
   mapping(uint256 => ResourceValidation[]) public contributionValidations;
@@ -33,7 +33,7 @@ contract ValidationRules is Callable {
   mapping(address => mapping(uint256 => bool)) private validatorContributionsValidations;
   mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
   mapping(address => mapping(uint256 => bool)) private validatorResearchesValidations;
-  mapping(address => mapping(address => bool)) private validatorUsersValidations;
+  mapping(address => mapping(address => mapping(uint256 => bool))) private validatorUsersValidations;
   mapping(address => uint256) public validatorLastVoteAt;
 
   CommunityRules private communityRules;
@@ -82,20 +82,34 @@ contract ValidationRules is Callable {
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(!communityRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
     require(!communityRules.userTypeIs(UserType.DENIED, userAddress), "User already denied");
-    require(!validatorUsersValidations[msg.sender][userAddress], "Already voted");
+
+    uint256 currentEra = userCurrentEra(userAddress);
+
+    require(!validatorUsersValidations[msg.sender][userAddress][currentEra], "Already voted");
     require(waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
-    validatorUsersValidations[msg.sender][userAddress] = true;
+    validatorUsersValidations[msg.sender][userAddress][currentEra] = true;
     validatorLastVoteAt[msg.sender] = block.number;
 
-    uint256 majorityValidatorsCount_ = votesToInvalidate();
-    uint256 validationsCount = userValidations[userAddress].length + 1;
+    uint256 _votesToInvalidate = votesToInvalidate();
+    uint256 validationsCount = userValidations[userAddress][currentEra].length + 1;
 
-    userValidations[userAddress].push(
-      UserValidation(msg.sender, userAddress, justification, majorityValidatorsCount_, block.number)
+    userValidations[userAddress][currentEra].push(
+      UserValidation(msg.sender, userAddress, justification, _votesToInvalidate, block.number)
     );
 
-    if (validationsCount >= majorityValidatorsCount_) denieUser(userAddress);
+    if (validationsCount >= _votesToInvalidate) denieUser(userAddress);
+  }
+
+  function userCurrentEra(address userAddress) internal view returns (uint256 era) {
+    UserType userType = communityRules.getUser(userAddress);
+
+    if (userType == UserType.ACTIVIST) return activistRules.poolCurrentEra();
+    if (userType == UserType.CONTRIBUTOR) return contributorRules.poolCurrentEra();
+    if (userType == UserType.DEVELOPER) return developerRules.poolCurrentEra();
+    if (userType == UserType.INSPECTOR) return inspectorRules.poolCurrentEra();
+    if (userType == UserType.RESEARCHER) return researcherRules.poolCurrentEra();
+    if (userType == UserType.REGENERATOR) return regeneratorRules.poolCurrentEra();
   }
 
   /**
@@ -300,8 +314,8 @@ contract ValidationRules is Callable {
     if (oldUserType == UserType.ACTIVIST) return activistRules.removePoolLevels(userAddress, levels);
   }
 
-  function getUserValidations(address userAddress) public view returns (UserValidation[] memory) {
-    return userValidations[userAddress];
+  function getUserValidations(address userAddress, uint256 currentEra) public view returns (UserValidation[] memory) {
+    return userValidations[userAddress][currentEra];
   }
 
   function votesToInvalidate() public view returns (uint256 count) {

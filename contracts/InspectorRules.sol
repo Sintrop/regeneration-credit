@@ -71,7 +71,7 @@ contract InspectorRules is Callable {
       0,
       0,
       0,
-      Pool(0, inspectorPoolEra()),
+      Pool(0, poolCurrentEra()),
       block.number
     );
 
@@ -210,7 +210,7 @@ contract InspectorRules is Callable {
    * @dev Current inspectorPool era
    * @return uint256 Return the current contract pool era
    */
-  function inspectorPoolEra() internal view returns (uint256) {
+  function poolCurrentEra() public view returns (uint256) {
     return inspectorPool.currentContractEra();
   }
 
