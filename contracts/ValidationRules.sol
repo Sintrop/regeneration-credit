@@ -24,7 +24,7 @@ import { VoteRules } from "./VoteRules.sol";
  * @notice Responsible for reviewing and voting to invalidate wrong or corrupted actions
  */
 contract ValidationRules is Callable {
-  mapping(address => UserValidation[]) private userValidations;
+  mapping(address => UserValidation[]) public userValidations;
   mapping(uint256 => ResourceValidation[]) public inspectionValidations;
   mapping(uint256 => ResourceValidation[]) public reportValidations;
   mapping(uint256 => ResourceValidation[]) public contributionValidations;
@@ -34,7 +34,7 @@ contract ValidationRules is Callable {
   mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
   mapping(address => mapping(uint256 => bool)) private validatorResearchesValidations;
   mapping(address => mapping(address => bool)) private validatorUsersValidations;
-  mapping(address => uint256) private validatorLastVoteAt;
+  mapping(address => uint256) public validatorLastVoteAt;
 
   CommunityRules private communityRules;
   RegeneratorRules private regeneratorRules;
