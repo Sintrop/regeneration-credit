@@ -41,8 +41,8 @@ async function configureValidationRules() {
   await inspectorRules.newAllowedCaller(validationRules.target);
   await validationRules.newAllowedCaller(researcherRules.target);
   await validationRules.newAllowedCaller(developerRules.target);
-  await validationRules.newAllowedCaller(contributorRules.target);
-  
+  await validationRules.newAllowedCaller(contributorRules.target);  
+
   console.log("After ValidationRules deploy is OK");
 }
 
