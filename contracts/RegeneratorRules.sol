@@ -262,6 +262,17 @@ contract RegeneratorRules is Callable {
     regenerationArea -= regenerators[addr].totalArea;
   }
 
+  function getCoordinates(address addr) public view returns (Coordinates[] memory) {
+    Regenerator memory regenerator = regenerators[addr];
+    Coordinates[] memory coordinatesList = new Coordinates[](regenerator.coordinatesCount);
+
+    for (uint256 i = 0; i < regenerator.coordinatesCount; i++) {
+      coordinatesList[i] = coordinates[addr][i];
+    }
+
+    return coordinatesList;
+  }
+
   /**
    * @notice Update your profile photo
    * @param newPhoto newPhoto hash
