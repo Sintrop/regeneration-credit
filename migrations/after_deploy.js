@@ -39,7 +39,10 @@ async function configureValidationRules() {
   await validationRules.setContractAddressDependencies(contractDependencies);
   await regeneratorRules.newAllowedCaller(validationRules.target);
   await inspectorRules.newAllowedCaller(validationRules.target);
-
+  await validationRules.newAllowedCaller(researcherRules.target);
+  await validationRules.newAllowedCaller(developerRules.target);
+  await validationRules.newAllowedCaller(contributorRules.target);
+  
   console.log("After ValidationRules deploy is OK");
 }
 
