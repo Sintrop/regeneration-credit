@@ -53,6 +53,7 @@ contract InspectionRules is Callable {
   RegenerationIndexRules private regenerationIndexRules;
 
   uint256 public inspectionsCount;
+  uint256 public realizedInspectionsCount;
   uint256 public inspectionsTotalCount;
   uint256 public inspectionsTreesImpact;
   uint256 public inspectionsBiodiversityImpact;
@@ -188,6 +189,7 @@ contract InspectionRules is Callable {
     inspectionsTreesImpact += treesResult;
     inspectionsBiodiversityImpact += biodiversityResult;
     inspectorInspected[msg.sender][inspection.regenerator] = true;
+    realizedInspectionsCount++;
   }
 
   /**
@@ -278,6 +280,7 @@ contract InspectionRules is Callable {
     inspection.status = InspectionStatus.INVALIDATED;
     inspection.invalidatedAt = block.number;
     inspections[inspection.id] = inspection;
+    realizedInspectionsCount--;
   }
 
   /**
