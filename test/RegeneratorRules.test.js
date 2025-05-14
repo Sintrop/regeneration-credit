@@ -627,7 +627,7 @@ describe("RegeneratorRules", () => {
   describe("#regeneratorPoolEra", () => {
     context("when pool is in era 1", () => {
       it("return era equal 1", async () => {
-        const currentEra = await instance.regeneratorPoolEra();
+        const currentEra = await instance.poolCurrentEra();
 
         expect(currentEra).to.equal(1);
       });
@@ -639,7 +639,7 @@ describe("RegeneratorRules", () => {
       });
 
       it("return era equal 1", async () => {
-        const currentEra = await instance.regeneratorPoolEra();
+        const currentEra = await instance.poolCurrentEra();
 
         expect(currentEra).to.equal(2);
       });

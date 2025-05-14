@@ -285,7 +285,7 @@ describe("ValidationRules", () => {
               });
 
               it("should add validation", async () => {
-                const validations = await instance.getUserValidations(dev2Address);
+                const validations = await instance.getUserValidations(dev2Address, 1);
 
                 expect(validations[0].justification).to.equal("my justification");
                 expect(validations.length).to.equal(1);
@@ -332,7 +332,7 @@ describe("ValidationRules", () => {
                 });
 
                 it("should add validation", async () => {
-                  const validations = await instance.getUserValidations(dev2Address);
+                  const validations = await instance.getUserValidations(dev2Address, 1);
 
                   expect(validations[0].justification).to.equal("my justification");
                   expect(validations.length).to.equal(1);
@@ -361,7 +361,7 @@ describe("ValidationRules", () => {
               });
 
               it("should add validation", async () => {
-                const validations = await instance.getUserValidations(user2Address);
+                const validations = await instance.getUserValidations(user2Address, 1);
 
                 expect(validations[0].justification).to.equal("my justification");
                 expect(validations.length).to.equal(1);
@@ -408,7 +408,7 @@ describe("ValidationRules", () => {
                 });
 
                 it("should add validation", async () => {
-                  const validations = await instance.getUserValidations(user2Address);
+                  const validations = await instance.getUserValidations(user2Address, 1);
 
                   expect(validations[0].justification).to.equal("my justification");
                   expect(validations.length).to.equal(1);
@@ -437,7 +437,7 @@ describe("ValidationRules", () => {
               });
 
               it("should add validation", async () => {
-                const validations = await instance.getUserValidations(user2Address);
+                const validations = await instance.getUserValidations(user2Address, 1);
 
                 expect(validations[0].justification).to.equal("my justification");
                 expect(validations.length).to.equal(1);
@@ -484,7 +484,7 @@ describe("ValidationRules", () => {
                 });
 
                 it("should add validation", async () => {
-                  const validations = await instance.getUserValidations(user2Address);
+                  const validations = await instance.getUserValidations(user2Address, 1);
 
                   expect(validations[0].justification).to.equal("my justification");
                   expect(validations.length).to.equal(1);
@@ -513,7 +513,7 @@ describe("ValidationRules", () => {
               });
 
               it("should add validation", async () => {
-                const validations = await instance.getUserValidations(user2Address);
+                const validations = await instance.getUserValidations(user2Address, 3);
 
                 expect(validations[0].justification).to.equal("my justification");
                 expect(validations.length).to.equal(1);
@@ -568,7 +568,7 @@ describe("ValidationRules", () => {
                 });
 
                 it("should add validation", async () => {
-                  const validations = await instance.getUserValidations(user2Address);
+                  const validations = await instance.getUserValidations(user2Address, 4);
 
                   expect(validations[0].justification).to.equal("my justification");
                   expect(validations.length).to.equal(1);
@@ -622,7 +622,7 @@ describe("ValidationRules", () => {
               });
 
               it("should add validation", async () => {
-                const validations = await instance.getUserValidations(regenerator1Address);
+                const validations = await instance.getUserValidations(regenerator1Address, 1);
 
                 expect(validations[0].justification).to.equal("my justification");
                 expect(validations.length).to.equal(2);
@@ -683,7 +683,7 @@ describe("ValidationRules", () => {
               });
 
               it("should add validation", async () => {
-                const validations = await instance.getUserValidations(inspector1Address);
+                const validations = await instance.getUserValidations(inspector1Address, 4);
 
                 expect(validations[0].justification).to.equal("my justification");
                 expect(validations.length).to.equal(2);
@@ -731,7 +731,7 @@ describe("ValidationRules", () => {
               });
 
               it("should add validation", async () => {
-                const validations = await instance.getUserValidations(contributor1Address);
+                const validations = await instance.getUserValidations(contributor1Address, 1);
 
                 expect(validations[0].justification).to.equal("my justification");
                 expect(validations.length).to.equal(2);
@@ -779,7 +779,7 @@ describe("ValidationRules", () => {
               });
 
               it("should add validation", async () => {
-                const validations = await instance.getUserValidations(dev1Address);
+                const validations = await instance.getUserValidations(dev1Address, 1);
 
                 expect(validations[0].justification).to.equal("my justification");
                 expect(validations.length).to.equal(2);
@@ -827,7 +827,7 @@ describe("ValidationRules", () => {
               });
 
               it("should add validation", async () => {
-                const validations = await instance.getUserValidations(resea1Address);
+                const validations = await instance.getUserValidations(resea1Address, 1);
 
                 expect(validations[0].justification).to.equal("my justification");
                 expect(validations.length).to.equal(2);
@@ -878,7 +878,7 @@ describe("ValidationRules", () => {
               });
 
               it("should add validation", async () => {
-                const validations = await instance.getUserValidations(activist1Address);
+                const validations = await instance.getUserValidations(activist1Address, 4);
 
                 expect(validations[0].justification).to.equal("my justification");
                 expect(validations.length).to.equal(2);
@@ -914,26 +914,33 @@ describe("ValidationRules", () => {
           });
 
           context("when current era is 2", () => {
-            context("when validators have contributed to last era", () => {
-              beforeEach(async () => {});
+            context("when add validation", () => {
+              beforeEach(async () => {
+                await addInvitation(owner, regenerator1Address, userTypes.Regenerator, owner);
+                await addInvitation(owner, regenerator2Address, userTypes.Regenerator, owner);
+                await addRegenerator("Regenerator A", regenerator1Address);
+                await addRegenerator("Regenerator B", regenerator2Address);
 
-              context("when add validation", () => {
-                beforeEach(async () => {
-                  await addInvitation(owner, regenerator1Address, userTypes.Regenerator, owner);
-                  await addInvitation(owner, regenerator2Address, userTypes.Regenerator, owner);
-                  await addRegenerator("Regenerator A", regenerator1Address);
-                  await addRegenerator("Regenerator B", regenerator2Address);
+                await instance.connect(user1Address).addUserValidation(regenerator1Address, "my justification");
 
-                  await instance.connect(user1Address).addUserValidation(regenerator1Address, "my justification");
-                  await instance.connect(user2Address).addUserValidation(regenerator1Address, "my justification");
-                });
+                const nextEraIn = await regeneratorRules.nextEraIn();
+                await advanceBlock(nextEraIn);
 
-                it("should add validation", async () => {
-                  const validations = await instance.getUserValidations(regenerator1Address);
+                await instance.connect(user1Address).addUserValidation(regenerator1Address, "my justification");
+                await instance.connect(user2Address).addUserValidation(regenerator1Address, "my justification");
+              });
 
-                  expect(validations[0].justification).to.equal("my justification");
-                  expect(validations.length).to.equal(2);
-                });
+              it("should add validation", async () => {
+                const validations = await instance.getUserValidations(regenerator1Address, 2);
+
+                expect(validations[0].justification).to.equal("my justification");
+                expect(validations.length).to.equal(2);
+              });
+
+              it("user type must be denied", async () => {
+                const user = await communityRules.getUser(regenerator1Address);
+
+                expect(user).to.equal(userTypes.Denied);
               });
             });
           });

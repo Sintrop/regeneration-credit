@@ -98,7 +98,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
       msg.sender,
       name,
       proofPhoto,
-      Pool(0, contributorPoolEra()),
+      Pool(0, poolCurrentEra()),
       block.number,
       0
     );
@@ -137,17 +137,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
     contributionsTotalCount++;
     uint256 id = contributionsTotalCount;
 
-    contributions[id] = Contribution(
-      id,
-      contributorPoolEra(),
-      msg.sender,
-      description,
-      report,
-      0,
-      true,
-      0,
-      block.number
-    );
+    contributions[id] = Contribution(id, poolCurrentEra(), msg.sender, description, report, 0, true, 0, block.number);
 
     contributionsIds[msg.sender].push(id);
 
@@ -176,7 +166,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
 
     Contribution memory contribution = contributions[id];
 
-    require(contribution.valid && contributorPoolEra() <= contribution.era, "This contribution is not VALID");
+    require(contribution.valid && poolCurrentEra() <= contribution.era, "This contribution is not VALID");
 
     contribution.validationsCount += 1;
     contributions[id] = contribution;
@@ -297,7 +287,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
    * @dev Current contributorPool era
    * @return uint256 Return the current contract pool era
    */
-  function contributorPoolEra() internal view returns (uint256) {
+  function poolCurrentEra() public view returns (uint256) {
     return contributorPool.currentContractEra();
   }
 
@@ -318,6 +308,6 @@ contract ContributorRules is Ownable, Callable, Invitable {
    * @return uint256 Return the amount of blocks to next era
    */
   function nextEraIn() public view returns (uint256) {
-    return uint256(contributorPool.nextEraIn(contributorPoolEra()));
+    return uint256(contributorPool.nextEraIn(poolCurrentEra()));
   }
 }

@@ -214,7 +214,7 @@ contract InspectionRules is Callable {
     inspection.proofPhoto = proofPhoto;
     inspection.report = report;
     inspection.inspectedAt = block.number;
-    inspection.inspectedAtEra = regeneratorRules.regeneratorPoolEra();
+    inspection.inspectedAtEra = regeneratorRules.poolCurrentEra();
 
     inspections[inspection.id] = inspection;
   }
@@ -257,7 +257,7 @@ contract InspectionRules is Callable {
 
     Inspection memory inspection = inspections[id];
 
-    require(regeneratorRules.regeneratorPoolEra() <= inspection.inspectedAtEra, "Can not add validation anymore");
+    require(regeneratorRules.poolCurrentEra() <= inspection.inspectedAtEra, "Can not add validation anymore");
 
     inspection.validationsCount += 1;
     inspections[inspection.id] = inspection;

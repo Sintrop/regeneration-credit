@@ -108,7 +108,7 @@ contract ResearcherRules is Callable, Invitable {
       id,
       msg.sender,
       name,
-      Pool(0, researcherPoolEra()),
+      Pool(0, poolCurrentEra()),
       proofPhoto,
       0,
       0,
@@ -182,7 +182,7 @@ contract ResearcherRules is Callable, Invitable {
 
     Research memory research = Research(
       id,
-      researcherPoolEra(),
+      poolCurrentEra(),
       msg.sender,
       title,
       thesis,
@@ -228,7 +228,7 @@ contract ResearcherRules is Callable, Invitable {
 
     Research memory research = researches[id];
 
-    require(research.valid && researcherPoolEra() <= research.era, "This research is not VALID");
+    require(research.valid && poolCurrentEra() <= research.era, "This research is not VALID");
 
     research.validationsCount += 1;
     researches[id] = research;
@@ -259,7 +259,7 @@ contract ResearcherRules is Callable, Invitable {
     Researcher memory researcher = researchers[addr];
 
     researchers[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : researcher.pool.level;
-    researcherPool.removePoolLevels(addr, researcherPoolEra(), removeSomeLevels);
+    researcherPool.removePoolLevels(addr, poolCurrentEra(), removeSomeLevels);
   }
 
   /**
@@ -309,7 +309,7 @@ contract ResearcherRules is Callable, Invitable {
    * @dev Current researcherPool era
    * @return uint256 Return the current contract pool era
    */
-  function researcherPoolEra() internal view returns (uint256) {
+  function poolCurrentEra() public view returns (uint256) {
     return researcherPool.currentContractEra();
   }
 
@@ -396,6 +396,6 @@ contract ResearcherRules is Callable, Invitable {
    * @return uint256 Return the amount of blocks to next era
    */
   function nextEraIn() public view returns (uint256) {
-    return uint256(researcherPool.nextEraIn(researcherPoolEra()));
+    return uint256(researcherPool.nextEraIn(poolCurrentEra()));
   }
 }

@@ -69,7 +69,7 @@ contract ActivistRules is Callable, Invitable {
 
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
-    Activist memory activist = Activist(id, msg.sender, name, proofPhoto, Pool(0, activistPoolEra()), block.number);
+    Activist memory activist = Activist(id, msg.sender, name, proofPhoto, Pool(0, poolCurrentEra()), block.number);
 
     activists[msg.sender] = activist;
     activistsAddress[id] = msg.sender;
@@ -215,14 +215,14 @@ contract ActivistRules is Callable, Invitable {
     Activist memory activist = activists[addr];
 
     activists[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : activist.pool.level;
-    activistPool.removePoolLevels(addr, activistPoolEra(), removeSomeLevels);
+    activistPool.removePoolLevels(addr, poolCurrentEra(), removeSomeLevels);
   }
 
   /**
    * @dev Current actvistPool era
    * @return uint256 Return the current contract pool era
    */
-  function activistPoolEra() internal view returns (uint256) {
+  function poolCurrentEra() public view returns (uint256) {
     return activistPool.currentContractEra();
   }
 }
