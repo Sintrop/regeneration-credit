@@ -1320,7 +1320,7 @@ describe("ValidationRules", () => {
     });
   });
 
-  describe("#addDeveloperReportValidation", () => {
+  describe("#addReportValidation", () => {
     context("with allowed caller", () => {
       beforeEach(async () => {
         await addInvitation(owner, dev1Address, userTypes.Developer, owner);
@@ -1339,7 +1339,7 @@ describe("ValidationRules", () => {
           let report = await developerRules.getReport(1);
           report = generateReportObject(report);
 
-          await instance.connect(owner).addDeveloperReportValidation(report, "justification", user1Address);
+          await instance.connect(owner).addReportValidation(report, "justification", user1Address);
         });
 
         it("should return error", async () => {
@@ -1347,7 +1347,7 @@ describe("ValidationRules", () => {
           report = generateReportObject(report);
 
           await expect(
-            instance.connect(owner).addDeveloperReportValidation(report, "justification", user1Address)
+            instance.connect(owner).addReportValidation(report, "justification", user1Address)
           ).to.be.revertedWith("Already voted");
         });
       });
@@ -1366,7 +1366,7 @@ describe("ValidationRules", () => {
 
                 report.validationsCount = 2;
                 report.valid = false;
-                await instance.connect(owner).addDeveloperReportValidation(report, "justification", user1Address);
+                await instance.connect(owner).addReportValidation(report, "justification", user1Address);
               });
 
               it("should add report validation", async () => {
@@ -1397,13 +1397,13 @@ describe("ValidationRules", () => {
                 report = generateReportObject(report);
                 report.validationsCount = 1;
 
-                await instance.connect(owner).addDeveloperReportValidation(report, "justification", user1Address);
+                await instance.connect(owner).addReportValidation(report, "justification", user1Address);
 
                 report = await developerRules.getReport(1);
                 report = generateReportObject(report);
                 report.validationsCount = 2;
 
-                await instance.connect(owner).addDeveloperReportValidation(report, "justification", user2Address);
+                await instance.connect(owner).addReportValidation(report, "justification", user2Address);
               });
 
               it("developer is the same", async () => {
@@ -1426,7 +1426,7 @@ describe("ValidationRules", () => {
               report = generateReportObject(report);
               report.validationsCount = 1;
 
-              await instance.connect(owner).addDeveloperReportValidation(report, "justification", user1Address);
+              await instance.connect(owner).addReportValidation(report, "justification", user1Address);
             });
 
             it("total penalties is zero", async () => {
@@ -1445,13 +1445,13 @@ describe("ValidationRules", () => {
         report = generateReportObject(report);
 
         await expect(
-          instance.connect(user1Address).addDeveloperReportValidation(report, "justification", user2Address)
+          instance.connect(user1Address).addReportValidation(report, "justification", user2Address)
         ).to.be.revertedWith("Not allowed caller");
       });
     });
   });
 
-  describe("#addResearcherResearchValidation", () => {
+  describe("#addResearchValidation", () => {
     context("with allowed caller", () => {
       beforeEach(async () => {
         await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
@@ -1471,7 +1471,7 @@ describe("ValidationRules", () => {
           let research = await researcherRules.researches(1);
           research = generateResearchObject(research);
 
-          await instance.connect(owner).addResearcherResearchValidation(research, "justification", user1Address);
+          await instance.connect(owner).addResearchValidation(research, "justification", user1Address);
         });
 
         it("should add research validation", async () => {
@@ -1488,7 +1488,7 @@ describe("ValidationRules", () => {
           research = generateResearchObject(research);
 
           await expect(
-            instance.connect(owner).addResearcherResearchValidation(research, "justification", user1Address)
+            instance.connect(owner).addResearchValidation(research, "justification", user1Address)
           ).to.be.revertedWith("Already voted");
         });
       });
@@ -1505,10 +1505,10 @@ describe("ValidationRules", () => {
                 await researcherRules.addPenalty(research.createdBy, research.id);
                 await researcherRules.addPenalty(research.createdBy, research.id);
 
-                await instance.connect(owner).addResearcherResearchValidation(research, "justification", user1Address);
+                await instance.connect(owner).addResearchValidation(research, "justification", user1Address);
 
                 research.validationsCount = 2;
-                await instance.connect(owner).addResearcherResearchValidation(research, "justification", user2Address);
+                await instance.connect(owner).addResearchValidation(research, "justification", user2Address);
               });
 
               it("deny researcher", async () => {
@@ -1530,13 +1530,13 @@ describe("ValidationRules", () => {
                 research = generateResearchObject(research);
                 research.validationsCount = 1;
 
-                await instance.connect(owner).addResearcherResearchValidation(research, "justification", user1Address);
+                await instance.connect(owner).addResearchValidation(research, "justification", user1Address);
 
                 research = await researcherRules.researches(1);
                 research = generateResearchObject(research);
                 research.validationsCount = 2;
 
-                await instance.connect(owner).addResearcherResearchValidation(research, "justification", user2Address);
+                await instance.connect(owner).addResearchValidation(research, "justification", user2Address);
               });
 
               it("researcher is the same", async () => {
@@ -1560,7 +1560,7 @@ describe("ValidationRules", () => {
               research = generateResearchObject(research);
               research.validationsCount = 1;
 
-              await instance.connect(owner).addResearcherResearchValidation(research, "justification", user1Address);
+              await instance.connect(owner).addResearchValidation(research, "justification", user1Address);
             });
 
             it("total penalties is zero", async () => {
@@ -1579,7 +1579,7 @@ describe("ValidationRules", () => {
         research = generateResearchObject(research);
 
         await expect(
-          instance.connect(user1Address).addResearcherResearchValidation(research, "justification", user2Address)
+          instance.connect(user1Address).addResearchValidation(research, "justification", user2Address)
         ).to.be.revertedWith("Not allowed caller");
       });
     });

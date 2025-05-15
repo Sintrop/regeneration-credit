@@ -237,7 +237,7 @@ contract ResearcherRules is Callable, Invitable {
 
     if (mustInvalidateResearch) invalidateResearch(research);
 
-    validationRules.addResearcherResearchValidation(research, justification, msg.sender);
+    validationRules.addResearchValidation(research, justification, msg.sender);
   }
 
   /**

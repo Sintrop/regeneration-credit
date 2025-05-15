@@ -165,7 +165,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
       report = invalidateReport(report);
     }
 
-    validationRules.addDeveloperReportValidation(report, justification, msg.sender);
+    validationRules.addReportValidation(report, justification, msg.sender);
   }
 
   /**
