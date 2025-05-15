@@ -134,12 +134,12 @@ contract ValidationRules is Callable {
     validatorInspectionsValidations[validatorAddress][inspection.id] = true;
     validatorLastVoteAt[validatorAddress] = block.number;
 
-    uint256 majorityValidatorsCount_ = votesToInvalidate();
+    uint256 _votesToInvalidate = votesToInvalidate();
 
-    bool addPenalty = inspection.validationsCount >= majorityValidatorsCount_;
+    bool addPenalty = inspection.validationsCount >= _votesToInvalidate;
 
     inspectionValidations[inspection.id].push(
-      ResourceValidation(validatorAddress, inspection.id, justification, majorityValidatorsCount_, block.number)
+      ResourceValidation(validatorAddress, inspection.id, justification, _votesToInvalidate, block.number)
     );
 
     if (!addPenalty) return;
@@ -162,7 +162,7 @@ contract ValidationRules is Callable {
    * @param justification Invalidation justification
    * @param validatorAddress Address of the voter
    */
-  function addDeveloperReportValidation(
+  function addReportValidation(
     Report memory report,
     string memory justification,
     address validatorAddress
@@ -232,7 +232,7 @@ contract ValidationRules is Callable {
    * @param justification Invalidation justification
    * @param validatorAddress Address of the voter
    */
-  function addResearcherResearchValidation(
+  function addResearchValidation(
     Research memory research,
     string memory justification,
     address validatorAddress
@@ -242,12 +242,12 @@ contract ValidationRules is Callable {
     validatorResearchesValidations[validatorAddress][research.id] = true;
     validatorLastVoteAt[validatorAddress] = block.number;
 
-    uint256 majorityValidatorsCount_ = votesToInvalidate();
+    uint256 _votesToInvalidate = votesToInvalidate();
 
-    bool addPenalty = research.validationsCount >= majorityValidatorsCount_;
+    bool addPenalty = research.validationsCount >= _votesToInvalidate;
 
     researchValidations[research.id].push(
-      ResourceValidation(validatorAddress, research.id, justification, majorityValidatorsCount_, block.number)
+      ResourceValidation(validatorAddress, research.id, justification, _votesToInvalidate, block.number)
     );
 
     if (!addPenalty) return;
