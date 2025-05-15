@@ -24,6 +24,7 @@ struct Inspector {
   uint256 totalInspections;
   uint256 giveUps;
   uint256 lastAcceptedAt;
+  uint256 lastRealizedAt;
   uint256 lastInspection;
   Pool pool;
   uint256 createdAt;

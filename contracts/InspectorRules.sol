@@ -41,6 +41,8 @@ contract InspectorRules is Callable {
   /// @notice Max allowed giveUps before block
   uint256 private constant MAX_GIVEUPS = 3;
 
+  uint256 public immutable blocksToAccept = 6000;
+
   constructor(address communityRulesAddress, address inspectorPoolAddress, uint256 maxPenalties_) {
     communityRules = CommunityRules(communityRulesAddress);
     inspectorPool = InspectorPool(inspectorPoolAddress);
@@ -67,6 +69,7 @@ contract InspectorRules is Callable {
       msg.sender,
       name,
       proofPhoto,
+      0,
       0,
       0,
       0,
@@ -137,6 +140,7 @@ contract InspectorRules is Callable {
    */
   function incrementInspections(address addr) private returns (uint256) {
     inspectors[addr].totalInspections++;
+    inspectors[addr].lastRealizedAt = block.number;
 
     addLevel(addr);
 
@@ -247,5 +251,13 @@ contract InspectorRules is Callable {
    */
   function isInspectorValid(address addr) public view returns (bool) {
     return inspectors[addr].giveUps < MAX_GIVEUPS;
+  }
+
+  function canAcceptInspection(address addr) public view returns (bool) {
+    uint256 lastRealizedAt = inspectors[addr].lastRealizedAt;
+
+    if (lastRealizedAt <= 0) return true;
+
+    return block.number > lastRealizedAt + blocksToAccept;
   }
 }

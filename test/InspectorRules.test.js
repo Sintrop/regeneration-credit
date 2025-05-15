@@ -61,6 +61,7 @@ describe("InspectorRules", () => {
       expect(inspector.giveUps).to.equal("0");
       expect(inspector.lastAcceptedAt).to.equal("0");
       expect(inspector.lastInspection).to.equal("0");
+      expect(inspector.lastRealizedAt).to.equal("0");
     });
   });
 

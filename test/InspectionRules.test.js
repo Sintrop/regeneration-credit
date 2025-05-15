@@ -64,6 +64,7 @@ describe("InspectionRules", () => {
     allowedInitialRequests: 1,
     acceptInspectionDelayBlocks: 5,
     securityBlocksToValidatorAnalysis: 100,
+    blocksToAccept: 6000,
   };
 
   const addRegenerator = async (name, from) => {
@@ -662,10 +663,16 @@ describe("InspectionRules", () => {
               beforeEach(async () => {
                 await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
                 await realizeInspection(1, "", treesResultValue, biodiversityResultValue, inspectorAddress);
-                await acceptInspection(2, inspectorAddress);
+              });
+
+              it("should return error when try to accept another inspection before wait blocks", async () => {
+                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Wait to accept");
               });
 
               it("should accept inspection with success after finishing previous one", async () => {
+                await advanceBlock(sintropArgs.blocksToAccept);
+                await acceptInspection(2, inspectorAddress);
+
                 const inspection = await instance.getInspection(2);
 
                 expect(inspection.status).to.equal(STATUS.accepted);
