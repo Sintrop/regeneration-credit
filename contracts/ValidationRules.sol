@@ -365,9 +365,8 @@ contract ValidationRules is Callable {
 
   /**
    * @dev Function to calculate how many votes is necessary to invalidate a user, based on how many voters are registered in the system
-   * @notice Get how many validations is necessary to invalidate a user or resource
-   * @param count Sum of voters count, which includes activists, researchers, developers and contributors
-   * @return uint256 Number of votes
+   * @notice Get how many validations is necessary to invalidate a user or resource. Calculation is based on voters count, which includes activists, researchers, developers and contributors
+   * @return count Number of votes
    */
   function votesToInvalidate() public view returns (uint256 count) {
     uint256 voters = communityRules.votersCount();
