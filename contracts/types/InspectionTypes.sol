@@ -21,7 +21,7 @@ enum InspectionStatus {
  * @param regenerationScore Inspection regeneration score
  * @param proofPhoto Hash of the inspection proofPhoto
  * @param report Report data and justification of the result
- * @param validationsCount Number of invalidations vote received
+ * @param validationsCount Number of invalidation votes received
  * @param createdAt Creation block.number
  * @param acceptedAt Accepted block.number
  * @param inspectedAt Realize inspection block.number
@@ -44,4 +44,17 @@ struct Inspection {
   uint256 inspectedAt;
   uint256 inspectedAtEra;
   uint256 invalidatedAt;
+}
+
+/**
+ * @dev System used contracts address
+ */
+struct ContractsDependency {
+  address communityRulesAddress;
+  address regeneratorRulesAddress;
+  address validationRulesAddress;
+  address inspectorRulesAddress;
+  address regenerationIndexRulesAddress;
+  address activistRulesAddress;
+  address voteRulesAddress;
 }

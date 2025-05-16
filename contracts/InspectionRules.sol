@@ -8,11 +8,10 @@ import { ValidationRules } from "./ValidationRules.sol";
 import { RegenerationIndexRules } from "./RegenerationIndexRules.sol";
 import { ActivistRules } from "./ActivistRules.sol";
 import { CommunityRules } from "./CommunityRules.sol";
-import { InspectionStatus, Inspection } from "./types/InspectionTypes.sol";
+import { InspectionStatus, Inspection, ContractsDependency } from "./types/InspectionTypes.sol";
 import { Regenerator } from "./types/RegeneratorTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
 import { UserType } from "./types/CommunityTypes.sol";
-import { ContractsDependency } from "./types/SintropTypes.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Callable } from "./shared/Callable.sol";
 import { VoteRules } from "./VoteRules.sol";
@@ -26,41 +25,64 @@ import { VoteRules } from "./VoteRules.sol";
 contract InspectionRules is Callable {
   using SafeMath for uint256;
 
-  /// @notice Checks if an inspector has already inspected a regenerator
+  /// Checks if an inspector has already inspected a regenerator
   mapping(address => mapping(address => bool)) internal inspectorInspected;
 
+  /// User inspections ids
   mapping(address => uint256[]) internal userInspections;
 
-  /// @notice The relationship between id and inspection data
+  /// The relationship between id and inspection data
   mapping(uint256 => Inspection) internal inspections;
 
+  /// InspectorRules contract address
   InspectorRules private inspectorRules;
+
+  /// RegeneratorRules contract address
   RegeneratorRules private regeneratorRules;
 
-  /// @notice CommunityRules contract address
+  /// CommunityRules contract address
   CommunityRules private communityRules;
 
-  /// @notice ValidationRules contract address
+  /// ValidationRules contract address
   ValidationRules private validationRules;
 
-  /// @notice ActivistRules contract address
+  /// ActivistRules contract address
   ActivistRules private activistRules;
 
-  /// @notice ValidationRules contract address
+  /// ValidationRules contract address
   VoteRules internal voteRules;
 
-  /// @notice RegenerationIndexRules contract address
+  /// RegenerationIndexRules contract address
   RegenerationIndexRules private regenerationIndexRules;
 
+  /// @notice Valid inspections count
   uint256 public inspectionsCount;
+
+  /// @notice Realized inspections count
   uint256 public realizedInspectionsCount;
+
+  /// @notice Total inspections count, including invalidated ones
   uint256 public inspectionsTotalCount;
+
+  /// @notice Sum of all inspections trees impact
   uint256 public inspectionsTreesImpact;
+
+  /// @notice Sum of all inspections biodiversity impact
   uint256 public inspectionsBiodiversityImpact;
+
+  /// @notice Time between inspections after reaching the allowedInitialRequests
   uint256 public immutable timeBetweenInspections;
+
+  /// @notice Amount of blocks to expire an accepted inspection
   uint256 public immutable blocksToExpireAcceptedInspection;
+
+  /// @notice Allowed initial inspections to be approved and before reaching the timeBetweenInspections
   uint256 public immutable allowedInitialRequests;
+
+  /// @notice Amount of blocks that inspectors must wait to accept a new requested inspection
   uint256 public immutable acceptInspectionDelayBlocks;
+
+  /// @notice Amount of blocks for validators to check inspections before ending an era
   uint256 public immutable securityBlocksToValidatorAnalysis;
 
   constructor(
@@ -325,10 +347,18 @@ contract InspectionRules is Callable {
     return finishedLastInspection || acceptedInspectionExpired || inspector.lastInspection == 0;
   }
 
+  /**
+   * @dev Function that checks if the inspection delay blocks has passed
+   * @return bool True if can accept, false if not
+   */
   function acceptInspectionDelayBlocksPassed(Inspection memory inspection) private view returns (bool) {
     return block.number > inspection.createdAt + acceptInspectionDelayBlocks;
   }
 
+  /**
+   * @dev Function that blocks an inspector to accept inspections at the end of an era so validators can have time for reviewing all inspections before next era
+   * @return bool True if can accept, false if not
+   */
   function beforeAcceptHaveSecurityBlocksToVote() private view returns (bool) {
     if (regeneratorRules.nextEraIn() < blocksToExpireAcceptedInspection) return false;
 

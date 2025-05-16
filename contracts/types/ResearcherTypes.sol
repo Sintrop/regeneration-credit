@@ -82,6 +82,14 @@ struct CalculatorItem {
   uint256 carbonImpact;
 }
 
+/**
+ * @dev Evaluation method data structure
+ * @param id Method id
+ * @param createdBy Researcher wallet address
+ * @param title Method title
+ * @param research Paper or justification of the method provided
+ * @param projectURL Project URL or repository address
+ */
 struct EvaluationMethod {
   uint256 id;
   address createdBy;
@@ -97,6 +105,9 @@ struct Penalty {
   uint256 researchId;
 }
 
+/**
+ * @dev System used contracts address
+ */
 struct ContractsDependency {
   address communityRulesAddress;
   address researcherPoolAddress;

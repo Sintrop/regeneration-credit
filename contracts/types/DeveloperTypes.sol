@@ -55,6 +55,9 @@ struct Penalty {
   uint256 reportId;
 }
 
+/**
+ * @dev System used contracts address
+ */
 struct ContractsDependency {
   address communityRulesAddress;
   address developerPoolAddress;

@@ -187,6 +187,10 @@ contract RegeneratorRules is Callable {
     regeneratorPool.removePoolLevels(addr, regenerator.pool.currentEra, removeSomeLevels);
   }
 
+  /**
+   * @dev Increment regenerator total inspections
+   * @param addr Regenerator wallet
+   */
   function incrementInspections(address addr) private returns (uint256) {
     regenerators[addr].totalInspections++;
 
@@ -198,6 +202,10 @@ contract RegeneratorRules is Callable {
     return regenerators[addr].totalInspections;
   }
 
+  /**
+   * @dev Decrement regenerator total inspections
+   * @param addr Regenerator wallet
+   */
   function decrementInspections(address addr) public mustBeAllowedCaller {
     require(regenerators[addr].totalInspections > 0, "totalInspections invalid");
 
@@ -209,15 +217,27 @@ contract RegeneratorRules is Callable {
     regenerators[addr].totalInspections--;
   }
 
+  /**
+   * @dev Actions after regenerator request inspection
+   * @param addr Regenerator wallet
+   */
   function afterRequestInspection(address addr) public mustBeAllowedCaller {
     pendingInspection(addr, true);
     lastRequestAt(addr, block.number);
   }
 
+  /**
+   * @dev Actions after inspector accept inspection
+   * @param addr Inspector wallet
+   */
   function afterAcceptInspection(address addr) public mustBeAllowedCaller {
     pendingInspection(addr, false);
   }
 
+  /**
+   * @dev Actions after realize inspection.
+   * @param addr Regenerator wallet
+   */
   function afterRealizeInspection(address addr, uint256 score) public mustBeAllowedCaller returns (uint256) {
     uint256 totalInspections = incrementInspections(addr);
 
@@ -226,6 +246,10 @@ contract RegeneratorRules is Callable {
     return totalInspections;
   }
 
+  /**
+   * @dev Set regenerator lastRequestAt after request inspection.
+   * @param addr Regenerator wallet
+   */
   function lastRequestAt(address addr, uint256 blocksNumber) private {
     regenerators[addr].lastRequestAt = blocksNumber;
   }
@@ -262,6 +286,11 @@ contract RegeneratorRules is Callable {
     regenerationArea -= regenerators[addr].totalArea;
   }
 
+  /**
+   * @dev Function to get all regenerator coordinate points
+   * @param addr Regenerator wallet
+   * @return Coordinates Returns an array of coordinates
+   */
   function getCoordinates(address addr) public view returns (Coordinates[] memory) {
     Regenerator memory regenerator = regenerators[addr];
     Coordinates[] memory coordinatesList = new Coordinates[](regenerator.coordinatesCount);
