@@ -372,10 +372,10 @@ describe("RegenerationCreditImpact", () => {
               await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
             });
 
-            it("must returnstotalCarbonImpact equal 1000", async () => {
+            it("must returnstotalCarbonImpact equal 1000000", async () => {
               const totalCarbonImpact = await instance.totalCarbonImpact();
 
-              expect(totalCarbonImpact).to.equal(1000);
+              expect(totalCarbonImpact).to.equal(1000000);
             });
           });
 
@@ -386,10 +386,10 @@ describe("RegenerationCreditImpact", () => {
               await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
             });
 
-            it("must returnstotalCarbonImpact equal 3200", async () => {
+            it("must returnstotalCarbonImpact equal 3200000", async () => {
               const totalCarbonImpact = await instance.totalCarbonImpact();
 
-              expect(totalCarbonImpact).to.equal(3200);
+              expect(totalCarbonImpact).to.equal(3200000);
             });
           });
         });
@@ -444,10 +444,10 @@ describe("RegenerationCreditImpact", () => {
             await realizeInspection(5, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector5Address);
           });
 
-          it("must returnstotalCarbonImpact equal 17400", async () => {
+          it("must returnstotalCarbonImpact equal 17400000", async () => {
             const totalCarbonImpact = await instance.totalCarbonImpact();
 
-            expect(totalCarbonImpact).to.equal(17400);
+            expect(totalCarbonImpact).to.equal(17400000);
           });
         });
 
@@ -483,10 +483,10 @@ describe("RegenerationCreditImpact", () => {
             await realizeInspection(3, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector3Address);
           });
 
-          it("must returnstotalCarbonImpact equal 8800", async () => {
+          it("must returnstotalCarbonImpact equal 8800000", async () => {
             const totalCarbonImpact = await instance.totalCarbonImpact();
 
-            expect(totalCarbonImpact).to.equal(8800);
+            expect(totalCarbonImpact).to.equal(8800000);
           });
         });
       });
@@ -1040,10 +1040,10 @@ describe("RegenerationCreditImpact", () => {
                 await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
               });
 
-              it("must returns carbonPerToken equal 66666666", async () => {
+              it("must returns carbonPerToken equal 66666666666", async () => {
                 const carbonPerToken = await instance.carbonPerToken();
 
-                expect(carbonPerToken).to.equal(66666666);
+                expect(carbonPerToken).to.equal(66666666666);
               });
             });
 
@@ -1057,10 +1057,10 @@ describe("RegenerationCreditImpact", () => {
                 await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
               });
 
-              it("must returns carbonPerToken equal 111111111", async () => {
+              it("must returns carbonPerToken equal 111111111111", async () => {
                 const carbonPerToken = await instance.carbonPerToken();
 
-                expect(carbonPerToken).to.equal(111111111);
+                expect(carbonPerToken).to.equal(111111111111);
               });
             });
           });
@@ -1072,10 +1072,10 @@ describe("RegenerationCreditImpact", () => {
               await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
             });
 
-            it("must returnstotalTreesImpact equal 213333333", async () => {
+            it("must returnstotalTreesImpact equal 213333333333", async () => {
               const carbonPerToken = await instance.carbonPerToken();
 
-              expect(carbonPerToken).to.equal(213333333);
+              expect(carbonPerToken).to.equal(213333333333);
             });
           });
         });
@@ -1130,10 +1130,10 @@ describe("RegenerationCreditImpact", () => {
             await realizeInspection(5, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector5Address);
           });
 
-          it("must returns carbonPerToken equal 1160000000", async () => {
+          it("must returns carbonPerToken equal 1160000000000", async () => {
             const carbonPerToken = await instance.carbonPerToken();
 
-            expect(carbonPerToken).to.equal(1160000000);
+            expect(carbonPerToken).to.equal(1160000000000);
           });
         });
 
@@ -1169,10 +1169,10 @@ describe("RegenerationCreditImpact", () => {
             await realizeInspection(3, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector3Address);
           });
 
-          it("must returns carbonPerToken equal 586666666", async () => {
+          it("must returns carbonPerToken equal 586666666666", async () => {
             const carbonPerToken = await instance.carbonPerToken();
 
-            expect(carbonPerToken).to.equal(586666666);
+            expect(carbonPerToken).to.equal(586666666666);
           });
         });
       });

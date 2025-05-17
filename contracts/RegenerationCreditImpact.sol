@@ -21,14 +21,14 @@ contract RegenerationCreditImpact {
   uint256 public constant IMPACT_DECIMALS = 10 ** 32;
 
   /**
-   * @notice [kg]
-   * This constant estimates an average carbon sequestration of 100 kg per tree, palm tree and other plants with more than 5cm in diameter recorded by inspectors.
+   * @notice [g]
+   * This constant estimates an average carbon sequestration of 100000g (or 100kg) per tree, palm tree and other plants with over 3cm in diameter and 1 meter high recorded by inspectors.
    * In practice, it is not so simple to make this relationship, as the actual amount of carbon sequestered will vary from species to species,
    * from biome to biome, from soil to soil, from management to management and from each geolocation.
    * However, we need to standardize this value to simplify and allow the decentralized certification system to occur.
-   * This result was obtained by estimating that, on average, each tree/plant sequesters 10 kg of carbon per year, living an average of 10 years.
+   * This result was obtained by estimating that, on average, each tree/plant sequesters 10 kg of carbon per year, living an average of 10 years. With the result expressed in grams [g].
    */
-  uint256 public constant CARBON_PER_TREE = 100;
+  uint256 public constant CARBON_PER_TREE = 100000;
 
   RegenerationCredit internal regenerationCredit;
   InspectionRules internal inspectionRules;
@@ -62,7 +62,7 @@ contract RegenerationCreditImpact {
 
   /**
    * @notice Function to calculate the total carbon impact of the system.
-   * @return uint256 Kg of carbon [kg]
+   * @return uint256 Grams of carbon [g]
    */
   function totalCarbonImpact() public view returns (uint256) {
     if (inspectionRules.realizedInspectionsCount() == 0) return 0;
