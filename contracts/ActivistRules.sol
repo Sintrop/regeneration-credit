@@ -64,7 +64,9 @@ contract ActivistRules is Callable, Invitable {
    * @param proofPhoto Identity photo
    */
   function addActivist(string memory name, string memory proofPhoto) public {
+    // Characters limit
     require(bytes(name).length <= 100 && bytes(proofPhoto).length <= 100, "Max 100 characters");
+    // Max limit activist users
     require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
 
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
@@ -84,8 +86,10 @@ contract ActivistRules is Callable, Invitable {
   function canSendInvite(address addr) public view returns (bool) {
     Activist memory activist = activists[addr];
 
+    // Return false if it is not an activist
     if (activist.id <= 0) return false;
 
+    // Calls the invitable function to calculate if true or false
     return canInvite(approvedInvites, communityRules.userTypesTotalCount(USER_TYPE), activist.pool.level);
   }
 
@@ -175,9 +179,11 @@ contract ActivistRules is Callable, Invitable {
 
     if (activist.id <= 0) return;
 
+    // Inscrease the activist pool level
     activist.pool.level++;
     activists[activistAddress] = activist;
 
+    // Add pool level to activist be able to withdraw tokens
     activistPool.addLevel(activistAddress, 1);
   }
 
@@ -195,15 +201,19 @@ contract ActivistRules is Callable, Invitable {
    * - vacancies according to the number of regenerators
    */
   function withdraw() public {
+    // Only activist can call the function
     require(communityRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Pool only to activist");
 
     Activist memory activist = activists[msg.sender];
     uint256 currentEra = activist.pool.currentEra;
 
+    // Checks if activist currentEra is below the pool era
     require(activistPool.canWithdraw(currentEra), "Can't approve withdraw");
 
+    // Increase the activist pool era
     activists[msg.sender].pool.currentEra++;
 
+    // Call the pool withdraw function
     activistPool.withdraw(msg.sender, currentEra);
   }
 

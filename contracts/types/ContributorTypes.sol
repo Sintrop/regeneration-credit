@@ -59,6 +59,9 @@ struct Penalty {
   uint256 contributionId;
 }
 
+/**
+ * @dev System used contracts address
+ */
 struct ContractsDependency {
   address communityRulesAddress;
   address contributorPoolAddress;

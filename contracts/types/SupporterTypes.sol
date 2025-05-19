@@ -37,6 +37,13 @@ struct Publication {
   string content;
 }
 
+/**
+ * @dev Offset data structure
+ * @param supporterAddress Supporter wallet address
+ * @param createdAt Block of creation
+ * @param amountBrun Tokens burned
+ * @param calculatorItemId Calculator item to offset
+ */
 struct Offset {
   address supporterAddress;
   uint256 createdAt;

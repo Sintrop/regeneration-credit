@@ -80,6 +80,10 @@ contract ResearcherRules is Callable, Invitable {
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
   }
 
+  /**
+   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced after
+   * @param contractDependency Addresses of system contracts used
+   */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
     communityRules = CommunityRules(contractDependency.communityRulesAddress);
     researcherPool = ResearcherPool(contractDependency.researcherPoolAddress);
