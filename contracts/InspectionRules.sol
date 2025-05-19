@@ -171,6 +171,7 @@ contract InspectionRules is Callable {
     require(inspection.status == InspectionStatus.OPEN, "This inspection is not OPEN");
     require(acceptInspectionDelayBlocksPassed(inspection), "Wait inspection delay blocks");
     require(beforeAcceptHaveSecurityBlocksToVote(), "Wait until next era to accept");
+    require(inspectorRules.canAcceptInspection(msg.sender), "Wait to accept");
 
     inspection.status = InspectionStatus.ACCEPTED;
     inspection.acceptedAt = block.number;
