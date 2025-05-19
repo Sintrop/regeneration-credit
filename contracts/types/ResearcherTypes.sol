@@ -71,7 +71,7 @@ struct Research {
  * @param title Item title
  * @param unit Item unit. [Example: Kg, L, kwh]
  * @param justification Justification of the result provided
- * @param carbonImpact Impact of each item unit in carbon. [kg]
+ * @param carbonImpact Impact of each item unit in carbon. [g]
  */
 struct CalculatorItem {
   uint256 id;

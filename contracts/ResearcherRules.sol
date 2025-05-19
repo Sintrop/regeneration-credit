@@ -323,7 +323,7 @@ contract ResearcherRules is Callable, Invitable {
    * @param title CalculatorItem title
    * @param unit Unit of the item. Exapmle: liters, kwh, kg
    * @param justification Item result justification
-   * @param carbonImpact Kg of carbon per unit [kg]
+   * @param carbonImpact Grams of carbon per unit [g]
    */
   function addCalculatorItem(
     string memory title,
