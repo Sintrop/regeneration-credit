@@ -99,17 +99,17 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @return The category regeneration score
    */
   function treesRegenerationIndexId(uint256 indicator) internal pure returns (uint256) {
-    if (indicator > 20000) {
+    if (indicator >= 20000) {
       return 1;
-    } else if (indicator > 10000 && indicator < 20000) {
+    } else if (indicator >= 10000 && indicator < 20000) {
       return 2;
-    } else if (indicator > 5000 && indicator < 10000) {
+    } else if (indicator >= 5000 && indicator < 10000) {
       return 3;
-    } else if (indicator > 1000 && indicator < 5000) {
+    } else if (indicator >= 1000 && indicator < 5000) {
       return 4;
-    } else if (indicator > 100 && indicator < 1000) {
+    } else if (indicator >= 100 && indicator < 1000) {
       return 5;
-    } else if (indicator > 10 && indicator < 100) {
+    } else if (indicator >= 10 && indicator < 100) {
       return 6;
     } else {
       return 7;
@@ -122,17 +122,17 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @return The category regeneration score
    */
   function biodiversityRegenerationIndexId(uint256 indicator) internal pure returns (uint256) {
-    if (indicator > 240) {
+    if (indicator >= 240) {
       return 1;
-    } else if (indicator > 120 && indicator < 240) {
+    } else if (indicator >= 120 && indicator < 240) {
       return 2;
-    } else if (indicator > 60 && indicator < 120) {
+    } else if (indicator >= 60 && indicator < 120) {
       return 3;
-    } else if (indicator > 30 && indicator < 60) {
+    } else if (indicator >= 30 && indicator < 60) {
       return 4;
-    } else if (indicator > 15 && indicator < 30) {
+    } else if (indicator >= 15 && indicator < 30) {
       return 5;
-    } else if (indicator > 5 && indicator < 15) {
+    } else if (indicator >= 5 && indicator < 15) {
       return 6;
     } else {
       return 7;
