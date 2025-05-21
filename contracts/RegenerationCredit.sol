@@ -12,18 +12,33 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * @notice Token backed by the regeneration impact of the community
  */
 contract RegenerationCredit is ERC20, Ownable {
+  /// @notice Token name
   string public constant NAME = "REGENERATION CREDIT";
+
+  /// @notice Token symbol
   string public constant SYMBOL = "RC";
+
+  /// @notice Token decimals
   uint8 public constant DECIMALS = 18;
 
+  /// @notice Relationship between address and token balance
   mapping(address => uint256) internal balances;
   mapping(address => mapping(address => uint256)) internal allowed;
+
+  /// @notice Relationship between address and burned tokens
   mapping(address => uint256) public certificate;
+
+  /// @notice Checks if an address is a contract pool
   mapping(address => bool) internal contractsPools;
 
-  uint256 internal totalSupply_;
-  uint256 internal totalCertified_;
-  uint256 internal totalLocked_;
+  /// @notice Total token supply
+  uint256 public totalSupply_;
+
+  /// @notice Amount of burned tokens
+  uint256 public totalCertified_;
+
+  /// @notice Amount of pool locked tokens
+  uint256 public totalLocked_;
 
   using SafeMath for uint256;
 
@@ -51,11 +66,7 @@ contract RegenerationCredit is ERC20, Ownable {
    * @param receiver Address to receive the tokens
    * @param numTokens Amount of tokens
    */
-  function transferWith(
-    address tokenOwner,
-    address receiver,
-    uint256 numTokens
-  ) public mustBeContractPool returns (bool) {
+  function transferWith(address tokenOwner, address receiver, uint256 numTokens) public mustBeContractPool {
     require(numTokens <= balances[tokenOwner], "You don't have RC Tokens");
 
     balances[tokenOwner] = balances[tokenOwner].sub(numTokens);
@@ -65,22 +76,32 @@ contract RegenerationCredit is ERC20, Ownable {
     unchecked {
       if (contractsPools[tokenOwner]) totalLocked_ -= numTokens;
     }
-
-    return true;
   }
 
+  /**
+   * @notice Checks if an address is a contract pool
+   */
   function contractPool(address contractFundsAddress) public view returns (bool) {
     return contractsPools[contractFundsAddress];
   }
 
+  /**
+   * @notice Returns the Regeneration Credit totalSupply
+   */
   function totalSupply() public view override returns (uint256) {
     return totalSupply_;
   }
 
+  /**
+   * @notice Returns the Regeneration Credit name
+   */
   function name() public pure override returns (string memory) {
     return NAME;
   }
 
+  /**
+   * @notice Returns the Regeneration Credit balance of an user
+   */
   function balanceOf(address tokenOwner) public view override returns (uint256) {
     return balances[tokenOwner];
   }
@@ -114,6 +135,11 @@ contract RegenerationCredit is ERC20, Ownable {
     return true;
   }
 
+  /**
+   * @dev Allows any user to burn tokens
+   * @notice Compensate your environmental degradation by burning Regeneration Credit tokens.  Receive a certificate with your offset impact.
+   * @param amount Tokens burned
+   */
   function burnTokens(uint256 amount) public {
     burnTokensInternal(msg.sender, amount);
   }
@@ -122,12 +148,18 @@ contract RegenerationCredit is ERC20, Ownable {
     burnTokensInternal(tokenOwner, amount);
   }
 
+  /**
+   * @dev Internal function to add burned tokens to the certificate
+   */
   function burnTokensInternal(address tokenOwner, uint256 amount) internal {
     _burn(tokenOwner, amount);
     certificate[tokenOwner] += amount;
     totalCertified_ += amount;
   }
 
+  /**
+   * @dev Burn the tokens
+   */
   function _burn(address account, uint256 amount) internal override {
     require(account != address(0), "Burn from the zero address");
 
@@ -141,14 +173,23 @@ contract RegenerationCredit is ERC20, Ownable {
     emit Transfer(account, address(0), amount);
   }
 
+  /**
+   * @notice Total certified tokens
+   */
   function totalCertified() public view returns (uint256) {
     return totalCertified_;
   }
 
+  /**
+   * @notice Total tokens locked at pools
+   */
   function totalLocked() public view returns (uint256) {
     return totalLocked_;
   }
 
+  /**
+   * @dev Modifier to only contract pools
+   */
   modifier mustBeContractPool() {
     require(contractPool(msg.sender), "Not a contract pool");
     _;

@@ -2,7 +2,7 @@
 Regeneration Credit Core Contracts
 
 ## Project introduction 
-Our goal is to create a P2P funding system to regenerate the world. We are bulding a community of people to fight for this cause.  
+A P2P funding system to regenerate the world. We are bulding a community of people to fight for this cause.  
 
 To understand better, read our _whitepaper_ before start contributing.
 

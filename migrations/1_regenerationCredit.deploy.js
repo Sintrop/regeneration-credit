@@ -2,7 +2,7 @@ const saveContractAddress = require("../scripts/shared/saveContractAddress");
 const verifyContract = require("../scripts/shared/verifyContract");
 
 async function regenerationCreditDeploy() {
-  const regenerationCreditsTotalTokens = process.env["RC_TOKENS_TOTAL_TOKENS"];
+  const regenerationCreditsTotalTokens = process.env["RC_TOTAL_TOKENS"];
 
   const RegenerationCredit = await ethers.getContractFactory("RegenerationCredit");
 

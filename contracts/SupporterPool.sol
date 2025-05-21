@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { Callable } from "./Callable.sol";
+import { Callable } from "./shared/Callable.sol";
 import { RegenerationCredit } from "./RegenerationCredit.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
@@ -12,37 +12,43 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * @notice Receive tokens for inviting others to burn tokens
  */
 contract SupporterPool is Callable {
-  using SafeMath for uint256;
-
   RegenerationCredit internal regenerationCredit;
-
-  uint256 public constant INVITER_PERCENTAGE = 5;
 
   constructor(address regenerationCreditAddress) {
     regenerationCredit = RegenerationCredit(regenerationCreditAddress);
   }
 
+  /**
+   * @dev Burn tokens event
+   */
   event PoolBurnTokensEvent(
     address indexed _tokenOwner,
-    uint256 _amountSend,
     uint256 _amountBurned,
     address indexed _inviter,
     uint256 _inviterTotalTokens
   );
 
+  /**
+   * @dev Checks the regeneration credit balance of an address
+   */
   function balanceOf(address addr) public view returns (uint256) {
     return regenerationCredit.balanceOf(addr);
   }
 
-  function burnTokens(address tokenOwner, address inviter, uint256 amount, bool isInvited) public mustBeAllowedCaller {
-    uint256 inviterTotalTokens = isInvited ? amount.mul(INVITER_PERCENTAGE).div(100) : 0;
-    uint256 amountBurn = amount.sub(inviterTotalTokens);
-
+  /**
+   * @dev Called by supporterRules, burn tokens function that pays reward for inviter
+   */
+  function burnTokens(
+    address tokenOwner,
+    address inviter,
+    uint256 amountBurn,
+    uint256 inviterTotalTokens
+  ) public mustBeAllowedCaller {
     regenerationCredit.burnTokensWith(tokenOwner, amountBurn);
 
-    emit PoolBurnTokensEvent(tokenOwner, amount, amountBurn, inviter, inviterTotalTokens);
+    emit PoolBurnTokensEvent(tokenOwner, amountBurn, inviter, inviterTotalTokens);
 
-    if (!isInvited) return;
+    if (inviterTotalTokens <= 0) return;
 
     regenerationCredit.transferWith(tokenOwner, inviter, inviterTotalTokens);
   }

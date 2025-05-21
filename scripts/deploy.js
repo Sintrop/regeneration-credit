@@ -7,39 +7,39 @@
 const hre = require("hardhat");
 var fs = require("fs");
 const regenerationCreditDeploy = require("../migrations/1_regenerationCredit.deploy.js");
-const userContractDeploy = require("../migrations/2_userContract.deploy.js");
+const communityRulesDeploy = require("../migrations/2_communityRules.deploy.js");
 const developerPoolDeploy = require("../migrations/3_developerPool.deploy.js");
-const developerContractDeploy = require("../migrations/4_developerContract.deploy.js");
+const developerRulesDeploy = require("../migrations/4_developerRules.deploy.js");
 const inspectorPoolDeploy = require("../migrations/5_inspectorPool.deploy.js");
-const inspectorContractDeploy = require("../migrations/6_inspectorContract.deploy.js");
-const producerPoolDeploy = require("../migrations/7_producerPool.deploy.js");
-const producerContractDeploy = require("../migrations/8_producerContract.deploy.js");
+const inspectorRulesDeploy = require("../migrations/6_inspectorRules.deploy.js");
+const regeneratorPoolDeploy = require("../migrations/7_regeneratorPool.deploy.js");
+const regeneratorRulesDeploy = require("../migrations/8_regeneratorRules.deploy.js");
 const researcherPoolDeploy = require("../migrations/9_researcherPool.deploy.js");
-const researcherContractDeploy = require("../migrations/10_researcherContract.deploy.js");
-const validatorPoolDeploy = require("../migrations/13_validatorPool.deploy.js");
-const validatorContractDeploy = require("../migrations/14_validatorContract.deploy.js");
+const researcherRulesDeploy = require("../migrations/10_researcherRules.deploy.js");
+const validationRulesDeploy = require("../migrations/14_validationRules.deploy.js");
 const activistPoolDeploy = require("../migrations/15_activistPool.deploy.js");
-const activistContractDeploy = require("../migrations/16_activistContract.deploy.js");
+const activistRulesDeploy = require("../migrations/16_activistRules.deploy.js");
 const supporterPoolDeploy = require("../migrations/17_supporterPool.deploy.js");
-const supporterContractDeploy = require("../migrations/18_supporterContract.deploy.js");
-const invitationContractDeploy = require("../migrations/19_invitationContract.deploy.js");
-const categoryContractDeploy = require("../migrations/20_categoryContract.deploy.js");
-const sintropDeploy = require("../migrations/21_sintrop.deploy.js");
+const supporterRulesDeploy = require("../migrations/18_supporterRules.deploy.js");
+const invitationRulesDeploy = require("../migrations/19_invitationRules.deploy.js");
+const regenerationIndexRulesDeploy = require("../migrations/20_regenerationIndexRules.deploy.js");
+const inspectionRulesDeploy = require("../migrations/21_inspectionRules.deploy.js");
 const contributorPoolDeploy = require("../migrations/11_contributorPool.deploy.js");
-const contributorContractDeploy = require("../migrations/12_contributorContract.deploy.js");
+const contributorRulesDeploy = require("../migrations/12_contributorRules.deploy.js");
 const afterDeploy = require("../migrations/after_deploy.js");
+const regenerationCreditImpactDeploy = require("../migrations/22_regenerationCredImpact.deploy.js");
+const voteRulesDeploy = require("../migrations/23_voteRules.deploy.js");
 
 const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function startDeployAlert() {
   const etherscanVerificationEnabled = process.env["ETHERSCAN_VERIFICATION_ENABLED"];
-  const etherscanVerifyEnabledText = etherscanVerificationEnabled == 'true' ? "HABILITADA" : 'DESABILITADA'
+  const etherscanVerifyEnabledText = etherscanVerificationEnabled == "true" ? "HABILITADA" : "DESABILITADA";
   const deployStartSeconds = process.env["DEPLOY_START_SECONDS"] || 1;
 
   console.log(`-------------------  REDE ${hre.network.name} (CTRL + C para cancelar) -------------------`);
 
   console.log(`VERIFICAÇÃO DOS CONTRATOS ESTÁ ${etherscanVerifyEnabledText}`);
-  
 
   for (let i = deployStartSeconds; i > 0; i--) {
     await sleep(1000);
@@ -68,26 +68,27 @@ async function main() {
   await startDeployAlert();
 
   await regenerationCreditDeploy();
-  await userContractDeploy();
-  await validatorPoolDeploy();
-  await validatorContractDeploy();
+  await communityRulesDeploy();
   await developerPoolDeploy();
-  await developerContractDeploy();
+  await developerRulesDeploy();
   await inspectorPoolDeploy();
-  await inspectorContractDeploy();
-  await producerPoolDeploy();
-  await producerContractDeploy();
+  await inspectorRulesDeploy();
+  await regeneratorPoolDeploy();
+  await regeneratorRulesDeploy();
   await researcherPoolDeploy();
-  await researcherContractDeploy();
+  await researcherRulesDeploy();
   await contributorPoolDeploy();
-  await contributorContractDeploy();
+  await contributorRulesDeploy();
   await activistPoolDeploy();
-  await activistContractDeploy();
+  await activistRulesDeploy();
   await supporterPoolDeploy();
-  await supporterContractDeploy();
-  await categoryContractDeploy();
-  await invitationContractDeploy();
-  await sintropDeploy();
+  await supporterRulesDeploy();
+  await regenerationIndexRulesDeploy();
+  await inspectionRulesDeploy();
+  await regenerationCreditImpactDeploy();
+  await validationRulesDeploy();
+  await voteRulesDeploy();
+  await invitationRulesDeploy();
 
   await afterDeploy();
 

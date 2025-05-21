@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import { RegenerationCreditInterface } from "./RegenerationCreditInterface.sol";
+import { RegenerationCreditInterface } from "./interfaces/RegenerationCreditInterface.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { Blockable } from "./Blockable.sol";
-import { Callable } from "./Callable.sol";
-import { Poolable } from "./Poolable.sol";
+import { Blockable } from "./shared/Blockable.sol";
+import { Callable } from "./shared/Callable.sol";
+import { Poolable } from "./shared/Poolable.sol";
 
 /**
  * @author Sintrop
@@ -19,13 +19,14 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
 
   RegenerationCreditInterface internal regenerationCredit;
 
-  uint256 internal constant TOTAL_TOKENS_POOL = 30000000000000000000000000;
+  /// @notice Total researcher pool tokens
+  uint256 internal constant TOTAL_POOL_TOKENS = 40000000000000000000000000;
 
   constructor(
     address regenerationCreditAddress,
     uint256 _halving,
     uint256 _blocksPerEra
-  ) Blockable(_blocksPerEra, _halving) Poolable(TOTAL_TOKENS_POOL) {
+  ) Blockable(_blocksPerEra, _halving) Poolable(TOTAL_POOL_TOKENS) {
     regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
   }
 
@@ -47,13 +48,12 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
   /**
    * @dev Called by the researcher contract, function to increase researcher level
    * @param addr Researcher wallet
-   * @param currentLevel Researcher current level
-   * @param addLevels Levels to increase
+   * @param levels Levels to increase
    */
-  function addLevel(address addr, uint256 currentLevel, uint256 addLevels) public mustBeAllowedCaller {
+  function addLevel(address addr, uint256 levels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 
-    addPoolLevel(addr, currentLevel, addLevels, era);
+    addPoolLevel(addr, levels, era);
   }
 
   /**

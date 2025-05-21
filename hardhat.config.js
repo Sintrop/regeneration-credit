@@ -39,7 +39,7 @@ module.exports = {
     //   accounts: [privateKey],
     // },
     // sequoiaTestnet: {
-    //   url: "https://rpcsequoia01.edevapps.com.br",
+    //   url: "https://sequoiarpc.sintrop.com",
     //   accounts: [privateKey],
     // }
   },
@@ -50,10 +50,10 @@ module.exports = {
     customChains: [
       {
         network: "sequoiaTestnet",
-        chainId: 1500,
+        chainId: 1600,
         urls: {
-          apiURL: "https://sequoiaapi.edevapps.com.br/api",
-          browserURL: "https://sequoiaapi.edevapps.com.br:5000"
+          apiURL: "https://sequoiaapi.sintrop.com/api",
+          browserURL: "https://sequoiaapi.sintrop.com:5000"
         }
       }
     ]
@@ -75,7 +75,7 @@ module.exports = {
     },
   },
   gasReporter: {
-    enabled: !!gasReportEnabled,
+    enabled: gasReportEnabled == 'true',
     currency: "USD",
     L1Etherscan: etherscanApiKey,
     currencyDisplayPrecision: 2,

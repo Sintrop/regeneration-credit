@@ -1,24 +1,57 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <=0.9.0;
 
-import "./UserTypes.sol";
+import "./CommunityTypes.sol";
 
+/**
+ * @dev Researcher user type data structure
+ * @param id User id
+ * @param researcherWallet Researcher wallet address
+ * @param name User name
+ * @param pool Pool data
+ * @param proofPhoto Hash of the identity photo
+ * @param publishedResearches Number of published researches
+ * @param lastPublishedAt Block of last research publication
+ * @param publishedItems Number of published researches
+ * @param lastCalculatorItemAt Block of last calculator item publication
+ * @param createdAt Block of user creation
+ */
 struct Researcher {
   uint256 id;
   address researcherWallet;
   string name;
   Pool pool;
   string proofPhoto;
-  uint256 publishedWorks;
+  uint256 publishedResearches;
   uint256 lastPublishedAt;
+  uint256 publishedItems;
+  uint256 lastCalculatorItemAt;
+  uint256 createdAt;
+  bool canPublishMethod;
 }
 
+/**
+ * @dev Researcher pool data
+ */
 struct Pool {
   uint256 level;
   uint256 currentEra;
 }
 
-struct Work {
+/**
+ * @dev Research data structure
+ * @param id Research id
+ * @param era Era of creation
+ * @param createdBy Researcher wallet address
+ * @param title Research title
+ * @param thesis Research thesis
+ * @param file Hash of the research publication
+ * @param validationsCount Number of invalidation votes
+ * @param valid True if valid, false if invalid
+ * @param invalidateAt Block of invalidation
+ * @param createdAtBlock Block of research creation
+ */
+struct Research {
   uint256 id;
   uint256 era;
   address createdBy;
@@ -31,6 +64,53 @@ struct Work {
   uint256 createdAtBlock;
 }
 
+/**
+ * @dev Calculator item data structure
+ * @param id Item id
+ * @param createdBy Researcher wallet address
+ * @param title Item title
+ * @param unit Item unit. [Example: Kg, L, kwh]
+ * @param justification Justification of the result provided
+ * @param carbonImpact Impact of each item unit in carbon. [g]
+ */
+struct CalculatorItem {
+  uint256 id;
+  address createdBy;
+  string title;
+  string unit;
+  string justification;
+  uint256 carbonImpact;
+}
+
+/**
+ * @dev Evaluation method data structure
+ * @param id Method id
+ * @param createdBy Researcher wallet address
+ * @param title Method title
+ * @param research Paper or justification of the method provided
+ * @param projectURL Project URL or repository address
+ */
+struct EvaluationMethod {
+  uint256 id;
+  address createdBy;
+  string title;
+  string research;
+  string projectURL;
+}
+
+/**
+ * @dev Research penalty
+ */
 struct Penalty {
-  uint256 workId;
+  uint256 researchId;
+}
+
+/**
+ * @dev System used contracts address
+ */
+struct ContractsDependency {
+  address communityRulesAddress;
+  address researcherPoolAddress;
+  address validationRulesAddress;
+  address voteRulesAddress;
 }

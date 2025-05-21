@@ -1,14 +1,13 @@
 const userTypes = {
   Undefined: 0,
-  Producer: 1,
+  Regenerator: 1,
   Inspector: 2,
   Researcher: 3,
   Developer: 4,
   Contributor: 5,
   Activist: 6,
   Supporter: 7,
-  Validator: 8,
-  Denied: 9,
+  Denied: 8,
 };
 
 module.exports = { userTypes };
