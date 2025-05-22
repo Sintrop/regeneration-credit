@@ -326,20 +326,27 @@ contract ResearcherRules is Callable, Invitable {
    * @param carbonImpact Grams of carbon per unit [g]
    */
   function addCalculatorItem(
+    string memory item,
     string memory title,
-    string memory unit,
     string memory justification,
+    string memory unit,
     uint256 carbonImpact
   ) public {
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
-
+    require(
+      bytes(item).length <= 35 &&
+        bytes(title).length <= 100 &&
+        bytes(justification).length <= 250 &&
+        bytes(unit).length <= 20,
+      "Max characters reached"
+    );
     Researcher memory researcher = researchers[msg.sender];
 
     require(canPublishCalculatorItem(researcher), "Can't publish yet");
 
     uint256 id = calculatorItemsCount + 1;
 
-    calculatorItems[id] = CalculatorItem(id, msg.sender, title, unit, justification, carbonImpact);
+    calculatorItems[id] = CalculatorItem(id, msg.sender, item, title, justification, unit, carbonImpact);
     calculatorItemsCount++;
     researchers[msg.sender].lastCalculatorItemAt = block.number;
     researchers[msg.sender].publishedItems++;
