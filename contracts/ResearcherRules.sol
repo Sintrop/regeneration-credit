@@ -176,7 +176,7 @@ contract ResearcherRules is Callable, Invitable {
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add research");
     require(canPublishResearch(msg.sender), "Can't publish yet");
     require(
-      bytes(title).length <= 100 && bytes(thesis).length <= 500 && bytes(file).length <= 100,
+      bytes(title).length <= 100 && bytes(thesis).length <= 300 && bytes(file).length <= 100,
       "Max characters reached"
     );
 

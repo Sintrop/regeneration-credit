@@ -40,7 +40,7 @@ contract SupporterRules {
   uint256 public publicationsCount;
 
   /// @notice Max characters lenght of a publication
-  uint constant MAX_CHARACTERS = 1000;
+  uint constant MAX_CHARACTERS = 600;
 
   /// @notice The relationship between offset id and its data
   mapping(uint256 => Offset) public offsets;
@@ -136,7 +136,7 @@ contract SupporterRules {
     require(amount >= 1000000000000000000, "Amount invalid");
     require(
       bytes(description).length <= MAX_CHARACTERS && bytes(content).length <= MAX_CHARACTERS,
-      "Max 1000 characters"
+      "Max 600 characters"
     );
 
     uint256 amountBurn = burnTokens(amount);

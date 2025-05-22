@@ -126,7 +126,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add report");
     require(canPublishReport(msg.sender), "Can't publish yet");
-    require(bytes(description).length <= 500 && bytes(report).length <= 100, "Max characters reached");
+    require(bytes(description).length <= 300 && bytes(report).length <= 100, "Max characters reached");
 
     reportsCount++;
     reportsTotalCount++;
@@ -154,7 +154,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   function addReportValidation(uint256 id, string memory justification) public {
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
-    require(bytes(justification).length <= 300, "Max 300 characters reached");
+    require(bytes(justification).length <= 300, "Max 300 characters");
 
     Report memory report = reports[id];
 
