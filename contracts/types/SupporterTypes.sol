@@ -50,17 +50,3 @@ struct Offset {
   uint256 amountBurn;
   uint256 calculatorItemId;
 }
-
-/**
- * @dev PublicationId data structure
- */
-struct PublicationId {
-  uint256 id;
-}
-
-/**
- * @dev OffsetId data structure
- */
-struct OffsetId {
-  uint256 id;
-}
