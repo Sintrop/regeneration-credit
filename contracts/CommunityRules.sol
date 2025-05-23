@@ -195,6 +195,8 @@ contract CommunityRules is Ownable, Callable {
    * @param userAddress Denied user address
    */
   function setDeniedType(address userAddress) public mustBeAllowedCaller {
+    if (users[userAddress] == UserType.DENIED) return;
+
     userTypesCount[users[userAddress]]--;
 
     users[userAddress] = UserType.DENIED;

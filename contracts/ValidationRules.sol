@@ -268,15 +268,11 @@ contract ValidationRules is Callable {
     validatorResearchesValidations[validatorAddress][research.id] = true;
     validatorLastVoteAt[validatorAddress] = block.number;
 
-    uint256 _votesToInvalidate = votesToInvalidate();
-
-    bool addPenalty = research.validationsCount >= _votesToInvalidate;
-
     researchValidations[research.id].push(
-      ResourceValidation(validatorAddress, research.id, justification, _votesToInvalidate, block.number)
+      ResourceValidation(validatorAddress, research.id, justification, votesToInvalidate(), block.number)
     );
 
-    if (!addPenalty) return;
+    if (research.valid) return;
 
     uint256 totalPenalties = researcherRules.addPenalty(research.createdBy, research.id);
     removeReseacherResearch(research);
@@ -334,6 +330,7 @@ contract ValidationRules is Callable {
    */
   function denyUser(address userAddress) internal {
     removeLevelsFromPool(userAddress, 0);
+
     communityRules.setDeniedType(userAddress);
   }
 
@@ -345,6 +342,7 @@ contract ValidationRules is Callable {
   function removeLevelsFromPool(address userAddress, uint256 levels) internal {
     UserType oldUserType = communityRules.getUser(userAddress);
 
+    if (oldUserType == UserType.DENIED) return;
     if (oldUserType == UserType.INSPECTOR) return inspectorRules.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.REGENERATOR) return regeneratorRules.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.DEVELOPER) return developerRules.removePoolLevels(userAddress, levels);
