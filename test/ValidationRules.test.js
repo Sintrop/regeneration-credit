@@ -1451,7 +1451,7 @@ describe("ValidationRules", () => {
     });
   });
 
-  describe("#addResearchValidation", () => {
+  describe.only("#addResearchValidation", () => {
     context("with allowed caller", () => {
       beforeEach(async () => {
         await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
@@ -1508,6 +1508,7 @@ describe("ValidationRules", () => {
                 await instance.connect(owner).addResearchValidation(research, "justification", user1Address);
 
                 research.validationsCount = 2;
+                research.valid = false;
                 await instance.connect(owner).addResearchValidation(research, "justification", user2Address);
               });
 
@@ -1535,6 +1536,7 @@ describe("ValidationRules", () => {
                 research = await researcherRules.researches(1);
                 research = generateResearchObject(research);
                 research.validationsCount = 2;
+                research.valid = false;
 
                 await instance.connect(owner).addResearchValidation(research, "justification", user2Address);
               });
