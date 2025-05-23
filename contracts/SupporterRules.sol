@@ -202,7 +202,7 @@ contract SupporterRules {
    */
   function getOffsets(address addr) public view returns (uint256[] memory) {
     return offsetIds[addr];
-  }  
+  }
 
   /**
    * @dev Return a specific supporter
