@@ -172,6 +172,7 @@ contract InspectionRules is Callable {
     require(acceptInspectionDelayBlocksPassed(inspection), "Wait inspection delay blocks");
     require(beforeAcceptHaveSecurityBlocksToVote(), "Wait until next era to accept");
     require(inspectorRules.canAcceptInspection(msg.sender), "Wait to accept");
+    require(communityRules.userTypeIs(UserType.REGENERATOR, inspection.regenerator), "Regenerator invalid");
 
     inspection.status = InspectionStatus.ACCEPTED;
     inspection.acceptedAt = block.number;
