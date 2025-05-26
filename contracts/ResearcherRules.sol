@@ -339,7 +339,7 @@ contract ResearcherRules is Callable, Invitable {
         bytes(justification).length <= 250 &&
         bytes(unit).length <= 20,
       "Max characters reached"
-    );    
+    );
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
 
     Researcher memory researcher = researchers[msg.sender];
