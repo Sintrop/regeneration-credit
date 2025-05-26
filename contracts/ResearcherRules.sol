@@ -320,9 +320,10 @@ contract ResearcherRules is Callable, Invitable {
   /**
    * @dev Allows a researcher to attempt to publish an calculatorItem to users calculate their degradation
    * @notice One calculatorItem per research
-   * @param title CalculatorItem title
-   * @param unit Unit of the item. Exapmle: liters, kwh, kg
-   * @param justification Item result justification
+   * @param item Item name - 35 characters
+   * @param title CalculatorItem title - 100 characters
+   * @param unit Unit of the item. Example: liters, kwh, kg - 20 characters
+   * @param justification Item brief result justification - 250 characters
    * @param carbonImpact Grams of carbon per unit [g]
    */
   function addCalculatorItem(
@@ -332,14 +333,15 @@ contract ResearcherRules is Callable, Invitable {
     string memory unit,
     uint256 carbonImpact
   ) public {
-    require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
     require(
       bytes(item).length <= 35 &&
         bytes(title).length <= 100 &&
         bytes(justification).length <= 250 &&
         bytes(unit).length <= 20,
       "Max characters reached"
-    );
+    );    
+    require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
+
     Researcher memory researcher = researchers[msg.sender];
 
     require(canPublishCalculatorItem(researcher), "Can't publish yet");
