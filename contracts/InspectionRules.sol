@@ -274,9 +274,9 @@ contract InspectionRules is Callable {
    * @param justification Invalidation justification
    */
   function addInspectionValidation(uint256 id, string memory justification) public {
+    require(bytes(justification).length <= 300, "Max 300 characters reached");
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
-    require(bytes(justification).length <= 300, "Max 300 characters reached");
 
     Inspection memory inspection = inspections[id];
 

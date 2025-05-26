@@ -61,7 +61,7 @@ contract InspectorRules is Callable {
    * @param proofPhoto Identity photo
    */
   function addInspector(string memory name, string memory proofPhoto) public {
-    require(bytes(name).length <= 100 && bytes(proofPhoto).length <= 100, "Max 100 characters");
+    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Inspector memory inspector = Inspector(

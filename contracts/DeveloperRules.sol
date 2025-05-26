@@ -92,7 +92,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @param proofPhoto Identity photo
    */
   function addDeveloper(string memory name, string memory proofPhoto) public {
-    require(bytes(name).length <= 100 && bytes(proofPhoto).length <= 100, "Max 100 characters");
+    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
     require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
 
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
@@ -123,10 +123,10 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @param report Hash of the report file
    */
   function addReport(string memory description, string memory report) public {
+    require(bytes(description).length <= 300 && bytes(report).length <= 100, "Max characters reached");
     require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add report");
     require(canPublishReport(msg.sender), "Can't publish yet");
-    require(bytes(description).length <= 300 && bytes(report).length <= 100, "Max characters reached");
 
     reportsCount++;
     reportsTotalCount++;
@@ -152,9 +152,9 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @param justification String with invalidation explanation
    */
   function addReportValidation(uint256 id, string memory justification) public {
+    require(bytes(justification).length <= 300, "Max 300 characters");
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
-    require(bytes(justification).length <= 300, "Max 300 characters");
 
     Report memory report = reports[id];
 

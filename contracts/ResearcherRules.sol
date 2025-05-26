@@ -103,7 +103,7 @@ contract ResearcherRules is Callable, Invitable {
    * @param proofPhoto Identity photo
    */
   function addResearcher(string memory name, string memory proofPhoto) public {
-    require(bytes(name).length <= 100 && bytes(proofPhoto).length <= 100, "Max 100 characters");
+    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
     require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
 
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
@@ -172,13 +172,13 @@ contract ResearcherRules is Callable, Invitable {
    * @param file Hash of the report file
    */
   function addResearch(string memory title, string memory thesis, string memory file) public {
-    require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
-    require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add research");
-    require(canPublishResearch(msg.sender), "Can't publish yet");
     require(
       bytes(title).length <= 100 && bytes(thesis).length <= 300 && bytes(file).length <= 100,
       "Max characters reached"
     );
+    require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
+    require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add research");
+    require(canPublishResearch(msg.sender), "Can't publish yet");
 
     Researcher storage researcher = researchers[msg.sender];
 
@@ -226,9 +226,9 @@ contract ResearcherRules is Callable, Invitable {
    * @param justification Invalidation justification
    */
   function addResearchValidation(uint256 id, string memory justification) public {
+    require(bytes(justification).length <= 300, "Max 300 characters reached");
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
-    require(bytes(justification).length <= 300, "Max 300 characters reached");
 
     Research memory research = researches[id];
 

@@ -105,10 +105,10 @@ contract ValidationRules is Callable {
    * @param justification Invalidation justification
    */
   function addUserValidation(address userAddress, string memory justification) public {
+    require(bytes(justification).length <= 300, "Max 300 characters");
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(!communityRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
     require(!communityRules.userTypeIs(UserType.DENIED, userAddress), "User already denied");
-    require(bytes(justification).length <= 300, "Max 300 characters");
 
     uint256 currentEra = userCurrentEra(userAddress);
 

@@ -93,8 +93,8 @@ contract SupporterRules {
    * @param newPhoto User new profilePhoto
    */
   function updateProfilePhoto(string memory newPhoto) public {
-    require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(bytes(newPhoto).length <= 100, "Max 100 characters");
+    require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
 
     supporters[msg.sender].profilePhoto = newPhoto;
   }
@@ -132,12 +132,12 @@ contract SupporterRules {
    * @param content Post content
    */
   function publish(uint256 amount, string memory description, string memory content) public {
-    require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
-    require(amount >= 1000000000000000000, "Amount invalid");
     require(
       bytes(description).length <= MAX_CHARACTERS && bytes(content).length <= MAX_CHARACTERS,
       "Max 600 characters"
     );
+    require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
+    require(amount >= 1000000000000000000, "Amount invalid");
 
     uint256 amountBurn = burnTokens(amount);
 

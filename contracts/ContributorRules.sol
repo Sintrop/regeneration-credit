@@ -92,7 +92,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
    * @param proofPhoto Identity photo
    */
   function addContributor(string memory name, string memory proofPhoto) public {
-    require(bytes(name).length <= 100 && bytes(proofPhoto).length <= 100, "Max 100 characters");
+    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
     require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
 
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
@@ -164,9 +164,9 @@ contract ContributorRules is Ownable, Callable, Invitable {
    * @param justification String with invalidation explanation
    */
   function addContributionValidation(uint256 id, string memory justification) public {
+    require(bytes(justification).length <= 300, "Max 300 characters");
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
-    require(bytes(justification).length <= 300, "Max 300 characters");
 
     Contribution memory contribution = contributions[id];
 
