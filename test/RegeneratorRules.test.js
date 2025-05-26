@@ -13,12 +13,12 @@ describe("RegeneratorRules", () => {
 
   const addRegenerator = async (name, from, _coordinates = []) => {
     const test = _coordinates.length > 0 ? _coordinates : coordinates();
-    await instance.connect(from).addRegenerator(1000, name, "photoURL", test);
+    await instance.connect(from).addRegenerator(1000, name, "photoURL", "projectDescription", test);
   };
 
   const addRegenerator2 = async (name, from, _coordinates = []) => {
     const test = _coordinates.length > 0 ? _coordinates : coordinates();
-    await instance.connect(from).addRegenerator(10, name, "photoURL", test);
+    await instance.connect(from).addRegenerator(10, name, "photoURL", "projectDescription", test);
   };
 
   const coordinates = () => {
