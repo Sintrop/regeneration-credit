@@ -182,7 +182,7 @@ contract ResearcherRules is Callable, Invitable {
 
     Researcher storage researcher = researchers[msg.sender];
 
-    uint256 id = researchesCount + 1;
+    uint256 id = researchesTotalCount + 1;
 
     Research memory research = Research(
       id,
@@ -249,7 +249,7 @@ contract ResearcherRules is Callable, Invitable {
    * @param research Invalidated research
    */
   function invalidateResearch(Research memory research) internal {
-    researchesTotalCount--;
+    researchesCount--;
     research.valid = false;
     research.invalidatedAt = block.number;
     researches[research.id] = research;
