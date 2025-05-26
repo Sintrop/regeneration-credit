@@ -193,7 +193,7 @@ contract InspectionRules is Callable {
    */
   function realizeInspection(
     uint256 inspectionId,
-    string memory proofPhoto,
+    string memory proofPh 
     string memory report,
     uint256 treesResult,
     uint256 biodiversityResult
@@ -204,6 +204,7 @@ contract InspectionRules is Callable {
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
     require(inspection.inspector == msg.sender, "You have not accepted this inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
+    require(treesResult <= 200000 && biodiversityResult <= 1000, "Max result limit");
 
     markAsRealized(inspection, proofPhoto, report, treesResult, biodiversityResult);
 

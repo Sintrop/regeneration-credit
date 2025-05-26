@@ -954,10 +954,21 @@ describe("InspectionRules", () => {
                 });
 
                 context("when check inspection regenerationIndex", () => {
+                  context("when select result over the max limit", () => {
+                    it("should return error message", async () => {
+                      const treesResultValue = 10001;
+                      const biodiversityResultValue = 1071;
+
+                      await expect(
+                        realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress)
+                      ).to.be.revertedWith("Max result limit");
+                    });
+                  });
+
                   context("when select REGENERATIVE_6", () => {
                     beforeEach(async () => {
-                      const treesResultValue = 100001;
-                      const biodiversityResultValue = 1001;
+                      const treesResultValue = 80001;
+                      const biodiversityResultValue = 971;
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
