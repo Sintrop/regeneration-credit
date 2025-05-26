@@ -264,6 +264,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
   function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
     Contributor memory contributor = contributors[addr];
 
+    contributors[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : contributor.pool.level;
     contributorPool.removePoolLevels(addr, contributor.pool.currentEra, removeSomeLevels);
   }
 
