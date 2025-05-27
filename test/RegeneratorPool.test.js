@@ -14,10 +14,6 @@ describe("RegeneratorPool", () => {
     blocksPerEra: 12,
   };
 
-  const transferTokensTo = async (userAddress, tokens) => {
-    await regenerationCredit.transfer(userAddress, tokens);
-  };
-
   beforeEach(async () => {
     [owner, regenerator1Address, regenerator2Address] = await ethers.getSigners();
 
