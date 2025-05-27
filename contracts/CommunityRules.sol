@@ -109,7 +109,7 @@ contract CommunityRules is Ownable, Callable {
     if (registeredUserTypeCount < MINIMUM_REGISTERED_USERS_QUANTITY) return true;
 
     if (setting.directProportionalityRegistration) return registeredUserTypeCount < regeneratorsCount * proportionality;
-    return registeredUserTypeCount < regeneratorsCount / proportionality;
+    return registeredUserTypeCount <= regeneratorsCount / proportionality;
   }
 
   /**
