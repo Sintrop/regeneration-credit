@@ -358,7 +358,7 @@ describe("DeveloperPool", () => {
     });
   });
 
-  describe.only("#withdraw", () => {
+  describe("#withdraw", () => {
     context("with allowed caller", () => {
       context("when can withdraw", () => {
         context("when is epoch 1", () => {
