@@ -182,7 +182,7 @@ contract ResearcherRules is Callable, Invitable {
 
     Researcher storage researcher = researchers[msg.sender];
 
-    uint256 id = researchesCount + 1;
+    uint256 id = researchesTotalCount + 1;
 
     Research memory research = Research(
       id,
@@ -249,7 +249,7 @@ contract ResearcherRules is Callable, Invitable {
    * @param research Invalidated research
    */
   function invalidateResearch(Research memory research) internal {
-    researchesTotalCount--;
+    researchesCount--;
     research.valid = false;
     research.invalidatedAt = block.number;
     researches[research.id] = research;
@@ -320,17 +320,26 @@ contract ResearcherRules is Callable, Invitable {
   /**
    * @dev Allows a researcher to attempt to publish an calculatorItem to users calculate their degradation
    * @notice One calculatorItem per research
-   * @param title CalculatorItem title
-   * @param unit Unit of the item. Exapmle: liters, kwh, kg
-   * @param justification Item result justification
+   * @param item Item name - 35 characters
+   * @param title CalculatorItem title - 100 characters
+   * @param unit Unit of the item. Example: liters, kwh, kg - 20 characters
+   * @param justification Item brief result justification - 250 characters
    * @param carbonImpact Grams of carbon per unit [g]
    */
   function addCalculatorItem(
+    string memory item,
     string memory title,
-    string memory unit,
     string memory justification,
+    string memory unit,
     uint256 carbonImpact
   ) public {
+    require(
+      bytes(item).length <= 35 &&
+        bytes(title).length <= 100 &&
+        bytes(justification).length <= 250 &&
+        bytes(unit).length <= 20,
+      "Max characters reached"
+    );
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
 
     Researcher memory researcher = researchers[msg.sender];
@@ -339,7 +348,7 @@ contract ResearcherRules is Callable, Invitable {
 
     uint256 id = calculatorItemsCount + 1;
 
-    calculatorItems[id] = CalculatorItem(id, msg.sender, title, unit, justification, carbonImpact);
+    calculatorItems[id] = CalculatorItem(id, msg.sender, item, title, justification, unit, carbonImpact);
     calculatorItemsCount++;
     researchers[msg.sender].lastCalculatorItemAt = block.number;
     researchers[msg.sender].publishedItems++;

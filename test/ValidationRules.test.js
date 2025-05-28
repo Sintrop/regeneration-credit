@@ -752,10 +752,10 @@ describe("ValidationRules", () => {
                 expect(levelsEra2).to.equal(0);
               });
 
-              it("do not remove user levels from contributor", async () => {
+              it("should remove user levels from contributor", async () => {
                 const contributor = await contributorRules.getContributor(contributor1Address);
 
-                expect(contributor.pool.level).to.equal(1);
+                expect(contributor.pool.level).to.equal(0);
               });
 
               it("userTypesCount must be decremented", async () => {
