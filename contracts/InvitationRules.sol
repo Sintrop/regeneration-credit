@@ -19,6 +19,9 @@ contract InvitationRules is Ownable {
   /// @notice Relationship between address and last invitation blockNumber
   mapping(address => uint256) public lastInviteBlocks;
 
+  /// @notice Relationship between address and last activist regenerator or inspector invitation blockNumber
+  mapping(address => uint256) public lastInviteActivist;
+
   /// @notice Relationship between which userType can invite who
   mapping(UserType => UserType) public canBeInviteds;
 
@@ -39,6 +42,8 @@ contract InvitationRules is Ownable {
 
   /// @notice ValidationRules contract address
   ValidationRules internal validationRules;
+
+  uint256 public immutable activistDelayBlocks = 1000;
 
   constructor(
     address communityRulesAddress,
@@ -109,9 +114,9 @@ contract InvitationRules is Ownable {
   function inviteRegeneratorInspector(address invited, UserType userType) public {
     require(communityRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Only to activists");
     require(userType == UserType.REGENERATOR || userType == UserType.INSPECTOR, "Only regenerators or inspectors");
-    require(invitationDelayReached(UserType.ACTIVIST), "Invite delay not reached");
+    require(invitationDelayActivist(), "Invite delay not reached");
 
-    lastInviteBlocks[msg.sender] = block.number;
+    lastInviteActivist[msg.sender] = block.number;
 
     communityRules.addInvitation(msg.sender, invited, userType);
   }
@@ -134,5 +139,9 @@ contract InvitationRules is Ownable {
     uint256 delayBlocks = communityRules.getUserTypeSettings(userType).invitationDelayBlocks;
 
     return lastInviteBlocks[msg.sender] <= 0 || block.number - lastInviteBlocks[msg.sender] >= delayBlocks;
+  }
+
+  function invitationDelayActivist() internal view returns (bool) {
+    return lastInviteActivist[msg.sender] <= 0 || block.number - lastInviteActivist[msg.sender] >= activistDelayBlocks;
   }
 }
