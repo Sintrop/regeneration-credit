@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0 <=0.9.0;
 
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import { Era } from "contracts/types/PoolTypes.sol";
+import { Era, EraMetric } from "contracts/types/PoolTypes.sol";
 
 /**
  * @author Sintrop
@@ -42,6 +42,7 @@ contract Poolable {
   function updateEraAfterWithdraw(uint256 era, address user, uint256 numTokens) internal {
     eras[era].users++;
     eras[era].tokens += numTokens;
+    eras[era].metrics.push(EraMetric(user, numTokens));
     eraTokens[era][user] = numTokens;
   }
 

@@ -383,6 +383,18 @@ describe("DeveloperPool", () => {
 
                   expect(balanceOf).to.equal(833333333333333333333333n);
                 });
+
+                it("must update get era", async () => {
+                  await instance.withdraw(dev1Address, 1);
+
+                  const era = await instance.getEra(1);
+
+                  expect(era.users).to.equal(1);
+                  expect(era.tokens).to.equal(833333333333333333333333n);
+                  expect(era.levels).to.equal(6);
+                  expect(era.metrics[0].user).to.equal("0x70997970C51812dc3A010C7d01b50e0d17dc79C8");
+                  expect(era.metrics[0].tokens).to.equal(833333333333333333333333n);
+                });
               });
 
               context("when dev1 have 6 levels in era 1", () => {
@@ -488,6 +500,18 @@ describe("DeveloperPool", () => {
                   const balanceOf = await instance.eraTokens(2, dev1Address);
 
                   expect(balanceOf).to.equal(833333333333333333333333n);
+                });
+
+                it("must update eras", async () => {
+                  const era = await instance.getEra(2);
+
+                  expect(era.users).to.equal(2);
+                  expect(era.tokens).to.equal(1666666666666666666666666n);
+                  expect(era.levels).to.equal(6);
+                  expect(era.metrics[0].user).to.equal("0x70997970C51812dc3A010C7d01b50e0d17dc79C8");
+                  expect(era.metrics[0].tokens).to.equal(833333333333333333333333n);
+                  expect(era.metrics[1].user).to.equal("0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC");
+                  expect(era.metrics[1].tokens).to.equal(833333333333333333333333n);
                 });
               });
 
