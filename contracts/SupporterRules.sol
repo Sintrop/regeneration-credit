@@ -4,7 +4,7 @@ pragma solidity >=0.7.0 <=0.9.0;
 import { CommunityRules } from "./CommunityRules.sol";
 import { ResearcherRules } from "./ResearcherRules.sol";
 import { CalculatorItem } from "./types/ResearcherTypes.sol";
-import { Supporter, Publication, PublicationId, Offset, OffsetId } from "./types/SupporterTypes.sol";
+import { Supporter, Publication, Offset } from "./types/SupporterTypes.sol";
 import { UserType, Invitation } from "./types/CommunityTypes.sol";
 import { SupporterPool } from "./SupporterPool.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -34,19 +34,19 @@ contract SupporterRules {
   mapping(uint256 => Publication) public publications;
 
   /// @notice The relationship between address and publications made
-  mapping(address => PublicationId[]) public publicationIds;
+  mapping(address => uint256[]) public publicationIds;
 
   /// @notice Total number of publications made
   uint256 public publicationsCount;
 
   /// @notice Max characters lenght of a publication
-  uint constant MAX_CHARACTERS = 1000;
+  uint constant MAX_CHARACTERS = 600;
 
   /// @notice The relationship between offset id and its data
   mapping(uint256 => Offset) public offsets;
 
   /// @notice The relationship between a supporter and its publication ids
-  mapping(address => OffsetId[]) public offsetIds;
+  mapping(address => uint256[]) public offsetIds;
 
   /// @notice Offsets total count
   uint256 public offsetsCount;
@@ -93,8 +93,8 @@ contract SupporterRules {
    * @param newPhoto User new profilePhoto
    */
   function updateProfilePhoto(string memory newPhoto) public {
-    require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(bytes(newPhoto).length <= 100, "Max 100 characters");
+    require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
 
     supporters[msg.sender].profilePhoto = newPhoto;
   }
@@ -120,7 +120,7 @@ contract SupporterRules {
 
     offsets[id] = Offset(msg.sender, block.number, amountBurn, calculatorItemId);
 
-    offsetIds[msg.sender].push(OffsetId(id));
+    offsetIds[msg.sender].push(id);
     offsetsCount++;
     supporters[msg.sender].offsetsCount++;
   }
@@ -132,12 +132,12 @@ contract SupporterRules {
    * @param content Post content
    */
   function publish(uint256 amount, string memory description, string memory content) public {
-    require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
-    require(amount >= 1000000000000000000, "Amount invalid");
     require(
       bytes(description).length <= MAX_CHARACTERS && bytes(content).length <= MAX_CHARACTERS,
-      "Max 1000 characters"
+      "Max 600 characters"
     );
+    require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
+    require(amount >= 1000000000000000000, "Amount invalid");
 
     uint256 amountBurn = burnTokens(amount);
 
@@ -145,7 +145,7 @@ contract SupporterRules {
 
     publications[id] = Publication(msg.sender, block.number, amountBurn, description, content);
 
-    publicationIds[msg.sender].push(PublicationId(id));
+    publicationIds[msg.sender].push(id);
     publicationsCount++;
     supporters[msg.sender].publicationsCount++;
   }
@@ -192,7 +192,16 @@ contract SupporterRules {
    * @return array Of publication ids
    */
   function getPublications(address addr) public view returns (uint256[] memory) {
-    return reductionCommitments[addr];
+    return publicationIds[addr];
+  }
+
+  /**
+   * @notice Get offsets for a specific address
+   * @param addr Supporter address
+   * @return array Of offset ids
+   */
+  function getOffsets(address addr) public view returns (uint256[] memory) {
+    return offsetIds[addr];
   }
 
   /**

@@ -71,9 +71,9 @@ contract RegeneratorRules is Callable {
     string memory proofPhoto,
     Coordinates[] memory _coordinates
   ) public {
-    require(bytes(name).length <= 100 && bytes(proofPhoto).length <= 100, "Max 100 characters");
+    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
     require(_coordinates.length >= 3 && _coordinates.length <= 10, "Minimum 3 and maximum 10 coordinate points");
-    require(totalArea >= 500, "Minimum 500 square meters");
+    require(totalArea >= 500 && totalArea <= 500000, "Minimum 500 and maximum 500.000 square meters");
 
     Regenerator memory regenerator = regenerators[msg.sender];
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
@@ -307,8 +307,8 @@ contract RegeneratorRules is Callable {
    * @param newPhoto newPhoto hash
    */
   function updateAreaPhoto(string memory newPhoto) public {
-    require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
     require(bytes(newPhoto).length <= 100, "Max 100 characters");
+    require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
 
     areaPhoto[msg.sender] = newPhoto;
   }

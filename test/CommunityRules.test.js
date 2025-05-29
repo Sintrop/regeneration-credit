@@ -494,6 +494,16 @@ describe("CommunityRules", function () {
         await expect(addDelation(user1Address, user2Address)).to.be.revertedWith("Caller must be registered");
       });
     });
+
+    context("when user2 (informer) is a supporter", () => {
+      it("should return error message", async () => {
+        await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+        await addUser(user1Address, userTypes.Regenerator, owner);
+        await addUser(user2Address, userTypes.Supporter, owner);
+
+        await expect(addDelation(user1Address, user2Address)).to.be.revertedWith("Not allowed to supporters");
+      });
+    });
   });
 
   describe("#getUserDelations", () => {

@@ -172,6 +172,7 @@ contract InspectionRules is Callable {
     require(acceptInspectionDelayBlocksPassed(inspection), "Wait inspection delay blocks");
     require(beforeAcceptHaveSecurityBlocksToVote(), "Wait until next era to accept");
     require(inspectorRules.canAcceptInspection(msg.sender), "Wait to accept");
+    require(communityRules.userTypeIs(UserType.REGENERATOR, inspection.regenerator), "Regenerator invalid");
 
     inspection.status = InspectionStatus.ACCEPTED;
     inspection.acceptedAt = block.number;
@@ -204,6 +205,7 @@ contract InspectionRules is Callable {
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
     require(inspection.inspector == msg.sender, "You have not accepted this inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
+    require(treesResult <= 200000 && biodiversityResult <= 300, "Max result limit");
 
     markAsRealized(inspection, proofPhoto, report, treesResult, biodiversityResult);
 
@@ -274,9 +276,9 @@ contract InspectionRules is Callable {
    * @param justification Invalidation justification
    */
   function addInspectionValidation(uint256 id, string memory justification) public {
+    require(bytes(justification).length <= 300, "Max 300 characters reached");
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
-    require(bytes(justification).length <= 300, "Max 300 characters reached");
 
     Inspection memory inspection = inspections[id];
 

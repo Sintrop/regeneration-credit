@@ -103,7 +103,7 @@ contract ResearcherRules is Callable, Invitable {
    * @param proofPhoto Identity photo
    */
   function addResearcher(string memory name, string memory proofPhoto) public {
-    require(bytes(name).length <= 100 && bytes(proofPhoto).length <= 100, "Max 100 characters");
+    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
     require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
 
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
@@ -172,17 +172,17 @@ contract ResearcherRules is Callable, Invitable {
    * @param file Hash of the report file
    */
   function addResearch(string memory title, string memory thesis, string memory file) public {
+    require(
+      bytes(title).length <= 100 && bytes(thesis).length <= 300 && bytes(file).length <= 100,
+      "Max characters reached"
+    );
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add research");
     require(canPublishResearch(msg.sender), "Can't publish yet");
-    require(
-      bytes(title).length <= 100 && bytes(thesis).length <= 500 && bytes(file).length <= 100,
-      "Max characters reached"
-    );
 
     Researcher storage researcher = researchers[msg.sender];
 
-    uint256 id = researchesCount + 1;
+    uint256 id = researchesTotalCount + 1;
 
     Research memory research = Research(
       id,
@@ -226,9 +226,9 @@ contract ResearcherRules is Callable, Invitable {
    * @param justification Invalidation justification
    */
   function addResearchValidation(uint256 id, string memory justification) public {
+    require(bytes(justification).length <= 300, "Max 300 characters reached");
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
-    require(bytes(justification).length <= 300, "Max 300 characters reached");
 
     Research memory research = researches[id];
 
@@ -251,7 +251,7 @@ contract ResearcherRules is Callable, Invitable {
    * @param research Invalidated research
    */
   function invalidateResearch(Research memory research) internal returns (Research memory) {
-    researchesTotalCount--;
+    researchesCount--;
     research.valid = false;
     research.invalidatedAt = block.number;
     researches[research.id] = research;
@@ -324,17 +324,26 @@ contract ResearcherRules is Callable, Invitable {
   /**
    * @dev Allows a researcher to attempt to publish an calculatorItem to users calculate their degradation
    * @notice One calculatorItem per research
-   * @param title CalculatorItem title
-   * @param unit Unit of the item. Exapmle: liters, kwh, kg
-   * @param justification Item result justification
+   * @param item Item name - 35 characters
+   * @param title CalculatorItem title - 100 characters
+   * @param unit Unit of the item. Example: liters, kwh, kg - 20 characters
+   * @param justification Item brief result justification - 250 characters
    * @param carbonImpact Grams of carbon per unit [g]
    */
   function addCalculatorItem(
+    string memory item,
     string memory title,
-    string memory unit,
     string memory justification,
+    string memory unit,
     uint256 carbonImpact
   ) public {
+    require(
+      bytes(item).length <= 35 &&
+        bytes(title).length <= 100 &&
+        bytes(justification).length <= 250 &&
+        bytes(unit).length <= 20,
+      "Max characters reached"
+    );
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only allowed to researchers");
 
     Researcher memory researcher = researchers[msg.sender];
@@ -343,7 +352,7 @@ contract ResearcherRules is Callable, Invitable {
 
     uint256 id = calculatorItemsCount + 1;
 
-    calculatorItems[id] = CalculatorItem(id, msg.sender, title, unit, justification, carbonImpact);
+    calculatorItems[id] = CalculatorItem(id, msg.sender, item, title, justification, unit, carbonImpact);
     calculatorItemsCount++;
     researchers[msg.sender].lastCalculatorItemAt = block.number;
     researchers[msg.sender].publishedItems++;

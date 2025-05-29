@@ -52,7 +52,7 @@ describe("ResearcherRules", () => {
   };
 
   const addCalculatorItem = async (from) => {
-    await instance.connect(from).addCalculatorItem("title", "kg", "justification", 1);
+    await instance.connect(from).addCalculatorItem("item", "title", "justification", "kg", 1);
   };
 
   const addEvaluationMethod = async (from) => {
@@ -455,9 +455,9 @@ describe("ResearcherRules", () => {
           });
 
           it("must decrement researchesCount in one", async () => {
-            const researchesTotalCount = await instance.researchesTotalCount();
+            const researchesCount = await instance.researchesCount();
 
-            expect(researchesTotalCount).to.eq(0);
+            expect(researchesCount).to.eq(0);
           });
         });
 
@@ -665,9 +665,9 @@ describe("ResearcherRules", () => {
           });
 
           it("must decrement researchesCount in one", async () => {
-            const researchesTotalCount = await instance.researchesTotalCount();
+            const researchesCount = await instance.researchesCount();
 
-            expect(researchesTotalCount).to.eq(0);
+            expect(researchesCount).to.eq(0);
           });
         });
 
@@ -839,9 +839,9 @@ describe("ResearcherRules", () => {
           });
 
           it("must decrement researchesCount in one", async () => {
-            const researchesTotalCount = await instance.researchesTotalCount();
+            const researchesCount = await instance.researchesCount();
 
-            expect(researchesTotalCount).to.eq(0);
+            expect(researchesCount).to.eq(0);
           });
         });
 
@@ -1013,9 +1013,9 @@ describe("ResearcherRules", () => {
           });
 
           it("must decrement researchesCount in one", async () => {
-            const researchesTotalCount = await instance.researchesTotalCount();
+            const researchesCount = await instance.researchesCount();
 
-            expect(researchesTotalCount).to.eq(0);
+            expect(researchesCount).to.eq(0);
           });
         });
 
