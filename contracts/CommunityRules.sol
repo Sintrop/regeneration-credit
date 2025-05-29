@@ -167,6 +167,7 @@ contract CommunityRules is Ownable, Callable {
   function addDelation(address addr, string memory title, string memory testimony) public {
     require(bytes(title).length <= 100 && bytes(testimony).length <= 300, "Max characters reached");
     require(users[msg.sender] != UserType.UNDEFINED, "Caller must be registered");
+    require(users[msg.sender] != UserType.SUPPORTER, "Not allowed to supporters");
     require(users[addr] != UserType.UNDEFINED, "User must be registered");
 
     delations[addr].push(Delation(delationsCount + 1, msg.sender, addr, title, testimony));
