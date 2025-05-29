@@ -247,15 +247,19 @@ describe("RegeneratorRules", () => {
 
   context("when totalArea is below 500", () => {
     it("should return error", async () => {
-      await expect(addRegenerator2("Regenerator A", prod1Address)).to.be.revertedWith("Minimum 500 and maximum 100.000 square meters");
+      await expect(addRegenerator2("Regenerator A", prod1Address)).to.be.revertedWith(
+        "Minimum 500 and maximum 500.000 square meters"
+      );
     });
   });
 
   context("when totalArea is over 100.000", () => {
     it("should return error", async () => {
-      await expect(addRegenerator3("Regenerator A", prod1Address)).to.be.revertedWith("Minimum 500 and maximum 100.000 square meters");
+      await expect(addRegenerator3("Regenerator A", prod1Address)).to.be.revertedWith(
+        "Minimum 500 and maximum 500.000 square meters"
+      );
     });
-  });  
+  });
 
   context("when regenerator alredy exists", () => {
     it("should return error when try create same regenerator", async () => {

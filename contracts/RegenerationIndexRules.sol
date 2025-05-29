@@ -41,16 +41,16 @@ contract RegenerationIndexRules is Ownable, Callable {
     Category memory treesCategory = Category(
       1,
       "Trees",
-      "Indicator to measure the total amount of trees, palm trees and other plants over 1m high and 3cm in diameter in the regenerating area. How many trees, palm trees and other plants with more than 5cm of diameters there is in the regenerating area? Justify your answer in the report."
+      "Indicator to measure the total amount of trees, palm trees and other plants over 1m high and 3cm in diameter in the regenerating area. How many trees, palm trees and other plants over 1m high and 3cm in diameter there is in the regenerating area? Justify your answer in the report."
     );
 
-    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(1, "Trees > 20000"));
-    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(2, "20000 > Trees > 10000"));
-    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(3, "10000 > Trees > 5000"));
-    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(4, "5000 > Trees > 1000"));
-    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(5, "1000 > Trees > 100"));
-    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(6, "100 > Trees > 10"));
-    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(7, "Trees < 10"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(1, "trees >= 50000"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(2, "trees >= 25000 && trees < 50000"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(3, "trees >= 12500 && trees < 25000"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(4, "trees >= 6250 && trees < 12500"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(5, "trees >= 3125 && trees < 6250"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(6, "trees >= 20 && trees < 3125"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(7, "trees < 20"));
 
     Category memory biodiversityCategory = Category(
       2,
@@ -58,12 +58,12 @@ contract RegenerationIndexRules is Ownable, Callable {
       "Indicator to measure the level of biodiversity of trees, palm trees and other plants over 1m high and 3cm in diameter in the regenerating area. How many different species are there in the area? Each different species is equivalent to one point and only trees and plants managed or planted by the regenerator should be counted."
     );
 
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(1, "Biodiversity > 240"));
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(2, "240 > Biodiversity > 120"));
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(3, "120 > Biodiversity > 60"));
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(4, "60 > Biodiversity > 30"));
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(5, "30 > Biodiversity > 15"));
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(6, "15 > Biodiversity > 5"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(1, "Biodiversity >= 240"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(2, "240 >= Biodiversity > 120"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(3, "120 >= Biodiversity > 60"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(4, "60 >= Biodiversity > 30"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(5, "30 >= Biodiversity > 15"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(6, "15 >= Biodiversity > 5"));
     categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(7, "Biodiversity < 5"));
 
     categories[1] = treesCategory;
@@ -99,17 +99,17 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @return The category regeneration score
    */
   function treesRegenerationIndexId(uint256 indicator) internal pure returns (uint256) {
-    if (indicator >= 20000) {
+    if (indicator >= 50000) {
       return 1;
-    } else if (indicator >= 10000 && indicator < 20000) {
+    } else if (indicator >= 25000 && indicator < 50000) {
       return 2;
-    } else if (indicator >= 5000 && indicator < 10000) {
+    } else if (indicator >= 12500 && indicator < 25000) {
       return 3;
-    } else if (indicator >= 1000 && indicator < 5000) {
+    } else if (indicator >= 6250 && indicator < 12500) {
       return 4;
-    } else if (indicator >= 100 && indicator < 1000) {
+    } else if (indicator >= 3125 && indicator < 6250) {
       return 5;
-    } else if (indicator >= 10 && indicator < 100) {
+    } else if (indicator >= 20 && indicator < 3125) {
       return 6;
     } else {
       return 7;
