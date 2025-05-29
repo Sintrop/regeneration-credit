@@ -136,6 +136,10 @@ describe("InspectionRules", () => {
     await instance.connect(from).realizeInspection(id, proofPhoto, report, treesResult, biodiversityResult);
   };
 
+  const denyUser = async (userAddress) => {
+    await communityRules.setDeniedType(userAddress);
+  };
+
   beforeEach(async () => {
     [
       owner,
@@ -711,6 +715,16 @@ describe("InspectionRules", () => {
       context("when inspection dont exists", () => {
         it("should return error message", async () => {
           await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("This inspection do not exist");
+        });
+      });
+
+      context("when regenerator is not valid", () => {
+        it("should return error message", async () => {
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+
+          await denyUser(regeneratorAddress);
+          await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Regenerator invalid");
         });
       });
     });
