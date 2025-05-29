@@ -205,6 +205,7 @@ contract InspectionRules is Callable {
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
     require(inspection.inspector == msg.sender, "You have not accepted this inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
+    require(treesResult <= 200000 && biodiversityResult <= 300, "Max result limit");
 
     markAsRealized(inspection, proofPhoto, report, treesResult, biodiversityResult);
 
