@@ -174,7 +174,7 @@ contract ValidationRules is Callable {
     uint256 inspectorTotalPenalties = inspectorRules.addPenalty(inspection.inspector, inspection.id);
     removeUserInspection(inspection);
 
-    if (inspectorTotalPenalties >= inspectorRules.maxPenalties()) externalDenyUser(inspection.inspector);
+    if (inspectorTotalPenalties >= inspectorRules.maxPenalties()) denyUser(inspection.inspector);
   }
 
   /**
@@ -209,7 +209,7 @@ contract ValidationRules is Callable {
 
     removeDeveloperReport(report);
 
-    if (developerTotalPenalties >= developerRules.MAX_PENALTIES()) externalDenyUser(report.developer);
+    if (developerTotalPenalties >= developerRules.MAX_PENALTIES()) denyUser(report.developer);
   }
 
   /**
@@ -244,7 +244,7 @@ contract ValidationRules is Callable {
 
     removeContributorContribution(contribution);
 
-    if (contributorTotalPenalties >= contributorRules.MAX_PENALTIES()) externalDenyUser(contribution.user);
+    if (contributorTotalPenalties >= contributorRules.MAX_PENALTIES()) denyUser(contribution.user);
   }
 
   /**
@@ -278,7 +278,7 @@ contract ValidationRules is Callable {
     uint256 totalPenalties = researcherRules.addPenalty(research.createdBy, research.id);
     removeReseacherResearch(research);
 
-    if (totalPenalties >= researcherRules.MAX_PENALTIES()) externalDenyUser(research.createdBy);
+    if (totalPenalties >= researcherRules.MAX_PENALTIES()) denyUser(research.createdBy);
   }
 
   /**
@@ -315,14 +315,6 @@ contract ValidationRules is Callable {
 
     removeLevelsFromPool(inspection.inspector, 1);
     removeLevelsFromPool(inspection.regenerator, inspection.regenerationScore);
-  }
-
-  /**
-   * @dev Function to call denyUser
-   * @param userAddress Invalidated userAddress
-   */
-  function externalDenyUser(address userAddress) private {
-    denyUser(userAddress);
   }
 
   /**
