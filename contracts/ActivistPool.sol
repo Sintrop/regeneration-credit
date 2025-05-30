@@ -51,9 +51,7 @@ contract ActivistPool is Poolable, Ownable, Blockable, Callable {
    * @param levels Levels to increase
    */
   function addLevel(address addr, uint256 levels) public mustBeAllowedCaller {
-    uint256 era = currentContractEra();
-
-    addPoolLevel(addr, levels, era);
+    addPoolLevel(addr, levels, currentContractEra());
   }
 
   /**
