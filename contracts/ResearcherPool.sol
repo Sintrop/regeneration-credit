@@ -46,6 +46,18 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
   }
 
   /**
+   * @notice View function to check if a user have tokens to withdraw at an era
+   * @param delegate User address
+   * @param era User current era
+   * @return bool True if have tokens to withdraw, false if will just update era.
+   */
+  function haveTokensToWithdraw(address delegate, uint256 era) public view returns (bool) {
+    uint256 numTokens = tokens(era, delegate, tokensPerEra(currentUserEpoch(era), HALVING));
+
+    return numTokens > 0;
+  }
+
+  /**
    * @dev Called by the researcher contract, function to increase researcher level
    * @param addr Researcher wallet
    * @param levels Levels to increase
