@@ -39,7 +39,7 @@ describe("ContributorPool", () => {
 
         expect(era.levels).to.equal(0);
         expect(era.tokens).to.equal(0);
-        expect(era.users).to.equal(0);
+        expect(era.claimsCount).to.equal(0);
       });
     });
   });
@@ -495,7 +495,7 @@ describe("ContributorPool", () => {
                 it("must update eras", async () => {
                   const era = await instance.getEra(2);
 
-                  expect(era.users).to.equal(2);
+                  expect(era.claimsCount).to.equal(2);
                   expect(era.tokens).to.equal(1666666666666666666666666n);
                   expect(era.levels).to.equal(6);
                   expect(era.metrics[0].user).to.equal("0x70997970C51812dc3A010C7d01b50e0d17dc79C8");
