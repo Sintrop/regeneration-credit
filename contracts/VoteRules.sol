@@ -91,7 +91,7 @@ contract VoteRules {
    * @param totalUsers Total number of users of the specific type registered in the system.
    * @param userLevels Total levels of the individual user.
    * @return bool True if the user meets the voting criteria, false otherwise.
-   */   
+   */
   function canVoteRules(uint256 totalTypeLevels, uint256 totalUsers, uint256 userLevels) internal pure returns (bool) {
     if (totalUsers <= 5) return true;
 
@@ -136,7 +136,7 @@ contract VoteRules {
    * Returns 0 if the user type is not recognized or has no aggregated levels.
    * @param userType The UserType to check.
    * @return levels Total aggregated levels for the specified user type.
-   */   
+   */
   function totalLevels(UserType userType) internal view returns (uint256) {
     if (userType == UserType.ACTIVIST) {
       return activistRules.approvedInvites();
