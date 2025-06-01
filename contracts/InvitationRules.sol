@@ -13,16 +13,22 @@ import { UserType } from "./types/CommunityTypes.sol";
 /**
  * @author Sintrop
  * @title InvitationRules
- * @dev Manage logic to allow users invite others
+ * @dev Manages the logic to allow users to invite others to the community.
+ * @notice This contract manages the rules and logic for users to invite others into the community.
  */
 contract InvitationRules is Ownable {
-  /// @notice Relationship between address and last invitation blockNumber
+
+  // --- State Variables ---
+    
+  /// @notice Relationship between address and last general invitation blockNumber.
   mapping(address => uint256) public lastInviteBlocks;
 
-  /// @notice Relationship between address and last activist regenerator or inspector invitation blockNumber
+  /// @notice Relationship between activist address and last activist invitation blockNumber (for Regenerator/Inspector).
   mapping(address => uint256) public lastInviteActivist;
 
-  /// @notice Relationship between which userType can invite who
+
+  /// @notice Maps which UserType (inviter) can invite which other UserTypes (invited).
+  /// @dev The key is the inviter's UserType, and the value is a mapping from UserType (invited) to a boolean (true if allowed).
   mapping(UserType => UserType) public canBeInviteds;
 
   /// @notice CommunityRules contract address
@@ -43,8 +49,21 @@ contract InvitationRules is Ownable {
   /// @notice ValidationRules contract address
   ValidationRules internal validationRules;
 
-  uint256 public immutable activistDelayBlocks = 1000;
+  /// @notice The minimum number of blocks an activist needs to wait to invite Regenerators or Inspectors again.
+  uint256 public constant activistDelayBlocks = 1000;
 
+  // --- Constructor ---
+
+  /**
+   * @notice Constructor that initializes the addresses of the rule contracts and defines invitation permissions.
+   * @dev Ensures that all contract addresses are valid (not null).
+   * @param communityRulesAddress Address of the CommunityRules contract.
+   * @param researcherRulesAddress Address of the ResearcherRules contract.
+   * @param developerRulesAddress Address of the DeveloperRules contract.
+   * @param activistRulesAddress Address of the ActivistRules contract.
+   * @param contributorRulesAddress Address of the ContributorRules contract.
+   * @param validationRulesAddress Address of the ValidationRules contract.
+   */
   constructor(
     address communityRulesAddress,
     address researcherRulesAddress,
@@ -60,6 +79,7 @@ contract InvitationRules is Ownable {
     contributorRules = ContributorRules(contributorRulesAddress);
     validationRules = ValidationRules(validationRulesAddress);
 
+    // Definition of invitation permissions: who can invite whom
     canBeInviteds[UserType.ACTIVIST] = UserType.ACTIVIST;
     canBeInviteds[UserType.INSPECTOR] = UserType.ACTIVIST;
     canBeInviteds[UserType.REGENERATOR] = UserType.ACTIVIST;
@@ -69,23 +89,54 @@ contract InvitationRules is Ownable {
     canBeInviteds[UserType.CONTRIBUTOR] = UserType.CONTRIBUTOR;
   }
 
+  // --- Core Logic Functions ---
+
   /**
-   * @dev Allows a user to attempt to invite another wallet to the community
-   * @notice Most active users can invite new users to the system
-   * @param invited Invited address
-   * @param userType Invited type
+   * @dev Allows a user to attempt to invite another wallet to the community.
+   * @notice Most active users can invite new users to the system, respecting delay and type rules.
+   * @param invited The address of the wallet to be invited.
+   * @param userType The user type to which the invited user will be assigned.
    */
   function invite(address invited, UserType userType) public {
     UserType msgSenderUserType = communityRules.getUser(msg.sender);
 
+    // Checks if the inviter has general permission to send invitations.
     require(canSendInvite(msgSenderUserType), "Only most active users allowed to invite");
+    // Checks if the invitation delay for the inviter's type has been reached.
     require(invitationDelayReached(msgSenderUserType), "Invite delay not reached");
+    // Checks if the inviter can invite the specified user type.
     require(canBeInviteds[userType] == msgSenderUserType, "Can't invite this type");
 
+    // Updates the last invitation block for the inviter.
     lastInviteBlocks[msg.sender] = block.number;
 
+    // Adds the invitation to the CommunityRules contract.
     communityRules.addInvitation(msg.sender, invited, userType);
   }
+
+  /**
+   * @dev Allows an activist to invite Regenerators or Inspectors to the community.
+   * @notice Activists can invite Regenerators or Inspectors to the system, respecting the specific activist delay.
+   * @param invited The address of the wallet to be invited.
+   * @param userType The user type to which the invited user will be assigned (must be REGENERATOR or INSPECTOR).
+   */
+  function inviteRegeneratorInspector(address invited, UserType userType) public {
+
+    // Checks if the caller is an activist.
+    require(communityRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Only to activists");
+    // Checks if the invited user type is Regenerator or Inspector.
+    require(userType == UserType.REGENERATOR || userType == UserType.INSPECTOR, "Only regenerators or inspectors");
+    // Checks if the specific invitation delay for activists has been reached.
+    require(invitationDelayActivist(), "Invite delay not reached");
+
+    // Updates the last activist invitation block for the inviter.
+    lastInviteActivist[msg.sender] = block.number;
+
+    // Adds the invitation to the CommunityRules contract.
+    communityRules.addInvitation(msg.sender, invited, userType);
+  }
+
+  // --- Helper Functions (Internal/View) ---
 
   /**
    * @dev Based on the inviter userType, this function sends to the correct contract to check if user can invite
@@ -106,42 +157,44 @@ contract InvitationRules is Ownable {
   }
 
   /**
-   * @dev Allows an activist to invite others to the community
-   * @notice Activists can invite regenerators or inspectors to the system
-   * @param invited Invited address
-   * @param userType Invited type
-   */
-  function inviteRegeneratorInspector(address invited, UserType userType) public {
-    require(communityRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Only to activists");
-    require(userType == UserType.REGENERATOR || userType == UserType.INSPECTOR, "Only regenerators or inspectors");
-    require(invitationDelayActivist(), "Invite delay not reached");
-
-    lastInviteActivist[msg.sender] = block.number;
-
-    communityRules.addInvitation(msg.sender, invited, userType);
-  }
-
-  /**
-   * @dev Allows owner to invite another wallet to the community
-   * @param invited Invited address
-   * @param userType Invited type
-   */
-  function onlyOwnerInvite(address invited, UserType userType) public onlyOwner {
-    communityRules.addInvitation(msg.sender, invited, userType);
-  }
-
-  /**
-   * @dev Calculate if user reached invitation delay
-   * @param userType Invited type
-   * @return bool True if user waited delay blocks
+   * @dev Calculates if the user has reached the general invitation delay based on their user type.
+   * @param userType The user type of the inviter.
+   * @return bool True if the user waited the delay blocks, false otherwise.
    */
   function invitationDelayReached(UserType userType) internal view returns (bool) {
     uint256 delayBlocks = communityRules.getUserTypeSettings(userType).invitationDelayBlocks;
 
-    return lastInviteBlocks[msg.sender] <= 0 || block.number - lastInviteBlocks[msg.sender] >= delayBlocks;
+    return hasInvitationDelayPassed(lastInviteBlocks[msg.sender], delayBlocks);
   }
 
+  /**
+   * @dev Calculates if the activist has reached the specific invitation delay for activists.
+   * @return bool True if the activist waited the delay blocks, false otherwise.
+   */
   function invitationDelayActivist() internal view returns (bool) {
-    return lastInviteActivist[msg.sender] <= 0 || block.number - lastInviteActivist[msg.sender] >= activistDelayBlocks;
-  }
+    return hasInvitationDelayPassed(lastInviteActivist[msg.sender], activistDelayBlocks);
+  } 
+
+  /**
+   * @dev Helper function to calculate if an invitation delay has been met.
+   * @param lastInviteBlock The block number of the last invitation.
+   * @param delayBlocks The number of blocks that need to be waited.
+   * @return bool True if the delay has been met, false otherwise.
+   */
+  function hasInvitationDelayPassed(uint256 lastInviteBlock, uint256 delayBlocks) internal view returns (bool) {
+    return lastInviteBlock == 0 || block.number - lastInviteBlock >= delayBlocks;
+  }  
+
+  // --- Deploy Functions ---
+
+  /**
+   * @dev Allows the contract owner to invite a wallet to the community.
+   * @notice The owner can invite any user type without delay or type restrictions.
+   * If ownership is renounced, no wallet will be able to call this function.
+   * @param invited The address of the wallet to be invited.
+   * @param userType The user type to which the invited user will be assigned.
+   */
+  function onlyOwnerInvite(address invited, UserType userType) public onlyOwner {
+    communityRules.addInvitation(msg.sender, invited, userType);
+  }  
 }
