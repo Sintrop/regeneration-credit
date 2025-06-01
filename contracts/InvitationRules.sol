@@ -17,6 +17,7 @@ import { UserType } from "./types/CommunityTypes.sol";
  * @notice This contract manages the rules and logic for users to invite others into the community.
  */
 contract InvitationRules is Ownable {
+  
   // --- State Variables ---
 
   /// @notice Relationship between address and last general invitation blockNumber.
@@ -24,6 +25,9 @@ contract InvitationRules is Ownable {
 
   /// @notice Relationship between activist address and last activist invitation blockNumber (for Regenerator/Inspector).
   mapping(address => uint256) public lastInviteActivist;
+
+  /// @notice Relationship between supporter address and last supporter invitation blockNumber (for Regenerator/Inspector).
+  mapping(address => uint256) public lastInviteSupporter;
 
   /// @notice Maps which UserType (inviter) can invite which other UserTypes (invited).
   /// @dev The key is the inviter's UserType, and the value is a mapping from UserType (invited) to a boolean (true if allowed).
@@ -49,6 +53,9 @@ contract InvitationRules is Ownable {
 
   /// @notice The minimum number of blocks an activist needs to wait to invite Regenerators or Inspectors again.
   uint256 public constant activistDelayBlocks = 1000;
+
+  /// @notice The minimum number of blocks an supporter needs to wait to invite a Supporter again.
+  uint256 public constant supporterDelayBlocks = 500;  
 
   // --- Events ---
 
@@ -148,6 +155,24 @@ contract InvitationRules is Ownable {
     emit UserInvited(msg.sender, invited, userType, block.number);
   }
 
+  function inviteSupporter(address invited, UserType userType) public {
+    // Checks if the caller is a supporter.
+    require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only to supporters");
+    // Checks if the invited user type is Supporter.
+    require(userType == UserType.SUPPORTER, "Only supporters");
+    // Checks if the specific invitation delay for supporters has been reached.
+    require(invitationDelaySupporter(), "Invite delay not reached");
+
+    // Updates the last activist invitation block for the inviter.
+    lastInviteSupporter[msg.sender] = block.number;
+
+    // Adds the invitation to the CommunityRules contract.
+    communityRules.addInvitation(msg.sender, invited, userType);
+
+    // Emits an event to log the invitation.
+    emit UserInvited(msg.sender, invited, userType, block.number);    
+  }  
+
   // --- Helper Functions (Internal/View) ---
 
   /**
@@ -186,6 +211,14 @@ contract InvitationRules is Ownable {
   function invitationDelayActivist() internal view returns (bool) {
     return hasInvitationDelayPassed(lastInviteActivist[msg.sender], activistDelayBlocks);
   }
+
+  /**
+   * @dev Calculates if the supporter has reached the specific invitation delay for supporters.
+   * @return bool True if the supporter waited the delay blocks, false otherwise.
+   */
+  function invitationDelaySupporter() internal view returns (bool) {
+    return hasInvitationDelayPassed(lastInviteSupporter[msg.sender], supporterDelayBlocks);
+  }  
 
   /**
    * @dev Helper function to calculate if an invitation delay has been met.
