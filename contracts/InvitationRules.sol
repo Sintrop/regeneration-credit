@@ -17,15 +17,13 @@ import { UserType } from "./types/CommunityTypes.sol";
  * @notice This contract manages the rules and logic for users to invite others into the community.
  */
 contract InvitationRules is Ownable {
-
   // --- State Variables ---
-    
+
   /// @notice Relationship between address and last general invitation blockNumber.
   mapping(address => uint256) public lastInviteBlocks;
 
   /// @notice Relationship between activist address and last activist invitation blockNumber (for Regenerator/Inspector).
   mapping(address => uint256) public lastInviteActivist;
-
 
   /// @notice Maps which UserType (inviter) can invite which other UserTypes (invited).
   /// @dev The key is the inviter's UserType, and the value is a mapping from UserType (invited) to a boolean (true if allowed).
@@ -121,7 +119,6 @@ contract InvitationRules is Ownable {
    * @param userType The user type to which the invited user will be assigned (must be REGENERATOR or INSPECTOR).
    */
   function inviteRegeneratorInspector(address invited, UserType userType) public {
-
     // Checks if the caller is an activist.
     require(communityRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Only to activists");
     // Checks if the invited user type is Regenerator or Inspector.
@@ -173,7 +170,7 @@ contract InvitationRules is Ownable {
    */
   function invitationDelayActivist() internal view returns (bool) {
     return hasInvitationDelayPassed(lastInviteActivist[msg.sender], activistDelayBlocks);
-  } 
+  }
 
   /**
    * @dev Helper function to calculate if an invitation delay has been met.
@@ -183,7 +180,7 @@ contract InvitationRules is Ownable {
    */
   function hasInvitationDelayPassed(uint256 lastInviteBlock, uint256 delayBlocks) internal view returns (bool) {
     return lastInviteBlock == 0 || block.number - lastInviteBlock >= delayBlocks;
-  }  
+  }
 
   // --- Deploy Functions ---
 
@@ -196,5 +193,5 @@ contract InvitationRules is Ownable {
    */
   function onlyOwnerInvite(address invited, UserType userType) public onlyOwner {
     communityRules.addInvitation(msg.sender, invited, userType);
-  }  
+  }
 }
