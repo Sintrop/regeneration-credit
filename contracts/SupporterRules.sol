@@ -12,47 +12,49 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 /**
  * @author Sintrop
  * @title SupporterRules
- * @dev Manage supporters rules and data
- * @notice Burn tokens to compensate your degradation
+ * @notice Manages the rules and data specific to Supporter users within the community.
+ * @dev This contract handles supporter registration, profile updates, token burning for environmental offsets and content publications, and management of reduction commitments.
  */
 contract SupporterRules {
   using SafeMath for uint256;
 
+  // --- State Variables ---
+
   /// @notice The relationship between address and supporter data
   mapping(address => Supporter) internal supporters;
 
-  /// @notice The relationship between address and burned tokens per item
+  /// @notice The relationship between address and burned tokens per calculator item.
   mapping(address => mapping(uint256 => uint256)) public calculatorItemCertificates;
 
-  /// @notice The relationship between address and reduction commitment statements
+  /// @notice The relationship between address and reduction commitment statements (stored as calculator item IDs).
   mapping(address => uint256[]) public reductionCommitments;
 
-  /// @notice The relationship between id and supporter address
+  /// @notice The relationship between ID and supporter address.
   mapping(uint256 => address) public supportersAddress;
 
-  /// @notice The relationship between address and publications made
+  /// @notice The relationship between address and publications data.
   mapping(uint256 => Publication) public publications;
 
-  /// @notice The relationship between address and publications made
+  /// @notice The relationship between supporter address and their list of publication IDs.
   mapping(address => uint256[]) public publicationIds;
 
-  /// @notice Total number of publications made
+  /// @notice Total number of publications made across all supporters.
   uint256 public publicationsCount;
 
-  /// @notice Max characters lenght of a publication
+  /// @notice Max characters length allowed for a publication's description and content.
   uint constant MAX_CHARACTERS = 600;
 
-  /// @notice The relationship between offset id and its data
+  /// @notice The relationship between offset id and its data.
   mapping(uint256 => Offset) public offsets;
 
-  /// @notice The relationship between a supporter and its publication ids
+  /// @notice The relationship between a supporter's address and their list of offset IDs.
   mapping(address => uint256[]) public offsetIds;
 
-  /// @notice Offsets total count
+  /// @notice Total number of offsets made across all supporters.
   uint256 public offsetsCount;
 
-  /// @notice Commission percentage on invited burn
-  uint256 public constant INVITER_PERCENTAGE = 5;
+  /// @notice Commission percentage paid to the inviter when an invited supporter burns tokens.
+  uint256 public constant INVITER_PERCENTAGE = 5; // 5%
 
   /// @notice CommunityRules contract address
   CommunityRules internal communityRules;
@@ -66,31 +68,115 @@ contract SupporterRules {
   /// @notice Supporter UserType
   UserType private constant USER_TYPE = UserType.SUPPORTER;
 
+  // --- Events ---
+
+  /**
+   * @notice Emitted when a new supporter is registered.
+   * @param supporterAddress The address of the newly registered supporter.
+   * @param supporterId The unique ID assigned to the supporter.
+   * @param name The name of the supporter.
+   * @param profilePhoto The URL or hash of the supporter's profile photo.
+   * @param createdAtBlock The block number at which the supporter was registered.
+   */
+  event SupporterRegistered(
+    address indexed supporterAddress,
+    uint256 supporterId,
+    string name,
+    string profilePhoto,
+    uint256 createdAtBlock
+  );
+
+  /**
+   * @notice Emitted when a supporter burns tokens to offset degradation.
+   * @param supporterAddress The address of the supporter.
+   * @param offsetId The unique ID of the offset record.
+   * @param amountBurned The amount of tokens burned by the supporter for the offset.
+   * @param calculatorItemId The ID of the calculator item, if associated.
+   * @param blockNumber The block number at which the offset occurred.
+   */
+  event OffsetMade(
+    address indexed supporterAddress,
+    uint256 offsetId,
+    uint256 amountBurned,
+    uint256 calculatorItemId,
+    uint256 blockNumber
+  );
+
+  /**
+   * @notice Emitted when a supporter burns tokens to publish content.
+   * @param publisherAddress The address of the supporter.
+   * @param publicationId The unique ID of the publication record.
+   * @param amountBurned The amount of tokens burned by the supporter for the publication.
+   * @param description The description of the publication.
+   * @param blockNumber The block number at which the publication occurred.
+   */
+  event PublicationPosted(
+    address indexed publisherAddress,
+    uint256 publicationId,
+    uint256 amountBurned,
+    string description,
+    uint256 blockNumber
+  );
+
+  /**
+   * @notice Emitted when a supporter declares a reduction commitment.
+   * @param supporterAddress The address of the supporter.
+   * @param calculatorItemId The ID of the calculator item for the commitment.
+   * @param blockNumber The block number at which the commitment was declared.
+   */
+  event ReductionCommitmentDeclared(
+    address indexed supporterAddress,
+    uint256 calculatorItemId,
+    uint256 blockNumber
+  );
+
+  // --- Constructor ---
+
+  /**
+   * @dev Initializes the SupporterRules contract with addresses of crucial external contracts.
+   * @param communityRulesAddress Address of the CommunityRules contract.
+   * @param supporterPoolAddress Address of the SupporterPool contract, used for token burning.
+   * @param researcherRulesAddress Address of the ResearcherRules contract, used for CalculatorItem data.
+   */  
+
   constructor(address communityRulesAddress, address supporterPoolAddress, address researcherRulesAddress) {
     communityRules = CommunityRules(communityRulesAddress);
     supporterPool = SupporterPool(supporterPoolAddress);
     researcherRules = ResearcherRules(researcherRulesAddress);
   }
 
+  // --- External Functions (State Modifying) ---
+
   /**
    * @notice Allow new register of supporter
    * @param name The name of the supporter
    */
+  /**
+   * @notice Allows a new user to register as a Supporter.
+   * @dev Registers the sender as a Supporter, assigning them a unique ID and updating CommunityRules.
+   * Requires name and profile photo length to be within limits.
+   * @param name The name of the supporter (max 100 characters).
+   * @param profilePhoto The profile photo URL/hash of the supporter (max 100 characters).
+   */   
   function addSupporter(string memory name, string memory profilePhoto) public {
     require(bytes(name).length <= 100 && bytes(profilePhoto).length <= 100, "Max 100 characters");
-    uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
+  
+    uint256 id = communityRules.userTypesTotalCount(USER_TYPE).add(1);
 
     Supporter memory supporter = Supporter(id, msg.sender, name, profilePhoto, 0, 0, 0, block.number);
 
     supporters[msg.sender] = supporter;
     supportersAddress[id] = msg.sender;
     communityRules.addUser(msg.sender, USER_TYPE);
+
+    emit SupporterRegistered(msg.sender, id, name, profilePhoto, block.number);
   }
 
   /**
-   * @dev Allows a supporter to update the profilePhoto
-   * @notice Update your user profilePhoto
-   * @param newPhoto User new profilePhoto
+   * @notice Allows a supporter to update their profile photo.
+   * @dev Updates the 'profilePhoto' field for the calling supporter.
+   * Only accessible by registered supporters, and enforces a max character limit.
+   * @param newPhoto User's new profile photo URL/hash (max 100 characters).
    */
   function updateProfilePhoto(string memory newPhoto) public {
     require(bytes(newPhoto).length <= 100, "Max 100 characters");
@@ -100,18 +186,19 @@ contract SupporterRules {
   }
 
   /**
-   * @notice Burn tokens to compensate for a specific item degradation
-   * @param amount Tokens burned
-   * @param calculatorItemId Calculator item id
+   * @notice Allows a supporter to burn tokens to compensate for a specific item's degradation.
+   * @dev Burns tokens via the SupporterPool. If a valid calculatorItemId is provided,
+   * records the burned amount as a certificate for that item.
+   * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
+   * @param calculatorItemId The ID of the CalculatorItem, or 0 if not applicable.
    */
   function offset(uint256 amount, uint256 calculatorItemId) public {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount >= 1000000000000000000, "Amount invalid");
-    require(amount > 0, "Amount invalid");
 
-    uint256 amountBurn = burnTokens(amount);
+    uint256 amountBurn = burnTokens(amount); // This calculates commission and calls SupporterPool
 
-    uint256 id = offsetsCount + 1;
+    uint256 id = offsetsCount.add(1);
 
     if (calculatorItemId > 0) {
       CalculatorItem memory calculatorItem = researcherRules.getCalculatorItem(calculatorItemId);
@@ -121,15 +208,19 @@ contract SupporterRules {
     offsets[id] = Offset(msg.sender, block.number, amountBurn, calculatorItemId);
 
     offsetIds[msg.sender].push(id);
-    offsetsCount++;
-    supporters[msg.sender].offsetsCount++;
+    offsetsCount = offsetsCount.add(1);
+    supporters[msg.sender].offsetsCount = supporters[msg.sender].offsetsCount.add(1);
+
+    emit OffsetMade(msg.sender, id, amountBurn, calculatorItemId, block.number);
   }
 
   /**
-   * @notice Burn tokens to post
-   * @param amount Tokens burned
-   * @param description Post description
-   * @param content Post content
+   * @notice Allows a supporter to burn tokens to post content.
+   * @dev Burns tokens via the SupporterPool and creates a new publication record.
+   * Enforces character limits for description and content.
+   * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
+   * @param description The description of the post (max 600 characters).
+   * @param content The content of the post (max 600 characters).
    */
   function publish(uint256 amount, string memory description, string memory content) public {
     require(
@@ -139,20 +230,28 @@ contract SupporterRules {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount >= 1000000000000000000, "Amount invalid");
 
-    uint256 amountBurn = burnTokens(amount);
+    uint256 amountBurn = burnTokens(amount); // This calculates commission and calls SupporterPool
 
-    uint256 id = publicationsCount + 1;
+    uint256 id = publicationsCount.add(1);
 
     publications[id] = Publication(msg.sender, block.number, amountBurn, description, content);
 
     publicationIds[msg.sender].push(id);
-    publicationsCount++;
-    supporters[msg.sender].publicationsCount++;
+    publicationsCount = publicationsCount.add(1);
+    supporters[msg.sender].publicationsCount = supporters[msg.sender].publicationsCount.add(1);
+
+    emit PublicationPosted(msg.sender, id, amountBurn, description, block.number);
   }
 
+  /**
+   * @dev Internal function to handle token burning and inviter commission.
+   * It retrieves invitation data from CommunityRules and calls the SupporterPool to perform the burn.
+   * @param amount The total amount of tokens to consider for burning (before commission).
+   * @return uint256 The net amount of tokens burned by the supporter (after commission).
+   */
   function burnTokens(uint256 amount) internal returns (uint256) {
     Invitation memory invitation = communityRules.getInvitation(msg.sender);
-    bool isInvited = invitation.createdAtBlock != 0;
+    bool isInvited = invitation.createdAtBlock != 0; // Check if invitation exists
 
     uint256 inviterTotalTokens = isInvited ? amount.mul(INVITER_PERCENTAGE).div(100) : 0;
     uint256 amountBurn = amount.sub(inviterTotalTokens);
@@ -163,8 +262,10 @@ contract SupporterRules {
   }
 
   /**
-   * @notice Declare reduction comitment for a specific item
-   * @param calculatorItemId Calculator item id
+   * @notice Allows a supporter to declare a reduction commitment for a specific calculator item.
+   * @dev Records the calculator item ID as a commitment for the calling supporter.
+   * Requires the calculator item to exist and the sender to be a registered supporter.
+   * @param calculatorItemId The ID of the CalculatorItem for which the commitment is being declared.
    */
   function declareReductionCommitment(uint256 calculatorItemId) public {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
@@ -174,39 +275,45 @@ contract SupporterRules {
     require(calculatorItem.id > 0, "Calculator item does not exist");
 
     reductionCommitments[msg.sender].push(calculatorItemId);
-    supporters[msg.sender].reductionItemsCount++;
+    supporters[msg.sender].reductionItemsCount = supporters[msg.sender].reductionItemsCount.add(1);
+
+    emit ReductionCommitmentDeclared(msg.sender, calculatorItemId, block.number);
   }
 
+  // --- View Functions ---
+
   /**
-   * @notice Get reduction comitments for a specific address
-   * @param addr Supporter address
-   * @return array Of items ids
+   * @notice Retrieves the list of reduction commitment item IDs for a specific address.
+   * @param addr The address of the supporter.
+   * @return uint256[] An array of calculator item IDs representing the commitments.
    */
   function getReductionCommitments(address addr) public view returns (uint256[] memory) {
     return reductionCommitments[addr];
   }
 
   /**
-   * @notice Get publications for a specific address
-   * @param addr Supporter address
-   * @return array Of publication ids
+   * @notice Retrieves the list of publication IDs for a specific address.
+   * @param addr The address of the supporter.
+   * @return uint256[] An array of publication IDs made by the supporter.
    */
   function getPublications(address addr) public view returns (uint256[] memory) {
     return publicationIds[addr];
   }
 
   /**
-   * @notice Get offsets for a specific address
-   * @param addr Supporter address
-   * @return array Of offset ids
+   * @notice Retrieves the list of offset IDs for a specific address.
+   * @param addr The address of the supporter.
+   * @return uint256[] An array of offset IDs made by the supporter.
    */
   function getOffsets(address addr) public view returns (uint256[] memory) {
     return offsetIds[addr];
   }
 
   /**
-   * @dev Return a specific supporter
-   * @param addr the address of the supporter.
+   * @dev Retrieves the full Supporter struct data for a specific address.
+   * @notice Returns the detailed information of a supporter.
+   * @param addr The address of the supporter.
+   * @return Supporter The `Supporter` struct containing their data.
    */
   function getSupporter(address addr) public view returns (Supporter memory) {
     return supporters[addr];
