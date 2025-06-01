@@ -75,7 +75,10 @@ contract RegeneratorRules is Callable {
     string memory projectDescription,
     Coordinates[] memory _coordinates
   ) public {
-    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
+    require(
+      bytes(name).length <= 50 && bytes(proofPhoto).length <= 100 && bytes(projectDescription).length <= 200,
+      "Max characters reached"
+    );
     require(_coordinates.length >= 3 && _coordinates.length <= 10, "Minimum 3 and maximum 10 coordinate points");
     require(totalArea >= 500 && totalArea <= 500000, "Minimum 500 and maximum 500.000 square meters");
 
