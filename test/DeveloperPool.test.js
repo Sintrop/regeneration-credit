@@ -712,7 +712,9 @@ describe("DeveloperPool", () => {
 
       context("when cant withdraw", () => {
         it("should return error message", async () => {
-          await expect(instance.withdraw(dev1Address, 1)).to.be.revertedWith("Blockable: Action not allowed until user's current era has passed");
+          await expect(instance.withdraw(dev1Address, 1)).to.be.revertedWith(
+            "Blockable: Action not allowed until user's current era has passed"
+          );
         });
       });
     });

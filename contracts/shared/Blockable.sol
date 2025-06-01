@@ -86,7 +86,7 @@ contract Blockable {
 
   /**
    * @dev Calculates the number of blocks remaining until the start of the next era.
-   * @param targetEra The era for which to calculate the remaining blocks until its completion.   
+   * @param targetEra The era for which to calculate the remaining blocks until its completion.
    * @return int256 Number of blocks until the next era begins. Positive if targetEra is ongoing,
    * negative if targetEra has passed, zero if the current block is the first block of the next era.
    */
@@ -96,7 +96,7 @@ contract Blockable {
     // Target block is the first block of the (targetEra + 1)
     // Which is DEPLOYED_AT + (targetEra * BLOCKS_PER_ERA)
     uint256 endBlockOfTargetEra = DEPLOYED_AT.add(targetEra.mul(BLOCKS_PER_ERA));
-    return int256(endBlockOfTargetEra) - int256(currentBlockNumber());    
+    return int256(endBlockOfTargetEra) - int256(currentBlockNumber());
   }
 
   /**
