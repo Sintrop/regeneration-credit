@@ -17,7 +17,6 @@ import { UserType } from "./types/CommunityTypes.sol";
  * @notice This contract manages the rules and logic for users to invite others into the community.
  */
 contract InvitationRules is Ownable {
-  
   // --- State Variables ---
 
   /// @notice Relationship between address and last general invitation blockNumber.
@@ -55,7 +54,7 @@ contract InvitationRules is Ownable {
   uint256 public constant activistDelayBlocks = 1000;
 
   /// @notice The minimum number of blocks an supporter needs to wait to invite a Supporter again.
-  uint256 public constant supporterDelayBlocks = 500;  
+  uint256 public constant supporterDelayBlocks = 500;
 
   // --- Events ---
 
@@ -170,8 +169,8 @@ contract InvitationRules is Ownable {
     communityRules.addInvitation(msg.sender, invited, userType);
 
     // Emits an event to log the invitation.
-    emit UserInvited(msg.sender, invited, userType, block.number);    
-  }  
+    emit UserInvited(msg.sender, invited, userType, block.number);
+  }
 
   // --- Helper Functions (Internal/View) ---
 
@@ -218,7 +217,7 @@ contract InvitationRules is Ownable {
    */
   function invitationDelaySupporter() internal view returns (bool) {
     return hasInvitationDelayPassed(lastInviteSupporter[msg.sender], supporterDelayBlocks);
-  }  
+  }
 
   /**
    * @dev Helper function to calculate if an invitation delay has been met.

@@ -625,7 +625,7 @@ describe("InvitationRules", () => {
         ).to.be.revertedWith("Invite delay not reached");
       });
     });
-  });  
+  });
 
   describe("#onlyOwnerInvite", () => {
     context("when invite", () => {
