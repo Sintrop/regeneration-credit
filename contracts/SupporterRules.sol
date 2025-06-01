@@ -124,11 +124,7 @@ contract SupporterRules {
    * @param calculatorItemId The ID of the calculator item for the commitment.
    * @param blockNumber The block number at which the commitment was declared.
    */
-  event ReductionCommitmentDeclared(
-    address indexed supporterAddress,
-    uint256 calculatorItemId,
-    uint256 blockNumber
-  );
+  event ReductionCommitmentDeclared(address indexed supporterAddress, uint256 calculatorItemId, uint256 blockNumber);
 
   // --- Constructor ---
 
@@ -137,7 +133,7 @@ contract SupporterRules {
    * @param communityRulesAddress Address of the CommunityRules contract.
    * @param supporterPoolAddress Address of the SupporterPool contract, used for token burning.
    * @param researcherRulesAddress Address of the ResearcherRules contract, used for CalculatorItem data.
-   */  
+   */
 
   constructor(address communityRulesAddress, address supporterPoolAddress, address researcherRulesAddress) {
     communityRules = CommunityRules(communityRulesAddress);
@@ -157,10 +153,10 @@ contract SupporterRules {
    * Requires name and profile photo length to be within limits.
    * @param name The name of the supporter (max 100 characters).
    * @param profilePhoto The profile photo URL/hash of the supporter (max 100 characters).
-   */   
+   */
   function addSupporter(string memory name, string memory profilePhoto) public {
     require(bytes(name).length <= 100 && bytes(profilePhoto).length <= 100, "Max 100 characters");
-  
+
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE).add(1);
 
     Supporter memory supporter = Supporter(id, msg.sender, name, profilePhoto, 0, 0, 0, block.number);
