@@ -17,6 +17,7 @@ import { UserType } from "./types/CommunityTypes.sol";
  * @notice This contract manages the rules and logic for users to invite others into the community.
  */
 contract InvitationRules is Ownable {
+
   // --- State Variables ---
 
   /// @notice Relationship between address and last general invitation blockNumber.
@@ -149,7 +150,7 @@ contract InvitationRules is Ownable {
     } else if (userType == UserType.RESEARCHER) {
       return researcherRules.canSendInvite(msg.sender);
     } else {
-      return true;
+      return false;
     }
   }
 
