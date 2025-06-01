@@ -28,6 +28,42 @@ contract Poolable {
   /// @dev Tracks the tokens claimed by each user per era. Mapping: eraId => userAddress => eraTokens.
   mapping(uint256 => mapping(address => uint256)) public eraTokens;
 
+  // --- Events ---
+
+  /// @notice Emitted when a user's pool levels are added for a specific era.
+  /// @param user The address of the user whose levels were added.
+  /// @param era The era number where levels were added.
+  /// @param levelsAdded The amount of levels added.
+  /// @param newTotalEraLevels The new total levels for the era.
+  /// @param newEraUserLevels The new total levels for the user in that era.
+  event PoolLevelAdded(
+    address indexed user,
+    uint256 era,
+    uint256 levelsAdded,
+    uint256 newTotalEraLevels,
+    uint256 newEraUserLevels
+  );
+
+  /// @notice Emitted when a user's pool levels are removed for a specific era.
+  /// @param user The address of the user whose levels were removed.
+  /// @param era The era number where levels were removed.
+  /// @param levelsRemoved The amount of levels removed.
+  /// @param newTotalEraLevels The new total levels for the era.
+  /// @param newEraUserLevels The new total levels for the user in that era.
+  event PoolLevelRemoved(
+    address indexed user,
+    uint256 era,
+    uint256 levelsRemoved,
+    uint256 newTotalEraLevels,
+    uint256 newEraUserLevels
+  );
+
+  /// @notice Emitted when a user successfully withdraws tokens for a specific era.
+  /// @param user The address of the user who withdrew tokens.
+  /// @param era The era number from which tokens were withdrawn.
+  /// @param amount The amount of tokens withdrawn.
+  event TokensWithdrawn(address indexed user, uint256 era, uint256 amount);
+
   // --- Constructor ---
 
   /**
@@ -62,6 +98,7 @@ contract Poolable {
     uint256 levelTo = eraLevels[era][to];
 
     if (levelTo == 0) return 0;
+    if (levels == 0) return 0;
 
     return levelTo.mul(_tokensPerEra).div(levels);
   }
@@ -101,6 +138,8 @@ contract Poolable {
     eras[era].tokens += numTokens;
     eras[era].metrics.push(EraMetric(user, numTokens));
     eraTokens[era][user] = numTokens;
+    // Emit event after successful withdrawal update
+    emit TokensWithdrawn(user, era, numTokens);
   }
 
   /**
@@ -112,6 +151,8 @@ contract Poolable {
   function addPoolLevel(address to, uint256 levels, uint256 era) internal {
     eras[era].levels = eras[era].levels.add(levels);
     eraLevels[era][to] += levels;
+    // Emit event after levels are added
+    emit PoolLevelAdded(to, era, levels, eras[era].levels, eraLevels[era][to]);
   }
 
   /**
@@ -141,5 +182,7 @@ contract Poolable {
 
     eras[era].levels = eras[era].levels.sub(levels);
     eraLevels[era][to] = eraLevels[era][to].sub(levels);
+    // Emit event after levels are removed
+    emit PoolLevelRemoved(to, era, levels, eras[era].levels, eraLevels[era][to]);
   }
 }
