@@ -17,7 +17,6 @@ import { UserType } from "./types/CommunityTypes.sol";
  * @notice This contract manages the rules and logic for users to invite others into the community.
  */
 contract InvitationRules is Ownable {
-
   // --- State Variables ---
 
   /// @notice Relationship between address and last general invitation blockNumber.
@@ -50,6 +49,15 @@ contract InvitationRules is Ownable {
 
   /// @notice The minimum number of blocks an activist needs to wait to invite Regenerators or Inspectors again.
   uint256 public constant activistDelayBlocks = 1000;
+
+  // --- Events ---
+
+  /// @notice Event emitted when a user invites another.
+  /// @param inviter The address of the user who made the invitation.
+  /// @param invited The address of the invited user.
+  /// @param invitedType The user type assigned to the invited user.
+  /// @param blockNumber The block number at which the invitation was made.
+  event UserInvited(address indexed inviter, address indexed invited, UserType invitedType, uint256 blockNumber);
 
   // --- Constructor ---
 
@@ -111,6 +119,9 @@ contract InvitationRules is Ownable {
 
     // Adds the invitation to the CommunityRules contract.
     communityRules.addInvitation(msg.sender, invited, userType);
+
+    // Emits an event to log the invitation.
+    emit UserInvited(msg.sender, invited, userType, block.number);
   }
 
   /**
@@ -132,6 +143,9 @@ contract InvitationRules is Ownable {
 
     // Adds the invitation to the CommunityRules contract.
     communityRules.addInvitation(msg.sender, invited, userType);
+
+    // Emits an event to log the invitation.
+    emit UserInvited(msg.sender, invited, userType, block.number);
   }
 
   // --- Helper Functions (Internal/View) ---
@@ -194,5 +208,7 @@ contract InvitationRules is Ownable {
    */
   function onlyOwnerInvite(address invited, UserType userType) public onlyOwner {
     communityRules.addInvitation(msg.sender, invited, userType);
+    // Emits an event to log the invitation.
+    emit UserInvited(msg.sender, invited, userType, block.number);
   }
 }
