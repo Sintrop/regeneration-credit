@@ -6,30 +6,46 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 /**
  * @author Sintrop
  * @title Callable
- * @dev Contract to secure public functions to be called only by allowedCallers
+ * @notice Base contract to restrict access to certain functions, allowing calls only from a list of authorized addresses (allowedCallers).
+ * @dev Inherit from this contract and use the `mustBeAllowedCaller` modifier to protect functions.
+ * The list of allowed callers is managed by the contract owner (from Ownable).
+ * If ownership is renounced, only previously added allowed callers will be able to call the functions.
  */
 contract Callable is Ownable {
-  /// @dev Addresses allowed to call.
+  // --- State Variables ---
+
+  /// @dev Mapping storing the addresses authorized to call protected functions.
+  /// `true` if the address is allowed, `false` otherwise.
   mapping(address => bool) public allowedCallers;
 
+  // --- Constructor ---
+  // The Ownable constructor is called implicitly, setting msg.sender as the initial owner.
+
+  // --- Public Functions ---
+
   /**
-   * @dev Add a new allowed caller address
-   * @param allowed Allowed caller address
+   * @dev Allows the contract owner to add a new address to the list of allowed callers.
+   * If ownership is renounced, this function can no longer be performed.
+   * @param allowed The address to add to the allowed callers list.
    */
   function newAllowedCaller(address allowed) public onlyOwner {
     allowedCallers[allowed] = true;
   }
 
   /**
-   * @dev Checks if an address is allowed caller
-   * @param caller Address to check
+   * @notice Checks if a given address is currently in the list of allowed callers.
+   * @param caller The address to check.
+   * @return bool True if the address is an allowed caller, false otherwise.
    */
   function isAllowedCaller(address caller) public view returns (bool) {
     return allowedCallers[caller];
   }
 
+  // --- Modifiers ---
+
   /**
-   * @dev Only allow allowed callers to call function
+   * @dev Modifier to ensure that the function caller (`msg.sender`) is in the `allowedCallers` list.
+   * @notice Reverts if `msg.sender` is not an allowed caller.
    */
   modifier mustBeAllowedCaller() {
     require(allowedCallers[msg.sender], "Not allowed caller");

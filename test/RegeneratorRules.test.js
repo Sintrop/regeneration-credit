@@ -627,7 +627,7 @@ describe("RegeneratorRules", () => {
         });
 
         it("should return error message", async () => {
-          await expect(instance.connect(prod1Address).withdraw()).to.be.revertedWith("You can't approve yet");
+          await expect(instance.connect(prod1Address).withdraw()).to.be.revertedWith("Blockable: Action not allowed until user's current era has passed");
         });
       });
     });

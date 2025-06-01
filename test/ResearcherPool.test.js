@@ -703,7 +703,7 @@ describe("ResearcherPool", () => {
 
       context("when cant withdraw", () => {
         it("should return error message", async () => {
-          await expect(instance.withdraw(researcher1Address, 1)).to.be.revertedWith("You can't approve yet");
+          await expect(instance.withdraw(researcher1Address, 1)).to.be.revertedWith("Blockable: Action not allowed until user's current era has passed");
         });
       });
     });
