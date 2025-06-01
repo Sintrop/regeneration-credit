@@ -109,7 +109,7 @@ contract CommunityRules is Ownable, Callable {
     if (registeredUserTypeCount < MINIMUM_REGISTERED_USERS_QUANTITY) return true;
 
     if (setting.directProportionalityRegistration) return registeredUserTypeCount < regeneratorsCount * proportionality;
-    return registeredUserTypeCount < regeneratorsCount / proportionality;
+    return registeredUserTypeCount <= regeneratorsCount / proportionality;
   }
 
   /**
@@ -165,7 +165,9 @@ contract CommunityRules is Ownable, Callable {
    * @param testimony Delation justification
    */
   function addDelation(address addr, string memory title, string memory testimony) public {
+    require(bytes(title).length <= 100 && bytes(testimony).length <= 300, "Max characters reached");
     require(users[msg.sender] != UserType.UNDEFINED, "Caller must be registered");
+    require(users[msg.sender] != UserType.SUPPORTER, "Not allowed to supporters");
     require(users[addr] != UserType.UNDEFINED, "User must be registered");
 
     delations[addr].push(Delation(delationsCount + 1, msg.sender, addr, title, testimony));
@@ -195,6 +197,8 @@ contract CommunityRules is Ownable, Callable {
    * @param userAddress Denied user address
    */
   function setDeniedType(address userAddress) public mustBeAllowedCaller {
+    if (users[userAddress] == UserType.DENIED) return;
+
     userTypesCount[users[userAddress]]--;
 
     users[userAddress] = UserType.DENIED;

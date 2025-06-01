@@ -492,6 +492,18 @@ describe("InspectorPool", (accounts) => {
 
                   expect(balanceOf).to.equal(3750000000000000000000000n);
                 });
+
+                it("must update eras", async () => {
+                  const era = await instance.getEra(2);
+
+                  expect(era.users).to.equal(2);
+                  expect(era.tokens).to.equal(7500000000000000000000000n);
+                  expect(era.levels).to.equal(6);
+                  expect(era.metrics[0].user).to.equal("0x70997970C51812dc3A010C7d01b50e0d17dc79C8");
+                  expect(era.metrics[0].tokens).to.equal(3750000000000000000000000n);
+                  expect(era.metrics[1].user).to.equal("0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC");
+                  expect(era.metrics[1].tokens).to.equal(3750000000000000000000000n);
+                });
               });
 
               context("when inspector2 withdraw from era 1 and era 2", () => {

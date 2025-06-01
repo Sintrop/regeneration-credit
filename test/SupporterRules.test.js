@@ -23,7 +23,7 @@ describe("SupporterRules", () => {
   };
 
   const addCalculatorItem = async (from) => {
-    await researcherRules.connect(from).addCalculatorItem("title", "g", "justification", 1);
+    await researcherRules.connect(from).addCalculatorItem("item", "title", "g", "justification", 1);
   };
 
   const reseacherPoolArgs = {
@@ -473,7 +473,7 @@ describe("SupporterRules", () => {
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                 "text"
               )
-          ).to.be.revertedWith("Max 1000 characters");
+          ).to.be.revertedWith("Max 600 characters");
         });
       });
     });

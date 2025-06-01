@@ -76,9 +76,10 @@ struct Research {
 struct CalculatorItem {
   uint256 id;
   address createdBy;
+  string item;
   string title;
-  string unit;
   string justification;
+  string unit;
   uint256 carbonImpact;
 }
 

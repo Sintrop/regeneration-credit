@@ -494,6 +494,16 @@ describe("CommunityRules", function () {
         await expect(addDelation(user1Address, user2Address)).to.be.revertedWith("Caller must be registered");
       });
     });
+
+    context("when user2 (informer) is a supporter", () => {
+      it("should return error message", async () => {
+        await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+        await addUser(user1Address, userTypes.Regenerator, owner);
+        await addUser(user2Address, userTypes.Supporter, owner);
+
+        await expect(addDelation(user1Address, user2Address)).to.be.revertedWith("Not allowed to supporters");
+      });
+    });
   });
 
   describe("#getUserDelations", () => {
@@ -665,6 +675,40 @@ describe("CommunityRules", function () {
         const isVoter = await instance.isVoter(user5Address);
 
         expect(isVoter).to.equal(true);
+      });
+    });
+  });
+
+  describe("#setDeniedType", () => {
+    context("with allowed user", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+        await addUser(user1Address, userTypes.Regenerator, owner);
+      });
+
+      beforeEach(async () => {
+        await communityRules.setDeniedType(user1Address);
+      });
+
+      it("", async () => {
+        await communityRules.setDeniedType(user1Address);
+
+        const userType = await communityRules.getUser(user1Address);
+
+        await expect(userType).to.eq(userTypes.Denied);
+      });
+    });
+
+    context("with not allowed user", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+        await addUser(user1Address, userTypes.Regenerator, owner);
+      });
+
+      it("", async () => {
+        await expect(communityRules.connect(user1Address).setDeniedType(user1Address)).to.be.revertedWith(
+          "Not allowed caller"
+        );
       });
     });
   });

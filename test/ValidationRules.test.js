@@ -752,10 +752,10 @@ describe("ValidationRules", () => {
                 expect(levelsEra2).to.equal(0);
               });
 
-              it("do not remove user levels from contributor", async () => {
+              it("should remove user levels from contributor", async () => {
                 const contributor = await contributorRules.getContributor(contributor1Address);
 
-                expect(contributor.pool.level).to.equal(1);
+                expect(contributor.pool.level).to.equal(0);
               });
 
               it("userTypesCount must be decremented", async () => {
@@ -1356,38 +1356,81 @@ describe("ValidationRules", () => {
         context("when current era is 1", () => {
           context("when report validations is => votesToInvalidate (addPenalty == true)", () => {
             context("when developer total penalties is >= developerRules.maxPenalties", () => {
-              beforeEach(async () => {
-                let report = await developerRules.getReport(1);
-                report = generateReportObject(report);
-                report.validationsCount = 1;
+              context("when user is not denied", () => {
+                beforeEach(async () => {
+                  let report = await developerRules.getReport(1);
+                  report = generateReportObject(report);
+                  report.validationsCount = 1;
 
-                await developerRules.addPenalty(dev1Address, report.id);
-                await developerRules.addPenalty(dev1Address, report.id);
+                  await developerRules.addPenalty(dev1Address, report.id);
+                  await developerRules.addPenalty(dev1Address, report.id);
 
-                report.validationsCount = 2;
-                report.valid = false;
-                await instance.connect(owner).addReportValidation(report, "justification", user1Address);
+                  report.validationsCount = 2;
+                  report.valid = false;
+                  await instance.connect(owner).addReportValidation(report, "justification", user1Address);
+
+                  const era = await developerRules.poolCurrentEra();
+                  console.log(era);
+                });
+
+                it("should add report validation", async () => {
+                  const validation = await instance.reportValidations(1, 0);
+
+                  expect(validation[0]).to.equal(user1Address.address);
+                  expect(validation[1]).to.equal(1);
+                  expect(validation[2]).to.equal("justification");
+                  expect(validation[3]).to.equal(2);
+                });
+
+                it("deny developer", async () => {
+                  const newDeveloperType = await communityRules.getUser(dev1Address);
+
+                  expect(newDeveloperType).to.equal(userTypes.Denied);
+                });
+
+                it("remove report regeneration score level from developer pool", async () => {
+                  const levels = await developerPool.eraLevels(1, dev1Address);
+
+                  expect(levels).to.equal(0);
+                });
               });
 
-              it("should add report validation", async () => {
-                const validation = await instance.reportValidations(1, 0);
+              context("when user is already denied", () => {
+                beforeEach(async () => {
+                  let report = await developerRules.getReport(1);
+                  report = generateReportObject(report);
+                  report.validationsCount = 1;
 
-                expect(validation[0]).to.equal(user1Address.address);
-                expect(validation[1]).to.equal(1);
-                expect(validation[2]).to.equal("justification");
-                expect(validation[3]).to.equal(2);
-              });
+                  await developerRules.addPenalty(dev1Address, report.id);
+                  await developerRules.addPenalty(dev1Address, report.id);
 
-              it("deny developer", async () => {
-                const newDeveloperType = await communityRules.getUser(dev1Address);
+                  await communityRules.setDeniedType(dev1Address);
 
-                expect(newDeveloperType).to.equal(userTypes.Denied);
-              });
+                  report.validationsCount = 2;
+                  report.valid = false;
+                  await instance.connect(owner).addReportValidation(report, "justification", user1Address);
+                });
 
-              it("remove report regeneration score level from developer pool", async () => {
-                const levels = await developerPool.eraLevels(4, dev1Address);
+                it("should add report validation", async () => {
+                  const validation = await instance.reportValidations(1, 0);
 
-                expect(levels).to.equal(0);
+                  expect(validation[0]).to.equal(user1Address.address);
+                  expect(validation[1]).to.equal(1);
+                  expect(validation[2]).to.equal("justification");
+                  expect(validation[3]).to.equal(2);
+                });
+
+                it("do not remove any developer.pool.levels", async () => {
+                  const developer = await developerRules.getDeveloper(dev1Address);
+
+                  expect(developer.pool.level).to.equal(1);
+                });
+
+                it("do not remove any era levels", async () => {
+                  const levels = await developerPool.eraLevels(1, dev1Address);
+
+                  expect(levels).to.equal(1);
+                });
               });
             });
 
@@ -1508,6 +1551,7 @@ describe("ValidationRules", () => {
                 await instance.connect(owner).addResearchValidation(research, "justification", user1Address);
 
                 research.validationsCount = 2;
+                research.valid = false;
                 await instance.connect(owner).addResearchValidation(research, "justification", user2Address);
               });
 
@@ -1535,6 +1579,7 @@ describe("ValidationRules", () => {
                 research = await researcherRules.researches(1);
                 research = generateResearchObject(research);
                 research.validationsCount = 2;
+                research.valid = false;
 
                 await instance.connect(owner).addResearchValidation(research, "justification", user2Address);
               });

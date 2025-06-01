@@ -22,7 +22,7 @@ describe("RegenerationIndexRules", () => {
       expect(category.id).to.equal(1);
       expect(category.name).to.equal("Trees");
       expect(category.description).to.equal(
-        "Indicator to measure the total amount of trees, palm trees and other plants over 1m high and 3cm in diameter in the regenerating area. How many trees, palm trees and other plants with more than 5cm of diameters there is in the regenerating area? Justify your answer in the report."
+        "Indicator to measure the total amount of trees, palm trees and other plants over 1m high and 3cm in diameter in the regenerating area. How many trees, palm trees and other plants over 1m high and 3cm in diameter there is in the regenerating area? Justify your answer in the report."
       );
     });
 
@@ -44,7 +44,7 @@ describe("RegenerationIndexRules", () => {
       categoryRegenerationIndexDescriptions = categoryRegenerationIndexDescriptions.toString();
 
       expect(categoryRegenerationIndexDescriptions).to.equal(
-        "1,Trees > 20000,2,20000 > Trees > 10000,3,10000 > Trees > 5000,4,5000 > Trees > 1000,5,1000 > Trees > 100,6,100 > Trees > 10,7,Trees < 10"
+        "1,trees >= 50000,2,trees >= 25000 && trees < 50000,3,trees >= 12500 && trees < 25000,4,trees >= 6250 && trees < 12500,5,trees >= 3125 && trees < 6250,6,trees >= 20 && trees < 3125,7,trees < 20"
       );
     });
 
@@ -54,7 +54,7 @@ describe("RegenerationIndexRules", () => {
       categoryRegenerationIndexDescriptions = categoryRegenerationIndexDescriptions.toString();
 
       expect(categoryRegenerationIndexDescriptions).to.equal(
-        "1,Biodiversity > 240,2,240 > Biodiversity > 120,3,120 > Biodiversity > 60,4,60 > Biodiversity > 30,5,30 > Biodiversity > 15,6,15 > Biodiversity > 5,7,Biodiversity < 5"
+        "1,Biodiversity >= 240,2,240 >= Biodiversity > 120,3,120 >= Biodiversity > 60,4,60 >= Biodiversity > 30,5,30 >= Biodiversity > 15,6,15 >= Biodiversity > 5,7,Biodiversity < 5"
       );
     });
   });
