@@ -11,7 +11,6 @@ import { Callable } from "./shared/Callable.sol";
  * @dev Manage index categories and score
  */
 contract RegenerationIndexRules is Ownable, Callable {
-
   // --- State Variables ---
 
   /// @notice Relationship between id and category data
@@ -67,11 +66,21 @@ contract RegenerationIndexRules is Ownable, Callable {
     );
 
     categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(1, "Biodiversity >= 240"));
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(2, "Biodiversity >= 120 && Biodiversity < 240"));
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(3, "Biodiversity >= 60 && Biodiversity < 120")); 
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(4, "Biodiversity >= 30 && Biodiversity < 60")); 
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(5, "Biodiversity >= 15 && Biodiversity < 30")); 
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(6, "Biodiversity >= 5 && Biodiversity < 15"));  
+    categoryRegenerationIndexDescriptions[2].push(
+      RegenerationIndexDescription(2, "Biodiversity >= 120 && Biodiversity < 240")
+    );
+    categoryRegenerationIndexDescriptions[2].push(
+      RegenerationIndexDescription(3, "Biodiversity >= 60 && Biodiversity < 120")
+    );
+    categoryRegenerationIndexDescriptions[2].push(
+      RegenerationIndexDescription(4, "Biodiversity >= 30 && Biodiversity < 60")
+    );
+    categoryRegenerationIndexDescriptions[2].push(
+      RegenerationIndexDescription(5, "Biodiversity >= 15 && Biodiversity < 30")
+    );
+    categoryRegenerationIndexDescriptions[2].push(
+      RegenerationIndexDescription(6, "Biodiversity >= 5 && Biodiversity < 15")
+    );
     categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(7, "Biodiversity < 5"));
 
     categories[1] = treesCategory;
