@@ -18,7 +18,7 @@ contract Poolable {
   // --- State Variables ---
 
   /// @notice The total supply of tokens to be managed by this contract.
-  /// @dev This value is set once during contract deployment and remains constant.  
+  /// @dev This value is set once during contract deployment and remains constant.
   uint256 internal immutable TOTAL_TOKENS;
 
   /// @dev Stores data for each era. Key is the era number.
@@ -144,7 +144,7 @@ contract Poolable {
     eras[era].tokens += numTokens;
     eras[era].metrics.push(EraMetric(user, numTokens));
     eraTokens[era][user] = numTokens;
-    
+
     // Emit event after successful withdrawal update
     emit TokensWithdrawn(user, era, numTokens);
   }
