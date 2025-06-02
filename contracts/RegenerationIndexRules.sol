@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 import { Category, RegenerationIndex, RegenerationIndexDescription } from "./types/IndexTypes.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
@@ -11,14 +11,19 @@ import { Callable } from "./shared/Callable.sol";
  * @dev Manage index categories and score
  */
 contract RegenerationIndexRules is Ownable, Callable {
+
+  // --- State Variables ---
+
   /// @notice Relationship between id and category data
   mapping(uint256 => Category) public categories;
 
   /// @notice Relationship between category id and category descriptions
   mapping(uint256 => RegenerationIndexDescription[]) public categoryRegenerationIndexDescriptions;
+
+  /// @notice Relationship between regeneration index id and its name/value
   mapping(uint256 => RegenerationIndex) public regenerationIndex;
 
-  uint256 public categoryCounts;
+  uint256 public immutable categoryCounts;
 
   constructor() {
     regenerationIndex[1] = RegenerationIndex("REGENERATIVE 6", 32);
@@ -34,8 +39,11 @@ contract RegenerationIndexRules is Ownable, Callable {
     categoryCounts = 2;
   }
 
+  // --- Internal Functions ---
+
   /**
-   * @dev Function that creates system categories
+   * @dev Internal function that creates system categories and their regeneration index descriptions.
+   * This function is intended to be called only during contract deployment.
    */
   function addCategories() internal {
     Category memory treesCategory = Category(
@@ -59,32 +67,38 @@ contract RegenerationIndexRules is Ownable, Callable {
     );
 
     categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(1, "Biodiversity >= 240"));
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(2, "240 >= Biodiversity > 120"));
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(3, "120 >= Biodiversity > 60"));
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(4, "60 >= Biodiversity > 30"));
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(5, "30 >= Biodiversity > 15"));
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(6, "15 >= Biodiversity > 5"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(2, "Biodiversity >= 120 && Biodiversity < 240"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(3, "Biodiversity >= 60 && Biodiversity < 120")); 
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(4, "Biodiversity >= 30 && Biodiversity < 60")); 
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(5, "Biodiversity >= 15 && Biodiversity < 30")); 
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(6, "Biodiversity >= 5 && Biodiversity < 15"));  
     categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(7, "Biodiversity < 5"));
 
     categories[1] = treesCategory;
     categories[2] = biodiversityCategory;
   }
 
+  // --- View Functions ---
+
   /**
-   * @dev Returns all added category regeneration index description
-   * @return RegenerationIndexDescription struct array
+   * @notice Returns all added regeneration index descriptions for a specific category.
+   * @dev Validates the provided category ID to ensure it exists.
+   * @param categoryId The ID of the category to retrieve descriptions for.
+   * @return RegenerationIndexDescription struct array for the specified category.
    */
   function getCategoryRegenerationIndexDescription(
     uint256 categoryId
   ) public view returns (RegenerationIndexDescription[] memory) {
+    require(categoryId > 0 && categoryId <= categoryCounts, "Invalid category ID");
     return categoryRegenerationIndexDescriptions[categoryId];
   }
 
   /**
-   * @dev Function to calculate the inspection score
-   * @param treesResult Inspection result provided by inspector
-   * @param biodiversityResult Inspection result provided by inspector
-   * @return int256 Inspection score
+   * @notice Calculates the overall inspection score based on trees and biodiversity results.
+   * @dev This function sums the regeneration index values for trees and biodiversity indicators.
+   * @param treesResult Inspection result provided by inspector for trees.
+   * @param biodiversityResult Inspection result provided by inspector for biodiversity.
+   * @return uint256 The combined inspection score.
    */
   function calculateScore(uint256 treesResult, uint256 biodiversityResult) public view returns (uint256) {
     RegenerationIndex memory trees = regenerationIndex[treesRegenerationIndexId(treesResult)];
@@ -94,9 +108,10 @@ contract RegenerationIndexRules is Ownable, Callable {
   }
 
   /**
-   * @dev Function to calculate the trees inspection score
-   * @param indicator The result provided by the inspector
-   * @return The category regeneration score
+   * @dev Calculates the regeneration index ID for the given trees indicator.
+   * This is an internal pure function, meaning it does not read from or modify the contract's state.
+   * @param indicator The result provided by the inspector for trees.
+   * @return The regeneration index ID corresponding to the indicator.
    */
   function treesRegenerationIndexId(uint256 indicator) internal pure returns (uint256) {
     if (indicator >= 50000) {
@@ -117,9 +132,10 @@ contract RegenerationIndexRules is Ownable, Callable {
   }
 
   /**
-   * @dev Function to calculate the biodiversity inspection score
-   * @param indicator The result provided by the inspector
-   * @return The category regeneration score
+   * @dev Calculates the regeneration index ID for the given biodiversity indicator.
+   * This is an internal pure function, meaning it does not read from or modify the contract's state.
+   * @param indicator The result provided by the inspector for biodiversity.
+   * @return The regeneration index ID corresponding to the indicator.
    */
   function biodiversityRegenerationIndexId(uint256 indicator) internal pure returns (uint256) {
     if (indicator >= 240) {
