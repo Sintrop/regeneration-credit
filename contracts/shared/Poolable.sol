@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import { Era, EraMetric } from "contracts/types/PoolTypes.sol";
+import { Era } from "contracts/types/PoolTypes.sol";
 
 /**
  * @title Poolable
@@ -142,7 +142,6 @@ contract Poolable {
   function updateEraAfterWithdraw(uint256 era, address user, uint256 numTokens) internal {
     eras[era].claimsCount++;
     eras[era].tokens += numTokens;
-    eras[era].metrics.push(EraMetric(user, numTokens));
     eraTokens[era][user] = numTokens;
 
     // Emit event after successful withdrawal update
