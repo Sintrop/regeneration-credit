@@ -1,21 +1,24 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Era, EraMetric } from "contracts/types/PoolTypes.sol";
 
 /**
- * @author Sintrop
  * @title Poolable
- * @notice Manages token distribution logic across different eras based on user levels.
- * @dev This contract handles the calculation of token allocations and tracks user participation in eras.
+ * @author Sintrop
+ * @notice Manages token distribution logic across different eras based on user levels and a halving mechanism.
+ * @dev This abstract contract provides the core functionalities for calculating token allocations,
+ * tracking user participation (levels and withdraws) within specific eras, and managing the pool token supply.
+ * It is designed to be inherited by other pool contracts.
  */
 contract Poolable {
   using SafeMath for uint256;
 
   // --- State Variables ---
 
-  /// @dev The total supply of tokens to be managed by this contract.
+  /// @notice The total supply of tokens to be managed by this contract.
+  /// @dev This value is set once during contract deployment and remains constant.  
   uint256 internal immutable TOTAL_TOKENS;
 
   /// @dev Stores data for each era. Key is the era number.
@@ -78,16 +81,18 @@ contract Poolable {
   // --- View Functions ---
 
   /**
-   * @dev Returns the data for a specific era.
-   * @param era The era number
-   * @return Era The `Era` struct containing details for the specified era.
+   * @notice Returns the aggregated data for a specific era.
+   * @dev Provides access to `claimsCount`, `tokens` claimed, and `levels` for the requested era.
+   * @param era The number of the era to retrieve data for.
+   * @return Era The `Era` struct containing the aggregated details for the specified era.
    */
   function getEra(uint256 era) external view returns (Era memory) {
     return eras[era];
   }
 
   /**
-   * @dev Calculates the amount of tokens a user is eligible to withdraw in a specific era.
+   * @notice Calculates the amount of tokens a user is eligible to withdraw in a specific era.
+   * @dev The calculation is based on the user's levels relative to the total levels in that era.
    * @param era Era number
    * @param to UserAddress
    * @param _tokensPerEra The total tokens available for distribution in this specific era
@@ -97,6 +102,7 @@ contract Poolable {
     uint256 levels = eras[era].levels;
     uint256 levelTo = eraLevels[era][to];
 
+    // Return 0 if the user has no levels or there are no levels at all in the era to prevent division by zero.
     if (levelTo == 0) return 0;
     if (levels == 0) return 0;
 
@@ -138,6 +144,7 @@ contract Poolable {
     eras[era].tokens += numTokens;
     eras[era].metrics.push(EraMetric(user, numTokens));
     eraTokens[era][user] = numTokens;
+    
     // Emit event after successful withdrawal update
     emit TokensWithdrawn(user, era, numTokens);
   }
