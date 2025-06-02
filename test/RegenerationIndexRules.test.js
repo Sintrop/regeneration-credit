@@ -54,7 +54,7 @@ describe("RegenerationIndexRules", () => {
       categoryRegenerationIndexDescriptions = categoryRegenerationIndexDescriptions.toString();
 
       expect(categoryRegenerationIndexDescriptions).to.equal(
-        "1,Biodiversity >= 240,2,Biodiversity >= 120 && Biodiversity < 240,3,Biodiversity >= 60 && Biodiversity < 120,4,Biodiversity >= 30 && Biodiversity < 60,5,Biodiversity >= 15 && Biodiversity < 30,6,Biodiversity >= 5 && Biodiversity < 15,7,Biodiversity < 5"
+        "1,Biodiversity >= 160,2,Biodiversity >= 80 && Biodiversity < 160,3,Biodiversity >= 40 && Biodiversity < 80,4,Biodiversity >= 20 && Biodiversity < 40,5,Biodiversity >= 10 && Biodiversity < 20,6,Biodiversity >= 5 && Biodiversity < 10,7,Biodiversity < 5"
       );
     });
   });
