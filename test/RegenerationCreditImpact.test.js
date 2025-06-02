@@ -22,7 +22,9 @@ describe("RegenerationCreditImpact", () => {
 
   const addRegenerator = async (name, from, _coordinates = []) => {
     const coordinatesParams = _coordinates.length > 0 ? _coordinates : coordinates();
-    await regeneratorRules.connect(from).addRegenerator(1000, name, "photoURL", coordinatesParams);
+    await regeneratorRules
+      .connect(from)
+      .addRegenerator(1000, name, "projectDescription", "photoURL", coordinatesParams);
   };
 
   const addInspector = async (name, from) => {

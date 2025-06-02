@@ -26,6 +26,9 @@ contract RegeneratorRules is Callable {
   /// @notice The relationship between address and coordinates array
   mapping(address => Coordinates[]) public coordinates;
 
+  /// @notice The relationship between address and description
+  mapping(address => string) public projectDescriptions;
+
   /// @notice Number of approved impact regenerators
   mapping(address => bool) public impactRegenerators;
 
@@ -69,9 +72,13 @@ contract RegeneratorRules is Callable {
     uint256 totalArea,
     string memory name,
     string memory proofPhoto,
+    string memory projectDescription,
     Coordinates[] memory _coordinates
   ) public {
-    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
+    require(
+      bytes(name).length <= 50 && bytes(proofPhoto).length <= 100 && bytes(projectDescription).length <= 200,
+      "Max characters reached"
+    );
     require(_coordinates.length >= 3 && _coordinates.length <= 10, "Minimum 3 and maximum 10 coordinate points");
     require(totalArea >= 500 && totalArea <= 500000, "Minimum 500 and maximum 500.000 square meters");
 
@@ -89,6 +96,7 @@ contract RegeneratorRules is Callable {
 
     regenerators[msg.sender] = regenerator;
     regeneratorsAddress[id] = msg.sender;
+    projectDescriptions[msg.sender] = projectDescription;
     communityRules.addUser(msg.sender, USER_TYPE);
 
     regenerationArea += totalArea;
