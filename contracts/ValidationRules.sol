@@ -16,14 +16,19 @@ import { Report } from "./types/DeveloperTypes.sol";
 import { Research } from "./types/ResearcherTypes.sol";
 import { Contribution } from "./types/ContributorTypes.sol";
 import { VoteRules } from "./VoteRules.sol";
+import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol"; // Using SafeMath for safety
 
 /**
  * @author Sintrop
  * @title ValidationRules
- * @dev Manage validators rules and data
- * @notice Responsible for reviewing and voting to invalidate wrong or corrupted actions
+ * @dev Manage validators rules and data. This contract is responsible for reviewing and voting to invalidate wrong or corrupted actions across different user types and resources.
+ * @notice Responsible for reviewing and voting to invalidate wrong or corrupted actions.
  */
 contract ValidationRules is Callable {
+  using SafeMath for uint256;
+
+  // --- State Variables ---
+
   /// @notice The relationship between address and validations received by era
   mapping(address => mapping(uint256 => UserValidation[])) public userValidations;
 
@@ -71,15 +76,53 @@ contract ValidationRules is Callable {
   /// @notice Amount of blocks between votes
   uint256 private immutable timeBetweenVotes;
 
+  /// @notice Flag to ensure contract dependencies are set only once.
+  bool public contractsDependenciesSet; // Added flag for one-time initialization
+
+  // --- Events ---
+
+  /**
+   * @notice Emitted when a user is successfully invalidated and denied.
+   * @param _userAddress The address of the user who was denied.
+   */
+  event UserDenied(address indexed _userAddress);
+
+  /**
+   * @notice Emitted when a resource (Inspection, Report, Contribution, Research) is processed after accumulating enough invalidation votes.
+   * @param _resourceType The type of resource being processed (e.g., "Inspection", "Report").
+   * @param _resourceId The ID of the resource.
+   * @param _ownerAddress The address of the user who created the invalidated resource.
+   * @param _penaltiesAdded The number of penalties added to the owner.
+   */
+  event ResourceInvalidated(
+    string _resourceType,
+    uint256 _resourceId,
+    address indexed _ownerAddress,
+    uint256 _penaltiesAdded
+  );
+
+  // --- Constructor ---
+
+  /**
+   * @notice Initializes the ValidationRules contract with a minimum time between votes.
+   * @dev Sets the immutable `timeBetweenVotes` which dictates how many blocks a validator must wait between votes.
+   * @param timeBetweenVotes_ The number of blocks a validator must wait between consecutive votes.
+   */
   constructor(uint256 timeBetweenVotes_) {
     timeBetweenVotes = timeBetweenVotes_;
+    contractsDependenciesSet = false; // Initialize the flag
   }
 
   /**
-   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced after
-   * @param contractDependency Addresses of system contracts used
+   * @notice Sets the addresses of all essential external contracts this contract depends on.
+   * @dev This function can only be called the contract owner after deployment.
+   * It initializes references to various *Rules contracts and the VoteRules contract.
+   * Ownership should ideally be renounced after this call.
+   * @param contractDependency Addresses of system contracts used.
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+    //require(!contractsDependenciesSet, "Dependencies already set"); // Enforce one-time call
+
     communityRules = CommunityRules(contractDependency.communityRulesAddress);
     regeneratorRules = RegeneratorRules(contractDependency.regeneratorRulesAddress);
     inspectorRules = InspectorRules(contractDependency.inspectorRulesAddress);
@@ -88,21 +131,25 @@ contract ValidationRules is Callable {
     contributorRules = ContributorRules(contractDependency.contributorRulesAddress);
     activistRules = ActivistRules(contractDependency.activistRulesAddress);
     voteRules = VoteRules(contractDependency.voteRulesAddress);
+
+    contractsDependenciesSet = true; // Mark as set
   }
 
+  // --- External Functions (State Modifying) ---
+
   /**
-   * @dev Allows users to attempt to vote to invalidate an user
-   * @notice Vote to invalidate users with unwanted behavior
+   * @notice Allows users to attempt to vote to invalidate an user.
+   * @dev Votes to invalidate users with unwanted behavior.
    *
    * Requirements:
+   * - The caller must be a registered voter user (verified by VoteRules).
+   * - Caller level must be above average (verified by VoteRules.canVote implicitly).
+   * - Caller must have waited `timeBetweenVotes` since their last vote.
+   * - Caller must vote only once per user per era.
+   * - The target user must be registered and not already denied.
    *
-   * - the caller must be a voter user
-   * - caller level must be above average
-   * - caller must have waited timeBetweenVotes
-   * - caller must vote only once per user
-   *
-   * @param userAddress Invalidation user address
-   * @param justification Invalidation justification
+   * @param userAddress Invalidation user address.
+   * @param justification Invalidation justification (max 300 characters).
    */
   function addUserValidation(address userAddress, string memory justification) public {
     require(bytes(justification).length <= 300, "Max 300 characters");
@@ -119,7 +166,7 @@ contract ValidationRules is Callable {
     validatorLastVoteAt[msg.sender] = block.number;
 
     uint256 _votesToInvalidate = votesToInvalidate();
-    uint256 validationsCount = userValidations[userAddress][currentEra].length + 1;
+    uint256 validationsCount = userValidations[userAddress][currentEra].length.add(1);
 
     userValidations[userAddress][currentEra].push(
       UserValidation(msg.sender, userAddress, justification, _votesToInvalidate, block.number)
@@ -128,34 +175,25 @@ contract ValidationRules is Callable {
     if (validationsCount >= _votesToInvalidate) denyUser(userAddress);
   }
 
-  function userCurrentEra(address userAddress) internal view returns (uint256 era) {
-    UserType userType = communityRules.getUser(userAddress);
-
-    if (userType == UserType.ACTIVIST) return activistRules.poolCurrentEra();
-    if (userType == UserType.CONTRIBUTOR) return contributorRules.poolCurrentEra();
-    if (userType == UserType.DEVELOPER) return developerRules.poolCurrentEra();
-    if (userType == UserType.INSPECTOR) return inspectorRules.poolCurrentEra();
-    if (userType == UserType.RESEARCHER) return researcherRules.poolCurrentEra();
-    if (userType == UserType.REGENERATOR) return regeneratorRules.poolCurrentEra();
-  }
-
   /**
-   * @dev Called only by the inspectionRules contract
-   * @notice Allows users to attempt to vote to invalidate an inspection
+   * @notice Allows allowed callers (e.g., InspectorRules) to record a validation vote against an inspection.
+   * @dev This function is intended to be called by the `InspectorRules` contract.
+   * It records a validation vote for an inspection and applies penalties if enough votes accumulate.
    *
    * Requirements:
+   * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
+   * - The validator address must not have already voted for this specific inspection.
    *
-   * - voter must vote only once per user
-   *
-   * @param inspection Inspection data
-   * @param justification Invalidation justification
-   * @param validatorAddress Address of the voter
+   * @param inspection Inspection data.
+   * @param justification Invalidation justification.
+   * @param validatorAddress Address of the voter.
    */
   function addInspectionValidation(
     Inspection memory inspection,
     string memory justification,
     address validatorAddress
   ) public mustBeAllowedCaller {
+    require(bytes(justification).length <= 300, "Max 300 characters");
     require(!validatorInspectionsValidations[validatorAddress][inspection.id], "Already voted");
 
     validatorInspectionsValidations[validatorAddress][inspection.id] = true;
@@ -174,26 +212,30 @@ contract ValidationRules is Callable {
     uint256 inspectorTotalPenalties = inspectorRules.addPenalty(inspection.inspector, inspection.id);
     removeUserInspection(inspection);
 
+    emit ResourceInvalidated("Inspection", inspection.id, inspection.inspector, inspectorTotalPenalties); // Emit event
+
     if (inspectorTotalPenalties >= inspectorRules.maxPenalties()) denyUser(inspection.inspector);
   }
 
   /**
-   * @dev Called only by the developerRules contract
-   * @notice Allows users to attempt to vote to invalidate a report
+   * @notice Allows allowed callers (e.g., DeveloperRules) to record a validation vote against a report.
+   * @dev This function is intended to be called by the `DeveloperRules` contract.
+   * It records a validation vote for a report and applies penalties if enough votes accumulate.
    *
    * Requirements:
+   * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
+   * - The validator address must not have already voted for this specific report.
    *
-   * - voter must vote only once per report
-   *
-   * @param report Report data
-   * @param justification Invalidation justification
-   * @param validatorAddress Address of the voter
+   * @param report Report data.
+   * @param justification Invalidation justification.
+   * @param validatorAddress Address of the voter.
    */
   function addReportValidation(
     Report memory report,
     string memory justification,
     address validatorAddress
   ) public mustBeAllowedCaller {
+    require(bytes(justification).length <= 300, "Max 300 characters");
     require(!validatorReportsValidations[validatorAddress][report.id], "Already voted");
 
     validatorReportsValidations[validatorAddress][report.id] = true;
@@ -209,26 +251,30 @@ contract ValidationRules is Callable {
 
     removeDeveloperReport(report);
 
+    emit ResourceInvalidated("Report", report.id, report.developer, developerTotalPenalties); // Emit event
+
     if (developerTotalPenalties >= developerRules.MAX_PENALTIES()) denyUser(report.developer);
   }
 
   /**
-   * @dev Called only by the contributorRules contract
-   * @notice Allows users to attempt to vote to invalidate a contribution
+   * @notice Allows allowed callers (e.g., ContributorRules) to record a validation vote against a contribution.
+   * @dev This function is intended to be called by the `ContributorRules` contract.
+   * It records a validation vote for a contribution and applies penalties if enough votes accumulate.
    *
    * Requirements:
+   * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
+   * - The validator address must not have already voted for this specific contribution.
    *
-   * - voter must vote only once per resource
-   *
-   * @param contribution Contribution data
-   * @param justification Invalidation justification
-   * @param validatorAddress Address of the voter
+   * @param contribution Contribution data.
+   * @param justification Invalidation justification.
+   * @param validatorAddress Address of the voter.
    */
   function addContributionValidation(
     Contribution memory contribution,
     string memory justification,
     address validatorAddress
   ) public mustBeAllowedCaller {
+    require(bytes(justification).length <= 300, "Max 300 characters");
     require(!validatorContributionsValidations[validatorAddress][contribution.id], "Already voted");
 
     validatorContributionsValidations[validatorAddress][contribution.id] = true;
@@ -244,26 +290,30 @@ contract ValidationRules is Callable {
 
     removeContributorContribution(contribution);
 
+    emit ResourceInvalidated("Contribution", contribution.id, contribution.user, contributorTotalPenalties); // Emit event
+
     if (contributorTotalPenalties >= contributorRules.MAX_PENALTIES()) denyUser(contribution.user);
   }
 
   /**
-   * @dev Called only by the researcherRules contract
-   * @notice Allows users to attempt to vote to invalidate a research
+   * @notice Allows allowed callers (e.g., ResearcherRules) to record a validation vote against a research.
+   * @dev This function is intended to be called by the `ResearcherRules` contract.
+   * It records a validation vote for a research and applies penalties if enough votes accumulate.
    *
    * Requirements:
+   * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
+   * - The validator address must not have already voted for this specific research.
    *
-   * - voter must vote only once per resource
-   *
-   * @param research Research data
-   * @param justification Invalidation justification
-   * @param validatorAddress Address of the voter
+   * @param research Research data.
+   * @param justification Invalidation justification.
+   * @param validatorAddress Address of the voter.
    */
   function addResearchValidation(
     Research memory research,
     string memory justification,
     address validatorAddress
   ) public mustBeAllowedCaller {
+    require(bytes(justification).length <= 300, "Max 300 characters");
     require(!validatorResearchesValidations[validatorAddress][research.id], "Already voted");
 
     validatorResearchesValidations[validatorAddress][research.id] = true;
@@ -278,7 +328,27 @@ contract ValidationRules is Callable {
     uint256 totalPenalties = researcherRules.addPenalty(research.createdBy, research.id);
     removeReseacherResearch(research);
 
+    emit ResourceInvalidated("Research", research.id, research.createdBy, totalPenalties); // Emit event
+
     if (totalPenalties >= researcherRules.MAX_PENALTIES()) denyUser(research.createdBy);
+  }
+
+  // --- Internal Functions ---
+
+  /**
+   * @dev Determines the current era for a given user's type.
+   * @param userAddress The address of the user.
+   * @return era The current era for the user's specific type pool.
+   */
+  function userCurrentEra(address userAddress) internal view returns (uint256 era) {
+    UserType userType = communityRules.getUser(userAddress);
+
+    if (userType == UserType.ACTIVIST) return activistRules.poolCurrentEra();
+    if (userType == UserType.CONTRIBUTOR) return contributorRules.poolCurrentEra();
+    if (userType == UserType.DEVELOPER) return developerRules.poolCurrentEra();
+    if (userType == UserType.INSPECTOR) return inspectorRules.poolCurrentEra();
+    if (userType == UserType.RESEARCHER) return researcherRules.poolCurrentEra();
+    if (userType == UserType.REGENERATOR) return regeneratorRules.poolCurrentEra();
   }
 
   /**
@@ -318,13 +388,14 @@ contract ValidationRules is Callable {
   }
 
   /**
-   * @dev Function to deny a user
-   * @param userAddress Invalidated userAddress
+   * @dev Sets a user's type to DENIED in CommunityRules and removes their levels from pools.
+   * @param userAddress The address of the user to deny.
    */
   function denyUser(address userAddress) internal {
-    removeLevelsFromPool(userAddress, 0);
+    removeLevelsFromPool(userAddress, 0); // Remove all levels (0 means all for denied users)
 
     communityRules.setDeniedType(userAddress);
+    emit UserDenied(userAddress); // Emit event for user denial
   }
 
   /**
@@ -335,7 +406,8 @@ contract ValidationRules is Callable {
   function removeLevelsFromPool(address userAddress, uint256 levels) internal {
     UserType oldUserType = communityRules.getUser(userAddress);
 
-    if (oldUserType == UserType.DENIED) return;
+    if (oldUserType == UserType.DENIED) return; // Already denied, nothing to do
+    // Check for each user type and call their respective removePoolLevels function
     if (oldUserType == UserType.INSPECTOR) return inspectorRules.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.REGENERATOR) return regeneratorRules.removePoolLevels(userAddress, levels);
     if (oldUserType == UserType.DEVELOPER) return developerRules.removePoolLevels(userAddress, levels);
@@ -344,20 +416,24 @@ contract ValidationRules is Callable {
     if (oldUserType == UserType.ACTIVIST) return activistRules.removePoolLevels(userAddress, levels);
   }
 
+  // --- View Functions ---
+
   /**
-   * @dev Function to get a user validations
-   * @notice Get all user validations of an era
-   * @param userAddress Invalidated userAddress
-   * @param currentEra Checked current era
+   * @notice Get all user validations for a specific user in a given era.
+   * @dev Retrieves an array of `UserValidation` structs for a specified user and era.
+   * @param userAddress The address of the user.
+   * @param currentEra The era to check for validations.
+   * @return UserValidation[] An array of `UserValidation` structs.
    */
   function getUserValidations(address userAddress, uint256 currentEra) public view returns (UserValidation[] memory) {
     return userValidations[userAddress][currentEra];
   }
 
   /**
-   * @dev Function to calculate how many votes is necessary to invalidate a user, based on how many voters are registered in the system
-   * @notice Get how many validations is necessary to invalidate a user or resource. Calculation is based on voters count, which includes activists, researchers, developers and contributors
-   * @return count Number of votes
+   * @notice Get how many validations is necessary to invalidate a user or resource.
+   * @dev Calculates the required number of votes for invalidation based on the total number of registered voters in the system.
+   * Calculation is based on the `votersCount` which includes activists, researchers, developers, and contributors.
+   * @return count Number of votes required for invalidation.
    */
   function votesToInvalidate() public view returns (uint256 count) {
     uint256 voters = communityRules.votersCount();
@@ -374,15 +450,16 @@ contract ValidationRules is Callable {
   }
 
   /**
-   * @dev Function to check if a validator has waited the timeBetweenVotes
-   * @notice Check if a validator can vote or not, based on his last vote block.number
-   * @param validatorAddress Validator address
-   * @return bool True if can vote, false if not
+   * @notice Check if a validator can vote based on their last vote block number and `timeBetweenVotes`.
+   * @dev Returns true if the current block number is past `validatorLastVoteAt` + `timeBetweenVotes`,
+   * or if the validator has never voted before.
+   * @param validatorAddress The address of the validator.
+   * @return bool True if the validator can vote, false otherwise.
    */
   function waitedTimeBetweenVotes(address validatorAddress) public view returns (bool) {
     uint256 lastVoteAt = validatorLastVoteAt[validatorAddress];
 
-    bool canVote = block.number > lastVoteAt + timeBetweenVotes;
+    bool canVote = block.number > lastVoteAt.add(timeBetweenVotes);
     return canVote || lastVoteAt <= 0;
   }
 }
