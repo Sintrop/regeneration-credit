@@ -172,11 +172,7 @@ describe("CommunityRules", function () {
 
         context("to denied", () => {
           it("should add correct enum to denied", async () => {
-            await addUser(user1Address, userTypes.Denied, owner);
-
-            const user = await instance.getUser(user1Address);
-
-            expect(user).to.equal(userTypes.Denied);
+            await expect(addUser(user1Address, userTypes.Denied, owner)).to.be.revertedWith("Invalid user type");
           });
         });
       });
