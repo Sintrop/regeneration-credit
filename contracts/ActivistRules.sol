@@ -220,12 +220,13 @@ contract ActivistRules is Callable, Invitable {
   /**
    * @dev Remove pool levels from activist
    * @param addr Activist wallet
+   * @param levelsToRemove Levels to remove
    */
-  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
     Activist memory activist = activists[addr];
 
-    activists[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : activist.pool.level;
-    activistPool.removePoolLevels(addr, removeSomeLevels);
+    activists[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : activist.pool.level;
+    activistPool.removePoolLevels(addr, levelsToRemove);
   }
 
   /**

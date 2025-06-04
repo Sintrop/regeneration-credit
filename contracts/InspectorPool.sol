@@ -59,9 +59,9 @@ contract InspectorPool is Poolable, Ownable, Blockable, Callable {
   /**
    * @dev Called by the inspector contract, function to decrease inspector pool level
    * @param addr Inspector wallet
-   * @param removeSomeLevels Levels to decrease
+   * @param levelsToRemove Levels to remove
    */
-  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
-    removePoolLevel(addr, currentContractEra(), removeSomeLevels);
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+    removePoolLevel(addr, currentContractEra(), levelsToRemove);
   }
 }
