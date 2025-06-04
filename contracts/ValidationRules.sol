@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 import { CommunityRules } from "./CommunityRules.sol";
 import { RegeneratorRules } from "./RegeneratorRules.sol";
@@ -174,7 +174,7 @@ contract ValidationRules is Callable {
     uint256 inspectorTotalPenalties = inspectorRules.addPenalty(inspection.inspector, inspection.id);
     removeUserInspection(inspection);
 
-    if (inspectorTotalPenalties >= inspectorRules.maxPenalties()) externalDenyUser(inspection.inspector);
+    if (inspectorTotalPenalties >= inspectorRules.maxPenalties()) denyUser(inspection.inspector);
   }
 
   /**
@@ -209,7 +209,7 @@ contract ValidationRules is Callable {
 
     removeDeveloperReport(report);
 
-    if (developerTotalPenalties >= developerRules.MAX_PENALTIES()) externalDenyUser(report.developer);
+    if (developerTotalPenalties >= developerRules.MAX_PENALTIES()) denyUser(report.developer);
   }
 
   /**
@@ -244,7 +244,7 @@ contract ValidationRules is Callable {
 
     removeContributorContribution(contribution);
 
-    if (contributorTotalPenalties >= contributorRules.MAX_PENALTIES()) externalDenyUser(contribution.user);
+    if (contributorTotalPenalties >= contributorRules.MAX_PENALTIES()) denyUser(contribution.user);
   }
 
   /**
@@ -269,20 +269,16 @@ contract ValidationRules is Callable {
     validatorResearchesValidations[validatorAddress][research.id] = true;
     validatorLastVoteAt[validatorAddress] = block.number;
 
-    uint256 _votesToInvalidate = votesToInvalidate();
-
-    bool addPenalty = research.validationsCount >= _votesToInvalidate;
-
     researchValidations[research.id].push(
-      ResourceValidation(validatorAddress, research.id, justification, _votesToInvalidate, block.number)
+      ResourceValidation(validatorAddress, research.id, justification, votesToInvalidate(), block.number)
     );
 
-    if (!addPenalty) return;
+    if (research.valid) return;
 
     uint256 totalPenalties = researcherRules.addPenalty(research.createdBy, research.id);
     removeReseacherResearch(research);
 
-    if (totalPenalties >= researcherRules.MAX_PENALTIES()) externalDenyUser(research.createdBy);
+    if (totalPenalties >= researcherRules.MAX_PENALTIES()) denyUser(research.createdBy);
   }
 
   /**
@@ -322,14 +318,6 @@ contract ValidationRules is Callable {
   }
 
   /**
-   * @dev Function to call denyUser
-   * @param userAddress Invalidated userAddress
-   */
-  function externalDenyUser(address userAddress) private {
-    denyUser(userAddress);
-  }
-
-  /**
    * @dev Function to deny a user
    * @param userAddress Invalidated userAddress
    */
@@ -347,6 +335,7 @@ contract ValidationRules is Callable {
   function removeUserLevels(address userAddress, uint256 levels) internal {
     UserType userType = communityRules.getUser(userAddress);
 
+    if (userType == UserType.DENIED) return;
     if (userType == UserType.INSPECTOR) return inspectorRules.removePoolLevels(userAddress, levels);
     if (userType == UserType.REGENERATOR) return regeneratorRules.removePoolLevels(userAddress, levels);
     if (userType == UserType.DEVELOPER) return developerRules.removePoolLevels(userAddress, levels);

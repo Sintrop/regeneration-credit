@@ -68,7 +68,7 @@ describe("InspectionRules", () => {
   };
 
   const addRegenerator = async (name, from) => {
-    await regeneratorRules.connect(from).addRegenerator(1000, name, "photoURL", coordinates());
+    await regeneratorRules.connect(from).addRegenerator(1000, name, "projectDescription", "photoURL", coordinates());
   };
 
   const coordinates = () => {
@@ -1012,7 +1012,7 @@ describe("InspectionRules", () => {
                   context("when select REGENERATIVE_4", () => {
                     beforeEach(async () => {
                       const treesResultValue = 15001;
-                      const biodiversityResultValue = 101;
+                      const biodiversityResultValue = 79;
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
@@ -1027,7 +1027,7 @@ describe("InspectionRules", () => {
                   context("when select REGENERATIVE_3", () => {
                     beforeEach(async () => {
                       const treesResultValue = 8001;
-                      const biodiversityResultValue = 51;
+                      const biodiversityResultValue = 35;
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
@@ -1042,7 +1042,7 @@ describe("InspectionRules", () => {
                   context("when select REGENERATIVE_2", () => {
                     beforeEach(async () => {
                       const treesResultValue = 3500;
-                      const biodiversityResultValue = 21;
+                      const biodiversityResultValue = 18;
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
@@ -1057,7 +1057,7 @@ describe("InspectionRules", () => {
                   context("when select REGENERATIVE_1", () => {
                     beforeEach(async () => {
                       const treesResultValue = 50;
-                      const biodiversityResultValue = 10;
+                      const biodiversityResultValue = 8;
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });

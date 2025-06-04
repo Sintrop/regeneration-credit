@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 import { RegenerationCredit } from "./RegenerationCredit.sol";
 import { InspectionRules } from "./InspectionRules.sol";
@@ -16,6 +16,8 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
  */
 contract RegenerationCreditImpact {
   using SafeMath for uint256;
+
+  // --- State Variables ---
 
   /// @notice Constant of 32 decimals to calculate the impact. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
   uint256 public constant IMPACT_DECIMALS = 10 ** 32;
@@ -35,6 +37,16 @@ contract RegenerationCreditImpact {
   CommunityRules internal communityRules;
   RegeneratorRules internal regeneratorRules;
 
+  // --- Constructor ---
+
+  /**
+   * @notice Initializes the RegenerationCreditImpact contract with addresses of necessary external contracts.
+   * @dev This constructor links to core system contracts required for impact calculations.
+   * @param regenerationCreditAddress Address of the RegenerationCredit token contract.
+   * @param inspectionRulesAddress Address of the InspectionRules contract.
+   * @param communityRulesAddress Address of the CommunityRules contract.
+   * @param regeneratorRulesAddress Address of the RegeneratorRules contract.
+   */
   constructor(
     address regenerationCreditAddress,
     address inspectionRulesAddress,
@@ -47,8 +59,11 @@ contract RegenerationCreditImpact {
     regeneratorRules = RegeneratorRules(regeneratorRulesAddress);
   }
 
+  // --- View Functions ---
+
   /**
-   * @notice Function to calculate the total trees impact of the system.
+   * @notice Calculates the total trees impact of the system.
+   * @dev This function uses data from inspections and regenerator impact to estimate total trees.
    * @return uint256 Amount of trees
    */
   function totalTreesImpact() public view returns (uint256) {
@@ -61,17 +76,17 @@ contract RegenerationCreditImpact {
   }
 
   /**
-   * @notice Function to calculate the total carbon impact of the system.
+   * @notice Calculates the total carbon impact of the system.
+   * @dev Converts the total trees impact into estimated grams of carbon sequestered.
    * @return uint256 Grams of carbon [g]
    */
   function totalCarbonImpact() public view returns (uint256) {
-    if (inspectionRules.realizedInspectionsCount() == 0) return 0;
-
     return totalTreesImpact().mul(CARBON_PER_TREE);
   }
 
   /**
-   * @notice Function to calculate the total biodiversity impact of the system.
+   * @notice Calculates the total biodiversity impact of the system.
+   * @dev This function uses data from inspections and regenerator impact to estimate total biodiversity species registered.
    * @return uint256 Amount of species
    */
   function totalBiodiversityImpact() public view returns (uint256) {
@@ -84,7 +99,8 @@ contract RegenerationCreditImpact {
   }
 
   /**
-   * @notice Function to calculate the total soil impact of the system.
+   * @notice Calculates the total soil impact of the system.
+   * @dev This directly returns the total regeneration area reported by regenerators.
    * @return uint256 Area under regeneration [m²]
    */
   function totalSoilImpact() public view returns (uint256) {
@@ -93,7 +109,10 @@ contract RegenerationCreditImpact {
 
   /**
    * @dev 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
-   * @notice Function that calculates the trees impact per regeneration credit.
+   * @notice Calculates the trees impact per Regeneration Credit.
+   * @dev The denominator represents the sum of currently circulating tokens (total supply minus locked) AND all tokens that have ever been burned (certified).
+   * This provides an impact metric based on all tokens that have contributed to or represent impact, whether currently in circulation or already consumed.
+   * @return uint256 Trees per token (with IMPACT_DECIMALS precision)
    */
   function treesPerToken() public view returns (uint256) {
     return
@@ -104,7 +123,10 @@ contract RegenerationCreditImpact {
 
   /**
    * @dev 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
-   * @notice Function that calculates the carbon impact per regeneration credit.
+   * @notice Calculates the carbon impact per Regeneration Credit.
+   * @dev The denominator represents the sum of currently circulating tokens (total supply minus locked) AND all tokens that have ever been burned (certified).
+   * This provides an impact metric based on all tokens that have contributed to or represent impact, whether currently in circulation or already consumed.
+   * @return uint256 Grams of carbon per token (with IMPACT_DECIMALS precision)
    */
   function carbonPerToken() public view returns (uint256) {
     return
@@ -115,7 +137,10 @@ contract RegenerationCreditImpact {
 
   /**
    * @dev 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
-   * @notice Function that calculates the biodiversity impact per regeneration credit.
+   * @notice Calculates the biodiversity impact per Regeneration Credit.
+   * @dev The denominator represents the sum of currently circulating tokens (total supply minus locked) AND all tokens that have ever been burned (certified).
+   * This provides an impact metric based on all tokens that have contributed to or represent impact, whether currently in circulation or already consumed.
+   * @return uint256 Amount of species per token (with IMPACT_DECIMALS precision)
    */
   function biodiversityPerToken() public view returns (uint256) {
     return
@@ -126,8 +151,10 @@ contract RegenerationCreditImpact {
 
   /**
    * @dev 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
-   * @notice Function that calculates the soil impact per regeneration credit
-   * @return uint256 Area [m²]
+   * @notice Calculates the soil impact per Regeneration Credit.
+   * @dev The denominator represents the sum of currently circulating tokens (total supply minus locked) AND all tokens that have ever been burned (certified).
+   * This provides an impact metric based on all tokens that have contributed to or represent impact, whether currently in circulation or already consumed.
+   * @return uint256 Area [m²] per token (with IMPACT_DECIMALS precision)
    */
   function soilPerToken() public view returns (uint256) {
     return

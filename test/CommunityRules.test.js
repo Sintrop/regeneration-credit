@@ -678,4 +678,38 @@ describe("CommunityRules", function () {
       });
     });
   });
+
+  describe("#setDeniedType", () => {
+    context("with allowed user", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+        await addUser(user1Address, userTypes.Regenerator, owner);
+      });
+
+      beforeEach(async () => {
+        await communityRules.setDeniedType(user1Address);
+      });
+
+      it("", async () => {
+        await communityRules.setDeniedType(user1Address);
+
+        const userType = await communityRules.getUser(user1Address);
+
+        await expect(userType).to.eq(userTypes.Denied);
+      });
+    });
+
+    context("with not allowed user", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+        await addUser(user1Address, userTypes.Regenerator, owner);
+      });
+
+      it("", async () => {
+        await expect(communityRules.connect(user1Address).setDeniedType(user1Address)).to.be.revertedWith(
+          "Not allowed caller"
+        );
+      });
+    });
+  });
 });

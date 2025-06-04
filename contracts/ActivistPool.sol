@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 import { RegenerationCreditInterface } from "./interfaces/RegenerationCreditInterface.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -51,9 +51,7 @@ contract ActivistPool is Poolable, Ownable, Blockable, Callable {
    * @param levels Levels to increase
    */
   function addLevel(address addr, uint256 levels) public mustBeAllowedCaller {
-    uint256 era = currentContractEra();
-
-    addPoolLevel(addr, levels, era);
+    addPoolLevel(addr, levels, currentContractEra());
   }
 
   /**

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
@@ -237,9 +237,11 @@ contract ResearcherRules is Callable, Invitable {
     research.validationsCount += 1;
     researches[id] = research;
 
-    bool mustInvalidateResearch = research.validationsCount >= validationRules.votesToInvalidate();
+    bool invalidate = research.validationsCount >= validationRules.votesToInvalidate();
 
-    if (mustInvalidateResearch) invalidateResearch(research);
+    if (invalidate) {
+      research = invalidateResearch(research);
+    }
 
     validationRules.addResearchValidation(research, justification, msg.sender);
   }
@@ -248,11 +250,13 @@ contract ResearcherRules is Callable, Invitable {
    * @dev Function that invalidates a research
    * @param research Invalidated research
    */
-  function invalidateResearch(Research memory research) internal {
+  function invalidateResearch(Research memory research) internal returns (Research memory) {
     researchesCount--;
     research.valid = false;
     research.invalidatedAt = block.number;
     researches[research.id] = research;
+
+    return research;
   }
 
   /**

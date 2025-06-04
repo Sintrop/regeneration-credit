@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { UserType, Delation, Invitation, UserTypeSetting } from "./types/CommunityTypes.sol";
@@ -197,6 +197,8 @@ contract CommunityRules is Ownable, Callable {
    * @param userAddress Denied user address
    */
   function setDeniedType(address userAddress) public mustBeAllowedCaller {
+    if (users[userAddress] == UserType.DENIED) return;
+
     userTypesCount[users[userAddress]]--;
 
     users[userAddress] = UserType.DENIED;
