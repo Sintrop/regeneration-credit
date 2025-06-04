@@ -172,19 +172,17 @@ contract RegeneratorRules is Callable {
   /**
    * @dev Remove pool levels from regenerator
    * @param addr Regenerator wallet
-   * @param removeSomeLevels Levels to be removed, when 0 the user is being blocked
+   * @param levelsToRemove Levels to be removed, when 0 the user is being blocked
    */
-  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
-    Regenerator memory regenerator = regenerators[addr];
-
-    if (removeSomeLevels == 0) {
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+    if (levelsToRemove == 0) {
       regenerators[addr].regenerationScore.score = 0;
       decrementArea(addr);
     } else {
-      regenerators[addr].regenerationScore.score -= removeSomeLevels;
+      regenerators[addr].regenerationScore.score -= levelsToRemove;
     }
 
-    regeneratorPool.removePoolLevels(addr, regenerator.pool.currentEra, removeSomeLevels);
+    regeneratorPool.removePoolLevels(addr, levelsToRemove);
   }
 
   /**

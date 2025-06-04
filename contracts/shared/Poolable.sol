@@ -103,8 +103,7 @@ contract Poolable {
     uint256 levelTo = eraLevels[era][to];
 
     // Return 0 if the user has no levels or there are no levels at all in the era to prevent division by zero.
-    if (levelTo == 0) return 0;
-    if (levels == 0) return 0;
+    if (levelTo == 0 || levels == 0) return 0;
 
     return levelTo.mul(_tokensPerEra).div(levels);
   }
@@ -161,34 +160,16 @@ contract Poolable {
     emit PoolLevelAdded(to, era, levels, eras[era].levels, eraLevels[era][to]);
   }
 
-  /**
-   * @dev Removes a specified amount of levels or all levels from a user for an era.
-   * @param to The address of the user.
-   * @param era The number of the era.
-   * @param removeSomeLevels The amount of levels to remove. If 0, all levels for the user in the era are removed.
-   */
-  function removeLevelsFromEra(address to, uint256 era, uint256 removeSomeLevels) internal {
-    uint256 currentLevels = eraLevels[era][to];
+  function removePoolLevel(address _user, uint256 _era, uint256 _levelsToRemove) internal {
+    uint256 currentLevels = eraLevels[_era][_user];
 
     if (currentLevels == 0) return;
 
-    uint256 levels = removeSomeLevels > 0 ? removeSomeLevels : currentLevels;
+    uint256 levels = _levelsToRemove > 0 ? _levelsToRemove : eraLevels[_era][_user];
 
-    removePoolLevel(to, era, levels);
-  }
+    eras[_era].levels -= levels;
+    eraLevels[_era][_user] -= levels;
 
-  /**
-   * @dev Removes a specified amount of levels or all levels from a user for an era.
-   * @param to The address of the user.
-   * @param era The number of the era.
-   * @param levels The amount of levels to remove. If 0, all levels for the user in the era are removed.
-   */
-  function removePoolLevel(address to, uint256 era, uint256 levels) private {
-    if (levels > eraLevels[era][to]) levels = eraLevels[era][to];
-
-    eras[era].levels = eras[era].levels.sub(levels);
-    eraLevels[era][to] = eraLevels[era][to].sub(levels);
-    // Emit event after levels are removed
-    emit PoolLevelRemoved(to, era, levels, eras[era].levels, eraLevels[era][to]);
+    emit PoolLevelRemoved(_user, _era, levels, eras[_era].levels, eraLevels[_era][_user]);
   }
 }

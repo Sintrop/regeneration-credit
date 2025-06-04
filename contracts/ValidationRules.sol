@@ -290,7 +290,7 @@ contract ValidationRules is Callable {
    * @param report Invalidated report
    */
   function removeDeveloperReport(Report memory report) internal {
-    removeLevelsFromPool(report.developer, 1);
+    removeUserLevels(report.developer, 1);
   }
 
   /**
@@ -298,7 +298,7 @@ contract ValidationRules is Callable {
    * @param contribution Invalidated contribution
    */
   function removeContributorContribution(Contribution memory contribution) internal {
-    removeLevelsFromPool(contribution.user, 1);
+    removeUserLevels(contribution.user, 1);
   }
 
   /**
@@ -306,7 +306,7 @@ contract ValidationRules is Callable {
    * @param research Invalidated research
    */
   function removeReseacherResearch(Research memory research) internal {
-    removeLevelsFromPool(research.createdBy, 1);
+    removeUserLevels(research.createdBy, 1);
   }
 
   /**
@@ -317,8 +317,8 @@ contract ValidationRules is Callable {
     inspectorRules.decrementInspections(inspection.inspector);
     regeneratorRules.decrementInspections(inspection.regenerator);
 
-    removeLevelsFromPool(inspection.inspector, 1);
-    removeLevelsFromPool(inspection.regenerator, inspection.regenerationScore);
+    removeUserLevels(inspection.inspector, 1);
+    removeUserLevels(inspection.regenerator, inspection.regenerationScore);
   }
 
   /**
@@ -334,7 +334,8 @@ contract ValidationRules is Callable {
    * @param userAddress Invalidated userAddress
    */
   function denyUser(address userAddress) internal {
-    removeLevelsFromPool(userAddress, 0);
+    removeUserLevels(userAddress, 0);
+
     communityRules.setDeniedType(userAddress);
   }
 
@@ -343,15 +344,15 @@ contract ValidationRules is Callable {
    * @param userAddress Invalidated userAddress
    * @param levels Levels to remove
    */
-  function removeLevelsFromPool(address userAddress, uint256 levels) internal {
-    UserType oldUserType = communityRules.getUser(userAddress);
+  function removeUserLevels(address userAddress, uint256 levels) internal {
+    UserType userType = communityRules.getUser(userAddress);
 
-    if (oldUserType == UserType.INSPECTOR) return inspectorRules.removePoolLevels(userAddress, levels);
-    if (oldUserType == UserType.REGENERATOR) return regeneratorRules.removePoolLevels(userAddress, levels);
-    if (oldUserType == UserType.DEVELOPER) return developerRules.removePoolLevels(userAddress, levels);
-    if (oldUserType == UserType.RESEARCHER) return researcherRules.removePoolLevels(userAddress, levels);
-    if (oldUserType == UserType.CONTRIBUTOR) return contributorRules.removePoolLevels(userAddress, levels);
-    if (oldUserType == UserType.ACTIVIST) return activistRules.removePoolLevels(userAddress, levels);
+    if (userType == UserType.INSPECTOR) return inspectorRules.removePoolLevels(userAddress, levels);
+    if (userType == UserType.REGENERATOR) return regeneratorRules.removePoolLevels(userAddress, levels);
+    if (userType == UserType.DEVELOPER) return developerRules.removePoolLevels(userAddress, levels);
+    if (userType == UserType.RESEARCHER) return researcherRules.removePoolLevels(userAddress, levels);
+    if (userType == UserType.CONTRIBUTOR) return contributorRules.removePoolLevels(userAddress, levels);
+    if (userType == UserType.ACTIVIST) return activistRules.removePoolLevels(userAddress, levels);
   }
 
   /**

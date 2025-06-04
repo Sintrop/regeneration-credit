@@ -165,13 +165,12 @@ contract InspectorRules is Callable {
    * @dev Remove pool levels from inspector
    * @param addr Inspector wallet
    */
-  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
     Inspector memory inspector = inspectors[addr];
 
-    if (removeSomeLevels == 0) inspectors[addr].pool.level = 0;
-    if (removeSomeLevels > 0) inspectors[addr].pool.level -= removeSomeLevels;
+    inspectors[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : inspector.pool.level;
 
-    inspectorPool.removePoolLevels(addr, inspector.pool.currentEra, removeSomeLevels);
+    inspectorPool.removePoolLevels(addr, levelsToRemove);
   }
 
   /**

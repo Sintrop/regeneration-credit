@@ -62,16 +62,15 @@ contract RegeneratorPool is Poolable, Ownable, Blockable, Callable {
   function removeLevel(address regenerator, uint256 levels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 
-    removeLevelsFromEra(regenerator, era, levels);
+    removePoolLevel(regenerator, era, levels);
   }
 
   /**
    * @dev Called by the regenerator contract, function to decrease regenerator pool level
    * @param addr Regenerator wallet
-   * @param era Current pool era
-   * @param removeSomeLevels Levels to decrease
+   * @param levelsToRemove Levels to decrease
    */
-  function removePoolLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
-    removeLevelsFromEra(addr, era, removeSomeLevels);
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+    removePoolLevel(addr, currentContractEra(), levelsToRemove);
   }
 }

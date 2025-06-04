@@ -59,10 +59,9 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
   /**
    * @dev Called by the researcher contract, function to decrease researcher pool level
    * @param addr Inspector wallet
-   * @param era Current pool era
-   * @param removeSomeLevels Levels to decrease
+   * @param levelsToRemove Levels to decrease
    */
-  function removePoolLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
-    removeLevelsFromEra(addr, era, removeSomeLevels);
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+    removePoolLevel(addr, currentContractEra(), levelsToRemove);
   }
 }

@@ -59,10 +59,9 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
   /**
    * @dev Called by the developer contract, function to decrease developer pool level
    * @param addr Developer wallet
-   * @param era Current pool era
-   * @param removeSomeLevels Levels to decrease
+   * @param levelsToRemove Levels to remove
    */
-  function removePoolLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
-    removeLevelsFromEra(addr, era, removeSomeLevels);
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+    removePoolLevel(addr, currentContractEra(), levelsToRemove);
   }
 }
