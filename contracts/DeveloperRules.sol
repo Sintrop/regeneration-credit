@@ -227,7 +227,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * Requirements:
    *
    * - only to developers
-   * - to be eligible to withdraw tokens, you must have publisehd at least one report in the era
+   * - to be eligible to withdraw tokens, you must have published at least one report in the era
    *
    */
   function withdraw() public {
