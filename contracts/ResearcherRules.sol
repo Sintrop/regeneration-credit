@@ -263,11 +263,12 @@ contract ResearcherRules is Callable, Invitable {
    * @dev Remove pool levels from researcher
    * @param addr Researcher wallet
    */
-  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
     Researcher memory researcher = researchers[addr];
 
-    researchers[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : researcher.pool.level;
-    researcherPool.removePoolLevels(addr, poolCurrentEra(), removeSomeLevels);
+    researchers[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : researcher.pool.level;
+
+    researcherPool.removePoolLevels(addr, levelsToRemove);
   }
 
   /**
