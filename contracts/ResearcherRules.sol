@@ -15,9 +15,8 @@ import { ValidationRules } from "./ValidationRules.sol";
  * @author Sintrop
  * @dev Manages researcher rules and data.
  * @notice Contract for managing researcher users, research submissions, and evaluation methods within the system.
- */ 
+ */
 contract ResearcherRules is Callable, Invitable {
-
   // --- State Variables ---
 
   /// @notice The relationship between address and researcher data
@@ -214,7 +213,7 @@ contract ResearcherRules is Callable, Invitable {
     }
 
     validationRules.addResearchValidation(research, justification, msg.sender);
-  }  
+  }
 
   /**
    * @dev Allows a researcher to attempt to publish an calculatorItem to users calculate their degradation
@@ -231,9 +230,7 @@ contract ResearcherRules is Callable, Invitable {
     uint256 carbonImpact
   ) public {
     require(
-      bytes(item).length <= 35 &&
-        bytes(thesis).length <= 250 &&
-        bytes(unit).length <= 20,
+      bytes(item).length <= 35 && bytes(thesis).length <= 250 && bytes(unit).length <= 20,
       "Max characters reached"
     );
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
@@ -326,7 +323,7 @@ contract ResearcherRules is Callable, Invitable {
     return totalPenalties(addr);
   }
 
-    // --- View Functions ---
+  // --- View Functions ---
 
   /**
    * @dev Checks if a researcher can send invite
