@@ -25,9 +25,6 @@ contract InvitationRules is Ownable {
   /// @notice Relationship between activist address and last activist invitation blockNumber (for Regenerator/Inspector).
   mapping(address => uint256) public lastInviteActivist;
 
-  /// @notice Relationship between supporter address and last supporter invitation blockNumber (for Regenerator/Inspector).
-  mapping(address => uint256) public lastInviteSupporter;
-
   /// @notice Maps which UserType (inviter) can invite which other UserTypes (invited).
   /// @dev The key is the inviter's UserType, and the value is a mapping from UserType (invited) to a boolean (true if allowed).
   mapping(UserType => UserType) public canBeInviteds;
