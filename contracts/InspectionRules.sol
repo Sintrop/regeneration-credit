@@ -201,6 +201,8 @@ contract InspectionRules is Callable {
   /**
    * @dev Allows regenerators to request an inspection.
    * @notice When requesting an inspection, the regenerator agrees to receive an inspector to assess the registered area.
+   * Regenerators can receive 3 inspections in a row. From then on, they must wait 1 era between inspections.
+   * Only 12 inspections allowed.
    */
   function requestInspection() public {
     Regenerator memory regenerator = regeneratorRules.getRegenerator(msg.sender);
