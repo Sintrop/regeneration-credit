@@ -552,9 +552,9 @@ describe("InvitationRules", () => {
               });
 
               it("invite with success", async () => {
-                await expect(instance.connect(user2Address).invite(user4Address, userTypes.Supporter)).to.be.revertedWith(
-                  "Invite delay not reached"
-                );
+                await expect(
+                  instance.connect(user2Address).invite(user4Address, userTypes.Supporter)
+                ).to.be.revertedWith("Invite delay not reached");
               });
             });
           });
