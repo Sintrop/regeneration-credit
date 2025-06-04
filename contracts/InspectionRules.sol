@@ -5,7 +5,6 @@ import { RegeneratorRules } from "./RegeneratorRules.sol";
 import { InspectorRules } from "./InspectorRules.sol";
 import { RegenerationIndexRules } from "./RegenerationIndexRules.sol";
 import { ValidationRules } from "./ValidationRules.sol";
-import { RegenerationIndexRules } from "./RegenerationIndexRules.sol";
 import { ActivistRules } from "./ActivistRules.sol";
 import { CommunityRules } from "./CommunityRules.sol";
 import { InspectionStatus, Inspection, ContractsDependency } from "./types/InspectionTypes.sol";
@@ -17,74 +16,148 @@ import { Callable } from "./shared/Callable.sol";
 import { VoteRules } from "./VoteRules.sol";
 
 /**
- * @author Sintrop
  * @title InspectionRules
- * @dev Manage inspections rules and data
- * @notice Allow regenerator to request inspection, and inspectors to accept and realize it
- */
+ * @author Sintrop
+ * @notice Manages the lifecycle of regeneration inspections, from request to realization and validation.
+ * @dev This contract allows Regenerators to request inspections, and Inspectors to accept, perform, and submit them.
+ * It integrates with various other rule contracts for user validation, level updates, and penalty management.
+ */ 
 contract InspectionRules is Callable {
   using SafeMath for uint256;
 
-  /// Checks if an inspector has already inspected a regenerator
-  mapping(address => mapping(address => bool)) internal inspectorInspected;
+  // --- State Variables ---  
 
-  /// User inspections ids
-  mapping(address => uint256[]) internal userInspections;
-
-  /// The relationship between id and inspection data
+  /// @notice Stores inspection data by its unique ID.
   mapping(uint256 => Inspection) internal inspections;
 
-  /// InspectorRules contract address
+  /// @notice Checks if an inspector has already inspected a specific regenerator.
+  mapping(address => mapping(address => bool)) internal inspectorInspected;
+
+  /// @notice InspectorRules contract instance for interacting with inspector-specific logic.
   InspectorRules private inspectorRules;
 
-  /// RegeneratorRules contract address
+  /// @notice RegeneratorRules contract instance for interacting with regenerator-specific logic.
   RegeneratorRules private regeneratorRules;
 
-  /// CommunityRules contract address
+  /// @notice CommunityRules contract instance for checking user types and other community-wide rules.
   CommunityRules private communityRules;
 
-  /// ValidationRules contract address
+  /// @notice ValidationRules contract instance for handling inspection invalidations.
   ValidationRules private validationRules;
 
-  /// ActivistRules contract address
+  /// @notice ActivistRules contract instance for updating activist levels based on inspection activities.
   ActivistRules private activistRules;
 
-  /// ValidationRules contract address
+  /// @notice VoteRules contract instance for checking voter eligibility.
   VoteRules internal voteRules;
 
-  /// RegenerationIndexRules contract address
+  /// @notice RegenerationIndexRules contract instance for calculating regeneration scores.
   RegenerationIndexRules private regenerationIndexRules;
 
-  /// @notice Valid inspections count
+  /// @notice Valid inspections count (inspections not invalidated).
   uint256 public inspectionsCount;
 
-  /// @notice Realized inspections count
+  /// @notice Realized inspections count (inspections that have been completed and submitted).
   uint256 public realizedInspectionsCount;
 
-  /// @notice Total inspections count, including invalidated ones
+  /// @notice Total inspections count, including open, accepted, realized, and invalidated ones.
   uint256 public inspectionsTotalCount;
 
-  /// @notice Sum of all inspections trees impact
+  /// @notice Sum of all valid inspections' trees impact.
   uint256 public inspectionsTreesImpact;
 
-  /// @notice Sum of all inspections biodiversity impact
+  /// @notice Sum of all valid inspections' biodiversity impact.
   uint256 public inspectionsBiodiversityImpact;
 
-  /// @notice Time between inspections after reaching the allowedInitialRequests
+  /// @notice Time (in blocks) a regenerator must wait between inspection requests after exceeding initial allowed requests.
   uint256 public immutable timeBetweenInspections;
 
-  /// @notice Amount of blocks to expire an accepted inspection
+  /// @notice Amount of blocks an accepted inspection has before it expires if not realized.
   uint256 public immutable blocksToExpireAcceptedInspection;
 
-  /// @notice Allowed initial inspections to be approved and before reaching the timeBetweenInspections
+  /// @notice Number of initial inspection requests a regenerator can make without `timeBetweenInspections` delay.
   uint256 public immutable allowedInitialRequests;
 
-  /// @notice Amount of blocks that inspectors must wait to accept a new requested inspection
+  /// @notice Amount of blocks that inspectors must wait after a request is made before they can accept it.
   uint256 public immutable acceptInspectionDelayBlocks;
 
-  /// @notice Amount of blocks for validators to check inspections before ending an era
+  /// @notice Amount of blocks for validators to analyze inspections before an era ends.
   uint256 public immutable securityBlocksToValidatorAnalysis;
 
+  /// @notice Flag to ensure contract dependencies are set only once.
+  bool public contractsDependenciesSet;
+
+  // --- Events ---
+
+  /**
+   * @notice Emitted when a new inspection request is successfully created by a Regenerator.
+   * @param inspectionId The unique ID of the newly created inspection.
+   * @param regeneratorAddress The address of the Regenerator who requested the inspection.
+   * @param createdAt The block number when the inspection was requested.
+   */
+  event InspectionRequested(
+    uint256 indexed inspectionId,
+    address indexed regeneratorAddress,
+    uint256 createdAt
+  );
+
+  /**
+   * @notice Emitted when an Inspector successfully accepts an open inspection.
+   * @param inspectionId The ID of the inspection that was accepted.
+   * @param inspectorAddress The address of the Inspector who accepted the inspection.
+   * @param acceptedAt The block number when the inspection was accepted.
+   */
+  event InspectionAccepted(
+    uint256 indexed inspectionId,
+    address indexed inspectorAddress,
+    uint256 acceptedAt
+  );
+
+  /**
+   * @notice Emitted when an accepted inspection is successfully realized and submitted by an Inspector.
+   * @param inspectionId The ID of the inspection that was realized.
+   * @param inspectorAddress The address of the Inspector who realized the inspection.
+   * @param regeneratorAddress The address of the Regenerator whose area was inspected.
+   * @param treesResult The reported number of trees.
+   * @param biodiversityResult The reported number of species.
+   * @param regenerationScore The calculated regeneration score.
+   * @param inspectedAt The block number when the inspection was realized.
+   */
+  event InspectionRealized(
+    uint256 indexed inspectionId,
+    address indexed inspectorAddress,
+    address indexed regeneratorAddress,
+    uint256 treesResult,
+    uint256 biodiversityResult,
+    uint256 regenerationScore,
+    uint256 inspectedAt
+  );
+
+  /**
+   * @notice Emitted when an inspection is successfully invalidated due to validator votes.
+   * @param inspectionId The ID of the inspection that was invalidated.
+   * @param inspectorAddress The address of the Inspector who performed the invalidated inspection.
+   * @param regeneratorAddress The address of the Regenerator whose inspection was invalidated.
+   * @param invalidatedAt The block number when the inspection was invalidated.
+   */
+  event InspectionInvalidated(
+    uint256 indexed inspectionId,
+    address indexed inspectorAddress,
+    address indexed regeneratorAddress,
+    uint256 invalidatedAt
+  );  
+
+  // --- Constructor ---
+
+  /**
+   * @notice Initializes the InspectionRules contract with key time and quantity parameters.
+   * @dev Sets immutable values that govern inspection delays, expiration, and initial allowances.
+   * @param timeBetweenInspections_ The number of blocks a regenerator must wait between requests.
+   * @param blocksToExpireAcceptedInspection_ The number of blocks before an accepted inspection expires.
+   * @param allowedInitialRequests_ The number of initial requests allowed without delay.
+   * @param acceptInspectionDelayBlocks_ The number of blocks inspectors must wait before accepting.
+   * @param securityBlocksToValidatorAnalysis_ The number of security blocks for validators before era end.
+   */
   constructor(
     uint256 timeBetweenInspections_,
     uint256 blocksToExpireAcceptedInspection_,
@@ -97,9 +170,21 @@ contract InspectionRules is Callable {
     allowedInitialRequests = allowedInitialRequests_;
     acceptInspectionDelayBlocks = acceptInspectionDelayBlocks_;
     securityBlocksToValidatorAnalysis = securityBlocksToValidatorAnalysis_;
+    contractsDependenciesSet = false; // Initialize the flag    
   }
 
+  // --- Owner function (Setup Only) ---
+
+  /**
+   * @notice Sets the addresses of all essential external contracts this contract depends on.
+   * @dev This function can only be called once by the contract owner after deployment.
+   * It initializes references to various *Rules contracts and the VoteRules contract.
+   * Ownership should be renounced after this call.
+   * @param contractDependency Struct containing addresses of all system contracts.
+   */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+    require(!contractsDependenciesSet, "Dependencies already set"); // Enforce one-time call
+
     communityRules = CommunityRules(contractDependency.communityRulesAddress);
     regeneratorRules = RegeneratorRules(contractDependency.regeneratorRulesAddress);
     validationRules = ValidationRules(contractDependency.validationRulesAddress);
@@ -107,18 +192,15 @@ contract InspectionRules is Callable {
     regenerationIndexRules = RegenerationIndexRules(contractDependency.regenerationIndexRulesAddress);
     activistRules = ActivistRules(contractDependency.activistRulesAddress);
     voteRules = VoteRules(contractDependency.voteRulesAddress);
+
+    contractsDependenciesSet = true; // Mark as set
   }
 
-  /**
-   * @dev Allows to get all regenerator/inspector inspections with status INSPECTED
-   */
-  function getInspectionsHistory(address addr) public view returns (uint256[] memory) {
-    return userInspections[addr];
-  }
+  // --- External Functions (State Modifying) ---
 
   /**
-   * @dev Allows the current user (regenerator) request a inspection
-   * @notice When requesting an inspection, the regenerator agrees to receive an inspector to assess the area under regeneration
+   * @dev Allows regenerators to request an inspection.
+   * @notice When requesting an inspection, the regenerator agrees to receive an inspector to assess the registered area.
    */
   function requestInspection() public {
     Regenerator memory regenerator = regeneratorRules.getRegenerator(msg.sender);
@@ -148,6 +230,8 @@ contract InspectionRules is Callable {
     inspections[inspection.id] = inspection;
     inspectionsCount++;
     inspectionsTotalCount++;
+
+    emit InspectionRequested(id, msg.sender, block.number);
   }
 
   function afterRequestInspection() internal {
@@ -156,9 +240,14 @@ contract InspectionRules is Callable {
 
   /**
    * @dev Allows the current user (inspector) accept a inspection.
-   * @notice Inspectors must only accept inspections that they can perform
+   * @notice Inspectors must only accept inspections that they can perform. 
+   * You will need to estimate how many trees over 1m high and 3 cm in diamater there is in the regenerator area.
+   * Your safety is your responsability! Visiting regeneration areas presents natural ecosystem threats, such as dangerous animals (snakes, tigers, ...), falling branches, etc. 
+   * Be prepared and use appropriate safety equipments, such as boots, hat, long sleeves clothing, machetes, knifes, etc.
+   * Study the area before accepting. If you accept an inspection, you gain 1 giveUp. You lose this giveUp if you realize the inspection. But with 3 giveUps you account get locked.
+   * By accepting this function, you agree that your safety is your responsibility.
    * @param inspectionId The id of the inspection that the inspector want accept.
-   */
+   */   
   function acceptInspection(uint256 inspectionId) public {
     require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspectorRules.isInspectorValid(msg.sender), "No more than 3 giveUps allowed");
@@ -181,16 +270,20 @@ contract InspectionRules is Callable {
 
     regeneratorRules.afterAcceptInspection(inspection.regenerator);
     inspectorRules.afterAcceptInspection(msg.sender, inspectionId);
+
+    emit InspectionAccepted(inspectionId, msg.sender, block.number);
   }
 
   /**
-   * @dev Allow a inspector realize a inspection and mark as INSPECTED
-   * @notice Inspectors must evaluate the amount of trees and species of the regeneration area
-   * @param inspectionId The id of the inspection to be realized
-   * @param proofPhoto The string of a photo with the regenerator or at the regeneration area
-   * @param treesResult The number of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
-   * @param biodiversityResult The number of different species of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
-   * @param report The justification of the result found
+   * @dev Allow a inspector realize a inspection and mark as INSPECTED.
+   * @notice Inspectors must evaluate the amount of trees and species of the regeneration area.
+   * How many trees, palm trees and other plants over 1m high and 3cm in diameter there is in the regenerating area? Justify your answer in the report.
+   * How many different species of those plants/trees were found? Each different species is equivalent to one unity and only trees and plants managed or planted by the regenerator should be counted. Justify your answer in the report.
+   * @param inspectionId The id of the inspection to be realized.
+   * @param proofPhoto The string of a photo with the regenerator or at the regeneration area.
+   * @param treesResult The number of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted.
+   * @param biodiversityResult The number of different species of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted.
+   * @param report The justification of the result found.
    */
   function realizeInspection(
     uint256 inspectionId,
@@ -215,6 +308,16 @@ contract InspectionRules is Callable {
     inspectionsBiodiversityImpact += biodiversityResult;
     inspectorInspected[msg.sender][inspection.regenerator] = true;
     realizedInspectionsCount++;
+
+    emit InspectionRealized(
+        inspectionId,
+        msg.sender,
+        inspection.regenerator,
+        treesResult,
+        biodiversityResult,
+        inspection.regenerationScore,
+        block.number
+    );    
   }
 
   /**
@@ -258,9 +361,6 @@ contract InspectionRules is Callable {
     );
 
     activistRules.addInspectorLevel(inspectorAddress, inspectorRules.afterRealizeInspection(inspectorAddress));
-
-    userInspections[regeneratorAddress].push(inspection.id);
-    userInspections[inspectorAddress].push(inspection.id);
   }
 
   /**
@@ -306,6 +406,13 @@ contract InspectionRules is Callable {
     inspection.invalidatedAt = block.number;
     inspections[inspection.id] = inspection;
     realizedInspectionsCount--;
+
+    emit InspectionInvalidated(
+        inspection.id,
+        inspection.inspector,
+        inspection.regenerator,
+        block.number
+    );    
   }
 
   /**
@@ -313,6 +420,7 @@ contract InspectionRules is Callable {
    * @param id The id of the inspection to return.
    */
   function getInspection(uint256 id) public view returns (Inspection memory) {
+    require(id >= 1 && id <= inspectionsTotalCount, "This inspection do not exist");
     return inspections[id];
   }
 

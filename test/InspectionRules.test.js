@@ -268,10 +268,8 @@ describe("InspectionRules", () => {
     });
 
     context("when inspection dont exists", () => {
-      it("should return inspection", async () => {
-        const inspection = await instance.getInspection(1);
-
-        expect(inspection.id).to.equal(0);
+      it("should return error", async () => {
+        await expect(instance.getInspection(1)).to.be.revertedWith("This inspection do not exist");
       });
     });
   });
@@ -942,22 +940,6 @@ describe("InspectionRules", () => {
                     const inspector = await inspectorRules.getInspector(inspectorAddress);
 
                     expect(inspector.totalInspections).to.equal(1);
-                  });
-
-                  it("should add inspection to inspector in userInspections", async () => {
-                    const userInspections = await instance
-                      .connect(inspectorAddress)
-                      .getInspectionsHistory(inspectorAddress);
-
-                    expect(userInspections.length).to.equal(1);
-                  });
-
-                  it("should add inspection to regenerator in userInspections", async () => {
-                    const userInspections = await instance
-                      .connect(regeneratorAddress)
-                      .getInspectionsHistory(regeneratorAddress);
-
-                    expect(userInspections.length).to.equal(1);
                   });
 
                   it("should increment realizedInspectionsCount", async () => {
