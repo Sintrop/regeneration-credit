@@ -21,11 +21,11 @@ import { VoteRules } from "./VoteRules.sol";
  * @notice Manages the lifecycle of regeneration inspections, from request to realization and validation.
  * @dev This contract allows Regenerators to request inspections, and Inspectors to accept, perform, and submit them.
  * It integrates with various other rule contracts for user validation, level updates, and penalty management.
- */ 
+ */
 contract InspectionRules is Callable {
   using SafeMath for uint256;
 
-  // --- State Variables ---  
+  // --- State Variables ---
 
   /// @notice Stores inspection data by its unique ID.
   mapping(uint256 => Inspection) internal inspections;
@@ -95,11 +95,7 @@ contract InspectionRules is Callable {
    * @param regeneratorAddress The address of the Regenerator who requested the inspection.
    * @param createdAt The block number when the inspection was requested.
    */
-  event InspectionRequested(
-    uint256 indexed inspectionId,
-    address indexed regeneratorAddress,
-    uint256 createdAt
-  );
+  event InspectionRequested(uint256 indexed inspectionId, address indexed regeneratorAddress, uint256 createdAt);
 
   /**
    * @notice Emitted when an Inspector successfully accepts an open inspection.
@@ -107,11 +103,7 @@ contract InspectionRules is Callable {
    * @param inspectorAddress The address of the Inspector who accepted the inspection.
    * @param acceptedAt The block number when the inspection was accepted.
    */
-  event InspectionAccepted(
-    uint256 indexed inspectionId,
-    address indexed inspectorAddress,
-    uint256 acceptedAt
-  );
+  event InspectionAccepted(uint256 indexed inspectionId, address indexed inspectorAddress, uint256 acceptedAt);
 
   /**
    * @notice Emitted when an accepted inspection is successfully realized and submitted by an Inspector.
@@ -145,7 +137,7 @@ contract InspectionRules is Callable {
     address indexed inspectorAddress,
     address indexed regeneratorAddress,
     uint256 invalidatedAt
-  );  
+  );
 
   // --- Constructor ---
 
@@ -170,7 +162,7 @@ contract InspectionRules is Callable {
     allowedInitialRequests = allowedInitialRequests_;
     acceptInspectionDelayBlocks = acceptInspectionDelayBlocks_;
     securityBlocksToValidatorAnalysis = securityBlocksToValidatorAnalysis_;
-    contractsDependenciesSet = false; // Initialize the flag    
+    contractsDependenciesSet = false; // Initialize the flag
   }
 
   // --- Owner function (Setup Only) ---
@@ -242,14 +234,14 @@ contract InspectionRules is Callable {
 
   /**
    * @dev Allows the current user (inspector) accept a inspection.
-   * @notice Inspectors must only accept inspections that they can perform. 
+   * @notice Inspectors must only accept inspections that they can perform.
    * You will need to estimate how many trees over 1m high and 3 cm in diamater there is in the regenerator area.
-   * Your safety is your responsability! Visiting regeneration areas presents natural ecosystem threats, such as dangerous animals (snakes, tigers, ...), falling branches, etc. 
+   * Your safety is your responsability! Visiting regeneration areas presents natural ecosystem threats, such as dangerous animals (snakes, tigers, ...), falling branches, etc.
    * Be prepared and use appropriate safety equipments, such as boots, hat, long sleeves clothing, machetes, knifes, etc.
    * Study the area before accepting. If you accept an inspection, you gain 1 giveUp. You lose this giveUp if you realize the inspection. But with 3 giveUps you account get locked.
    * By accepting this function, you agree that your safety is your responsibility.
    * @param inspectionId The id of the inspection that the inspector want accept.
-   */   
+   */
   function acceptInspection(uint256 inspectionId) public {
     require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
     require(inspectorRules.isInspectorValid(msg.sender), "No more than 3 giveUps allowed");
@@ -312,14 +304,14 @@ contract InspectionRules is Callable {
     realizedInspectionsCount++;
 
     emit InspectionRealized(
-        inspectionId,
-        msg.sender,
-        inspection.regenerator,
-        treesResult,
-        biodiversityResult,
-        inspection.regenerationScore,
-        block.number
-    );    
+      inspectionId,
+      msg.sender,
+      inspection.regenerator,
+      treesResult,
+      biodiversityResult,
+      inspection.regenerationScore,
+      block.number
+    );
   }
 
   /**
@@ -409,12 +401,7 @@ contract InspectionRules is Callable {
     inspections[inspection.id] = inspection;
     realizedInspectionsCount--;
 
-    emit InspectionInvalidated(
-        inspection.id,
-        inspection.inspector,
-        inspection.regenerator,
-        block.number
-    );    
+    emit InspectionInvalidated(inspection.id, inspection.inspector, inspection.regenerator, block.number);
   }
 
   /**
