@@ -225,7 +225,7 @@ contract ActivistRules is Callable, Invitable {
     Activist memory activist = activists[addr];
 
     activists[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : activist.pool.level;
-    activistPool.removePoolLevels(addr, poolCurrentEra(), removeSomeLevels);
+    activistPool.removePoolLevels(addr, removeSomeLevels);
   }
 
   /**

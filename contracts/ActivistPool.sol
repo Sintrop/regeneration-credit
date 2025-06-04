@@ -57,10 +57,9 @@ contract ActivistPool is Poolable, Ownable, Blockable, Callable {
   /**
    * @dev Called by the activist contract, function to decrease activist pool level
    * @param addr Activist wallet
-   * @param era Current pool era
    * @param levelsToRemove Levels to decrease
    */
-  function removePoolLevels(address addr, uint256 era, uint256 levelsToRemove) public mustBeAllowedCaller {
-    removePoolLevel(addr, era, levelsToRemove);
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+    removePoolLevel(addr, currentContractEra(), levelsToRemove);
   }
 }
