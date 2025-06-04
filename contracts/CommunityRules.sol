@@ -1,4 +1,4 @@
-   // SPDX-License-Identifier: GPL-3.0
+// SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
@@ -12,7 +12,6 @@ import { Callable } from "./shared/Callable.sol";
  * @dev This contract acts as a central registry for user data, defining rules for user types, proportionality in registration, and handling reports of unwanted behavior.
  */
 contract CommunityRules is Ownable, Callable {
-
   // --- State Variables ---
 
   /// @notice The relationship between addresses and user type
@@ -42,13 +41,6 @@ contract CommunityRules is Ownable, Callable {
   /// @notice Minimum number of users allowed for a specific type before proportionality rules apply.
   uint256 public constant MINIMUM_REGISTERED_USERS_QUANTITY = 5;
 
-  // --- Constants for UserTypeSettings ---
-
-  uint256 private constant DELAY_BLOCKS_ACTIVIST_INVITE = 100000;
-  uint256 private constant DELAY_BLOCKS_RESEARCHER_INVITE = 200000;
-  uint256 private constant DELAY_BLOCKS_DEVELOPER_INVITE = 200000;
-  uint256 private constant DELAY_BLOCKS_CONTRIBUTOR_INVITE = 100000;
-
   // --- Constructor ---
 
   /**
@@ -59,7 +51,7 @@ contract CommunityRules is Ownable, Callable {
    * @param researcherProportionality Defines the proportionality ratio for Researcher registration.
    * @param developerProportionality Defines the proportionality ratio for Developer registration.
    * @param contributorProportionality Defines the proportionality ratio for Contributor registration.
-   */  
+   */
 
   constructor(
     uint256 inspectorProportionality,
@@ -68,13 +60,13 @@ contract CommunityRules is Ownable, Callable {
     uint256 developerProportionality,
     uint256 contributorProportionality
   ) {
-    // Initialize settings for all relevant UserTypes    
+    // Initialize settings for all relevant UserTypes
     userTypeSettings[UserType.REGENERATOR] = UserTypeSetting(0, false, true, 0, false);
     userTypeSettings[UserType.INSPECTOR] = UserTypeSetting(inspectorProportionality, true, true, 0, false);
-    userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(activistProportionality, false, true, DELAY_BLOCKS_ACTIVIST_INVITE, true);
-    userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(researcherProportionality, false, true, DELAY_BLOCKS_RESEARCHER_INVITE, true);
-    userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(developerProportionality, false, true, DELAY_BLOCKS_DEVELOPER_INVITE, true);
-    userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(contributorProportionality, false, true, DELAY_BLOCKS_CONTRIBUTOR_INVITE, true);
+    userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(activistProportionality, false, true, 100000, true);
+    userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(researcherProportionality, false, true, 100000, true);
+    userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(developerProportionality, false, true, 100000, true);
+    userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(contributorProportionality, false, true, 100000, true);
   }
 
   // --- Events ---
@@ -123,7 +115,6 @@ contract CommunityRules is Ownable, Callable {
     require(registrationProportionalityAllowed(userType), "Proportionality invalid"); // Vacancies according to the number of regenerators
     require(invitedTypeOnRegister(addr, userType), "Invalid invitation"); // Only with valid invitation
 
-
     users[addr] = userType;
     usersCount++;
     userTypesCount[userType]++;
@@ -135,7 +126,7 @@ contract CommunityRules is Ownable, Callable {
   /**
    * @dev Adds a new delation to the system. Enforces character limits for title and testimony, and requires both reporter and reported user to be registered.
    * @notice Allows registered users (excluding Supporters) to report other users or resources that may require invalidation.
-   * 
+   *
    * Examples of unwanted behavior:
    *
    * - A user voting to invalidate a valid resource
@@ -170,7 +161,7 @@ contract CommunityRules is Ownable, Callable {
    * @param inviter The address of the user who issued the invitation.
    * @param invited The address of the user who received the invitation.
    * @param userType The `UserType` the `invited` user is intended to register as.
-   */   
+   */
   function addInvitation(address inviter, address invited, UserType userType) public mustBeAllowedCaller {
     require(invited != address(0), "Invited address cannot be zero");
     require(invitations[invited].invited == address(0), "Already invited");
@@ -187,7 +178,7 @@ contract CommunityRules is Ownable, Callable {
    * It decrements the count of the user's previous type and sets their `UserType` to `DENIED`.
    * Prevents re-denying an already denied user.
    * @param userAddress The address of the user to be denied.
-   */   
+   */
   function setDeniedType(address userAddress) public mustBeAllowedCaller {
     if (users[userAddress] == UserType.DENIED) return;
 
@@ -218,7 +209,7 @@ contract CommunityRules is Ownable, Callable {
    * @dev Checks if registration for a specific user type is allowed based on proportionality rules.
    * @param userType The `UserType` for which registration is being checked.
    * @return bool True if registration is allowed according to proportionality, false otherwise.
-   */   
+   */
   function registrationProportionalityAllowed(UserType userType) internal view returns (bool) {
     uint256 regeneratorsCount = userTypesCount[UserType.REGENERATOR];
     uint256 registeredUserTypeCount = userTypesCount[userType];
