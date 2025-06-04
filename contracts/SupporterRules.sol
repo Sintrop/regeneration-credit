@@ -35,9 +35,6 @@ contract SupporterRules {
   /// @notice The relationship between address and publications data.
   mapping(uint256 => Publication) public publications;
 
-  /// @notice The relationship between supporter address and their list of publication IDs.
-  mapping(address => uint256[]) public publicationIds;
-
   /// @notice Total number of publications made across all supporters.
   uint256 public publicationsCount;
 
@@ -46,9 +43,6 @@ contract SupporterRules {
 
   /// @notice The relationship between offset id and its data.
   mapping(uint256 => Offset) public offsets;
-
-  /// @notice The relationship between a supporter's address and their list of offset IDs.
-  mapping(address => uint256[]) public offsetIds;
 
   /// @notice Total number of offsets made across all supporters.
   uint256 public offsetsCount;
@@ -203,7 +197,6 @@ contract SupporterRules {
 
     offsets[id] = Offset(msg.sender, block.number, amountBurn, calculatorItemId);
 
-    offsetIds[msg.sender].push(id);
     offsetsCount = offsetsCount.add(1);
     supporters[msg.sender].offsetsCount = supporters[msg.sender].offsetsCount.add(1);
 
@@ -232,7 +225,6 @@ contract SupporterRules {
 
     publications[id] = Publication(msg.sender, block.number, amountBurn, description, content);
 
-    publicationIds[msg.sender].push(id);
     publicationsCount = publicationsCount.add(1);
     supporters[msg.sender].publicationsCount = supporters[msg.sender].publicationsCount.add(1);
 
@@ -285,24 +277,6 @@ contract SupporterRules {
    */
   function getReductionCommitments(address addr) public view returns (uint256[] memory) {
     return reductionCommitments[addr];
-  }
-
-  /**
-   * @notice Retrieves the list of publication IDs for a specific address.
-   * @param addr The address of the supporter.
-   * @return uint256[] An array of publication IDs made by the supporter.
-   */
-  function getPublications(address addr) public view returns (uint256[] memory) {
-    return publicationIds[addr];
-  }
-
-  /**
-   * @notice Retrieves the list of offset IDs for a specific address.
-   * @param addr The address of the supporter.
-   * @return uint256[] An array of offset IDs made by the supporter.
-   */
-  function getOffsets(address addr) public view returns (uint256[] memory) {
-    return offsetIds[addr];
   }
 
   /**
