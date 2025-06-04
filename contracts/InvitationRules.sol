@@ -50,9 +50,6 @@ contract InvitationRules is Ownable {
   /// @notice The minimum number of blocks an activist needs to wait to invite Regenerators or Inspectors again.
   uint256 public constant activistDelayBlocks = 1000;
 
-  /// @notice The minimum number of blocks an supporter needs to wait to invite a Supporter again.
-  uint256 public constant supporterDelayBlocks = 500;
-
   // --- Events ---
 
   /// @notice Event emitted when a user invites another.
