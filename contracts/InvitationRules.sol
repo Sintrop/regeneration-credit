@@ -154,24 +154,6 @@ contract InvitationRules is Ownable {
     emit UserInvited(msg.sender, invited, userType, block.number);
   }
 
-  function inviteSupporter(address invited, UserType userType) public {
-    // Checks if the caller is a supporter.
-    require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only to supporters");
-    // Checks if the invited user type is Supporter.
-    require(userType == UserType.SUPPORTER, "Only supporters");
-    // Checks if the specific invitation delay for supporters has been reached.
-    require(invitationDelaySupporter(), "Invite delay not reached");
-
-    // Updates the last activist invitation block for the inviter.
-    lastInviteSupporter[msg.sender] = block.number;
-
-    // Adds the invitation to the CommunityRules contract.
-    communityRules.addInvitation(msg.sender, invited, userType);
-
-    // Emits an event to log the invitation.
-    emit UserInvited(msg.sender, invited, userType, block.number);
-  }
-
   // --- Helper Functions (Internal/View) ---
 
   /**
@@ -187,6 +169,8 @@ contract InvitationRules is Ownable {
       return developerRules.canSendInvite(msg.sender);
     } else if (userType == UserType.RESEARCHER) {
       return researcherRules.canSendInvite(msg.sender);
+    } else if (userType == UserType.SUPPORTER) {
+      return true;
     } else {
       return false;
     }
@@ -209,14 +193,6 @@ contract InvitationRules is Ownable {
    */
   function invitationDelayActivist() internal view returns (bool) {
     return hasInvitationDelayPassed(lastInviteActivist[msg.sender], activistDelayBlocks);
-  }
-
-  /**
-   * @dev Calculates if the supporter has reached the specific invitation delay for supporters.
-   * @return bool True if the supporter waited the delay blocks, false otherwise.
-   */
-  function invitationDelaySupporter() internal view returns (bool) {
-    return hasInvitationDelayPassed(lastInviteSupporter[msg.sender], supporterDelayBlocks);
   }
 
   /**
