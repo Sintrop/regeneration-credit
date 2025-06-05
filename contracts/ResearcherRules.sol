@@ -37,6 +37,9 @@ contract ResearcherRules is Callable, Invitable {
   /// @notice The relationship between address and penalties received
   mapping(address => Penalty[]) public penalties;
 
+  /// @notice The relationship between id and researcher address
+  mapping(uint256 => address) public researchersAddress;
+
   /// @notice CommunityRules contract address
   CommunityRules internal communityRules;
 
@@ -72,6 +75,33 @@ contract ResearcherRules is Callable, Invitable {
 
   /// @notice Number of blocks to block addResearch before the end of an era
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
+
+  // --- Events ---
+
+  /**
+   * @dev Emitted when a new researcher is successfully registered.
+   * @param researcherAddress The address of the newly registered researcher.
+   * @param researcherId The unique ID assigned to the researcher.
+   * @param name The public name of the researcher.
+   */
+  event ResearcherRegistered(address indexed researcherAddress, uint256 researcherId, string name);
+
+  /**
+   * @dev Emitted when a new research report is published.
+   * @param researchId The unique ID of the published research.
+   * @param researcher The address of the researcher who published the research.
+   * @param publishedAt The block number when the research was published.
+   * @param era The era in which the research was published.
+   */
+  event ResearchPublished(uint256 indexed researchId, address indexed researcher, uint256 publishedAt, uint256 era);
+
+  /**
+   * @dev Emitted when a research is successfully invalidated by validators.
+   * @param researchId The ID of the research that was invalidated.
+   * @param invalidatedBy The address of the voter who performed the validation action (leading to invalidation).
+   * @param justification A brief justification for the invalidation.
+   */
+  event ResearchInvalidated(uint256 indexed researchId, address indexed invalidatedBy, string justification);
 
   // --- Constructor ---
 
@@ -134,7 +164,11 @@ contract ResearcherRules is Callable, Invitable {
     );
 
     researchers[msg.sender] = researcher;
+    researchersAddress[id] = msg.sender;
     communityRules.addUser(msg.sender, USER_TYPE);
+
+    // --- Event Emission ---
+    emit ResearcherRegistered(msg.sender, id, name);
   }
 
   /**
@@ -180,6 +214,9 @@ contract ResearcherRules is Callable, Invitable {
 
     researcher.pool.level++;
     researcherPool.addLevel(msg.sender, 1);
+
+    // --- Event Emission ---
+    emit ResearchPublished(id, msg.sender, block.number, research.era);
   }
 
   /**
@@ -210,6 +247,8 @@ contract ResearcherRules is Callable, Invitable {
 
     if (invalidate) {
       research = invalidateResearch(research);
+      // --- Event Emission ---
+      emit ResearchInvalidated(id, msg.sender, justification);
     }
 
     validationRules.addResearchValidation(research, justification, msg.sender);
