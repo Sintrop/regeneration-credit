@@ -133,15 +133,11 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   /**
-   * @notice Allows a user to attempt to register as a researcher
-   *
-   * Requirements:
-   *
-   * - the caller must have been invited before
-   * - vacancies according to the number of regenerators
-   *
-   * @param name The name of the researcher
-   * @param proofPhoto Identity photo
+   * @notice Allows a user to register as a researcher.
+   * @dev Requires the caller to have been previously invited (handled by `CommunityRules`)
+   * and for researcher vacancies to be available.
+   * @param name The public name or alias of the researcher (max 50 characters).
+   * @param proofPhoto A hash or identifier for the researcher's identity photo/document (max 100 characters).
    */
   function addResearcher(string memory name, string memory proofPhoto) public {
     require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
@@ -172,11 +168,13 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   /**
-   * @dev Allows a researcher to attempt to publish a research report
-   * @notice Publish research before security blocks
-   * @param title Paper title
-   * @param thesis Short thesis description
-   * @param file Hash of the report file
+   * @notice Allows a registered researcher to publish a new research report.
+   * @dev Requires the caller to be a registered researcher, to be outside the security block window
+   * (i.e., not too close to the end of an era), and to have waited the `timeBetweenWorks`
+   * period since their last research publication.
+   * @param title The title of the research paper (max 100 characters).
+   * @param thesis A short description or thesis statement (max 300 characters).
+   * @param file A hash or identifier for the research report file (max 100 characters).
    */
   function addResearch(string memory title, string memory thesis, string memory file) public {
     require(
@@ -220,16 +218,12 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   /**
-   * @notice Allows a voter to attempt to vote to invalidate a research
-   *
-   * Requirements:
-   *
-   * - the caller must be a voter user
-   * - caller level must be above average
-   * - caller must have waited timeBetweenVotes
-   *
-   * @param id Resource id
-   * @param justification Invalidation justification
+   * @notice Allows a voter to vote to invalidate a research.
+   * @dev Requires the caller to be a registered voter, have sufficient level as defined by `VoteRules`,
+   * and to have waited the `timeBetweenVotes` period (managed by `ValidationRules`).
+   * If the validation count meets the threshold (`votesToInvalidate`), the research is marked as invalid.
+   * @param id The ID of the research to validate.
+   * @param justification A brief justification for invalidating the research (max 300 characters).
    */
   function addResearchValidation(uint256 id, string memory justification) public {
     require(bytes(justification).length <= 300, "Max 300 characters reached");
@@ -255,12 +249,13 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   /**
-   * @dev Allows a researcher to attempt to publish an calculatorItem to users calculate their degradation
-   * @notice One calculatorItem per research
-   * @param item Item name - 35 characters
-   * @param thesis CalculatorItem thesis and brief result justification - 250 characters
-   * @param unit Unit of the item. Example: liters, kwh, kg - 20 characters
-   * @param carbonImpact Grams of carbon per unit [g]
+   * @notice Allows a researcher to publish a calculator item, used by users to calculate degradation.
+   * @dev Requires the caller to be a registered researcher and to have waited the `timeBetweenWorks`
+   * period since their last calculator item publication.
+   * @param item The short name of the item (e.g., "Electricity", "Diesel") (max 35 characters).
+   * @param thesis The combined title and brief result justification for the item (max 350 characters).
+   * @param unit The unit of the item (e.g., "liters", "kWh", "kg") (max 20 characters).
+   * @param carbonImpact The carbon impact in grams per unit (e.g., 200 for 200g CO2e/kWh).
    */
   function addCalculatorItem(
     string memory item,
@@ -287,11 +282,12 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   /**
-   * @dev Allows a researcher to pulish an off-chain evaluation method or project
-   * @notice Publish a project or application that can help inspectors analyze a regeneration area. Only one method allowed per researcher
-   * @param title Method title
-   * @param research Method paper or research
-   * @param projectURL Project url or code repository
+   * @notice Allows a researcher to publish an off-chain evaluation method or project.
+   * @dev This function supports publishing a project or application that helps inspectors in analyzing regeneration areas, estimating the number of trees and biodiversity.
+   * Each researcher is allowed to publish only one method.
+   * @param title The title of the method (e.g., "Sattelite-driven Tree Counter") (max 100 characters).
+   * @param research The associated paper or research link (e.g., IPFS hash or URL) (max 100 characters).
+   * @param projectURL The URL of the project or code repository (max 100 characters).
    */
   function addEvaluationMethod(string memory title, string memory research, string memory projectURL) public {
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
@@ -305,14 +301,10 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   /**
-   * @dev Call withdraw function from researcherPool to try to claim tokens
-   * @notice Withdraw regeneration credit from research service provided
-   *
-   * Requirements:
-   *
-   * - only to researchers
-   * - to be eligible to withdraw tokens, you must have published at least one research in currentEra
-   *
+   * @notice Allows a researcher to attempt to withdraw regeneration credit from the researcher pool.
+   * @dev Requires the caller to be a registered researcher and to be eligible to withdraw tokens
+   * (eligibility determined by `ResearcherPool` and includes having published at least one research in the current era).
+   * Increments the researcher's `pool.currentEra` upon successful withdrawal attempt.
    */
   function withdraw() public {
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
@@ -325,19 +317,6 @@ contract ResearcherRules is Callable, Invitable {
     researchers[msg.sender].pool.currentEra++;
 
     researcherPool.withdraw(msg.sender, currentEra);
-  }
-
-  /**
-   * @dev Function that invalidates a research
-   * @param research Invalidated research
-   */
-  function invalidateResearch(Research memory research) internal returns (Research memory) {
-    researchesCount--;
-    research.valid = false;
-    research.invalidatedAt = block.number;
-    researches[research.id] = research;
-
-    return research;
   }
 
   /**
@@ -366,9 +345,10 @@ contract ResearcherRules is Callable, Invitable {
   // --- View Functions ---
 
   /**
-   * @dev Checks if a researcher can send invite
-   * @notice True if researcher can send invite
-   * @param addr The researcher address
+   * @dev Checks if a researcher is eligible to send invitations.
+   * @notice Returns `true` if the researcher can send invites based on total researches, total researchers, and their pool level.
+   * @param addr The address of the researcher.
+   * @return `true` if the researcher can send an invite, `false` otherwise.
    */
   function canSendInvite(address addr) public view returns (bool) {
     Researcher memory researcher = getResearcher(addr);
@@ -379,33 +359,37 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   /**
-   * @dev Return a specific researcher
-   * @param addr the address of the researcher.
+   * @dev Retrieves the detailed data of a specific researcher.
+   * @param addr The address of the researcher.
+   * @return The `Researcher` struct containing their data.
    */
   function getResearcher(address addr) public view returns (Researcher memory) {
     return researchers[addr];
   }
 
   /**
-   * @dev Returns a research
-   * @param id researchId
+   * @dev Retrieves the detailed data of a specific research.
+   * @param id The ID of the research.
+   * @return The `Research` struct containing its data.
    */
   function getResearch(uint256 id) public view returns (Research memory) {
     return researches[id];
   }
 
   /**
-   * @dev Check if a specific researcher exists
-   * @return a bool that represent if a researcher exists or not
+   * @dev Checks if a researcher exists by their address.
+   * @notice Returns `true` if a researcher is registered at the given address.
+   * @param addr The address to check.
+   * @return `true` if the researcher exists, `false` otherwise.
    */
   function researcherExists(address addr) public view returns (bool) {
     return bytes(researchers[addr].name).length > 0;
   }
 
   /**
-   * @dev Returns addr number of penalties
-   * @notice Number of penalties of an user
-   * @param addr Researcher wallet
+   * @notice Returns the total number of penalties received by a researcher.
+   * @param addr The researcher's wallet address.
+   * @return The total count of penalties.
    */
   function totalPenalties(address addr) public view returns (uint256) {
     return penalties[addr].length;
@@ -420,17 +404,44 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   /**
-   * @dev Return a specific calculatorItem
-   * @param id of the calculatorItem
+   * @dev Retrieves a specific calculator item by its ID.
+   * @param id The ID of the calculator item.
+   * @return The `CalculatorItem` struct containing its data.
    */
   function getCalculatorItem(uint256 id) public view returns (CalculatorItem memory) {
     return calculatorItems[id];
   }
 
   /**
-   * @notice Checks if user can publish a research
-   * @return bool True if can
-   * @param addr Msg.sender addresss
+   * @dev Calculates the remaining blocks until the next era of the researcher pool.
+   * Relies on the `ResearcherPool` contract to provide era progression logic.
+   * @return The number of blocks remaining until the next era.
+   */
+  function nextEraIn() public view returns (uint256) {
+    return uint256(researcherPool.nextEraIn(poolCurrentEra()));
+  }
+
+  // --- Internal / Private Helper Functions ---
+
+  /**
+   * @dev Internal helper function that invalidates a research by updating its status.
+   * Decrements the total count of valid researches.
+   * @param research The `Research` struct to be invalidated.
+   */
+  function invalidateResearch(Research memory research) internal returns (Research memory) {
+    researchesCount--;
+    research.valid = false;
+    research.invalidatedAt = block.number;
+    researches[research.id] = research;
+
+    return research;
+  }
+
+  /**
+   * @notice Checks if a researcher is eligible to publish a research.
+   * @dev Calculates eligibility based on the `lastPublishedAt` block.number and `timeBetweenWorks`.
+   * @param addr The address of the potential publisher.
+   * @return `true` if the user can publish research, `false` otherwise.
    */
   function canPublishResearch(address addr) internal view returns (bool) {
     uint256 lastPublishedAt = researchers[addr].lastPublishedAt;
@@ -440,22 +451,14 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   /**
-   * @dev Checks if user can publish an calculatorItem
-   * @return bool True if can
-   * @param researcher Msg.sender addresss
+   * @dev Checks if a researcher is eligible to publish a calculator item.
+   * @param researcher The `Researcher` struct of the potential publisher.
+   * @return `true` if the user can publish a calculator item, `false` otherwise.
    */
   function canPublishCalculatorItem(Researcher memory researcher) internal view returns (bool) {
     uint256 lastCalculatorItemAt = researcher.lastCalculatorItemAt;
 
     bool canPublish = block.number > lastCalculatorItemAt + timeBetweenWorks;
     return canPublish || lastCalculatorItemAt <= 0;
-  }
-
-  /**
-   * @dev Calculate blocks to next era
-   * @return uint256 Return the amount of blocks to next era
-   */
-  function nextEraIn() public view returns (uint256) {
-    return uint256(researcherPool.nextEraIn(poolCurrentEra()));
   }
 }
