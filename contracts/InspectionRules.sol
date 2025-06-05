@@ -30,6 +30,9 @@ contract InspectionRules is Callable {
   /// @notice Stores inspection data by its unique ID.
   mapping(uint256 => Inspection) internal inspections;
 
+  /// User inspections ids
+  mapping(address => uint256[]) internal userInspections;  
+
   /// @notice Checks if an inspector has already inspected a specific regenerator.
   mapping(address => mapping(address => bool)) internal inspectorInspected;
 
@@ -83,9 +86,6 @@ contract InspectionRules is Callable {
 
   /// @notice Amount of blocks for validators to analyze inspections before an era ends.
   uint256 public immutable securityBlocksToValidatorAnalysis;
-
-  /// @notice Flag to ensure contract dependencies are set only once.
-  bool public contractsDependenciesSet;
 
   // --- Events ---
 
@@ -162,7 +162,6 @@ contract InspectionRules is Callable {
     allowedInitialRequests = allowedInitialRequests_;
     acceptInspectionDelayBlocks = acceptInspectionDelayBlocks_;
     securityBlocksToValidatorAnalysis = securityBlocksToValidatorAnalysis_;
-    contractsDependenciesSet = false; // Initialize the flag
   }
 
   // --- Owner function (Setup Only) ---
@@ -175,8 +174,6 @@ contract InspectionRules is Callable {
    * @param contractDependency Struct containing addresses of all system contracts.
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
-    require(!contractsDependenciesSet, "Dependencies already set"); // Enforce one-time call
-
     communityRules = CommunityRules(contractDependency.communityRulesAddress);
     regeneratorRules = RegeneratorRules(contractDependency.regeneratorRulesAddress);
     validationRules = ValidationRules(contractDependency.validationRulesAddress);
@@ -184,8 +181,6 @@ contract InspectionRules is Callable {
     regenerationIndexRules = RegenerationIndexRules(contractDependency.regenerationIndexRulesAddress);
     activistRules = ActivistRules(contractDependency.activistRulesAddress);
     voteRules = VoteRules(contractDependency.voteRulesAddress);
-
-    contractsDependenciesSet = true; // Mark as set
   }
 
   // --- External Functions (State Modifying) ---
@@ -199,7 +194,7 @@ contract InspectionRules is Callable {
   function requestInspection() public {
     Regenerator memory regenerator = regeneratorRules.getRegenerator(msg.sender);
 
-    require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Please register as regenerator");
+    require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
     require(!regenerator.pendingInspection, "Request already OPEN");
     require(waitToRequest(regenerator), "Wait to request");
     require(regenerator.totalInspections < 12, "You have completed your mission");
@@ -208,6 +203,122 @@ contract InspectionRules is Callable {
 
     afterRequestInspection();
   }
+
+  /**
+   * @dev Allows the current user (inspector) accept a inspection.
+   * @notice Inspectors must only accept inspections that they can perform.
+   * You will need to estimate how many trees over 1m high and 3 cm in diamater there is in the regenerator area.
+   * Your safety is your responsability! Visiting regeneration areas presents natural ecosystem threats, such as dangerous animals (snakes, tigers, ...), falling branches, etc.
+   * Be prepared and use appropriate safety equipments, such as boots, hat, long sleeves clothing, machetes, knifes, etc.
+   * Study the area before accepting. If you accept an inspection, you gain 1 giveUp. You lose this giveUp if you realize the inspection. But with 3 giveUps you account get locked.
+   * By accepting this function, you agree that your safety is your responsibility.
+   * @param inspectionId The id of the inspection that the inspector want accept.
+   */
+  function acceptInspection(uint256 inspectionId) public {
+    require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Only inspectors");
+    require(inspectorRules.isInspectorValid(msg.sender), "No more than 3 giveUps allowed");
+
+    Inspection memory inspection = inspections[inspectionId];
+
+    require(inspection.id >= 1, "Inspection do not exist");
+    require(alreadyHaveInspectionAccepted(), "You already have an inspection Accepted");
+    require(!inspectorInspected[msg.sender][inspection.regenerator], "Already inspected this regenerator");
+    require(inspection.status == InspectionStatus.OPEN, "Inspection must be OPEN");
+    require(acceptInspectionDelayBlocksPassed(inspection), "Wait inspection delay blocks");
+    require(beforeAcceptHaveSecurityBlocksToVote(), "Wait until next era to accept");
+    require(inspectorRules.canAcceptInspection(msg.sender), "Wait to accept");
+    require(communityRules.userTypeIs(UserType.REGENERATOR, inspection.regenerator), "Regenerator invalid");
+
+    inspection.status = InspectionStatus.ACCEPTED;
+    inspection.acceptedAt = block.number;
+    inspection.inspector = msg.sender;
+    inspections[inspectionId] = inspection;
+
+    regeneratorRules.afterAcceptInspection(inspection.regenerator);
+    inspectorRules.afterAcceptInspection(msg.sender, inspectionId);
+
+    emit InspectionAccepted(inspectionId, msg.sender, block.number);
+  }
+
+  /**
+   * @dev Allow a inspector realize a inspection and mark as INSPECTED.
+   * @notice Inspectors must evaluate the amount of trees and species of the regeneration area.
+   * How many trees, palm trees and other plants over 1m high and 3cm in diameter there is in the regenerating area? Justify your answer in the report.
+   * How many different species of those plants/trees were found? Each different species is equivalent to one unity and only trees and plants managed or planted by the regenerator should be counted. Justify your answer in the report.
+   * Max result of 200.000 trees and 300 biodiversity.
+   * @param inspectionId The id of the inspection to be realized.
+   * @param proofPhoto The string of a photo with the regenerator or at the regeneration area.
+   * @param treesResult The number of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted.
+   * @param biodiversityResult The number of different species of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted.
+   * @param report The justification of the result found.
+   */
+  function realizeInspection(
+    uint256 inspectionId,
+    string memory proofPhoto,
+    string memory report,
+    uint256 treesResult,
+    uint256 biodiversityResult
+  ) public {
+    Inspection memory inspection = inspections[inspectionId];
+
+    require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Only inspectors");
+    require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
+    require(inspection.inspector == msg.sender, "Not your inspection");
+    require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
+    require(treesResult <= 200000 && biodiversityResult <= 300, "Max result limit");
+
+    markAsRealized(inspection, proofPhoto, report, treesResult, biodiversityResult);
+
+    afterRealizeInspection(inspection);
+
+    inspectionsTreesImpact += treesResult;
+    inspectionsBiodiversityImpact += biodiversityResult;
+    inspectorInspected[msg.sender][inspection.regenerator] = true;
+    realizedInspectionsCount++;
+
+    emit InspectionRealized(
+      inspectionId,
+      msg.sender,
+      inspection.regenerator,
+      treesResult,
+      biodiversityResult,
+      inspection.regenerationScore,
+      block.number
+    );
+  }
+
+  /**
+   * @notice Allows a voter to attempt to vote to invalidate an inspection
+   *
+   * Requirements:
+   *
+   * - the caller must be a voter user
+   * - caller level must be above average
+   * - caller must have waited timeBetweenVotes
+   *
+   * @param id Resource id
+   * @param justification Invalidation justification
+   */
+  function addInspectionValidation(uint256 id, string memory justification) public {
+    require(bytes(justification).length <= 300, "Max 300 characters reached");
+    require(voteRules.canVote(msg.sender), "User cannot vote");
+    require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
+
+    Inspection memory inspection = inspections[id];
+
+    require(regeneratorRules.poolCurrentEra() <= inspection.inspectedAtEra, "Can't validade anymore");
+
+    inspection.validationsCount += 1;
+    inspections[inspection.id] = inspection;
+
+    bool mustInvalidateInspection = inspection.validationsCount >= validationRules.votesToInvalidate();
+
+    if (mustInvalidateInspection) invalidateInspection(inspection);
+
+    validationRules.addInspectionValidation(inspection, justification, msg.sender);
+  }
+
+  // --- Internal functions ---
 
   /**
    * @dev Function that creates a new inspection
@@ -230,88 +341,6 @@ contract InspectionRules is Callable {
 
   function afterRequestInspection() internal {
     regeneratorRules.afterRequestInspection(msg.sender);
-  }
-
-  /**
-   * @dev Allows the current user (inspector) accept a inspection.
-   * @notice Inspectors must only accept inspections that they can perform.
-   * You will need to estimate how many trees over 1m high and 3 cm in diamater there is in the regenerator area.
-   * Your safety is your responsability! Visiting regeneration areas presents natural ecosystem threats, such as dangerous animals (snakes, tigers, ...), falling branches, etc.
-   * Be prepared and use appropriate safety equipments, such as boots, hat, long sleeves clothing, machetes, knifes, etc.
-   * Study the area before accepting. If you accept an inspection, you gain 1 giveUp. You lose this giveUp if you realize the inspection. But with 3 giveUps you account get locked.
-   * By accepting this function, you agree that your safety is your responsibility.
-   * @param inspectionId The id of the inspection that the inspector want accept.
-   */
-  function acceptInspection(uint256 inspectionId) public {
-    require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
-    require(inspectorRules.isInspectorValid(msg.sender), "No more than 3 giveUps allowed");
-
-    Inspection memory inspection = inspections[inspectionId];
-
-    require(inspection.id >= 1, "This inspection do not exist");
-    require(alreadyHaveInspectionAccepted(), "You already have an inspection Accepted");
-    require(!inspectorInspected[msg.sender][inspection.regenerator], "Already inspected this regenerator");
-    require(inspection.status == InspectionStatus.OPEN, "This inspection is not OPEN");
-    require(acceptInspectionDelayBlocksPassed(inspection), "Wait inspection delay blocks");
-    require(beforeAcceptHaveSecurityBlocksToVote(), "Wait until next era to accept");
-    require(inspectorRules.canAcceptInspection(msg.sender), "Wait to accept");
-    require(communityRules.userTypeIs(UserType.REGENERATOR, inspection.regenerator), "Regenerator invalid");
-
-    inspection.status = InspectionStatus.ACCEPTED;
-    inspection.acceptedAt = block.number;
-    inspection.inspector = msg.sender;
-    inspections[inspectionId] = inspection;
-
-    regeneratorRules.afterAcceptInspection(inspection.regenerator);
-    inspectorRules.afterAcceptInspection(msg.sender, inspectionId);
-
-    emit InspectionAccepted(inspectionId, msg.sender, block.number);
-  }
-
-  /**
-   * @dev Allow a inspector realize a inspection and mark as INSPECTED.
-   * @notice Inspectors must evaluate the amount of trees and species of the regeneration area.
-   * How many trees, palm trees and other plants over 1m high and 3cm in diameter there is in the regenerating area? Justify your answer in the report.
-   * How many different species of those plants/trees were found? Each different species is equivalent to one unity and only trees and plants managed or planted by the regenerator should be counted. Justify your answer in the report.
-   * @param inspectionId The id of the inspection to be realized.
-   * @param proofPhoto The string of a photo with the regenerator or at the regeneration area.
-   * @param treesResult The number of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted.
-   * @param biodiversityResult The number of different species of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted.
-   * @param report The justification of the result found.
-   */
-  function realizeInspection(
-    uint256 inspectionId,
-    string memory proofPhoto,
-    string memory report,
-    uint256 treesResult,
-    uint256 biodiversityResult
-  ) public {
-    Inspection memory inspection = inspections[inspectionId];
-
-    require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Please register as inspector");
-    require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
-    require(inspection.inspector == msg.sender, "You have not accepted this inspection");
-    require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
-    require(treesResult <= 200000 && biodiversityResult <= 300, "Max result limit");
-
-    markAsRealized(inspection, proofPhoto, report, treesResult, biodiversityResult);
-
-    afterRealizeInspection(inspection);
-
-    inspectionsTreesImpact += treesResult;
-    inspectionsBiodiversityImpact += biodiversityResult;
-    inspectorInspected[msg.sender][inspection.regenerator] = true;
-    realizedInspectionsCount++;
-
-    emit InspectionRealized(
-      inspectionId,
-      msg.sender,
-      inspection.regenerator,
-      treesResult,
-      biodiversityResult,
-      inspection.regenerationScore,
-      block.number
-    );
   }
 
   /**
@@ -355,37 +384,9 @@ contract InspectionRules is Callable {
     );
 
     activistRules.addInspectorLevel(inspectorAddress, inspectorRules.afterRealizeInspection(inspectorAddress));
-  }
 
-  /**
-   * @notice Allows a voter to attempt to vote to invalidate an inspection
-   *
-   * Requirements:
-   *
-   * - the caller must be a voter user
-   * - caller level must be above average
-   * - caller must have waited timeBetweenVotes
-   *
-   * @param id Resource id
-   * @param justification Invalidation justification
-   */
-  function addInspectionValidation(uint256 id, string memory justification) public {
-    require(bytes(justification).length <= 300, "Max 300 characters reached");
-    require(voteRules.canVote(msg.sender), "User cannot vote");
-    require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
-
-    Inspection memory inspection = inspections[id];
-
-    require(regeneratorRules.poolCurrentEra() <= inspection.inspectedAtEra, "Can not add validation anymore");
-
-    inspection.validationsCount += 1;
-    inspections[inspection.id] = inspection;
-
-    bool mustInvalidateInspection = inspection.validationsCount >= validationRules.votesToInvalidate();
-
-    if (mustInvalidateInspection) invalidateInspection(inspection);
-
-    validationRules.addInspectionValidation(inspection, justification, msg.sender);
+    userInspections[regeneratorAddress].push(inspection.id);
+    userInspections[inspectorAddress].push(inspection.id);    
   }
 
   /**
@@ -404,12 +405,14 @@ contract InspectionRules is Callable {
     emit InspectionInvalidated(inspection.id, inspection.inspector, inspection.regenerator, block.number);
   }
 
+  // --- View functions ---
+
   /**
    * @dev Returns a inspection by id if that exists.
    * @param id The id of the inspection to return.
    */
   function getInspection(uint256 id) public view returns (Inspection memory) {
-    require(id >= 1 && id <= inspectionsTotalCount, "This inspection do not exist");
+    require(id >= 1 && id <= inspectionsTotalCount, "Inspection do not exist");
     return inspections[id];
   }
 
