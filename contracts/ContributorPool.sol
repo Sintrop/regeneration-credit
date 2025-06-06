@@ -36,7 +36,7 @@ contract ContributorPool is Poolable, Ownable, Blockable, Callable {
    * @param era User current era
    */
   function withdraw(address delegate, uint256 era) public mustBeAllowedCaller canWithdrawModifier(era) {
-    uint256 numTokens = calculateUserEraTokens(era, delegate, tokensPerEra(currentUserEpoch(era), HALVING));
+    uint256 numTokens = calculateUserEraTokens(era, delegate, tokensPerEra(getEpochForEra(era), HALVING));
 
     updateEraAfterWithdraw(era, delegate, numTokens);
 
