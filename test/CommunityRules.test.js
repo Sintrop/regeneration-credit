@@ -568,7 +568,7 @@ describe("CommunityRules", function () {
       it("returns settings", async () => {
         const settings = await instance.getUserTypeSettings(userTypes.Researcher);
 
-        expect(settings).deep.to.equal([1n, false, true, 200000n, true]);
+        expect(settings).deep.to.equal([1n, false, true, 100000n, true]);
       });
     });
 
@@ -576,7 +576,7 @@ describe("CommunityRules", function () {
       it("returns settings", async () => {
         const settings = await instance.getUserTypeSettings(userTypes.Developer);
 
-        expect(settings).deep.to.equal([1n, false, true, 200000n, true]);
+        expect(settings).deep.to.equal([1n, false, true, 100000n, true]);
       });
     });
   });
