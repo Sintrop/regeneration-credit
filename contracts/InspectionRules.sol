@@ -31,7 +31,7 @@ contract InspectionRules is Callable {
   mapping(uint256 => Inspection) internal inspections;
 
   /// User inspections ids
-  mapping(address => uint256[]) internal userInspections;  
+  mapping(address => uint256[]) internal userInspections;
 
   /// @notice Checks if an inspector has already inspected a specific regenerator.
   mapping(address => mapping(address => bool)) internal inspectorInspected;
@@ -386,7 +386,7 @@ contract InspectionRules is Callable {
     activistRules.addInspectorLevel(inspectorAddress, inspectorRules.afterRealizeInspection(inspectorAddress));
 
     userInspections[regeneratorAddress].push(inspection.id);
-    userInspections[inspectorAddress].push(inspection.id);    
+    userInspections[inspectorAddress].push(inspection.id);
   }
 
   /**
