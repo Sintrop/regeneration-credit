@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 import "./CommunityTypes.sol";
 
@@ -77,8 +77,7 @@ struct CalculatorItem {
   uint256 id;
   address createdBy;
   string item;
-  string title;
-  string justification;
+  string thesis;
   string unit;
   uint256 carbonImpact;
 }
@@ -101,6 +100,7 @@ struct EvaluationMethod {
 
 /**
  * @dev Research penalty
+ * @param researchId ID of the research that incurred the penalty.
  */
 struct Penalty {
   uint256 researchId;
@@ -108,6 +108,10 @@ struct Penalty {
 
 /**
  * @dev System used contracts address
+ * @param communityRulesAddress Address of the CommunityRules contract
+ * @param researcherPoolAddress Address of the ResearcherPool contract
+ * @param validationRulesAddress Address of the ValidationRules contract
+ * @param voteRulesAddress Address of the VoteRules contract
  */
 struct ContractsDependency {
   address communityRulesAddress;

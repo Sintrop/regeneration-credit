@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 import { RegenerationCreditInterface } from "./interfaces/RegenerationCreditInterface.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -36,7 +36,7 @@ contract ActivistPool is Poolable, Ownable, Blockable, Callable {
    * @param era User current era
    */
   function withdraw(address delegate, uint256 era) public mustBeAllowedCaller canWithdrawModifier(era) {
-    uint256 numTokens = tokens(era, delegate, tokensPerEra(currentUserEpoch(era), HALVING));
+    uint256 numTokens = calculateUserEraTokens(era, delegate, tokensPerEra(getEpochForEra(era), HALVING));
 
     updateEraAfterWithdraw(era, delegate, numTokens);
 
@@ -57,10 +57,9 @@ contract ActivistPool is Poolable, Ownable, Blockable, Callable {
   /**
    * @dev Called by the activist contract, function to decrease activist pool level
    * @param addr Activist wallet
-   * @param era Current pool era
-   * @param removeSomeLevels Levels to decrease
+   * @param levelsToRemove Levels to decrease
    */
-  function removePoolLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
-    removeLevelsFromEra(addr, era, removeSomeLevels);
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+    removePoolLevel(addr, currentContractEra(), levelsToRemove);
   }
 }
