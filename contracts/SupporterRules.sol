@@ -202,7 +202,7 @@ contract SupporterRules {
     offsets[id] = Offset(msg.sender, block.number, amountBurn, calculatorItemId);
 
     offsetsCount = offsetsCount.add(1);
-    supporter.offsetsCount.add(1);
+    supporter.offsetsCount++;
 
     emit OffsetMade(msg.sender, id, amountBurn, calculatorItemId, block.number);
   }
@@ -232,7 +232,7 @@ contract SupporterRules {
     Supporter storage supporter = supporters[msg.sender];
 
     publicationsCount = publicationsCount.add(1);
-    supporter.publicationsCount.add(1);
+    supporter.publicationsCount++;
 
     emit PublicationPosted(msg.sender, id, amountBurn, description, block.number);
   }
@@ -271,7 +271,7 @@ contract SupporterRules {
     Supporter storage supporter = supporters[msg.sender];
 
     reductionCommitments[msg.sender].push(calculatorItemId);
-    supporter.reductionItemsCount.add(1);
+    supporter.reductionItemsCount++;
 
     emit ReductionCommitmentDeclared(msg.sender, calculatorItemId, block.number);
   }
