@@ -172,7 +172,9 @@ contract SupporterRules {
     require(bytes(newPhoto).length <= 100, "Max 100 characters");
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
 
-    supporters[msg.sender].profilePhoto = newPhoto;
+    Supporter storage supporter = supporters[msg.sender];
+
+    supporter.profilePhoto = newPhoto;
   }
 
   /**
@@ -195,10 +197,12 @@ contract SupporterRules {
       if (calculatorItem.id > 0) calculatorItemCertificates[msg.sender][calculatorItemId] += amountBurn;
     }
 
+    Supporter storage supporter = supporters[msg.sender];
+
     offsets[id] = Offset(msg.sender, block.number, amountBurn, calculatorItemId);
 
     offsetsCount = offsetsCount.add(1);
-    supporters[msg.sender].offsetsCount = supporters[msg.sender].offsetsCount.add(1);
+    supporter.offsetsCount.add(1);
 
     emit OffsetMade(msg.sender, id, amountBurn, calculatorItemId, block.number);
   }
@@ -225,8 +229,10 @@ contract SupporterRules {
 
     publications[id] = Publication(msg.sender, block.number, amountBurn, description, content);
 
+    Supporter storage supporter = supporters[msg.sender];
+
     publicationsCount = publicationsCount.add(1);
-    supporters[msg.sender].publicationsCount = supporters[msg.sender].publicationsCount.add(1);
+    supporter.publicationsCount.add(1);
 
     emit PublicationPosted(msg.sender, id, amountBurn, description, block.number);
   }
@@ -262,8 +268,10 @@ contract SupporterRules {
 
     require(calculatorItem.id > 0, "Calculator item does not exist");
 
+    Supporter storage supporter = supporters[msg.sender];
+
     reductionCommitments[msg.sender].push(calculatorItemId);
-    supporters[msg.sender].reductionItemsCount = supporters[msg.sender].reductionItemsCount.add(1);
+    supporter.reductionItemsCount.add(1);
 
     emit ReductionCommitmentDeclared(msg.sender, calculatorItemId, block.number);
   }
