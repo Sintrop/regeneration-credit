@@ -74,11 +74,11 @@ contract SupporterPool is Callable {
     // Perform the token burning
     regenerationCredit.burnTokensWith(tokenOwner, amountBurn);
 
+    if (inviterTotalTokens > 0) {
+      regenerationCredit.transferWith(tokenOwner, inviter, inviterTotalTokens);
+    }
+
     // Emit event before potential external transfer call (Checks-Effects-Interactions)
     emit PoolBurnTokensEvent(tokenOwner, amountBurn, inviter, inviterTotalTokens);
-
-    if (inviterTotalTokens <= 0) return;
-
-    regenerationCredit.transferWith(tokenOwner, inviter, inviterTotalTokens);
   }
 }
