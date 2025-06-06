@@ -76,9 +76,7 @@ contract Blockable {
    * @return uint256 Current contract EPOCH.
    */
   function currentEpoch() public view returns (uint256) {
-    // Subtract 1 from currentContractEra to align with a 0-indexed concept for epoch calculation,
-    // then divide by HALVING and add 1 to get the 1-indexed epoch number.
-    return (currentContractEra().sub(1)).div(HALVING).add(1);
+    return getEpochForEra(currentContractEra());
   }
 
   /**
