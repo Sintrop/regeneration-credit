@@ -377,16 +377,6 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   /**
-   * @dev Checks if a researcher exists by their address.
-   * @notice Returns `true` if a researcher is registered at the given address.
-   * @param addr The address to check.
-   * @return `true` if the researcher exists, `false` otherwise.
-   */
-  function researcherExists(address addr) public view returns (bool) {
-    return bytes(researchers[addr].name).length > 0;
-  }
-
-  /**
    * @notice Returns the total number of penalties received by a researcher.
    * @param addr The researcher's wallet address.
    * @return The total count of penalties.

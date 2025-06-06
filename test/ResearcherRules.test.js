@@ -195,17 +195,17 @@ describe("ResearcherRules", () => {
       });
 
       it("return true", async () => {
-        const researcherExists = await instance.researcherExists(resea1Address);
+        const researcher = await instance.getResearcher(resea1Address);
 
-        expect(researcherExists).to.equal(true);
+        expect(researcher.id).to.equal(1);
       });
     });
 
     context("when researcher don't exist", () => {
       it("return false", async () => {
-        const researcherExists = await instance.researcherExists(resea1Address);
+        const researcher = await instance.getResearcher(resea1Address);
 
-        expect(researcherExists).to.equal(false);
+        expect(researcher.id).to.equal(0);
       });
     });
   });
