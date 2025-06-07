@@ -9,23 +9,29 @@ import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
 
 /**
- * @author Sintrop
  * @title ActivistRules
- * @dev Manage activists rules and data
- * @notice User responsible for inviting new regenerators and inspectors
+ * @author Sintrop
+ * @notice This contract defines and manages the rules and data specific to "Activist" users
+ * within the system. Activists are primarily responsible for inviting new Regenerators
+ * and Inspectors, and they earn rewards based on the approval of their invited users.
+ * @dev Inherits functionalities from `Callable` (for whitelisted function access) and `Invitable`
+ * (for managing invitation logic). It interacts with `CommunityRules` for general user management
+ * and `ActivistPool` for reward distribution.
  */
 
 contract ActivistRules is Callable, Invitable {
-  /// @notice The relationship between address and activist data
+  // --- State Variables ---
+
+  /// @notice A mapping from an activist's wallet address to their detailed `Activist` data structure.
+  /// This serves as the primary storage for activist profiles.
   mapping(address => Activist) internal activists;
 
-  /// @notice Checks if an activist has received level from an invited user
+  /// @notice A nested mapping to track whether an activist has already "won a level" (received credit)
+  /// from a specific invited user (Regenerator or Inspector). Prevents duplicate level gains.
+  /// Key: `activistAddress` -> Key: `invitedUserAddress` -> Value: `true` if level won.
   mapping(address => mapping(address => bool)) internal activistWonLevel;
 
-  /// @notice Activist approved invited users
-  mapping(address => address[]) public activistApprovedUsers;
-
-  /// @notice Activist approved invites
+  /// @notice A public mapping to track the total count of approved invitations for each activist.
   mapping(address => uint256) public activistApprovedInvites;
 
   /// @notice The relationship between id and activist address
@@ -142,7 +148,6 @@ contract ActivistRules is Callable, Invitable {
       activistWonLevel[activistAddress][regeneratorAddress] = true;
       approvedInvites++;
       activistApprovedInvites[activistAddress]++;
-      activistApprovedUsers[activistAddress].push(regeneratorAddress);
 
       setActivistLevel(activistAddress);
     }
@@ -164,7 +169,6 @@ contract ActivistRules is Callable, Invitable {
       activistWonLevel[activistAddress][inspectorAddress] = true;
       approvedInvites++;
       activistApprovedInvites[activistAddress]++;
-      activistApprovedUsers[activistAddress].push(inspectorAddress);
 
       setActivistLevel(activistAddress);
     }
