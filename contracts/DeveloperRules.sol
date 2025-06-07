@@ -63,10 +63,14 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   /// @notice Number of blocks to block addReport before the end of an era
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
+  /// @notice Flag to ensure contract dependencies are set only once.
+  bool public contractsDependenciesSet; // Added flag for one-time initialization  
+
   constructor(uint256 timeBetweenWorks_, uint256 maxPenalties_, uint256 securityBlocksToValidatorAnalysis) {
     timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
+    contractsDependenciesSet = false; // Initialize the flag    
   }
 
   /**
@@ -74,10 +78,14 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @param contractDependency Addresses of system contracts used
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+    require(!contractsDependenciesSet, "Dependencies already set"); // Enforce one-time call
+    
     communityRules = CommunityRules(contractDependency.communityRulesAddress);
     developerPool = DeveloperPool(contractDependency.developerPoolAddress);
     validationRules = ValidationRules(contractDependency.validationRulesAddress);
     voteRules = VoteRules(contractDependency.voteRulesAddress);
+
+    contractsDependenciesSet = true; // Mark as set
   }
 
   /**

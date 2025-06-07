@@ -85,6 +85,9 @@ contract InspectionRules is Callable {
   /// @notice Amount of blocks for validators to check inspections before ending an era
   uint256 public immutable securityBlocksToValidatorAnalysis;
 
+  /// @notice Flag to ensure contract dependencies are set only once.
+  bool public contractsDependenciesSet; // Added flag for one-time initialization
+
   constructor(
     uint256 timeBetweenInspections_,
     uint256 blocksToExpireAcceptedInspection_,
@@ -97,9 +100,12 @@ contract InspectionRules is Callable {
     allowedInitialRequests = allowedInitialRequests_;
     acceptInspectionDelayBlocks = acceptInspectionDelayBlocks_;
     securityBlocksToValidatorAnalysis = securityBlocksToValidatorAnalysis_;
+    contractsDependenciesSet = false; // Initialize the flag    
   }
 
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+    require(!contractsDependenciesSet, "Dependencies already set"); // Enforce one-time call
+    
     communityRules = CommunityRules(contractDependency.communityRulesAddress);
     regeneratorRules = RegeneratorRules(contractDependency.regeneratorRulesAddress);
     validationRules = ValidationRules(contractDependency.validationRulesAddress);
@@ -107,6 +113,8 @@ contract InspectionRules is Callable {
     regenerationIndexRules = RegenerationIndexRules(contractDependency.regenerationIndexRulesAddress);
     activistRules = ActivistRules(contractDependency.activistRulesAddress);
     voteRules = VoteRules(contractDependency.voteRulesAddress);
+
+    contractsDependenciesSet = true; // Mark as set
   }
 
   /**

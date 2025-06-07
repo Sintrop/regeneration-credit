@@ -76,6 +76,9 @@ contract ResearcherRules is Callable, Invitable {
   /// @notice Number of blocks to block addResearch before the end of an era
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
+  /// @notice Flag to ensure contract dependencies are set only once.
+  bool public contractsDependenciesSet; // Added flag for one-time initialization  
+
   // --- Events ---
 
   /**
@@ -117,6 +120,7 @@ contract ResearcherRules is Callable, Invitable {
     timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
+    contractsDependenciesSet = false; // Initialize the flag
   }
 
   // --- State-Modifying Functions ---
@@ -126,10 +130,14 @@ contract ResearcherRules is Callable, Invitable {
    * @param contractDependency Addresses of system contracts used
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+    require(!contractsDependenciesSet, "Dependencies already set"); // Enforce one-time call
+    
     communityRules = CommunityRules(contractDependency.communityRulesAddress);
     researcherPool = ResearcherPool(contractDependency.researcherPoolAddress);
     validationRules = ValidationRules(contractDependency.validationRulesAddress);
     voteRules = VoteRules(contractDependency.voteRulesAddress);
+
+    contractsDependenciesSet = true; // Mark as set        
   }
 
   /**
