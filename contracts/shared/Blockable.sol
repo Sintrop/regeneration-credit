@@ -4,23 +4,37 @@ pragma solidity >=0.8.0 <0.9.0;
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
- * @author Sintrop
  * @title Blockable
- * @dev Contract to manage time, blocks and eras
+ * @author Sintrop
+ * @notice Contract to manage time-related calculations based on block numbers, including eras and epochs.
+ * @dev Provides utility functions to determine current era, epoch, and eligibility for actions based on block progression.
+ * Eras and Epochs are 1-indexed.
  */
 contract Blockable {
   using SafeMath for uint256;
 
+  // --- Constants and Immutables ---
+
+  /// @dev Precision factor used in calculations.
   uint256 public constant BLOCKS_PRECISION = 5;
 
-  /// @notice Amount of blocks per ERA.
+  /// @notice The number of blocks that constitute a single ERA.
   uint256 private immutable BLOCKS_PER_ERA;
 
-  /// @notice Contract deploy block.number.
+  /// @notice The block number at which this contract was deployed.
   uint256 private immutable DEPLOYED_AT;
 
-  /// @notice Blocks to reduce rewards.
+  /// @dev Used to determine epoch changes, linked to reward halving adjustments
+  /// @notice Defines the number of eras that form one EPOCH cycle.
   uint256 internal immutable HALVING;
+
+  // --- Constructor ---
+
+  /**
+   * @dev Initializes the Blockable contract.
+   * @param blocksPerEra The number of blocks in each era. Must be greater than 0.
+   * @param _halving The number of eras that constitute one halving cycle/epoch.
+   */
 
   constructor(uint256 blocksPerEra, uint256 _halving) {
     BLOCKS_PER_ERA = blocksPerEra;
@@ -28,63 +42,113 @@ contract Blockable {
     HALVING = _halving;
   }
 
+  // --- Public View Functions ---
+
   /**
-   * @dev Checks if an user can withdraw rewards.
-   * @param currentUserEra Current user pool era, passed by pool contracts.
-   * @return bool True if currentUserEra is smaller than contractEra. False if not.
+   * @dev Checks if a user, based on their current era, is eligible for a withdraw.
+   * @notice The user will be eligible for a withdrawal when their era is lower than the current contract era.
+   * @param currentUserEra The user's current era.
+   * @return bool True if currentUserEra is less than the contract's current era, false otherwise.
    */
   function canWithdraw(uint256 currentUserEra) public view returns (bool) {
     return currentUserEra < currentContractEra();
   }
 
   /**
-   * @dev Function to calculate the contract current ERA.
-   * @return uint256 Current contract ERA.
+   * @dev Calculates the current era of the contract based on block progression since deployment.
+   * @notice Get the current contract era.
+   * @return uint256 The current contract era.
    */
   function currentContractEra() public view returns (uint256) {
-    return currentBlockNumber().sub(DEPLOYED_AT).div(BLOCKS_PER_ERA).add(1);
+    uint256 blocksSinceDeployment = currentBlockNumber().sub(DEPLOYED_AT);
+
+    return blocksSinceDeployment.div(BLOCKS_PER_ERA).add(1);
   }
 
   /**
-   * @dev Function to calculate the contract current EPOCH.
+   * @dev Calculates the current EPOCH of the contract.
+   * @notice Epochs are 1-indexed. The calculation ensures that each epoch (including the first)
+   * comprises exactly `HALVING` eras, aligning with a conceptual 0-indexed era system for epoch grouping.
+   * For example, assuming HALVING = 12:
+   * Eras 1-12 (contract era numbers) -> Epoch 1
+   * Eras 13-24 (contract era numbers) -> Epoch 2
+   * And so on.
    * @return uint256 Current contract EPOCH.
    */
   function currentEpoch() public view returns (uint256) {
-    return currentContractEra().div(HALVING).add(1);
+    return getEpochForEra(currentContractEra());
   }
 
   /**
-   * @dev Function to calculate the epoch based on an era.
-   * @return uint256 Current era EPOCH.
+   * @dev Calculates the epoch for a given era number.
+   * @notice Follows the same calculation logic as `currentEpoch`.
+   * @param era The era number to determine the epoch for.
+   * @return uint256 The epoch corresponding to the given era.
    */
-  function currentUserEpoch(uint256 era) public view returns (uint256) {
-    return era.div(HALVING).add(1);
+  function getEpochForEra(uint256 era) public view returns (uint256) {
+    require(era > 0, "Era must be greater than 0");
+    // Subtract 1 from the given era to align with a 0-indexed concept for epoch calculation,
+    // then divide by HALVING and add 1 to get the 1-indexed epoch number.
+    return (era.sub(1)).div(HALVING).add(1);
   }
 
   /**
-   * @dev Function to calculate the amount of blocks remaining to change the contract ERA.
-   * @return int256 Amount of blocks to change ERA.
+   * @dev Calculates the number of blocks remaining until the start of the next era.
+   * @param targetEra The era for which to calculate the remaining blocks until its completion.
+   * @return int256 Number of blocks until the next era begins. Positive if targetEra is ongoing,
+   * negative if targetEra has passed, zero if the current block is the first block of the next era.
    */
-  function nextEraIn(uint256 currentUserEra) public view returns (int256) {
-    return int256(DEPLOYED_AT) + (int256(BLOCKS_PER_ERA) * int256(currentUserEra)) - int256(currentBlockNumber());
+  function nextEraIn(uint256 targetEra) public view returns (int256) {
+    require(targetEra > 0, "Target era must be greater than 0");
+
+    // Target block is the first block of the (targetEra + 1)
+    // Which is DEPLOYED_AT + (targetEra * BLOCKS_PER_ERA)
+    uint256 endBlockOfTargetEra = DEPLOYED_AT.add(targetEra.mul(BLOCKS_PER_ERA));
+    return int256(endBlockOfTargetEra) - int256(currentBlockNumber());
   }
 
+  /**
+   * @dev Calculates a scaled value representing how many "BLOCKS_PER_ERA" periods have elapsed
+   * since a given currentUserEra ended.
+   * @notice Returns 0 if currentUserEra has not yet ended.
+   * The result is scaled by 10**BLOCKS_PRECISION. For example, if 1.5 eras have passed,
+   * and BLOCKS_PRECISION is 5, it returns 150000.
+   * @param currentUserEra The era that the user has completed.
+   * @return uint256 Scaled representation of elapsed eras past currentUserEra.
+   */
   function canWithdrawTimes(uint256 currentUserEra) public view returns (uint256) {
-    int256 approvesTimes = nextEraIn(currentUserEra);
+    int256 blocksUntilEndOfUserEra = nextEraIn(currentUserEra);
 
-    if (approvesTimes > 0) return 0;
+    if (blocksUntilEndOfUserEra > 0) {
+      // currentUserEra has not yet ended, or is the current block.
+      return 0;
+    }
 
-    return uint256(-approvesTimes).mul(10 ** BLOCKS_PRECISION).div(BLOCKS_PER_ERA);
+    // blocksUntilEndOfUserEra is <= 0.
+    // Number of blocks passed since currentUserEra ended.
+    uint256 blocksPassed = uint256(-blocksUntilEndOfUserEra);
+
+    // (blocksPassed / BLOCKS_PER_ERA) * (10**BLOCKS_PRECISION)
+    return blocksPassed.mul(10 ** BLOCKS_PRECISION).div(BLOCKS_PER_ERA);
   }
 
-  // PRIVATE FUNCTIONS
+  // --- Internal View Functions ---
 
+  /**
+   * @dev Returns the current block number.
+   * @return uint256 The current block.number.
+   */
   function currentBlockNumber() internal view returns (uint256) {
     return block.number;
   }
 
-  // MODIFIERS
+  // --- Modifiers ---
 
+  /**
+   * @dev Modifier to restrict a function's execution until the provided `era` has passed
+   * relative to the contract's current era.
+   * @param era The user's current recorded era.
+   */
   modifier canWithdrawModifier(uint256 era) {
     require(canWithdraw(era), "You can't approve yet");
     _;

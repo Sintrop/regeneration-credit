@@ -72,15 +72,75 @@ describe("Blockable", () => {
       });
     });
 
-    context("when is era 15", () => {
+    context("when is era 12", () => {
       beforeEach(async () => {
-        await advanceBlock(14 * params.blocksPerEra);
+        await advanceBlock(11 * params.blocksPerEra);
       });
 
       it("return currentEpoch equal 1", async () => {
         const currentEpoch = await instance.currentEpoch();
 
+        expect(currentEpoch).to.equal(1);
+      });
+    });
+
+    context("when is era 13", () => {
+      beforeEach(async () => {
+        await advanceBlock(12 * params.blocksPerEra);
+      });
+
+      it("return currentEpoch equal 2", async () => {
+        const currentEpoch = await instance.currentEpoch();
+
         expect(currentEpoch).to.equal(2);
+      });
+    });
+
+    context("when is era 24", () => {
+      beforeEach(async () => {
+        await advanceBlock(23 * params.blocksPerEra);
+      });
+
+      it("return currentEpoch equal 2", async () => {
+        const currentEpoch = await instance.currentEpoch();
+
+        expect(currentEpoch).to.equal(2);
+      });
+    });
+
+    context("when is era 25", () => {
+      beforeEach(async () => {
+        await advanceBlock(24 * params.blocksPerEra);
+      });
+
+      it("return currentEpoch equal 2", async () => {
+        const currentEpoch = await instance.currentEpoch();
+
+        expect(currentEpoch).to.equal(3);
+      });
+    });
+
+    context("when is era 36", () => {
+      beforeEach(async () => {
+        await advanceBlock(34 * params.blocksPerEra);
+      });
+
+      it("return currentEpoch equal 2", async () => {
+        const currentEpoch = await instance.currentEpoch();
+
+        expect(currentEpoch).to.equal(3);
+      });
+    });
+
+    context("when is era 37", () => {
+      beforeEach(async () => {
+        await advanceBlock(36 * params.blocksPerEra);
+      });
+
+      it("return currentEpoch equal 2", async () => {
+        const currentEpoch = await instance.currentEpoch();
+
+        expect(currentEpoch).to.equal(4);
       });
     });
   });

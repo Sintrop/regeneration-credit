@@ -36,7 +36,7 @@ contract InspectorPool is Poolable, Ownable, Blockable, Callable {
    * @param era User current era
    */
   function withdraw(address delegate, uint256 era) public mustBeAllowedCaller canWithdrawModifier(era) {
-    uint256 numTokens = tokens(era, delegate, tokensPerEra(currentUserEpoch(era), HALVING));
+    uint256 numTokens = calculateUserEraTokens(era, delegate, tokensPerEra(getEpochForEra(era), HALVING));
 
     updateEraAfterWithdraw(era, delegate, numTokens);
 
@@ -59,10 +59,9 @@ contract InspectorPool is Poolable, Ownable, Blockable, Callable {
   /**
    * @dev Called by the inspector contract, function to decrease inspector pool level
    * @param addr Inspector wallet
-   * @param era Current pool era
-   * @param removeSomeLevels Levels to decrease
+   * @param levelsToRemove Levels to remove
    */
-  function removePoolLevels(address addr, uint256 era, uint256 removeSomeLevels) public mustBeAllowedCaller {
-    removeLevelsFromEra(addr, era, removeSomeLevels);
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+    removePoolLevel(addr, currentContractEra(), levelsToRemove);
   }
 }
