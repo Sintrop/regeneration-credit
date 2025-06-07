@@ -207,11 +207,12 @@ contract InspectionRules is Callable {
   /**
    * @dev Allows the current user (inspector) accept a inspection.
    * @notice Inspectors must only accept inspections that they can perform.
-   * You will need to estimate how many trees over 1m high and 3 cm in diamater there is in the regenerator area.
+   * You will need to estimate how many trees/plantas over 1m high and 3 cm in diamater there is in the regenerator area. And also estimate how many different species of these plants.
    * Your safety is your responsability! Visiting regeneration areas presents natural ecosystem threats, such as dangerous animals (snakes, tigers, ...), falling branches, etc.
    * Be prepared and use appropriate safety equipments, such as boots, hat, long sleeves clothing, machetes, knifes, etc.
    * Study the area before accepting. If you accept an inspection, you gain 1 giveUp. You lose this giveUp if you realize the inspection. But with 3 giveUps you account get locked.
-   * By accepting this function, you agree that your safety is your responsibility.
+   * You can inspect only one time each regenerator.
+   * You must wait the inspection delay to accept a new one.
    * @param inspectionId The id of the inspection that the inspector want accept.
    */
   function acceptInspection(uint256 inspectionId) public {
@@ -221,7 +222,7 @@ contract InspectionRules is Callable {
     Inspection memory inspection = inspections[inspectionId];
 
     require(inspection.id >= 1, "Inspection do not exist");
-    require(alreadyHaveInspectionAccepted(), "You already have an inspection Accepted");
+    require(canAcceptNewInspection(), "You already have an inspection Accepted");
     require(!inspectorInspected[msg.sender][inspection.regenerator], "Already inspected this regenerator");
     require(inspection.status == InspectionStatus.OPEN, "Inspection must be OPEN");
     require(acceptInspectionDelayBlocksPassed(inspection), "Wait inspection delay blocks");
@@ -259,6 +260,9 @@ contract InspectionRules is Callable {
     uint256 treesResult,
     uint256 biodiversityResult
   ) public {
+    require(bytes(proofPhoto).length <= 100, "Max proofPhoto length");
+    require(bytes(report).length <= 1000, "Max report length");
+
     Inspection memory inspection = inspections[inspectionId];
 
     require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Only inspectors");
@@ -339,6 +343,9 @@ contract InspectionRules is Callable {
     emit InspectionRequested(id, msg.sender, block.number);
   }
 
+  /**
+   * @dev Update regenerator data after request.
+   */
   function afterRequestInspection() internal {
     regeneratorRules.afterRequestInspection(msg.sender);
   }
@@ -348,7 +355,7 @@ contract InspectionRules is Callable {
    * @param inspection The current inspection
    * @param proofPhoto The string of a photo with the regenerator or at the regeneration area
    * @param treesResult The number of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
-   * @param biodiversityResult The number of different species of trees, palm trees and other plants lover 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
+   * @param biodiversityResult The number of different species of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
    * @param report The justification of the result found
    */
   function markAsRealized(
@@ -436,9 +443,9 @@ contract InspectionRules is Callable {
 
   /**
    * @dev Function that checks if an inspector already have an open inspection
-   * @return bool inspection The invalidated inspection
+   * @return bool True if can accept new inspection. False if has already an open inspection.
    */
-  function alreadyHaveInspectionAccepted() private view returns (bool) {
+  function canAcceptNewInspection() private view returns (bool) {
     Inspector memory inspector = inspectorRules.getInspector(msg.sender);
     Inspection memory lastInspection = inspections[inspector.lastInspection];
 
