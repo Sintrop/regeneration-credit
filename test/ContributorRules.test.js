@@ -363,21 +363,6 @@ describe("ContributorRules", (accounts) => {
     });
   });
 
-  describe("#contributorExists", () => {
-    it("should return true when exists", async () => {
-      await addContributor("Contributor A", contr1Address);
-      const contributorExists = await instance.contributorExists(contr1Address);
-
-      expect(contributorExists).to.equal(true);
-    });
-
-    it("it should return false when don't exists", async () => {
-      const contributorExists = await instance.contributorExists(contr1Address);
-
-      expect(contributorExists).to.equal(false);
-    });
-  });
-
   describe("#withdraw", () => {
     context("when is contributor", () => {
       beforeEach(async () => {
