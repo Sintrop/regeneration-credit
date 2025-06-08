@@ -31,63 +31,83 @@ contract ActivistRules is Callable, Invitable {
   /// Key: `activistAddress` -> Key: `invitedUserAddress` -> Value: `true` if level won.
   mapping(address => mapping(address => bool)) internal activistWonLevel;
 
-  /// @notice A public mapping to track the total count of approved invitations for each activist.
-  mapping(address => uint256) public activistApprovedInvites;
-
-  /// @notice The relationship between id and activist address
+  /// @notice A public mapping from a unique activist ID to their corresponding wallet address.
+  /// Facilitates lookup of an activist's address by their ID.
   mapping(uint256 => address) public activistsAddress;
 
-  /// @notice CommunityRules contract address
+  /// @notice The address of the `CommunityRules` contract, used to interact with
+  /// community-wide rules, user types, and invitation data.
   CommunityRules internal communityRules;
 
-  /// @notice ActivistPool contract address
+  /// @notice The address of the `ActivistPool` contract, responsible for managing
+  /// and distributing token rewards to activists.
   ActivistPool internal activistPool;
 
-  /// @notice Activist UserType
+  /// @notice The specific `UserType` enumeration value for the Activist user.
   UserType private constant USER_TYPE = UserType.ACTIVIST;
 
-  /// @notice Total approved invites
+  /// @notice The total count of all invitations that have been successfully approved across the entire system.
   uint256 public approvedInvites;
 
-  /// @notice Minimum 3 inspections to approve invite
+  /// @notice The minimum number of inspections an invited Regenerator or Inspector must complete
+  /// for the inviting activist to "win a pool level".
   uint256 private constant MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS = 3;
 
+  // --- Constructor ---
+
+  /**
+   * @dev Initializes the ActivistRules contract.
+   * Sets the addresses for the `CommunityRules` and `ActivistPool` contracts.
+   * @param communityRulesAddress The address of the deployed `CommunityRules` contract.
+   * @param activistPoolAddress The address of the deployed `ActivistPool` contract.
+   */
   constructor(address communityRulesAddress, address activistPoolAddress) {
     communityRules = CommunityRules(communityRulesAddress);
     activistPool = ActivistPool(activistPoolAddress);
   }
 
   /**
-   * @dev Allows a user to attempt to register as an activist
-   * @notice Attempt to register as an activist
+   * @dev Allows a user to attempt to register as an activist.
+   * Creates a new `Activist` profile for the caller if all requirements are met.
+   * @notice Users must meet specific criteria (previously invitation, system proportionality)
+   * to successfully register as an activist.
    *
    * Requirements:
-   *
-   * - the caller must have been invited before
-   * - vacancies according to the number of regenerators
-   *
-   * @param name The name of the activist
-   * @param proofPhoto Identity photo
+   * - The caller (`msg.sender`) must not already be a registered user.
+   * - The `name` and `proofPhoto` strings must not exceed 100 characters in byte length.
+   * - The total number of `ACTIVIST` users in the system must not exceed 16,000.
+   * @param name The chosen name for the activist.
+   * @param proofPhoto A hash or identifier for the activist's identity verification photo.
    */
   function addActivist(string memory name, string memory proofPhoto) public {
-    // Characters limit
+    // Character limit validation for name and proofPhoto.
     require(bytes(name).length <= 100 && bytes(proofPhoto).length <= 100, "Max 100 characters");
-    // Max limit activist users
+    // Max limit for activist users in the system.
     require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
 
+    // Generate a unique ID for the new activist.
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
+    // Create a new Activist struct in memory.
+    // Pool initialized with level 0 and current era set to the current pool era.
     Activist memory activist = Activist(id, msg.sender, name, proofPhoto, Pool(0, poolCurrentEra()), block.number);
 
+
+    // Store the new activist data in storage.
     activists[msg.sender] = activist;
     activistsAddress[id] = msg.sender;
+    // Register the user with CommunityRules as an ACTIVIST.  
     communityRules.addUser(msg.sender, USER_TYPE);
+
+    // Emit event
+    emit ActivistRegistered(id, msg.sender, name, block.number);    
   }
 
   /**
-   * @dev Checks if an activist can send invite
-   * @notice True if activist can send invite
-   * @param addr The activist address
+   * @dev Checks if a specific activist address is eligible to send new invitations.
+   * @notice Returns `true` if the activist can send an invite, `false` otherwise.
+   * @param addr The address of the activist to check.
+   * @return bool `true` if the activist is eligible to send an invite, `false` otherwise.
    */
   function canSendInvite(address addr) public view returns (bool) {
     Activist memory activist = activists[addr];
@@ -95,25 +115,28 @@ contract ActivistRules is Callable, Invitable {
     // Return false if it is not an activist
     if (activist.id <= 0) return false;
 
-    // Calls the invitable function to calculate if true or false
+    // Calls the inherited `canInvite` function from `Invitable` to calculate eligibility.
+    // This depends on total approved invites, total activist count, and the activist's pool level.
     return canInvite(approvedInvites, communityRules.userTypesTotalCount(USER_TYPE), activist.pool.level);
   }
 
   /**
-   * @dev Return a specific activist
-   * @param addr The address of the activist
-   * @return Activist
+   * @dev Returns the detailed `Activist` data for a given address.
+   * @notice Provides the full profile of an activist.
+   * @param addr The address of the activist to retrieve.
+   * @return Activist The `Activist` struct containing the user's data.
    */
   function getActivist(address addr) public view returns (Activist memory) {
     return activists[addr];
   }
 
-  /**
-   * @dev Allow an activist to receive pool levels from invited regenerators
-   * @notice Receive level when invited users complete three inspections
-   * @param regeneratorAddress Invited regenerator wallet
-   * @param regeneratorTotalInspections Invited regenerator total inspections
-
+ /**
+   * @dev External function for authorized callers to add a pool level to an activist
+   * when an invited Regenerator reaches the minimum inspection threshold.
+   * @notice This function should be called by the InspectionRules contract.
+   * after a Regenerator completes their required inspections.
+   * @param regeneratorAddress The wallet address of the invited Regenerator.
+   * @param regeneratorTotalInspections The total number of inspections completed by the Regenerator.
    */
   function addRegeneratorLevel(
     address regeneratorAddress,
@@ -123,10 +146,12 @@ contract ActivistRules is Callable, Invitable {
   }
 
   /**
-   * @dev Allow an activist to receive pool levels from invited inspectors
-   * @notice Receive level when invited users complete three inspections
-   * @param inspectorAddress Invited inspector wallet
-   * @param inspectorTotalInspections Invited inspector total inspections
+   * @dev External function for authorized callers to add a pool level to an activist
+   * when an invited Inspector reaches the minimum inspection threshold.
+   * @notice This function should be called by the InspectionRules contract
+   * after an Inspector completes their required inspections.
+   * @param inspectorAddress The wallet address of the invited Inspector.
+   * @param inspectorTotalInspections The total number of inspections completed by the Inspector.
    */
   function addInspectorLevel(address inspectorAddress, uint256 inspectorTotalInspections) external mustBeAllowedCaller {
     addLevelFromInspector(inspectorAddress, inspectorTotalInspections);
@@ -147,7 +172,6 @@ contract ActivistRules is Callable, Invitable {
     ) {
       activistWonLevel[activistAddress][regeneratorAddress] = true;
       approvedInvites++;
-      activistApprovedInvites[activistAddress]++;
 
       setActivistLevel(activistAddress);
     }
@@ -168,19 +192,21 @@ contract ActivistRules is Callable, Invitable {
     ) {
       activistWonLevel[activistAddress][inspectorAddress] = true;
       approvedInvites++;
-      activistApprovedInvites[activistAddress]++;
 
       setActivistLevel(activistAddress);
     }
   }
 
   /**
-   * @dev Increases activist level
-   * @param activistAddress Activist wallet
+   * @dev Increases an activist's internal pool level and calls the `ActivistPool` contract
+   * to reflect this level increase for token withdrawal purposes.
+   * @param activistAddress The wallet address of the activist whose level is to be increased.
    */
   function setActivistLevel(address activistAddress) internal {
+    // Retrieve the activist's data.
     Activist memory activist = activists[activistAddress];
 
+    // If activist does not exist, return.
     if (activist.id <= 0) return;
 
     // Inscrease the activist pool level
@@ -189,25 +215,27 @@ contract ActivistRules is Callable, Invitable {
 
     // Add pool level to activist be able to withdraw tokens
     activistPool.addLevel(activistAddress, 1);
+
+    // Emit an event for off-chain monitoring.
+    emit ActivistLevelIncreased(activistAddress, activist.pool.level, block.number);    
   }
 
   /**
-   * @dev Call activistPool withdraw function to try to claim tokens
-   * @notice Withdraw regeneration credits from activism service provided
-   *
-   * An approved user is when a regenerator or an inspector reach 3 valid inspection
-   * the token distribution is proportional to the amount of approved users in the era
+   * @dev Allows an activist to initiate a withdrawal of Regeneration Credits
+   * based on their approved invited users and current era.
+   * @notice Activists can claim tokens for the services provided. The distribution
+   * is proportional to the amount of approved users in the current era.
    *
    * Requirements:
-   *
-   * - only to activists
-   * - to be eligible to withdraw tokens, you must have approved users in the era
-   * - vacancies according to the number of regenerators
+   * - The caller (`msg.sender`) must be a registered `ACTIVIST`.
+   * - The activist must have approvedUsers in their current era.
+   * - The activist's current era (`activist.pool.currentEra`) will be incremented upon successful withdrawal attempt.
    */
   function withdraw() public {
     // Only activist can call the function
     require(communityRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Pool only to activist");
 
+    // Retrieve activist data.
     Activist memory activist = activists[msg.sender];
     uint256 currentEra = activist.pool.currentEra;
 
@@ -219,25 +247,93 @@ contract ActivistRules is Callable, Invitable {
 
     // Call the pool withdraw function
     activistPool.withdraw(msg.sender, currentEra);
+
+    // Emit an event.
+    emit ActivistWithdrawalInitiated(msg.sender, currentEra, block.number);    
   }
 
   /**
-   * @dev Remove pool levels from activist
-   * @param addr Activist wallet
-   * @param levelsToRemove Levels to remove
+   * @dev Allows an authorized caller to remove levels from an activist's pool.
+   * This function updates the activist's local level and notifies the `ActivistPool` contract.
+   * @notice Can only be called by the ValidationRules contract.
+   * @param addr The wallet address of the activist from whom levels are to be removed.
+   * @param levelsToRemove The number of levels to decrease. 
    */
   function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
     Activist memory activist = activists[addr];
 
     activists[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : activist.pool.level;
     activistPool.removePoolLevels(addr, levelsToRemove);
+
+    // Emit an event
+    emit ActivistLevelRemoved(addr, levelsToRemove, activist.pool.level, block.number);    
   }
 
   /**
-   * @dev Current actvistPool era
-   * @return uint256 Return the current contract pool era
+   * @dev Returns the current era as determined by the `ActivistPool` contract.
+   * @notice This function provides the current era from the perspective of the reward pool.
+   * @return uint256 The current era of the `ActivistPool`.
    */
   function poolCurrentEra() public view returns (uint256) {
     return activistPool.currentContractEra();
   }
+
+  // --- Events ---
+
+  /// @dev Emitted when a new activist successfully registers.
+  /// @param id The unique ID of the newly registered activist.
+  /// @param activistAddress The wallet address of the activist.
+  /// @param name The name provided by the activist.
+  /// @param blockNumber The block number at which the registration occurred.
+  event ActivistRegistered(
+    uint256 indexed id,
+    address indexed activistAddress,
+    string name,
+    uint256 blockNumber
+  );
+
+  /// @dev Emitted when an activist earns a level from an invited Regenerator or Inspector
+  /// successfully completing their minimum inspections.
+  /// @param activistAddress The address of the activist who gained the level.
+  /// @param invitedUserAddress The address of the invited user (Regenerator/Inspector) who triggered the level gain.
+  /// @param invitedUserTotalInspections The total inspections of the invited user at the time of level gain.
+  /// @param blockNumber The block number at which the level was gained.
+  event LevelWonFromInvitedUser(
+    address indexed activistAddress,
+    address indexed invitedUserAddress,
+    uint256 invitedUserTotalInspections,
+    uint256 blockNumber
+  );
+
+  /// @dev Emitted when an activist's level is increased.
+  /// @param activistAddress The address of the activist whose level was increased.
+  /// @param newLevel The new total level of the activist.
+  /// @param blockNumber The block number at which the level increase occurred.
+  event ActivistLevelIncreased(
+    address indexed activistAddress,
+    uint256 newLevel,
+    uint256 blockNumber
+  );
+
+  /// @dev Emitted when an activist successfully initiates a withdrawal of tokens.
+  /// @param activistAddress The address of the activist initiating the withdrawal.
+  /// @param era The era for which the withdrawal was initiated.
+  /// @param blockNumber The block number at which the withdrawal was initiated.
+  event ActivistWithdrawalInitiated(
+    address indexed activistAddress,
+    uint256 indexed era,
+    uint256 blockNumber
+  );
+
+  /// @dev Emitted when an activist's pool levels are removed.
+  /// @param activistAddress The address of the activist whose levels were removed.
+  /// @param levelsRemoved The number of levels that were removed.
+  /// @param newLevel The new total level of the activist after removal.
+  /// @param blockNumber The block number at which the level removal occurred.
+  event ActivistLevelRemoved(
+    address indexed activistAddress,
+    uint256 levelsRemoved,
+    uint256 newLevel,
+    uint256 blockNumber
+  );  
 }
