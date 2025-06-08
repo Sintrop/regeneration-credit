@@ -12,57 +12,84 @@ import { ValidationRules } from "./ValidationRules.sol";
 import { Developer, Pool, Report, Penalty, ContractsDependency } from "./types/DeveloperTypes.sol";
 
 /**
- * @author Sintrop
  * @title DeveloperRules
- * @dev Manage developers rules and data
- * @notice Responsible for the development of the project
+ * @author Sintrop
+ * @notice This contract defines and manages the rules and data specific to "Developer" users
+ * within the system. Developers are primarily responsible for the development of the project
+ * through submitting development reports, which are subject to validation and penalty mechanisms.
+ * @dev Inherits functionalities from `Ownable` (for contract ownership), `Callable` (for whitelisted
+ * function access), and `Invitable` (for managing invitation logic). It interacts with `CommunityRules`
+ * for general user management, `DeveloperPool` for reward distribution, `VoteRules` for voting
+ * eligibility, and `ValidationRules` for report validation processes.
  */
 contract DeveloperRules is Ownable, Callable, Invitable {
-  /// @notice The relationship between address and developer data
+  // --- State Variables ---
+
+  /// @notice A mapping from a developer's wallet address to their detailed `Developer` data structure.
+  /// This serves as the primary storage for developer profiles.
   mapping(address => Developer) public developers;
 
-  /// @notice The relationship between id and report data
+  /// @notice A mapping from a unique report ID to its detailed `Report` data structure.
+  /// Stores all submitted development reports.
   mapping(uint256 => Report) public reports;
 
-  /// @notice The relationship between address and reports ids
+  /// @notice A mapping from a developer's wallet address to an array of IDs of reports they have submitted.
   mapping(address => uint256[]) public reportsIds;
 
-  /// @notice The relationship between address and penalties received
+  /// @notice A mapping from a developer's wallet address to an array of `Penalty` structs they have received.
   mapping(address => Penalty[]) public penalties;
 
-  /// @notice The relationship between id and developer address
+  /// @notice A mapping from a unique developer ID to their corresponding wallet address.
+  /// Facilitates lookup of a developer's address by their ID.
   mapping(uint256 => address) public developersAddress;
 
-  /// @notice CommunityRules contract address
+  /// @notice The address of the `CommunityRules` contract, used to interact with
+  /// community-wide rules, user types, and invitation data.
   CommunityRules internal communityRules;
 
-  /// @notice DeveloperPool contract address
+  /// @notice The address of the `DeveloperPool` contract, responsible for managing
+  /// and distributing token rewards to developers.
   DeveloperPool internal developerPool;
 
-  /// @notice ValidationRules contract address
+  /// @notice The address of the `ValidationRules` contract, which defines the rules
+  /// and processes for validating or invalidating development reports.
   ValidationRules internal validationRules;
 
-  /// @notice VoteRules contract address
+  /// @notice The address of the `VoteRules` contract, which defines rules for user voting
+  /// eligibility, particularly for report validation.
   VoteRules internal voteRules;
 
-  /// @notice Developer UserType
+  /// @notice The specific `UserType` enumeration value for a Developer user.
   UserType private constant USER_TYPE = UserType.DEVELOPER;
 
-  /// @notice Total valid reports count
+  /// @notice The total count of development reports that are currently considered valid (not invalidated).
   uint256 public reportsCount;
 
-  /// @notice Total reports count
+  /// @notice The grand total count of all development reports ever submitted, including invalidated ones.
+  /// This acts as a global unique ID counter for new reports.
   uint256 public reportsTotalCount;
 
-  /// @notice Waiting blocks to publish report
+  /// @notice The minimum number of blocks that must elapse between a developer's successful report publications.
+  /// This prevents spamming or rapid consecutive report submissions.
   uint256 internal immutable timeBetweenWorks;
 
-  /// @notice Max allowed penalties before user invalidation
+  /// @notice The maximum number of penalties a developer can accumulate before facing invalidation.
   uint256 public immutable MAX_PENALTIES;
 
-  /// @notice Number of blocks to block addReport before the end of an era
+  /// @notice The number of blocks before the end of an era during which no new reports can be published.
+  /// This period allows validators sufficient time to analyze and vote on reports before the era concludes.
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
+  // --- Constructor ---
+
+  /**
+   * @dev Initializes the DeveloperRules contract with key parameters for report management.
+   * Note: External contract addresses (`communityRules`, `developerPool`, etc.) are set via `setContractAddressDependencies`
+   * after deployment, following an `onlyOwner` pattern for secure initialization.
+   * @param timeBetweenWorks_ The required blocks between report publications.
+   * @param maxPenalties_ The maximum allowed penalties for a developer.
+   * @param securityBlocksToValidatorAnalysis The number of blocks before era end to block new report submissions.
+   */
   constructor(uint256 timeBetweenWorks_, uint256 maxPenalties_, uint256 securityBlocksToValidatorAnalysis) {
     timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
@@ -80,101 +107,163 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     voteRules = VoteRules(contractDependency.voteRulesAddress);
   }
 
+  // --- Public Functions ---
+
   /**
-   * @dev Allows a user to attempt to register as a developer
+   * @dev Allows a user to attempt to register as a developer.
+   * Creates a new `Developer` profile for the caller if all requirements are met.
+   * @notice Users must meet specific criteria (previous invitation, system vacancies)
+   * to successfully register as a developer.
    *
    * Requirements:
-   *
-   * - the caller must have been invited before
-   * - vacancies according to the number of regenerator
-   *
-   * @param name The name of the developer
-   * @param proofPhoto Identity photo
+   * - The caller (`msg.sender`) must not already be a registered developer.
+   * - The `name` string must not exceed 50 characters in byte length.
+   * - The `proofPhoto` string must not exceed 100 characters in byte length.
+   * - The total number of `DEVELOPER` users in the system must not exceed 16,000.
+   * @param name The chosen name for the developer.
+   * @param proofPhoto A hash or identifier (e.g., URL) for the developer's identity verification photo.
    */
   function addDeveloper(string memory name, string memory proofPhoto) public {
+    // Character limit validation for name and proofPhoto.
     require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
+    // Max limit for developer users in the system.
     require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
 
+    // Generate a unique ID for the new developer.
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     developers[msg.sender] = Developer(id, msg.sender, name, proofPhoto, Pool(0, poolCurrentEra()), 0, block.number, 0);
 
+    // Store the relationship between ID and address for lookup.
     developersAddress[id] = msg.sender;
+
+    // Register the user with CommunityRules as a DEVELOPER.
+    // This function checks proportionality, valid invitation and valid userType.
     communityRules.addUser(msg.sender, USER_TYPE);
+
+    // Emit an event.
+    emit DeveloperRegistered(id, msg.sender, name, block.number);
   }
 
   /**
-   * @dev Checks if a developer can send invite
-   * @notice True if developer can send invite
-   * @param addr The developer address
+   * @dev Checks if a specific developer address is eligible to send new invitations.
+   * @notice Only most active users canSendInvite.
+   * @param addr The address of the developer to check.
+   * @return bool `true` if the developer is eligible to send an invite, `false` otherwise.
    */
   function canSendInvite(address addr) public view returns (bool) {
     Developer memory developer = developers[addr];
 
+    // Return false if the address is not a registered developer (id is 0).
     if (developer.id <= 0) return false;
 
+    // Calls the inherited `canInvite` function from `Invitable` to calculate eligibility.
+    // This depends on total reports count, total developer count, and the developer's pool level.
     return canInvite(reportsTotalCount, communityRules.userTypesTotalCount(USER_TYPE), developer.pool.level);
   }
 
   /**
-   * @dev Allows a developer to attempt to publish a development report
-   * @notice Publish development reports before security blocks
-   * @param description Title or description of the report
-   * @param report Hash of the report file
+   * @dev Allows a developer to attempt to publish a new development report.
+   * @notice Development reports can only be published if certain time conditions and user type requirements are met.
+   *
+   * Requirements:
+   * - The `description` string must not exceed 300 characters in byte length.
+   * - The `report` hash/identifier string must not exceed 100 characters in byte length.
+   * - The caller (`msg.sender`) must be a registered `DEVELOPER`.
+   * - The current block number must be greater than `SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS` blocks away
+   * from the end of the current era (i.e., not within the security window).
+   * - The developer must be eligible to publish based on `timeBetweenWorks` (checked via `canPublishReport`).
+   * @param description A title or brief description of the report.
+   * @param report A hash or identifier (e.g., IPFS CID) of the detailed development report file.
    */
   function addReport(string memory description, string memory report) public {
+    // Character limit validation for description and report.
     require(bytes(description).length <= 300 && bytes(report).length <= 100, "Max characters reached");
+    // Only registered developers can call this function.
     require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
+    // Check if within the security window before era end.
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add report");
+    // Check if enough time has passed since the last publication.
     require(canPublishReport(msg.sender), "Can't publish yet");
 
+    // Increment global report counters and assign a unique ID.
     reportsCount++;
     reportsTotalCount++;
     uint256 id = reportsTotalCount;
 
+    // Increment developer's total reports count within their struct.
     developers[msg.sender].totalReports++;
 
     reports[id] = Report(id, poolCurrentEra(), msg.sender, description, report, 0, true, 0, block.number);
 
+    // Record the report ID for the specific developer.
     reportsIds[msg.sender].push(id);
 
+    // Increase the developer's pool level for this successful report.
     updateLevel(msg.sender);
+
+    // Emit an event for off-chain monitoring.
+    emit ReportAdded(id, msg.sender, description, block.number);
   }
 
+  /**
+   * @dev Returns an array of IDs of the reports made by a specific address.
+   * @notice Provides a list of all reports submitted by a given user.
+   * @param addr The address of the developer whose reports are to be retrieved.
+   * @return uint256[] An array of report IDs.
+   */
   function getReportsIds(address addr) public view returns (uint256[] memory) {
     return reportsIds[addr];
   }
 
   /**
-   * @dev Allows a validator to vote to invalidate a development report
-   * @notice Publish one development report per era before security blocks
-   * @param id Report id
-   * @param justification String with invalidation explanation
+   * @dev Allows a validator to vote to invalidate a specific development report.
+   * This process increments the validation count for the report and may trigger its invalidation.
+   * @notice Only authorized validators can initiate this process after meeting specific time requirements.
+   *
+   * Requirements:
+   * - The `justification` string must not exceed 300 characters in byte length.
+   * - The caller (`msg.sender`) must be eligible to vote (checked via `voteRules.canVote`).
+   * - The caller must have waited the required `timeBetweenVotes` (checked via `validationRules.waitedTimeBetweenVotes`).
+   * - The target `report` must exist and be currently valid, and its era must be the current era or a past one.
+   * @param id The unique ID of the report to be validated/invalidated.
+   * @param justification A string explaining why the report is being invalidated.
    */
   function addReportValidation(uint256 id, string memory justification) public {
+    // Character limit validation for justification.
     require(bytes(justification).length <= 300, "Max 300 characters");
+    // Check if the caller is eligible to vote. User.level must be greater than average levels.
     require(voteRules.canVote(msg.sender), "User cannot vote");
+    // Check if the caller has waited the required time between votes.
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
     Report memory report = reports[id];
 
     require(report.valid && poolCurrentEra() <= report.era, "This report is not VALID");
 
+    // Increment the number of validations for this report.
     report.validationsCount += 1;
     reports[id] = report;
 
+    // Check if the report has reached the threshold for invalidation.
     bool mustInvalidateReport = report.validationsCount >= validationRules.votesToInvalidate();
 
     if (mustInvalidateReport) {
+      // If threshold reached, invalidate the report.
       report = invalidateReport(report);
+      // Emit event for invalidation.
+      emit ReportInvalidated(id, report.developer, justification, totalPenalties(report.developer), block.number);
     }
 
+    // Call the ValidationRules contract.
     validationRules.addReportValidation(report, justification, msg.sender);
   }
 
   /**
-   * @dev Executes invalidation
-   * @param report Invalidated report
+   * @dev Internal function to execute the invalidation process for a development report.
+   * Updates the report's status, decrements global valid reports count,
+   * and records the invalidation time.
+   * @param report A `Report` storage reference to the report being invalidated.
    */
   function invalidateReport(Report memory report) internal returns (Report memory) {
     reportsCount--;
@@ -186,67 +275,79 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   }
 
   /**
-   * @dev Remove pool levels from developer
-   * @param addr Developer wallet
+   * @dev Allows an authorized caller to remove levels from a developer's pool.
+   * This function updates the developer's local level and notifies the `DeveloperPool` contract.
+   * @notice Can only be called by whitelisted addresses, the ValidatorRules contract.
+   * @param addr The wallet address of the developer from whom levels are to be removed.
+   * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
+   * this function sets the developer's pool level to 0. Otherwise, it subtracts the specified amount.
    */
   function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
     Developer memory developer = developers[addr];
 
     developers[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : developer.pool.level;
 
+    // Notify the DeveloperPool contract to adjust the developer's pool levels there as well.
     developerPool.removePoolLevels(addr, levelsToRemove);
+
+    // Emit an event.
+    emit DeveloperLevelRemoved(addr, levelsToRemove, developer.pool.level, block.number);
   }
 
   /**
-   * @dev Returns a developer
-   * @param addr The address of the developer
+   * @dev Returns a developer's detailed profile.
+   * @notice Provides the full profile of a developer.
+   * @param addr The address of the developer to retrieve.
+   * @return developer The `Developer` struct containing the user's data.
    */
   function getDeveloper(address addr) public view returns (Developer memory developer) {
     return developers[addr];
   }
 
   /**
-   * @dev Returns a report
-   * @param id reportId
+   * @dev Returns the detailed `Report` data for a given report ID.
+   * @notice Provides the full details of a specific development report.
+   * @param id The unique ID of the report to retrieve.
+   * @return Report The `Report` struct containing the report's data.
    */
   function getReport(uint256 id) public view returns (Report memory) {
     return reports[id];
   }
 
   /**
-   * @dev Check if developer exists
-   * @param addr The address of the developer
-   */
-  function developerExists(address addr) public view returns (bool) {
-    return developers[addr].id > 0;
-  }
-
-  /**
-   * @dev Call withdraw function from developerPool to try to claim tokens
-   * @notice Withdraw regeneration credit from development service provided
+   * @dev Allows a developer to initiate a withdrawal of Regeneration Credits
+   * based on their published reports and current era.
+   * @notice Developers can claim tokens for their development service.
    *
    * Requirements:
-   *
-   * - only to developers
-   * - to be eligible to withdraw tokens, you must have published at least one report in the era
-   *
+   * - The caller (`msg.sender`) must be a registered `DEVELOPER`.
+   * - The developer must be eligible for withdrawal in their current era (checked via `developerPool.canWithdraw`).
+   * - The developer's current era (`developer.pool.currentEra`) will be incremented upon successful withdrawal attempt.
    */
   function withdraw() public {
+    // Only registered developers can call this function.
     require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Pool only to developer");
 
     Developer memory developer = developers[msg.sender];
     uint256 currentEra = developer.pool.currentEra;
 
-    require(developerPool.canWithdraw(currentEra), "Can't approve withdraw");
+    // Check if the developer is eligible to withdraw for the current era through DeveloperPool.
+    require(developerPool.canWithdraw(currentEra), "Not eligible to withdraw for this era");
 
+    // Increment the developer's era in their local pool data.
     developers[msg.sender].pool.currentEra++;
 
+    // Call the DeveloperPool contract to perform the actual token withdrawal.
     developerPool.withdraw(msg.sender, currentEra);
+
+    // Emit an event for off-chain monitoring.
+    emit DeveloperWithdrawalInitiated(msg.sender, currentEra, block.number);
   }
 
   /**
-   * @dev Adds a level to a developer
-   * @param addr Developer wallet
+   * @dev Internal function to add a level to a developer's pool.
+   * This function also updates the `lastPublishedAt` timestamp for the developer.
+   * @param addr The wallet address of the developer whose level is to be increased.
    */
   function updateLevel(address addr) internal {
     Developer memory developer = developers[addr];
@@ -254,54 +355,135 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     developer.pool.level++;
     developers[addr] = developer;
 
+    // Call the DeveloperPool contract about the level increase, enabling token withdrawal.
     developerPool.addLevel(addr, 1);
+
+    // Emit an event.
+    emit DeveloperLevelIncreased(addr, developer.pool.level, block.number);
   }
 
   /**
-   * @dev Add developer penalty when invalidating a report
-   * @param addr Developer wallet
-   * @param reportId Report id
+   * @dev Adds a penalty to a developer's record when one of their reports is invalidated.
+   * @notice This function should be called by authorized contracts.
+   * @param addr The wallet address of the developer receiving the penalty.
+   * @param reportId The ID of the report associated with this penalty.
+   * @return uint256 The total number of penalties the developer has accumulated.
    */
   function addPenalty(address addr, uint256 reportId) public mustBeAllowedCaller returns (uint256) {
+    // Add the penalty record to the penalties array.
     penalties[addr].push(Penalty(reportId));
+
+    // Emit an event.
+    emit PenaltyAdded(addr, reportId, block.number);
 
     return totalPenalties(addr);
   }
 
   /**
-   * @dev Returns addr number of penalties
-   * @notice Number of penalties of an user
-   * @param addr Developer wallet
+   * @dev Returns the total number of penalties an address has accumulated.
+   * @notice Provides the current penalty count for a specific developer.
+   * @param addr The developer's wallet address.
+   * @return uint256 The total number of penalties for the given address.
    */
   function totalPenalties(address addr) public view returns (uint256) {
     return penalties[addr].length;
   }
 
   /**
-   * @dev Current developerPool era
-   * @return uint256 Return the current contract pool era
+   * @dev Returns the current era as determined by the `DeveloperPool` contract.
+   * @notice This function provides the current era from the perspective of the reward pool,
+   * essential for era-based eligibility and reward calculations for developers.
+   * @return uint256 The current era of the `DeveloperPool`.
    */
   function poolCurrentEra() public view returns (uint256) {
     return developerPool.currentContractEra();
   }
 
   /**
-   * @notice Checks if user can publish a report
-   * @return bool True if can
-   * @param addr Msg.sender addresss
+   * @dev Checks if a user can publish a new report based on `timeBetweenWorks`.
+   * @notice This function determines if a developer has waited the required time since their last publication.
+   * @param addr The address of the developer to check.
+   * @return bool `true` if the developer can publish a report, `false` otherwise.
    */
   function canPublishReport(address addr) internal view returns (bool) {
     uint256 lastPublishedAt = developers[addr].lastPublishedAt;
 
     bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
+
+    // A user can publish if:
+    // 1. Their last publication was long enough ago (`block.number > lastPublishedAt + timeBetweenWorks`).
+    // 2. They have never published before (`lastPublishedAt == 0`).
     return canPublish || lastPublishedAt <= 0;
   }
 
   /**
-   * @dev Calculate blocks to next era
-   * @return uint256 Return the amount of blocks to next era
+   * @dev Calculates the number of blocks remaining until the start of the next era,
+   * according to the `DeveloperPool` contract's era definition.
+   * @notice Provides a countdown to the next era for report planning.
+   * @return uint256 The amount of blocks remaining until the next era begins.
    */
   function nextEraIn() public view returns (uint256) {
     return uint256(developerPool.nextEraIn(poolCurrentEra()));
   }
+
+  // --- Events ---
+
+  /// @dev Emitted when a new developer successfully registers.
+  /// @param id The unique ID of the newly registered developer.
+  /// @param developerAddress The wallet address of the developer.
+  /// @param name The name provided by the developer.
+  /// @param blockNumber The block number at which the registration occurred.
+  event DeveloperRegistered(uint256 indexed id, address indexed developerAddress, string name, uint256 blockNumber);
+
+  /// @dev Emitted when a new development report is successfully added by a developer.
+  /// @param id The unique ID of the new report.
+  /// @param developerAddress The address of the developer who submitted the report.
+  /// @param description The description/title of the report.
+  /// @param blockNumber The block number at which the report was added.
+  event ReportAdded(uint256 indexed id, address indexed developerAddress, string description, uint256 blockNumber);
+
+  /// @dev Emitted when a development report is officially invalidated after reaching the required votes.
+  /// This event signifies a final state change for the report.
+  /// @param reportId The ID of the report that was invalidated.
+  /// @param developerAddress The address of the developer of the invalidated report.
+  /// @param justification The justification provided by the validator who triggered the invalidation (last vote).
+  /// @param newPenaltyCount The total number of penalties the developer now has.
+  /// @param blockNumber The block number at which the report was invalidated.
+  event ReportInvalidated(
+    uint256 indexed reportId,
+    address indexed developerAddress,
+    string justification,
+    uint256 newPenaltyCount,
+    uint256 blockNumber
+  );
+
+  /// @dev Emitted when a penalty is added to a developer's record.
+  /// @param developerAddress The address of the developer who received the penalty.
+  /// @param associatedReportId The ID of the report linked to this penalty.
+  /// @param blockNumber The block number at which the penalty was added.
+  event PenaltyAdded(address indexed developerAddress, uint256 indexed associatedReportId, uint256 blockNumber);
+
+  /// @dev Emitted when a developer successfully initiates a withdrawal of tokens.
+  /// @param developerAddress The address of the developer initiating the withdrawal.
+  /// @param era The era for which the withdrawal was initiated.
+  /// @param blockNumber The block number at which the withdrawal was initiated.
+  event DeveloperWithdrawalInitiated(address indexed developerAddress, uint256 indexed era, uint256 blockNumber);
+
+  /// @dev Emitted when a developer's level is increased.
+  /// @param developerAddress The address of the developer whose level was increased.
+  /// @param newLevel The new total level of the developer.
+  /// @param blockNumber The block number at which the level increase occurred.
+  event DeveloperLevelIncreased(address indexed developerAddress, uint256 newLevel, uint256 blockNumber);
+
+  /// @dev Emitted when a developer's pool levels are removed.
+  /// @param developerAddress The address of the developer whose levels were removed.
+  /// @param levelsRemoved The number of levels that were removed.
+  /// @param newLevel The new total level of the developer after removal.
+  /// @param blockNumber The block number at which the level removal occurred.
+  event DeveloperLevelRemoved(
+    address indexed developerAddress,
+    uint256 levelsRemoved,
+    uint256 newLevel,
+    uint256 blockNumber
+  );
 }

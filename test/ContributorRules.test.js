@@ -451,7 +451,9 @@ describe("ContributorRules", (accounts) => {
           });
 
           it("should return error message", async () => {
-            await expect(instance.connect(contr1Address).withdraw()).to.be.revertedWith("Can't approve withdraw");
+            await expect(instance.connect(contr1Address).withdraw()).to.be.revertedWith(
+              "Not eligible to withdraw for this era"
+            );
           });
         });
 
@@ -478,7 +480,9 @@ describe("ContributorRules", (accounts) => {
 
       context("when can't withdraw tokens", () => {
         it("should return error message", async () => {
-          await expect(instance.connect(contr1Address).withdraw()).to.be.revertedWith("Can't approve withdraw");
+          await expect(instance.connect(contr1Address).withdraw()).to.be.revertedWith(
+            "Not eligible to withdraw for this era"
+          );
         });
       });
     });

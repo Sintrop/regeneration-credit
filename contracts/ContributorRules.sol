@@ -71,12 +71,11 @@ contract ContributorRules is Ownable, Callable, Invitable {
   /// This prevents spamming or rapid consecutive contributions.
   uint256 internal immutable timeBetweenWorks;
 
-
   /// @notice The number of blocks before the end of an era during which no new contributions can be published.
   /// This period allows validators sufficient time to analyze and vote on contributions before the era concludes.
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
-/// @notice The maximum number of penalties a contributor can accumulate before being denied.
+  /// @notice The maximum number of penalties a contributor can accumulate before being denied.
   uint256 public immutable MAX_PENALTIES;
 
   /// @notice A mapping from a contributor's wallet address to an array of `Penalty` structs they have received.
@@ -153,7 +152,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
     communityRules.addUser(msg.sender, USER_TYPE);
 
     // Emit an event for off-chain monitoring.
-    emit ContributorRegistered(id, msg.sender, name, block.number);    
+    emit ContributorRegistered(id, msg.sender, name, block.number);
   }
 
   /**
@@ -214,7 +213,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
     addPoolLevel(msg.sender);
 
     // Emit an event.
-    emit ContributionAdded(id, msg.sender, description, block.number);    
+    emit ContributionAdded(id, msg.sender, description, block.number);
   }
 
   /**
@@ -263,11 +262,17 @@ contract ContributorRules is Ownable, Callable, Invitable {
     bool mustInvalidateContribution = contribution.validationsCount >= validationRules.votesToInvalidate();
 
     if (mustInvalidateContribution) {
-      // If threshold reached, invalidate the contribution.      
+      // If threshold reached, invalidate the contribution.
       contribution = invalidateContribution(contribution);
 
-   // Emit event for invalidation.
-      emit ContributionInvalidated(id, contribution.user, justification, totalPenalties(contribution.user), block.number);      
+      // Emit event for invalidation.
+      emit ContributionInvalidated(
+        id,
+        contribution.user,
+        justification,
+        totalPenalties(contribution.user),
+        block.number
+      );
     }
 
     // Record the validation in the ValidationRules contract.
@@ -328,7 +333,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
     uint256 currentEra = contributor.pool.currentEra;
 
     // Check if the contributor is eligible to withdraw for the current era through ContributorPool.
-    require(contributorPool.canWithdraw(currentEra), "Can't approve withdraw");
+    require(contributorPool.canWithdraw(currentEra), "Not eligible to withdraw for this era");
 
     // Increment the contributor's era in their local pool data.
     contributors[msg.sender].pool.currentEra++;
@@ -337,7 +342,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
     contributorPool.withdraw(msg.sender, currentEra);
 
     // Emit an event.
-    emit ContributorWithdrawalInitiated(msg.sender, currentEra, block.number);    
+    emit ContributorWithdrawalInitiated(msg.sender, currentEra, block.number);
   }
 
   /**
@@ -358,7 +363,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
     contributorPool.addLevel(addr, 1);
 
     // Emit an event for off-chain monitoring.
-    emit ContributorLevelIncreased(addr, contributor.pool.level, block.number);    
+    emit ContributorLevelIncreased(addr, contributor.pool.level, block.number);
   }
 
   /**
@@ -377,7 +382,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
     contributorPool.removePoolLevels(addr, levelsToRemove);
 
     // Emit an event.
-    emit ContributorLevelRemoved(addr, levelsToRemove, contributor.pool.level, block.number);    
+    emit ContributorLevelRemoved(addr, levelsToRemove, contributor.pool.level, block.number);
   }
 
   /**
@@ -445,12 +450,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
   /// @param contributorAddress The wallet address of the contributor.
   /// @param name The name provided by the contributor.
   /// @param blockNumber The block number at which the registration occurred.
-  event ContributorRegistered(
-    uint256 indexed id,
-    address indexed contributorAddress,
-    string name,
-    uint256 blockNumber
-  );
+  event ContributorRegistered(uint256 indexed id, address indexed contributorAddress, string name, uint256 blockNumber);
 
   /// @dev Emitted when a new contribution is successfully added by a contributor.
   /// @param id The unique ID of the new contribution.
@@ -477,27 +477,19 @@ contract ContributorRules is Ownable, Callable, Invitable {
     string justification,
     uint256 newPenaltyCount,
     uint256 blockNumber
-  );  
+  );
 
   /// @dev Emitted when a contributor successfully initiates a withdrawal of tokens.
   /// @param contributorAddress The address of the contributor initiating the withdrawal.
   /// @param era The era for which the withdrawal was initiated.
   /// @param blockNumber The block number at which the withdrawal was initiated.
-  event ContributorWithdrawalInitiated(
-    address indexed contributorAddress,
-    uint256 indexed era,
-    uint256 blockNumber
-  );
+  event ContributorWithdrawalInitiated(address indexed contributorAddress, uint256 indexed era, uint256 blockNumber);
 
   /// @dev Emitted when a contributor's level is increased.
   /// @param contributorAddress The address of the contributor whose level was increased.
   /// @param newLevel The new total level of the contributor.
   /// @param blockNumber The block number at which the level increase occurred.
-  event ContributorLevelIncreased(
-    address indexed contributorAddress,
-    uint256 newLevel,
-    uint256 blockNumber
-  );
+  event ContributorLevelIncreased(address indexed contributorAddress, uint256 newLevel, uint256 blockNumber);
 
   /// @dev Emitted when a contributor's pool levels are removed.
   /// @param contributorAddress The address of the contributor whose levels were removed.
@@ -509,5 +501,5 @@ contract ContributorRules is Ownable, Callable, Invitable {
     uint256 levelsRemoved,
     uint256 newLevel,
     uint256 blockNumber
-  );  
+  );
 }
