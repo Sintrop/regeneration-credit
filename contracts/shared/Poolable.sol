@@ -104,4 +104,17 @@ contract Poolable {
   function tokensPerEpoch(uint256 currentEpoch) public view returns (uint256) {
     return TOTAL_TOKENS.div((2 ** currentEpoch));
   }
+
+  /**
+   * @notice Internal function to check if a user have tokens to withdraw at an era
+   * @param delegate User address
+   * @param era User current era
+   * @param tokensPerEra Pool tokensPerEra
+   * @return bool True if have tokens to withdraw, false if will just update era.
+   */
+  function _haveTokensToWithdraw(address delegate, uint256 era, uint256 tokensPerEra) internal view returns (bool) {
+    uint256 numTokens = tokens(era, delegate, tokensPerEra);
+
+    return numTokens > 0;
+  }
 }

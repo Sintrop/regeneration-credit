@@ -52,9 +52,7 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
    * @return bool True if have tokens to withdraw, false if will just update era.
    */
   function haveTokensToWithdraw(address delegate, uint256 era) public view returns (bool) {
-    uint256 numTokens = tokens(era, delegate, tokensPerEra(currentUserEpoch(era), HALVING));
-
-    return numTokens > 0;
+    _haveTokensToWithdraw(delegate, era, tokensPerEra(currentUserEpoch(era), HALVING));
   }
 
   /**
