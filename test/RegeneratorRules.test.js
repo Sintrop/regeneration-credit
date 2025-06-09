@@ -13,17 +13,17 @@ describe("RegeneratorRules", () => {
 
   const addRegenerator = async (name, from, _coordinates = []) => {
     const test = _coordinates.length > 0 ? _coordinates : coordinates();
-    await instance.connect(from).addRegenerator(1000, name, "photoURL", test);
+    await instance.connect(from).addRegenerator(1000, name, "photoURL", "projectDescription", test);
   };
 
   const addRegenerator2 = async (name, from, _coordinates = []) => {
     const test = _coordinates.length > 0 ? _coordinates : coordinates();
-    await instance.connect(from).addRegenerator(10, name, "photoURL", test);
+    await instance.connect(from).addRegenerator(10, name, "photoURL", "projectDescription", test);
   };
 
   const addRegenerator3 = async (name, from, _coordinates = []) => {
     const test = _coordinates.length > 0 ? _coordinates : coordinates();
-    await instance.connect(from).addRegenerator(1000000000000, name, "photoURL", test);
+    await instance.connect(from).addRegenerator(1000000000000, name, "photoURL", "projectDescription", test);
   };
 
   const coordinates = () => {
@@ -253,7 +253,7 @@ describe("RegeneratorRules", () => {
     });
   });
 
-  context("when totalArea is over 100.000", () => {
+  context("when totalArea is over 500.000", () => {
     it("should return error", async () => {
       await expect(addRegenerator3("Regenerator A", prod1Address)).to.be.revertedWith(
         "Minimum 500 and maximum 500.000 square meters"

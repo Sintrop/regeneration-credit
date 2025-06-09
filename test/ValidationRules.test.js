@@ -78,7 +78,7 @@ describe("ValidationRules", () => {
   };
 
   const addRegenerator = async (name, from) => {
-    await regeneratorRules.connect(from).addRegenerator(1000, name, "photoURL", coordinates());
+    await regeneratorRules.connect(from).addRegenerator(1000, name, "projectDescription", "photoURL", coordinates());
   };
 
   const coordinates = () => {

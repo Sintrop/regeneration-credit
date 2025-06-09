@@ -552,11 +552,9 @@ describe("InvitationRules", () => {
               });
 
               it("invite with success", async () => {
-                await instance.connect(user2Address).invite(user4Address, userTypes.Supporter);
-
-                const invitation = await communityRules.invitations(user4Address);
-
-                expect(invitation.invited).to.equal(user4Address.address);
+                await expect(
+                  instance.connect(user2Address).invite(user4Address, userTypes.Supporter)
+                ).to.be.revertedWith("Invite delay not reached");
               });
             });
           });

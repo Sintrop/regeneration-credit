@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Callable } from "./shared/Callable.sol";
@@ -189,11 +189,12 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @dev Remove pool levels from developer
    * @param addr Developer wallet
    */
-  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
     Developer memory developer = developers[addr];
 
-    developers[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : developer.pool.level;
-    developerPool.removePoolLevels(addr, poolCurrentEra(), removeSomeLevels);
+    developers[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : developer.pool.level;
+
+    developerPool.removePoolLevels(addr, levelsToRemove);
   }
 
   /**
@@ -227,7 +228,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * Requirements:
    *
    * - only to developers
-   * - to be eligible to withdraw tokens, you must have publisehd at least one report in the era
+   * - to be eligible to withdraw tokens, you must have published at least one report in the era
    *
    */
   function withdraw() public {

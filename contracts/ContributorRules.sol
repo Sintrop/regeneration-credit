@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { CommunityRules } from "./CommunityRules.sol";
@@ -261,11 +261,12 @@ contract ContributorRules is Ownable, Callable, Invitable {
    * @dev Remove pool levels from contributor
    * @param addr Contributor wallet
    */
-  function removePoolLevels(address addr, uint256 removeSomeLevels) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
     Contributor memory contributor = contributors[addr];
 
-    contributors[addr].pool.level -= removeSomeLevels > 0 ? removeSomeLevels : contributor.pool.level;
-    contributorPool.removePoolLevels(addr, contributor.pool.currentEra, removeSomeLevels);
+    contributors[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : contributor.pool.level;
+
+    contributorPool.removePoolLevels(addr, levelsToRemove);
   }
 
   /**

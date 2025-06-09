@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { UserType, Delation, Invitation, UserTypeSetting } from "./types/CommunityTypes.sol";
@@ -46,6 +46,7 @@ contract CommunityRules is Ownable, Callable {
     uint256 developerProportionality,
     uint256 contributorProportionality
   ) {
+    userTypeSettings[UserType.SUPPORTER] = UserTypeSetting(0, false, false, 150, false);
     userTypeSettings[UserType.REGENERATOR] = UserTypeSetting(0, false, true, 0, false);
     userTypeSettings[UserType.INSPECTOR] = UserTypeSetting(inspectorProportionality, true, true, 0, false);
     userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(activistProportionality, false, true, 100000, true);
