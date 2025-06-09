@@ -41,7 +41,7 @@ contract RegeneratorRules is Callable {
   mapping(address => string) public projectDescriptions;
 
   /// @notice A mapping to track if a regenerator is an "impact regenerator" (has successfully
-  /// completed at least treee inspections). 
+  /// completed at least treee inspections).
   mapping(address => bool) public impactRegenerators;
 
   /// @notice A mapping from a regenerator's wallet address to a hash or identifier of their area photo.
@@ -98,7 +98,7 @@ contract RegeneratorRules is Callable {
    * @param proofPhoto A hash or identifier for the regenerator's identity verification photo.
    * @param projectDescription A brief description of the regeneration project.
    * @param _coordinates An array of coordinate points defining the boundaries of the regeneration area.
-   */   
+   */
   function addRegenerator(
     uint256 totalArea,
     string memory name,
@@ -139,7 +139,7 @@ contract RegeneratorRules is Callable {
     }
 
     // Emit an event.
-    emit RegeneratorRegistered(id, msg.sender, name, totalArea, block.number);    
+    emit RegeneratorRegistered(id, msg.sender, name, totalArea, block.number);
   }
 
   /**
@@ -147,7 +147,7 @@ contract RegeneratorRules is Callable {
    * based on their completed inspections and current era.
    * @notice Regenerators can claim tokens for their regeneration service, provided they meet
    * the minimum inspection threshold and are eligible for the current era.
-   * To win more tokens, regenerators must plant more trees from different species. 
+   * To win more tokens, regenerators must plant more trees from different species.
    *
    * Requirements:
    * - The caller (`msg.sender`) must be a registered `REGENERATOR`.
@@ -170,7 +170,7 @@ contract RegeneratorRules is Callable {
     regeneratorPool.withdraw(msg.sender, regenerator.pool.currentEra);
 
     // Emit an event for off-chain monitoring.
-    emit RegeneratorWithdrawalInitiated(msg.sender, regenerator.pool.currentEra, block.number);    
+    emit RegeneratorWithdrawalInitiated(msg.sender, regenerator.pool.currentEra, block.number);
   }
 
   /**
@@ -313,7 +313,7 @@ contract RegeneratorRules is Callable {
     if (!regenerator.pool.onContractPool) {
       regenerators[addr].pool.onContractPool = true;
       levels = regenerator.regenerationScore.score;
-      emit RegeneratorEnteredPool(addr, block.number); // Emit event for entering pool      
+      emit RegeneratorEnteredPool(addr, block.number); // Emit event for entering pool
     }
 
     // Add level(s) to the regenerator pool.
@@ -358,7 +358,7 @@ contract RegeneratorRules is Callable {
    */
   function decrementArea(address addr) internal {
     regenerationArea -= regenerators[addr].totalArea;
-  }  
+  }
 
   // --- View Functions ---
 
@@ -431,24 +431,17 @@ contract RegeneratorRules is Callable {
     string name,
     uint256 totalArea,
     uint256 blockNumber
-  );  
+  );
 
   /// @dev Emitted when a regenerator successfully initiates a withdrawal of tokens.
   /// @param regeneratorAddress The address of the regenerator initiating the withdrawal.
   /// @param era The era for which the withdrawal was initiated.
   /// @param blockNumber The block number at which the withdrawal was initiated.
-  event RegeneratorWithdrawalInitiated(
-    address indexed regeneratorAddress,
-    uint256 indexed era,
-    uint256 blockNumber
-  );  
+  event RegeneratorWithdrawalInitiated(address indexed regeneratorAddress, uint256 indexed era, uint256 blockNumber);
 
   /// @dev Emitted when a regenerator initially enters the contract's reward pool
   /// by meeting the minimum inspection criteria and `onContractPool` is set to true.
   /// @param regeneratorAddress The address of the regenerator entering the pool.
   /// @param blockNumber The block number at which the regenerator entered the pool.
-  event RegeneratorEnteredPool(
-    address indexed regeneratorAddress,
-    uint256 blockNumber
-  );  
+  event RegeneratorEnteredPool(address indexed regeneratorAddress, uint256 blockNumber);
 }
