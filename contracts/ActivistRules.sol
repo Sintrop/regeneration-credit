@@ -92,15 +92,14 @@ contract ActivistRules is Callable, Invitable {
     // Pool initialized with level 0 and current era set to the current pool era.
     Activist memory activist = Activist(id, msg.sender, name, proofPhoto, Pool(0, poolCurrentEra()), block.number);
 
-
     // Store the new activist data in storage.
     activists[msg.sender] = activist;
     activistsAddress[id] = msg.sender;
-    // Register the user with CommunityRules as an ACTIVIST.  
+    // Register the user with CommunityRules as an ACTIVIST.
     communityRules.addUser(msg.sender, USER_TYPE);
 
     // Emit event
-    emit ActivistRegistered(id, msg.sender, name, block.number);    
+    emit ActivistRegistered(id, msg.sender, name, block.number);
   }
 
   /**
@@ -130,7 +129,7 @@ contract ActivistRules is Callable, Invitable {
     return activists[addr];
   }
 
- /**
+  /**
    * @dev External function for authorized callers to add a pool level to an activist
    * when an invited Regenerator reaches the minimum inspection threshold.
    * @notice This function should be called by the InspectionRules contract.
@@ -217,7 +216,7 @@ contract ActivistRules is Callable, Invitable {
     activistPool.addLevel(activistAddress, 1);
 
     // Emit an event for off-chain monitoring.
-    emit ActivistLevelIncreased(activistAddress, activist.pool.level, block.number);    
+    emit ActivistLevelIncreased(activistAddress, activist.pool.level, block.number);
   }
 
   /**
@@ -249,7 +248,7 @@ contract ActivistRules is Callable, Invitable {
     activistPool.withdraw(msg.sender, currentEra);
 
     // Emit an event.
-    emit ActivistWithdrawalInitiated(msg.sender, currentEra, block.number);    
+    emit ActivistWithdrawalInitiated(msg.sender, currentEra, block.number);
   }
 
   /**
@@ -257,7 +256,7 @@ contract ActivistRules is Callable, Invitable {
    * This function updates the activist's local level and notifies the `ActivistPool` contract.
    * @notice Can only be called by the ValidationRules contract.
    * @param addr The wallet address of the activist from whom levels are to be removed.
-   * @param levelsToRemove The number of levels to decrease. 
+   * @param levelsToRemove The number of levels to decrease.
    */
   function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
     Activist memory activist = activists[addr];
@@ -266,7 +265,7 @@ contract ActivistRules is Callable, Invitable {
     activistPool.removePoolLevels(addr, levelsToRemove);
 
     // Emit an event
-    emit ActivistLevelRemoved(addr, levelsToRemove, activist.pool.level, block.number);    
+    emit ActivistLevelRemoved(addr, levelsToRemove, activist.pool.level, block.number);
   }
 
   /**
@@ -285,12 +284,7 @@ contract ActivistRules is Callable, Invitable {
   /// @param activistAddress The wallet address of the activist.
   /// @param name The name provided by the activist.
   /// @param blockNumber The block number at which the registration occurred.
-  event ActivistRegistered(
-    uint256 indexed id,
-    address indexed activistAddress,
-    string name,
-    uint256 blockNumber
-  );
+  event ActivistRegistered(uint256 indexed id, address indexed activistAddress, string name, uint256 blockNumber);
 
   /// @dev Emitted when an activist earns a level from an invited Regenerator or Inspector
   /// successfully completing their minimum inspections.
@@ -309,21 +303,13 @@ contract ActivistRules is Callable, Invitable {
   /// @param activistAddress The address of the activist whose level was increased.
   /// @param newLevel The new total level of the activist.
   /// @param blockNumber The block number at which the level increase occurred.
-  event ActivistLevelIncreased(
-    address indexed activistAddress,
-    uint256 newLevel,
-    uint256 blockNumber
-  );
+  event ActivistLevelIncreased(address indexed activistAddress, uint256 newLevel, uint256 blockNumber);
 
   /// @dev Emitted when an activist successfully initiates a withdrawal of tokens.
   /// @param activistAddress The address of the activist initiating the withdrawal.
   /// @param era The era for which the withdrawal was initiated.
   /// @param blockNumber The block number at which the withdrawal was initiated.
-  event ActivistWithdrawalInitiated(
-    address indexed activistAddress,
-    uint256 indexed era,
-    uint256 blockNumber
-  );
+  event ActivistWithdrawalInitiated(address indexed activistAddress, uint256 indexed era, uint256 blockNumber);
 
   /// @dev Emitted when an activist's pool levels are removed.
   /// @param activistAddress The address of the activist whose levels were removed.
@@ -335,5 +321,5 @@ contract ActivistRules is Callable, Invitable {
     uint256 levelsRemoved,
     uint256 newLevel,
     uint256 blockNumber
-  );  
+  );
 }
