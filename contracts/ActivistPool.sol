@@ -52,7 +52,7 @@ contract ActivistPool is Poolable, Ownable, Blockable, Callable {
    * @return bool True if have tokens to withdraw, false if will just update era.
    */
   function haveTokensToWithdraw(address delegate, uint256 era) public view returns (bool) {
-    _haveTokensToWithdraw(delegate, era, tokensPerEra(currentUserEpoch(era), HALVING));
+    return _haveTokensToWithdraw(delegate, era, tokensPerEra(getEpochForEra(era), HALVING));
   }
 
   /**

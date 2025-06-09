@@ -132,11 +132,11 @@ contract Poolable {
    * @notice Internal function to check if a user have tokens to withdraw at an era
    * @param delegate User address
    * @param era User current era
-   * @param tokensPerEra Pool tokensPerEra
+   * @param _tokensPerEra Pool tokensPerEra
    * @return bool True if have tokens to withdraw, false if will just update era.
    */
-  function _haveTokensToWithdraw(address delegate, uint256 era, uint256 tokensPerEra) internal view returns (bool) {
-    uint256 numTokens = tokens(era, delegate, tokensPerEra);
+  function _haveTokensToWithdraw(address delegate, uint256 era, uint256 _tokensPerEra) internal view returns (bool) {
+    uint256 numTokens = calculateUserEraTokens(era, delegate, _tokensPerEra);
 
     return numTokens > 0;
   }
