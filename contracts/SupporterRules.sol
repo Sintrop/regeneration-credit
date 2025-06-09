@@ -10,8 +10,8 @@ import { SupporterPool } from "./SupporterPool.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
- * @author Sintrop
  * @title SupporterRules
+ * @author Sintrop
  * @notice Manages the rules and data specific to Supporter users within the community.
  * @dev This contract handles supporter registration, profile updates, token burning for environmental offsets and content publications, and management of reduction commitments.
  */
@@ -62,64 +62,6 @@ contract SupporterRules {
   /// @notice Supporter UserType
   UserType private constant USER_TYPE = UserType.SUPPORTER;
 
-  // --- Events ---
-
-  /**
-   * @notice Emitted when a new supporter is registered.
-   * @param supporterAddress The address of the newly registered supporter.
-   * @param supporterId The unique ID assigned to the supporter.
-   * @param name The name of the supporter.
-   * @param profilePhoto The URL or hash of the supporter's profile photo.
-   * @param createdAtBlock The block number at which the supporter was registered.
-   */
-  event SupporterRegistered(
-    address indexed supporterAddress,
-    uint256 supporterId,
-    string name,
-    string profilePhoto,
-    uint256 createdAtBlock
-  );
-
-  /**
-   * @notice Emitted when a supporter burns tokens to offset degradation.
-   * @param supporterAddress The address of the supporter.
-   * @param offsetId The unique ID of the offset record.
-   * @param amountBurned The amount of tokens burned by the supporter for the offset.
-   * @param calculatorItemId The ID of the calculator item, if associated.
-   * @param blockNumber The block number at which the offset occurred.
-   */
-  event OffsetMade(
-    address indexed supporterAddress,
-    uint256 offsetId,
-    uint256 amountBurned,
-    uint256 calculatorItemId,
-    uint256 blockNumber
-  );
-
-  /**
-   * @notice Emitted when a supporter burns tokens to publish content.
-   * @param publisherAddress The address of the supporter.
-   * @param publicationId The unique ID of the publication record.
-   * @param amountBurned The amount of tokens burned by the supporter for the publication.
-   * @param description The description of the publication.
-   * @param blockNumber The block number at which the publication occurred.
-   */
-  event PublicationPosted(
-    address indexed publisherAddress,
-    uint256 publicationId,
-    uint256 amountBurned,
-    string description,
-    uint256 blockNumber
-  );
-
-  /**
-   * @notice Emitted when a supporter declares a reduction commitment.
-   * @param supporterAddress The address of the supporter.
-   * @param calculatorItemId The ID of the calculator item for the commitment.
-   * @param blockNumber The block number at which the commitment was declared.
-   */
-  event ReductionCommitmentDeclared(address indexed supporterAddress, uint256 calculatorItemId, uint256 blockNumber);
-
   // --- Constructor ---
 
   /**
@@ -148,12 +90,15 @@ contract SupporterRules {
    * @param name The name of the supporter (max 100 characters).
    * @param profilePhoto The profile photo URL/hash of the supporter (max 100 characters).
    */
-  function addSupporter(string memory name, string memory profilePhoto) public {
-    require(bytes(name).length <= 100 && bytes(profilePhoto).length <= 100, "Max 100 characters");
+  function addSupporter(string memory name, string memory description, string memory profilePhoto) public {
+    require(
+      bytes(name).length <= 50 && bytes(description).length <= 200 && bytes(profilePhoto).length <= 100,
+      "Max characters reached"
+    );
 
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE).add(1);
 
-    Supporter memory supporter = Supporter(id, msg.sender, name, profilePhoto, 0, 0, 0, block.number);
+    Supporter memory supporter = Supporter(id, msg.sender, name, description, profilePhoto, 0, 0, 0, block.number);
 
     supporters[msg.sender] = supporter;
     supportersAddress[id] = msg.sender;
@@ -238,24 +183,6 @@ contract SupporterRules {
   }
 
   /**
-   * @dev Internal function to handle token burning and inviter commission.
-   * It retrieves invitation data from CommunityRules and calls the SupporterPool to perform the burn.
-   * @param amount The total amount of tokens to consider for burning (before commission).
-   * @return uint256 The net amount of tokens burned by the supporter (after commission).
-   */
-  function burnTokens(uint256 amount) internal returns (uint256) {
-    Invitation memory invitation = communityRules.getInvitation(msg.sender);
-    bool isInvited = invitation.createdAtBlock != 0; // Check if invitation exists
-
-    uint256 inviterTotalTokens = isInvited ? amount.mul(INVITER_PERCENTAGE).div(100) : 0;
-    uint256 amountBurn = amount.sub(inviterTotalTokens);
-
-    supporterPool.burnTokens(msg.sender, invitation.inviter, amountBurn, inviterTotalTokens);
-
-    return amountBurn;
-  }
-
-  /**
    * @notice Allows a supporter to declare a reduction commitment for a specific calculator item.
    * @dev Records the calculator item ID as a commitment for the calling supporter.
    * Requires the calculator item to exist and the sender to be a registered supporter.
@@ -274,6 +201,26 @@ contract SupporterRules {
     supporter.reductionItemsCount++;
 
     emit ReductionCommitmentDeclared(msg.sender, calculatorItemId, block.number);
+  }
+
+  // --- Internal Functions (State Modifying) ---
+
+  /**
+   * @dev Internal function to handle token burning and inviter commission.
+   * It retrieves invitation data from CommunityRules and calls the SupporterPool to perform the burn.
+   * @param amount The total amount of tokens to consider for burning (before commission).
+   * @return uint256 The net amount of tokens burned by the supporter (after commission).
+   */
+  function burnTokens(uint256 amount) internal returns (uint256) {
+    Invitation memory invitation = communityRules.getInvitation(msg.sender);
+    bool isInvited = invitation.createdAtBlock != 0; // Check if invitation exists
+
+    uint256 inviterTotalTokens = isInvited ? amount.mul(INVITER_PERCENTAGE).div(100) : 0;
+    uint256 amountBurn = amount.sub(inviterTotalTokens);
+
+    supporterPool.burnTokens(msg.sender, invitation.inviter, amountBurn, inviterTotalTokens);
+
+    return amountBurn;
   }
 
   // --- View Functions ---
@@ -296,4 +243,62 @@ contract SupporterRules {
   function getSupporter(address addr) public view returns (Supporter memory) {
     return supporters[addr];
   }
+
+  // --- Events ---
+
+  /**
+   * @notice Emitted when a new supporter is registered.
+   * @param supporterAddress The address of the newly registered supporter.
+   * @param supporterId The unique ID assigned to the supporter.
+   * @param name The name of the supporter.
+   * @param profilePhoto The URL or hash of the supporter's profile photo.
+   * @param createdAtBlock The block number at which the supporter was registered.
+   */
+  event SupporterRegistered(
+    address indexed supporterAddress,
+    uint256 supporterId,
+    string name,
+    string profilePhoto,
+    uint256 createdAtBlock
+  );
+
+  /**
+   * @notice Emitted when a supporter burns tokens to offset degradation.
+   * @param supporterAddress The address of the supporter.
+   * @param offsetId The unique ID of the offset record.
+   * @param amountBurned The amount of tokens burned by the supporter for the offset.
+   * @param calculatorItemId The ID of the calculator item, if associated.
+   * @param blockNumber The block number at which the offset occurred.
+   */
+  event OffsetMade(
+    address indexed supporterAddress,
+    uint256 offsetId,
+    uint256 amountBurned,
+    uint256 calculatorItemId,
+    uint256 blockNumber
+  );
+
+  /**
+   * @notice Emitted when a supporter burns tokens to publish content.
+   * @param publisherAddress The address of the supporter.
+   * @param publicationId The unique ID of the publication record.
+   * @param amountBurned The amount of tokens burned by the supporter for the publication.
+   * @param description The description of the publication.
+   * @param blockNumber The block number at which the publication occurred.
+   */
+  event PublicationPosted(
+    address indexed publisherAddress,
+    uint256 publicationId,
+    uint256 amountBurned,
+    string description,
+    uint256 blockNumber
+  );
+
+  /**
+   * @notice Emitted when a supporter declares a reduction commitment.
+   * @param supporterAddress The address of the supporter.
+   * @param calculatorItemId The ID of the calculator item for the commitment.
+   * @param blockNumber The block number at which the commitment was declared.
+   */
+  event ReductionCommitmentDeclared(address indexed supporterAddress, uint256 calculatorItemId, uint256 blockNumber);
 }

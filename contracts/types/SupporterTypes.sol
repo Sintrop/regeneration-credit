@@ -14,6 +14,7 @@ struct Supporter {
   uint256 id;
   address supporterWallet;
   string name;
+  string description;
   string profilePhoto;
   uint256 publicationsCount;
   uint256 offsetsCount;
