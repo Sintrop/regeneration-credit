@@ -57,6 +57,21 @@ contract RegenerationCredit is ERC20, Ownable {
   // --- Public Functions ---
 
   /**
+   * @dev Allows any user to burn their own tokens.
+   * @notice Compensate your environmental degradation by burning Regeneration Credit tokens.
+   * Burning tokens permanently removes them from circulation and contributes to certified offset.
+   * @param amount The amount of tokens to burn from the caller's balance.
+   *
+   * Requirements:
+   * - The caller (`msg.sender`) must have `amount` tokens.
+   * - `amount` must be greater than 0.
+   */
+  function burnTokens(uint256 amount) public {
+    require(amount > 0, "Burn amount must be greater than 0");
+    burnTokensInternal(msg.sender, amount);
+  }
+
+  /**
    * @dev Allows the contract owner to designate a new address as a "contract pool"
    * and transfer an initial allocation of tokens to it.
    * @notice This function is used to fund and activate distribution pools within the ecosystem.
@@ -79,6 +94,8 @@ contract RegenerationCredit is ERC20, Ownable {
 
     return true;
   }
+
+  // --- Pool functions ---
 
   /**
    * @dev Allows a designated "contract pool" to transfer tokens to a user as a reward for
@@ -107,30 +124,6 @@ contract RegenerationCredit is ERC20, Ownable {
   }
 
   /**
-   * @notice Checks if a given address is a designated "contract pool" in the system.
-   * @param poolAddress The address to check.
-   * @return bool `true` if the address is a contract pool, `false` otherwise.
-   */
-  function contractPool(address poolAddress) public view returns (bool) {
-    return contractsPools[poolAddress];
-  }
-
-  /**
-   * @dev Allows any user to burn their own tokens.
-   * @notice Compensate your environmental degradation by burning Regeneration Credit tokens.
-   * Burning tokens permanently removes them from circulation and contributes to certified offset.
-   * @param amount The amount of tokens to burn from the caller's balance.
-   *
-   * Requirements:
-   * - The caller (`msg.sender`) must have `amount` tokens.
-   * - `amount` must be greater than 0.
-   */
-  function burnTokens(uint256 amount) public {
-    require(amount > 0, "Burn amount must be greater than 0");
-    burnTokensInternal(msg.sender, amount);
-  }
-
-  /**
    * @dev Allows a designated "contract pool" to burn tokens on behalf of another address.
    * @notice This function can only be called by the SupporterPool.
    * @param tokenOwner The address from which tokens will be burned.
@@ -146,6 +139,8 @@ contract RegenerationCredit is ERC20, Ownable {
     require(amount > 0, "Burn amount must be greater than 0");
     burnTokensInternal(tokenOwner, amount);
   }
+
+  // --- Internal functions ---
 
   /**
    * @dev Internal function to handle the burning of tokens and updating certification records.
@@ -166,6 +161,8 @@ contract RegenerationCredit is ERC20, Ownable {
     emit TokensCertified(tokenOwner, amount, certificate[tokenOwner]);
   }
 
+  // --- View functions ---
+
   /**
    * @notice Returns the total amount of tokens that have been permanently burned/retired (certified) across the system.
    * @return uint256 The total certified tokens.
@@ -180,6 +177,15 @@ contract RegenerationCredit is ERC20, Ownable {
    */
   function totalLocked() public view returns (uint256) {
     return totalLocked_;
+  }
+
+  /**
+   * @notice Checks if a given address is a designated "contract pool" in the system.
+   * @param poolAddress The address to check.
+   * @return bool `true` if the address is a contract pool, `false` otherwise.
+   */
+  function contractPool(address poolAddress) public view returns (bool) {
+    return contractsPools[poolAddress];
   }
 
   // --- Modifiers ---
