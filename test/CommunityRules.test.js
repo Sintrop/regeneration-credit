@@ -67,8 +67,8 @@ describe("CommunityRules", function () {
           expect(usersCount).to.equal(1);
         });
 
-        it("must emit AddUserEvent", async () => {
-          await expect(receipt).to.emit(instance, "AddUserEvent").withArgs(user1Address, userTypes.Regenerator);
+        it("must emit UserRegistered", async () => {
+          await expect(receipt).to.emit(instance, "UserRegistered").withArgs(user1Address, userTypes.Regenerator);
         });
       });
 
@@ -366,9 +366,9 @@ describe("CommunityRules", function () {
           expect(invitation.invited).to.equal(user1Address.address);
         });
 
-        it("must emit AddInvitationEvent", async () => {
+        it("must emit InvitationAdded", async () => {
           await expect(receipt)
-            .to.emit(instance, "AddInvitationEvent")
+            .to.emit(instance, "InvitationAdded")
             .withArgs(owner, user1Address, userTypes.Regenerator);
         });
       });
