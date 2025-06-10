@@ -467,8 +467,8 @@ describe("CommunityRules", function () {
           expect(testimony).to.equal("testimony");
         });
 
-        it("must emit AddDelelationEvent", async () => {
-          await expect(receipt).to.emit(instance, "AddDelelationEvent").withArgs(user2Address, user1Address);
+        it("must emit DelationAdded", async () => {
+          await expect(receipt).to.emit(instance, "DelationAdded").withArgs(user2Address, user1Address);
         });
       });
     });
