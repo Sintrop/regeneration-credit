@@ -6,36 +6,41 @@ import { UserType, Delation, Invitation, UserTypeSetting } from "./types/Communi
 import { Callable } from "./shared/Callable.sol";
 
 /**
- * @author Sintrop
  * @title CommunityRules
- * @notice Manages user types, registration, invitations, and a delation system within the community.
- * @dev This contract acts as a central registry for user data, defining rules for user types, proportionality in registration, and handling reports of unwanted behavior.
+ * @author Sintrop
+ * @notice This contract serves as the central registry for user management within the community.
+ * It manages user types, registration processes, invitation mechanisms, and a delation system for reporting unwanted behavior.
+ * @dev Inherits from `Ownable` for deploy setup and `Callable` for restricting access to sensitive functions
+ * to whitelisted addresses. It defines critical parameters and logic for user onboarding and community governance.
  */
 contract CommunityRules is Ownable, Callable {
   // --- State Variables ---
 
-  /// @notice The relationship between addresses and user type
+  /// @notice A mapping from a user's wallet address to their assigned `UserType`.
   mapping(address => UserType) internal users;
 
-  /// @notice The relationship between addresses and delations received
+  /// @notice A mapping from a reported user's address to an array of `Delation` structs they have received.
+  /// Stores a historical record of all delations against a user.
   mapping(address => Delation[]) private delations;
 
-  /// @notice The relationship between addresses and invitation received
+  /// @notice A mapping from an invited user's address to their `Invitation` details.
   mapping(address => Invitation) public invitations;
 
-  /// @notice Active user count by userType
+  /// @notice A mapping to track the count of active users for each `UserType`.
   mapping(UserType => uint256) public userTypesCount;
 
-  /// @notice Active and invalid user count by userType (total registered including denied).
+  /// @notice A mapping to track the total count of registered users for each `UserType`,
+  /// including both active and `DENIED` users. This count serves as a global counter for new user IDs.
   mapping(UserType => uint256) public userTypesTotalCount;
 
-  /// @notice Settings by userType, including proportionality, invitation requirements, and voter status.
+  /// @notice A mapping storing specific settings for each `UserType`,
+  /// including proportionality rules, invitation requirements, and voter status.
   mapping(UserType => UserTypeSetting) public userTypeSettings;
 
   /// @notice Total count of delations received across all users.
   uint256 public delationsCount;
 
-  /// @notice Total active users count in the system.
+  /// @notice The global total count of all active (non-`UNDEFINED`, non-`DENIED`) users in the system..
   uint256 public usersCount;
 
   /// @notice Minimum number of users allowed for a specific type before proportionality rules apply.
@@ -62,7 +67,6 @@ contract CommunityRules is Ownable, Callable {
   ) {
     // Initialize settings for all relevant UserTypes
     userTypeSettings[UserType.SUPPORTER] = UserTypeSetting(0, false, false, 150, false);
-    userTypeSettings[UserType.SUPPORTER] = UserTypeSetting(0, false, false, 150, false);
     userTypeSettings[UserType.REGENERATOR] = UserTypeSetting(0, false, true, 0, false);
     userTypeSettings[UserType.INSPECTOR] = UserTypeSetting(inspectorProportionality, true, true, 0, false);
     userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(activistProportionality, false, true, 100000, true);
@@ -70,36 +74,6 @@ contract CommunityRules is Ownable, Callable {
     userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(developerProportionality, false, true, 100000, true);
     userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(contributorProportionality, false, true, 100000, true);
   }
-
-  // --- Events ---
-
-  /**
-   * @notice Emitted when a new user is successfully added to the system.
-   * @param addr The address of the newly registered user.
-   * @param userType The `UserType` assigned to the new user.
-   */
-  event AddUserEvent(address indexed addr, UserType userType);
-
-  /**
-   * @notice Emitted when a user's type is changed to `DENIED`.
-   * @param addr The address of the user who has been denied.
-   */
-  event DeniedUserEvent(address indexed addr);
-
-  /**
-   * @notice Emitted when a delation is successfully added.
-   * @param informer The address of the user who submitted the delation.
-   * @param reported The address of the user being reported.
-   */
-  event AddDelelationEvent(address indexed informer, address indexed reported);
-
-  /**
-   * @notice Emitted when an invitation is successfully added to the system.
-   * @param inviter The address of the user who issued the invitation.
-   * @param invited The address of the user who received the invitation.
-   * @param userTypeTo The `UserType` the invited user is intended to register as.
-   */
-  event AddInvitationEvent(address indexed inviter, address indexed invited, UserType userTypeTo);
 
   // --- External Functions (State Modifying) ---
 
@@ -122,7 +96,7 @@ contract CommunityRules is Ownable, Callable {
     userTypesCount[userType]++;
     userTypesTotalCount[userType]++;
 
-    emit AddUserEvent(addr, userType);
+    emit UserRegistered(addr, userType);
   }
 
   /**
@@ -152,12 +126,12 @@ contract CommunityRules is Ownable, Callable {
     delations[addr].push(Delation(delationsCount + 1, msg.sender, addr, title, testimony));
     delationsCount++;
 
-    emit AddDelelationEvent(msg.sender, addr);
+    emit DelationAdded(msg.sender, addr);
   }
 
   /**
    * @notice Attempts to add an invitation for a user.
-   * @dev This function is intended to be called by an allowed caller (e.g., an Invitation Rules).
+   * @dev This function is intended to be called by an allowed caller, the Invitation Rules.
    * It records an invitation for a specific user to register as a certain user type.
    * Prevents re-inviting an already invited or registered address.
    * @param inviter The address of the user who issued the invitation.
@@ -171,7 +145,7 @@ contract CommunityRules is Ownable, Callable {
 
     invitations[invited] = Invitation(invited, inviter, userType, block.number);
 
-    emit AddInvitationEvent(inviter, invited, userType);
+    emit InvitationAdded(inviter, invited, userType);
   }
 
   /**
@@ -200,10 +174,14 @@ contract CommunityRules is Ownable, Callable {
    * @return bool True if the user meets the invitation criteria for registration, false otherwise.
    */
   function invitedTypeOnRegister(address addr, UserType userType) internal view returns (bool) {
+    // If the UserType does not require an invitation for registration, return true.
     if (!userTypeSettings[userType].needInvitationOnRegister) return true;
 
+    // Retrieve the invitation details for the given address.
     Invitation memory invitation = invitations[addr];
 
+    // Check if an invitation exists for the address and if the invitation's userType matches the requested userType.
+    // An invitation exists if `createdAtBlock` is greater than 0.
     return invitation.createdAtBlock > 0 && invitation.userType == userType;
   }
 
@@ -295,4 +273,34 @@ contract CommunityRules is Ownable, Callable {
   function getInvitation(address addr) public view returns (Invitation memory) {
     return invitations[addr];
   }
+
+  // --- Events ---
+
+  /**
+   * @notice Emitted when a new user is successfully added to the system.
+   * @param addr The address of the newly registered user.
+   * @param userType The `UserType` assigned to the new user.
+   */
+  event UserRegistered(address indexed addr, UserType userType);
+
+  /**
+   * @notice Emitted when a user's type is changed to `DENIED`.
+   * @param addr The address of the user who has been denied.
+   */
+  event DeniedUserEvent(address indexed addr);
+
+  /**
+   * @notice Emitted when a delation is successfully added.
+   * @param informer The address of the user who submitted the delation.
+   * @param reported The address of the user being reported.
+   */
+  event DelationAdded(address indexed informer, address indexed reported);
+
+  /**
+   * @notice Emitted when an invitation is successfully added to the system.
+   * @param inviter The address of the user who issued the invitation.
+   * @param invited The address of the user who received the invitation.
+   * @param userTypeTo The `UserType` the invited user is intended to register as.
+   */
+  event InvitationAdded(address indexed inviter, address indexed invited, UserType userTypeTo);
 }
