@@ -87,58 +87,6 @@ contract InspectionRules is Callable {
   /// @notice Amount of blocks for validators to analyze inspections before an era ends.
   uint256 public immutable securityBlocksToValidatorAnalysis;
 
-  // --- Events ---
-
-  /**
-   * @notice Emitted when a new inspection request is successfully created by a Regenerator.
-   * @param inspectionId The unique ID of the newly created inspection.
-   * @param regeneratorAddress The address of the Regenerator who requested the inspection.
-   * @param createdAt The block number when the inspection was requested.
-   */
-  event InspectionRequested(uint256 indexed inspectionId, address indexed regeneratorAddress, uint256 createdAt);
-
-  /**
-   * @notice Emitted when an Inspector successfully accepts an open inspection.
-   * @param inspectionId The ID of the inspection that was accepted.
-   * @param inspectorAddress The address of the Inspector who accepted the inspection.
-   * @param acceptedAt The block number when the inspection was accepted.
-   */
-  event InspectionAccepted(uint256 indexed inspectionId, address indexed inspectorAddress, uint256 acceptedAt);
-
-  /**
-   * @notice Emitted when an accepted inspection is successfully realized and submitted by an Inspector.
-   * @param inspectionId The ID of the inspection that was realized.
-   * @param inspectorAddress The address of the Inspector who realized the inspection.
-   * @param regeneratorAddress The address of the Regenerator whose area was inspected.
-   * @param treesResult The reported number of trees.
-   * @param biodiversityResult The reported number of species.
-   * @param regenerationScore The calculated regeneration score.
-   * @param inspectedAt The block number when the inspection was realized.
-   */
-  event InspectionRealized(
-    uint256 indexed inspectionId,
-    address indexed inspectorAddress,
-    address indexed regeneratorAddress,
-    uint256 treesResult,
-    uint256 biodiversityResult,
-    uint256 regenerationScore,
-    uint256 inspectedAt
-  );
-
-  /**
-   * @notice Emitted when an inspection is successfully invalidated due to validator votes.
-   * @param inspectionId The ID of the inspection that was invalidated.
-   * @param inspectorAddress The address of the Inspector who performed the invalidated inspection.
-   * @param regeneratorAddress The address of the Regenerator whose inspection was invalidated.
-   * @param invalidatedAt The block number when the inspection was invalidated.
-   */
-  event InspectionInvalidated(
-    uint256 indexed inspectionId,
-    address indexed inspectorAddress,
-    address indexed regeneratorAddress,
-    uint256 invalidatedAt
-  );
-
   // --- Constructor ---
 
   /**
@@ -248,20 +196,20 @@ contract InspectionRules is Callable {
    * How many different species of those plants/trees were found? Each different species is equivalent to one unity and only trees and plants managed or planted by the regenerator should be counted. Justify your answer in the report.
    * Max result of 200.000 trees and 300 biodiversity.
    * @param inspectionId The id of the inspection to be realized.
-   * @param proofPhoto The string of a photo with the regenerator or at the regeneration area.
+   * @param proofPhotos The string of a photo with the regenerator or at the regeneration area.
+   * @param justificationReport The justification and report of the result found.
    * @param treesResult The number of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted.
    * @param biodiversityResult The number of different species of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted.
-   * @param report The justification of the result found.
    */
   function realizeInspection(
     uint256 inspectionId,
-    string memory proofPhoto,
-    string memory report,
+    string memory proofPhotos,
+    string memory justificationReport,
     uint256 treesResult,
     uint256 biodiversityResult
   ) public {
-    require(bytes(proofPhoto).length <= 100, "Max proofPhoto length");
-    require(bytes(report).length <= 1000, "Max report length");
+    require(bytes(proofPhotos).length <= 100, "Max proofPhotos length");
+    require(bytes(justificationReport).length <= 1000, "Max report length");
 
     Inspection memory inspection = inspections[inspectionId];
 
@@ -271,7 +219,7 @@ contract InspectionRules is Callable {
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
     require(treesResult <= 200000 && biodiversityResult <= 300, "Max result limit");
 
-    markAsRealized(inspection, proofPhoto, report, treesResult, biodiversityResult);
+    markAsRealized(inspection, proofPhotos, justificationReport, treesResult, biodiversityResult);
 
     afterRealizeInspection(inspection);
 
@@ -353,15 +301,15 @@ contract InspectionRules is Callable {
   /**
    * @dev Update the inspection data
    * @param inspection The current inspection
-   * @param proofPhoto The string of a photo with the regenerator or at the regeneration area
+   * @param proofPhotos The string of a photo with the regenerator or at the regeneration area
    * @param treesResult The number of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
    * @param biodiversityResult The number of different species of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
-   * @param report The justification of the result found
+   * @param justificationReport The justification of the result found
    */
   function markAsRealized(
     Inspection memory inspection,
-    string memory proofPhoto,
-    string memory report,
+    string memory proofPhotos,
+    string memory justificationReport,
     uint256 treesResult,
     uint256 biodiversityResult
   ) internal {
@@ -369,8 +317,8 @@ contract InspectionRules is Callable {
     inspection.treesResult = treesResult;
     inspection.biodiversityResult = biodiversityResult;
     inspection.regenerationScore = regenerationIndexRules.calculateScore(treesResult, biodiversityResult);
-    inspection.proofPhoto = proofPhoto;
-    inspection.report = report;
+    inspection.proofPhotos = proofPhotos;
+    inspection.justificationReport = justificationReport;
     inspection.inspectedAt = block.number;
     inspection.inspectedAtEra = regeneratorRules.poolCurrentEra();
 
@@ -474,4 +422,56 @@ contract InspectionRules is Callable {
 
     return regeneratorRules.nextEraIn().sub(blocksToExpireAcceptedInspection) > securityBlocksToValidatorAnalysis;
   }
+
+  // --- Events ---
+
+  /**
+   * @notice Emitted when a new inspection request is successfully created by a Regenerator.
+   * @param inspectionId The unique ID of the newly created inspection.
+   * @param regeneratorAddress The address of the Regenerator who requested the inspection.
+   * @param createdAt The block number when the inspection was requested.
+   */
+  event InspectionRequested(uint256 indexed inspectionId, address indexed regeneratorAddress, uint256 createdAt);
+
+  /**
+   * @notice Emitted when an Inspector successfully accepts an open inspection.
+   * @param inspectionId The ID of the inspection that was accepted.
+   * @param inspectorAddress The address of the Inspector who accepted the inspection.
+   * @param acceptedAt The block number when the inspection was accepted.
+   */
+  event InspectionAccepted(uint256 indexed inspectionId, address indexed inspectorAddress, uint256 acceptedAt);
+
+  /**
+   * @notice Emitted when an accepted inspection is successfully realized and submitted by an Inspector.
+   * @param inspectionId The ID of the inspection that was realized.
+   * @param inspectorAddress The address of the Inspector who realized the inspection.
+   * @param regeneratorAddress The address of the Regenerator whose area was inspected.
+   * @param treesResult The reported number of trees.
+   * @param biodiversityResult The reported number of species.
+   * @param regenerationScore The calculated regeneration score.
+   * @param inspectedAt The block number when the inspection was realized.
+   */
+  event InspectionRealized(
+    uint256 indexed inspectionId,
+    address indexed inspectorAddress,
+    address indexed regeneratorAddress,
+    uint256 treesResult,
+    uint256 biodiversityResult,
+    uint256 regenerationScore,
+    uint256 inspectedAt
+  );
+
+  /**
+   * @notice Emitted when an inspection is successfully invalidated due to validator votes.
+   * @param inspectionId The ID of the inspection that was invalidated.
+   * @param inspectorAddress The address of the Inspector who performed the invalidated inspection.
+   * @param regeneratorAddress The address of the Regenerator whose inspection was invalidated.
+   * @param invalidatedAt The block number when the inspection was invalidated.
+   */
+  event InspectionInvalidated(
+    uint256 indexed inspectionId,
+    address indexed inspectorAddress,
+    address indexed regeneratorAddress,
+    uint256 invalidatedAt
+  );
 }
