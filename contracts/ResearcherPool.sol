@@ -9,19 +9,33 @@ import { Callable } from "./shared/Callable.sol";
 import { Poolable } from "./shared/Poolable.sol";
 
 /**
- * @author Sintrop
  * @title ResearcherPool
- * @dev ResearcherPool is a contract to reward researchers
- * @notice Receive tokens for research service provided
+ * @author Sintrop
+ * @notice This contract manages the distribution of Regeneration Credit tokens as rewards to researchers
+ * for their research and methodology improvement service provided.
+ * The reward is distributed related to the number of valid published researches.
+ * @dev Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for ownership),
+ * `Blockable` (for era/epoch tracking), and `Callable` (for whitelisted caller control).
  */
 contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;
 
+  /// @notice Interface to the Regeneration Credit token contract, used for token transfers.
   RegenerationCreditInterface internal regenerationCredit;
 
-  /// @notice Total researcher pool tokens
+  /// @notice The total supply of Regeneration Credit tokens designated for this researcher pool.
+  /// This value represents the maximum tokens available for distribution through this contract.
   uint256 internal constant TOTAL_POOL_TOKENS = 40000000000000000000000000;
 
+  /**
+   * @dev Initializes the ResearcherPool contract.
+   * Sets up the Regeneration Credit token interface and initializes inherited base contracts.
+   * @param regenerationCreditAddress The address of the RegenerationCredit token contract.
+   * @param _halving The number of eras that constitute one halving cycle/epoch for reward adjustments.
+   * Passed to the `Blockable` base contract.
+   * @param _blocksPerEra The number of blocks that constitute a single era.
+   * Passed to the `Blockable` base contract.
+   */
   constructor(
     address regenerationCreditAddress,
     uint256 _halving,
@@ -31,37 +45,50 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
   }
 
   /**
-   * @dev Called by the researcher contract, this function calls the token contract to transfer the rewards
-   * @param delegate User address
-   * @param era User current era
+   * @dev Allows an authorized caller, the Researcher contract, to trigger a token withdrawal for a user.
+   * This function calculates the eligible tokens for the user's era and transfers them.
+   * @notice This function can only be called by the ResearcherRules contract, whitelisted via the `Callable` contract's mechanisms.
+   * The user must also be eligible for withdrawal based on the `Blockable` contract's era tracking.
+   * @param delegate The address of the user (researcher) for whom the withdrawal is being processed.
+   * @param era The last recorded era of the `delegate` user, used for reward calculation and eligibility.
    */
   function withdraw(address delegate, uint256 era) public mustBeAllowedCaller canWithdrawModifier(era) {
+    require(era <= currentContractEra(), "Era in the future");
+
+    // Calculate the number of tokens the user is eligible to receive for the given era.
     uint256 numTokens = calculateUserEraTokens(era, delegate, tokensPerEra(getEpochForEra(era), HALVING));
 
+    // Update the user's era and token balance state after the withdrawal.
     updateEraAfterWithdraw(era, delegate, numTokens);
 
+    // If no tokens are to be transferred, return.
     if (numTokens == 0) return;
 
+    // Transfer the calculated tokens from this contract to the delegate.
     regenerationCredit.transferWith(address(this), delegate, numTokens);
   }
 
   /**
-   * @dev Called by the researcher contract, function to increase researcher level
-   * @param addr Researcher wallet
-   * @param levels Levels to increase
+   * @dev Allows an authorized caller to increase the user pool level.
+   * This function updates the researcher level within the system's pooling mechanism.
+   * @notice Can only be called by the researcherRules address.
+   * @param addr The wallet address of the researcher.
+   * @param levels The number of levels to increase the researcher's pool level by.
    */
   function addLevel(address addr, uint256 levels) public mustBeAllowedCaller {
-    uint256 era = currentContractEra();
-
-    addPoolLevel(addr, levels, era);
+    // Calls the addPoolLevel function from Poolable.sol.
+    addPoolLevel(addr, levels, currentContractEra());
   }
 
   /**
-   * @dev Called by the researcher contract, function to decrease researcher pool level
-   * @param addr Inspector wallet
-   * @param levelsToRemove Levels to decrease
+   * @dev Allows an authorized caller to decrease an researcher's pool level.
+   * This function adjusts the researcher's level downwards within the system's pooling mechanism.
+   * @notice Can only be called by researcherRules address.
+   * @param addr The wallet address of the researcher.
+   * @param levelsToRemove The number of levels to decrease the researcher's pool level by.
    */
   function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+    // Calls the removePoolLevel function from Poolable.sol.
     removePoolLevel(addr, currentContractEra(), levelsToRemove);
   }
 }
