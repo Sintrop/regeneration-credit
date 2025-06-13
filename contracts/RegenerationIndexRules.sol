@@ -6,8 +6,8 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Callable } from "./shared/Callable.sol";
 
 /**
- * @author Sintrop
  * @title RegenerationIndexRules
+ * @author Sintrop
  * @dev Manage index categories and score
  */
 contract RegenerationIndexRules is Ownable, Callable {
