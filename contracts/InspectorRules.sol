@@ -144,8 +144,8 @@ contract InspectorRules is Callable {
     inspectorPool.withdraw(msg.sender, currentEra);
 
     // Emit an event for off-chain monitoring.
-    emit InspectorWithdrawalInitiated(msg.sender, currentEra, block.number);    
-  }  
+    emit InspectorWithdrawalInitiated(msg.sender, currentEra, block.number);
+  }
 
   /**
    * @dev Allows an authorized caller (`ValidationRules` contract) to add a penalty to an inspector's record.
@@ -181,7 +181,7 @@ contract InspectorRules is Callable {
    * @notice This function is called by the InspectionRules contract after an inspection is realized.
    * @param addr The inspector's wallet address.
    * @return uint256 The updated total number of inspections completed by the inspector.
-   */   
+   */
   function afterRealizeInspection(address addr) public mustBeAllowedCaller returns (uint256) {
     decreaseGiveUps(addr);
 
@@ -203,7 +203,7 @@ contract InspectorRules is Callable {
     inspectorPool.removePoolLevels(addr, levelsToRemove);
 
     // Emit an event.
-    emit InspectorLevelRemoved(addr, levelsToRemove, inspector.pool.level, block.number);    
+    emit InspectorLevelRemoved(addr, levelsToRemove, inspector.pool.level, block.number);
   }
 
   /**
@@ -219,7 +219,7 @@ contract InspectorRules is Callable {
     require(inspectors[addr].totalInspections > 0, "totalInspections invalid");
 
     inspectors[addr].totalInspections--;
-  }  
+  }
 
   // --- Internal/private functions (State modifying) ---
 
@@ -263,7 +263,7 @@ contract InspectorRules is Callable {
    */
   function incrementGiveUps(address addr) private {
     inspectors[addr].giveUps++;
-    emit GiveUpIncreased(addr, inspectors[addr].giveUps, block.number);    
+    emit GiveUpIncreased(addr, inspectors[addr].giveUps, block.number);
   }
 
   /**
@@ -360,41 +360,25 @@ contract InspectorRules is Callable {
   /// @param inspectorAddress The address of the inspector.
   /// @param newGiveUpsCount The new total give-ups count for the inspector.
   /// @param blockNumber The block number at which the give-up occurred.
-  event GiveUpIncreased(
-    address indexed inspectorAddress,
-    uint256 newGiveUpsCount,
-    uint256 blockNumber
-  );
+  event GiveUpIncreased(address indexed inspectorAddress, uint256 newGiveUpsCount, uint256 blockNumber);
 
   /// @dev Emitted when an inspector's give-up count decreases.
   /// @param inspectorAddress The address of the inspector.
   /// @param newGiveUpsCount The new total give-ups count for the inspector.
   /// @param blockNumber The block number at which the give-up decreased.
-  event GiveUpDecreased(
-    address indexed inspectorAddress,
-    uint256 newGiveUpsCount,
-    uint256 blockNumber
-  );
+  event GiveUpDecreased(address indexed inspectorAddress, uint256 newGiveUpsCount, uint256 blockNumber);
 
   /// @dev Emitted when an inspector successfully initiates a withdrawal of tokens.
   /// @param inspectorAddress The address of the inspector initiating the withdrawal.
   /// @param era The era for which the withdrawal was initiated.
   /// @param blockNumber The block number at which the withdrawal was initiated.
-  event InspectorWithdrawalInitiated(
-    address indexed inspectorAddress,
-    uint256 indexed era,
-    uint256 blockNumber
-  );
+  event InspectorWithdrawalInitiated(address indexed inspectorAddress, uint256 indexed era, uint256 blockNumber);
 
   /// @dev Emitted when an inspector's level is increased.
   /// @param inspectorAddress The address of the inspector whose level was increased.
   /// @param newLevel The new total level of the inspector.
   /// @param blockNumber The block number at which the level increase occurred.
-  event InspectorLevelIncreased(
-    address indexed inspectorAddress,
-    uint256 newLevel,
-    uint256 blockNumber
-  );
+  event InspectorLevelIncreased(address indexed inspectorAddress, uint256 newLevel, uint256 blockNumber);
 
   /// @dev Emitted when an inspector's pool levels are removed.
   /// @param inspectorAddress The address of the inspector whose levels were removed.
@@ -406,5 +390,5 @@ contract InspectorRules is Callable {
     uint256 levelsRemoved,
     uint256 newLevel,
     uint256 blockNumber
-  );  
+  );
 }
