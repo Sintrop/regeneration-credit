@@ -277,6 +277,8 @@ contract InspectionRules is Callable {
     Inspection storage inspection = inspections[id];
 
     require(regeneratorRules.poolCurrentEra() <= inspection.inspectedAtEra, "Can't validade anymore");
+    require(inspection.id >= 1 && inspection.id <= inspectionsTotalCount, "Inspection does not exist");
+    require(inspection.status == InspectionStatus.INSPECTED, "Only INSPECTED inspections can be validated");
 
     inspection.validationsCount += 1;
 
@@ -369,8 +371,6 @@ contract InspectionRules is Callable {
    * @param inspection A storage reference to the `Inspection` struct being invalidated.
    */
   function invalidateInspection(Inspection storage inspection) internal {
-    require(inspection.status != InspectionStatus.INVALIDATED, "Inspection already invalidated");
-
     // Decrement global impact metrics.
     inspectionsTreesImpact -= inspection.treesResult;
     inspectionsBiodiversityImpact -= inspection.biodiversityResult;
