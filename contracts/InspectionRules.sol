@@ -11,7 +11,6 @@ import { InspectionStatus, Inspection, ContractsDependency } from "./types/Inspe
 import { Regenerator } from "./types/RegeneratorTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
 import { UserType } from "./types/CommunityTypes.sol";
-import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Callable } from "./shared/Callable.sol";
 import { VoteRules } from "./VoteRules.sol";
 
@@ -23,8 +22,6 @@ import { VoteRules } from "./VoteRules.sol";
  * It integrates with various other rule contracts for user validation, level updates, and penalty management.
  */
 contract InspectionRules is Callable {
-  using SafeMath for uint256;
-
   // --- State Variables ---
 
   /// @notice Stores inspection data by its unique ID.
@@ -73,19 +70,19 @@ contract InspectionRules is Callable {
   uint256 public inspectionsBiodiversityImpact;
 
   /// @notice Time (in blocks) a regenerator must wait between inspection requests after exceeding initial allowed requests.
-  uint256 public immutable timeBetweenInspections;
+  uint32 public immutable timeBetweenInspections;
 
   /// @notice Amount of blocks an accepted inspection has before it expires if not realized.
-  uint256 public immutable blocksToExpireAcceptedInspection;
+  uint32 public immutable blocksToExpireAcceptedInspection;
 
   /// @notice Number of initial inspection requests a regenerator can make without `timeBetweenInspections` delay.
-  uint256 public immutable allowedInitialRequests;
+  uint8 public immutable allowedInitialRequests;
 
   /// @notice Amount of blocks that inspectors must wait after a request is made before they can accept it.
-  uint256 public immutable acceptInspectionDelayBlocks;
+  uint32 public immutable acceptInspectionDelayBlocks;
 
   /// @notice Amount of blocks for validators to analyze inspections before an era ends.
-  uint256 public immutable securityBlocksToValidatorAnalysis;
+  uint32 public immutable securityBlocksToValidatorAnalysis;
 
   // --- Constructor ---
 
@@ -99,11 +96,11 @@ contract InspectionRules is Callable {
    * @param securityBlocksToValidatorAnalysis_ The number of security blocks for validators before era end.
    */
   constructor(
-    uint256 timeBetweenInspections_,
-    uint256 blocksToExpireAcceptedInspection_,
-    uint256 allowedInitialRequests_,
-    uint256 acceptInspectionDelayBlocks_,
-    uint256 securityBlocksToValidatorAnalysis_
+    uint32 timeBetweenInspections_,
+    uint32 blocksToExpireAcceptedInspection_,
+    uint8 allowedInitialRequests_,
+    uint32 acceptInspectionDelayBlocks_,
+    uint32 securityBlocksToValidatorAnalysis_
   ) {
     timeBetweenInspections = timeBetweenInspections_;
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
@@ -134,10 +131,17 @@ contract InspectionRules is Callable {
   // --- External Functions (State Modifying) ---
 
   /**
-   * @dev Allows regenerators to request an inspection.
-   * @notice When requesting an inspection, the regenerator agrees to receive an inspector to assess the registered area.
-   * Regenerators can receive 3 inspections in a row. From then on, they must wait 1 era between inspections.
-   * Only 12 inspections allowed.
+   * @dev Allows a regenerator to request a new inspection for their registered area.
+   * @notice Regenerators agree to receive an inspector to assess their registered area.
+   * They can make an `allowedInitialRequests` number of requests without delay.
+   * After that, they must wait `timeBetweenInspections` blocks between requests.
+   * A hard limit of 12 total inspections is enforced.
+   *
+   * Requirements:
+   * - The caller (`msg.sender`) must be a registered `REGENERATOR`.
+   * - The regenerator must not have a `pendingInspection` already open.
+   * - The regenerator must adhere to the `timeBetweenInspections` delay if `allowedInitialRequests` are used up.
+   * - The regenerator must have completed less than 12 total inspections.
    */
   function requestInspection() public {
     Regenerator memory regenerator = regeneratorRules.getRegenerator(msg.sender);
@@ -147,27 +151,39 @@ contract InspectionRules is Callable {
     require(waitToRequest(regenerator), "Wait to request");
     require(regenerator.totalInspections < 12, "You have completed your mission");
 
+    // Create the new inspection record.
     createInspection();
 
+    // Update regenerator's state in RegeneratorRules.
     afterRequestInspection();
   }
 
   /**
-   * @dev Allows the current user (inspector) accept a inspection.
-   * @notice Inspectors must only accept inspections that they can perform.
-   * You will need to estimate how many trees/plantas over 1m high and 3 cm in diamater there is in the regenerator area. And also estimate how many different species of these plants.
-   * Your safety is your responsability! Visiting regeneration areas presents natural ecosystem threats, such as dangerous animals (snakes, tigers, ...), falling branches, etc.
-   * Be prepared and use appropriate safety equipments, such as boots, hat, long sleeves clothing, machetes, knifes, etc.
-   * Study the area before accepting. If you accept an inspection, you gain 1 giveUp. You lose this giveUp if you realize the inspection. But with 3 giveUps you account get locked.
-   * You can inspect only one time each regenerator.
-   * You must wait the inspection delay to accept a new one.
-   * @param inspectionId The id of the inspection that the inspector want accept.
+   * @dev Allows an inspector to accept an open inspection request.
+   * @notice Inspectors must only accept inspections they are capable of performing, being aware
+   * of the safety risks and responsibilities. Accepting an inspection counts as a 'give-up' until realized.
+   * Inspectors can only accept one open inspection at a time and cannot inspect the same regenerator twice.
+   * They must also adhere to specific delays and security windows.
+   *
+   * Requirements:
+   * - The caller (`msg.sender`) must be a registered `INSPECTOR`.
+   * - The inspector must have less than `MAX_GIVEUPS` (from InspectorRules).
+   * - The `inspectionId` must correspond to an existing inspection.
+   * - The inspector must not already have an inspection `ACCEPTED` that is not yet `INSPECTED` or `INVALIDATED` or `EXPIRED`.
+   * - The inspector must not have previously inspected this specific regenerator.
+   * - The inspection's status must be `OPEN`.
+   * - The `acceptInspectionDelayBlocks` must have passed since the inspection was created.
+   * - The system must not be within the `securityBlocksToValidatorAnalysis` window before an era ends.
+   * - The inspector must adhere to `inspectorRules.canAcceptInspection` (delay from last realized inspection).
+   * - The `inspection.regenerator` must be a valid `REGENERATOR`.
+   *
+   * @param inspectionId The unique ID of the inspection the inspector wishes to accept.
    */
   function acceptInspection(uint256 inspectionId) public {
     require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Only inspectors");
     require(inspectorRules.isInspectorValid(msg.sender), "No more than 3 giveUps allowed");
 
-    Inspection memory inspection = inspections[inspectionId];
+    Inspection storage inspection = inspections[inspectionId];
 
     require(inspection.id >= 1, "Inspection do not exist");
     require(canAcceptNewInspection(), "You already have an inspection Accepted");
@@ -181,7 +197,6 @@ contract InspectionRules is Callable {
     inspection.status = InspectionStatus.ACCEPTED;
     inspection.acceptedAt = block.number;
     inspection.inspector = msg.sender;
-    inspections[inspectionId] = inspection;
 
     regeneratorRules.afterAcceptInspection(inspection.regenerator);
     inspectorRules.afterAcceptInspection(msg.sender, inspectionId);
@@ -196,7 +211,7 @@ contract InspectionRules is Callable {
    * How many different species of those plants/trees were found? Each different species is equivalent to one unity and only trees and plants managed or planted by the regenerator should be counted. Justify your answer in the report.
    * Max result of 200.000 trees and 300 biodiversity.
    * @param inspectionId The id of the inspection to be realized.
-   * @param proofPhotos The string of a photo with the regenerator or at the regeneration area.
+   * @param proofPhotos The string of a photo with the regenerator or the string of a document with the proofPhoto with the regenerator and other area photos.
    * @param justificationReport The justification and report of the result found.
    * @param treesResult The number of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted.
    * @param biodiversityResult The number of different species of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted.
@@ -211,7 +226,7 @@ contract InspectionRules is Callable {
     require(bytes(proofPhotos).length <= 100, "Max proofPhotos length");
     require(bytes(justificationReport).length <= 1000, "Max report length");
 
-    Inspection memory inspection = inspections[inspectionId];
+    Inspection storage inspection = inspections[inspectionId];
 
     require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Only inspectors");
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
@@ -240,28 +255,30 @@ contract InspectionRules is Callable {
   }
 
   /**
-   * @notice Allows a voter to attempt to vote to invalidate an inspection
+   * @notice Allows a voter to cast a vote to invalidate an inspection.
+   * This function increments the validation count for the inspection and may trigger its invalidation.
    *
    * Requirements:
+   * - The `justification` string must not exceed `MAX_VALIDATION_JUSTIFICATION_LENGTH` (300) characters.
+   * - The caller (`msg.sender`) must be a registered `voter` (`voteRules.canVote`).
+   * - The caller must have waited the required `timeBetweenVotes` (from `validationRules.waitedTimeBetweenVotes`).
+   * - The `inspectionId` must correspond to an existing and currently valid inspection.
+   * - The inspection must have been realized (`INSPECTED` status).
+   * - The current `poolCurrentEra() must be less than or equal to the `inspection's `inspectedAtEra` .
    *
-   * - the caller must be a voter user
-   * - caller level must be above average
-   * - caller must have waited timeBetweenVotes
-   *
-   * @param id Resource id
-   * @param justification Invalidation justification
+   * @param id The unique ID of the inspection to be validated/invalidated.
+   * @param justification A string explaining why the inspection is being invalidated.
    */
   function addInspectionValidation(uint256 id, string memory justification) public {
     require(bytes(justification).length <= 300, "Max 300 characters reached");
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
-    Inspection memory inspection = inspections[id];
+    Inspection storage inspection = inspections[id];
 
     require(regeneratorRules.poolCurrentEra() <= inspection.inspectedAtEra, "Can't validade anymore");
 
     inspection.validationsCount += 1;
-    inspections[inspection.id] = inspection;
 
     bool mustInvalidateInspection = inspection.validationsCount >= validationRules.votesToInvalidate();
 
@@ -273,20 +290,21 @@ contract InspectionRules is Callable {
   // --- Internal functions ---
 
   /**
-   * @dev Function that creates a new inspection
+   * @dev Internal function that creates a new inspection request record in the system.
+   * Sets its status to `OPEN`, assigns the regenerator, and increments global counters.
    */
   function createInspection() internal {
-    uint256 id = inspectionsTotalCount + 1;
-    Inspection memory inspection = inspections[id];
+    inspectionsTotalCount++;
+    uint256 id = inspectionsTotalCount;
 
+    Inspection storage inspection = inspections[id];
     inspection.id = id;
     inspection.status = InspectionStatus.OPEN;
     inspection.regenerator = msg.sender;
     inspection.inspector = address(0);
     inspection.createdAt = block.number;
-    inspections[inspection.id] = inspection;
+
     inspectionsCount++;
-    inspectionsTotalCount++;
 
     emit InspectionRequested(id, msg.sender, block.number);
   }
@@ -301,13 +319,13 @@ contract InspectionRules is Callable {
   /**
    * @dev Update the inspection data
    * @param inspection The current inspection
-   * @param proofPhotos The string of a photo with the regenerator or at the regeneration area
+   * @param proofPhotos The string of a photo with the regenerator or the string of a document with the proofPhoto with the regenerator and other area photos.
    * @param treesResult The number of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
    * @param biodiversityResult The number of different species of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
    * @param justificationReport The justification of the result found
    */
   function markAsRealized(
-    Inspection memory inspection,
+    Inspection storage inspection,
     string memory proofPhotos,
     string memory justificationReport,
     uint256 treesResult,
@@ -316,18 +334,17 @@ contract InspectionRules is Callable {
     inspection.status = InspectionStatus.INSPECTED;
     inspection.treesResult = treesResult;
     inspection.biodiversityResult = biodiversityResult;
+    // Calculate regeneration score using `RegenerationIndexRules`.
     inspection.regenerationScore = regenerationIndexRules.calculateScore(treesResult, biodiversityResult);
     inspection.proofPhotos = proofPhotos;
     inspection.justificationReport = justificationReport;
     inspection.inspectedAt = block.number;
     inspection.inspectedAtEra = regeneratorRules.poolCurrentEra();
-
-    inspections[inspection.id] = inspection;
   }
 
   /**
-   * @dev Inscrement regenerator and inspector request actions
-   * @param inspection the inspected inspection
+   * @dev Inscrement regenerator and inspector request actions.
+   * @param inspection The inspected inspection.
    */
   function afterRealizeInspection(Inspection memory inspection) internal {
     address regeneratorAddress = inspection.regenerator;
@@ -345,17 +362,25 @@ contract InspectionRules is Callable {
   }
 
   /**
-   * @dev Function to invalidate an inspection
-   * @param inspection The invalidated inspection
+   * @dev Internal function to execute the invalidation process for an inspection.
+   * Updates global impact counters, decreases `inspectionsCount` and `realizedInspectionsCount`,
+   * marks the inspection as `INVALIDATED`, and records the invalidation time.
+   * It also adds penalties to the involved regenerator and inspector.
+   * @param inspection A storage reference to the `Inspection` struct being invalidated.
    */
-  function invalidateInspection(Inspection memory inspection) internal {
+  function invalidateInspection(Inspection storage inspection) internal {
+    require(inspection.status != InspectionStatus.INVALIDATED, "Inspection already invalidated");
+
+    // Decrement global impact metrics.
     inspectionsTreesImpact -= inspection.treesResult;
     inspectionsBiodiversityImpact -= inspection.biodiversityResult;
-    inspectionsCount--;
+
+    inspectionsCount--; // Decrement valid inspections count
+    realizedInspectionsCount--; // Decrement realized inspections count
+
+    // Update inspection status
     inspection.status = InspectionStatus.INVALIDATED;
     inspection.invalidatedAt = block.number;
-    inspections[inspection.id] = inspection;
-    realizedInspectionsCount--;
 
     emit InspectionInvalidated(inspection.id, inspection.inspector, inspection.regenerator, block.number);
   }
@@ -372,8 +397,8 @@ contract InspectionRules is Callable {
   }
 
   /**
-   * @notice Checks if regenerator waited timeBetweenInspections
-   * @return bool True if can request
+   * @notice Checks if regenerator waited timeBetweenInspections.
+   * @return bool True if can request.
    */
   function waitToRequest(Regenerator memory regenerator) public view returns (bool) {
     if (regenerator.totalInspections < allowedInitialRequests) return true;
@@ -382,15 +407,15 @@ contract InspectionRules is Callable {
   }
 
   /**
-   * @notice Function to calculate amount of blocks to expire an inspection
-   * @return uint256 Return amount of blocks to expire an inspection
+   * @notice Function to calculate amount of blocks to expire an inspection.
+   * @return uint256 Return amount of blocks to expire an inspection.
    */
   function calculateBlocksToExpire(uint256 inspectionId) public view returns (uint256) {
     return inspections[inspectionId].acceptedAt + blocksToExpireAcceptedInspection - block.number;
   }
 
   /**
-   * @dev Function that checks if an inspector already have an open inspection
+   * @dev Function that checks if an inspector already have an open inspection.
    * @return bool True if can accept new inspection. False if has already an open inspection.
    */
   function canAcceptNewInspection() private view returns (bool) {
@@ -406,21 +431,23 @@ contract InspectionRules is Callable {
   }
 
   /**
-   * @dev Function that checks if the inspection delay blocks has passed
-   * @return bool True if can accept, false if not
+   * @dev Function that checks if the inspection delay blocks has passed.
+   * @return bool True if can accept, false if not.
    */
   function acceptInspectionDelayBlocksPassed(Inspection memory inspection) private view returns (bool) {
+    if (inspection.createdAt == 0) return false;
+
     return block.number > inspection.createdAt + acceptInspectionDelayBlocks;
   }
 
   /**
-   * @dev Function that blocks an inspector to accept inspections at the end of an era so validators can have time for reviewing all inspections before next era
-   * @return bool True if can accept, false if not
+   * @dev Function that blocks an inspector to accept inspections at the end of an era so validators can have time for reviewing all inspections before next era.
+   * @return bool True if can accept, false if not.
    */
   function beforeAcceptHaveSecurityBlocksToVote() private view returns (bool) {
     if (regeneratorRules.nextEraIn() < blocksToExpireAcceptedInspection) return false;
 
-    return regeneratorRules.nextEraIn().sub(blocksToExpireAcceptedInspection) > securityBlocksToValidatorAnalysis;
+    return regeneratorRules.nextEraIn() - blocksToExpireAcceptedInspection > securityBlocksToValidatorAnalysis;
   }
 
   // --- Events ---
