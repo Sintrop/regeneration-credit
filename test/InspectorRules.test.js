@@ -285,7 +285,9 @@ describe("InspectorRules", () => {
           await instance.afterAcceptInspection(inspe1Address, 1);
           await instance.afterRealizeInspection(inspe1Address);
 
-          await expect(instance.connect(inspe1Address).withdraw()).to.be.revertedWith("Can't approve withdraw");
+          await expect(instance.connect(inspe1Address).withdraw()).to.be.revertedWith(
+            "Not eligible to withdraw for this era"
+          );
         });
       });
 
