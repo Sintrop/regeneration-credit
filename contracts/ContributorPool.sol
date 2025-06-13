@@ -71,6 +71,16 @@ contract ContributorPool is Poolable, Ownable, Blockable, Callable {
   }
 
   /**
+   * @notice View function to check if a user have tokens to withdraw at an era
+   * @param delegate User address
+   * @param era User current era
+   * @return bool True if have tokens to withdraw, false if will just update era.
+   */
+  function haveTokensToWithdraw(address delegate, uint256 era) public view returns (bool) {
+    return _haveTokensToWithdraw(delegate, era, tokensPerEra(getEpochForEra(era), HALVING));
+  }
+
+  /**
    * @dev Allows an authorized caller to increase the user pool level.
    * This function updates the contributor level within the system's pooling mechanism.
    * @notice Can only be called by the contributorRules address.
