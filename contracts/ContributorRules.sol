@@ -67,16 +67,16 @@ contract ContributorRules is Ownable, Callable, Invitable {
   /// This acts as a global unique ID counter for new contributions.
   uint256 public contributionsTotalCount;
 
+  /// @notice The maximum number of penalties a contributor can accumulate before being denied.
+  uint8 public immutable MAX_PENALTIES;
+
   /// @notice The minimum number of blocks that must elapse between a contributor's successful contribution publications.
   /// This prevents spamming or rapid consecutive contributions.
-  uint256 internal immutable timeBetweenWorks;
+  uint32 internal immutable timeBetweenWorks;
 
   /// @notice The number of blocks before the end of an era during which no new contributions can be published.
   /// This period allows validators sufficient time to analyze and vote on contributions before the era concludes.
-  uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
-
-  /// @notice The maximum number of penalties a contributor can accumulate before being denied.
-  uint256 public immutable MAX_PENALTIES;
+  uint32 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
   /// @notice A mapping from a contributor's wallet address to an array of `Penalty` structs they have received.
   mapping(address => Penalty[]) public penalties;
@@ -91,7 +91,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
    * @param maxPenalties_ The maximum allowed penalties for a contributor.
    * @param securityBlocksToValidatorAnalysis The number of blocks before era end to block new contributions.
    */
-  constructor(uint256 timeBetweenWorks_, uint256 maxPenalties_, uint256 securityBlocksToValidatorAnalysis) {
+  constructor(uint32 timeBetweenWorks_, uint8 maxPenalties_, uint32 securityBlocksToValidatorAnalysis) {
     timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
@@ -156,23 +156,6 @@ contract ContributorRules is Ownable, Callable, Invitable {
   }
 
   /**
-   * @dev Checks if a specific contributor address is eligible to send new invitations.
-   * @notice Returns `true` if the contributor can send an invite, `false` otherwise.
-   * @param addr The address of the contributor to check.
-   * @return bool `true` if the contributor is eligible to send an invite, `false` otherwise.
-   */
-  function canSendInvite(address addr) public view returns (bool) {
-    Contributor memory contributor = contributors[addr];
-
-    // Return false if the address is not a registered contributor (id is 0).
-    if (contributor.id <= 0) return false;
-
-    // Calls the inherited `canInvite` function from `Invitable` to calculate eligibility.
-    // This depends on total contributions count, total contributor count, and the contributor's pool level.
-    return canInvite(contributionsTotalCount, communityRules.userTypesTotalCount(USER_TYPE), contributor.pool.level);
-  }
-
-  /**
    * @dev Allows a contributor to attempt to publish a new contribution report.
    * @notice Contributions can only be published if certain time conditions and user type requirements are met.
    *
@@ -214,16 +197,6 @@ contract ContributorRules is Ownable, Callable, Invitable {
 
     // Emit an event.
     emit ContributionAdded(id, msg.sender, description, block.number);
-  }
-
-  /**
-   * @dev Returns an array of IDs of the contributions made by a specific address.
-   * @notice Provides a list of all contributions made by a given user.
-   * @param addr The address of the contributor whose contributions are to be retrieved.
-   * @return uint256[] An array of contribution IDs.
-   */
-  function getContributionsIds(address addr) public view returns (uint256[] memory) {
-    return contributionsIds[addr];
   }
 
   /**
@@ -280,41 +253,6 @@ contract ContributorRules is Ownable, Callable, Invitable {
   }
 
   /**
-   * @dev Internal function to execute the invalidation process for a contribution.
-   * Updates the contribution's status, decrements valid contributions count,
-   * and records the invalidation time.
-   * @param contribution A `Contribution` storage reference to the contribution being invalidated.
-   */
-  function invalidateContribution(Contribution memory contribution) internal returns (Contribution memory) {
-    contributionsCount--;
-    contribution.valid = false;
-    contribution.invalidatedAt = block.number;
-    contributions[contribution.id] = contribution;
-
-    return contribution;
-  }
-
-  /**
-   * @dev Returns the detailed `Contributor` data for a given address.
-   * @notice Provides the full profile of a contributor.
-   * @param addr The address of the contributor to retrieve.
-   * @return contributor The `Contributor` struct containing the user's data.
-   */
-  function getContributor(address addr) public view returns (Contributor memory contributor) {
-    return contributors[addr];
-  }
-
-  /**
-   * @dev Returns the detailed `Contribution` data for a given contribution ID.
-   * @notice Provides the full details of a specific contribution.
-   * @param id The unique ID of the contribution to retrieve.
-   * @return Contribution The `Contribution` struct containing the contribution's data.
-   */
-  function getContribution(uint256 id) public view returns (Contribution memory) {
-    return contributions[id];
-  }
-
-  /**
    * @dev Allows a contributor to initiate a withdrawal of Regeneration Credits
    * based on their published contributions and current era.
    * @notice Contributors can claim tokens for their contribution service.
@@ -345,26 +283,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
     emit ContributorWithdrawalInitiated(msg.sender, currentEra, block.number);
   }
 
-  /**
-   * @dev Internal function to add a level to a contributor's pool.
-   * This function also updates the `lastPublishedAt` timestamp for the contributor.
-   * @param addr The wallet address of the contributor whose level is to be increased.
-   */
-  function addPoolLevel(address addr) internal {
-    Contributor memory contributor = contributors[addr];
-    // If contributor does not exist, return.
-    if (contributor.id == 0) return;
-
-    contributor.lastPublishedAt = block.number; // Update last published block for this contributor.
-    contributor.pool.level++; // Increase the contributor's local pool level.
-
-    contributors[addr] = contributor;
-
-    contributorPool.addLevel(addr, 1);
-
-    // Emit an event for off-chain monitoring.
-    emit ContributorLevelIncreased(addr, contributor.pool.level, block.number);
-  }
+  // --- MustBeAllowedCaller functions ---
 
   /**
    * @dev Allows an authorized caller to remove levels from a contributor's pool.
@@ -396,6 +315,91 @@ contract ContributorRules is Ownable, Callable, Invitable {
     penalties[addr].push(Penalty(contributionId));
 
     return totalPenalties(addr);
+  }
+
+  // --- Internal functions ---
+
+  /**
+   * @dev Internal function to add a level to a contributor's pool.
+   * This function also updates the `lastPublishedAt` timestamp for the contributor.
+   * @param addr The wallet address of the contributor whose level is to be increased.
+   */
+  function addPoolLevel(address addr) internal {
+    Contributor storage contributor = contributors[addr];
+    // If contributor does not exist, return.
+    if (contributor.id == 0) return;
+
+    contributor.lastPublishedAt = block.number; // Update last published block for this contributor.
+    contributor.pool.level++; // Increase the contributor's local pool level.
+
+    contributorPool.addLevel(addr, 1);
+
+    // Emit an event for off-chain monitoring.
+    emit ContributorLevelIncreased(addr, contributor.pool.level, block.number);
+  }
+
+  /**
+   * @dev Internal function to execute the invalidation process for a contribution.
+   * Updates the contribution's status, decrements valid contributions count,
+   * and records the invalidation time.
+   * @param contribution A `Contribution` storage reference to the contribution being invalidated.
+   */
+  function invalidateContribution(Contribution memory contribution) internal returns (Contribution memory) {
+    contributionsCount--;
+    contribution.valid = false;
+    contribution.invalidatedAt = block.number;
+    contributions[contribution.id] = contribution;
+
+    return contribution;
+  }
+
+  // --- View functions ---
+
+  /**
+   * @dev Returns the detailed `Contributor` data for a given address.
+   * @notice Provides the full profile of a contributor.
+   * @param addr The address of the contributor to retrieve.
+   * @return contributor The `Contributor` struct containing the user's data.
+   */
+  function getContributor(address addr) public view returns (Contributor memory contributor) {
+    return contributors[addr];
+  }
+
+  /**
+   * @dev Returns the detailed `Contribution` data for a given contribution ID.
+   * @notice Provides the full details of a specific contribution.
+   * @param id The unique ID of the contribution to retrieve.
+   * @return Contribution The `Contribution` struct containing the contribution's data.
+   */
+  function getContribution(uint256 id) public view returns (Contribution memory) {
+    return contributions[id];
+  }
+
+  /**
+   * @dev Returns an array of IDs of the contributions made by a specific address.
+   * @notice Provides a list of all contributions made by a given user.
+   * @param addr The address of the contributor whose contributions are to be retrieved.
+   * @return uint256[] An array of contribution IDs.
+   */
+  function getContributionsIds(address addr) public view returns (uint256[] memory) {
+    return contributionsIds[addr];
+  }
+
+  /**
+   * @dev Checks if a specific contributor address is eligible to send new invitations.
+   * @notice Returns `true` if the contributor can send an invite, `false` otherwise.
+   * @param addr The address of the contributor to check.
+   * @return bool `true` if the contributor is eligible to send an invite, `false` otherwise.
+   */
+  function canSendInvite(address addr) public view returns (bool) {
+    Contributor memory contributor = contributors[addr];
+
+    // Return false if the address is not a registered contributor (id is 0).
+    if (contributor.id <= 0) return false;
+
+    // Calls the inherited `canInvite` function from `Invitable` to calculate eligibility.
+    // This depends on total contributions count, total contributor count, and the contributor's pool level.
+    return canInvite(contributionsTotalCount, communityRules.userTypesTotalCount(USER_TYPE), contributor.pool.level);
   }
 
   /**

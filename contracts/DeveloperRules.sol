@@ -69,16 +69,16 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   /// This acts as a global unique ID counter for new reports.
   uint256 public reportsTotalCount;
 
+  /// @notice The maximum number of penalties a developer can accumulate before facing invalidation.
+  uint8 public immutable MAX_PENALTIES;
+
   /// @notice The minimum number of blocks that must elapse between a developer's successful report publications.
   /// This prevents spamming or rapid consecutive report submissions.
-  uint256 internal immutable timeBetweenWorks;
-
-  /// @notice The maximum number of penalties a developer can accumulate before facing invalidation.
-  uint256 public immutable MAX_PENALTIES;
+  uint32 internal immutable timeBetweenWorks;
 
   /// @notice The number of blocks before the end of an era during which no new reports can be published.
   /// This period allows validators sufficient time to analyze and vote on reports before the era concludes.
-  uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
+  uint32 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
   // --- Constructor ---
 
@@ -90,7 +90,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @param maxPenalties_ The maximum allowed penalties for a developer.
    * @param securityBlocksToValidatorAnalysis The number of blocks before era end to block new report submissions.
    */
-  constructor(uint256 timeBetweenWorks_, uint256 maxPenalties_, uint256 securityBlocksToValidatorAnalysis) {
+  constructor(uint32 timeBetweenWorks_, uint8 maxPenalties_, uint32 securityBlocksToValidatorAnalysis) {
     timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
@@ -146,23 +146,6 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   }
 
   /**
-   * @dev Checks if a specific developer address is eligible to send new invitations.
-   * @notice Only most active users canSendInvite.
-   * @param addr The address of the developer to check.
-   * @return bool `true` if the developer is eligible to send an invite, `false` otherwise.
-   */
-  function canSendInvite(address addr) public view returns (bool) {
-    Developer memory developer = developers[addr];
-
-    // Return false if the address is not a registered developer (id is 0).
-    if (developer.id <= 0) return false;
-
-    // Calls the inherited `canInvite` function from `Invitable` to calculate eligibility.
-    // This depends on total reports count, total developer count, and the developer's pool level.
-    return canInvite(reportsTotalCount, communityRules.userTypesTotalCount(USER_TYPE), developer.pool.level);
-  }
-
-  /**
    * @dev Allows a developer to attempt to publish a new development report.
    * @notice Development reports can only be published if certain time conditions and user type requirements are met.
    *
@@ -204,16 +187,6 @@ contract DeveloperRules is Ownable, Callable, Invitable {
 
     // Emit an event for off-chain monitoring.
     emit ReportAdded(id, msg.sender, description, block.number);
-  }
-
-  /**
-   * @dev Returns an array of IDs of the reports made by a specific address.
-   * @notice Provides a list of all reports submitted by a given user.
-   * @param addr The address of the developer whose reports are to be retrieved.
-   * @return uint256[] An array of report IDs.
-   */
-  function getReportsIds(address addr) public view returns (uint256[] memory) {
-    return reportsIds[addr];
   }
 
   /**
@@ -260,61 +233,6 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   }
 
   /**
-   * @dev Internal function to execute the invalidation process for a development report.
-   * Updates the report's status, decrements global valid reports count,
-   * and records the invalidation time.
-   * @param report A `Report` storage reference to the report being invalidated.
-   */
-  function invalidateReport(Report memory report) internal returns (Report memory) {
-    reportsCount--;
-    report.valid = false;
-    report.invalidatedAt = block.number;
-    reports[report.id] = report;
-
-    return report;
-  }
-
-  /**
-   * @dev Allows an authorized caller to remove levels from a developer's pool.
-   * This function updates the developer's local level and notifies the `DeveloperPool` contract.
-   * @notice Can only be called by whitelisted addresses, the ValidatorRules contract.
-   * @param addr The wallet address of the developer from whom levels are to be removed.
-   * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
-   * this function sets the developer's pool level to 0. Otherwise, it subtracts the specified amount.
-   */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
-    Developer memory developer = developers[addr];
-
-    developers[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : developer.pool.level;
-
-    // Notify the DeveloperPool contract to adjust the developer's pool levels there as well.
-    developerPool.removePoolLevels(addr, levelsToRemove);
-
-    // Emit an event.
-    emit DeveloperLevelRemoved(addr, levelsToRemove, developer.pool.level, block.number);
-  }
-
-  /**
-   * @dev Returns a developer's detailed profile.
-   * @notice Provides the full profile of a developer.
-   * @param addr The address of the developer to retrieve.
-   * @return developer The `Developer` struct containing the user's data.
-   */
-  function getDeveloper(address addr) public view returns (Developer memory developer) {
-    return developers[addr];
-  }
-
-  /**
-   * @dev Returns the detailed `Report` data for a given report ID.
-   * @notice Provides the full details of a specific development report.
-   * @param id The unique ID of the report to retrieve.
-   * @return Report The `Report` struct containing the report's data.
-   */
-  function getReport(uint256 id) public view returns (Report memory) {
-    return reports[id];
-  }
-
-  /**
    * @dev Allows a developer to initiate a withdrawal of Regeneration Credits
    * based on their published reports and current era.
    * @notice Developers can claim tokens for their development service.
@@ -344,22 +262,26 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     emit DeveloperWithdrawalInitiated(msg.sender, currentEra, block.number);
   }
 
-  /**
-   * @dev Internal function to add a level to a developer's pool.
-   * This function also updates the `lastPublishedAt` timestamp for the developer.
-   * @param addr The wallet address of the developer whose level is to be increased.
-   */
-  function updateLevel(address addr) internal {
-    Developer memory developer = developers[addr];
-    developer.lastPublishedAt = block.number;
-    developer.pool.level++;
-    developers[addr] = developer;
+  // --- MustBeAllowedCaller functions ---
 
-    // Call the DeveloperPool contract about the level increase, enabling token withdrawal.
-    developerPool.addLevel(addr, 1);
+  /**
+   * @dev Allows an authorized caller to remove levels from a developer's pool.
+   * This function updates the developer's local level and notifies the `DeveloperPool` contract.
+   * @notice Can only be called by whitelisted addresses, the ValidatorRules contract.
+   * @param addr The wallet address of the developer from whom levels are to be removed.
+   * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
+   * this function sets the developer's pool level to 0. Otherwise, it subtracts the specified amount.
+   */
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+    Developer memory developer = developers[addr];
+
+    developers[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : developer.pool.level;
+
+    // Notify the DeveloperPool contract to adjust the developer's pool levels there as well.
+    developerPool.removePoolLevels(addr, levelsToRemove);
 
     // Emit an event.
-    emit DeveloperLevelIncreased(addr, developer.pool.level, block.number);
+    emit DeveloperLevelRemoved(addr, levelsToRemove, developer.pool.level, block.number);
   }
 
   /**
@@ -377,6 +299,89 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     emit PenaltyAdded(addr, reportId, block.number);
 
     return totalPenalties(addr);
+  }
+
+  // --- Internal functions ---
+
+  /**
+   * @dev Internal function to execute the invalidation process for a development report.
+   * Updates the report's status, decrements global valid reports count,
+   * and records the invalidation time.
+   * @param report A `Report` storage reference to the report being invalidated.
+   */
+  function invalidateReport(Report memory report) internal returns (Report memory) {
+    reportsCount--;
+    report.valid = false;
+    report.invalidatedAt = block.number;
+    reports[report.id] = report;
+
+    return report;
+  }
+
+  /**
+   * @dev Internal function to add a level to a developer's pool.
+   * This function also updates the `lastPublishedAt` timestamp for the developer.
+   * @param addr The wallet address of the developer whose level is to be increased.
+   */
+  function updateLevel(address addr) internal {
+    Developer storage developer = developers[addr];
+    developer.lastPublishedAt = block.number;
+    developer.pool.level++;
+
+    // Call the DeveloperPool contract about the level increase, enabling token withdrawal.
+    developerPool.addLevel(addr, 1);
+
+    // Emit an event.
+    emit DeveloperLevelIncreased(addr, developer.pool.level, block.number);
+  }
+
+  // --- View functions ---
+
+  /**
+   * @dev Checks if a specific developer address is eligible to send new invitations.
+   * @notice Only most active users canSendInvite.
+   * @param addr The address of the developer to check.
+   * @return bool `true` if the developer is eligible to send an invite, `false` otherwise.
+   */
+  function canSendInvite(address addr) public view returns (bool) {
+    Developer memory developer = developers[addr];
+
+    // Return false if the address is not a registered developer (id is 0).
+    if (developer.id <= 0) return false;
+
+    // Calls the inherited `canInvite` function from `Invitable` to calculate eligibility.
+    // This depends on total reports count, total developer count, and the developer's pool level.
+    return canInvite(reportsTotalCount, communityRules.userTypesTotalCount(USER_TYPE), developer.pool.level);
+  }
+
+  /**
+   * @dev Returns a developer's detailed profile.
+   * @notice Provides the full profile of a developer.
+   * @param addr The address of the developer to retrieve.
+   * @return developer The `Developer` struct containing the user's data.
+   */
+  function getDeveloper(address addr) public view returns (Developer memory developer) {
+    return developers[addr];
+  }
+
+  /**
+   * @dev Returns the detailed `Report` data for a given report ID.
+   * @notice Provides the full details of a specific development report.
+   * @param id The unique ID of the report to retrieve.
+   * @return Report The `Report` struct containing the report's data.
+   */
+  function getReport(uint256 id) public view returns (Report memory) {
+    return reports[id];
+  }
+
+  /**
+   * @dev Returns an array of IDs of the reports made by a specific address.
+   * @notice Provides a list of all reports submitted by a given user.
+   * @param addr The address of the developer whose reports are to be retrieved.
+   * @return uint256[] An array of report IDs.
+   */
+  function getReportsIds(address addr) public view returns (uint256[] memory) {
+    return reportsIds[addr];
   }
 
   /**
