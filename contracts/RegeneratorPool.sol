@@ -14,7 +14,7 @@ import { Poolable } from "./shared/Poolable.sol";
  * @notice This contract manages the distribution of Regeneration Credit tokens as rewards to regenerators
  * for their ecosystem regeneration service provided.
  * The reward is distributed related to the RegenerationScore, the result of each inspection that ranges from [0, 64].
- * @dev Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for ownership),
+ * @dev Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for deploy setup only),
  * `Blockable` (for era/epoch tracking), and `Callable` (for whitelisted caller control).
  */
 contract RegeneratorPool is Poolable, Ownable, Blockable, Callable {

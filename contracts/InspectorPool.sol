@@ -9,10 +9,13 @@ import { Callable } from "./shared/Callable.sol";
 import { Poolable } from "./shared/Poolable.sol";
 
 /**
- * @author Sintrop
  * @title InspectorPool
- * @dev InspectorPool is a contract to reward inspectors
- * @notice Receive tokens for inspection service provided
+ * @author Sintrop
+ * @notice This contract manages the distribution of Regeneration Credit tokens as rewards to inspectors
+ * for their inspection services provided, for counting trees and biodiversity of the Regenerators regeneration area.
+ * Each valid realized inspection is equivalent to one level in the pool.
+ * @dev Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for deploy setup only),
+ * `Blockable` (for era/epoch tracking), and `Callable` (for whitelisted caller control).
  */
 contract InspectorPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;

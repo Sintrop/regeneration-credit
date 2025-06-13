@@ -15,7 +15,7 @@ import { Poolable } from "./shared/Poolable.sol";
  * for their code development, primarily for the development of the system software.
  * Developers can contribute to the 'core' front-end, to smart-contracts, UX, website, evaluation methods and any other related open-source projects.
  * Each valid published development report is equivalent to one level in the pool.
- * @dev Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for ownership),
+ * @dev Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for deploy setup only),
  * `Blockable` (for era/epoch tracking), and `Callable` (for whitelisted caller control).
  */
 contract DeveloperPool is Poolable, Ownable, Blockable, Callable {

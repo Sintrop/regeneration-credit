@@ -26,7 +26,7 @@ pragma solidity >=0.8.0 <0.9.0;
  * Supporter: Any individual or organization, who can finance regeneration by
  * purchasing tokens from users and then burning them to receive an offset certificate.
  *
- * Denied: Represents a user whose access or participation has been explicitly denied. 
+ * Denied: Represents a user whose access or participation has been explicitly denied.
  */
 enum UserType {
   UNDEFINED,
