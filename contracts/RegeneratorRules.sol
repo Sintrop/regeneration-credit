@@ -13,17 +13,17 @@ import { UserType } from "./types/CommunityTypes.sol";
  * @notice This contract defines and manages the rules and data specific to "Regenerator" users
  * within the system. Regenerators are individuals, families, or groups providing ecosystem
  * regeneration services to an area.
- * @dev Inherits functionalities from `Ownable` (for contract ownership) and `Callable` (for whitelisted
+ * @dev Inherits functionalities from `Ownable` (for contract deploy setup) and `Callable` (for whitelisted
  * function access). It interacts with `CommunityRules` for general user management and `RegeneratorPool`
  * for reward distribution. This contract handles regenerator registration, area management (coordinates,
  * total area), regeneration score tracking, inspection processes, and penalty management.
  */
 contract RegeneratorRules is Callable {
-  // --- State Variables ---
+  // --- Contants & state Variables ---
 
   /// @notice The minimum number of successful inspections a regenerator must have
   /// to be eligible for rewards from the Regenerator Pool.
-  uint256 internal constant MINIMUM_INSPECTION_TO_POOL = 3;
+  uint8 internal constant MINIMUM_INSPECTION_TO_POOL = 3;
 
   /// @notice A mapping from a regenerator's wallet address to their detailed `Regenerator` data structure.
   /// This serves as the primary storage for regenerator profiles.
@@ -113,7 +113,7 @@ contract RegeneratorRules is Callable {
     require(_coordinates.length >= 3 && _coordinates.length <= 10, "Minimum 3 and maximum 10 coordinate points");
     require(totalArea >= 500 && totalArea <= 500000, "Minimum 500 and maximum 500.000 square meters");
 
-    Regenerator memory regenerator = regenerators[msg.sender];
+    Regenerator storage regenerator = regenerators[msg.sender];
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     regenerator.id = id;
@@ -125,7 +125,6 @@ contract RegeneratorRules is Callable {
     regenerator.createdAt = block.number;
     regenerator.coordinatesCount = _coordinates.length;
 
-    regenerators[msg.sender] = regenerator;
     regeneratorsAddress[id] = msg.sender;
     projectDescriptions[msg.sender] = projectDescription;
     communityRules.addUser(msg.sender, USER_TYPE);
@@ -187,6 +186,8 @@ contract RegeneratorRules is Callable {
 
     areaPhoto[msg.sender] = newPhoto;
   }
+
+  // --- MustBeAllowedCaller Functions (State modifying) ---
 
   /**
    * @dev Allows an authorized caller to remove levels from a regenerator's pool.
@@ -298,11 +299,11 @@ contract RegeneratorRules is Callable {
    * @param regenerationScore The score to add to the regenerator's total regeneration score.
    */
   function setRegenerationScore(address addr, uint256 regenerationScore) private {
-    Regenerator memory regenerator = regenerators[addr];
+    Regenerator storage regenerator = regenerators[addr];
+    require(regenerator.id != 0, "Regenerator does not exist");
 
     // Increment regenerator's total regeneration score.
     regenerator.regenerationScore.score += regenerationScore;
-    regenerators[addr] = regenerator;
 
     // If minimum inspections are not met, only update score, not pool level.
     if (!minimumInspections(regenerator.totalInspections)) return;
