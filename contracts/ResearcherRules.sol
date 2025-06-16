@@ -312,7 +312,7 @@ contract ResearcherRules is Callable, Invitable {
     Researcher memory researcher = researchers[msg.sender];
     uint256 currentEra = researcher.pool.currentEra;
 
-    require(researcherPool.canWithdraw(currentEra), "Can't approve withdraw");
+    require(researcherPool.canWithdraw(currentEra), "Not eligible to withdraw for this era");
 
     researchers[msg.sender].pool.currentEra++;
 

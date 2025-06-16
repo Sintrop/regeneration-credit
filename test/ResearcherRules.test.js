@@ -218,7 +218,9 @@ describe("ResearcherRules", () => {
 
       context("when researcher is in era 1 and current era is 1", () => {
         it("should return error", async () => {
-          await expect(instance.connect(resea1Address).withdraw()).to.be.revertedWith("Can't approve withdraw");
+          await expect(instance.connect(resea1Address).withdraw()).to.be.revertedWith(
+            "Not eligible to withdraw for this era"
+          );
         });
       });
 

@@ -248,7 +248,9 @@ describe("ActivistRules", () => {
           });
 
           it("should return error message", async () => {
-            await expect(instance.connect(activ1Address).withdraw()).to.be.revertedWith("Can't approve withdraw");
+            await expect(instance.connect(activ1Address).withdraw()).to.be.revertedWith(
+              "Not eligible to withdraw for this era"
+            );
           });
         });
       });

@@ -122,7 +122,7 @@ contract ActivistRules is Callable, Invitable {
     uint256 currentEra = activist.pool.currentEra;
 
     // Checks if activist currentEra is below the pool era
-    require(activistPool.canWithdraw(currentEra), "Can't approve withdraw");
+    require(activistPool.canWithdraw(currentEra), "Not eligible to withdraw for this era");
 
     // Increase the activist pool era
     activist.pool.currentEra++;
