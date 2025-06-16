@@ -20,7 +20,14 @@ import { Invitable } from "./shared/Invitable.sol";
  */
 
 contract ActivistRules is Callable, Invitable {
-  // --- State Variables ---
+  // --- Constants & State Variables ---
+
+  /// @notice The minimum number of inspections an invited Regenerator or Inspector must complete
+  /// for the inviting activist to "win a pool level".
+  uint8 private constant MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS = 3;
+
+  /// @notice The total count of all invitations that have been successfully approved across the entire system.
+  uint32 public approvedInvites;
 
   /// @notice A mapping from an activist's wallet address to their detailed `Activist` data structure.
   /// This serves as the primary storage for activist profiles.
@@ -46,13 +53,6 @@ contract ActivistRules is Callable, Invitable {
   /// @notice The specific `UserType` enumeration value for the Activist user.
   UserType private constant USER_TYPE = UserType.ACTIVIST;
 
-  /// @notice The total count of all invitations that have been successfully approved across the entire system.
-  uint256 public approvedInvites;
-
-  /// @notice The minimum number of inspections an invited Regenerator or Inspector must complete
-  /// for the inviting activist to "win a pool level".
-  uint256 private constant MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS = 3;
-
   // --- Constructor ---
 
   /**
@@ -65,6 +65,8 @@ contract ActivistRules is Callable, Invitable {
     communityRules = CommunityRules(communityRulesAddress);
     activistPool = ActivistPool(activistPoolAddress);
   }
+
+  // --- Public functions (State modifying) ---
 
   /**
    * @dev Allows a user to attempt to register as an activist.
@@ -90,10 +92,8 @@ contract ActivistRules is Callable, Invitable {
 
     // Create a new Activist struct in memory.
     // Pool initialized with level 0 and current era set to the current pool era.
-    Activist memory activist = Activist(id, msg.sender, name, proofPhoto, Pool(0, poolCurrentEra()), block.number);
+    activists[msg.sender] = Activist(id, msg.sender, name, proofPhoto, Pool(0, poolCurrentEra()), block.number);
 
-    // Store the new activist data in storage.
-    activists[msg.sender] = activist;
     activistsAddress[id] = msg.sender;
     // Register the user with CommunityRules as an ACTIVIST.
     communityRules.addUser(msg.sender, USER_TYPE);
@@ -103,31 +103,38 @@ contract ActivistRules is Callable, Invitable {
   }
 
   /**
-   * @dev Checks if a specific activist address is eligible to send new invitations.
-   * @notice Returns `true` if the activist can send an invite, `false` otherwise.
-   * @param addr The address of the activist to check.
-   * @return bool `true` if the activist is eligible to send an invite, `false` otherwise.
+   * @dev Allows an activist to initiate a withdrawal of Regeneration Credits
+   * based on their approved invited users and current era.
+   * @notice Activists can claim tokens for the services provided. The distribution
+   * is proportional to the amount of approved users in the current era.
+   *
+   * Requirements:
+   * - The caller (`msg.sender`) must be a registered `ACTIVIST`.
+   * - The activist must have approvedUsers in their current era.
+   * - The activist's current era (`activist.pool.currentEra`) will be incremented upon successful withdrawal attempt.
    */
-  function canSendInvite(address addr) public view returns (bool) {
-    Activist memory activist = activists[addr];
+  function withdraw() public {
+    // Only activist can call the function
+    require(communityRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Pool only to activist");
 
-    // Return false if it is not an activist
-    if (activist.id <= 0) return false;
+    // Retrieve activist data.
+    Activist storage activist = activists[msg.sender];
+    uint256 currentEra = activist.pool.currentEra;
 
-    // Calls the inherited `canInvite` function from `Invitable` to calculate eligibility.
-    // This depends on total approved invites, total activist count, and the activist's pool level.
-    return canInvite(approvedInvites, communityRules.userTypesTotalCount(USER_TYPE), activist.pool.level);
+    // Checks if activist currentEra is below the pool era
+    require(activistPool.canWithdraw(currentEra), "Can't approve withdraw");
+
+    // Increase the activist pool era
+    activist.pool.currentEra++;
+
+    // Call the pool withdraw function
+    activistPool.withdraw(msg.sender, currentEra);
+
+    // Emit an event.
+    emit ActivistWithdrawalInitiated(msg.sender, currentEra, block.number);
   }
 
-  /**
-   * @dev Returns the detailed `Activist` data for a given address.
-   * @notice Provides the full profile of an activist.
-   * @param addr The address of the activist to retrieve.
-   * @return Activist The `Activist` struct containing the user's data.
-   */
-  function getActivist(address addr) public view returns (Activist memory) {
-    return activists[addr];
-  }
+  // --- MustBeAllowedCaller functions (State modifying) ---
 
   /**
    * @dev External function for authorized callers to add a pool level to an activist
@@ -155,6 +162,25 @@ contract ActivistRules is Callable, Invitable {
   function addInspectorLevel(address inspectorAddress, uint256 inspectorTotalInspections) external mustBeAllowedCaller {
     addLevelFromInspector(inspectorAddress, inspectorTotalInspections);
   }
+
+  /**
+   * @dev Allows an authorized caller to remove levels from an activist's pool.
+   * This function updates the activist's local level and notifies the `ActivistPool` contract.
+   * @notice Can only be called by the ValidationRules contract.
+   * @param addr The wallet address of the activist from whom levels are to be removed.
+   * @param levelsToRemove The number of levels to decrease.
+   */
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+    Activist storage activist = activists[addr];
+
+    activist.pool.level -= levelsToRemove > 0 ? levelsToRemove : activist.pool.level;
+    activistPool.removePoolLevels(addr, levelsToRemove);
+
+    // Emit an event
+    emit ActivistLevelRemoved(addr, levelsToRemove, activist.pool.level, block.number);
+  }
+
+  // --- Internal functions ---
 
   /**
    * @dev Add level to activist when invited regenerator reaches minimum inspections
@@ -203,14 +229,13 @@ contract ActivistRules is Callable, Invitable {
    */
   function setActivistLevel(address activistAddress) internal {
     // Retrieve the activist's data.
-    Activist memory activist = activists[activistAddress];
+    Activist storage activist = activists[activistAddress];
 
     // If activist does not exist, return.
     if (activist.id <= 0) return;
 
     // Inscrease the activist pool level
     activist.pool.level++;
-    activists[activistAddress] = activist;
 
     // Add pool level to activist be able to withdraw tokens
     activistPool.addLevel(activistAddress, 1);
@@ -219,53 +244,33 @@ contract ActivistRules is Callable, Invitable {
     emit ActivistLevelIncreased(activistAddress, activist.pool.level, block.number);
   }
 
+  // --- View functions ---
+
   /**
-   * @dev Allows an activist to initiate a withdrawal of Regeneration Credits
-   * based on their approved invited users and current era.
-   * @notice Activists can claim tokens for the services provided. The distribution
-   * is proportional to the amount of approved users in the current era.
-   *
-   * Requirements:
-   * - The caller (`msg.sender`) must be a registered `ACTIVIST`.
-   * - The activist must have approvedUsers in their current era.
-   * - The activist's current era (`activist.pool.currentEra`) will be incremented upon successful withdrawal attempt.
+   * @dev Checks if a specific activist address is eligible to send new invitations.
+   * @notice Returns `true` if the activist can send an invite, `false` otherwise.
+   * @param addr The address of the activist to check.
+   * @return bool `true` if the activist is eligible to send an invite, `false` otherwise.
    */
-  function withdraw() public {
-    // Only activist can call the function
-    require(communityRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Pool only to activist");
+  function canSendInvite(address addr) public view returns (bool) {
+    Activist memory activist = activists[addr];
 
-    // Retrieve activist data.
-    Activist memory activist = activists[msg.sender];
-    uint256 currentEra = activist.pool.currentEra;
+    // Return false if it is not an activist
+    if (activist.id <= 0) return false;
 
-    // Checks if activist currentEra is below the pool era
-    require(activistPool.canWithdraw(currentEra), "Can't approve withdraw");
-
-    // Increase the activist pool era
-    activists[msg.sender].pool.currentEra++;
-
-    // Call the pool withdraw function
-    activistPool.withdraw(msg.sender, currentEra);
-
-    // Emit an event.
-    emit ActivistWithdrawalInitiated(msg.sender, currentEra, block.number);
+    // Calls the inherited `canInvite` function from `Invitable` to calculate eligibility.
+    // This depends on total approved invites, total activist count, and the activist's pool level.
+    return canInvite(approvedInvites, communityRules.userTypesTotalCount(USER_TYPE), activist.pool.level);
   }
 
   /**
-   * @dev Allows an authorized caller to remove levels from an activist's pool.
-   * This function updates the activist's local level and notifies the `ActivistPool` contract.
-   * @notice Can only be called by the ValidationRules contract.
-   * @param addr The wallet address of the activist from whom levels are to be removed.
-   * @param levelsToRemove The number of levels to decrease.
+   * @dev Returns the detailed `Activist` data for a given address.
+   * @notice Provides the full profile of an activist.
+   * @param addr The address of the activist to retrieve.
+   * @return Activist The `Activist` struct containing the user's data.
    */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
-    Activist memory activist = activists[addr];
-
-    activists[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : activist.pool.level;
-    activistPool.removePoolLevels(addr, levelsToRemove);
-
-    // Emit an event
-    emit ActivistLevelRemoved(addr, levelsToRemove, activist.pool.level, block.number);
+  function getActivist(address addr) public view returns (Activist memory) {
+    return activists[addr];
   }
 
   /**
