@@ -18,10 +18,21 @@ import { InspectorPool } from "./InspectorPool.sol";
  * This contract handles inspector registration, inspection tracking, give-ups, and penalties.
  */
 contract InspectorRules is Callable {
-  // --- State Variables ---
+  // --- Constants & state variables ---
 
   /// @notice The minimum number of completed inspections required for an inspector to be eligible for pool rewards.
-  uint256 internal constant MINIMUM_INSPECTIONS_TO_POOL = 3;
+  uint8 internal constant MINIMUM_INSPECTIONS_TO_POOL = 3;
+
+  /// @notice The maximum allowed number of "give-ups" (accepted but unrealized inspections)
+  /// before an inspector's validity is affected (blocked from accepting new inspections).
+  uint8 private constant MAX_GIVEUPS = 3;
+
+  /// @notice The maximum number of penalties an inspector can accumulate before facing invalidation.
+  uint8 public immutable maxPenalties;
+
+  /// @notice The number of blocks within which an accepted inspection must be realized.
+  /// If an inspection is not realized within this period after being accepted, inspectors will sum one "give-up".
+  uint32 public immutable blocksToAccept = 6000;
 
   /// @notice A mapping from an inspector's wallet address to their detailed `Inspector` data structure.
   /// This serves as the primary storage for inspector profiles.
@@ -45,17 +56,6 @@ contract InspectorRules is Callable {
   /// This is a constant for gas efficiency and clarity.
   UserType private constant USER_TYPE = UserType.INSPECTOR;
 
-  /// @notice The maximum number of penalties an inspector can accumulate before facing invalidation.
-  uint256 public immutable maxPenalties;
-
-  /// @notice The maximum allowed number of "give-ups" (accepted but unrealized inspections)
-  /// before an inspector's validity is affected (blocked from accepting new inspections).
-  uint256 private constant MAX_GIVEUPS = 3;
-
-  /// @notice The number of blocks within which an accepted inspection must be realized.
-  /// If an inspection is not realized within this period after being accepted, inspectors will sum one "give-up".
-  uint256 public immutable blocksToAccept = 6000;
-
   // --- Constructor ---
 
   /**
@@ -64,7 +64,7 @@ contract InspectorRules is Callable {
    * @param inspectorPoolAddress The address of the deployed `InspectorPool` contract.
    * @param maxPenalties_ The maximum allowed penalties for an inspector.
    */
-  constructor(address communityRulesAddress, address inspectorPoolAddress, uint256 maxPenalties_) {
+  constructor(address communityRulesAddress, address inspectorPoolAddress, uint8 maxPenalties_) {
     communityRules = CommunityRules(communityRulesAddress);
     inspectorPool = InspectorPool(inspectorPoolAddress);
     maxPenalties = maxPenalties_;
@@ -91,7 +91,7 @@ contract InspectorRules is Callable {
     require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
-    Inspector memory inspector = Inspector(
+    inspectors[msg.sender] = Inspector(
       id,
       msg.sender,
       name,
@@ -105,7 +105,6 @@ contract InspectorRules is Callable {
       block.number
     );
 
-    inspectors[msg.sender] = inspector;
     // Store the relationship between ID and address for lookup.
     inspectorsAddress[id] = msg.sender;
     // Register the user with CommunityRules as an INSPECTOR. Other rules are applied at this function.
@@ -128,17 +127,17 @@ contract InspectorRules is Callable {
     // Only registered inspectors can call this function.
     require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Pool only to inspectors");
 
-    Inspector memory inspector = inspectors[msg.sender];
+    Inspector storage inspector = inspectors[msg.sender];
     // Check if the inspector has completed the minimum required inspections.
     require(minimumInspections(inspector.totalInspections), "Minimum inspections");
 
     uint256 currentEra = inspector.pool.currentEra;
 
     // Check if the inspector is eligible to withdraw for the current era through InspectorPool.
-    require(inspectorPool.canWithdraw(currentEra), "Can't approve withdraw");
+    require(inspectorPool.canWithdraw(currentEra), "Not eligible to withdraw for this era");
 
     // Increment the inspector's era in their local pool data.
-    inspectors[msg.sender].pool.currentEra++;
+    inspector.pool.currentEra++;
 
     // Call the InspectorPool contract to perform the actual token withdrawal.
     inspectorPool.withdraw(msg.sender, currentEra);
@@ -146,6 +145,8 @@ contract InspectorRules is Callable {
     // Emit an event for off-chain monitoring.
     emit InspectorWithdrawalInitiated(msg.sender, currentEra, block.number);
   }
+
+  // --- MustBeAllowedCaller functions (State modifying) ---
 
   /**
    * @dev Allows an authorized caller (`ValidationRules` contract) to add a penalty to an inspector's record.
@@ -230,12 +231,15 @@ contract InspectorRules is Callable {
    * @return uint256 The updated total number of inspections for the inspector.
    */
   function incrementInspections(address addr) private returns (uint256) {
-    inspectors[addr].totalInspections++;
-    inspectors[addr].lastRealizedAt = block.number;
+    Inspector storage inspector = inspectors[addr];
+    require(inspector.id != 0, "Inspector does not exist");
+
+    inspector.totalInspections++;
+    inspector.lastRealizedAt = block.number;
 
     addLevel(addr);
 
-    return inspectors[addr].totalInspections;
+    return inspector.totalInspections;
   }
 
   /**
@@ -245,10 +249,12 @@ contract InspectorRules is Callable {
    * @param addr The inspector's wallet address.
    */
   function addLevel(address addr) internal {
-    Inspector memory inspector = inspectors[addr];
-    inspector.pool.level++;
-    inspectors[addr] = inspector;
+    Inspector storage inspector = inspectors[addr];
+    require(inspector.id != 0, "Inspector does not exist");
 
+    inspector.pool.level++;
+
+    // Only add level to the pool if minimum inspections threshold is met.
     if (!minimumInspections(inspector.totalInspections)) return;
 
     inspectorPool.addLevel(addr, 1);
@@ -272,6 +278,8 @@ contract InspectorRules is Callable {
    * @param addr The inspector's wallet address.
    */
   function decreaseGiveUps(address addr) private {
+    require(inspectors[addr].giveUps > 0, "Cannot be decremented below zero");
+
     inspectors[addr].giveUps--;
     emit GiveUpDecreased(addr, inspectors[addr].giveUps, block.number);
   }
