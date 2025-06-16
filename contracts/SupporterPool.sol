@@ -6,10 +6,10 @@ import { RegenerationCredit } from "./RegenerationCredit.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
- * @author Sintrop
  * @title SupporterPool
- * @notice Receives tokens for inviting others to burn tokens and manages token burning for supporters.
- * @dev SupporterPool is a contract designed to manage the burning of RegenerationCredit tokens and to reward inviters.
+ * @author Sintrop
+ * @notice Contrat that manages token referral commission for supporters. Supporters can receive tokens for inviting others when they burn their tokens.
+ * @dev SupporterPool is a contract designed to manage the token burning rewards of the RegenerationCredit.
  */
 contract SupporterPool is Callable {
   /// @notice The address of the RegenerationCredit token contract.
@@ -25,22 +25,6 @@ contract SupporterPool is Callable {
   constructor(address regenerationCreditAddress) {
     regenerationCredit = RegenerationCredit(regenerationCreditAddress);
   }
-
-  // --- Events ---
-
-  /**
-   * @notice Emitted when tokens are burned through the SupporterPool.
-   * @param _tokenOwner The address of the user whose tokens were burned.
-   * @param _amountBurned The net amount of tokens burned by the tokenOwner (excluding inviter commission).
-   * @param _inviter The address of the inviter who receives a commission, or address(0) if no inviter.
-   * @param _inviterTotalTokens The amount of tokens transferred to the inviter as commission.
-   */
-  event PoolBurnTokensEvent(
-    address indexed _tokenOwner,
-    uint256 _amountBurned,
-    address indexed _inviter,
-    uint256 _inviterTotalTokens
-  );
 
   // --- External/Public Functions ---
 
@@ -81,4 +65,20 @@ contract SupporterPool is Callable {
     // Emit event before potential external transfer call (Checks-Effects-Interactions)
     emit PoolBurnTokensEvent(tokenOwner, amountBurn, inviter, inviterTotalTokens);
   }
+
+  // --- Events ---
+
+  /**
+   * @notice Emitted when tokens are burned through the SupporterPool.
+   * @param _tokenOwner The address of the user whose tokens were burned.
+   * @param _amountBurned The net amount of tokens burned by the tokenOwner (excluding inviter commission).
+   * @param _inviter The address of the inviter who receives a commission, or address(0) if no inviter.
+   * @param _inviterTotalTokens The amount of tokens transferred to the inviter as commission.
+   */
+  event PoolBurnTokensEvent(
+    address indexed _tokenOwner,
+    uint256 _amountBurned,
+    address indexed _inviter,
+    uint256 _inviterTotalTokens
+  );
 }

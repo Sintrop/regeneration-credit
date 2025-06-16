@@ -10,8 +10,8 @@ describe("SupporterRules", () => {
   let instance, communityRules, regenerationCredit, supporterPool, researcherRules;
   let ownerAddress, inv1Address, inv2Address, user1Address;
 
-  const addSupporter = async (name, profilePhoto, from) => {
-    await instance.connect(from).addSupporter(name, profilePhoto);
+  const addSupporter = async (name, description, profilePhoto, from) => {
+    await instance.connect(from).addSupporter(name, description, profilePhoto);
   };
 
   const updateProfilePhoto = async (newPhoto, from) => {
@@ -57,8 +57,8 @@ describe("SupporterRules", () => {
   describe("#addSupporter", () => {
     context("when supporter exists", () => {
       it("should return error", async () => {
-        await addSupporter("Supporter A", "profilePhoto", inv1Address);
-        await expect(addSupporter("Supporter A", "profilePhoto", inv1Address)).to.be.revertedWith(
+        await addSupporter("Supporter A", "description", "profilePhoto", inv1Address);
+        await expect(addSupporter("Supporter A", "description", "profilePhoto", inv1Address)).to.be.revertedWith(
           "User already exists"
         );
       });
@@ -66,11 +66,12 @@ describe("SupporterRules", () => {
 
     context("when supporter don't exist", () => {
       it("create supporter", async () => {
-        await addSupporter("Supporter A", "profilePhoto", inv1Address);
-        await addSupporter("Supporter B", "profilePhoto", inv2Address);
+        await addSupporter("Supporter A", "description", "profilePhoto", inv1Address);
+        await addSupporter("Supporter B", "description", "profilePhoto", inv2Address);
         const supporter = await instance.getSupporter(inv1Address);
 
         expect(supporter.supporterWallet).to.equal(inv1Address.address);
+        expect(supporter.description).to.equal("description");
         expect(supporter.profilePhoto).to.equal("profilePhoto");
         expect(supporter.publicationsCount).to.equal(0);
         expect(supporter.offsetsCount).to.equal(0);
@@ -78,15 +79,15 @@ describe("SupporterRules", () => {
       });
 
       it("increment supporterCount", async () => {
-        await addSupporter("Supporter A", "profilePhoto", inv1Address);
-        await addSupporter("Supporter B", "profilePhoto", inv2Address);
+        await addSupporter("Supporter A", "description", "profilePhoto", inv1Address);
+        await addSupporter("Supporter B", "description", "profilePhoto", inv2Address);
         const supportersCount = await communityRules.userTypesCount(userTypes.Supporter);
 
         expect(supportersCount).to.equal(2);
       });
 
       it("add created supporter in userType contract as a SUPPORTER", async () => {
-        await addSupporter("Supporter A", "profilePhoto", inv1Address);
+        await addSupporter("Supporter A", "description", "profilePhoto", inv1Address);
 
         const userType = await communityRules.getUser(inv1Address);
         const SUPPORTER = 7;
@@ -99,14 +100,14 @@ describe("SupporterRules", () => {
   describe("#updateProfilePhoto", () => {
     context("without supporter", () => {
       it("should return error", async () => {
-        await addSupporter("Supporter A", "profilePhoto", inv1Address);
+        await addSupporter("Supporter A", "description", "profilePhoto", inv1Address);
         await expect(updateProfilePhoto("newPhoto", inv2Address)).to.be.revertedWith("Only supporters");
       });
     });
 
     context("with supporter", () => {
       it("should update photo", async () => {
-        await addSupporter("Supporter A", "profilePhoto", inv1Address);
+        await addSupporter("Supporter A", "description", "profilePhoto", inv1Address);
         await updateProfilePhoto("newPhoto", inv1Address);
         const supporter = await instance.getSupporter(inv1Address);
 
@@ -118,7 +119,7 @@ describe("SupporterRules", () => {
 
   describe("#getSupporter", () => {
     it("return a supporter", async () => {
-      await addSupporter("Supporter A", "profilePhoto", inv1Address);
+      await addSupporter("Supporter A", "description", "profilePhoto", inv1Address);
 
       const supporter = await instance.getSupporter(inv1Address);
 
@@ -130,7 +131,7 @@ describe("SupporterRules", () => {
   describe("#offset", () => {
     context("when msg.sender is SUPPORTER", () => {
       beforeEach(async () => {
-        await addSupporter("Supporter A", "profilePhoto", inv1Address);
+        await addSupporter("Supporter A", "description", "profilePhoto", inv1Address);
       });
 
       context("when amount is greater than zero", () => {
@@ -145,7 +146,7 @@ describe("SupporterRules", () => {
           context("when SUPPORTER was invited", () => {
             beforeEach(async () => {
               await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
-              await addSupporter("Supporter B", "profilePhoto", inv2Address);
+              await addSupporter("Supporter B", "description", "profilePhoto", inv2Address);
               await transferTokensTo(inv2Address, 100000000000000000000n);
             });
 
@@ -300,7 +301,7 @@ describe("SupporterRules", () => {
         context("when calculatorItemId does not exists", () => {
           beforeEach(async () => {
             await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
-            await addSupporter("Supporter B", "profilePhoto", inv2Address);
+            await addSupporter("Supporter B", "description", "profilePhoto", inv2Address);
             await transferTokensTo(inv2Address, 100000000000000000000n);
             await instance.connect(inv2Address).offset(1000000000000000000n, 10);
           });
@@ -332,7 +333,7 @@ describe("SupporterRules", () => {
   describe("#publish", () => {
     context("when msg.sender is SUPPORTER", () => {
       beforeEach(async () => {
-        await addSupporter("Supporter A", "profilePhoto", inv1Address);
+        await addSupporter("Supporter A", "description", "profilePhoto", inv1Address);
       });
 
       context("when amount is greater than one", () => {
@@ -340,7 +341,7 @@ describe("SupporterRules", () => {
           context("when SUPPORTER was invited", () => {
             beforeEach(async () => {
               await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
-              await addSupporter("Supporter B", "profilePhoto", inv2Address);
+              await addSupporter("Supporter B", "description", "profilePhoto", inv2Address);
               await transferTokensTo(inv2Address, 100000000000000000000n);
             });
 
@@ -487,7 +488,7 @@ describe("SupporterRules", () => {
 
   describe("#declareReductionCommitment", () => {
     beforeEach(async () => {
-      await addSupporter("Supporter A", "profilePhoto", inv1Address);
+      await addSupporter("Supporter A", "description", "profilePhoto", inv1Address);
     });
 
     context("when is supporter", () => {

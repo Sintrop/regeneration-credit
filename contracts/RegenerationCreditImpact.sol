@@ -9,10 +9,10 @@ import { UserType } from "./types/CommunityTypes.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
- * @author Sintrop
  * @title RegenerationCreditImpact
- * @dev Total impact and total token impact functions
- * @notice Manages and calculates Regeneration Credit system impact
+ * @author Sintrop
+ * @dev Total impact and total token impact functions.
+ * @notice Manages and calculates Regeneration Credit system impact.
  */
 contract RegenerationCreditImpact {
   using SafeMath for uint256;
