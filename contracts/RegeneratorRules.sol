@@ -113,7 +113,7 @@ contract RegeneratorRules is Callable {
     require(_coordinates.length >= 3 && _coordinates.length <= 10, "Minimum 3 and maximum 10 coordinate points");
     require(totalArea >= 500 && totalArea <= 500000, "Minimum 500 and maximum 500.000 square meters");
 
-    Regenerator storage regenerator = regenerators[msg.sender];
+    Regenerator memory regenerator = regenerators[msg.sender];
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     regenerator.id = id;
@@ -124,6 +124,7 @@ contract RegeneratorRules is Callable {
     regenerator.pool = Pool(false, regeneratorPool.currentContractEra());
     regenerator.createdAt = block.number;
     regenerator.coordinatesCount = _coordinates.length;
+    regenerators[msg.sender] = regenerator;
 
     regeneratorsAddress[id] = msg.sender;
     projectDescriptions[msg.sender] = projectDescription;
@@ -299,11 +300,12 @@ contract RegeneratorRules is Callable {
    * @param regenerationScore The score to add to the regenerator's total regeneration score.
    */
   function setRegenerationScore(address addr, uint256 regenerationScore) private {
-    Regenerator storage regenerator = regenerators[addr];
+    Regenerator memory regenerator = regenerators[addr];
     require(regenerator.id != 0, "Regenerator does not exist");
 
     // Increment regenerator's total regeneration score.
     regenerator.regenerationScore.score += regenerationScore;
+    regenerators[addr] = regenerator;
 
     // If minimum inspections are not met, only update score, not pool level.
     if (!minimumInspections(regenerator.totalInspections)) return;
