@@ -118,14 +118,14 @@ contract ActivistRules is Callable, Invitable {
     require(communityRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Pool only to activist");
 
     // Retrieve activist data.
-    Activist storage activist = activists[msg.sender];
+    Activist memory activist = activists[msg.sender];
     uint256 currentEra = activist.pool.currentEra;
 
     // Checks if activist currentEra is below the pool era
     require(activistPool.canWithdraw(currentEra), "Not eligible to withdraw for this era");
 
     // Increase the activist pool era
-    activist.pool.currentEra++;
+    activists[msg.sender].pool.currentEra++;
 
     // Call the pool withdraw function
     activistPool.withdraw(msg.sender, currentEra);
@@ -171,9 +171,9 @@ contract ActivistRules is Callable, Invitable {
    * @param levelsToRemove The number of levels to decrease.
    */
   function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
-    Activist storage activist = activists[addr];
+    Activist memory activist = activists[addr];
 
-    activist.pool.level -= levelsToRemove > 0 ? levelsToRemove : activist.pool.level;
+    activists[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : activist.pool.level;
     activistPool.removePoolLevels(addr, levelsToRemove);
 
     // Emit an event
@@ -229,13 +229,14 @@ contract ActivistRules is Callable, Invitable {
    */
   function setActivistLevel(address activistAddress) internal {
     // Retrieve the activist's data.
-    Activist storage activist = activists[activistAddress];
+    Activist memory activist = activists[activistAddress];
 
     // If activist does not exist, return.
     if (activist.id <= 0) return;
 
     // Inscrease the activist pool level
     activist.pool.level++;
+    activists[activistAddress] = activist;
 
     // Add pool level to activist be able to withdraw tokens
     activistPool.addLevel(activistAddress, 1);
