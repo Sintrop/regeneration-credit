@@ -183,7 +183,7 @@ contract InspectionRules is Callable {
     require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Only inspectors");
     require(inspectorRules.isInspectorValid(msg.sender), "No more than 3 giveUps allowed");
 
-    Inspection storage inspection = inspections[inspectionId];
+    Inspection memory inspection = inspections[inspectionId];
 
     require(inspection.id >= 1, "Inspection do not exist");
     require(canAcceptNewInspection(), "You already have an inspection Accepted");
@@ -197,6 +197,7 @@ contract InspectionRules is Callable {
     inspection.status = InspectionStatus.ACCEPTED;
     inspection.acceptedAt = block.number;
     inspection.inspector = msg.sender;
+    inspections[inspectionId] = inspection;
 
     regeneratorRules.afterAcceptInspection(inspection.regenerator);
     inspectorRules.afterAcceptInspection(msg.sender, inspectionId);
@@ -226,7 +227,7 @@ contract InspectionRules is Callable {
     require(bytes(proofPhotos).length <= 100, "Max proofPhotos length");
     require(bytes(justificationReport).length <= 1000, "Max report length");
 
-    Inspection storage inspection = inspections[inspectionId];
+    Inspection memory inspection = inspections[inspectionId];
 
     require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Only inspectors");
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
@@ -274,13 +275,14 @@ contract InspectionRules is Callable {
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
-    Inspection storage inspection = inspections[id];
+    Inspection memory inspection = inspections[id];
 
     require(regeneratorRules.poolCurrentEra() <= inspection.inspectedAtEra, "Can't validade anymore");
     require(inspection.id >= 1 && inspection.id <= inspectionsTotalCount, "Inspection does not exist");
     require(inspection.status == InspectionStatus.INSPECTED, "Only INSPECTED inspections can be validated");
 
     inspection.validationsCount += 1;
+    inspections[inspection.id] = inspection;
 
     bool mustInvalidateInspection = inspection.validationsCount >= validationRules.votesToInvalidate();
 
@@ -299,12 +301,13 @@ contract InspectionRules is Callable {
     inspectionsTotalCount++;
     uint256 id = inspectionsTotalCount;
 
-    Inspection storage inspection = inspections[id];
+    Inspection memory inspection = inspections[id];
     inspection.id = id;
     inspection.status = InspectionStatus.OPEN;
     inspection.regenerator = msg.sender;
     inspection.inspector = address(0);
     inspection.createdAt = block.number;
+    inspections[inspection.id] = inspection;
 
     inspectionsCount++;
 
@@ -327,7 +330,7 @@ contract InspectionRules is Callable {
    * @param justificationReport The justification of the result found
    */
   function markAsRealized(
-    Inspection storage inspection,
+    Inspection memory inspection,
     string memory proofPhotos,
     string memory justificationReport,
     uint256 treesResult,
@@ -342,6 +345,7 @@ contract InspectionRules is Callable {
     inspection.justificationReport = justificationReport;
     inspection.inspectedAt = block.number;
     inspection.inspectedAtEra = regeneratorRules.poolCurrentEra();
+    inspections[inspection.id] = inspection;
   }
 
   /**
@@ -368,9 +372,9 @@ contract InspectionRules is Callable {
    * Updates global impact counters, decreases `inspectionsCount` and `realizedInspectionsCount`,
    * marks the inspection as `INVALIDATED`, and records the invalidation time.
    * It also adds penalties to the involved regenerator and inspector.
-   * @param inspection A storage reference to the `Inspection` struct being invalidated.
+   * @param inspection A reference to the `Inspection` struct being invalidated.
    */
-  function invalidateInspection(Inspection storage inspection) internal {
+  function invalidateInspection(Inspection memory inspection) internal {
     // Decrement global impact metrics.
     inspectionsTreesImpact -= inspection.treesResult;
     inspectionsBiodiversityImpact -= inspection.biodiversityResult;
@@ -381,6 +385,7 @@ contract InspectionRules is Callable {
     // Update inspection status
     inspection.status = InspectionStatus.INVALIDATED;
     inspection.invalidatedAt = block.number;
+    inspections[inspection.id] = inspection;
 
     emit InspectionInvalidated(inspection.id, inspection.inspector, inspection.regenerator, block.number);
   }
