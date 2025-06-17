@@ -232,12 +232,14 @@ contract InspectorRules is Callable {
    */
   function incrementInspections(address addr) private returns (uint256) {
     Inspector storage inspector = inspectors[addr];
+
     require(inspector.id != 0, "Inspector does not exist");
 
     inspector.totalInspections++;
     inspector.lastRealizedAt = block.number;
+    inspector.pool.level++;
 
-    addLevel(addr);
+    addLevel(inspector);
 
     return inspector.totalInspections;
   }
@@ -246,20 +248,14 @@ contract InspectorRules is Callable {
    * @dev Internal function to add a level to an inspector's pool.
    * This function increments the inspector's local pool level and notifies the `InspectorPool` contract,
    * but only if the inspector has reached the `MINIMUM_INSPECTIONS_TO_POOL` threshold.
-   * @param addr The inspector's wallet address.
+   * @param inspector The inspector's wallet address.
    */
-  function addLevel(address addr) internal {
-    Inspector storage inspector = inspectors[addr];
-    require(inspector.id != 0, "Inspector does not exist");
-
-    inspector.pool.level++;
-
-    // Only add level to the pool if minimum inspections threshold is met.
+  function addLevel(Inspector storage inspector) internal {
     if (!minimumInspections(inspector.totalInspections)) return;
 
-    inspectorPool.addLevel(addr, 1);
+    inspectorPool.addLevel(inspector.inspectorWallet, 1);
 
-    emit InspectorLevelIncreased(addr, inspector.pool.level, block.number);
+    emit InspectorLevelIncreased(inspector.inspectorWallet, inspector.pool.level, block.number);
   }
 
   /**
@@ -268,8 +264,11 @@ contract InspectorRules is Callable {
    * @param addr The inspector's wallet address.
    */
   function incrementGiveUps(address addr) private {
-    inspectors[addr].giveUps++;
-    emit GiveUpIncreased(addr, inspectors[addr].giveUps, block.number);
+    uint256 currentGiveUps = inspectors[addr].giveUps;
+    uint256 newGiveUps = currentGiveUps + 1;
+    inspectors[addr].giveUps = newGiveUps;
+
+    emit GiveUpIncreased(addr, newGiveUps, block.number);
   }
 
   /**
@@ -278,10 +277,14 @@ contract InspectorRules is Callable {
    * @param addr The inspector's wallet address.
    */
   function decreaseGiveUps(address addr) private {
-    require(inspectors[addr].giveUps > 0, "Cannot be decremented below zero");
+    uint256 currentGiveUps = inspectors[addr].giveUps;
 
-    inspectors[addr].giveUps--;
-    emit GiveUpDecreased(addr, inspectors[addr].giveUps, block.number);
+    require(currentGiveUps > 0, "Cannot be decremented below zero");
+
+    uint256 newGiveUps = currentGiveUps - 1;
+    inspectors[addr].giveUps = newGiveUps;
+
+    emit GiveUpDecreased(addr, newGiveUps, block.number);
   }
 
   /**
@@ -292,8 +295,10 @@ contract InspectorRules is Callable {
    * @param lastInspectionId The ID of the inspection that was just accepted.
    */
   function markLastInspection(address addr, uint256 lastInspectionId) private {
-    inspectors[addr].lastAcceptedAt = block.number;
-    inspectors[addr].lastInspection = lastInspectionId;
+    Inspector storage inspector = inspectors[addr];
+
+    inspector.lastAcceptedAt = block.number;
+    inspector.lastInspection = lastInspectionId;
   }
 
   // --- View functions ---
