@@ -12,58 +12,86 @@ import { VoteRules } from "./VoteRules.sol";
 import { ValidationRules } from "./ValidationRules.sol";
 
 /**
- * @author Sintrop
  * @title ContributorRules
- * @dev Manage contributors rules and data
- * @notice User type to perform generic contributions to the project
+ * @author Sintrop
+ * @notice This contract defines and manages the rules and data specific to "Contributor" users
+ * within the system. Contributors perform generic contributions to the project and are subject
+ * to validation and penalty mechanisms.
+ * @dev Inherits functionalities from `Ownable` (for contract ownership), `Callable` (for whitelisted
+ * function access), and `Invitable` (for managing invitation logic). It interacts with `CommunityRules`
+ * for general user management, `ContributorPool` for reward distribution, `VoteRules` for voting
+ * eligibility, and `ValidationRules` for contribution validation processes.
  */
 contract ContributorRules is Ownable, Callable, Invitable {
-  /// @notice The relationship between address and contributor data
+  // --- State Variables ---
+
+  /// @notice A mapping from a contributor's wallet address to their detailed `Contributor` data structure.
+  /// This serves as the primary storage for contributor profiles.
   mapping(address => Contributor) public contributors;
 
-  /// @notice The relationship between id and contribution data
+  /// @notice A mapping from a unique contribution ID to its detailed `Contribution` data structure.
+  /// Stores all submitted contributions.
   mapping(uint256 => Contribution) public contributions;
 
-  /// @notice The relationship between id and contributor address
+  /// @notice A mapping from a unique contributor ID to their corresponding wallet address.
+  /// Facilitates lookup of a contributor's address by their ID.
   mapping(uint256 => address) public contributorsAddress;
 
-  /// @notice The relationship between address and contributions ids
+  /// @notice A mapping from a contributor's wallet address to an array of IDs of contributions they have made.
+  /// @dev This array can grow indefinitely per contributor.
   mapping(address => uint256[]) public contributionsIds;
 
-  /// @notice CommunityRules contract address
+  /// @notice The address of the `CommunityRules` contract, used to interact with
+  /// community-wide rules, user types, and invitation data.
   CommunityRules internal communityRules;
 
-  /// @notice ContributorPool contract address
+  /// @notice The address of the `ContributorPool` contract, responsible for managing
+  /// and distributing token rewards to contributors.
   ContributorPool internal contributorPool;
 
-  /// @notice ValidationRules contract address
+  /// @notice The address of the `ValidationRules` contract, which defines the rules
+  /// and processes for validating or invalidating contributions.
   ValidationRules internal validationRules;
 
-  /// @notice VoteRules contract address
+  /// @notice The address of the `VoteRules` contract, which defines rules for user voting
+  /// eligibility, particularly for contribution validation.
   VoteRules internal voteRules;
 
-  /// @notice Contributor UserType
+  /// @notice The specific `UserType` enumeration value for a Contributor user.
   UserType private constant USER_TYPE = UserType.CONTRIBUTOR;
 
-  /// @notice Total valid contributions count
+  /// @notice The total count of contributions that are currently considered valid (not invalidated).
   uint256 public contributionsCount;
 
-  /// @notice Total contributions count
+  /// @notice The total count of all contributions ever submitted, including invalidated ones.
+  /// This acts as a global unique ID counter for new contributions.
   uint256 public contributionsTotalCount;
 
-  /// @notice Waiting blocks to publish contribution
-  uint256 internal immutable timeBetweenWorks;
+  /// @notice The maximum number of penalties a contributor can accumulate before being denied.
+  uint8 public immutable MAX_PENALTIES;
 
-  /// @notice Number of blocks to block addContribution before the end of an era
-  uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
+  /// @notice The minimum number of blocks that must elapse between a contributor's successful contribution publications.
+  /// This prevents spamming or rapid consecutive contributions.
+  uint32 internal immutable timeBetweenWorks;
 
-  /// @notice Max allowed penalties before user invalidation
-  uint256 public immutable MAX_PENALTIES;
+  /// @notice The number of blocks before the end of an era during which no new contributions can be published.
+  /// This period allows validators sufficient time to analyze and vote on contributions before the era concludes.
+  uint32 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
-  /// @notice The relationship between address and penalties received
+  /// @notice A mapping from a contributor's wallet address to an array of `Penalty` structs they have received.
   mapping(address => Penalty[]) public penalties;
 
-  constructor(uint256 timeBetweenWorks_, uint256 maxPenalties_, uint256 securityBlocksToValidatorAnalysis) {
+  // --- Constructor ---
+
+  /**
+   * @dev Initializes the ContributorRules contract with key parameters for contribution management.
+   * Note: External contract addresses (`communityRules`, `contributorPool`, etc.) are set via `setContractAddressDependencies`
+   * after deployment, following an `onlyOwner` pattern for secure initialization.
+   * @param timeBetweenWorks_ The required blocks between contributions.
+   * @param maxPenalties_ The maximum allowed penalties for a contributor.
+   * @param securityBlocksToValidatorAnalysis The number of blocks before era end to block new contributions.
+   */
+  constructor(uint32 timeBetweenWorks_, uint8 maxPenalties_, uint32 securityBlocksToValidatorAnalysis) {
     timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
@@ -80,23 +108,34 @@ contract ContributorRules is Ownable, Callable, Invitable {
     voteRules = VoteRules(contractDependency.voteRulesAddress);
   }
 
+  // --- Public Functions ---
+
   /**
-   * @dev Allows a user to attempt to register as a contributor
+   * @dev Allows a user to attempt to register as a contributor.
+   * Creates a new `Contributor` profile for the caller if all requirements are met.
+   * @notice Users must meet specific criteria (previous invitation, system vacancies)
+   * to successfully register as a contributor.
    *
    * Requirements:
-   *
-   * - the caller must have been invited before
-   * - vacancies according to the number of regenerators
-   *
-   * @param name The name of the contributor
-   * @param proofPhoto Identity photo
+   * - The caller (`msg.sender`) must not already be a registered contributor.
+   * - The `name` string must not exceed 50 characters in byte length.
+   * - The `proofPhoto` string must not exceed 100 characters in byte length.
+   * - The total number of `CONTRIBUTOR` users in the system must not exceed 16,000.
+   * @param name The chosen name for the contributor.
+   * @param proofPhoto A hash or identifier for the contributor's identity verification photo.
    */
   function addContributor(string memory name, string memory proofPhoto) public {
+    // Character limit validation for name and proofPhoto.
     require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
+    // Max limit for contributor users in the system.
     require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
 
+    // Generate a unique ID for the new contributor. Assumes userTypesTotalCount provides a globally unique counter.
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
+    // Create a new Contributor struct.
+    // Pool initialized with level 0 and current era set to the current pool era.
+    // Penalties count initialized to 0.
     contributors[msg.sender] = Contributor(
       id,
       msg.sender,
@@ -106,87 +145,204 @@ contract ContributorRules is Ownable, Callable, Invitable {
       block.number,
       0
     );
-
+    // Store the relationship between ID and address for lookup.
     contributorsAddress[id] = msg.sender;
 
+    // Attempt to reguster the user with CommunityRules as a CONTRIBUTOR.
     communityRules.addUser(msg.sender, USER_TYPE);
+
+    // Emit an event for off-chain monitoring.
+    emit ContributorRegistered(id, msg.sender, name, block.number);
   }
 
   /**
-   * @dev Checks if a contributor can send invite
-   * @notice True if contributor can send invite
-   * @param addr The contributor address
-   */
-  function canSendInvite(address addr) public view returns (bool) {
-    Contributor memory contributor = contributors[addr];
-
-    if (contributor.id <= 0) return false;
-
-    return canInvite(contributionsTotalCount, communityRules.userTypesTotalCount(USER_TYPE), contributor.pool.level);
-  }
-
-  /**
-   * @dev Allows a contributor to attempt to publish a contribution report
-   * @notice Publish contributions before security blocks and after timeBetweenWorks
-   * @param description Title or description of the contribution
-   * @param report Hash of the report file
+   * @dev Allows a contributor to attempt to publish a new contribution report.
+   * @notice Contributions can only be published if certain time conditions and user type requirements are met.
+   *
+   * Requirements:
+   * - The `description` string must not exceed 300 characters in byte length.
+   * - The `report` hash/identifier string must not exceed 100 characters in byte length.
+   * - The caller (`msg.sender`) must be a registered `CONTRIBUTOR`.
+   * - The current block number must be greater than `SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS` blocks away
+   * from the end of the current era (not within the security window).
+   * - The contributor must be eligible to publish based on `timeBetweenWorks` (checked via `canPublishContribution`).
+   * @param description A title or brief description of the contribution.
+   * @param report A hash or identifier (e.g., IPFS CID) of the detailed report file.
    */
   function addContribution(string memory description, string memory report) public {
+    // Character limit validation for description and report.
     require(bytes(description).length <= 300 && bytes(report).length <= 100, "Max characters reached");
+
+    // Only registered contributors can call this function.
     require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Only Contributor");
+
+    // Check if within the security window before era end.
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add contribution");
+
+    // Check if enough time has passed since the last publication.
     require(canPublishContribution(msg.sender), "Can't publish yet");
 
+    // Increment global contribution counters and assign a unique ID.
     contributionsCount++;
     contributionsTotalCount++;
     uint256 id = contributionsTotalCount;
 
     contributions[id] = Contribution(id, poolCurrentEra(), msg.sender, description, report, 0, true, 0, block.number);
 
+    // Record the contribution ID for the specific contributor.
     contributionsIds[msg.sender].push(id);
 
+    // Increase the contributor's pool level.
     addPoolLevel(msg.sender);
+
+    // Emit an event.
+    emit ContributionAdded(id, msg.sender, description, block.number);
   }
 
   /**
-   * @dev Returns an array of ids of the contributions made by the addr
-   * @notice Get the contribution id of an user
-   * @param addr Checked address
-   */
-  function getContributionsIds(address addr) public view returns (uint256[] memory) {
-    return contributionsIds[addr];
-  }
-
-  /**
-   * @dev Allows a validator to vote to invalidate a contribution
-   * @notice Publish contributions before security blocks
-   * @param id Contribution id
-   * @param justification String with invalidation explanation
+   * @dev Allows a validator to cast a vote to invalidate a specific contribution.
+   * This process increments the validation count for the contribution and may trigger its invalidation.
+   * @notice Only authorized validators can initiate this process after meeting specific requirements.
+   *
+   * Requirements:
+   * - The `justification` string must not exceed 300 characters in byte length.
+   * - The caller (`msg.sender`) must be eligible to vote (checked via `voteRules.canVote`).
+   * - The caller must have waited the required `timeBetweenVotes` (checked via `validationRules.waitedTimeBetweenVotes`).
+   * - The target `contribution` must exist and be currently valid, and its era must be the current era or a past one.
+   * @param id The unique ID of the contribution to be validated/invalidated.
+   * @param justification A string explaining why the contribution is being invalidated.
    */
   function addContributionValidation(uint256 id, string memory justification) public {
+    // Character limit validation for justification.
     require(bytes(justification).length <= 300, "Max 300 characters");
+    // Check if the caller is eligible to vote.
     require(voteRules.canVote(msg.sender), "User cannot vote");
+    // Check if the caller has waited the required time between votes.
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
+    // Retrieve the contribution using a storage reference to modify it directly.
     Contribution memory contribution = contributions[id];
 
+    // Check if contribution exists, is valid, and was made in the current or a past era.
+    // Note: Validation must occur within the same era.
     require(contribution.valid && poolCurrentEra() <= contribution.era, "This contribution is not VALID");
 
+    // Increment the number of validations for this contribution.
     contribution.validationsCount += 1;
     contributions[id] = contribution;
 
+    // Check if the contribution has reached the threshold for invalidation.
     bool mustInvalidateContribution = contribution.validationsCount >= validationRules.votesToInvalidate();
 
     if (mustInvalidateContribution) {
+      // If threshold reached, invalidate the contribution.
       contribution = invalidateContribution(contribution);
+
+      // Emit event for invalidation.
+      emit ContributionInvalidated(
+        id,
+        contribution.user,
+        justification,
+        totalPenalties(contribution.user),
+        block.number
+      );
     }
 
+    // Record the validation in the ValidationRules contract.
     validationRules.addContributionValidation(contribution, justification, msg.sender);
   }
 
   /**
-   * @dev Executes invalidation
-   * @param contribution Contribution id
+   * @dev Allows a contributor to initiate a withdrawal of Regeneration Credits
+   * based on their published contributions and current era.
+   * @notice Contributors can claim tokens for their contribution service.
+   *
+   * Requirements:
+   * - The caller (`msg.sender`) must be a registered `CONTRIBUTOR`.
+   * - The contributor must be eligible for withdrawal in their current era (checked via `contributorPool.canWithdraw`).
+   * - The contributor's current era (`contributor.pool.currentEra`) will be incremented upon successful withdrawal attempt.
+   */
+  function withdraw() public {
+    // Only registered contributors can call this function.
+    require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Pool only to contributor");
+
+    // Retrieve contributor data.
+    Contributor memory contributor = contributors[msg.sender];
+    uint256 currentEra = contributor.pool.currentEra;
+
+    // Check if the contributor is eligible to withdraw for the current era through ContributorPool.
+    require(contributorPool.canWithdraw(currentEra), "Not eligible to withdraw for this era");
+
+    // Increment the contributor's era in their local pool data.
+    contributors[msg.sender].pool.currentEra++;
+
+    // Call the ContributorPool contract to perform the actual token withdrawal.
+    contributorPool.withdraw(msg.sender, currentEra);
+
+    // Emit an event.
+    emit ContributorWithdrawalInitiated(msg.sender, currentEra, block.number);
+  }
+
+  // --- MustBeAllowedCaller functions ---
+
+  /**
+   * @dev Allows an authorized caller to remove levels from a contributor's pool.
+   * This function updates the contributor's local level and notifies the `ContributorPool` contract.
+   * @notice Can only be called by ContributorRules address.
+   * @param addr The wallet address of the contributor from whom levels are to be removed.
+   * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
+   * this function sets the contributor's pool level to 0. Otherwise, it subtracts the specified amount.
+   */
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+    Contributor memory contributor = contributors[addr];
+
+    contributors[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : contributor.pool.level;
+
+    contributorPool.removePoolLevels(addr, levelsToRemove);
+
+    // Emit an event.
+    emit ContributorLevelRemoved(addr, levelsToRemove, contributor.pool.level, block.number);
+  }
+
+  /**
+   * @dev Adds a penalty to a contributor's record when one of their contributions is invalidated.
+   * @notice This function must be called by the ValidationRules contract.
+   * @param addr The wallet address of the contributor receiving the penalty.
+   * @param contributionId The ID of the contribution associated with this penalty.
+   * @return uint256 The total number of penalties the contributor has accumulated.
+   */
+  function addPenalty(address addr, uint256 contributionId) public mustBeAllowedCaller returns (uint256) {
+    penalties[addr].push(Penalty(contributionId));
+
+    return totalPenalties(addr);
+  }
+
+  // --- Internal functions ---
+
+  /**
+   * @dev Internal function to add a level to a contributor's pool.
+   * This function also updates the `lastPublishedAt` timestamp for the contributor.
+   * @param addr The wallet address of the contributor whose level is to be increased.
+   */
+  function addPoolLevel(address addr) internal {
+    Contributor storage contributor = contributors[addr];
+    // If contributor does not exist, return.
+    if (contributor.id == 0) return;
+
+    contributor.lastPublishedAt = block.number; // Update last published block for this contributor.
+    contributor.pool.level++; // Increase the contributor's local pool level.
+
+    contributorPool.addLevel(addr, 1);
+
+    // Emit an event for off-chain monitoring.
+    emit ContributorLevelIncreased(addr, contributor.pool.level, block.number);
+  }
+
+  /**
+   * @dev Internal function to execute the invalidation process for a contribution.
+   * Updates the contribution's status, decrements valid contributions count,
+   * and records the invalidation time.
+   * @param contribution A `Contribution` storage reference to the contribution being invalidated.
    */
   function invalidateContribution(Contribution memory contribution) internal returns (Contribution memory) {
     contributionsCount--;
@@ -197,123 +353,157 @@ contract ContributorRules is Ownable, Callable, Invitable {
     return contribution;
   }
 
+  // --- View functions ---
+
   /**
-   * @dev Returns a contributor
-   * @param addr The address of the contributor
+   * @dev Returns the detailed `Contributor` data for a given address.
+   * @notice Provides the full profile of a contributor.
+   * @param addr The address of the contributor to retrieve.
+   * @return contributor The `Contributor` struct containing the user's data.
    */
   function getContributor(address addr) public view returns (Contributor memory contributor) {
     return contributors[addr];
   }
 
   /**
-   * @dev Returns a contribution
-   * @param id contributionId
+   * @dev Returns the detailed `Contribution` data for a given contribution ID.
+   * @notice Provides the full details of a specific contribution.
+   * @param id The unique ID of the contribution to retrieve.
+   * @return Contribution The `Contribution` struct containing the contribution's data.
    */
   function getContribution(uint256 id) public view returns (Contribution memory) {
     return contributions[id];
   }
 
   /**
-   * @dev Check if contributor exists
-   * @param addr The address of the contributor
+   * @dev Returns an array of IDs of the contributions made by a specific address.
+   * @notice Provides a list of all contributions made by a given user.
+   * @param addr The address of the contributor whose contributions are to be retrieved.
+   * @return uint256[] An array of contribution IDs.
    */
-  function contributorExists(address addr) public view returns (bool) {
-    return contributors[addr].id > 0;
+  function getContributionsIds(address addr) public view returns (uint256[] memory) {
+    return contributionsIds[addr];
   }
 
   /**
-   * @dev Call withdraw function from contributorPool to try to claim tokens
-   * @notice Withdraw regeneration credit from contribution service provided
-   *
-   * Requirements:
-   *
-   * - only to contributors
-   * - to be eligible to withdraw tokens, you must have published at least one contribution in the era
-   *
+   * @dev Checks if a specific contributor address is eligible to send new invitations.
+   * @notice Returns `true` if the contributor can send an invite, `false` otherwise.
+   * @param addr The address of the contributor to check.
+   * @return bool `true` if the contributor is eligible to send an invite, `false` otherwise.
    */
-  function withdraw() public {
-    require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Pool only to contributor");
-
-    Contributor memory contributor = contributors[msg.sender];
-    uint256 currentEra = contributor.pool.currentEra;
-
-    require(contributorPool.canWithdraw(currentEra), "Can't approve withdraw");
-
-    contributors[msg.sender].pool.currentEra++;
-
-    contributorPool.withdraw(msg.sender, currentEra);
-  }
-
-  /**
-   * @dev Adds a level to a contributor
-   * @param addr Contributor wallet
-   */
-  function addPoolLevel(address addr) internal {
-    Contributor memory contributor = contributors[addr];
-    contributor.lastPublishedAt = block.number;
-    contributor.pool.level++;
-    contributors[addr] = contributor;
-
-    contributorPool.addLevel(addr, 1);
-  }
-
-  /**
-   * @dev Remove pool levels from contributor
-   * @param addr Contributor wallet
-   */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+  function canSendInvite(address addr) public view returns (bool) {
     Contributor memory contributor = contributors[addr];
 
-    contributors[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : contributor.pool.level;
+    // Return false if the address is not a registered contributor (id is 0).
+    if (contributor.id <= 0) return false;
 
-    contributorPool.removePoolLevels(addr, levelsToRemove);
+    // Calls the inherited `canInvite` function from `Invitable` to calculate eligibility.
+    // This depends on total contributions count, total contributor count, and the contributor's pool level.
+    return canInvite(contributionsTotalCount, communityRules.userTypesTotalCount(USER_TYPE), contributor.pool.level);
   }
 
   /**
-   * @dev Add contributor penalty when invalidating a contribution
-   * @param addr Contributor wallet
-   * @param contributionId Contribution id
-   */
-  function addPenalty(address addr, uint256 contributionId) public mustBeAllowedCaller returns (uint256) {
-    penalties[addr].push(Penalty(contributionId));
-
-    return totalPenalties(addr);
-  }
-
-  /**
-   * @dev Returns addr number of penalties
-   * @notice Number of penalties of an user
-   * @param addr Contributor wallet
+   * @dev Returns the total number of penalties an address has accumulated.
+   * @notice Provides the current penalty count for a specific contributor.
+   * @param addr The contributor's wallet address.
+   * @return uint256 The total number of penalties for the given address.
    */
   function totalPenalties(address addr) public view returns (uint256) {
     return penalties[addr].length;
   }
 
   /**
-   * @dev Current contributorPool era
-   * @return uint256 Return the current contract pool era
+   * @dev Returns the current era as determined by the `ContributorPool` contract.
+   * @notice This function provides the current era from the perspective of the reward pool.
+   * @return uint256 The current era of the `ContributorPool`.
    */
   function poolCurrentEra() public view returns (uint256) {
     return contributorPool.currentContractEra();
   }
 
   /**
-   * @dev Checks if user can publish a contribution
-   * @return bool True if can
-   * @param addr Msg.sender addresss
+   * @dev Checks if a user can publish a new contribution based on `timeBetweenWorks`.
+   * @notice This function determines if a contributor has waited the required time since their last publication.
+   * @param addr The address of the contributor to check.
+   * @return bool `true` if the contributor can publish a contribution, `false` otherwise.
    */
   function canPublishContribution(address addr) internal view returns (bool) {
     uint256 lastPublishedAt = contributors[addr].lastPublishedAt;
 
+    // A user can publish if:
+    // 1. Their last publication was long enough ago (`block.number > lastPublishedAt + timeBetweenWorks`).
+    // 2. They have never published before (`lastPublishedAt <= 0`).
     bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
     return canPublish || lastPublishedAt <= 0;
   }
 
   /**
-   * @dev Calculate blocks to next era
-   * @return uint256 Return the amount of blocks to next era
+   * @dev Calculates the number of blocks remaining until the start of the next era,
+   * according to the `ContributorPool` contract's era definition.
+   * @notice Provides a countdown to the next era for contribution planning.
+   * @return uint256 The amount of blocks remaining until the next era begins.
    */
   function nextEraIn() public view returns (uint256) {
     return uint256(contributorPool.nextEraIn(poolCurrentEra()));
   }
+
+  // --- Events ---
+
+  /// @dev Emitted when a new contributor successfully registers.
+  /// @param id The unique ID of the newly registered contributor.
+  /// @param contributorAddress The wallet address of the contributor.
+  /// @param name The name provided by the contributor.
+  /// @param blockNumber The block number at which the registration occurred.
+  event ContributorRegistered(uint256 indexed id, address indexed contributorAddress, string name, uint256 blockNumber);
+
+  /// @dev Emitted when a new contribution is successfully added by a contributor.
+  /// @param id The unique ID of the new contribution.
+  /// @param contributorAddress The address of the contributor who submitted the contribution.
+  /// @param description The description/title of the contribution.
+  /// @param blockNumber The block number at which the contribution was added.
+  event ContributionAdded(
+    uint256 indexed id,
+    address indexed contributorAddress,
+    string description,
+    uint256 blockNumber
+  );
+
+  /// @dev Emitted when a contribution is officially invalidated after reaching the required votes.
+  /// This event signifies a final state change for the contribution.
+  /// @param contributionId The ID of the contribution that was invalidated.
+  /// @param contributorAddress The address of the contributor of the invalidated contribution.
+  /// @param justification The justification provided by the validator who triggered the invalidation (last vote).
+  /// @param newPenaltyCount The total number of penalties the contributor now has.
+  /// @param blockNumber The block number at which the contribution was invalidated.
+  event ContributionInvalidated(
+    uint256 indexed contributionId,
+    address indexed contributorAddress,
+    string justification,
+    uint256 newPenaltyCount,
+    uint256 blockNumber
+  );
+
+  /// @dev Emitted when a contributor successfully initiates a withdrawal of tokens.
+  /// @param contributorAddress The address of the contributor initiating the withdrawal.
+  /// @param era The era for which the withdrawal was initiated.
+  /// @param blockNumber The block number at which the withdrawal was initiated.
+  event ContributorWithdrawalInitiated(address indexed contributorAddress, uint256 indexed era, uint256 blockNumber);
+
+  /// @dev Emitted when a contributor's level is increased.
+  /// @param contributorAddress The address of the contributor whose level was increased.
+  /// @param newLevel The new total level of the contributor.
+  /// @param blockNumber The block number at which the level increase occurred.
+  event ContributorLevelIncreased(address indexed contributorAddress, uint256 newLevel, uint256 blockNumber);
+
+  /// @dev Emitted when a contributor's pool levels are removed.
+  /// @param contributorAddress The address of the contributor whose levels were removed.
+  /// @param levelsRemoved The number of levels that were removed.
+  /// @param newLevel The new total level of the contributor after removal.
+  /// @param blockNumber The block number at which the level removal occurred.
+  event ContributorLevelRemoved(
+    address indexed contributorAddress,
+    uint256 levelsRemoved,
+    uint256 newLevel,
+    uint256 blockNumber
+  );
 }

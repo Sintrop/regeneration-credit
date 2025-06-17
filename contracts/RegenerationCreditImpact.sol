@@ -9,10 +9,11 @@ import { UserType } from "./types/CommunityTypes.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
- * @author Sintrop
  * @title RegenerationCreditImpact
- * @dev Total impact and total token impact functions
- * @notice Manages and calculates Regeneration Credit system impact
+ * @author Sintrop
+ * @dev Total impact and token impact functions. These f
+ * @notice Manages and calculates Regeneration Credit system impact. This contract is responsible for
+ * calculating the system impact and also the impact per token. This is the foundation, the community impact is what is backing the Regeneration Credit.
  */
 contract RegenerationCreditImpact {
   using SafeMath for uint256;
@@ -108,10 +109,10 @@ contract RegenerationCreditImpact {
   }
 
   /**
-   * @dev 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
    * @notice Calculates the trees impact per Regeneration Credit.
    * @dev The denominator represents the sum of currently circulating tokens (total supply minus locked) AND all tokens that have ever been burned (certified).
    * This provides an impact metric based on all tokens that have contributed to or represent impact, whether currently in circulation or already consumed.
+   * 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
    * @return uint256 Trees per token (with IMPACT_DECIMALS precision)
    */
   function treesPerToken() public view returns (uint256) {
@@ -122,10 +123,10 @@ contract RegenerationCreditImpact {
   }
 
   /**
-   * @dev 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
    * @notice Calculates the carbon impact per Regeneration Credit.
    * @dev The denominator represents the sum of currently circulating tokens (total supply minus locked) AND all tokens that have ever been burned (certified).
    * This provides an impact metric based on all tokens that have contributed to or represent impact, whether currently in circulation or already consumed.
+   * 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
    * @return uint256 Grams of carbon per token (with IMPACT_DECIMALS precision)
    */
   function carbonPerToken() public view returns (uint256) {
@@ -136,10 +137,10 @@ contract RegenerationCreditImpact {
   }
 
   /**
-   * @dev 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
    * @notice Calculates the biodiversity impact per Regeneration Credit.
    * @dev The denominator represents the sum of currently circulating tokens (total supply minus locked) AND all tokens that have ever been burned (certified).
    * This provides an impact metric based on all tokens that have contributed to or represent impact, whether currently in circulation or already consumed.
+   * 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
    * @return uint256 Amount of species per token (with IMPACT_DECIMALS precision)
    */
   function biodiversityPerToken() public view returns (uint256) {
@@ -150,10 +151,10 @@ contract RegenerationCreditImpact {
   }
 
   /**
-   * @dev 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
    * @notice Calculates the soil impact per Regeneration Credit.
    * @dev The denominator represents the sum of currently circulating tokens (total supply minus locked) AND all tokens that have ever been burned (certified).
    * This provides an impact metric based on all tokens that have contributed to or represent impact, whether currently in circulation or already consumed.
+   * 32 decimal places are used for the calculation. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
    * @return uint256 Area [m²] per token (with IMPACT_DECIMALS precision)
    */
   function soilPerToken() public view returns (uint256) {
