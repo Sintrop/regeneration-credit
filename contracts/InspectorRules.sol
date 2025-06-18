@@ -197,9 +197,9 @@ contract InspectorRules is Callable {
    * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
    * this function sets the inspector's pool level to 0. Otherwise, it subtracts the specified amount.   */
   function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
-    Inspector memory inspector = inspectors[addr];
+    Inspector storage inspector = inspectors[addr];
 
-    inspectors[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : inspector.pool.level;
+    inspector.pool.level -= levelsToRemove > 0 ? levelsToRemove : inspector.pool.level;
 
     inspectorPool.removePoolLevels(addr, levelsToRemove);
 
@@ -217,9 +217,11 @@ contract InspectorRules is Callable {
    * - The inspector's `totalInspections` count must be greater than 0.
    */
   function decrementInspections(address addr) public mustBeAllowedCaller {
-    require(inspectors[addr].totalInspections > 0, "totalInspections invalid");
+    Inspector storage inspector = inspectors[addr];
 
-    inspectors[addr].totalInspections--;
+    require(inspector.totalInspections > 0, "totalInspections invalid");
+
+    inspector.totalInspections--;
   }
 
   // --- Internal/private functions (State modifying) ---
