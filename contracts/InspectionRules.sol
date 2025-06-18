@@ -362,7 +362,6 @@ contract InspectionRules is Callable {
     activistRules.addInspectorLevel(inspectorAddress, inspectorRules.afterRealizeInspection(inspectorAddress));
 
     userInspections[regeneratorAddress].push(inspection.id);
-    userInspections[inspectorAddress].push(inspection.id);
   }
 
   /**
