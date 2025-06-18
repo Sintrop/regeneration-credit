@@ -2,6 +2,7 @@ require("@nomicfoundation/hardhat-toolbox");
 require("@nomicfoundation/hardhat-verify");
 require("solidity-coverage");
 require("dotenv").config({ path: __dirname + "/.env" });
+require('hardhat-docgen');
 
 const infuraKey = process.env.INFURA_API_KEY;
 const privateKey = process.env.PRIVATE_KEY_ACCOUNT_TO_DEPLOY || "set private key";
@@ -97,5 +98,12 @@ module.exports = {
     checkLeaks: false,
     reporter: "spec",
     ui: "bdd",
+  },
+  docgen: {
+    path: './docs', // Optional: Path to HTML export directory
+    clear: true, // Optional: Delete old files on generation
+    runOnCompile: true, // Optional: Generate docs on compile
+    only: ['^contracts/'], // Optional: Include contracts matching this pattern
+    except: [], // Optional: Exclude contracts matching this pattern
   },
 };
