@@ -6,9 +6,11 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Callable } from "./shared/Callable.sol";
 
 /**
- * @author Sintrop
  * @title RegenerationIndexRules
- * @dev Manage index categories and score
+ * @author Sintrop
+ * @dev Manage index categories and score.
+ * @notice This contract handles the RegenerationIndexRules, used by the inspections to estimate the Regenerator impact
+ * and calculate the RegnerationScore. The system will have only two categories: Trees & Biodiversity.
  */
 contract RegenerationIndexRules is Ownable, Callable {
   // --- State Variables ---
@@ -22,6 +24,7 @@ contract RegenerationIndexRules is Ownable, Callable {
   /// @notice Relationship between regeneration index id and its name/value
   mapping(uint256 => RegenerationIndex) public regenerationIndex;
 
+  /// @notice Allowed categories: Trees & Biodiversity.
   uint256 public constant categoryCounts = 2;
 
   constructor() {
