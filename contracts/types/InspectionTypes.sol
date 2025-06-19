@@ -33,8 +33,8 @@ struct Inspection {
   InspectionStatus status;
   address regenerator;
   address inspector;
-  uint treesResult;
-  uint biodiversityResult;
+  uint256 treesResult;
+  uint256 biodiversityResult;
   uint256 regenerationScore;
   string proofPhotos;
   string justificationReport;
