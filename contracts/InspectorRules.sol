@@ -277,9 +277,6 @@ contract InspectorRules is Callable {
    * @param addr The inspector's wallet address.
    */
   function decreaseGiveUps(address addr) private {
-    uint256 currentGiveUps = inspectors[addr].giveUps;
-    require(currentGiveUps > 0, "Cannot be decremented below zero");
-
     inspectors[addr].giveUps--;
   }
 
