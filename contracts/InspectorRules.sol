@@ -364,7 +364,7 @@ contract InspectorRules is Callable {
   }
 
   // --- Events ---
-  
+
   /// @dev Emitted when a new inspector successfully registers.
   /// @param id The unique ID of the newly registered inspector.
   /// @param inspectorAddress The wallet address of the inspector.
