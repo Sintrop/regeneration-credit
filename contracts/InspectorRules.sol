@@ -109,6 +109,8 @@ contract InspectorRules is Callable {
     inspectorsAddress[id] = msg.sender;
     // Register the user with CommunityRules as an INSPECTOR. Other rules are applied at this function.
     communityRules.addUser(msg.sender, USER_TYPE);
+
+    emit InspectorRegistered(id, msg.sender, name, block.number);
   }
 
   /**
@@ -266,11 +268,7 @@ contract InspectorRules is Callable {
    * @param addr The inspector's wallet address.
    */
   function incrementGiveUps(address addr) private {
-    uint256 currentGiveUps = inspectors[addr].giveUps;
-    uint256 newGiveUps = currentGiveUps + 1;
-    inspectors[addr].giveUps = newGiveUps;
-
-    emit GiveUpIncreased(addr, newGiveUps, block.number);
+    inspectors[addr].giveUps++;
   }
 
   /**
@@ -280,13 +278,9 @@ contract InspectorRules is Callable {
    */
   function decreaseGiveUps(address addr) private {
     uint256 currentGiveUps = inspectors[addr].giveUps;
-
     require(currentGiveUps > 0, "Cannot be decremented below zero");
 
-    uint256 newGiveUps = currentGiveUps - 1;
-    inspectors[addr].giveUps = newGiveUps;
-
-    emit GiveUpDecreased(addr, newGiveUps, block.number);
+    inspectors[addr].giveUps--;
   }
 
   /**
@@ -370,18 +364,13 @@ contract InspectorRules is Callable {
   }
 
   // --- Events ---
-
-  /// @dev Emitted when an inspector's give-up count increases.
-  /// @param inspectorAddress The address of the inspector.
-  /// @param newGiveUpsCount The new total give-ups count for the inspector.
-  /// @param blockNumber The block number at which the give-up occurred.
-  event GiveUpIncreased(address indexed inspectorAddress, uint256 newGiveUpsCount, uint256 blockNumber);
-
-  /// @dev Emitted when an inspector's give-up count decreases.
-  /// @param inspectorAddress The address of the inspector.
-  /// @param newGiveUpsCount The new total give-ups count for the inspector.
-  /// @param blockNumber The block number at which the give-up decreased.
-  event GiveUpDecreased(address indexed inspectorAddress, uint256 newGiveUpsCount, uint256 blockNumber);
+  
+  /// @dev Emitted when a new inspector successfully registers.
+  /// @param id The unique ID of the newly registered inspector.
+  /// @param inspectorAddress The wallet address of the inspector.
+  /// @param name The name provided by the inspector.
+  /// @param blockNumber The block number at which the registration occurred.
+  event InspectorRegistered(uint256 indexed id, address indexed inspectorAddress, string name, uint256 blockNumber);
 
   /// @dev Emitted when an inspector successfully initiates a withdrawal of tokens.
   /// @param inspectorAddress The address of the inspector initiating the withdrawal.
