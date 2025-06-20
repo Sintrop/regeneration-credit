@@ -267,14 +267,14 @@ contract ContributorRules is Ownable, Callable, Invitable {
     require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Pool only to contributor");
 
     // Retrieve contributor data.
-    Contributor memory contributor = contributors[msg.sender];
+    Contributor storage contributor = contributors[msg.sender];
     uint256 currentEra = contributor.pool.currentEra;
 
     // Check if the contributor is eligible to withdraw for the current era through ContributorPool.
     require(contributorPool.canWithdraw(currentEra), "Not eligible to withdraw for this era");
 
     // Increment the contributor's era in their local pool data.
-    contributors[msg.sender].pool.currentEra++;
+    contributor.pool.currentEra++;
 
     // Call the ContributorPool contract to perform the actual token withdrawal.
     contributorPool.withdraw(msg.sender, currentEra);
