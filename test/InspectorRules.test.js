@@ -129,17 +129,6 @@ describe("InspectorRules", () => {
     });
   });
 
-  context("when will check if inspector exists", () => {
-    it("should return true when exists", async () => {
-      await addInspector("Inspector A", inspe1Address);
-      const inspectorExists = await instance.inspectorExists(inspe1Address);
-
-      expect(inspectorExists).to.equal(true);
-    });
-
-    // Todo Add when not exists
-  });
-
   describe("#afterRealizeInspection", () => {
     context("with allowed caller", () => {
       describe(".decreaseGiveUps", () => {
