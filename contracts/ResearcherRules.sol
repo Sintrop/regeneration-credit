@@ -176,18 +176,7 @@ contract ResearcherRules is Callable, Invitable {
     researchesTotalCount++;
     uint256 id = researchesTotalCount;
 
-    researches[id] = Research(
-      id,
-      poolCurrentEra(),
-      msg.sender,
-      title,
-      thesis,
-      file,
-      0,
-      true,
-      0,
-      block.number
-    );
+    researches[id] = Research(id, poolCurrentEra(), msg.sender, title, thesis, file, 0, true, 0, block.number);
 
     // Update researcher data
     Researcher storage researcher = researchers[msg.sender];
