@@ -287,8 +287,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(dev2Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(1);
+                expect(validations).to.equal(1);
               });
 
               it("user type must be the same", async () => {
@@ -334,8 +333,7 @@ describe("ValidationRules", () => {
                 it("should add validation", async () => {
                   const validations = await instance.getUserValidations(dev2Address, 1);
 
-                  expect(validations[0].justification).to.equal("my justification");
-                  expect(validations.length).to.equal(1);
+                  expect(validations).to.equal(1);
                 });
 
                 it("user type must be the same", async () => {
@@ -363,8 +361,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(user2Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(1);
+                expect(validations).to.equal(1);
               });
 
               it("user type must be the same", async () => {
@@ -410,8 +407,7 @@ describe("ValidationRules", () => {
                 it("should add validation", async () => {
                   const validations = await instance.getUserValidations(user2Address, 1);
 
-                  expect(validations[0].justification).to.equal("my justification");
-                  expect(validations.length).to.equal(1);
+                  expect(validations).to.equal(1);
                 });
 
                 it("user type must be the same", async () => {
@@ -439,8 +435,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(user2Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(1);
+                expect(validations).to.equal(1);
               });
 
               it("user type must be the same", async () => {
@@ -486,8 +481,7 @@ describe("ValidationRules", () => {
                 it("should add validation", async () => {
                   const validations = await instance.getUserValidations(user2Address, 1);
 
-                  expect(validations[0].justification).to.equal("my justification");
-                  expect(validations.length).to.equal(1);
+                  expect(validations).to.equal(1);
                 });
 
                 it("user type must be the same", async () => {
@@ -515,8 +509,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(user2Address, 3);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(1);
+                expect(validations).to.equal(1);
               });
 
               it("user type must be the same", async () => {
@@ -570,8 +563,7 @@ describe("ValidationRules", () => {
                 it("should add validation", async () => {
                   const validations = await instance.getUserValidations(user2Address, 4);
 
-                  expect(validations[0].justification).to.equal("my justification");
-                  expect(validations.length).to.equal(1);
+                  expect(validations).to.equal(1);
                 });
 
                 it("user type must be the same", async () => {
@@ -624,8 +616,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(regenerator1Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -685,8 +676,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(inspector1Address, 4);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -733,8 +723,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(contributor1Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -781,8 +770,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(dev1Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -829,8 +817,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(resea1Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -880,8 +867,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(activist1Address, 4);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -933,8 +919,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(regenerator1Address, 2);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {

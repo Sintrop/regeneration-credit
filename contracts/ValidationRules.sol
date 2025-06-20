@@ -3,7 +3,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import { CommunityRules } from "./CommunityRules.sol";
 import { RegeneratorRules } from "./RegeneratorRules.sol";
-import { UserValidation, ResourceValidation, ContractsDependency } from "./types/ValidationTypes.sol";
+import { ContractsDependency } from "./types/ValidationTypes.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { InspectorRules } from "./InspectorRules.sol";
@@ -27,7 +27,7 @@ contract ValidationRules is Callable {
   // --- State Variables ---
 
   /// @notice The relationship between address and validations received by era.
-  mapping(address => mapping(uint256 => UserValidation[])) public userValidations;
+  mapping(address => mapping(uint256 => uint256)) public userValidations;
 
   /// @notice Relationship between validator and report validation. Only one validation per resource allowed.
   mapping(address => mapping(uint256 => bool)) private validatorReportsValidations;
@@ -116,13 +116,12 @@ contract ValidationRules is Callable {
 
     validatorUsersValidations[msg.sender][userAddress][currentEra] = true;
     validatorLastVoteAt[msg.sender] = block.number;
+    userValidations[userAddress][currentEra]++;
 
     uint256 _votesToInvalidate = votesToInvalidate();
-    uint256 validationsCount = userValidations[userAddress][currentEra].length + 1;
+    uint256 validationsCount = userValidations[userAddress][currentEra];
 
-    userValidations[userAddress][currentEra].push(
-      UserValidation(msg.sender, userAddress, justification, _votesToInvalidate, block.number)
-    );
+    emit UserValidation(msg.sender, userAddress, justification);
 
     if (validationsCount >= _votesToInvalidate) denyUser(userAddress);
   }
@@ -364,7 +363,7 @@ contract ValidationRules is Callable {
    * @param currentEra The era to check for validations.
    * @return UserValidation[] An array of `UserValidation` structs.
    */
-  function getUserValidations(address userAddress, uint256 currentEra) public view returns (UserValidation[] memory) {
+  function getUserValidations(address userAddress, uint256 currentEra) public view returns (uint256) {
     return userValidations[userAddress][currentEra];
   }
 
@@ -403,6 +402,14 @@ contract ValidationRules is Callable {
   }
 
   // --- Events ---
+
+  /**
+   * @notice Emitted
+   * @param _validatorAddress The address of the validator.
+   * @param _userAddress The wallet of the user receiving the vote.
+   * @param _justification The justification provided for the vote.
+   */
+  event UserValidation(address indexed _validatorAddress, address indexed _userAddress, string _justification);
 
   /**
    * @notice Emitted
