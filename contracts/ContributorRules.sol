@@ -98,7 +98,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
   }
 
   /**
-   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced after
+   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced after.
    * @param contractDependency Addresses of system contracts used
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
@@ -267,14 +267,14 @@ contract ContributorRules is Ownable, Callable, Invitable {
     require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Pool only to contributor");
 
     // Retrieve contributor data.
-    Contributor memory contributor = contributors[msg.sender];
+    Contributor storage contributor = contributors[msg.sender];
     uint256 currentEra = contributor.pool.currentEra;
 
     // Check if the contributor is eligible to withdraw for the current era through ContributorPool.
     require(contributorPool.canWithdraw(currentEra), "Not eligible to withdraw for this era");
 
     // Increment the contributor's era in their local pool data.
-    contributors[msg.sender].pool.currentEra++;
+    contributor.pool.currentEra++;
 
     // Call the ContributorPool contract to perform the actual token withdrawal.
     contributorPool.withdraw(msg.sender, currentEra);
