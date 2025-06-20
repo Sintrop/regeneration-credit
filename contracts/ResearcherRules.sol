@@ -24,61 +24,70 @@ import { ValidationRules } from "./ValidationRules.sol";
 contract ResearcherRules is Callable, Invitable {
   // --- State Variables ---
 
-  /// @notice The relationship between address and researcher data
+  /// @notice A mapping from a researcher's wallet address to their detailed `Researcher` data structure.
+  /// This serves as the primary storage for researcher profiles.
   mapping(address => Researcher) internal researchers;
 
-  /// @notice The relationship between id and research data
+  /// @notice A mapping from a unique research ID to its detailed `Research` data structure.
+  /// Stores all submitted researchs.
   mapping(uint256 => Research) public researches;
 
-  /// @notice The relationship between address and researches ids
+  /// @notice A mapping from a researcher's wallet address to an array of IDs of researchs they have submitted.
   mapping(address => uint256[]) public researchesIds;
 
-  /// @notice The relationship between id and calculatorItem data
+  /// @notice The relationship between id and calculatorItem data.
   mapping(uint256 => CalculatorItem) public calculatorItems;
 
-  /// @notice The relationship between id and evaluationMethods data
+  /// @notice The relationship between id and evaluationMethods data.
   mapping(uint256 => EvaluationMethod) public evaluationMethods;
 
-  /// @notice The relationship between address and penalties received
+  /// @notice A mapping from a researcher's wallet address to an array of `Penalty` structs they have received.
   mapping(address => Penalty[]) public penalties;
 
-  /// @notice The relationship between id and researcher address
+  /// @notice A mapping from a unique reseracher ID to their corresponding wallet address.
+  /// Facilitates lookup of a reseracher's address by their ID.
   mapping(uint256 => address) public researchersAddress;
 
-  /// @notice CommunityRules contract address
+  /// @notice The address of the `CommunityRules` contract, used to interact with
+  /// community-wide rules, user types, and invitation data.
   CommunityRules internal communityRules;
 
-  /// @notice ResearcherPool contract address
+  /// @notice The address of the `ResearcherPool` contract, responsible for managing
+  /// and distributing token rewards to researchers.
   ResearcherPool internal researcherPool;
 
-  /// @notice ValidatorPool contract address
+  /// @notice The address of the `ValidationRules` contract, which defines the rules
+  /// and processes for validating or invalidating development reports.
   ValidationRules internal validationRules;
 
-  /// @notice ValidationRules contract address
+  /// @notice The address of the `VoteRules` contract, which defines rules for user voting
+  /// eligibility, particularly for report validation.
   VoteRules internal voteRules;
 
-  /// @notice Researcher UserType
+  /// @notice The specific `UserType` enumeration value for a Researcher user.
   UserType private constant USER_TYPE = UserType.RESEARCHER;
 
-  /// @notice Total valid researches count
+  /// @notice The total count of researchs that are currently considered valid (not invalidated).
   uint256 public researchesCount;
 
-  /// @notice Total researches count
+  /// @notice The grand total count of all researchs ever submitted, including invalidated ones.
+  /// This acts as a global unique ID counter for new researchs.
   uint256 public researchesTotalCount;
 
-  /// @notice Total calculatorItems count
+  /// @notice Total calculatorItems count.
   uint256 public calculatorItemsCount;
 
-  /// @notice Total methods count
+  /// @notice Total methods count.
   uint256 public evaluationMethodsCount;
 
   /// @notice Waiting blocks to publish research
   uint256 internal immutable timeBetweenWorks;
 
-  /// @notice Max allowed penalties before invalidation
+  /// @notice The maximum number of penalties a researcher can accumulate before facing invalidation.
   uint256 public immutable MAX_PENALTIES;
 
-  /// @notice Number of blocks to block addResearch before the end of an era
+  /// @notice The number of blocks before the end of an era during which no new researchs can be published.
+  /// This period allows validators sufficient time to analyze and vote on researchs before the era concludes.
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
   // --- Constructor ---
