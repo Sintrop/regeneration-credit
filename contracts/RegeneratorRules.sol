@@ -169,7 +169,7 @@ contract RegeneratorRules is Callable {
 
     // Current regenerator era before withdraw
     uint256 currentEra = regenerator.pool.currentEra;
-  
+
     // Increment the regenerator's era in their local pool data.
     regenerator.pool.currentEra = currentEra + 1;
 
