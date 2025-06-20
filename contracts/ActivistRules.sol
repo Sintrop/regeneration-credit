@@ -125,7 +125,7 @@ contract ActivistRules is Callable, Invitable {
     require(activistPool.canWithdraw(currentEra), "Not eligible to withdraw for this era");
 
     // Increase the activist pool era
-    activist.pool.currentEra++;
+    activist.pool.currentEra = currentEra + 1;
 
     // Call the pool withdraw function
     activistPool.withdraw(msg.sender, currentEra);
@@ -171,9 +171,9 @@ contract ActivistRules is Callable, Invitable {
    * @param levelsToRemove The number of levels to decrease.
    */
   function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
-    Activist memory activist = activists[addr];
+    Activist storage activist = activists[addr];
 
-    activists[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : activist.pool.level;
+    activist.pool.level -= levelsToRemove > 0 ? levelsToRemove : activist.pool.level;
     activistPool.removePoolLevels(addr, levelsToRemove);
 
     // Emit an event
