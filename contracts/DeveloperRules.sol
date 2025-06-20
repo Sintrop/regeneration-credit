@@ -246,14 +246,14 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     // Only registered developers can call this function.
     require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Pool only to developer");
 
-    Developer memory developer = developers[msg.sender];
+    Developer storage developer = developers[msg.sender];
     uint256 currentEra = developer.pool.currentEra;
 
     // Check if the developer is eligible to withdraw for the current era through DeveloperPool.
     require(developerPool.canWithdraw(currentEra), "Not eligible to withdraw for this era");
 
     // Increment the developer's era in their local pool data.
-    developers[msg.sender].pool.currentEra++;
+    developer.pool.currentEra++;
 
     // Call the DeveloperPool contract to perform the actual token withdrawal.
     developerPool.withdraw(msg.sender, currentEra);

@@ -80,7 +80,7 @@ contract ResearcherRules is Callable, Invitable {
   /// @notice Total methods count.
   uint256 public evaluationMethodsCount;
 
-  /// @notice Waiting blocks to publish research
+  /// @notice Waiting blocks to publish research.
   uint256 internal immutable timeBetweenWorks;
 
   /// @notice The maximum number of penalties a researcher can accumulate before facing invalidation.
@@ -132,7 +132,7 @@ contract ResearcherRules is Callable, Invitable {
 
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
-    Researcher memory researcher = Researcher(
+    researchers[msg.sender] = Researcher(
       id,
       msg.sender,
       name,
@@ -146,7 +146,6 @@ contract ResearcherRules is Callable, Invitable {
       true
     );
 
-    researchers[msg.sender] = researcher;
     researchersAddress[id] = msg.sender;
     communityRules.addUser(msg.sender, USER_TYPE);
 
@@ -173,36 +172,24 @@ contract ResearcherRules is Callable, Invitable {
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era");
     require(canPublishResearch(msg.sender), "Can't publish yet");
 
-    Researcher storage researcher = researchers[msg.sender];
-
-    uint256 id = researchesTotalCount + 1;
-
-    Research memory research = Research(
-      id,
-      poolCurrentEra(),
-      msg.sender,
-      title,
-      thesis,
-      file,
-      0,
-      true,
-      0,
-      block.number
-    );
-
-    researches[id] = research;
     researchesCount++;
     researchesTotalCount++;
+    uint256 id = researchesTotalCount;
+
+    researches[id] = Research(id, poolCurrentEra(), msg.sender, title, thesis, file, 0, true, 0, block.number);
+
+    // Update researcher data
+    Researcher storage researcher = researchers[msg.sender];
     researcher.publishedResearches++;
     researcher.lastPublishedAt = block.number;
-
     researchesIds[msg.sender].push(id);
 
+    // Update pool level
     researcher.pool.level++;
     researcherPool.addLevel(msg.sender, 1);
 
     // --- Event Emission ---
-    emit ResearchPublished(id, msg.sender, block.number, research.era);
+    emit ResearchPublished(id, msg.sender, block.number);
   }
 
   /**
@@ -297,12 +284,12 @@ contract ResearcherRules is Callable, Invitable {
   function withdraw() public {
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
 
-    Researcher memory researcher = researchers[msg.sender];
+    Researcher storage researcher = researchers[msg.sender];
     uint256 currentEra = researcher.pool.currentEra;
 
     require(researcherPool.canWithdraw(currentEra), "Not eligible to withdraw for this era");
 
-    researchers[msg.sender].pool.currentEra++;
+    researcher.pool.currentEra++;
 
     researcherPool.withdraw(msg.sender, currentEra);
   }
@@ -455,9 +442,8 @@ contract ResearcherRules is Callable, Invitable {
    * @param researchId The unique ID of the published research.
    * @param researcher The address of the researcher who published the research.
    * @param publishedAt The block number when the research was published.
-   * @param era The era in which the research was published.
    */
-  event ResearchPublished(uint256 indexed researchId, address indexed researcher, uint256 publishedAt, uint256 era);
+  event ResearchPublished(uint256 indexed researchId, address indexed researcher, uint256 publishedAt);
 
   /**
    * @dev Emitted when a research is successfully invalidated by validators.
