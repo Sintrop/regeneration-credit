@@ -13,7 +13,7 @@ import { InspectorPool } from "./InspectorPool.sol";
  * @notice This contract defines and manages the rules and data specific to "Inspector" users
  * within the system. Inspectors are primarily responsible for collecting data from regenerators.
  * and performing inspections, which may be subject to penalties for non-compliance.
- * @dev Inherits functionalities from `Callable` (for whitelisted function access) and `Ownable` (for contract ownership).
+ * @dev Inherits functionalities from `Callable` (for whitelisted function access) and `Ownable` (for contract deploy setup).
  * It interacts with `CommunityRules` for general user management and `InspectorPool` for reward distribution.
  * This contract handles inspector registration, inspection tracking, give-ups, and penalties.
  */

@@ -8,7 +8,8 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 /**
  * @title SupporterPool
  * @author Sintrop
- * @notice Contrat that manages token referral commission for supporters. Supporters can receive tokens for inviting others when they burn their tokens.
+ * @notice Contrat that manages token referral commission for supporters.
+ * Supporters can receive tokens for inviting others when they burn their tokens.
  * @dev SupporterPool is a contract designed to manage the token burning rewards of the RegenerationCredit.
  */
 contract SupporterPool is Callable {

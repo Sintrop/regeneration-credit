@@ -17,7 +17,7 @@ import { Developer, Pool, Report, Penalty, ContractsDependency } from "./types/D
  * @notice This contract defines and manages the rules and data specific to "Developer" users
  * within the system. Developers are primarily responsible for the development of the project
  * through submitting development reports, which are subject to validation and penalty mechanisms.
- * @dev Inherits functionalities from `Ownable` (for contract ownership), `Callable` (for whitelisted
+ * @dev Inherits functionalities from `Ownable` (for contract deploy setup), `Callable` (for whitelisted
  * function access), and `Invitable` (for managing invitation logic). It interacts with `CommunityRules`
  * for general user management, `DeveloperPool` for reward distribution, `VoteRules` for voting
  * eligibility, and `ValidationRules` for report validation processes.

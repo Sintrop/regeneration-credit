@@ -13,8 +13,13 @@ import { ValidationRules } from "./ValidationRules.sol";
 /**
  * @title ResearcherRules
  * @author Sintrop
- * @dev Manages researcher rules and data.
- * @notice Contract for managing researcher users, research submissions, and evaluation methods within the system.
+ * @notice This contract defines and manages the rules and data specific to "Researcher" users within the system.
+ * Researchers are primarily responsible for the development of the project impact calculator, for the creation and improvement
+ * of evaluation methods and through submitting researchs, which are subject to validation and penalty mechanisms.
+ * @dev Inherits functionalities from `Ownable` (for contract deploy setup), `Callable` (for whitelisted
+ * function access), and `Invitable` (for managing invitation logic). It interacts with `CommunityRules`
+ * for general user management, `ResearcherPool` for reward distribution, `VoteRules` for voting
+ * eligibility, and `ValidationRules` for research validation processes.
  */
 contract ResearcherRules is Callable, Invitable {
   // --- State Variables ---
@@ -75,33 +80,6 @@ contract ResearcherRules is Callable, Invitable {
 
   /// @notice Number of blocks to block addResearch before the end of an era
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
-
-  // --- Events ---
-
-  /**
-   * @dev Emitted when a new researcher is successfully registered.
-   * @param researcherAddress The address of the newly registered researcher.
-   * @param researcherId The unique ID assigned to the researcher.
-   * @param name The public name of the researcher.
-   */
-  event ResearcherRegistered(address indexed researcherAddress, uint256 researcherId, string name);
-
-  /**
-   * @dev Emitted when a new research report is published.
-   * @param researchId The unique ID of the published research.
-   * @param researcher The address of the researcher who published the research.
-   * @param publishedAt The block number when the research was published.
-   * @param era The era in which the research was published.
-   */
-  event ResearchPublished(uint256 indexed researchId, address indexed researcher, uint256 publishedAt, uint256 era);
-
-  /**
-   * @dev Emitted when a research is successfully invalidated by validators.
-   * @param researchId The ID of the research that was invalidated.
-   * @param invalidatedBy The address of the voter who performed the validation action (leading to invalidation).
-   * @param justification A brief justification for the invalidation.
-   */
-  event ResearchInvalidated(uint256 indexed researchId, address indexed invalidatedBy, string justification);
 
   // --- Constructor ---
 
@@ -168,7 +146,8 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   /**
-   * @notice Allows a registered researcher to publish a new research report.
+   * @notice Allows a registered researcher to publish a new 'research' report. A 'research' can be
+   * a new calculator item, a new methodology or improvement of current ones or a generic regeneration research.
    * @dev Requires the caller to be a registered researcher, to be outside the security block window
    * (i.e., not too close to the end of an era), and to have waited the `timeBetweenWorks`
    * period since their last research publication.
@@ -411,7 +390,7 @@ contract ResearcherRules is Callable, Invitable {
     return uint256(researcherPool.nextEraIn(poolCurrentEra()));
   }
 
-  // --- Internal / Private Helper Functions ---
+  // --- Internal  functions ---
 
   /**
    * @dev Internal helper function that invalidates a research by updating its status.
@@ -451,4 +430,31 @@ contract ResearcherRules is Callable, Invitable {
     bool canPublish = block.number > lastCalculatorItemAt + timeBetweenWorks;
     return canPublish || lastCalculatorItemAt <= 0;
   }
+
+  // --- Events ---
+
+  /**
+   * @dev Emitted when a new researcher is successfully registered.
+   * @param researcherAddress The address of the newly registered researcher.
+   * @param researcherId The unique ID assigned to the researcher.
+   * @param name The public name of the researcher.
+   */
+  event ResearcherRegistered(address indexed researcherAddress, uint256 researcherId, string name);
+
+  /**
+   * @dev Emitted when a new research report is published.
+   * @param researchId The unique ID of the published research.
+   * @param researcher The address of the researcher who published the research.
+   * @param publishedAt The block number when the research was published.
+   * @param era The era in which the research was published.
+   */
+  event ResearchPublished(uint256 indexed researchId, address indexed researcher, uint256 publishedAt, uint256 era);
+
+  /**
+   * @dev Emitted when a research is successfully invalidated by validators.
+   * @param researchId The ID of the research that was invalidated.
+   * @param invalidatedBy The address of the voter who performed the validation action (leading to invalidation).
+   * @param justification A brief justification for the invalidation.
+   */
+  event ResearchInvalidated(uint256 indexed researchId, address indexed invalidatedBy, string justification);
 }
