@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import { CommunityRules } from "./CommunityRules.sol";
-import { Regenerator, Pool, Coordinates } from "./types/RegeneratorTypes.sol";
+import { Regenerator, Pool, Coordinates, RegenerationScore } from "./types/RegeneratorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { RegeneratorPool } from "./RegeneratorPool.sol";
 import { UserType } from "./types/CommunityTypes.sol";
@@ -113,17 +113,22 @@ contract RegeneratorRules is Callable {
     require(_coordinates.length >= 3 && _coordinates.length <= 10, "Minimum 3 and maximum 10 coordinate points");
     require(totalArea >= 500 && totalArea <= 500000, "Minimum 500 and maximum 500.000 square meters");
 
-    Regenerator storage regenerator = regenerators[msg.sender];
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
-    regenerator.id = id;
-    regenerator.regeneratorWallet = msg.sender;
-    regenerator.name = name;
-    regenerator.proofPhoto = proofPhoto;
-    regenerator.totalArea = totalArea;
-    regenerator.pool = Pool(false, regeneratorPool.currentContractEra());
-    regenerator.createdAt = block.number;
-    regenerator.coordinatesCount = _coordinates.length;
+    regenerators[msg.sender] = Regenerator(
+      id,
+      msg.sender,
+      name,
+      proofPhoto,
+      totalArea,
+      false,
+      0,
+      0,
+      RegenerationScore(0),
+      Pool(false, regeneratorPool.currentContractEra()),
+      0,
+      _coordinates.length
+    );
 
     regeneratorsAddress[id] = msg.sender;
     projectDescriptions[msg.sender] = projectDescription;
@@ -158,18 +163,21 @@ contract RegeneratorRules is Callable {
     // Only registered regenerators can call this function.
     require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators pool");
 
-    Regenerator memory regenerator = regenerators[msg.sender];
+    Regenerator storage regenerator = regenerators[msg.sender];
     // Check if the regenerator has completed the minimum required inspections.
     require(minimumInspections(regenerator.totalInspections), "Minimum inspections");
 
+    // Current regenerator era before withdraw
+    uint256 currentEra = regenerator.pool.currentEra;
+  
     // Increment the regenerator's era in their local pool data.
-    regenerators[msg.sender].pool.currentEra++;
+    regenerator.pool.currentEra = currentEra + 1;
 
     // Call the RegeneratorPool contract to perform the actual token withdrawal.
-    regeneratorPool.withdraw(msg.sender, regenerator.pool.currentEra);
+    regeneratorPool.withdraw(msg.sender, currentEra);
 
     // Emit an event for off-chain monitoring.
-    emit RegeneratorWithdrawalInitiated(msg.sender, regenerator.pool.currentEra, block.number);
+    emit RegeneratorWithdrawalInitiated(msg.sender, currentEra, block.number);
   }
 
   /**
@@ -223,9 +231,11 @@ contract RegeneratorRules is Callable {
    * @param addr The regenerator's wallet address.
    */
   function decrementInspections(address addr) public mustBeAllowedCaller {
-    require(regenerators[addr].totalInspections > 0, "totalInspections invalid");
+    uint256 totalInspections = regenerators[addr].totalInspections;
 
-    if (regenerators[addr].totalInspections == 1) {
+    require(totalInspections > 0, "totalInspections invalid");
+
+    if (totalInspections == 1) {
       totalImpactRegenerators--;
       impactRegenerators[addr] = false;
     }
@@ -312,7 +322,7 @@ contract RegeneratorRules is Callable {
 
     // Logic to add initial levels if the regenerator is entering the contract pool for the first time.
     if (!regenerator.pool.onContractPool) {
-      regenerators[addr].pool.onContractPool = true;
+      regenerator.pool.onContractPool = true;
       levels = regenerator.regenerationScore.score;
       emit RegeneratorEnteredPool(addr, block.number); // Emit event for entering pool
     }
@@ -328,7 +338,9 @@ contract RegeneratorRules is Callable {
    * @return uint256 The updated total number of inspections for the regenerator.
    */
   function incrementInspections(address addr) private returns (uint256) {
-    regenerators[addr].totalInspections++;
+    Regenerator storage regenerator = regenerators[addr];
+
+    regenerator.totalInspections++;
 
     // Mark as impact regenerator.
     if (!impactRegenerators[addr]) {
@@ -336,7 +348,7 @@ contract RegeneratorRules is Callable {
       totalImpactRegenerators++;
     }
 
-    return regenerators[addr].totalInspections;
+    return regenerator.totalInspections;
   }
 
   /**
@@ -410,8 +422,9 @@ contract RegeneratorRules is Callable {
   function getCoordinates(address addr) public view returns (Coordinates[] memory) {
     Regenerator memory regenerator = regenerators[addr];
     Coordinates[] memory coordinatesList = new Coordinates[](regenerator.coordinatesCount);
+    uint256 coordinatesCount = regenerator.coordinatesCount;
 
-    for (uint256 i = 0; i < regenerator.coordinatesCount; i++) {
+    for (uint256 i = 0; i < coordinatesCount; i++) {
       coordinatesList[i] = coordinates[addr][i];
     }
 
