@@ -1169,12 +1169,9 @@ describe("InspectionRules", () => {
           });
 
           it("add validation", async () => {
-            const validation = await validationRules.inspectionValidations(1, 0);
+            const inspection = await instance.getInspection(1);
 
-            expect(validation[0]).to.equal(user1Address.address);
-            expect(validation[1]).to.equal(1);
-            expect(validation[2]).to.equal("justification");
-            expect(validation[3]).to.equal(2);
+            expect(inspection.validationsCount).to.equal(1);
           });
         });
 
@@ -1186,11 +1183,9 @@ describe("InspectionRules", () => {
             });
 
             it("add validations", async () => {
-              const validation1 = await validationRules.inspectionValidations(1, 0);
-              const validation2 = await validationRules.inspectionValidations(1, 1);
+              const inspection = await instance.getInspection(1);
 
-              expect(validation1.validator).to.equal(user1Address.address);
-              expect(validation2.validator).to.equal(user2Address.address);
+              expect(inspection.validationsCount).to.equal(2);
             });
 
             it("decrement inspectionsTreesImpact", async () => {
@@ -1332,12 +1327,9 @@ describe("InspectionRules", () => {
           });
 
           it("add validation", async () => {
-            const validation = await validationRules.inspectionValidations(1, 0);
+            const inspection = await instance.getInspection(1);
 
-            expect(validation[0]).to.equal(user1Address.address);
-            expect(validation[1]).to.equal(1);
-            expect(validation[2]).to.equal("justification");
-            expect(validation[3]).to.equal(2);
+            expect(inspection.validationsCount).to.equal(1);
           });
         });
 
@@ -1349,11 +1341,9 @@ describe("InspectionRules", () => {
             });
 
             it("add validations", async () => {
-              const validation1 = await validationRules.inspectionValidations(1, 0);
-              const validation2 = await validationRules.inspectionValidations(1, 1);
+              const inspection = await instance.getInspection(1);
 
-              expect(validation1.validator).to.equal(user1Address.address);
-              expect(validation2.validator).to.equal(user2Address.address);
+              expect(inspection.validationsCount).to.equal(2);
             });
 
             it("decrement inspectionsTreesImpact", async () => {
@@ -1495,12 +1485,9 @@ describe("InspectionRules", () => {
           });
 
           it("add validation", async () => {
-            const validation = await validationRules.inspectionValidations(1, 0);
+            const inspection = await instance.getInspection(1);
 
-            expect(validation[0]).to.equal(user1Address.address);
-            expect(validation[1]).to.equal(1);
-            expect(validation[2]).to.equal("justification");
-            expect(validation[3]).to.equal(2);
+            expect(inspection.validationsCount).to.equal(1);
           });
         });
 
@@ -1512,11 +1499,9 @@ describe("InspectionRules", () => {
             });
 
             it("add validations", async () => {
-              const validation1 = await validationRules.inspectionValidations(1, 0);
-              const validation2 = await validationRules.inspectionValidations(1, 1);
+              const inspection = await instance.getInspection(1);
 
-              expect(validation1.validator).to.equal(user1Address.address);
-              expect(validation2.validator).to.equal(user2Address.address);
+              expect(inspection.validationsCount).to.equal(2);
             });
 
             it("decrement inspectionsTreesImpact", async () => {
@@ -1658,12 +1643,9 @@ describe("InspectionRules", () => {
           });
 
           it("add validation", async () => {
-            const validation = await validationRules.inspectionValidations(1, 0);
+            const inspection = await instance.getInspection(1);
 
-            expect(validation[0]).to.equal(user1Address.address);
-            expect(validation[1]).to.equal(1);
-            expect(validation[2]).to.equal("justification");
-            expect(validation[3]).to.equal(2);
+            expect(inspection.validationsCount).to.equal(1);
           });
         });
 
@@ -1675,11 +1657,9 @@ describe("InspectionRules", () => {
             });
 
             it("add validations", async () => {
-              const validation1 = await validationRules.inspectionValidations(1, 0);
-              const validation2 = await validationRules.inspectionValidations(1, 1);
+              const inspection = await instance.getInspection(1);
 
-              expect(validation1.validator).to.equal(user1Address.address);
-              expect(validation2.validator).to.equal(user2Address.address);
+              expect(inspection.validationsCount).to.equal(2);
             });
 
             it("decrement inspectionsTreesImpact", async () => {
