@@ -17,7 +17,7 @@ import { Developer, Pool, Report, Penalty, ContractsDependency } from "./types/D
  * @notice This contract defines and manages the rules and data specific to "Developer" users
  * within the system. Developers are primarily responsible for the development of the project
  * through submitting development reports, which are subject to validation and penalty mechanisms.
- * @dev Inherits functionalities from `Ownable` (for contract ownership), `Callable` (for whitelisted
+ * @dev Inherits functionalities from `Ownable` (for contract deploy setup), `Callable` (for whitelisted
  * function access), and `Invitable` (for managing invitation logic). It interacts with `CommunityRules`
  * for general user management, `DeveloperPool` for reward distribution, `VoteRules` for voting
  * eligibility, and `ValidationRules` for report validation processes.
@@ -246,14 +246,14 @@ contract DeveloperRules is Ownable, Callable, Invitable {
     // Only registered developers can call this function.
     require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Pool only to developer");
 
-    Developer memory developer = developers[msg.sender];
+    Developer storage developer = developers[msg.sender];
     uint256 currentEra = developer.pool.currentEra;
 
     // Check if the developer is eligible to withdraw for the current era through DeveloperPool.
     require(developerPool.canWithdraw(currentEra), "Not eligible to withdraw for this era");
 
     // Increment the developer's era in their local pool data.
-    developers[msg.sender].pool.currentEra++;
+    developer.pool.currentEra++;
 
     // Call the DeveloperPool contract to perform the actual token withdrawal.
     developerPool.withdraw(msg.sender, currentEra);

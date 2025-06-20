@@ -1370,7 +1370,6 @@ describe("ValidationRules", () => {
                   await instance.connect(owner).addReportValidation(report, "justification", user1Address);
 
                   const era = await developerRules.poolCurrentEra();
-                  console.log(era);
                 });
 
                 it("should add report validation", async () => {
