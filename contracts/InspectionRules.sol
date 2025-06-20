@@ -27,8 +27,8 @@ contract InspectionRules is Callable {
   /// @notice Stores inspection data by its unique ID.
   mapping(uint256 => Inspection) internal inspections;
 
-  /// User inspections ids
-  mapping(address => uint256[]) internal userInspections;
+  /// Regenerator inspections ids list.
+  mapping(address => uint256[]) internal regeneratorInspections;
 
   /// @notice Checks if an inspector has already inspected a specific regenerator.
   mapping(address => mapping(address => bool)) internal inspectorInspected;
@@ -186,7 +186,7 @@ contract InspectionRules is Callable {
     Inspection storage inspection = inspections[inspectionId];
 
     require(inspection.id >= 1, "Inspection do not exist");
-    require(canAcceptNewInspection(), "You already have an inspection Accepted");
+    require(alreadyHaveInspectionAccepted(), "Already accepted inspection");
     require(!inspectorInspected[msg.sender][inspection.regenerator], "Already inspected this regenerator");
     require(inspection.status == InspectionStatus.OPEN, "Inspection must be OPEN");
     require(acceptInspectionDelayBlocksPassed(inspection), "Wait inspection delay blocks");
@@ -361,7 +361,7 @@ contract InspectionRules is Callable {
 
     activistRules.addInspectorLevel(inspectorAddress, inspectorRules.afterRealizeInspection(inspectorAddress));
 
-    userInspections[regeneratorAddress].push(inspection.id);
+    regeneratorInspections[regeneratorAddress].push(inspection.id);
   }
 
   /**
@@ -419,7 +419,7 @@ contract InspectionRules is Callable {
    * @dev Function that checks if an inspector already have an open inspection.
    * @return bool True if can accept new inspection. False if has already an open inspection.
    */
-  function canAcceptNewInspection() private view returns (bool) {
+  function alreadyHaveInspectionAccepted() private view returns (bool) {
     Inspector memory inspector = inspectorRules.getInspector(msg.sender);
     Inspection memory lastInspection = inspections[inspector.lastInspection];
 
@@ -436,8 +436,6 @@ contract InspectionRules is Callable {
    * @return bool True if can accept, false if not.
    */
   function acceptInspectionDelayBlocksPassed(Inspection memory inspection) private view returns (bool) {
-    if (inspection.createdAt == 0) return false;
-
     return block.number > inspection.createdAt + acceptInspectionDelayBlocks;
   }
 

@@ -642,9 +642,7 @@ describe("InspectionRules", () => {
 
             context("when last inspection is not expired", () => {
               it("should return error message", async () => {
-                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith(
-                  "You already have an inspection Accepted"
-                );
+                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Already accepted inspection");
               });
             });
 
@@ -683,9 +681,7 @@ describe("InspectionRules", () => {
 
             context("when dont finished last inspection", () => {
               it("should return error message", async () => {
-                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith(
-                  "You already have an inspection Accepted"
-                );
+                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Already accepted inspection");
               });
             });
           });
