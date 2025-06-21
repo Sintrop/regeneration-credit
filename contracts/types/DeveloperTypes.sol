@@ -52,7 +52,7 @@ struct Report {
  * @dev Report penalty
  */
 struct Penalty {
-  uint256 reportId;
+  uint64 reportId;
 }
 
 /**

@@ -34,7 +34,7 @@ struct Inspector {
  * @dev Invalidated inspection penalty
  */
 struct Penalty {
-  uint256 inspectionId;
+  uint64 inspectionId;
 }
 
 /**

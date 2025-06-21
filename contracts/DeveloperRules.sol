@@ -291,7 +291,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * @param reportId The ID of the report associated with this penalty.
    * @return uint256 The total number of penalties the developer has accumulated.
    */
-  function addPenalty(address addr, uint256 reportId) public mustBeAllowedCaller returns (uint256) {
+  function addPenalty(address addr, uint64 reportId) public mustBeAllowedCaller returns (uint256) {
     // Add the penalty record to the penalties array.
     penalties[addr].push(Penalty(reportId));
 
@@ -455,7 +455,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
   /// @param newPenaltyCount The total number of penalties the developer now has.
   /// @param blockNumber The block number at which the report was invalidated.
   event ReportInvalidated(
-    uint256 indexed reportId,
+    uint64 indexed reportId,
     address indexed developerAddress,
     string justification,
     uint256 newPenaltyCount,

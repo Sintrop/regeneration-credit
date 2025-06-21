@@ -311,7 +311,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
    * @param contributionId The ID of the contribution associated with this penalty.
    * @return uint256 The total number of penalties the contributor has accumulated.
    */
-  function addPenalty(address addr, uint256 contributionId) public mustBeAllowedCaller returns (uint256) {
+  function addPenalty(address addr, uint64 contributionId) public mustBeAllowedCaller returns (uint256) {
     penalties[addr].push(Penalty(contributionId));
 
     return totalPenalties(addr);
@@ -476,7 +476,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
   /// @param newPenaltyCount The total number of penalties the contributor now has.
   /// @param blockNumber The block number at which the contribution was invalidated.
   event ContributionInvalidated(
-    uint256 indexed contributionId,
+    uint64 indexed contributionId,
     address indexed contributorAddress,
     string justification,
     uint256 newPenaltyCount,

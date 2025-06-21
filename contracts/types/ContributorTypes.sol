@@ -56,7 +56,7 @@ struct Contribution {
  * @dev Contribution penalty
  */
 struct Penalty {
-  uint256 contributionId;
+  uint64 contributionId;
 }
 
 /**

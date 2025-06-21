@@ -159,7 +159,7 @@ contract InspectorRules is Callable {
    * @param inspectionId The ID of the inspection associated with this penalty.
    * @return uint256 The total number of penalties the inspector has accumulated.
    */
-  function addPenalty(address addr, uint256 inspectionId) public mustBeAllowedCaller returns (uint256) {
+  function addPenalty(address addr, uint64 inspectionId) public mustBeAllowedCaller returns (uint256) {
     penalties[addr].push(Penalty(inspectionId));
 
     return totalPenalties(addr);
