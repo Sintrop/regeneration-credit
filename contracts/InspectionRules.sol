@@ -24,11 +24,41 @@ import { VoteRules } from "./VoteRules.sol";
 contract InspectionRules is Callable {
   // --- State Variables ---
 
+  /// @notice Number of initial inspection requests a regenerator can make without `timeBetweenInspections` delay.
+  uint8 public immutable allowedInitialRequests;
+
+  /// @notice Time (in blocks) a regenerator must wait between inspection requests after exceeding initial allowed requests.
+  uint32 public immutable timeBetweenInspections;
+
+  /// @notice Amount of blocks an accepted inspection has before it expires if not realized.
+  uint32 public immutable blocksToExpireAcceptedInspection;
+
+  /// @notice Amount of blocks that inspectors must wait after a request is made before they can accept it.
+  uint32 public immutable acceptInspectionDelayBlocks;
+
+  /// @notice Amount of blocks for validators to analyze inspections before an era ends.
+  uint32 public immutable securityBlocksToValidatorAnalysis;
+
+  /// @notice Valid inspections count (inspections not invalidated).
+  uint64 public inspectionsCount;
+
+  /// @notice Realized inspections count (inspections that have been completed and submitted).
+  uint64 public realizedInspectionsCount;
+
+  /// @notice Total inspections count, including open, accepted, realized, and invalidated ones.
+  uint64 public inspectionsTotalCount;
+
+  /// @notice Sum of all valid inspections' trees impact.
+  uint256 public inspectionsTreesImpact;
+
+  /// @notice Sum of all valid inspections' biodiversity impact.
+  uint256 public inspectionsBiodiversityImpact;
+
   /// @notice Stores inspection data by its unique ID.
-  mapping(uint256 => Inspection) internal inspections;
+  mapping(uint64 => Inspection) internal inspections;
 
   /// Regenerator inspections ids list.
-  mapping(address => uint256[]) internal regeneratorInspections;
+  mapping(address => uint64[]) internal regeneratorInspections;
 
   /// @notice Checks if an inspector has already inspected a specific regenerator.
   mapping(address => mapping(address => bool)) internal inspectorInspected;
@@ -53,36 +83,6 @@ contract InspectionRules is Callable {
 
   /// @notice RegenerationIndexRules contract instance for calculating regeneration scores.
   RegenerationIndexRules private regenerationIndexRules;
-
-  /// @notice Valid inspections count (inspections not invalidated).
-  uint256 public inspectionsCount;
-
-  /// @notice Realized inspections count (inspections that have been completed and submitted).
-  uint256 public realizedInspectionsCount;
-
-  /// @notice Total inspections count, including open, accepted, realized, and invalidated ones.
-  uint256 public inspectionsTotalCount;
-
-  /// @notice Sum of all valid inspections' trees impact.
-  uint256 public inspectionsTreesImpact;
-
-  /// @notice Sum of all valid inspections' biodiversity impact.
-  uint256 public inspectionsBiodiversityImpact;
-
-  /// @notice Time (in blocks) a regenerator must wait between inspection requests after exceeding initial allowed requests.
-  uint32 public immutable timeBetweenInspections;
-
-  /// @notice Amount of blocks an accepted inspection has before it expires if not realized.
-  uint32 public immutable blocksToExpireAcceptedInspection;
-
-  /// @notice Number of initial inspection requests a regenerator can make without `timeBetweenInspections` delay.
-  uint8 public immutable allowedInitialRequests;
-
-  /// @notice Amount of blocks that inspectors must wait after a request is made before they can accept it.
-  uint32 public immutable acceptInspectionDelayBlocks;
-
-  /// @notice Amount of blocks for validators to analyze inspections before an era ends.
-  uint32 public immutable securityBlocksToValidatorAnalysis;
 
   // --- Constructor ---
 
@@ -179,7 +179,7 @@ contract InspectionRules is Callable {
    *
    * @param inspectionId The unique ID of the inspection the inspector wishes to accept.
    */
-  function acceptInspection(uint256 inspectionId) public {
+  function acceptInspection(uint64 inspectionId) public {
     require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Only inspectors");
     require(inspectorRules.isInspectorValid(msg.sender), "No more than 3 giveUps allowed");
 
@@ -217,11 +217,11 @@ contract InspectionRules is Callable {
    * @param biodiversityResult The number of different species of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted.
    */
   function realizeInspection(
-    uint256 inspectionId,
+    uint64 inspectionId,
     string memory proofPhotos,
     string memory justificationReport,
-    uint256 treesResult,
-    uint256 biodiversityResult
+    uint32 treesResult,
+    uint32 biodiversityResult
   ) public {
     require(bytes(proofPhotos).length <= 100, "Max proofPhotos length");
     require(bytes(justificationReport).length <= 1000, "Max report length");
@@ -269,7 +269,7 @@ contract InspectionRules is Callable {
    * @param id The unique ID of the inspection to be validated/invalidated.
    * @param justification A string explaining why the inspection is being invalidated.
    */
-  function addInspectionValidation(uint256 id, string memory justification) public {
+  function addInspectionValidation(uint64 id, string memory justification) public {
     require(bytes(justification).length <= 300, "Max 300 characters reached");
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
@@ -297,7 +297,7 @@ contract InspectionRules is Callable {
    */
   function createInspection() internal {
     inspectionsTotalCount++;
-    uint256 id = inspectionsTotalCount;
+    uint64 id = inspectionsTotalCount;
 
     Inspection memory inspection = inspections[id];
     inspection.id = id;
@@ -331,8 +331,8 @@ contract InspectionRules is Callable {
     Inspection memory inspection,
     string memory proofPhotos,
     string memory justificationReport,
-    uint256 treesResult,
-    uint256 biodiversityResult
+    uint32 treesResult,
+    uint32 biodiversityResult
   ) internal {
     inspection.status = InspectionStatus.INSPECTED;
     inspection.treesResult = treesResult;
@@ -392,7 +392,7 @@ contract InspectionRules is Callable {
    * @dev Returns a inspection by id if that exists.
    * @param id The id of the inspection to return.
    */
-  function getInspection(uint256 id) public view returns (Inspection memory) {
+  function getInspection(uint64 id) public view returns (Inspection memory) {
     require(id >= 1 && id <= inspectionsTotalCount, "Inspection do not exist");
     return inspections[id];
   }
@@ -411,7 +411,7 @@ contract InspectionRules is Callable {
    * @notice Function to calculate amount of blocks to expire an inspection.
    * @return uint256 Return amount of blocks to expire an inspection.
    */
-  function calculateBlocksToExpire(uint256 inspectionId) public view returns (uint256) {
+  function calculateBlocksToExpire(uint64 inspectionId) public view returns (uint256) {
     return inspections[inspectionId].acceptedAt + blocksToExpireAcceptedInspection - block.number;
   }
 
@@ -481,9 +481,9 @@ contract InspectionRules is Callable {
     uint256 indexed inspectionId,
     address indexed inspectorAddress,
     address indexed regeneratorAddress,
-    uint256 treesResult,
-    uint256 biodiversityResult,
-    uint256 regenerationScore,
+    uint32 treesResult,
+    uint32 biodiversityResult,
+    uint32 regenerationScore,
     uint256 inspectedAt
   );
 

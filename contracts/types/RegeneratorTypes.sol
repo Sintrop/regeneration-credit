@@ -19,7 +19,7 @@ import "./CommunityTypes.sol";
  * @param coordinatesCount Number of coordinate points
  */
 struct Regenerator {
-  uint256 id;
+  uint64 id;
   address regeneratorWallet;
   string name;
   string proofPhoto;

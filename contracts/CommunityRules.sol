@@ -16,6 +16,15 @@ import { Callable } from "./shared/Callable.sol";
 contract CommunityRules is Ownable, Callable {
   // --- State Variables ---
 
+  /// @notice Minimum number of users allowed for a specific type before proportionality rules apply.
+  uint8 public constant MINIMUM_REGISTERED_USERS_QUANTITY = 5;
+
+  /// @notice Total count of delations received across all users.
+  uint64 public delationsCount;
+
+  /// @notice The global total count of all active (non-`UNDEFINED`, non-`DENIED`) users in the system..
+  uint64 public usersCount;
+
   /// @notice A mapping from a user's wallet address to their assigned `UserType`.
   mapping(address => UserType) internal users;
 
@@ -27,24 +36,15 @@ contract CommunityRules is Ownable, Callable {
   mapping(address => Invitation) public invitations;
 
   /// @notice A mapping to track the count of active users for each `UserType`.
-  mapping(UserType => uint256) public userTypesCount;
+  mapping(UserType => uint64) public userTypesCount;
 
   /// @notice A mapping to track the total count of registered users for each `UserType`,
   /// including both active and `DENIED` users. This count serves as a global counter for new user IDs.
-  mapping(UserType => uint256) public userTypesTotalCount;
+  mapping(UserType => uint64) public userTypesTotalCount;
 
   /// @notice A mapping storing specific settings for each `UserType`,
   /// including proportionality rules, invitation requirements, and voter status.
   mapping(UserType => UserTypeSetting) public userTypeSettings;
-
-  /// @notice Total count of delations received across all users.
-  uint256 public delationsCount;
-
-  /// @notice The global total count of all active (non-`UNDEFINED`, non-`DENIED`) users in the system..
-  uint256 public usersCount;
-
-  /// @notice Minimum number of users allowed for a specific type before proportionality rules apply.
-  uint256 public constant MINIMUM_REGISTERED_USERS_QUANTITY = 5;
 
   // --- Constructor ---
 

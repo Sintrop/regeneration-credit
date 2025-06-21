@@ -19,6 +19,9 @@ import { UserType } from "./types/CommunityTypes.sol";
 contract InvitationRules is Ownable {
   // --- State Variables ---
 
+  /// @notice The minimum number of blocks an activist needs to wait to invite Regenerators or Inspectors again.
+  uint16 public constant activistDelayBlocks = 1000;
+
   /// @notice Relationship between address and last general invitation blockNumber.
   mapping(address => uint256) public lastInviteBlocks;
 
@@ -46,9 +49,6 @@ contract InvitationRules is Ownable {
 
   /// @notice ValidationRules contract address
   ValidationRules internal validationRules;
-
-  /// @notice The minimum number of blocks an activist needs to wait to invite Regenerators or Inspectors again.
-  uint256 public constant activistDelayBlocks = 1000;
 
   // --- Constructor ---
 

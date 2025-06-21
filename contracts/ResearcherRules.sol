@@ -24,6 +24,29 @@ import { ValidationRules } from "./ValidationRules.sol";
 contract ResearcherRules is Callable, Invitable {
   // --- State Variables ---
 
+  /// @notice The maximum number of penalties a researcher can accumulate before facing invalidation.
+  uint8 public immutable MAX_PENALTIES;
+
+  /// @notice Waiting blocks to publish research.
+  uint32 internal immutable timeBetweenWorks;
+
+  /// @notice The number of blocks before the end of an era during which no new researchs can be published.
+  /// This period allows validators sufficient time to analyze and vote on researchs before the era concludes.
+  uint32 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
+
+  /// @notice The total count of researchs that are currently considered valid (not invalidated).
+  uint64 public researchesCount;
+
+  /// @notice The grand total count of all researchs ever submitted, including invalidated ones.
+  /// This acts as a global unique ID counter for new researchs.
+  uint64 public researchesTotalCount;
+
+  /// @notice Total calculatorItems count.
+  uint64 public calculatorItemsCount;
+
+  /// @notice Total methods count.
+  uint64 public evaluationMethodsCount;
+
   /// @notice A mapping from a researcher's wallet address to their detailed `Researcher` data structure.
   /// This serves as the primary storage for researcher profiles.
   mapping(address => Researcher) internal researchers;
@@ -36,7 +59,7 @@ contract ResearcherRules is Callable, Invitable {
   mapping(address => uint256[]) public researchesIds;
 
   /// @notice The relationship between id and calculatorItem data.
-  mapping(uint256 => CalculatorItem) public calculatorItems;
+  mapping(uint64 => CalculatorItem) public calculatorItems;
 
   /// @notice The relationship between id and evaluationMethods data.
   mapping(uint256 => EvaluationMethod) public evaluationMethods;
@@ -67,29 +90,6 @@ contract ResearcherRules is Callable, Invitable {
   /// @notice The specific `UserType` enumeration value for a Researcher user.
   UserType private constant USER_TYPE = UserType.RESEARCHER;
 
-  /// @notice The total count of researchs that are currently considered valid (not invalidated).
-  uint256 public researchesCount;
-
-  /// @notice The grand total count of all researchs ever submitted, including invalidated ones.
-  /// This acts as a global unique ID counter for new researchs.
-  uint256 public researchesTotalCount;
-
-  /// @notice Total calculatorItems count.
-  uint256 public calculatorItemsCount;
-
-  /// @notice Total methods count.
-  uint256 public evaluationMethodsCount;
-
-  /// @notice Waiting blocks to publish research.
-  uint256 internal immutable timeBetweenWorks;
-
-  /// @notice The maximum number of penalties a researcher can accumulate before facing invalidation.
-  uint256 public immutable MAX_PENALTIES;
-
-  /// @notice The number of blocks before the end of an era during which no new researchs can be published.
-  /// This period allows validators sufficient time to analyze and vote on researchs before the era concludes.
-  uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
-
   // --- Constructor ---
 
   /**
@@ -100,7 +100,7 @@ contract ResearcherRules is Callable, Invitable {
    * @param securityBlocksToValidatorAnalysis The period in blocks before an era ends, during which new research cannot be added.
    * This allows validators sufficient time for analysis before era finalization.
    */
-  constructor(uint256 timeBetweenWorks_, uint256 maxPenalties_, uint256 securityBlocksToValidatorAnalysis) {
+  constructor(uint32 timeBetweenWorks_, uint8 maxPenalties_, uint32 securityBlocksToValidatorAnalysis) {
     timeBetweenWorks = timeBetweenWorks_;
     MAX_PENALTIES = maxPenalties_;
     SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
@@ -130,7 +130,7 @@ contract ResearcherRules is Callable, Invitable {
     require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
     require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
 
-    uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
+    uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     researchers[msg.sender] = Researcher(
       id,
@@ -174,7 +174,7 @@ contract ResearcherRules is Callable, Invitable {
 
     researchesCount++;
     researchesTotalCount++;
-    uint256 id = researchesTotalCount;
+    uint64 id = researchesTotalCount;
 
     researches[id] = Research(id, poolCurrentEra(), msg.sender, title, thesis, file, 0, true, 0, block.number);
 
@@ -200,7 +200,7 @@ contract ResearcherRules is Callable, Invitable {
    * @param id The ID of the research to validate.
    * @param justification A brief justification for invalidating the research (max 300 characters).
    */
-  function addResearchValidation(uint256 id, string memory justification) public {
+  function addResearchValidation(uint64 id, string memory justification) public {
     require(bytes(justification).length <= 300, "Max 300 characters reached");
     require(voteRules.canVote(msg.sender), "User cannot vote");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
@@ -248,7 +248,7 @@ contract ResearcherRules is Callable, Invitable {
 
     require(canPublishCalculatorItem(researcher), "Can't publish yet");
 
-    uint256 id = calculatorItemsCount + 1;
+    uint64 id = calculatorItemsCount + 1;
 
     calculatorItems[id] = CalculatorItem(id, msg.sender, item, thesis, unit, carbonImpact);
     calculatorItemsCount++;
@@ -268,7 +268,7 @@ contract ResearcherRules is Callable, Invitable {
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
     require(researchers[msg.sender].canPublishMethod, "Only one method allowed");
 
-    uint256 id = evaluationMethodsCount + 1;
+    uint64 id = evaluationMethodsCount + 1;
 
     evaluationMethods[id] = EvaluationMethod(id, msg.sender, title, research, projectURL);
     evaluationMethodsCount++;
@@ -347,7 +347,7 @@ contract ResearcherRules is Callable, Invitable {
    * @param id The ID of the research.
    * @return The `Research` struct containing its data.
    */
-  function getResearch(uint256 id) public view returns (Research memory) {
+  function getResearch(uint64 id) public view returns (Research memory) {
     return researches[id];
   }
 
@@ -373,7 +373,7 @@ contract ResearcherRules is Callable, Invitable {
    * @param id The ID of the calculator item.
    * @return The `CalculatorItem` struct containing its data.
    */
-  function getCalculatorItem(uint256 id) public view returns (CalculatorItem memory) {
+  function getCalculatorItem(uint64 id) public view returns (CalculatorItem memory) {
     return calculatorItems[id];
   }
 

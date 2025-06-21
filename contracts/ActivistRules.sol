@@ -88,7 +88,7 @@ contract ActivistRules is Callable, Invitable {
     require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
 
     // Generate a unique ID for the new activist.
-    uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
+    uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     // Create a new Activist struct in memory.
     // Pool initialized with level 0 and current era set to the current pool era.

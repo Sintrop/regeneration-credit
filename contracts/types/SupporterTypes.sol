@@ -11,7 +11,7 @@ import "./CommunityTypes.sol";
  * @param createdAt Block of user creation
  */
 struct Supporter {
-  uint256 id;
+  uint64 id;
   address supporterWallet;
   string name;
   string description;

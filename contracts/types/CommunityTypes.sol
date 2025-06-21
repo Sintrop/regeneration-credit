@@ -50,7 +50,7 @@ enum UserType {
  * @param testimony Detailed justification and evidence for the delation.
  */
 struct Delation {
-  uint256 id;
+  uint64 id;
   address informer;
   address reported;
   string title;

@@ -14,7 +14,7 @@ import { UserType } from "./CommunityTypes.sol";
  * @param lastPublishedAt Block of last contribution publication
  */
 struct Contributor {
-  uint256 id;
+  uint64 id;
   address contributorWallet;
   string name;
   string proofPhoto;
@@ -41,7 +41,7 @@ struct Pool {
  * @param createdAtBlockNumber Block of contribution creation
  */
 struct Contribution {
-  uint256 id;
+  uint64 id;
   uint256 era;
   address user;
   string description;

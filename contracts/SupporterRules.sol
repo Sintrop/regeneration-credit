@@ -24,31 +24,31 @@ contract SupporterRules {
   mapping(address => Supporter) internal supporters;
 
   /// @notice The relationship between address and burned tokens per calculator item.
-  mapping(address => mapping(uint256 => uint256)) public calculatorItemCertificates;
+  mapping(address => mapping(uint64 => uint256)) public calculatorItemCertificates;
 
   /// @notice The relationship between address and reduction commitment statements (stored as calculator item IDs).
-  mapping(address => uint256[]) public reductionCommitments;
+  mapping(address => uint64[]) public reductionCommitments;
 
   /// @notice The relationship between ID and supporter address.
   mapping(uint256 => address) public supportersAddress;
 
-  /// @notice The relationship between address and publications data.
-  mapping(uint256 => Publication) public publications;
-
-  /// @notice Total number of publications made across all supporters.
-  uint256 public publicationsCount;
-
-  /// @notice Max characters length allowed for a publication's description and content.
-  uint constant MAX_CHARACTERS = 600;
-
-  /// @notice The relationship between offset id and its data.
-  mapping(uint256 => Offset) public offsets;
+  /// @notice Commission percentage paid to the inviter when an invited supporter burns tokens.
+  uint8 public constant INVITER_PERCENTAGE = 5; // 5%
 
   /// @notice Total number of offsets made across all supporters.
-  uint256 public offsetsCount;
+  uint64 public offsetsCount;
 
-  /// @notice Commission percentage paid to the inviter when an invited supporter burns tokens.
-  uint256 public constant INVITER_PERCENTAGE = 5; // 5%
+  /// @notice Total number of publications made across all supporters.
+  uint64 public publicationsCount;
+
+  /// @notice The relationship between id and publication data.
+  mapping(uint64 => Publication) public publications;
+
+  /// @notice The relationship between offset id and its data.
+  mapping(uint64 => Offset) public offsets;
+
+  /// @notice Max characters length allowed for a publication's description and content.
+  uint256 constant MAX_CHARACTERS = 600;
 
   /// @notice CommunityRules contract address
   CommunityRules internal communityRules;
@@ -96,7 +96,7 @@ contract SupporterRules {
       "Max characters reached"
     );
 
-    uint256 id = communityRules.userTypesTotalCount(USER_TYPE).add(1);
+    uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     Supporter memory supporter = Supporter(id, msg.sender, name, description, profilePhoto, 0, 0, 0, block.number);
 
@@ -129,13 +129,13 @@ contract SupporterRules {
    * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
    * @param calculatorItemId The ID of the CalculatorItem, or 0 if not applicable.
    */
-  function offset(uint256 amount, uint256 calculatorItemId) public {
+  function offset(uint256 amount, uint64 calculatorItemId) public {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount >= 1000000000000000000, "Amount invalid");
 
     uint256 amountBurn = burnTokens(amount); // This calculates commission and calls SupporterPool
 
-    uint256 id = offsetsCount.add(1);
+    uint64 id = offsetsCount + 1;
 
     if (calculatorItemId > 0) {
       CalculatorItem memory calculatorItem = researcherRules.getCalculatorItem(calculatorItemId);
@@ -146,7 +146,7 @@ contract SupporterRules {
 
     offsets[id] = Offset(msg.sender, block.number, amountBurn, calculatorItemId);
 
-    offsetsCount = offsetsCount.add(1);
+    offsetsCount = offsetsCount + 1;
     supporter.offsetsCount++;
 
     emit OffsetMade(msg.sender, id, amountBurn, calculatorItemId, block.number);
@@ -170,13 +170,13 @@ contract SupporterRules {
 
     uint256 amountBurn = burnTokens(amount); // This calculates commission and calls SupporterPool
 
-    uint256 id = publicationsCount.add(1);
+    uint64 id = publicationsCount + 1;
 
     publications[id] = Publication(msg.sender, block.number, amountBurn, description, content);
 
     Supporter storage supporter = supporters[msg.sender];
 
-    publicationsCount = publicationsCount.add(1);
+    publicationsCount = publicationsCount + 1;
     supporter.publicationsCount++;
 
     emit PublicationPosted(msg.sender, id, amountBurn, description, block.number);
@@ -188,7 +188,7 @@ contract SupporterRules {
    * Requires the calculator item to exist and the sender to be a registered supporter.
    * @param calculatorItemId The ID of the CalculatorItem for which the commitment is being declared.
    */
-  function declareReductionCommitment(uint256 calculatorItemId) public {
+  function declareReductionCommitment(uint64 calculatorItemId) public {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
 
     CalculatorItem memory calculatorItem = researcherRules.getCalculatorItem(calculatorItemId);
@@ -230,7 +230,7 @@ contract SupporterRules {
    * @param addr The address of the supporter.
    * @return uint256[] An array of calculator item IDs representing the commitments.
    */
-  function getReductionCommitments(address addr) public view returns (uint256[] memory) {
+  function getReductionCommitments(address addr) public view returns (uint64[] memory) {
     return reductionCommitments[addr];
   }
 

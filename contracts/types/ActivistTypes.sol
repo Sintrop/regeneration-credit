@@ -13,7 +13,7 @@ import "./CommunityTypes.sol";
  * @param createdAt Block of user creation
  */
 struct Activist {
-  uint256 id;
+  uint64 id;
   address activistWallet;
   string name;
   string proofPhoto;
