@@ -59,11 +59,11 @@ contract CommunityRules is Ownable, Callable {
    */
 
   constructor(
-    uint256 inspectorProportionality,
-    uint256 activistProportionality,
-    uint256 researcherProportionality,
-    uint256 developerProportionality,
-    uint256 contributorProportionality
+    uint8 inspectorProportionality,
+    uint8 activistProportionality,
+    uint8 researcherProportionality,
+    uint8 developerProportionality,
+    uint8 contributorProportionality
   ) {
     // Initialize settings for all relevant UserTypes
     userTypeSettings[UserType.SUPPORTER] = UserTypeSetting(0, false, false, 150, false);
@@ -191,10 +191,10 @@ contract CommunityRules is Ownable, Callable {
    * @return bool True if registration is allowed according to proportionality, false otherwise.
    */
   function registrationProportionalityAllowed(UserType userType) internal view returns (bool) {
-    uint256 regeneratorsCount = userTypesCount[UserType.REGENERATOR];
-    uint256 registeredUserTypeCount = userTypesCount[userType];
+    uint64 regeneratorsCount = userTypesCount[UserType.REGENERATOR];
+    uint64 registeredUserTypeCount = userTypesCount[userType];
     UserTypeSetting memory setting = userTypeSettings[userType];
-    uint256 proportionality = setting.proportionalityOnRegister;
+    uint8 proportionality = setting.proportionalityOnRegister;
 
     // If proportionality is 0, no limit applies.
     if (proportionality == 0) return true;

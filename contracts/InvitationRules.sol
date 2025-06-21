@@ -167,7 +167,7 @@ contract InvitationRules is Ownable {
    * @return bool True if the user waited the delay blocks, false otherwise.
    */
   function invitationDelayReached(UserType userType) internal view returns (bool) {
-    uint256 delayBlocks = communityRules.getUserTypeSettings(userType).invitationDelayBlocks;
+    uint32 delayBlocks = communityRules.getUserTypeSettings(userType).invitationDelayBlocks;
 
     return hasInvitationDelayPassed(lastInviteBlocks[msg.sender], delayBlocks);
   }
@@ -186,7 +186,7 @@ contract InvitationRules is Ownable {
    * @param delayBlocks The number of blocks that need to be waited.
    * @return bool True if the delay has been met, false otherwise.
    */
-  function hasInvitationDelayPassed(uint256 lastInviteBlock, uint256 delayBlocks) internal view returns (bool) {
+  function hasInvitationDelayPassed(uint256 lastInviteBlock, uint32 delayBlocks) internal view returns (bool) {
     return lastInviteBlock == 0 || block.number - lastInviteBlock >= delayBlocks;
   }
 
