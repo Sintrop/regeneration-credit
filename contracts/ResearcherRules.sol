@@ -164,10 +164,7 @@ contract ResearcherRules is Callable, Invitable {
    * @param file A hash or identifier for the research report file (max 100 characters).
    */
   function addResearch(string memory title, string memory thesis, string memory file) public {
-    require(
-      bytes(title).length <= 100 && bytes(thesis).length <= 300 && bytes(file).length <= 100,
-      "Max characters"
-    );
+    require(bytes(title).length <= 100 && bytes(thesis).length <= 300 && bytes(file).length <= 100, "Max characters");
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era");
     require(canPublishResearch(msg.sender), "Can't publish yet");
@@ -238,10 +235,7 @@ contract ResearcherRules is Callable, Invitable {
     string memory unit,
     uint256 carbonImpact
   ) public {
-    require(
-      bytes(item).length <= 35 && bytes(thesis).length <= 250 && bytes(unit).length <= 20,
-      "Max characters"
-    );
+    require(bytes(item).length <= 35 && bytes(thesis).length <= 250 && bytes(unit).length <= 20, "Max characters");
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
 
     Researcher memory researcher = researchers[msg.sender];

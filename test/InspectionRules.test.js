@@ -693,9 +693,7 @@ describe("InspectionRules", () => {
           });
 
           it("should return error message", async () => {
-            await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith(
-              "Already inspected"
-            );
+            await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Already inspected");
           });
         });
       });
