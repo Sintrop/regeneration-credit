@@ -190,7 +190,7 @@ describe("DeveloperRules", (accounts) => {
           });
 
           it("should return error message", async () => {
-            await expect(addDeveloper("Developer A", dev1Address)).to.be.revertedWith("Max limit reached");
+            await expect(addDeveloper("Developer A", dev1Address)).to.be.revertedWith("Max user limit");
           });
         });
       });

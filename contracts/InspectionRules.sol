@@ -147,7 +147,7 @@ contract InspectionRules is Callable {
     Regenerator memory regenerator = regeneratorRules.getRegenerator(msg.sender);
 
     require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
-    require(!regenerator.pendingInspection, "Request already OPEN");
+    require(!regenerator.pendingInspection, "Request OPEN");
     require(waitToRequest(regenerator), "Wait to request");
     require(regenerator.totalInspections < 12, "You have completed your mission");
 
@@ -181,16 +181,16 @@ contract InspectionRules is Callable {
    */
   function acceptInspection(uint64 inspectionId) public {
     require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Only inspectors");
-    require(inspectorRules.isInspectorValid(msg.sender), "No more than 3 giveUps allowed");
+    require(inspectorRules.isInspectorValid(msg.sender), "Only 3 giveUps allowed");
 
     Inspection storage inspection = inspections[inspectionId];
 
     require(inspection.id >= 1, "Inspection do not exist");
-    require(alreadyHaveInspectionAccepted(), "Already accepted inspection");
-    require(!inspectorInspected[msg.sender][inspection.regenerator], "Already inspected this regenerator");
+    require(alreadyHaveInspectionAccepted(), "Already accepted");
+    require(!inspectorInspected[msg.sender][inspection.regenerator], "Already inspected");
     require(inspection.status == InspectionStatus.OPEN, "Inspection must be OPEN");
-    require(acceptInspectionDelayBlocksPassed(inspection), "Wait inspection delay blocks");
-    require(beforeAcceptHaveSecurityBlocksToVote(), "Wait until next era to accept");
+    require(acceptInspectionDelayBlocksPassed(inspection), "Wait delay blocks");
+    require(beforeAcceptHaveSecurityBlocksToVote(), "Wait until next era");
     require(inspectorRules.canAcceptInspection(msg.sender), "Wait to accept");
     require(communityRules.userTypeIs(UserType.REGENERATOR, inspection.regenerator), "Regenerator invalid");
 
@@ -223,13 +223,13 @@ contract InspectionRules is Callable {
     uint32 treesResult,
     uint32 biodiversityResult
   ) public {
-    require(bytes(proofPhotos).length <= 100, "Max proofPhotos length");
-    require(bytes(justificationReport).length <= 1000, "Max report length");
+    require(bytes(proofPhotos).length <= 100, "Max length");
+    require(bytes(justificationReport).length <= 1000, "Max length");
 
     Inspection memory inspection = inspections[inspectionId];
 
     require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Only inspectors");
-    require(inspection.status == InspectionStatus.ACCEPTED, "Accept this inspection before");
+    require(inspection.status == InspectionStatus.ACCEPTED, "Accept before");
     require(inspection.inspector == msg.sender, "Not your inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
     require(treesResult <= 200000 && biodiversityResult <= 300, "Max result limit");
@@ -270,15 +270,15 @@ contract InspectionRules is Callable {
    * @param justification A string explaining why the inspection is being invalidated.
    */
   function addInspectionValidation(uint64 id, string memory justification) public {
-    require(bytes(justification).length <= 300, "Max 300 characters reached");
-    require(voteRules.canVote(msg.sender), "User cannot vote");
+    require(bytes(justification).length <= 300, "Max characters reached");
+    require(voteRules.canVote(msg.sender), "Not a voter");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
     Inspection storage inspection = inspections[id];
 
     require(regeneratorRules.poolCurrentEra() <= inspection.inspectedAtEra, "Can't validade anymore");
     require(inspection.id >= 1 && inspection.id <= inspectionsTotalCount, "Inspection does not exist");
-    require(inspection.status == InspectionStatus.INSPECTED, "Only INSPECTED inspections can be validated");
+    require(inspection.status == InspectionStatus.INSPECTED, "Only to inspected inspections");
 
     inspection.validationsCount += 1;
 
@@ -393,7 +393,6 @@ contract InspectionRules is Callable {
    * @param id The id of the inspection to return.
    */
   function getInspection(uint64 id) public view returns (Inspection memory) {
-    require(id >= 1 && id <= inspectionsTotalCount, "Inspection do not exist");
     return inspections[id];
   }
 
@@ -401,7 +400,7 @@ contract InspectionRules is Callable {
    * @notice Checks if regenerator waited timeBetweenInspections.
    * @return bool True if can request.
    */
-  function waitToRequest(Regenerator memory regenerator) public view returns (bool) {
+  function waitToRequest(Regenerator memory regenerator) internal view returns (bool) {
     if (regenerator.totalInspections < allowedInitialRequests) return true;
 
     return block.number > regenerator.lastRequestAt + timeBetweenInspections;

@@ -127,8 +127,8 @@ contract ResearcherRules is Callable, Invitable {
    * @param proofPhoto A hash or identifier for the researcher's identity photo/document (max 100 characters).
    */
   function addResearcher(string memory name, string memory proofPhoto) public {
-    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
-    require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
+    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max characters");
+    require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max user limit");
 
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
@@ -166,7 +166,7 @@ contract ResearcherRules is Callable, Invitable {
   function addResearch(string memory title, string memory thesis, string memory file) public {
     require(
       bytes(title).length <= 100 && bytes(thesis).length <= 300 && bytes(file).length <= 100,
-      "Max characters reached"
+      "Max characters"
     );
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era");
@@ -201,8 +201,8 @@ contract ResearcherRules is Callable, Invitable {
    * @param justification A brief justification for invalidating the research (max 300 characters).
    */
   function addResearchValidation(uint64 id, string memory justification) public {
-    require(bytes(justification).length <= 300, "Max 300 characters reached");
-    require(voteRules.canVote(msg.sender), "User cannot vote");
+    require(bytes(justification).length <= 300, "Max characters");
+    require(voteRules.canVote(msg.sender), "Not a voter");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
     Research memory research = researches[id];
@@ -240,7 +240,7 @@ contract ResearcherRules is Callable, Invitable {
   ) public {
     require(
       bytes(item).length <= 35 && bytes(thesis).length <= 250 && bytes(unit).length <= 20,
-      "Max characters reached"
+      "Max characters"
     );
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
 

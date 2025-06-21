@@ -128,7 +128,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
     // Character limit validation for name and proofPhoto.
     require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
     // Max limit for contributor users in the system.
-    require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
+    require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max user limit");
 
     // Generate a unique ID for the new contributor. Assumes userTypesTotalCount provides a globally unique counter.
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
@@ -216,7 +216,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
     // Character limit validation for justification.
     require(bytes(justification).length <= 300, "Max 300 characters");
     // Check if the caller is eligible to vote.
-    require(voteRules.canVote(msg.sender), "User cannot vote");
+    require(voteRules.canVote(msg.sender), "Not a voter");
     // Check if the caller has waited the required time between votes.
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
