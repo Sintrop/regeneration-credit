@@ -16,9 +16,9 @@ struct Supporter {
   string name;
   string description;
   string profilePhoto;
-  uint256 publicationsCount;
-  uint256 offsetsCount;
-  uint256 reductionItemsCount;
+  uint32 publicationsCount;
+  uint32 offsetsCount;
+  uint16 reductionItemsCount;
   uint256 createdAt;
 }
 

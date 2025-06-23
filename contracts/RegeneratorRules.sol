@@ -100,7 +100,7 @@ contract RegeneratorRules is Callable {
    * @param _coordinates An array of coordinate points defining the boundaries of the regeneration area.
    */
   function addRegenerator(
-    uint256 totalArea,
+    uint32 totalArea,
     string memory name,
     string memory proofPhoto,
     string memory projectDescription,
@@ -443,7 +443,7 @@ contract RegeneratorRules is Callable {
     uint256 indexed id,
     address indexed regeneratorAddress,
     string name,
-    uint256 totalArea,
+    uint32 totalArea,
     uint256 blockNumber
   );
 

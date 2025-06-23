@@ -23,7 +23,7 @@ struct Regenerator {
   address regeneratorWallet;
   string name;
   string proofPhoto;
-  uint256 totalArea;
+  uint32 totalArea;
   bool pendingInspection;
   uint256 totalInspections;
   uint256 lastRequestAt;
