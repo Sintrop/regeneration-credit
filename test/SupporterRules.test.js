@@ -287,14 +287,16 @@ describe("SupporterRules", () => {
 
         context("when amount is equal zero", () => {
           it("should return error", async () => {
-            await expect(instance.connect(inv1Address).offset(0, 1)).to.be.revertedWith("Amount invalid");
+            await expect(instance.connect(inv1Address).offset(0, 1)).to.be.revertedWith("Amount must be at least 1 RC");
           });
         });
 
         context("when amount is below one and more than zero", () => {
           it("should return error", async () => {
             await transferTokensTo(inv1Address, "100000000000000000000");
-            await expect(instance.connect(inv1Address).offset(100, 1)).to.be.revertedWith("Amount invalid");
+            await expect(instance.connect(inv1Address).offset(100, 1)).to.be.revertedWith(
+              "Amount must be at least 1 RC"
+            );
           });
         });
 
@@ -303,14 +305,13 @@ describe("SupporterRules", () => {
             await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
             await addSupporter("Supporter B", "description", "profilePhoto", inv2Address);
             await transferTokensTo(inv2Address, 100000000000000000000n);
-            await instance.connect(inv2Address).offset(1000000000000000000n, 10);
           });
 
           context("when burn 1000000000000000000 tokens", () => {
             it("calculatorItemCertificates to item 10 must be 0", async () => {
-              const value = await instance.calculatorItemCertificates(inv2Address, 10);
-
-              expect(value).to.equal(0);
+              await expect(instance.connect(inv2Address).offset(1000000000000000000n, 10)).to.be.revertedWith(
+                "Calculator item does not exist"
+              );
             });
           });
         });
@@ -318,7 +319,7 @@ describe("SupporterRules", () => {
 
       context("when amount is equal zero", () => {
         it("should return error", async () => {
-          await expect(instance.connect(inv1Address).offset(0, 0)).to.be.revertedWith("Amount invalid");
+          await expect(instance.connect(inv1Address).offset(0, 0)).to.be.revertedWith("Amount must be at least 1 RC");
         });
       });
     });
@@ -452,14 +453,18 @@ describe("SupporterRules", () => {
 
       context("when amount is equal zero", () => {
         it("should return error", async () => {
-          await expect(instance.connect(inv1Address).publish(0, "text", "text")).to.be.revertedWith("Amount invalid");
+          await expect(instance.connect(inv1Address).publish(0, "text", "text")).to.be.revertedWith(
+            "Amount must be at least 1 RC"
+          );
         });
       });
 
       context("when amount is below one and more than zero", () => {
         it("should return error", async () => {
           await transferTokensTo(inv1Address, "100000000000000000000");
-          await expect(instance.connect(inv1Address).publish(100, "text", "text")).to.be.revertedWith("Amount invalid");
+          await expect(instance.connect(inv1Address).publish(100, "text", "text")).to.be.revertedWith(
+            "Amount must be at least 1 RC"
+          );
         });
       });
 
@@ -514,8 +519,23 @@ describe("SupporterRules", () => {
         });
       });
 
+      context("when try to declared the same item twice", () => {
+        it("should return error", async () => {
+          await communityRules.addInvitation(inv1Address, user1Address, userTypes.Researcher);
+          await researcherRules.connect(user1Address).addResearcher("Researcher  A", "photoURL");
+
+          await addCalculatorItem(user1Address);
+
+          await instance.connect(inv1Address).declareReductionCommitment(1);
+
+          await expect(instance.connect(inv1Address).declareReductionCommitment(1)).to.be.revertedWith(
+            "Commitment already declared"
+          );
+        });
+      });
+
       context("when calculatorItem does not exists", () => {
-        it("return a supporter", async () => {
+        it("should return error", async () => {
           await expect(instance.connect(inv1Address).declareReductionCommitment(100)).to.be.revertedWith(
             "Calculator item does not exist"
           );
