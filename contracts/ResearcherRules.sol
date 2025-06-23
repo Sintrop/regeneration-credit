@@ -13,95 +13,82 @@ import { ValidationRules } from "./ValidationRules.sol";
 /**
  * @title ResearcherRules
  * @author Sintrop
- * @dev Manages researcher rules and data.
- * @notice Contract for managing researcher users, research submissions, and evaluation methods within the system.
+ * @notice This contract defines and manages the rules and data specific to "Researcher" users within the system.
+ * Researchers are primarily responsible for the development of the project impact calculator, for the creation and improvement
+ * of evaluation methods and through submitting researchs, which are subject to validation and penalty mechanisms.
+ * @dev Inherits functionalities from `Ownable` (for contract deploy setup), `Callable` (for whitelisted
+ * function access), and `Invitable` (for managing invitation logic). It interacts with `CommunityRules`
+ * for general user management, `ResearcherPool` for reward distribution, `VoteRules` for voting
+ * eligibility, and `ValidationRules` for research validation processes.
  */
 contract ResearcherRules is Callable, Invitable {
   // --- State Variables ---
 
-  /// @notice The relationship between address and researcher data
+  /// @notice A mapping from a researcher's wallet address to their detailed `Researcher` data structure.
+  /// This serves as the primary storage for researcher profiles.
   mapping(address => Researcher) internal researchers;
 
-  /// @notice The relationship between id and research data
+  /// @notice A mapping from a unique research ID to its detailed `Research` data structure.
+  /// Stores all submitted researchs.
   mapping(uint256 => Research) public researches;
 
-  /// @notice The relationship between address and researches ids
+  /// @notice A mapping from a researcher's wallet address to an array of IDs of researchs they have submitted.
   mapping(address => uint256[]) public researchesIds;
 
-  /// @notice The relationship between id and calculatorItem data
+  /// @notice The relationship between id and calculatorItem data.
   mapping(uint256 => CalculatorItem) public calculatorItems;
 
-  /// @notice The relationship between id and evaluationMethods data
+  /// @notice The relationship between id and evaluationMethods data.
   mapping(uint256 => EvaluationMethod) public evaluationMethods;
 
-  /// @notice The relationship between address and penalties received
+  /// @notice A mapping from a researcher's wallet address to an array of `Penalty` structs they have received.
   mapping(address => Penalty[]) public penalties;
 
-  /// @notice The relationship between id and researcher address
+  /// @notice A mapping from a unique reseracher ID to their corresponding wallet address.
+  /// Facilitates lookup of a reseracher's address by their ID.
   mapping(uint256 => address) public researchersAddress;
 
-  /// @notice CommunityRules contract address
+  /// @notice The address of the `CommunityRules` contract, used to interact with
+  /// community-wide rules, user types, and invitation data.
   CommunityRules internal communityRules;
 
-  /// @notice ResearcherPool contract address
+  /// @notice The address of the `ResearcherPool` contract, responsible for managing
+  /// and distributing token rewards to researchers.
   ResearcherPool internal researcherPool;
 
-  /// @notice ValidatorPool contract address
+  /// @notice The address of the `ValidationRules` contract, which defines the rules
+  /// and processes for validating or invalidating development reports.
   ValidationRules internal validationRules;
 
-  /// @notice ValidationRules contract address
+  /// @notice The address of the `VoteRules` contract, which defines rules for user voting
+  /// eligibility, particularly for report validation.
   VoteRules internal voteRules;
 
-  /// @notice Researcher UserType
+  /// @notice The specific `UserType` enumeration value for a Researcher user.
   UserType private constant USER_TYPE = UserType.RESEARCHER;
 
-  /// @notice Total valid researches count
+  /// @notice The total count of researchs that are currently considered valid (not invalidated).
   uint256 public researchesCount;
 
-  /// @notice Total researches count
+  /// @notice The grand total count of all researchs ever submitted, including invalidated ones.
+  /// This acts as a global unique ID counter for new researchs.
   uint256 public researchesTotalCount;
 
-  /// @notice Total calculatorItems count
+  /// @notice Total calculatorItems count.
   uint256 public calculatorItemsCount;
 
-  /// @notice Total methods count
+  /// @notice Total methods count.
   uint256 public evaluationMethodsCount;
 
-  /// @notice Waiting blocks to publish research
+  /// @notice Waiting blocks to publish research.
   uint256 internal immutable timeBetweenWorks;
 
-  /// @notice Max allowed penalties before invalidation
+  /// @notice The maximum number of penalties a researcher can accumulate before facing invalidation.
   uint256 public immutable MAX_PENALTIES;
 
-  /// @notice Number of blocks to block addResearch before the end of an era
+  /// @notice The number of blocks before the end of an era during which no new researchs can be published.
+  /// This period allows validators sufficient time to analyze and vote on researchs before the era concludes.
   uint256 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
-
-  // --- Events ---
-
-  /**
-   * @dev Emitted when a new researcher is successfully registered.
-   * @param researcherAddress The address of the newly registered researcher.
-   * @param researcherId The unique ID assigned to the researcher.
-   * @param name The public name of the researcher.
-   */
-  event ResearcherRegistered(address indexed researcherAddress, uint256 researcherId, string name);
-
-  /**
-   * @dev Emitted when a new research report is published.
-   * @param researchId The unique ID of the published research.
-   * @param researcher The address of the researcher who published the research.
-   * @param publishedAt The block number when the research was published.
-   * @param era The era in which the research was published.
-   */
-  event ResearchPublished(uint256 indexed researchId, address indexed researcher, uint256 publishedAt, uint256 era);
-
-  /**
-   * @dev Emitted when a research is successfully invalidated by validators.
-   * @param researchId The ID of the research that was invalidated.
-   * @param invalidatedBy The address of the voter who performed the validation action (leading to invalidation).
-   * @param justification A brief justification for the invalidation.
-   */
-  event ResearchInvalidated(uint256 indexed researchId, address indexed invalidatedBy, string justification);
 
   // --- Constructor ---
 
@@ -145,7 +132,7 @@ contract ResearcherRules is Callable, Invitable {
 
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
-    Researcher memory researcher = Researcher(
+    researchers[msg.sender] = Researcher(
       id,
       msg.sender,
       name,
@@ -159,7 +146,6 @@ contract ResearcherRules is Callable, Invitable {
       true
     );
 
-    researchers[msg.sender] = researcher;
     researchersAddress[id] = msg.sender;
     communityRules.addUser(msg.sender, USER_TYPE);
 
@@ -168,7 +154,8 @@ contract ResearcherRules is Callable, Invitable {
   }
 
   /**
-   * @notice Allows a registered researcher to publish a new research report.
+   * @notice Allows a registered researcher to publish a new 'research' report. A 'research' can be
+   * a new calculator item, a new methodology or improvement of current ones or a generic regeneration research.
    * @dev Requires the caller to be a registered researcher, to be outside the security block window
    * (i.e., not too close to the end of an era), and to have waited the `timeBetweenWorks`
    * period since their last research publication.
@@ -185,36 +172,24 @@ contract ResearcherRules is Callable, Invitable {
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era");
     require(canPublishResearch(msg.sender), "Can't publish yet");
 
-    Researcher storage researcher = researchers[msg.sender];
-
-    uint256 id = researchesTotalCount + 1;
-
-    Research memory research = Research(
-      id,
-      poolCurrentEra(),
-      msg.sender,
-      title,
-      thesis,
-      file,
-      0,
-      true,
-      0,
-      block.number
-    );
-
-    researches[id] = research;
     researchesCount++;
     researchesTotalCount++;
+    uint256 id = researchesTotalCount;
+
+    researches[id] = Research(id, poolCurrentEra(), msg.sender, title, thesis, file, 0, true, 0, block.number);
+
+    // Update researcher data
+    Researcher storage researcher = researchers[msg.sender];
     researcher.publishedResearches++;
     researcher.lastPublishedAt = block.number;
-
     researchesIds[msg.sender].push(id);
 
+    // Update pool level
     researcher.pool.level++;
     researcherPool.addLevel(msg.sender, 1);
 
     // --- Event Emission ---
-    emit ResearchPublished(id, msg.sender, block.number, research.era);
+    emit ResearchPublished(id, msg.sender, block.number);
   }
 
   /**
@@ -309,12 +284,12 @@ contract ResearcherRules is Callable, Invitable {
   function withdraw() public {
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
 
-    Researcher memory researcher = researchers[msg.sender];
+    Researcher storage researcher = researchers[msg.sender];
     uint256 currentEra = researcher.pool.currentEra;
 
     require(researcherPool.canWithdraw(currentEra), "Not eligible to withdraw for this era");
 
-    researchers[msg.sender].pool.currentEra++;
+    researcher.pool.currentEra++;
 
     researcherPool.withdraw(msg.sender, currentEra);
   }
@@ -411,7 +386,7 @@ contract ResearcherRules is Callable, Invitable {
     return uint256(researcherPool.nextEraIn(poolCurrentEra()));
   }
 
-  // --- Internal / Private Helper Functions ---
+  // --- Internal  functions ---
 
   /**
    * @dev Internal helper function that invalidates a research by updating its status.
@@ -451,4 +426,30 @@ contract ResearcherRules is Callable, Invitable {
     bool canPublish = block.number > lastCalculatorItemAt + timeBetweenWorks;
     return canPublish || lastCalculatorItemAt <= 0;
   }
+
+  // --- Events ---
+
+  /**
+   * @dev Emitted when a new researcher is successfully registered.
+   * @param researcherAddress The address of the newly registered researcher.
+   * @param researcherId The unique ID assigned to the researcher.
+   * @param name The public name of the researcher.
+   */
+  event ResearcherRegistered(address indexed researcherAddress, uint256 researcherId, string name);
+
+  /**
+   * @dev Emitted when a new research report is published.
+   * @param researchId The unique ID of the published research.
+   * @param researcher The address of the researcher who published the research.
+   * @param publishedAt The block number when the research was published.
+   */
+  event ResearchPublished(uint256 indexed researchId, address indexed researcher, uint256 publishedAt);
+
+  /**
+   * @dev Emitted when a research is successfully invalidated by validators.
+   * @param researchId The ID of the research that was invalidated.
+   * @param invalidatedBy The address of the voter who performed the validation action (leading to invalidation).
+   * @param justification A brief justification for the invalidation.
+   */
+  event ResearchInvalidated(uint256 indexed researchId, address indexed invalidatedBy, string justification);
 }

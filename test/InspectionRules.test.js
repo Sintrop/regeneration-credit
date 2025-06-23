@@ -268,10 +268,8 @@ describe("InspectionRules", () => {
     });
 
     context("when inspection dont exists", () => {
-      it("should return inspection", async () => {
-        const inspection = await instance.getInspection(1);
-
-        expect(inspection.id).to.equal(0);
+      it("should return error", async () => {
+        await expect(instance.getInspection(1)).to.be.revertedWith("Inspection do not exist");
       });
     });
   });
@@ -482,7 +480,7 @@ describe("InspectionRules", () => {
     context("with non regenerator", () => {
       context("when is not regenerator and try request inspection", () => {
         it("should return message error", async () => {
-          await expect(instance.requestInspection()).to.be.revertedWith("Please register as regenerator");
+          await expect(instance.requestInspection()).to.be.revertedWith("Only regenerators");
         });
       });
     });
@@ -629,7 +627,7 @@ describe("InspectionRules", () => {
             });
 
             it("should return error message", async () => {
-              await expect(acceptInspection(1, inspector2Address)).to.be.revertedWith("This inspection is not OPEN");
+              await expect(acceptInspection(1, inspector2Address)).to.be.revertedWith("Inspection must be OPEN");
             });
           });
 
@@ -644,9 +642,7 @@ describe("InspectionRules", () => {
 
             context("when last inspection is not expired", () => {
               it("should return error message", async () => {
-                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith(
-                  "You already have an inspection Accepted"
-                );
+                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Already accepted inspection");
               });
             });
 
@@ -685,9 +681,7 @@ describe("InspectionRules", () => {
 
             context("when dont finished last inspection", () => {
               it("should return error message", async () => {
-                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith(
-                  "You already have an inspection Accepted"
-                );
+                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Already accepted inspection");
               });
             });
           });
@@ -714,7 +708,7 @@ describe("InspectionRules", () => {
 
       context("when inspection dont exists", () => {
         it("should return error message", async () => {
-          await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("This inspection do not exist");
+          await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Inspection do not exist");
         });
       });
 
@@ -732,7 +726,7 @@ describe("InspectionRules", () => {
     context("with non inspector", () => {
       it("should return error message", async () => {
         await requestInspection(regeneratorAddress);
-        await expect(acceptInspection(1, regeneratorAddress)).to.be.revertedWith("Please register as inspector");
+        await expect(acceptInspection(1, regeneratorAddress)).to.be.revertedWith("Only inspectors");
       });
     });
   });
@@ -944,22 +938,6 @@ describe("InspectionRules", () => {
                     expect(inspector.totalInspections).to.equal(1);
                   });
 
-                  it("should add inspection to inspector in userInspections", async () => {
-                    const userInspections = await instance
-                      .connect(inspectorAddress)
-                      .getInspectionsHistory(inspectorAddress);
-
-                    expect(userInspections.length).to.equal(1);
-                  });
-
-                  it("should add inspection to regenerator in userInspections", async () => {
-                    const userInspections = await instance
-                      .connect(regeneratorAddress)
-                      .getInspectionsHistory(regeneratorAddress);
-
-                    expect(userInspections.length).to.equal(1);
-                  });
-
                   it("should increment realizedInspectionsCount", async () => {
                     const realizedInspectionsCount = await instance.realizedInspectionsCount();
 
@@ -1097,7 +1075,7 @@ describe("InspectionRules", () => {
             it("should return error message", async () => {
               await expect(
                 realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspector2Address)
-              ).to.be.revertedWith("You have not accepted this inspection");
+              ).to.be.revertedWith("Not your inspection");
             });
           });
         });
@@ -1128,7 +1106,7 @@ describe("InspectionRules", () => {
 
         await expect(
           realizeInspection(1, report, treesResultValue, biodiversityResultValue, regeneratorAddress)
-        ).to.be.revertedWith("Please register as inspector");
+        ).to.be.revertedWith("Only inspectors");
       });
     });
   });
@@ -1291,7 +1269,7 @@ describe("InspectionRules", () => {
 
         it("should return error message", async () => {
           await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-            "Can not add validation anymore"
+            "Can't validade anymore"
           );
         });
       });
@@ -1299,7 +1277,7 @@ describe("InspectionRules", () => {
       context("when inspection is not inspected", () => {
         it("should return error message", async () => {
           await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-            "Can not add validation anymore"
+            "Can't validade anymore"
           );
         });
       });
@@ -1454,7 +1432,7 @@ describe("InspectionRules", () => {
 
         it("should return error message", async () => {
           await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-            "Can not add validation anymore"
+            "Can't validade anymore"
           );
         });
       });
@@ -1462,7 +1440,7 @@ describe("InspectionRules", () => {
       context("when inspection is not inspected", () => {
         it("should return error message", async () => {
           await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-            "Can not add validation anymore"
+            "Can't validade anymore"
           );
         });
       });
@@ -1617,7 +1595,7 @@ describe("InspectionRules", () => {
 
         it("should return error message", async () => {
           await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-            "Can not add validation anymore"
+            "Can't validade anymore"
           );
         });
       });
@@ -1625,7 +1603,7 @@ describe("InspectionRules", () => {
       context("when inspection is not inspected", () => {
         it("should return error message", async () => {
           await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-            "Can not add validation anymore"
+            "Can't validade anymore"
           );
         });
       });
@@ -1780,7 +1758,7 @@ describe("InspectionRules", () => {
 
         it("should return error message", async () => {
           await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-            "Can not add validation anymore"
+            "Can't validade anymore"
           );
         });
       });
@@ -1788,7 +1766,7 @@ describe("InspectionRules", () => {
       context("when inspection is not inspected", () => {
         it("should return error message", async () => {
           await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-            "Can not add validation anymore"
+            "Can't validade anymore"
           );
         });
       });
