@@ -243,7 +243,7 @@ describe("RegenerationCredit", (accounts) => {
         it("must return erro message", async () => {
           await expect(
             instance.connect(user1Address).transferFrom(ownerAddress, user2Address, "13754999990000000000000000000")
-          ).to.be.revertedWith("Insufficient balance.");
+          ).to.be.revertedWith("ERC20: insufficient allowance");
         });
       });
     });

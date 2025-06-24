@@ -124,6 +124,27 @@ contract RegenerationCredit is ERC20, Ownable {
   }
 
   /**
+   * @dev Allows a designated "contract pool" to
+   * @param tokenOwner The address of the contract pool initiating the transfer.
+   * @param receiver The address of the user who will receive the tokens.
+   * @param numTokens The amount of tokens to transfer.
+   *
+   * Requirements:
+   * - Only a registered `contractPool` can call this function (`mustBeContractPool` modifier).
+   * - The `tokenOwner` (which is `contractPool` due to modifier) must have sufficient balance.
+   */
+  function poolTransfer(address tokenOwner, address receiver, uint256 numTokens) public mustBeContractPool {
+    require(numTokens <= balanceOf(tokenOwner), "You don't have RC Tokens");
+
+    // Update total locked tokens.
+    unchecked {
+      if (contractsPools[tokenOwner]) totalLocked_ -= numTokens;
+    }
+    // Emit event specific to pool transfers.
+    emit PoolTransfer(tokenOwner, receiver, numTokens);
+  }
+
+  /**
    * @dev Allows a designated "contract pool" to burn tokens on behalf of another address.
    * @notice This function can only be called by the SupporterPool.
    * @param tokenOwner The address from which tokens will be burned.
