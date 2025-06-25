@@ -15,17 +15,17 @@ import { Callable } from "./shared/Callable.sol";
 contract RegenerationIndexRules is Ownable, Callable {
   // --- State Variables ---
 
+  /// @notice Allowed categories: Trees & Biodiversity.
+  uint8 public constant categoryCounts = 2;
+
   /// @notice Relationship between id and category data
-  mapping(uint256 => Category) public categories;
+  mapping(uint8 => Category) public categories;
 
   /// @notice Relationship between category id and category descriptions
-  mapping(uint256 => RegenerationIndexDescription[]) public categoryRegenerationIndexDescriptions;
+  mapping(uint8 => RegenerationIndexDescription[]) public categoryRegenerationIndexDescriptions;
 
   /// @notice Relationship between regeneration index id and its name/value
-  mapping(uint256 => RegenerationIndex) public regenerationIndex;
-
-  /// @notice Allowed categories: Trees & Biodiversity.
-  uint256 public constant categoryCounts = 2;
+  mapping(uint32 => RegenerationIndex) public regenerationIndex;
 
   constructor() {
     regenerationIndex[1] = RegenerationIndex("REGENERATIVE 6", 32);
@@ -97,7 +97,7 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @return RegenerationIndexDescription struct array for the specified category.
    */
   function getCategoryRegenerationIndexDescription(
-    uint256 categoryId
+    uint8 categoryId
   ) public view returns (RegenerationIndexDescription[] memory) {
     require(categoryId > 0 && categoryId <= categoryCounts, "Invalid category ID");
     return categoryRegenerationIndexDescriptions[categoryId];
@@ -110,7 +110,7 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @param biodiversityResult Inspection result provided by inspector for biodiversity.
    * @return uint256 The combined inspection score.
    */
-  function calculateScore(uint256 treesResult, uint256 biodiversityResult) public view returns (uint256) {
+  function calculateScore(uint32 treesResult, uint32 biodiversityResult) public view returns (uint32) {
     RegenerationIndex memory trees = regenerationIndex[treesRegenerationIndexId(treesResult)];
     RegenerationIndex memory biodiversity = regenerationIndex[biodiversityRegenerationIndexId(biodiversityResult)];
 
@@ -123,7 +123,7 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @param indicator The result provided by the inspector for trees.
    * @return The regeneration index ID corresponding to the indicator.
    */
-  function treesRegenerationIndexId(uint256 indicator) internal pure returns (uint256) {
+  function treesRegenerationIndexId(uint32 indicator) internal pure returns (uint32) {
     if (indicator >= 50000) {
       return 1;
     } else if (indicator >= 25000 && indicator < 50000) {
@@ -147,7 +147,7 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @param indicator The result provided by the inspector for biodiversity.
    * @return The regeneration index ID corresponding to the indicator.
    */
-  function biodiversityRegenerationIndexId(uint256 indicator) internal pure returns (uint256) {
+  function biodiversityRegenerationIndexId(uint32 indicator) internal pure returns (uint32) {
     if (indicator >= 160) {
       return 1;
     } else if (indicator >= 80 && indicator < 160) {

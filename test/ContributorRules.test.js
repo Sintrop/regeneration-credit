@@ -200,7 +200,7 @@ describe("ContributorRules", (accounts) => {
           });
 
           it("should return error message", async () => {
-            await expect(addContributor("Contributor A", contr1Address)).to.be.revertedWith("Max limit reached");
+            await expect(addContributor("Contributor A", contr1Address)).to.be.revertedWith("Max user limit");
           });
         });
       });

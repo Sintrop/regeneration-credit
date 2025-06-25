@@ -108,7 +108,7 @@ describe("ActivistRules", () => {
           });
 
           it("should return error message", async () => {
-            await expect(addActivist("Activist A", activ1Address)).to.be.revertedWith("Max limit reached");
+            await expect(addActivist("Activist A", activ1Address)).to.be.revertedWith("Max user limit");
           });
         });
       });

@@ -25,6 +25,24 @@ import { ValidationRules } from "./ValidationRules.sol";
 contract ContributorRules is Ownable, Callable, Invitable {
   // --- State Variables ---
 
+  /// @notice The maximum number of penalties a contributor can accumulate before being denied.
+  uint8 public immutable MAX_PENALTIES;
+
+  /// @notice The minimum number of blocks that must elapse between a contributor's successful contribution publications.
+  /// This prevents spamming or rapid consecutive contributions.
+  uint32 internal immutable timeBetweenWorks;
+
+  /// @notice The number of blocks before the end of an era during which no new contributions can be published.
+  /// This period allows validators sufficient time to analyze and vote on contributions before the era concludes.
+  uint32 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
+
+  /// @notice The total count of contributions that are currently considered valid (not invalidated).
+  uint64 public contributionsCount;
+
+  /// @notice The total count of all contributions ever submitted, including invalidated ones.
+  /// This acts as a global unique ID counter for new contributions.
+  uint64 public contributionsTotalCount;
+
   /// @notice A mapping from a contributor's wallet address to their detailed `Contributor` data structure.
   /// This serves as the primary storage for contributor profiles.
   mapping(address => Contributor) public contributors;
@@ -59,24 +77,6 @@ contract ContributorRules is Ownable, Callable, Invitable {
 
   /// @notice The specific `UserType` enumeration value for a Contributor user.
   UserType private constant USER_TYPE = UserType.CONTRIBUTOR;
-
-  /// @notice The total count of contributions that are currently considered valid (not invalidated).
-  uint256 public contributionsCount;
-
-  /// @notice The total count of all contributions ever submitted, including invalidated ones.
-  /// This acts as a global unique ID counter for new contributions.
-  uint256 public contributionsTotalCount;
-
-  /// @notice The maximum number of penalties a contributor can accumulate before being denied.
-  uint8 public immutable MAX_PENALTIES;
-
-  /// @notice The minimum number of blocks that must elapse between a contributor's successful contribution publications.
-  /// This prevents spamming or rapid consecutive contributions.
-  uint32 internal immutable timeBetweenWorks;
-
-  /// @notice The number of blocks before the end of an era during which no new contributions can be published.
-  /// This period allows validators sufficient time to analyze and vote on contributions before the era concludes.
-  uint32 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
   /// @notice A mapping from a contributor's wallet address to an array of `Penalty` structs they have received.
   mapping(address => Penalty[]) public penalties;
@@ -128,10 +128,10 @@ contract ContributorRules is Ownable, Callable, Invitable {
     // Character limit validation for name and proofPhoto.
     require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
     // Max limit for contributor users in the system.
-    require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
+    require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max user limit");
 
     // Generate a unique ID for the new contributor. Assumes userTypesTotalCount provides a globally unique counter.
-    uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
+    uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     // Create a new Contributor struct.
     // Pool initialized with level 0 and current era set to the current pool era.
@@ -185,7 +185,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
     // Increment global contribution counters and assign a unique ID.
     contributionsCount++;
     contributionsTotalCount++;
-    uint256 id = contributionsTotalCount;
+    uint64 id = contributionsTotalCount;
 
     contributions[id] = Contribution(id, poolCurrentEra(), msg.sender, description, report, 0, true, 0, block.number);
 
@@ -212,11 +212,11 @@ contract ContributorRules is Ownable, Callable, Invitable {
    * @param id The unique ID of the contribution to be validated/invalidated.
    * @param justification A string explaining why the contribution is being invalidated.
    */
-  function addContributionValidation(uint256 id, string memory justification) public {
+  function addContributionValidation(uint64 id, string memory justification) public {
     // Character limit validation for justification.
     require(bytes(justification).length <= 300, "Max 300 characters");
     // Check if the caller is eligible to vote.
-    require(voteRules.canVote(msg.sender), "User cannot vote");
+    require(voteRules.canVote(msg.sender), "Not a voter");
     // Check if the caller has waited the required time between votes.
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
@@ -311,7 +311,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
    * @param contributionId The ID of the contribution associated with this penalty.
    * @return uint256 The total number of penalties the contributor has accumulated.
    */
-  function addPenalty(address addr, uint256 contributionId) public mustBeAllowedCaller returns (uint256) {
+  function addPenalty(address addr, uint64 contributionId) public mustBeAllowedCaller returns (uint256) {
     penalties[addr].push(Penalty(contributionId));
 
     return totalPenalties(addr);
@@ -371,7 +371,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
    * @param id The unique ID of the contribution to retrieve.
    * @return Contribution The `Contribution` struct containing the contribution's data.
    */
-  function getContribution(uint256 id) public view returns (Contribution memory) {
+  function getContribution(uint64 id) public view returns (Contribution memory) {
     return contributions[id];
   }
 
@@ -476,7 +476,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
   /// @param newPenaltyCount The total number of penalties the contributor now has.
   /// @param blockNumber The block number at which the contribution was invalidated.
   event ContributionInvalidated(
-    uint256 indexed contributionId,
+    uint64 indexed contributionId,
     address indexed contributorAddress,
     string justification,
     uint256 newPenaltyCount,

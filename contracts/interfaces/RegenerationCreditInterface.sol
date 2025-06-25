@@ -6,7 +6,11 @@ interface RegenerationCreditInterface {
 
   function allowance(address owner, address delegate) external view returns (uint256);
 
-  function transferWith(address tokenOwner, address receiver, uint256 numTokens) external;
+  function transfer(address to, uint256 amount) external returns (bool);
 
   function transferFrom(address owner, address to, uint256 numTokens) external returns (bool);
+
+  function transferWith(address tokenOwner, address receiver, uint256 numTokens) external;
+
+  function poolTransfer(address tokenOwner, address receiver, uint256 numTokens) external;
 }

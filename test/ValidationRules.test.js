@@ -287,8 +287,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(dev2Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(1);
+                expect(validations).to.equal(1);
               });
 
               it("user type must be the same", async () => {
@@ -320,7 +319,7 @@ describe("ValidationRules", () => {
                 it("should return error", async () => {
                   await expect(
                     instance.connect(dev1Address).addUserValidation(dev2Address, "my justification")
-                  ).to.be.revertedWith("User cannot vote");
+                  ).to.be.revertedWith("Not a voter");
                 });
               });
 
@@ -334,8 +333,7 @@ describe("ValidationRules", () => {
                 it("should add validation", async () => {
                   const validations = await instance.getUserValidations(dev2Address, 1);
 
-                  expect(validations[0].justification).to.equal("my justification");
-                  expect(validations.length).to.equal(1);
+                  expect(validations).to.equal(1);
                 });
 
                 it("user type must be the same", async () => {
@@ -363,8 +361,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(user2Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(1);
+                expect(validations).to.equal(1);
               });
 
               it("user type must be the same", async () => {
@@ -396,7 +393,7 @@ describe("ValidationRules", () => {
                 it("should return error", async () => {
                   await expect(
                     instance.connect(user1Address).addUserValidation(user2Address, "my justification")
-                  ).to.be.revertedWith("User cannot vote");
+                  ).to.be.revertedWith("Not a voter");
                 });
               });
 
@@ -410,8 +407,7 @@ describe("ValidationRules", () => {
                 it("should add validation", async () => {
                   const validations = await instance.getUserValidations(user2Address, 1);
 
-                  expect(validations[0].justification).to.equal("my justification");
-                  expect(validations.length).to.equal(1);
+                  expect(validations).to.equal(1);
                 });
 
                 it("user type must be the same", async () => {
@@ -439,8 +435,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(user2Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(1);
+                expect(validations).to.equal(1);
               });
 
               it("user type must be the same", async () => {
@@ -472,7 +467,7 @@ describe("ValidationRules", () => {
                 it("should return error", async () => {
                   await expect(
                     instance.connect(user1Address).addUserValidation(user2Address, "my justification")
-                  ).to.be.revertedWith("User cannot vote");
+                  ).to.be.revertedWith("Not a voter");
                 });
               });
 
@@ -486,8 +481,7 @@ describe("ValidationRules", () => {
                 it("should add validation", async () => {
                   const validations = await instance.getUserValidations(user2Address, 1);
 
-                  expect(validations[0].justification).to.equal("my justification");
-                  expect(validations.length).to.equal(1);
+                  expect(validations).to.equal(1);
                 });
 
                 it("user type must be the same", async () => {
@@ -515,8 +509,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(user2Address, 3);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(1);
+                expect(validations).to.equal(1);
               });
 
               it("user type must be the same", async () => {
@@ -548,7 +541,7 @@ describe("ValidationRules", () => {
                 it("should return error", async () => {
                   await expect(
                     instance.connect(user1Address).addUserValidation(user2Address, "my justification")
-                  ).to.be.revertedWith("User cannot vote");
+                  ).to.be.revertedWith("Not a voter");
                 });
               });
 
@@ -570,8 +563,7 @@ describe("ValidationRules", () => {
                 it("should add validation", async () => {
                   const validations = await instance.getUserValidations(user2Address, 4);
 
-                  expect(validations[0].justification).to.equal("my justification");
-                  expect(validations.length).to.equal(1);
+                  expect(validations).to.equal(1);
                 });
 
                 it("user type must be the same", async () => {
@@ -624,8 +616,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(regenerator1Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -685,8 +676,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(inspector1Address, 4);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -733,8 +723,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(contributor1Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -781,8 +770,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(dev1Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -829,8 +817,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(resea1Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -880,8 +867,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(activist1Address, 4);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -933,8 +919,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(regenerator1Address, 2);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -1244,15 +1229,6 @@ describe("ValidationRules", () => {
 
               await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", user1Address);
             });
-
-            it("add inspection validation", async () => {
-              const validation = await instance.inspectionValidations(1, 0);
-
-              expect(validation[0]).to.equal(user1Address.address);
-              expect(validation[1]).to.equal(1);
-              expect(validation[2]).to.equal("foo");
-              expect(validation[3]).to.equal(2);
-            });
           });
         });
 
@@ -1278,15 +1254,6 @@ describe("ValidationRules", () => {
               };
 
               await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", user1Address);
-            });
-
-            it("add inspection validation", async () => {
-              const validation = await instance.inspectionValidations(1, 0);
-
-              expect(validation[0]).to.equal(user1Address.address);
-              expect(validation[1]).to.equal(1);
-              expect(validation[2]).to.equal("foo");
-              expect(validation[3]).to.equal(2);
             });
           });
         });
@@ -1372,15 +1339,6 @@ describe("ValidationRules", () => {
                   const era = await developerRules.poolCurrentEra();
                 });
 
-                it("should add report validation", async () => {
-                  const validation = await instance.reportValidations(1, 0);
-
-                  expect(validation[0]).to.equal(user1Address.address);
-                  expect(validation[1]).to.equal(1);
-                  expect(validation[2]).to.equal("justification");
-                  expect(validation[3]).to.equal(2);
-                });
-
                 it("deny developer", async () => {
                   const newDeveloperType = await communityRules.getUser(dev1Address);
 
@@ -1408,15 +1366,6 @@ describe("ValidationRules", () => {
                   report.validationsCount = 2;
                   report.valid = false;
                   await instance.connect(owner).addReportValidation(report, "justification", user1Address);
-                });
-
-                it("should add report validation", async () => {
-                  const validation = await instance.reportValidations(1, 0);
-
-                  expect(validation[0]).to.equal(user1Address.address);
-                  expect(validation[1]).to.equal(1);
-                  expect(validation[2]).to.equal("justification");
-                  expect(validation[3]).to.equal(2);
                 });
 
                 it("do not remove any developer.pool.levels", async () => {
@@ -1514,15 +1463,6 @@ describe("ValidationRules", () => {
           research = generateResearchObject(research);
 
           await instance.connect(owner).addResearchValidation(research, "justification", user1Address);
-        });
-
-        it("should add research validation", async () => {
-          const validation = await instance.researchValidations(1, 0);
-
-          expect(validation[0]).to.equal(user1Address.address);
-          expect(validation[1]).to.equal(1);
-          expect(validation[2]).to.equal("justification");
-          expect(validation[3]).to.equal(2);
         });
 
         it("should return error", async () => {
@@ -1650,15 +1590,6 @@ describe("ValidationRules", () => {
           contribution = generateContributionObject(contribution);
 
           await instance.connect(owner).addContributionValidation(contribution, "justification", user1Address);
-        });
-
-        it("should add contribution validation", async () => {
-          const validation = await instance.contributionValidations(1, 0);
-
-          expect(validation[0]).to.equal(user1Address.address);
-          expect(validation[1]).to.equal(1);
-          expect(validation[2]).to.equal("justification");
-          expect(validation[3]).to.equal(2);
         });
 
         it("should return error", async () => {

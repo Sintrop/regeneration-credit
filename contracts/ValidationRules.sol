@@ -3,7 +3,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import { CommunityRules } from "./CommunityRules.sol";
 import { RegeneratorRules } from "./RegeneratorRules.sol";
-import { UserValidation, ResourceValidation, ContractsDependency } from "./types/ValidationTypes.sol";
+import { ContractsDependency } from "./types/ValidationTypes.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { InspectorRules } from "./InspectorRules.sol";
@@ -27,19 +27,7 @@ contract ValidationRules is Callable {
   // --- State Variables ---
 
   /// @notice The relationship between address and validations received by era.
-  mapping(address => mapping(uint256 => UserValidation[])) public userValidations;
-
-  /// @notice Relationship between inspection and validations array.
-  mapping(uint256 => ResourceValidation[]) public inspectionValidations;
-
-  /// @notice Relationship between report and validations array.
-  mapping(uint256 => ResourceValidation[]) public reportValidations;
-
-  /// @notice Relashionship between contribution and validations array.
-  mapping(uint256 => ResourceValidation[]) public contributionValidations;
-
-  /// @notice Relationship between research and validations array.
-  mapping(uint256 => ResourceValidation[]) public researchValidations;
+  mapping(address => mapping(uint256 => uint256)) public userValidations;
 
   /// @notice Relationship between validator and report validation. Only one validation per resource allowed.
   mapping(address => mapping(uint256 => bool)) private validatorReportsValidations;
@@ -117,7 +105,7 @@ contract ValidationRules is Callable {
    */
   function addUserValidation(address userAddress, string memory justification) public {
     require(bytes(justification).length <= 300, "Max 300 characters");
-    require(voteRules.canVote(msg.sender), "User cannot vote");
+    require(voteRules.canVote(msg.sender), "Not a voter");
     require(!communityRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
     require(!communityRules.userTypeIs(UserType.DENIED, userAddress), "User already denied");
 
@@ -128,13 +116,12 @@ contract ValidationRules is Callable {
 
     validatorUsersValidations[msg.sender][userAddress][currentEra] = true;
     validatorLastVoteAt[msg.sender] = block.number;
+    userValidations[userAddress][currentEra]++;
 
     uint256 _votesToInvalidate = votesToInvalidate();
-    uint256 validationsCount = userValidations[userAddress][currentEra].length + 1;
+    uint256 validationsCount = userValidations[userAddress][currentEra];
 
-    userValidations[userAddress][currentEra].push(
-      UserValidation(msg.sender, userAddress, justification, _votesToInvalidate, block.number)
-    );
+    emit UserValidation(msg.sender, userAddress, justification);
 
     if (validationsCount >= _votesToInvalidate) denyUser(userAddress);
   }
@@ -166,14 +153,14 @@ contract ValidationRules is Callable {
 
     bool addPenalty = inspection.validationsCount >= _votesToInvalidate;
 
-    inspectionValidations[inspection.id].push(
-      ResourceValidation(validatorAddress, inspection.id, justification, _votesToInvalidate, block.number)
-    );
+    emit InspectionValidation(validatorAddress, inspection.id, justification);
 
     if (!addPenalty) return;
 
     uint256 inspectorTotalPenalties = inspectorRules.addPenalty(inspection.inspector, inspection.id);
     removeUserInspection(inspection);
+
+    emit ResourceInvalidated("Inspection", inspection.id, inspection.inspector, inspectorTotalPenalties); // Emit event
 
     if (inspectorTotalPenalties >= inspectorRules.maxPenalties()) denyUser(inspection.inspector);
   }
@@ -201,15 +188,15 @@ contract ValidationRules is Callable {
     validatorReportsValidations[validatorAddress][report.id] = true;
     validatorLastVoteAt[validatorAddress] = block.number;
 
-    reportValidations[report.id].push(
-      ResourceValidation(validatorAddress, report.id, justification, votesToInvalidate(), block.number)
-    );
+    emit ReportValidation(validatorAddress, report.id, justification);
 
     if (report.valid) return;
 
     uint256 developerTotalPenalties = developerRules.addPenalty(report.developer, report.id);
 
     removeDeveloperReport(report);
+
+    emit ResourceInvalidated("Report", report.id, report.developer, developerTotalPenalties); // Emit event
 
     if (developerTotalPenalties >= developerRules.MAX_PENALTIES()) denyUser(report.developer);
   }
@@ -237,15 +224,15 @@ contract ValidationRules is Callable {
     validatorContributionsValidations[validatorAddress][contribution.id] = true;
     validatorLastVoteAt[validatorAddress] = block.number;
 
-    contributionValidations[contribution.id].push(
-      ResourceValidation(validatorAddress, contribution.id, justification, votesToInvalidate(), block.number)
-    );
+    emit ContributionValidation(validatorAddress, contribution.id, justification);
 
     if (contribution.valid) return;
 
     uint256 contributorTotalPenalties = contributorRules.addPenalty(contribution.user, contribution.id);
 
     removeContributorContribution(contribution);
+
+    emit ResourceInvalidated("Contribution", contribution.id, contribution.user, contributorTotalPenalties); // Emit event
 
     if (contributorTotalPenalties >= contributorRules.MAX_PENALTIES()) denyUser(contribution.user);
   }
@@ -273,14 +260,14 @@ contract ValidationRules is Callable {
     validatorResearchesValidations[validatorAddress][research.id] = true;
     validatorLastVoteAt[validatorAddress] = block.number;
 
-    researchValidations[research.id].push(
-      ResourceValidation(validatorAddress, research.id, justification, votesToInvalidate(), block.number)
-    );
+    emit ResearchValidation(validatorAddress, research.id, justification);
 
     if (research.valid) return;
 
     uint256 totalPenalties = researcherRules.addPenalty(research.createdBy, research.id);
     removeReseacherResearch(research);
+
+    emit ResourceInvalidated("Research", research.id, research.createdBy, totalPenalties); // Emit event
 
     if (totalPenalties >= researcherRules.MAX_PENALTIES()) denyUser(research.createdBy);
   }
@@ -376,7 +363,7 @@ contract ValidationRules is Callable {
    * @param currentEra The era to check for validations.
    * @return UserValidation[] An array of `UserValidation` structs.
    */
-  function getUserValidations(address userAddress, uint256 currentEra) public view returns (UserValidation[] memory) {
+  function getUserValidations(address userAddress, uint256 currentEra) public view returns (uint256) {
     return userValidations[userAddress][currentEra];
   }
 
@@ -413,4 +400,66 @@ contract ValidationRules is Callable {
     bool canVote = block.number > lastVoteAt + timeBetweenVotes;
     return canVote || lastVoteAt <= 0;
   }
+
+  // --- Events ---
+
+  /**
+   * @notice Emitted
+   * @param _validatorAddress The address of the validator.
+   * @param _userAddress The wallet of the user receiving the vote.
+   * @param _justification The justification provided for the vote.
+   */
+  event UserValidation(address indexed _validatorAddress, address indexed _userAddress, string _justification);
+
+  /**
+   * @notice Emitted
+   * @param _validatorAddress The address of the validator.
+   * @param _resourceId The id of the resource receiving the vote.
+   * @param _justification The justification provided for the vote.
+   */
+  event InspectionValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
+
+  /**
+   * @notice Emitted
+   * @param _validatorAddress The address of the validator.
+   * @param _resourceId The id of the resource receiving the vote.
+   * @param _justification The justification provided for the vote.
+   */
+  event ReportValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
+
+  /**
+   * @notice Emitted
+   * @param _validatorAddress The address of the validator.
+   * @param _resourceId The id of the resource receiving the vote.
+   * @param _justification The justification provided for the vote.
+   */
+  event ContributionValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
+
+  /**
+   * @notice Emitted
+   * @param _validatorAddress The address of the validator.
+   * @param _resourceId The id of the resource receiving the vote.
+   * @param _justification The justification provided for the vote.
+   */
+  event ResearchValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
+
+  /**
+   * @notice Emitted when a user is successfully invalidated and denied.
+   * @param _userAddress The address of the user who was denied.
+   */
+  event UserDenied(address indexed _userAddress);
+
+  /**
+   * @notice Emitted when a resource (Inspection, Report, Contribution, Research) is processed after accumulating enough invalidation votes.
+   * @param _resourceType The type of resource being processed (e.g., "Inspection", "Report").
+   * @param _resourceId The ID of the resource.
+   * @param _ownerAddress The address of the user who created the invalidated resource.
+   * @param _penaltiesAdded The number of penalties added to the owner.
+   */
+  event ResourceInvalidated(
+    string _resourceType,
+    uint256 _resourceId,
+    address indexed _ownerAddress,
+    uint256 _penaltiesAdded
+  );
 }

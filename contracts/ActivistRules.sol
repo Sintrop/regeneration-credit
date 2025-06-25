@@ -85,10 +85,10 @@ contract ActivistRules is Callable, Invitable {
     // Character limit validation for name and proofPhoto.
     require(bytes(name).length <= 100 && bytes(proofPhoto).length <= 100, "Max 100 characters");
     // Max limit for activist users in the system.
-    require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
+    require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max user limit");
 
     // Generate a unique ID for the new activist.
-    uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
+    uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     // Create a new Activist struct in memory.
     // Pool initialized with level 0 and current era set to the current pool era.

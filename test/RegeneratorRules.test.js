@@ -23,7 +23,7 @@ describe("RegeneratorRules", () => {
 
   const addRegenerator3 = async (name, from, _coordinates = []) => {
     const test = _coordinates.length > 0 ? _coordinates : coordinates();
-    await instance.connect(from).addRegenerator(1000000000000, name, "photoURL", "projectDescription", test);
+    await instance.connect(from).addRegenerator(4000000000, name, "photoURL", "projectDescription", test);
   };
 
   const coordinates = () => {

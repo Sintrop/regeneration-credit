@@ -266,12 +266,6 @@ describe("InspectionRules", () => {
         expect(inspection.id).to.equal(1);
       });
     });
-
-    context("when inspection dont exists", () => {
-      it("should return error", async () => {
-        await expect(instance.getInspection(1)).to.be.revertedWith("Inspection do not exist");
-      });
-    });
   });
 
   describe("#requestInspection", () => {
@@ -323,7 +317,7 @@ describe("InspectionRules", () => {
       context("when have more than ALLOWED_INITIAL_REQUESTS", () => {
         context("when has request OPEN or ACCEPTED", () => {
           it("should return error message", async () => {
-            await expect(requestInspection(regeneratorAddress)).to.be.revertedWith("Request already OPEN");
+            await expect(requestInspection(regeneratorAddress)).to.be.revertedWith("Request OPEN");
           });
         });
 
@@ -503,7 +497,7 @@ describe("InspectionRules", () => {
 
         context("when have not waited inspection delay time", () => {
           it("should return error message", async () => {
-            await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Wait inspection delay blocks");
+            await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Wait delay blocks");
           });
         });
 
@@ -517,7 +511,7 @@ describe("InspectionRules", () => {
             });
 
             it("should return error message", async () => {
-              await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Wait until next era to accept");
+              await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Wait until next era");
             });
           });
 
@@ -530,7 +524,7 @@ describe("InspectionRules", () => {
             });
 
             it("should return error message", async () => {
-              await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Wait until next era to accept");
+              await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Wait until next era");
             });
           });
         });
@@ -582,7 +576,7 @@ describe("InspectionRules", () => {
           });
 
           it("should return error message", async () => {
-            await expect(acceptInspection(4, inspectorAddress)).to.be.revertedWith("No more than 3 giveUps allowed");
+            await expect(acceptInspection(4, inspectorAddress)).to.be.revertedWith("Only 3 giveUps allowed");
           });
         });
 
@@ -642,7 +636,7 @@ describe("InspectionRules", () => {
 
             context("when last inspection is not expired", () => {
               it("should return error message", async () => {
-                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Already accepted inspection");
+                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Already accepted");
               });
             });
 
@@ -681,7 +675,7 @@ describe("InspectionRules", () => {
 
             context("when dont finished last inspection", () => {
               it("should return error message", async () => {
-                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Already accepted inspection");
+                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Already accepted");
               });
             });
           });
@@ -699,9 +693,7 @@ describe("InspectionRules", () => {
           });
 
           it("should return error message", async () => {
-            await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith(
-              "Already inspected this regenerator"
-            );
+            await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Already inspected");
           });
         });
       });
@@ -1084,7 +1076,7 @@ describe("InspectionRules", () => {
           it("should return error message", async () => {
             await expect(
               realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress)
-            ).to.be.revertedWith("Accept this inspection before");
+            ).to.be.revertedWith("Accept before");
           });
         });
       });
@@ -1093,7 +1085,7 @@ describe("InspectionRules", () => {
         it("should return error message", async () => {
           await expect(
             realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress)
-          ).to.be.revertedWith("Accept this inspection before");
+          ).to.be.revertedWith("Accept before");
         });
       });
     });
@@ -1147,12 +1139,9 @@ describe("InspectionRules", () => {
           });
 
           it("add validation", async () => {
-            const validation = await validationRules.inspectionValidations(1, 0);
+            const inspection = await instance.getInspection(1);
 
-            expect(validation[0]).to.equal(user1Address.address);
-            expect(validation[1]).to.equal(1);
-            expect(validation[2]).to.equal("justification");
-            expect(validation[3]).to.equal(2);
+            expect(inspection.validationsCount).to.equal(1);
           });
         });
 
@@ -1164,11 +1153,9 @@ describe("InspectionRules", () => {
             });
 
             it("add validations", async () => {
-              const validation1 = await validationRules.inspectionValidations(1, 0);
-              const validation2 = await validationRules.inspectionValidations(1, 1);
+              const inspection = await instance.getInspection(1);
 
-              expect(validation1.validator).to.equal(user1Address.address);
-              expect(validation2.validator).to.equal(user2Address.address);
+              expect(inspection.validationsCount).to.equal(2);
             });
 
             it("decrement inspectionsTreesImpact", async () => {
@@ -1310,12 +1297,9 @@ describe("InspectionRules", () => {
           });
 
           it("add validation", async () => {
-            const validation = await validationRules.inspectionValidations(1, 0);
+            const inspection = await instance.getInspection(1);
 
-            expect(validation[0]).to.equal(user1Address.address);
-            expect(validation[1]).to.equal(1);
-            expect(validation[2]).to.equal("justification");
-            expect(validation[3]).to.equal(2);
+            expect(inspection.validationsCount).to.equal(1);
           });
         });
 
@@ -1327,11 +1311,9 @@ describe("InspectionRules", () => {
             });
 
             it("add validations", async () => {
-              const validation1 = await validationRules.inspectionValidations(1, 0);
-              const validation2 = await validationRules.inspectionValidations(1, 1);
+              const inspection = await instance.getInspection(1);
 
-              expect(validation1.validator).to.equal(user1Address.address);
-              expect(validation2.validator).to.equal(user2Address.address);
+              expect(inspection.validationsCount).to.equal(2);
             });
 
             it("decrement inspectionsTreesImpact", async () => {
@@ -1473,12 +1455,9 @@ describe("InspectionRules", () => {
           });
 
           it("add validation", async () => {
-            const validation = await validationRules.inspectionValidations(1, 0);
+            const inspection = await instance.getInspection(1);
 
-            expect(validation[0]).to.equal(user1Address.address);
-            expect(validation[1]).to.equal(1);
-            expect(validation[2]).to.equal("justification");
-            expect(validation[3]).to.equal(2);
+            expect(inspection.validationsCount).to.equal(1);
           });
         });
 
@@ -1490,11 +1469,9 @@ describe("InspectionRules", () => {
             });
 
             it("add validations", async () => {
-              const validation1 = await validationRules.inspectionValidations(1, 0);
-              const validation2 = await validationRules.inspectionValidations(1, 1);
+              const inspection = await instance.getInspection(1);
 
-              expect(validation1.validator).to.equal(user1Address.address);
-              expect(validation2.validator).to.equal(user2Address.address);
+              expect(inspection.validationsCount).to.equal(2);
             });
 
             it("decrement inspectionsTreesImpact", async () => {
@@ -1636,12 +1613,9 @@ describe("InspectionRules", () => {
           });
 
           it("add validation", async () => {
-            const validation = await validationRules.inspectionValidations(1, 0);
+            const inspection = await instance.getInspection(1);
 
-            expect(validation[0]).to.equal(user1Address.address);
-            expect(validation[1]).to.equal(1);
-            expect(validation[2]).to.equal("justification");
-            expect(validation[3]).to.equal(2);
+            expect(inspection.validationsCount).to.equal(1);
           });
         });
 
@@ -1653,11 +1627,9 @@ describe("InspectionRules", () => {
             });
 
             it("add validations", async () => {
-              const validation1 = await validationRules.inspectionValidations(1, 0);
-              const validation2 = await validationRules.inspectionValidations(1, 1);
+              const inspection = await instance.getInspection(1);
 
-              expect(validation1.validator).to.equal(user1Address.address);
-              expect(validation2.validator).to.equal(user2Address.address);
+              expect(inspection.validationsCount).to.equal(2);
             });
 
             it("decrement inspectionsTreesImpact", async () => {
