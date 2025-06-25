@@ -2,71 +2,102 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import { CommunityRules } from "./CommunityRules.sol";
-import { Regenerator, Pool, Coordinates } from "./types/RegeneratorTypes.sol";
+import { Regenerator, Pool, Coordinates, RegenerationScore } from "./types/RegeneratorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { RegeneratorPool } from "./RegeneratorPool.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 
 /**
- * @author Sintrop
  * @title RegeneratorRules
- * @dev Manage regenerator user logic.
- * @notice Person, family or a group of people that are providing ecosystem regeneration services
+ * @author Sintrop
+ * @notice This contract defines and manages the rules and data specific to "Regenerator" users
+ * within the system. Regenerators are individuals, families, or groups providing ecosystem
+ * regeneration services to an area.
+ * @dev Inherits functionalities from `Ownable` (for contract deploy setup) and `Callable` (for whitelisted
+ * function access). It interacts with `CommunityRules` for general user management and `RegeneratorPool`
+ * for reward distribution. This contract handles regenerator registration, area management (coordinates,
+ * total area), regeneration score tracking, inspection processes, and penalty management.
  */
 contract RegeneratorRules is Callable {
-  /// @notice Minimum inspections to regenerator receive tokens
-  uint256 internal constant MINIMUM_INSPECTION_TO_POOL = 3;
+  // --- Contants & state Variables ---
 
-  /// @notice The relationship between address and regenerator data
+  /// @notice The minimum number of successful inspections a regenerator must have
+  /// to be eligible for rewards from the Regenerator Pool.
+  uint8 internal constant MINIMUM_INSPECTION_TO_POOL = 3;
+
+  /// @notice A mapping from a regenerator's wallet address to their detailed `Regenerator` data structure.
+  /// This serves as the primary storage for regenerator profiles.
   mapping(address => Regenerator) public regenerators;
 
-  /// @notice The relationship between id and regenerator address
+  /// @notice A mapping from a unique regenerator ID to their corresponding wallet address.
+  /// Facilitates lookup of a regenerator's address by their ID.
   mapping(uint256 => address) public regeneratorsAddress;
 
-  /// @notice The relationship between address and coordinates array
+  /// @notice A mapping from a regenerator's wallet address to an array of coordinate points
+  /// defining the boundaries of their regeneration area.
   mapping(address => Coordinates[]) public coordinates;
 
-  /// @notice The relationship between address and description
+  /// @notice A mapping from a regenerator's wallet address to their project description.
   mapping(address => string) public projectDescriptions;
 
-  /// @notice Number of approved impact regenerators
+  /// @notice A mapping to track if a regenerator is an "impact regenerator" (has successfully
+  /// completed at least treee inspections).
   mapping(address => bool) public impactRegenerators;
 
+  /// @notice A mapping from a regenerator's wallet address to a hash or identifier of their area photo.
   mapping(address => string) public areaPhoto;
 
-  /// @notice CommunityRules contract address
+  /// @notice The address of the `CommunityRules` contract, used to interact with
+  /// community-wide rules and user types.
   CommunityRules internal communityRules;
 
-  /// @notice RegeneratorPool contract address
+  /// @notice The address of the `RegeneratorPool` contract, responsible for managing
+  /// and distributing token rewards to regenerators.
   RegeneratorPool internal regeneratorPool;
 
-  /// @notice Regenerator UserType
+  /// @notice The specific `UserType` enumeration value for a Regenerator user.
   UserType private constant USER_TYPE = UserType.REGENERATOR;
 
-  /// @notice Valid impact regenerators
+  /// @notice The total count of regenerators who are considered "impact regenerators"
+  /// (have achieved the minimum of three inspections.
   uint256 public totalImpactRegenerators;
 
-  /// @notice [m²]
+  /// @notice The grand total sum of all regeneration area (in square meters [m²])
+  /// managed by all registered regenerators in the system.
   uint256 public regenerationArea;
 
+  // --- Constructor ---
+
+  /**
+   * @dev Initializes the ContributorRules contract with key parameters.
+   * @param communityRulesAddress The address of the deployed `CommunityRules` contract.
+   * @param regeneratorPoolAddress The address of the deployed `RegeneratorPool` contract.
+   */
   constructor(address communityRulesAddress, address regeneratorPoolAddress) {
     communityRules = CommunityRules(communityRulesAddress);
     regeneratorPool = RegeneratorPool(regeneratorPoolAddress);
   }
 
+  // --- Public Functions (State modifying) ---
+
   /**
-   * @dev Allows a user to attempt to register as a regenerator
+   * @dev Allows a user to attempt to register as a regenerator.
+   * Creates a new `Regenerator` profile for the caller if all requirements are met.
+   * @notice Registers a new regenerator and their area of regeneration within the system.
+   * This area can be subject to inspections and potential rewards.
    *
    * Requirements:
-   *
-   * - the caller must have been invited before
-   * - vacancies according to the number of regenerators
-   *
-   * @notice Register as a regenerator to add to the system an area under your supervision that is in process of regeneration
-   * @param name The name of the regenerator
-   * @param proofPhoto Identity photo
-   * @param totalArea in square meters [m²]
-   * @param _coordinates the coordinates of the regenerator area
+   * - The caller (`msg.sender`) must not already be a registered regenerator.
+   * - The `name` string must not exceed `MAX_NAME_LENGTH` (50) characters in byte length.
+   * - The `proofPhoto` string must not exceed `MAX_PROOF_PHOTO_LENGTH` (100) characters in byte length.
+   * - The `projectDescription` string must not exceed `MAX_PROJECT_DESCRIPTION_LENGTH` (200) characters in byte length.
+   * - The `_coordinates` array must contain between (3) and (10) points.
+   * - The `totalArea` must be between (500) and (500,000) square meters [m²].
+   * @param totalArea The total area (in square meters [m²]) to be registered.
+   * @param name The chosen name for the regenerator.
+   * @param proofPhoto A hash or identifier for the regenerator's identity verification photo.
+   * @param projectDescription A brief description of the regeneration project.
+   * @param _coordinates An array of coordinate points defining the boundaries of the regeneration area.
    */
   function addRegenerator(
     uint256 totalArea,
@@ -82,105 +113,101 @@ contract RegeneratorRules is Callable {
     require(_coordinates.length >= 3 && _coordinates.length <= 10, "Minimum 3 and maximum 10 coordinate points");
     require(totalArea >= 500 && totalArea <= 500000, "Minimum 500 and maximum 500.000 square meters");
 
-    Regenerator memory regenerator = regenerators[msg.sender];
     uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
-    regenerator.id = id;
-    regenerator.regeneratorWallet = msg.sender;
-    regenerator.name = name;
-    regenerator.proofPhoto = proofPhoto;
-    regenerator.totalArea = totalArea;
-    regenerator.pool = Pool(false, regeneratorPool.currentContractEra());
-    regenerator.createdAt = block.number;
-    regenerator.coordinatesCount = _coordinates.length;
+    regenerators[msg.sender] = Regenerator(
+      id,
+      msg.sender,
+      name,
+      proofPhoto,
+      totalArea,
+      false,
+      0,
+      0,
+      RegenerationScore(0),
+      Pool(false, regeneratorPool.currentContractEra()),
+      0,
+      _coordinates.length
+    );
 
-    regenerators[msg.sender] = regenerator;
     regeneratorsAddress[id] = msg.sender;
     projectDescriptions[msg.sender] = projectDescription;
     communityRules.addUser(msg.sender, USER_TYPE);
 
+    // Update global regeneration area.
     regenerationArea += totalArea;
 
+    // Store coordinates.
     for (uint256 i = 0; i < _coordinates.length; i++) {
       coordinates[msg.sender].push(_coordinates[i]);
     }
+
+    // Emit an event.
+    emit RegeneratorRegistered(id, msg.sender, name, totalArea, block.number);
   }
 
   /**
-   * @dev Return a specific regenerator
-   * @param addr the address of the regenerator.
-   */
-  function getRegenerator(address addr) public view returns (Regenerator memory regenerator) {
-    return regenerators[addr];
-  }
-
-  /**
-   * @dev Call withdraw function from regeneratorPool to try to claim tokens
-   * @notice Withdraw regeneration credit from regeneration service provided
+   * @dev Allows a regenerator to initiate a withdrawal of Regeneration Credits
+   * based on their completed inspections and current era.
+   * @notice Regenerators can claim tokens for their regeneration service, provided they meet
+   * the minimum inspection threshold and are eligible for the current era.
+   * To win more tokens, regenerators must plant more trees from different species.
+   *
+   * Requirements:
+   * - The caller (`msg.sender`) must be a registered `REGENERATOR`.
+   * - The regenerator must have completed at least (3) inspections.
+   * - The regenerator must have a positive regeneration score.
+   * - The regenerator's current era (`regenerator.pool.currentEra`) will be incremented upon successful withdrawal attempt.
    */
   function withdraw() public {
+    // Only registered regenerators can call this function.
     require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators pool");
 
-    Regenerator memory regenerator = regenerators[msg.sender];
+    Regenerator storage regenerator = regenerators[msg.sender];
+    // Check if the regenerator has completed the minimum required inspections.
     require(minimumInspections(regenerator.totalInspections), "Minimum inspections");
 
-    regenerators[msg.sender].pool.currentEra++;
+    // Current regenerator era before withdraw
+    uint256 currentEra = regenerator.pool.currentEra;
 
-    regeneratorPool.withdraw(msg.sender, regenerator.pool.currentEra);
+    // Increment the regenerator's era in their local pool data.
+    regenerator.pool.currentEra = currentEra + 1;
+
+    // Call the RegeneratorPool contract to perform the actual token withdrawal.
+    regeneratorPool.withdraw(msg.sender, currentEra);
+
+    // Emit an event for off-chain monitoring.
+    emit RegeneratorWithdrawalInitiated(msg.sender, currentEra, block.number);
   }
 
   /**
-   * @dev Checks if regenerator reached minimum inspections
-   * @param totalInspections regenerator total received inspections
-   * @return bool True if reached
+   * @notice Allows a regenerator to update their area photo for their regeneration area.
+   * @param newPhoto The new hash or identifier of the area photo.
+   *
+   * Requirements:
+   * - The `newPhoto` string must not exceed 100 characters in byte length.
+   * - The caller (`msg.sender`) must be a registered `REGENERATOR`.
    */
-  function minimumInspections(uint256 totalInspections) private pure returns (bool) {
-    return totalInspections >= MINIMUM_INSPECTION_TO_POOL;
+  function updateAreaPhoto(string memory newPhoto) public {
+    require(bytes(newPhoto).length <= 100, "Max 100 characters");
+    require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
+
+    areaPhoto[msg.sender] = newPhoto;
   }
 
-  /**
-   * @dev Check if a specific regenerator exists
-   * @param addr Regenerator address
-   * @return a bool that represent if a regenerator exists or not
-   */
-  function regeneratorExists(address addr) public view returns (bool) {
-    return regenerators[addr].id > 0;
-  }
+  // --- MustBeAllowedCaller Functions (State modifying) ---
 
   /**
-   * @dev Checks if regenerator has pending inspection
-   */
-  function pendingInspection(address addr, bool state) private {
-    regenerators[addr].pendingInspection = state;
-  }
-
-  /**
-   * @dev Set the new regeneration score
-   * @param addr Regenerator address
-   * @param regenerationScore New score
-   */
-  function setRegenerationScore(address addr, uint256 regenerationScore) private {
-    Regenerator memory regenerator = regenerators[addr];
-
-    regenerator.regenerationScore.score += regenerationScore;
-    regenerators[addr] = regenerator;
-
-    if (!minimumInspections(regenerator.totalInspections)) return;
-
-    uint256 levels = regenerationScore;
-
-    if (!regenerator.pool.onContractPool) {
-      regenerators[addr].pool.onContractPool = true;
-      levels = regenerator.regenerationScore.score;
-    }
-
-    regeneratorPool.addLevel(addr, levels);
-  }
-
-  /**
-   * @dev Remove pool levels from regenerator
-   * @param addr Regenerator wallet
-   * @param levelsToRemove Levels to be removed, when 0 the user is being blocked
+   * @dev Allows an authorized caller to remove levels from a regenerator's pool.
+   * This function updates the regenerator's local regeneration score and notifies the `RegeneratorPool` contract.
+   * @notice Can only be called by the ValidatorRules address. If `levelsToRemove` is 0,
+   * this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
+   *
+   * Requirements:
+   * - Only addresses whitelisted via `Callable` can call this function.
+   * @param addr The wallet address of the regenerator from whom levels are to be removed.
+   * @param levelsToRemove The number of levels/score points to decrease. If `0`, the regenerator's
+   * regeneration score is reset to `0`, and their area is decremented from the total `regenerationArea`.
    */
   function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
     if (levelsToRemove == 0) {
@@ -194,28 +221,21 @@ contract RegeneratorRules is Callable {
   }
 
   /**
-   * @dev Increment regenerator total inspections
-   * @param addr Regenerator wallet
-   */
-  function incrementInspections(address addr) private returns (uint256) {
-    regenerators[addr].totalInspections++;
-
-    if (!impactRegenerators[addr]) {
-      impactRegenerators[addr] = true;
-      totalImpactRegenerators++;
-    }
-
-    return regenerators[addr].totalInspections;
-  }
-
-  /**
-   * @dev Decrement regenerator total inspections
-   * @param addr Regenerator wallet
+   * @dev Allows an authorized caller to decrement a regenerator's total completed inspections count.
+   * This function is typically called when an inspection previously counted as valid is invalidated.
+   * @notice Can only be called by the ValidatorRules address.
+   *
+   * Requirements:
+   * - The regenerator's `totalInspections` count must be greater than 0.
+   * - If `totalInspections` becomes 0 after decrement, the regenerator is removed from `impactRegenerators`.
+   * @param addr The regenerator's wallet address.
    */
   function decrementInspections(address addr) public mustBeAllowedCaller {
-    require(regenerators[addr].totalInspections > 0, "totalInspections invalid");
+    uint256 totalInspections = regenerators[addr].totalInspections;
 
-    if (regenerators[addr].totalInspections == 1) {
+    require(totalInspections > 0, "totalInspections invalid");
+
+    if (totalInspections == 1) {
       totalImpactRegenerators--;
       impactRegenerators[addr] = false;
     }
@@ -224,8 +244,10 @@ contract RegeneratorRules is Callable {
   }
 
   /**
-   * @dev Actions after regenerator request inspection
-   * @param addr Regenerator wallet
+   * @dev Processes actions after a regenerator requests an inspection for their area.
+   * Sets the `pendingInspection` status to `true` and records the `lastRequestAt` timestamp.
+   * @notice This function is intended to be called by a whitelisted contract, the InspectionRules.
+   * @param addr The regenerator's wallet address.
    */
   function afterRequestInspection(address addr) public mustBeAllowedCaller {
     pendingInspection(addr, true);
@@ -233,16 +255,23 @@ contract RegeneratorRules is Callable {
   }
 
   /**
-   * @dev Actions after inspector accept inspection
-   * @param addr Inspector wallet
+   * @dev Processes actions after an inspector accepts an inspection request from a regenerator.
+   * Sets the regenerator's `pendingInspection` status to `false`.
+   * @notice This function is intended to be called by a whitelisted external contract, the InspectorRules.
+   * @param addr The regenerator's wallet address.
    */
   function afterAcceptInspection(address addr) public mustBeAllowedCaller {
     pendingInspection(addr, false);
   }
 
   /**
-   * @dev Actions after realize inspection.
-   * @param addr Regenerator wallet
+   * @dev Processes actions after an inspection is successfully realized for a regenerator's area.
+   * Increments the regenerator's total inspections and updates their regeneration score.
+   * @notice This function is intended to be called by a whitelisted external contract, the InspectionRules
+   * after an inspection is completed.
+   * @param addr The regenerator's wallet address.
+   * @param score The score obtained from the realized inspection, to be added to the regenerator's total score.
+   * @return uint256 The updated total number of inspections for the regenerator.
    */
   function afterRealizeInspection(address addr, uint256 score) public mustBeAllowedCaller returns (uint256) {
     uint256 totalInspections = incrementInspections(addr);
@@ -252,70 +281,181 @@ contract RegeneratorRules is Callable {
     return totalInspections;
   }
 
+  // --- Internal/private functions ---
+
   /**
-   * @dev Set regenerator lastRequestAt after request inspection.
-   * @param addr Regenerator wallet
+   * @dev Checks if a regenerator has reached the MINIMUM_INSPECTIONS_TO_POOL threshold.
+   * @param totalInspections The total number of inspections completed by the regenerator.
+   * @return bool `true` if the total inspections meet or exceed the minimum, `false` otherwise.
    */
-  function lastRequestAt(address addr, uint256 blocksNumber) private {
-    regenerators[addr].lastRequestAt = blocksNumber;
+  function minimumInspections(uint256 totalInspections) private pure returns (bool) {
+    return totalInspections >= MINIMUM_INSPECTION_TO_POOL;
   }
 
   /**
-   * @dev Current regeneratorPool era
-   * @return uint256 Return the current contract pool era
+   * @dev Internal function to update a regenerator's pending inspection status.
+   * @notice Sets whether a regenerator has a pending inspection request (`true`) or not (`false`).
+   * @param addr The regenerator's wallet address.
+   * @param state The new pending inspection status (`true` for pending, `false` for not pending).
+   */
+  function pendingInspection(address addr, bool state) private {
+    regenerators[addr].pendingInspection = state;
+  }
+
+  /**
+   * @dev Sets the new regeneration score for a regenerator and potentially adds levels to the pool.
+   * @notice This function is called after an inspection is completed and a score is determined.
+   * @param addr The regenerator's wallet address.
+   * @param regenerationScore The score to add to the regenerator's total regeneration score.
+   */
+  function setRegenerationScore(address addr, uint256 regenerationScore) private {
+    Regenerator storage regenerator = regenerators[addr];
+    require(regenerator.id != 0, "Regenerator does not exist");
+
+    // Increment regenerator's total regeneration score.
+    regenerator.regenerationScore.score += regenerationScore;
+
+    // If minimum inspections are not met, only update score, not pool level.
+    if (!minimumInspections(regenerator.totalInspections)) return;
+
+    uint256 levels = regenerationScore;
+
+    // Logic to add initial levels if the regenerator is entering the contract pool for the first time.
+    if (!regenerator.pool.onContractPool) {
+      regenerator.pool.onContractPool = true;
+      levels = regenerator.regenerationScore.score;
+      emit RegeneratorEnteredPool(addr, block.number); // Emit event for entering pool
+    }
+
+    // Add level(s) to the regenerator pool.
+    regeneratorPool.addLevel(addr, levels);
+  }
+
+  /**
+   * @dev Internal function to increment a regenerator's total completed inspections count.
+   * This also updates the `impactRegenerators` flag and `totalImpactRegenerators` count.
+   * @param addr The regenerator's wallet address.
+   * @return uint256 The updated total number of inspections for the regenerator.
+   */
+  function incrementInspections(address addr) private returns (uint256) {
+    Regenerator storage regenerator = regenerators[addr];
+
+    regenerator.totalInspections++;
+
+    // Mark as impact regenerator.
+    if (!impactRegenerators[addr]) {
+      impactRegenerators[addr] = true;
+      totalImpactRegenerators++;
+    }
+
+    return regenerator.totalInspections;
+  }
+
+  /**
+   * @dev Internal function to set a regenerator's `lastRequestAt` block.
+   * @param addr The regenerator's wallet address.
+   * @param blockNumber The block number at which the last request was made.
+   */
+  function lastRequestAt(address addr, uint256 blockNumber) private {
+    regenerators[addr].lastRequestAt = blockNumber;
+  }
+
+  /**
+   * @dev Internal function to decrement the global `regenerationArea` when a regenerator's
+   * area is removed (due to invalidation).
+   * @param addr The regenerator's wallet address whose area is to be decremented.
+   *
+   * Requirements:
+   * - The regenerator must exist.
+   * - The `totalArea` of the regenerator must be accurately reflected in `regenerationArea`.
+   */
+  function decrementArea(address addr) internal {
+    regenerationArea -= regenerators[addr].totalArea;
+  }
+
+  // --- View Functions ---
+
+  /**
+   * @dev Returns the detailed `Regenerator` data for a given address.
+   * @notice Provides the full profile of a regenerator.
+   * @param addr The address of the regenerator to retrieve.
+   * @return regenerator The `Regenerator` struct containing the user's data.
+   */
+  function getRegenerator(address addr) public view returns (Regenerator memory regenerator) {
+    return regenerators[addr];
+  }
+
+  /**
+   * @dev Returns the current era as determined by the `RegeneratorPool` contract.
+   * @notice This function provides the current era from the perspective of the reward pool,
+   * which is essential for era-based eligibility and reward calculations for regenerators.
+   * @return uint256 The current era of the `RegeneratorPool`.
    */
   function poolCurrentEra() public view returns (uint256) {
     return regeneratorPool.currentContractEra();
   }
 
   /**
-   * @notice Calculate blocks to next era
-   * @return uint256 Return the amount of blocks to next era
+   * @dev Calculates the number of blocks remaining until the start of the next era,
+   * according to the `RegeneratorPool` contract's era definition.
+   * @notice Provides a countdown to the next era for regenerator planning.
+   * @return uint256 The amount of blocks remaining until the next era begins.
    */
   function nextEraIn() public view returns (uint256) {
     return uint256(regeneratorPool.nextEraIn(poolCurrentEra()));
   }
 
   /**
-   * @notice Total regeneration area
-   * @return uint256 Return the regeneration area [m²]
+   * @dev Returns the grand total sum of all regeneration area (in square meters [m²])
+   * managed by all registered regenerators in the system.
+   * @return uint256 The total regeneration area in square meters [m²].
    */
   function regenerationTotalArea() public view returns (uint256) {
     return regenerationArea;
   }
 
   /**
-   * @dev Function to decrement invalidated regenerator area
-   * @param addr Regenerator address
-   */
-  function decrementArea(address addr) internal {
-    regenerationArea -= regenerators[addr].totalArea;
-  }
-
-  /**
-   * @dev Function to get all regenerator coordinate points
-   * @param addr Regenerator wallet
-   * @return Coordinates Returns an array of coordinates
+   * @dev Returns all coordinate points defining a regenerator's area.
+   * @param addr The regenerator's wallet address.
+   * @return Coordinates[] An array of `Coordinates` structs representing the regenerator's area.
    */
   function getCoordinates(address addr) public view returns (Coordinates[] memory) {
     Regenerator memory regenerator = regenerators[addr];
     Coordinates[] memory coordinatesList = new Coordinates[](regenerator.coordinatesCount);
+    uint256 coordinatesCount = regenerator.coordinatesCount;
 
-    for (uint256 i = 0; i < regenerator.coordinatesCount; i++) {
+    for (uint256 i = 0; i < coordinatesCount; i++) {
       coordinatesList[i] = coordinates[addr][i];
     }
 
     return coordinatesList;
   }
 
-  /**
-   * @notice Update your profile photo
-   * @param newPhoto newPhoto hash
-   */
-  function updateAreaPhoto(string memory newPhoto) public {
-    require(bytes(newPhoto).length <= 100, "Max 100 characters");
-    require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
+  // --- Events ---
 
-    areaPhoto[msg.sender] = newPhoto;
-  }
+  /// @dev Emitted when a new regenerator successfully registers.
+  /// @param id The unique ID of the newly registered regenerator.
+  /// @param regeneratorAddress The wallet address of the regenerator.
+  /// @param name The name provided by the regenerator.
+  /// @param totalArea The total area (in square meters) managed by the regenerator.
+  /// @param blockNumber The block number at which the registration occurred.
+  event RegeneratorRegistered(
+    uint256 indexed id,
+    address indexed regeneratorAddress,
+    string name,
+    uint256 totalArea,
+    uint256 blockNumber
+  );
+
+  /// @dev Emitted when a regenerator successfully initiates a withdrawal of tokens.
+  /// @param regeneratorAddress The address of the regenerator initiating the withdrawal.
+  /// @param era The era for which the withdrawal was initiated.
+  /// @param blockNumber The block number at which the withdrawal was initiated.
+  event RegeneratorWithdrawalInitiated(address indexed regeneratorAddress, uint256 indexed era, uint256 blockNumber);
+
+  /// @dev Emitted when a regenerator initially enters the contract's reward pool
+  /// by meeting the minimum inspection criteria and `onContractPool` is set to true.
+  /// @param regeneratorAddress The address of the regenerator entering the pool.
+  /// @param blockNumber The block number at which the regenerator entered the pool.
+  event RegeneratorEnteredPool(address indexed regeneratorAddress, uint256 blockNumber);
 }

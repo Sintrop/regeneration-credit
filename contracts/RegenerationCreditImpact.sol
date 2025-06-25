@@ -118,7 +118,7 @@ contract RegenerationCreditImpact {
   function treesPerToken() public view returns (uint256) {
     return
       totalTreesImpact().mul(IMPACT_DECIMALS).div(
-        regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
+        regenerationCredit.totalSupply() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
       );
   }
 
@@ -132,7 +132,7 @@ contract RegenerationCreditImpact {
   function carbonPerToken() public view returns (uint256) {
     return
       totalCarbonImpact().mul(IMPACT_DECIMALS).div(
-        regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
+        regenerationCredit.totalSupply() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
       );
   }
 
@@ -146,7 +146,7 @@ contract RegenerationCreditImpact {
   function biodiversityPerToken() public view returns (uint256) {
     return
       totalBiodiversityImpact().mul(IMPACT_DECIMALS).div(
-        regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
+        regenerationCredit.totalSupply() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
       );
   }
 
@@ -160,7 +160,7 @@ contract RegenerationCreditImpact {
   function soilPerToken() public view returns (uint256) {
     return
       totalSoilImpact().mul(IMPACT_DECIMALS).div(
-        regenerationCredit.totalSupply_() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
+        regenerationCredit.totalSupply() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_()
       );
   }
 }

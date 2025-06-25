@@ -269,24 +269,6 @@ describe("RegeneratorRules", () => {
     });
   });
 
-  context("when regenerator don't exist", () => {
-    it("should return false when regenerator don't exist", async () => {
-      const regeneratorExists = await instance.regeneratorExists(prod1Address);
-
-      expect(regeneratorExists).to.equal(false);
-    });
-  });
-
-  context("when regenerator exists", () => {
-    it("should return true when regenerator exists", async () => {
-      await addRegenerator("Regenerator A", prod1Address);
-
-      const regeneratorExists = await instance.regeneratorExists(prod1Address);
-
-      expect(regeneratorExists).to.equal(true);
-    });
-  });
-
   describe("#afterRequestInspection", () => {
     beforeEach(async () => {
       await addRegenerator("Regenerator A", prod1Address);
