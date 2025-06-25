@@ -812,8 +812,8 @@ describe("RegenerationCreditImpact", () => {
 
             context("when have token totalLocked_", () => {
               beforeEach(async () => {
-                await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
-                await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
+                await regenerationCredit.addContractPool(owner, 300000000000000000000000000n);
+                await regenerationCredit.addContractPool(owner, 300000000000000000000000000n);
 
                 treesIndicatorValue = 10;
 
@@ -1051,8 +1051,8 @@ describe("RegenerationCreditImpact", () => {
 
             context("when have token totalLocked_", () => {
               beforeEach(async () => {
-                await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
-                await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
+                await regenerationCredit.addContractPool(owner, 300000000000000000000000000n);
+                await regenerationCredit.addContractPool(owner, 300000000000000000000000000n);
 
                 treesIndicatorValue = 10;
 
@@ -1246,8 +1246,8 @@ describe("RegenerationCreditImpact", () => {
 
             context("when have tokens totalLocked_", () => {
               beforeEach(async () => {
-                await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
-                await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
+                await regenerationCredit.addContractPool(owner, 300000000000000000000000000n);
+                await regenerationCredit.addContractPool(owner, 300000000000000000000000000n);
 
                 biodiversityIndicatorValue = 10;
 
@@ -1437,8 +1437,8 @@ describe("RegenerationCreditImpact", () => {
 
         context("when have tokens totalLocked_", () => {
           beforeEach(async () => {
-            await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
-            await regenerationCredit.addContractPool(ZERO_ADDRESS, 300000000000000000000000000n);
+            await regenerationCredit.addContractPool(owner, 300000000000000000000000000n);
+            await regenerationCredit.addContractPool(owner, 300000000000000000000000000n);
           });
 
           it("soilPerToken must be 222222222", async () => {
