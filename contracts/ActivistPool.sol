@@ -71,7 +71,8 @@ contract ActivistPool is Poolable, Ownable, Blockable, Callable {
     if (numTokens == 0) return;
 
     // Transfer the calculated tokens from this contract to the delegate.
-    regenerationCredit.transferWith(address(this), delegate, numTokens);
+    regenerationCredit.transfer(delegate, numTokens);
+    regenerationCredit.poolTransfer(address(this), delegate, numTokens);
   }
 
   /**
