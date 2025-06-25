@@ -15,7 +15,7 @@ import { UserType } from "./CommunityTypes.sol";
  * @param lastPublishedAt Block of last report publication
  */
 struct Developer {
-  uint256 id;
+  uint64 id;
   address developerWallet;
   string name;
   string proofPhoto;
@@ -37,7 +37,7 @@ struct Pool {
  * @dev Report resource data structure
  */
 struct Report {
-  uint256 id;
+  uint64 id;
   uint256 era;
   address developer;
   string description;
@@ -52,7 +52,7 @@ struct Report {
  * @dev Report penalty
  */
 struct Penalty {
-  uint256 reportId;
+  uint64 reportId;
 }
 
 /**

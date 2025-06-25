@@ -29,13 +29,13 @@ enum InspectionStatus {
  * @param invalidateAt Block of inspection invalidation
  */
 struct Inspection {
-  uint256 id;
+  uint64 id;
   InspectionStatus status;
   address regenerator;
   address inspector;
-  uint256 treesResult;
-  uint256 biodiversityResult;
-  uint256 regenerationScore;
+  uint32 treesResult;
+  uint32 biodiversityResult;
+  uint32 regenerationScore;
   string proofPhotos;
   string justificationReport;
   uint256 validationsCount;

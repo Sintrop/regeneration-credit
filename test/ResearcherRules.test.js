@@ -169,7 +169,7 @@ describe("ResearcherRules", () => {
           });
 
           it("should return error message", async () => {
-            await expect(addResearcher("Researcher A", resea1Address)).to.be.revertedWith("Max limit reached");
+            await expect(addResearcher("Researcher A", resea1Address)).to.be.revertedWith("Max user limit");
           });
         });
       });

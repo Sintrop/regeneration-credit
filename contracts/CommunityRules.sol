@@ -16,6 +16,15 @@ import { Callable } from "./shared/Callable.sol";
 contract CommunityRules is Ownable, Callable {
   // --- State Variables ---
 
+  /// @notice Minimum number of users allowed for a specific type before proportionality rules apply.
+  uint8 public constant MINIMUM_REGISTERED_USERS_QUANTITY = 5;
+
+  /// @notice Total count of delations received across all users.
+  uint64 public delationsCount;
+
+  /// @notice The global total count of all active (non-`UNDEFINED`, non-`DENIED`) users in the system..
+  uint64 public usersCount;
+
   /// @notice A mapping from a user's wallet address to their assigned `UserType`.
   mapping(address => UserType) internal users;
 
@@ -27,24 +36,15 @@ contract CommunityRules is Ownable, Callable {
   mapping(address => Invitation) public invitations;
 
   /// @notice A mapping to track the count of active users for each `UserType`.
-  mapping(UserType => uint256) public userTypesCount;
+  mapping(UserType => uint64) public userTypesCount;
 
   /// @notice A mapping to track the total count of registered users for each `UserType`,
   /// including both active and `DENIED` users. This count serves as a global counter for new user IDs.
-  mapping(UserType => uint256) public userTypesTotalCount;
+  mapping(UserType => uint64) public userTypesTotalCount;
 
   /// @notice A mapping storing specific settings for each `UserType`,
   /// including proportionality rules, invitation requirements, and voter status.
   mapping(UserType => UserTypeSetting) public userTypeSettings;
-
-  /// @notice Total count of delations received across all users.
-  uint256 public delationsCount;
-
-  /// @notice The global total count of all active (non-`UNDEFINED`, non-`DENIED`) users in the system..
-  uint256 public usersCount;
-
-  /// @notice Minimum number of users allowed for a specific type before proportionality rules apply.
-  uint256 public constant MINIMUM_REGISTERED_USERS_QUANTITY = 5;
 
   // --- Constructor ---
 
@@ -59,11 +59,11 @@ contract CommunityRules is Ownable, Callable {
    */
 
   constructor(
-    uint256 inspectorProportionality,
-    uint256 activistProportionality,
-    uint256 researcherProportionality,
-    uint256 developerProportionality,
-    uint256 contributorProportionality
+    uint8 inspectorProportionality,
+    uint8 activistProportionality,
+    uint8 researcherProportionality,
+    uint8 developerProportionality,
+    uint8 contributorProportionality
   ) {
     // Initialize settings for all relevant UserTypes
     userTypeSettings[UserType.SUPPORTER] = UserTypeSetting(0, false, false, 150, false);
@@ -191,10 +191,10 @@ contract CommunityRules is Ownable, Callable {
    * @return bool True if registration is allowed according to proportionality, false otherwise.
    */
   function registrationProportionalityAllowed(UserType userType) internal view returns (bool) {
-    uint256 regeneratorsCount = userTypesCount[UserType.REGENERATOR];
-    uint256 registeredUserTypeCount = userTypesCount[userType];
+    uint64 regeneratorsCount = userTypesCount[UserType.REGENERATOR];
+    uint64 registeredUserTypeCount = userTypesCount[userType];
     UserTypeSetting memory setting = userTypeSettings[userType];
-    uint256 proportionality = setting.proportionalityOnRegister;
+    uint8 proportionality = setting.proportionalityOnRegister;
 
     // If proportionality is 0, no limit applies.
     if (proportionality == 0) return true;
