@@ -43,28 +43,28 @@ contract SupporterPool is Callable {
    * @notice Burns tokens from a user and potentially rewards an inviter.
    * @dev This function is intended to be called by an allowed caller (e.g., SupporterRules).
    * It burns a specified amount of `RegenerationCredit` tokens from `tokenOwner` and
-   * transfers a commission to the `inviter` if `inviterTotalTokens` is greater than 0.
-   * Assumes `tokenOwner` has approved this contract to spend `amountBurn + inviterTotalTokens`.
+   * transfers a commission to the `inviter` if `inviterCommision` is greater than 0.
+   * Assumes `tokenOwner` has approved this contract to spend `amountBurn + inviterCommision`.
    * @param tokenOwner The address of the user whose tokens are to be burned.
    * @param inviter The address of the inviter to receive commission. Can be address(0) if no inviter.
    * @param amountBurn The amount of tokens to burn from the `tokenOwner`.
-   * @param inviterTotalTokens The amount of tokens to transfer to the `inviter`.
+   * @param inviterCommision The amount of tokens to transfer to the `inviter`.
    */
   function burnTokens(
     address tokenOwner,
     address inviter,
     uint256 amountBurn,
-    uint256 inviterTotalTokens
+    uint256 inviterCommision
   ) public mustBeAllowedCaller {
     // Perform the token burning
     regenerationCredit.burnTokensWith(tokenOwner, amountBurn);
 
-    if (inviterTotalTokens > 0) {
-      regenerationCredit.transferWith(tokenOwner, inviter, inviterTotalTokens);
+    // Commision transfer
+    if (inviterCommision > 0) {
+      regenerationCredit.transferWith(tokenOwner, inviter, inviterCommision);
     }
 
-    // Emit event before potential external transfer call (Checks-Effects-Interactions)
-    emit PoolBurnTokensEvent(tokenOwner, amountBurn, inviter, inviterTotalTokens);
+    emit PoolBurnTokensEvent(tokenOwner, amountBurn, inviter, inviterCommision);
   }
 
   // --- Events ---
