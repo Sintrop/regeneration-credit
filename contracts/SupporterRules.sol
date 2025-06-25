@@ -158,10 +158,7 @@ contract SupporterRules {
    * @param content The content of the post (max 600 characters).
    */
   function publish(uint256 amount, string memory description, string memory content) public {
-    require(
-      bytes(description).length <= 600 && bytes(content).length <= 600,
-      "Max 600 characters"
-    );
+    require(bytes(description).length <= 600 && bytes(content).length <= 600, "Max 600 characters");
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount >= 1000000000000000000, "Amount invalid");
 
