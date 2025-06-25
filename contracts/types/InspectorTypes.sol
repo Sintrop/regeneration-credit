@@ -17,7 +17,7 @@ import { UserType } from "./CommunityTypes.sol";
  * @param createdAt Block of user creation
  */
 struct Inspector {
-  uint256 id;
+  uint64 id;
   address inspectorWallet;
   string name;
   string proofPhoto;
@@ -25,7 +25,7 @@ struct Inspector {
   uint256 giveUps;
   uint256 lastAcceptedAt;
   uint256 lastRealizedAt;
-  uint256 lastInspection;
+  uint64 lastInspection;
   Pool pool;
   uint256 createdAt;
 }
@@ -34,7 +34,7 @@ struct Inspector {
  * @dev Invalidated inspection penalty
  */
 struct Penalty {
-  uint256 inspectionId;
+  uint64 inspectionId;
 }
 
 /**

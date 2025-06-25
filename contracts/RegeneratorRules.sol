@@ -24,7 +24,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /// @notice The minimum number of successful inspections a regenerator must have
   /// to be eligible for rewards from the Regenerator Pool.
-  uint8 internal constant MINIMUM_INSPECTION_TO_POOL = 3;
+  uint8 internal constant MINIMUM_INSPECTIONS_TO_POOL = 3;
 
   /// @notice A mapping from a regenerator's wallet address to their detailed `Regenerator` data structure.
   /// This serves as the primary storage for regenerator profiles.
@@ -101,7 +101,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param _coordinates An array of coordinate points defining the boundaries of the regeneration area.
    */
   function addRegenerator(
-    uint256 totalArea,
+    uint32 totalArea,
     string memory name,
     string memory proofPhoto,
     string memory projectDescription,
@@ -114,7 +114,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     require(_coordinates.length >= 3 && _coordinates.length <= 10, "Minimum 3 and maximum 10 coordinate points");
     require(totalArea >= 500 && totalArea <= 500000, "Minimum 500 and maximum 500.000 square meters");
 
-    uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
+    uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     regenerators[msg.sender] = Regenerator(
       id,
@@ -274,7 +274,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param score The score obtained from the realized inspection, to be added to the regenerator's total score.
    * @return uint256 The updated total number of inspections for the regenerator.
    */
-  function afterRealizeInspection(address addr, uint256 score) public mustBeAllowedCaller returns (uint256) {
+  function afterRealizeInspection(address addr, uint32 score) public mustBeAllowedCaller returns (uint256) {
     uint256 totalInspections = incrementInspections(addr);
 
     setRegenerationScore(addr, score);
@@ -290,7 +290,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @return bool `true` if the total inspections meet or exceed the minimum, `false` otherwise.
    */
   function minimumInspections(uint256 totalInspections) private pure returns (bool) {
-    return totalInspections >= MINIMUM_INSPECTION_TO_POOL;
+    return totalInspections >= MINIMUM_INSPECTIONS_TO_POOL;
   }
 
   /**
@@ -309,7 +309,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param addr The regenerator's wallet address.
    * @param regenerationScore The score to add to the regenerator's total regeneration score.
    */
-  function setRegenerationScore(address addr, uint256 regenerationScore) private {
+  function setRegenerationScore(address addr, uint32 regenerationScore) private {
     Regenerator storage regenerator = regenerators[addr];
     require(regenerator.id != 0, "Regenerator does not exist");
 
@@ -444,7 +444,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     uint256 indexed id,
     address indexed regeneratorAddress,
     string name,
-    uint256 totalArea,
+    uint32 totalArea,
     uint256 blockNumber
   );
 

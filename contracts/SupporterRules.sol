@@ -14,7 +14,8 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * @title SupporterRules
  * @author Sintrop
  * @notice Manages the rules and data specific to Supporter users within the community.
- * @dev This contract handles supporter registration, profile updates, token burning for environmental offsets and content publications, and management of reduction commitments.
+ * @dev This contract handles supporter registration, profile updates, token burning
+ * for environmental offsets and content publications, and management of reduction commitments.
  */
 contract SupporterRules is ReentrancyGuard {
   using SafeMath for uint256;
@@ -25,31 +26,31 @@ contract SupporterRules is ReentrancyGuard {
   mapping(address => Supporter) internal supporters;
 
   /// @notice The relationship between address and burned tokens per calculator item.
-  mapping(address => mapping(uint256 => uint256)) public calculatorItemCertificates;
+  mapping(address => mapping(uint64 => uint256)) public calculatorItemCertificates;
 
   /// @notice The relationship between address and reduction commitment statements (stored as calculator item IDs).
-  mapping(address => uint256[]) public reductionCommitments;
+  mapping(address => uint64[]) public reductionCommitments;
+
+  /// @notice The
+  mapping(address => mapping(uint256 => bool)) public declaredReduction;
 
   /// @notice The relationship between ID and supporter address.
   mapping(uint256 => address) public supportersAddress;
 
-  /// @notice The relationship between address and publications data.
-  mapping(uint256 => Publication) public publications;
-
-  /// @notice Total number of publications made across all supporters.
-  uint256 public publicationsCount;
-
-  /// @notice Max characters length allowed for a publication's description and content.
-  uint constant MAX_CHARACTERS = 600;
-
-  /// @notice The relationship between offset id and its data.
-  mapping(uint256 => Offset) public offsets;
+  /// @notice Commission percentage paid to the inviter when an invited supporter burns tokens.
+  uint8 public constant INVITER_PERCENTAGE = 5; // 5%
 
   /// @notice Total number of offsets made across all supporters.
-  uint256 public offsetsCount;
+  uint64 public offsetsCount;
 
-  /// @notice Commission percentage paid to the inviter when an invited supporter burns tokens.
-  uint256 public constant INVITER_PERCENTAGE = 5; // 5%
+  /// @notice Total number of publications made across all supporters.
+  uint64 public publicationsCount;
+
+  /// @notice The relationship between id and publication data.
+  mapping(uint64 => Publication) public publications;
+
+  /// @notice The relationship between offset id and its data.
+  mapping(uint64 => Offset) public offsets;
 
   /// @notice CommunityRules contract address
   CommunityRules internal communityRules;
@@ -97,12 +98,11 @@ contract SupporterRules is ReentrancyGuard {
       "Max characters reached"
     );
 
-    uint256 id = communityRules.userTypesTotalCount(USER_TYPE).add(1);
+    uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
-    Supporter memory supporter = Supporter(id, msg.sender, name, description, profilePhoto, 0, 0, 0, block.number);
-
-    supporters[msg.sender] = supporter;
+    supporters[msg.sender] = Supporter(id, msg.sender, name, description, profilePhoto, 0, 0, 0, block.number);
     supportersAddress[id] = msg.sender;
+
     communityRules.addUser(msg.sender, USER_TYPE);
 
     emit SupporterRegistered(msg.sender, id, name, profilePhoto, block.number);
@@ -118,9 +118,7 @@ contract SupporterRules is ReentrancyGuard {
     require(bytes(newPhoto).length <= 100, "Max 100 characters");
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
 
-    Supporter storage supporter = supporters[msg.sender];
-
-    supporter.profilePhoto = newPhoto;
+    supporters[msg.sender].profilePhoto = newPhoto;
   }
 
   /**
@@ -130,27 +128,25 @@ contract SupporterRules is ReentrancyGuard {
    * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
    * @param calculatorItemId The ID of the CalculatorItem, or 0 if not applicable.
    */
-  function offset(uint256 amount, uint256 calculatorItemId) public nonReentrant {
+  function offset(uint256 amount, uint64 calculatorItemId) public nonReentrant {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
-    require(amount >= 1000000000000000000, "Amount invalid");
+    require(amount >= 1000000000000000000, "Amount must be at least 1 RC");
+    require(researcherRules.getCalculatorItem(calculatorItemId).id > 0, "Calculator item does not exist");
 
-    uint256 amountBurn = burnTokens(amount); // This calculates commission and calls SupporterPool
+    (uint256 amountToBurn, uint256 commission) = calculateCommission(amount);
 
-    uint256 id = offsetsCount.add(1);
+    offsetsCount++;
+    uint64 id = offsetsCount;
 
-    if (calculatorItemId > 0) {
-      CalculatorItem memory calculatorItem = researcherRules.getCalculatorItem(calculatorItemId);
-      if (calculatorItem.id > 0) calculatorItemCertificates[msg.sender][calculatorItemId] += amountBurn;
-    }
+    calculatorItemCertificates[msg.sender][calculatorItemId] += amountToBurn;
 
-    Supporter storage supporter = supporters[msg.sender];
+    offsets[id] = Offset(msg.sender, block.number, amountToBurn, calculatorItemId);
 
-    offsets[id] = Offset(msg.sender, block.number, amountBurn, calculatorItemId);
+    supporters[msg.sender].offsetsCount++;
 
-    offsetsCount = offsetsCount.add(1);
-    supporter.offsetsCount++;
+    burnAndPayComissions(amountToBurn, commission);
 
-    emit OffsetMade(msg.sender, id, amountBurn, calculatorItemId, block.number);
+    emit OffsetMade(msg.sender, id, amountToBurn, calculatorItemId, block.number);
   }
 
   /**
@@ -162,25 +158,22 @@ contract SupporterRules is ReentrancyGuard {
    * @param content The content of the post (max 600 characters).
    */
   function publish(uint256 amount, string memory description, string memory content) public nonReentrant {
-    require(
-      bytes(description).length <= MAX_CHARACTERS && bytes(content).length <= MAX_CHARACTERS,
-      "Max 600 characters"
-    );
+    require(bytes(description).length <= 600 && bytes(content).length <= 600, "Max 600 characters");
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
-    require(amount >= 1000000000000000000, "Amount invalid");
+    require(amount >= 1000000000000000000, "Amount must be at least 1 RC");
 
-    uint256 amountBurn = burnTokens(amount); // This calculates commission and calls SupporterPool
+    (uint256 amountToBurn, uint256 commission) = calculateCommission(amount);
 
-    uint256 id = publicationsCount.add(1);
+    publicationsCount++;
+    uint64 id = publicationsCount;
 
-    publications[id] = Publication(msg.sender, block.number, amountBurn, description, content);
+    publications[id] = Publication(msg.sender, block.number, amountToBurn, description, content);
 
-    Supporter storage supporter = supporters[msg.sender];
+    supporters[msg.sender].publicationsCount++;
 
-    publicationsCount = publicationsCount.add(1);
-    supporter.publicationsCount++;
+    burnAndPayComissions(amountToBurn, commission);
 
-    emit PublicationPosted(msg.sender, id, amountBurn, description, block.number);
+    emit PublicationPosted(msg.sender, id, amountToBurn, description, block.number);
   }
 
   /**
@@ -189,17 +182,17 @@ contract SupporterRules is ReentrancyGuard {
    * Requires the calculator item to exist and the sender to be a registered supporter.
    * @param calculatorItemId The ID of the CalculatorItem for which the commitment is being declared.
    */
-  function declareReductionCommitment(uint256 calculatorItemId) public {
+  function declareReductionCommitment(uint64 calculatorItemId) public {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
+    require(!declaredReduction[msg.sender][calculatorItemId], "Commitment already declared");
 
     CalculatorItem memory calculatorItem = researcherRules.getCalculatorItem(calculatorItemId);
 
     require(calculatorItem.id > 0, "Calculator item does not exist");
 
-    Supporter storage supporter = supporters[msg.sender];
-
     reductionCommitments[msg.sender].push(calculatorItemId);
-    supporter.reductionItemsCount++;
+    declaredReduction[msg.sender][calculatorItemId] = true;
+    supporters[msg.sender].reductionItemsCount++;
 
     emit ReductionCommitmentDeclared(msg.sender, calculatorItemId, block.number);
   }
@@ -210,18 +203,20 @@ contract SupporterRules is ReentrancyGuard {
    * @dev Internal function to handle token burning and inviter commission.
    * It retrieves invitation data from CommunityRules and calls the SupporterPool to perform the burn.
    * @param amount The total amount of tokens to consider for burning (before commission).
-   * @return uint256 The net amount of tokens burned by the supporter (after commission).
+   * @return amountToBurn The net amount of tokens burned by the supporter (after commission).
+   * @return commission The commission for the invitation service provided.
    */
-  function burnTokens(uint256 amount) internal returns (uint256) {
+  function calculateCommission(uint256 amount) private view returns (uint256 amountToBurn, uint256 commission) {
     Invitation memory invitation = communityRules.getInvitation(msg.sender);
     bool isInvited = invitation.createdAtBlock != 0; // Check if invitation exists
 
-    uint256 inviterTotalTokens = isInvited ? amount.mul(INVITER_PERCENTAGE).div(100) : 0;
-    uint256 amountBurn = amount.sub(inviterTotalTokens);
+    commission = isInvited ? amount.mul(INVITER_PERCENTAGE).div(100) : 0;
+    amountToBurn = amount.sub(commission);
+  }
 
-    supporterPool.burnTokens(msg.sender, invitation.inviter, amountBurn, inviterTotalTokens);
-
-    return amountBurn;
+  function burnAndPayComissions(uint256 amountToBurn, uint256 commission) private {
+    Invitation memory invitation = communityRules.getInvitation(msg.sender);
+    supporterPool.burnTokens(msg.sender, invitation.inviter, amountToBurn, commission);
   }
 
   // --- View Functions ---
@@ -231,7 +226,7 @@ contract SupporterRules is ReentrancyGuard {
    * @param addr The address of the supporter.
    * @return uint256[] An array of calculator item IDs representing the commitments.
    */
-  function getReductionCommitments(address addr) public view returns (uint256[] memory) {
+  function getReductionCommitments(address addr) public view returns (uint64[] memory) {
     return reductionCommitments[addr];
   }
 

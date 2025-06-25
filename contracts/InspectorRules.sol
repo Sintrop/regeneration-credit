@@ -90,7 +90,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    */
   function addInspector(string memory name, string memory proofPhoto) public {
     require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
-    uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
+    uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     inspectors[msg.sender] = Inspector(
       id,
@@ -160,7 +160,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param inspectionId The ID of the inspection associated with this penalty.
    * @return uint256 The total number of penalties the inspector has accumulated.
    */
-  function addPenalty(address addr, uint256 inspectionId) public mustBeAllowedCaller returns (uint256) {
+  function addPenalty(address addr, uint64 inspectionId) public mustBeAllowedCaller returns (uint256) {
     penalties[addr].push(Penalty(inspectionId));
 
     return totalPenalties(addr);
@@ -173,7 +173,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param addr The inspector's wallet address.
    * @param lastInspectionId The ID of the inspection that was accepted.
    */
-  function afterAcceptInspection(address addr, uint256 lastInspectionId) public mustBeAllowedCaller {
+  function afterAcceptInspection(address addr, uint64 lastInspectionId) public mustBeAllowedCaller {
     markLastInspection(addr, lastInspectionId);
 
     incrementGiveUps(addr);
@@ -288,7 +288,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param addr The inspector's wallet address.
    * @param lastInspectionId The ID of the inspection that was just accepted.
    */
-  function markLastInspection(address addr, uint256 lastInspectionId) private {
+  function markLastInspection(address addr, uint64 lastInspectionId) private {
     Inspector storage inspector = inspectors[addr];
 
     inspector.lastAcceptedAt = block.number;

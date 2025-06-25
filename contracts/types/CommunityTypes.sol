@@ -50,7 +50,7 @@ enum UserType {
  * @param testimony Detailed justification and evidence for the delation.
  */
 struct Delation {
-  uint256 id;
+  uint64 id;
   address informer;
   address reported;
   string title;
@@ -89,9 +89,9 @@ struct Invitation {
  * `false` otherwise.
  */
 struct UserTypeSetting {
-  uint256 proportionalityOnRegister;
+  uint8 proportionalityOnRegister;
   bool directProportionalityRegistration;
   bool needInvitationOnRegister;
-  uint256 invitationDelayBlocks;
+  uint32 invitationDelayBlocks;
   bool isVoter;
 }

@@ -17,7 +17,7 @@ import "./CommunityTypes.sol";
  * @param createdAt Block of user creation
  */
 struct Researcher {
-  uint256 id;
+  uint64 id;
   address researcherWallet;
   string name;
   Pool pool;
@@ -52,7 +52,7 @@ struct Pool {
  * @param createdAtBlock Block of research creation
  */
 struct Research {
-  uint256 id;
+  uint64 id;
   uint256 era;
   address createdBy;
   string title;
@@ -74,7 +74,7 @@ struct Research {
  * @param carbonImpact Impact of each item unit in carbon. [g]
  */
 struct CalculatorItem {
-  uint256 id;
+  uint64 id;
   address createdBy;
   string item;
   string thesis;
@@ -91,7 +91,7 @@ struct CalculatorItem {
  * @param projectURL Project URL or repository address
  */
 struct EvaluationMethod {
-  uint256 id;
+  uint64 id;
   address createdBy;
   string title;
   string research;

@@ -26,6 +26,24 @@ import { Developer, Pool, Report, Penalty, ContractsDependency } from "./types/D
 contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
   // --- State Variables ---
 
+  /// @notice The maximum number of penalties a developer can accumulate before facing invalidation.
+  uint8 public immutable MAX_PENALTIES;
+
+  /// @notice The minimum number of blocks that must elapse between a developer's successful report publications.
+  /// This prevents spamming or rapid consecutive report submissions.
+  uint32 internal immutable timeBetweenWorks;
+
+  /// @notice The number of blocks before the end of an era during which no new reports can be published.
+  /// This period allows validators sufficient time to analyze and vote on reports before the era concludes.
+  uint32 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
+
+  /// @notice The total count of development reports that are currently considered valid (not invalidated).
+  uint64 public reportsCount;
+
+  /// @notice The grand total count of all development reports ever submitted, including invalidated ones.
+  /// This acts as a global unique ID counter for new reports.
+  uint64 public reportsTotalCount;
+
   /// @notice A mapping from a developer's wallet address to their detailed `Developer` data structure.
   /// This serves as the primary storage for developer profiles.
   mapping(address => Developer) public developers;
@@ -62,24 +80,6 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice The specific `UserType` enumeration value for a Developer user.
   UserType private constant USER_TYPE = UserType.DEVELOPER;
-
-  /// @notice The total count of development reports that are currently considered valid (not invalidated).
-  uint256 public reportsCount;
-
-  /// @notice The grand total count of all development reports ever submitted, including invalidated ones.
-  /// This acts as a global unique ID counter for new reports.
-  uint256 public reportsTotalCount;
-
-  /// @notice The maximum number of penalties a developer can accumulate before facing invalidation.
-  uint8 public immutable MAX_PENALTIES;
-
-  /// @notice The minimum number of blocks that must elapse between a developer's successful report publications.
-  /// This prevents spamming or rapid consecutive report submissions.
-  uint32 internal immutable timeBetweenWorks;
-
-  /// @notice The number of blocks before the end of an era during which no new reports can be published.
-  /// This period allows validators sufficient time to analyze and vote on reports before the era concludes.
-  uint32 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
 
   // --- Constructor ---
 
@@ -128,10 +128,10 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
     // Character limit validation for name and proofPhoto.
     require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
     // Max limit for developer users in the system.
-    require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max limit reached");
+    require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max user limit");
 
     // Generate a unique ID for the new developer.
-    uint256 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
+    uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     developers[msg.sender] = Developer(id, msg.sender, name, proofPhoto, Pool(0, poolCurrentEra()), 0, block.number, 0);
 
@@ -173,7 +173,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
     // Increment global report counters and assign a unique ID.
     reportsCount++;
     reportsTotalCount++;
-    uint256 id = reportsTotalCount;
+    uint64 id = reportsTotalCount;
 
     // Increment developer's total reports count within their struct.
     developers[msg.sender].totalReports++;
@@ -203,11 +203,11 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * @param id The unique ID of the report to be validated/invalidated.
    * @param justification A string explaining why the report is being invalidated.
    */
-  function addReportValidation(uint256 id, string memory justification) public {
+  function addReportValidation(uint64 id, string memory justification) public {
     // Character limit validation for justification.
     require(bytes(justification).length <= 300, "Max 300 characters");
     // Check if the caller is eligible to vote. User.level must be greater than average levels.
-    require(voteRules.canVote(msg.sender), "User cannot vote");
+    require(voteRules.canVote(msg.sender), "Not a voter");
     // Check if the caller has waited the required time between votes.
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
@@ -292,7 +292,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * @param reportId The ID of the report associated with this penalty.
    * @return uint256 The total number of penalties the developer has accumulated.
    */
-  function addPenalty(address addr, uint256 reportId) public mustBeAllowedCaller returns (uint256) {
+  function addPenalty(address addr, uint64 reportId) public mustBeAllowedCaller returns (uint256) {
     // Add the penalty record to the penalties array.
     penalties[addr].push(Penalty(reportId));
 
@@ -371,7 +371,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * @param id The unique ID of the report to retrieve.
    * @return Report The `Report` struct containing the report's data.
    */
-  function getReport(uint256 id) public view returns (Report memory) {
+  function getReport(uint64 id) public view returns (Report memory) {
     return reports[id];
   }
 
@@ -456,7 +456,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
   /// @param newPenaltyCount The total number of penalties the developer now has.
   /// @param blockNumber The block number at which the report was invalidated.
   event ReportInvalidated(
-    uint256 indexed reportId,
+    uint64 indexed reportId,
     address indexed developerAddress,
     string justification,
     uint256 newPenaltyCount,
