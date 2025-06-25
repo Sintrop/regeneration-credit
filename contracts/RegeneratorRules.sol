@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { CommunityRules } from "./CommunityRules.sol";
 import { Regenerator, Pool, Coordinates, RegenerationScore } from "./types/RegeneratorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
@@ -18,7 +19,7 @@ import { UserType } from "./types/CommunityTypes.sol";
  * for reward distribution. This contract handles regenerator registration, area management (coordinates,
  * total area), regeneration score tracking, inspection processes, and penalty management.
  */
-contract RegeneratorRules is Callable {
+contract RegeneratorRules is Callable, ReentrancyGuard {
   // --- Contants & state Variables ---
 
   /// @notice The minimum number of successful inspections a regenerator must have
@@ -159,7 +160,7 @@ contract RegeneratorRules is Callable {
    * - The regenerator must have a positive regeneration score.
    * - The regenerator's current era (`regenerator.pool.currentEra`) will be incremented upon successful withdrawal attempt.
    */
-  function withdraw() public {
+  function withdraw() public nonReentrant {
     // Only registered regenerators can call this function.
     require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators pool");
 

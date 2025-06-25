@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { CommunityRules } from "./CommunityRules.sol";
 import { ResearcherRules } from "./ResearcherRules.sol";
 import { CalculatorItem } from "./types/ResearcherTypes.sol";
@@ -15,7 +16,7 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * @notice Manages the rules and data specific to Supporter users within the community.
  * @dev This contract handles supporter registration, profile updates, token burning for environmental offsets and content publications, and management of reduction commitments.
  */
-contract SupporterRules {
+contract SupporterRules is ReentrancyGuard {
   using SafeMath for uint256;
 
   // --- State Variables ---
@@ -129,7 +130,7 @@ contract SupporterRules {
    * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
    * @param calculatorItemId The ID of the CalculatorItem, or 0 if not applicable.
    */
-  function offset(uint256 amount, uint256 calculatorItemId) public {
+  function offset(uint256 amount, uint256 calculatorItemId) public nonReentrant {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount >= 1000000000000000000, "Amount invalid");
 
@@ -160,7 +161,7 @@ contract SupporterRules {
    * @param description The description of the post (max 600 characters).
    * @param content The content of the post (max 600 characters).
    */
-  function publish(uint256 amount, string memory description, string memory content) public {
+  function publish(uint256 amount, string memory description, string memory content) public nonReentrant {
     require(
       bytes(description).length <= MAX_CHARACTERS && bytes(content).length <= MAX_CHARACTERS,
       "Max 600 characters"

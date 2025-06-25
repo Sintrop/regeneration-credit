@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { CommunityRules } from "./CommunityRules.sol";
 import { UserType } from "./types/CommunityTypes.sol";
@@ -22,7 +23,7 @@ import { ValidationRules } from "./ValidationRules.sol";
  * for general user management, `ContributorPool` for reward distribution, `VoteRules` for voting
  * eligibility, and `ValidationRules` for contribution validation processes.
  */
-contract ContributorRules is Ownable, Callable, Invitable {
+contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
   // --- State Variables ---
 
   /// @notice A mapping from a contributor's wallet address to their detailed `Contributor` data structure.
@@ -262,7 +263,7 @@ contract ContributorRules is Ownable, Callable, Invitable {
    * - The contributor must be eligible for withdrawal in their current era (checked via `contributorPool.canWithdraw`).
    * - The contributor's current era (`contributor.pool.currentEra`) will be incremented upon successful withdrawal attempt.
    */
-  function withdraw() public {
+  function withdraw() public nonReentrant {
     // Only registered contributors can call this function.
     require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Pool only to contributor");
 

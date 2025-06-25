@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
 import { VoteRules } from "./VoteRules.sol";
@@ -22,7 +23,7 @@ import { Developer, Pool, Report, Penalty, ContractsDependency } from "./types/D
  * for general user management, `DeveloperPool` for reward distribution, `VoteRules` for voting
  * eligibility, and `ValidationRules` for report validation processes.
  */
-contract DeveloperRules is Ownable, Callable, Invitable {
+contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
   // --- State Variables ---
 
   /// @notice A mapping from a developer's wallet address to their detailed `Developer` data structure.
@@ -242,7 +243,7 @@ contract DeveloperRules is Ownable, Callable, Invitable {
    * - The developer must be eligible for withdrawal in their current era (checked via `developerPool.canWithdraw`).
    * - The developer's current era (`developer.pool.currentEra`) will be incremented upon successful withdrawal attempt.
    */
-  function withdraw() public {
+  function withdraw() public nonReentrant {
     // Only registered developers can call this function.
     require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Pool only to developer");
 

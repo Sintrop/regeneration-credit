@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { CommunityRules } from "./CommunityRules.sol";
 import { Inspector, Penalty, Pool } from "./types/InspectorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
@@ -17,7 +18,7 @@ import { InspectorPool } from "./InspectorPool.sol";
  * It interacts with `CommunityRules` for general user management and `InspectorPool` for reward distribution.
  * This contract handles inspector registration, inspection tracking, give-ups, and penalties.
  */
-contract InspectorRules is Callable {
+contract InspectorRules is Callable, ReentrancyGuard {
   // --- Constants & state variables ---
 
   /// @notice The minimum number of completed inspections required for an inspector to be eligible for pool rewards.
@@ -125,7 +126,7 @@ contract InspectorRules is Callable {
    * - The inspector must be eligible for withdrawal in their current era (checked via `inspectorPool.canWithdraw`).
    * - The inspector's current era (`inspector.pool.currentEra`) will be incremented upon successful withdrawal attempt.
    */
-  function withdraw() public {
+  function withdraw() public nonReentrant {
     // Only registered inspectors can call this function.
     require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Pool only to inspectors");
 
