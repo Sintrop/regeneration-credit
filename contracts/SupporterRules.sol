@@ -47,9 +47,6 @@ contract SupporterRules {
   /// @notice The relationship between offset id and its data.
   mapping(uint64 => Offset) public offsets;
 
-  /// @notice Max characters length allowed for a publication's description and content.
-  uint256 constant MAX_CHARACTERS = 600;
-
   /// @notice CommunityRules contract address
   CommunityRules internal communityRules;
 
@@ -162,7 +159,7 @@ contract SupporterRules {
    */
   function publish(uint256 amount, string memory description, string memory content) public {
     require(
-      bytes(description).length <= MAX_CHARACTERS && bytes(content).length <= MAX_CHARACTERS,
+      bytes(description).length <= 600 && bytes(content).length <= 600,
       "Max 600 characters"
     );
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
