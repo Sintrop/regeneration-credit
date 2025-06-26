@@ -168,7 +168,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     require(bytes(title).length <= 100 && bytes(thesis).length <= 300 && bytes(file).length <= 100, "Max characters");
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era");
-    require(canPublishResearch(msg.sender), "Can't publish yet");
+    require(_canPublishResearch(msg.sender), "Can't publish yet");
 
     researchesCount++;
     researchesTotalCount++;
@@ -213,7 +213,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     bool invalidate = research.validationsCount >= validationRules.votesToInvalidate();
 
     if (invalidate) {
-      research = invalidateResearch(research);
+      research = _invalidateResearch(research);
       // --- Event Emission ---
       emit ResearchInvalidated(id, msg.sender, justification);
     }
@@ -241,7 +241,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
     Researcher memory researcher = researchers[msg.sender];
 
-    require(canPublishCalculatorItem(researcher), "Can't publish yet");
+    require(_canPublishCalculatorItem(researcher), "Can't publish yet");
 
     uint64 id = calculatorItemsCount + 1;
 
@@ -388,7 +388,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * Decrements the total count of valid researches.
    * @param research The `Research` struct to be invalidated.
    */
-  function invalidateResearch(Research memory research) internal returns (Research memory) {
+  function _invalidateResearch(Research memory research) internal returns (Research memory) {
     researchesCount--;
     research.valid = false;
     research.invalidatedAt = block.number;
@@ -403,7 +403,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param addr The address of the potential publisher.
    * @return `true` if the user can publish research, `false` otherwise.
    */
-  function canPublishResearch(address addr) internal view returns (bool) {
+  function _canPublishResearch(address addr) internal view returns (bool) {
     uint256 lastPublishedAt = researchers[addr].lastPublishedAt;
 
     bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
@@ -415,7 +415,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param researcher The `Researcher` struct of the potential publisher.
    * @return `true` if the user can publish a calculator item, `false` otherwise.
    */
-  function canPublishCalculatorItem(Researcher memory researcher) internal view returns (bool) {
+  function _canPublishCalculatorItem(Researcher memory researcher) internal view returns (bool) {
     uint256 lastCalculatorItemAt = researcher.lastCalculatorItemAt;
 
     bool canPublish = block.number > lastCalculatorItemAt + timeBetweenWorks;

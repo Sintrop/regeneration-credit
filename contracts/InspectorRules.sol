@@ -132,7 +132,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
 
     Inspector storage inspector = inspectors[msg.sender];
     // Check if the inspector has completed the minimum required inspections.
-    require(minimumInspections(inspector.totalInspections), "Minimum inspections");
+    require(_minimumInspections(inspector.totalInspections), "Minimum inspections");
 
     uint256 currentEra = inspector.pool.currentEra;
 
@@ -174,9 +174,9 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param lastInspectionId The ID of the inspection that was accepted.
    */
   function afterAcceptInspection(address addr, uint64 lastInspectionId) public mustBeAllowedCaller {
-    markLastInspection(addr, lastInspectionId);
+    _markLastInspection(addr, lastInspectionId);
 
-    incrementGiveUps(addr);
+    _incrementGiveUps(addr);
   }
 
   /**
@@ -186,10 +186,10 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param addr The inspector's wallet address.
    * @return uint256 The updated total number of inspections completed by the inspector.
    */
-  function afterRealizeInspection(address addr) public mustBeAllowedCaller returns (uint256) {
-    decreaseGiveUps(addr);
+  function _afterRealizeInspection(address addr) public mustBeAllowedCaller returns (uint256) {
+    _decreaseGiveUps(addr);
 
-    return incrementInspections(addr);
+    return _incrementInspections(addr);
   }
 
   /**
@@ -235,7 +235,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param addr The inspector's wallet address.
    * @return uint256 The updated total number of inspections for the inspector.
    */
-  function incrementInspections(address addr) private returns (uint256) {
+  function _incrementInspections(address addr) private returns (uint256) {
     Inspector storage inspector = inspectors[addr];
 
     require(inspector.id != 0, "Inspector does not exist");
@@ -244,7 +244,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
     inspector.lastRealizedAt = block.number;
     inspector.pool.level++;
 
-    addLevel(inspector);
+    _addLevel(inspector);
 
     return inspector.totalInspections;
   }
@@ -255,8 +255,8 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * but only if the inspector has reached the `MINIMUM_INSPECTIONS_TO_POOL` threshold.
    * @param inspector The inspector's wallet address.
    */
-  function addLevel(Inspector storage inspector) internal {
-    if (!minimumInspections(inspector.totalInspections)) return;
+  function _addLevel(Inspector storage inspector) internal {
+    if (!_minimumInspections(inspector.totalInspections)) return;
 
     inspectorPool.addLevel(inspector.inspectorWallet, 1);
 
@@ -268,7 +268,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * A give-up is recorded when an inspector accepts an inspection but fails to realize it in time.
    * @param addr The inspector's wallet address.
    */
-  function incrementGiveUps(address addr) private {
+  function _incrementGiveUps(address addr) private {
     inspectors[addr].giveUps++;
   }
 
@@ -277,7 +277,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * This is called when an inspector successfully realizes an inspection they had previously accepted.
    * @param addr The inspector's wallet address.
    */
-  function decreaseGiveUps(address addr) private {
+  function _decreaseGiveUps(address addr) private {
     inspectors[addr].giveUps--;
   }
 
@@ -288,7 +288,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param addr The inspector's wallet address.
    * @param lastInspectionId The ID of the inspection that was just accepted.
    */
-  function markLastInspection(address addr, uint64 lastInspectionId) private {
+  function _markLastInspection(address addr, uint64 lastInspectionId) private {
     Inspector storage inspector = inspectors[addr];
 
     inspector.lastAcceptedAt = block.number;
@@ -330,7 +330,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param totalInspections The total number of inspections completed by the inspector.
    * @return bool `true` if the total inspections meet or exceed the minimum, `false` otherwise.
    */
-  function minimumInspections(uint256 totalInspections) internal pure returns (bool) {
+  function _minimumInspections(uint256 totalInspections) internal pure returns (bool) {
     return totalInspections >= MINIMUM_INSPECTIONS_TO_POOL;
   }
 

@@ -194,7 +194,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
     contributionsIds[msg.sender].push(id);
 
     // Increase the contributor's pool level.
-    addPoolLevel(msg.sender);
+    _addPoolLevel(msg.sender);
 
     // Emit an event.
     emit ContributionAdded(id, msg.sender, description, block.number);
@@ -237,7 +237,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
     if (mustInvalidateContribution) {
       // If threshold reached, invalidate the contribution.
-      contribution = invalidateContribution(contribution);
+      contribution = _invalidateContribution(contribution);
 
       // Emit event for invalidation.
       emit ContributionInvalidated(
@@ -325,7 +325,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * This function also updates the `lastPublishedAt` timestamp for the contributor.
    * @param addr The wallet address of the contributor whose level is to be increased.
    */
-  function addPoolLevel(address addr) internal {
+  function _addPoolLevel(address addr) internal {
     Contributor storage contributor = contributors[addr];
     // If contributor does not exist, return.
     if (contributor.id == 0) return;
@@ -345,7 +345,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * and records the invalidation time.
    * @param contribution A `Contribution` storage reference to the contribution being invalidated.
    */
-  function invalidateContribution(Contribution memory contribution) internal returns (Contribution memory) {
+  function _invalidateContribution(Contribution memory contribution) internal returns (Contribution memory) {
     contributionsCount--;
     contribution.valid = false;
     contribution.invalidatedAt = block.number;

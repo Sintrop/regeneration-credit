@@ -61,7 +61,7 @@ contract RegeneratorPool is Poolable, Ownable, Blockable, Callable {
     uint256 numTokens = calculateUserEraTokens(era, delegate, tokensPerEra(getEpochForEra(era), HALVING));
 
     // Update the user's era and token balance state after the withdrawal.
-    updateEraAfterWithdraw(era, delegate, numTokens);
+    _updateEraAfterWithdraw(era, delegate, numTokens);
 
     // If no tokens are to be transferred, return.
     if (numTokens == 0) return;
@@ -89,8 +89,8 @@ contract RegeneratorPool is Poolable, Ownable, Blockable, Callable {
    * @param levels The number of levels to increase the regenerator's pool level by.
    */
   function addLevel(address regenerator, uint256 levels) public mustBeAllowedCaller {
-    // Calls the addPoolLevel function from Poolable.sol.
-    addPoolLevel(regenerator, levels, currentContractEra());
+    // Calls the _addPoolLevel function from Poolable.sol.
+    _addPoolLevel(regenerator, levels, currentContractEra());
   }
 
   /**
@@ -101,7 +101,7 @@ contract RegeneratorPool is Poolable, Ownable, Blockable, Callable {
   function removeLevel(address regenerator, uint256 levels) public mustBeAllowedCaller {
     uint256 era = currentContractEra();
 
-    removePoolLevel(regenerator, era, levels);
+    _removePoolLevel(regenerator, era, levels);
   }
 
   /**
@@ -112,7 +112,7 @@ contract RegeneratorPool is Poolable, Ownable, Blockable, Callable {
    * @param levelsToRemove The number of levels to decrease the regenerator's pool level by.
    */
   function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
-    // Calls the removePoolLevel function from Poolable.sol.
-    removePoolLevel(addr, currentContractEra(), levelsToRemove);
+    // Calls the _removePoolLevel function from Poolable.sol.
+    _removePoolLevel(addr, currentContractEra(), levelsToRemove);
   }
 }

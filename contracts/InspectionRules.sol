@@ -139,7 +139,7 @@ contract InspectionRules is Callable {
    *
    * Requirements:
    * - The caller (`msg.sender`) must be a registered `REGENERATOR`.
-   * - The regenerator must not have a `pendingInspection` already open.
+   * - The regenerator must not have a `_pendingInspection` already open.
    * - The regenerator must adhere to the `timeBetweenInspections` delay if `allowedInitialRequests` are used up.
    * - The regenerator must have completed less than 12 total inspections.
    */
@@ -152,10 +152,10 @@ contract InspectionRules is Callable {
     require(regenerator.totalInspections < 12, "You have completed your mission");
 
     // Create the new inspection record.
-    createInspection();
+    _createInspection();
 
     // Update regenerator's state in RegeneratorRules.
-    afterRequestInspection();
+    _afterRequestInspection();
   }
 
   /**
@@ -234,9 +234,9 @@ contract InspectionRules is Callable {
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
     require(treesResult <= 200000 && biodiversityResult <= 300, "Max result limit");
 
-    markAsRealized(inspection, proofPhotos, justificationReport, treesResult, biodiversityResult);
+    _markAsRealized(inspection, proofPhotos, justificationReport, treesResult, biodiversityResult);
 
-    afterRealizeInspection(inspection);
+    _afterRealizeInspection(inspection);
 
     inspectionsTreesImpact += treesResult;
     inspectionsBiodiversityImpact += biodiversityResult;
@@ -284,7 +284,7 @@ contract InspectionRules is Callable {
 
     bool mustInvalidateInspection = inspection.validationsCount >= validationRules.votesToInvalidate();
 
-    if (mustInvalidateInspection) invalidateInspection(inspection);
+    if (mustInvalidateInspection) _invalidateInspection(inspection);
 
     validationRules.addInspectionValidation(inspection, justification, msg.sender);
   }
@@ -295,7 +295,7 @@ contract InspectionRules is Callable {
    * @dev Internal function that creates a new inspection request record in the system.
    * Sets its status to `OPEN`, assigns the regenerator, and increments global counters.
    */
-  function createInspection() internal {
+  function _createInspection() internal {
     inspectionsTotalCount++;
     uint64 id = inspectionsTotalCount;
 
@@ -315,8 +315,8 @@ contract InspectionRules is Callable {
   /**
    * @dev Update regenerator data after request.
    */
-  function afterRequestInspection() internal {
-    regeneratorRules.afterRequestInspection(msg.sender);
+  function _afterRequestInspection() internal {
+    regeneratorRules._afterRequestInspection(msg.sender);
   }
 
   /**
@@ -327,7 +327,7 @@ contract InspectionRules is Callable {
    * @param biodiversityResult The number of different species of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
    * @param justificationReport The justification of the result found
    */
-  function markAsRealized(
+  function _markAsRealized(
     Inspection memory inspection,
     string memory proofPhotos,
     string memory justificationReport,
@@ -350,16 +350,16 @@ contract InspectionRules is Callable {
    * @dev Inscrement regenerator and inspector request actions.
    * @param inspection The inspected inspection.
    */
-  function afterRealizeInspection(Inspection memory inspection) internal {
+  function _afterRealizeInspection(Inspection memory inspection) internal {
     address regeneratorAddress = inspection.regenerator;
     address inspectorAddress = inspection.inspector;
 
     activistRules.addRegeneratorLevel(
       regeneratorAddress,
-      regeneratorRules.afterRealizeInspection(regeneratorAddress, inspection.regenerationScore)
+      regeneratorRules._afterRealizeInspection(regeneratorAddress, inspection.regenerationScore)
     );
 
-    activistRules.addInspectorLevel(inspectorAddress, inspectorRules.afterRealizeInspection(inspectorAddress));
+    activistRules.addInspectorLevel(inspectorAddress, inspectorRules._afterRealizeInspection(inspectorAddress));
 
     regeneratorInspections[regeneratorAddress].push(inspection.id);
   }
@@ -371,7 +371,7 @@ contract InspectionRules is Callable {
    * It also adds penalties to the involved regenerator and inspector.
    * @param inspection A reference to the `Inspection` struct being invalidated.
    */
-  function invalidateInspection(Inspection storage inspection) internal {
+  function _invalidateInspection(Inspection storage inspection) internal {
     // Decrement global impact metrics.
     inspectionsTreesImpact -= inspection.treesResult;
     inspectionsBiodiversityImpact -= inspection.biodiversityResult;

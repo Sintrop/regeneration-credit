@@ -36,7 +36,7 @@ struct Regenerator {
 /**
  * @dev Regenerator pool data
  * @param onContractPool True if regenerator received 3 or more inspections
- * @param currentEra User currentEra, updated after each withdraw 
+ * @param currentEra User currentEra, updated after each withdraw
  */
 struct Pool {
   bool onContractPool;
@@ -53,7 +53,7 @@ struct RegenerationScore {
 
 /**
  * @dev Regenerator coordinate points
- * @param latitutde The latitude coordinate points (e.g., -13.726317) 
+ * @param latitutde The latitude coordinate points (e.g., -13.726317)
  * @param longitude The longitude coordinate points (e.g., -39.462539)
  */
 struct Coordinates {

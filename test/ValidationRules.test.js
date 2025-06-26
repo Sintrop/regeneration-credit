@@ -665,9 +665,9 @@ describe("ValidationRules", () => {
                 await inspectorRules.afterAcceptInspection(inspector1Address, 1);
                 await inspectorRules.afterAcceptInspection(inspector1Address, 1);
 
-                await inspectorRules.afterRealizeInspection(inspector1Address);
-                await inspectorRules.afterRealizeInspection(inspector1Address);
-                await inspectorRules.afterRealizeInspection(inspector1Address);
+                await inspectorRules._afterRealizeInspection(inspector1Address);
+                await inspectorRules._afterRealizeInspection(inspector1Address);
+                await inspectorRules._afterRealizeInspection(inspector1Address);
 
                 await instance.connect(user1Address).addUserValidation(inspector1Address, "my justification");
                 await instance.connect(user2Address).addUserValidation(inspector1Address, "my justification");
@@ -1083,12 +1083,12 @@ describe("ValidationRules", () => {
                 await inspectorRules.afterAcceptInspection(inspectionMock.inspector, 1);
                 await inspectorRules.afterAcceptInspection(inspectionMock.inspector, 1);
 
-                await inspectorRules.afterRealizeInspection(inspectionMock.inspector);
-                await inspectorRules.afterRealizeInspection(inspectionMock.inspector);
+                await inspectorRules._afterRealizeInspection(inspectionMock.inspector);
+                await inspectorRules._afterRealizeInspection(inspectionMock.inspector);
 
-                await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 10);
-                await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 10);
-                await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 30);
+                await regeneratorRules._afterRealizeInspection(inspectionMock.regenerator, 10);
+                await regeneratorRules._afterRealizeInspection(inspectionMock.regenerator, 10);
+                await regeneratorRules._afterRealizeInspection(inspectionMock.regenerator, 30);
 
                 await inspectorRules.addPenalty(inspectionMock.inspector, 2);
                 await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", user1Address);
@@ -1159,12 +1159,12 @@ describe("ValidationRules", () => {
                 await inspectorRules.afterAcceptInspection(inspectionMock.inspector, 1);
                 await inspectorRules.afterAcceptInspection(inspectionMock.inspector, 1);
 
-                await inspectorRules.afterRealizeInspection(inspectionMock.inspector);
-                await inspectorRules.afterRealizeInspection(inspectionMock.inspector);
+                await inspectorRules._afterRealizeInspection(inspectionMock.inspector);
+                await inspectorRules._afterRealizeInspection(inspectionMock.inspector);
 
-                await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 10);
-                await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 10);
-                await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 30);
+                await regeneratorRules._afterRealizeInspection(inspectionMock.regenerator, 10);
+                await regeneratorRules._afterRealizeInspection(inspectionMock.regenerator, 10);
+                await regeneratorRules._afterRealizeInspection(inspectionMock.regenerator, 30);
 
                 await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", user1Address);
               });

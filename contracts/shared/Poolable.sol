@@ -128,6 +128,8 @@ contract Poolable {
     return TOTAL_TOKENS.div((2 ** currentEpoch));
   }
 
+  // --- Internal Functions (State Modifying) ---
+
   /**
    * @notice Internal function to check if a user have tokens to withdraw at an era
    * @param delegate User address
@@ -141,8 +143,6 @@ contract Poolable {
     return numTokens > 0;
   }
 
-  // --- Internal Functions (State Modifying) ---
-
   /**
    * @dev Updates era data after a user withdraw.
    * @notice This function should be called internally after a successful token withdrawal process.
@@ -151,7 +151,7 @@ contract Poolable {
    * @param user The address of the user who claimed tokens.
    * @param numTokens The amount of tokens claimed by the user.
    */
-  function updateEraAfterWithdraw(uint256 era, address user, uint256 numTokens) internal {
+  function _updateEraAfterWithdraw(uint256 era, address user, uint256 numTokens) internal {
     eras[era].claimsCount++;
     eras[era].tokens += numTokens;
     eraTokens[era][user] = numTokens;
@@ -166,14 +166,14 @@ contract Poolable {
    * @param levels The amount of levels to add.
    * @param era The number of the era.
    */
-  function addPoolLevel(address to, uint256 levels, uint256 era) internal {
+  function _addPoolLevel(address to, uint256 levels, uint256 era) internal {
     eras[era].levels = eras[era].levels.add(levels);
     eraLevels[era][to] += levels;
     // Emit event after levels are added
     emit PoolLevelAdded(to, era, levels, eras[era].levels, eraLevels[era][to]);
   }
 
-  function removePoolLevel(address _user, uint256 _era, uint256 _levelsToRemove) internal {
+  function _removePoolLevel(address _user, uint256 _era, uint256 _levelsToRemove) internal {
     uint256 currentLevels = eraLevels[_era][_user];
 
     if (currentLevels == 0) return;

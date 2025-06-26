@@ -133,7 +133,7 @@ contract SupporterRules is ReentrancyGuard {
     require(amount >= 1000000000000000000, "Amount must be at least 1 RC");
     require(researcherRules.getCalculatorItem(calculatorItemId).id > 0, "Calculator item does not exist");
 
-    (uint256 amountToBurn, uint256 commission) = calculateCommission(amount);
+    (uint256 amountToBurn, uint256 commission) = _calculateCommission(amount);
 
     offsetsCount++;
     uint64 id = offsetsCount;
@@ -144,7 +144,7 @@ contract SupporterRules is ReentrancyGuard {
 
     supporters[msg.sender].offsetsCount++;
 
-    burnAndPayCommissions(amountToBurn, commission);
+    _burnAndPayCommissions(amountToBurn, commission);
 
     emit OffsetMade(msg.sender, id, amountToBurn, calculatorItemId, block.number);
   }
@@ -162,7 +162,7 @@ contract SupporterRules is ReentrancyGuard {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount >= 1000000000000000000, "Amount must be at least 1 RC");
 
-    (uint256 amountToBurn, uint256 commission) = calculateCommission(amount);
+    (uint256 amountToBurn, uint256 commission) = _calculateCommission(amount);
 
     publicationsCount++;
     uint64 id = publicationsCount;
@@ -171,7 +171,7 @@ contract SupporterRules is ReentrancyGuard {
 
     supporters[msg.sender].publicationsCount++;
 
-    burnAndPayCommissions(amountToBurn, commission);
+    _burnAndPayCommissions(amountToBurn, commission);
 
     emit PublicationPosted(msg.sender, id, amountToBurn, description, block.number);
   }
@@ -206,7 +206,7 @@ contract SupporterRules is ReentrancyGuard {
    * @return amountToBurn The net amount of tokens burned by the supporter (after commission).
    * @return commission The commission for the invitation service provided.
    */
-  function calculateCommission(uint256 amount) private view returns (uint256 amountToBurn, uint256 commission) {
+  function _calculateCommission(uint256 amount) private view returns (uint256 amountToBurn, uint256 commission) {
     Invitation memory invitation = communityRules.getInvitation(msg.sender);
     bool isInvited = invitation.createdAtBlock != 0; // Check if invitation exists
 
@@ -214,7 +214,7 @@ contract SupporterRules is ReentrancyGuard {
     amountToBurn = amount.sub(commission);
   }
 
-  function burnAndPayCommissions(uint256 amountToBurn, uint256 commission) private {
+  function _burnAndPayCommissions(uint256 amountToBurn, uint256 commission) private {
     Invitation memory invitation = communityRules.getInvitation(msg.sender);
     supporterPool.burnTokens(msg.sender, invitation.inviter, amountToBurn, commission);
   }

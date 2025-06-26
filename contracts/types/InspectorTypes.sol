@@ -40,7 +40,7 @@ struct Penalty {
 /**
  * @dev Inspector pool data
  * @param level User pool level
- * @param currentEra User currentEra, updated after each withdraw  
+ * @param currentEra User currentEra, updated after each withdraw
  */
 struct Pool {
   uint256 level;

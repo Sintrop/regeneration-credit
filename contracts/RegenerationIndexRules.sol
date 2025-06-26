@@ -36,7 +36,7 @@ contract RegenerationIndexRules is Ownable, Callable {
     regenerationIndex[6] = RegenerationIndex("REGENERATIVE 1", 1);
     regenerationIndex[7] = RegenerationIndex("NEUTRO", 0);
 
-    addCategories();
+    _addCategories();
   }
 
   // --- Internal Functions ---
@@ -45,7 +45,7 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @dev Internal function that creates system categories and their regeneration index descriptions.
    * This function is intended to be called only during contract deployment.
    */
-  function addCategories() internal {
+  function _addCategories() internal {
     Category memory treesCategory = Category(
       1,
       "Trees",

@@ -431,7 +431,7 @@ describe("InspectionRules", () => {
         });
       });
 
-      describe("#afterRequestInspection", () => {
+      describe("#_afterRequestInspection", () => {
         it("initial status should be equal OPEN", async () => {
           const inspection = await instance.getInspection(1);
 
@@ -800,8 +800,8 @@ describe("InspectionRules", () => {
 
                   context("when regenerator win minimum inspection", () => {
                     beforeEach(async () => {
-                      await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
-                      await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
+                      await regeneratorRules.connect(owner)._afterRealizeInspection(regeneratorAddress, 0);
+                      await regeneratorRules.connect(owner)._afterRealizeInspection(regeneratorAddress, 0);
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
@@ -823,8 +823,8 @@ describe("InspectionRules", () => {
                       await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 1);
                       await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 1);
 
-                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
-                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
+                      await inspectorRules.connect(owner)._afterRealizeInspection(inspectorAddress);
+                      await inspectorRules.connect(owner)._afterRealizeInspection(inspectorAddress);
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
@@ -844,14 +844,14 @@ describe("InspectionRules", () => {
 
                   context("when regenerator and inspector win minimum inspection", () => {
                     beforeEach(async () => {
-                      await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
-                      await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
+                      await regeneratorRules.connect(owner)._afterRealizeInspection(regeneratorAddress, 0);
+                      await regeneratorRules.connect(owner)._afterRealizeInspection(regeneratorAddress, 0);
 
                       await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 1);
                       await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 1);
 
-                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
-                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
+                      await inspectorRules.connect(owner)._afterRealizeInspection(inspectorAddress);
+                      await inspectorRules.connect(owner)._afterRealizeInspection(inspectorAddress);
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
 

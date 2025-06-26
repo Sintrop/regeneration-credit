@@ -184,7 +184,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
     reportsIds[msg.sender].push(id);
 
     // Increase the developer's pool level for this successful report.
-    updateLevel(msg.sender);
+    _updateLevel(msg.sender);
 
     // Emit an event for off-chain monitoring.
     emit ReportAdded(id, msg.sender, description, block.number);
@@ -224,7 +224,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
     if (mustInvalidateReport) {
       // If threshold reached, invalidate the report.
-      report = invalidateReport(report);
+      report = _invalidateReport(report);
       // Emit event for invalidation.
       emit ReportInvalidated(id, report.developer, justification, totalPenalties(report.developer), block.number);
     }
@@ -310,7 +310,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * and records the invalidation time.
    * @param report A `Report` storage reference to the report being invalidated.
    */
-  function invalidateReport(Report memory report) internal returns (Report memory) {
+  function _invalidateReport(Report memory report) internal returns (Report memory) {
     reportsCount--;
     report.valid = false;
     report.invalidatedAt = block.number;
@@ -324,7 +324,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * This function also updates the `lastPublishedAt` timestamp for the developer.
    * @param addr The wallet address of the developer whose level is to be increased.
    */
-  function updateLevel(address addr) internal {
+  function _updateLevel(address addr) internal {
     Developer storage developer = developers[addr];
     developer.lastPublishedAt = block.number;
     developer.pool.level++;
@@ -340,7 +340,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /**
    * @dev Checks if a specific developer address is eligible to send new invitations.
-   * @notice Only most active users canSendInvite.
+   * @notice Only most active users _canSendInvite.
    * @param addr The address of the developer to check.
    * @return bool `true` if the developer is eligible to send an invite, `false` otherwise.
    */
