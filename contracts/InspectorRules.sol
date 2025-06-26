@@ -302,7 +302,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    */
   function _minimumInspections(uint256 totalInspections) internal pure returns (bool) {
     return totalInspections >= MINIMUM_INSPECTIONS_TO_POOL;
-  }  
+  }
 
   // --- View functions ---
 

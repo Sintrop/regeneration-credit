@@ -335,7 +335,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
     // Emit an event.
     emit DeveloperLevelIncreased(addr, developer.pool.level, block.number);
   }
-  
+
   // --- View functions ---
 
   /**
