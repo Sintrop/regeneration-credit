@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.27;
 
 import { Category, RegenerationIndex, RegenerationIndexDescription } from "./types/IndexTypes.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
@@ -36,16 +36,16 @@ contract RegenerationIndexRules is Ownable, Callable {
     regenerationIndex[6] = RegenerationIndex("REGENERATIVE 1", 1);
     regenerationIndex[7] = RegenerationIndex("NEUTRO", 0);
 
-    addCategories();
+    _addCategories();
   }
 
-  // --- Internal Functions ---
+  // --- Internal functions ---
 
   /**
    * @dev Internal function that creates system categories and their regeneration index descriptions.
    * This function is intended to be called only during contract deployment.
    */
-  function addCategories() internal {
+  function _addCategories() internal {
     Category memory treesCategory = Category(
       1,
       "Trees",
@@ -88,7 +88,7 @@ contract RegenerationIndexRules is Ownable, Callable {
     categories[2] = biodiversityCategory;
   }
 
-  // --- View Functions ---
+  // --- View functions ---
 
   /**
    * @notice Returns all added regeneration index descriptions for a specific category.
@@ -111,11 +111,13 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @return uint256 The combined inspection score.
    */
   function calculateScore(uint32 treesResult, uint32 biodiversityResult) public view returns (uint32) {
-    RegenerationIndex memory trees = regenerationIndex[treesRegenerationIndexId(treesResult)];
-    RegenerationIndex memory biodiversity = regenerationIndex[biodiversityRegenerationIndexId(biodiversityResult)];
+    RegenerationIndex memory trees = regenerationIndex[_treesRegenerationIndexId(treesResult)];
+    RegenerationIndex memory biodiversity = regenerationIndex[_biodiversityRegenerationIndexId(biodiversityResult)];
 
     return trees.value + biodiversity.value;
   }
+
+  // --- Internal functions ---
 
   /**
    * @dev Calculates the regeneration index ID for the given trees indicator.
@@ -123,7 +125,7 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @param indicator The result provided by the inspector for trees.
    * @return The regeneration index ID corresponding to the indicator.
    */
-  function treesRegenerationIndexId(uint32 indicator) internal pure returns (uint32) {
+  function _treesRegenerationIndexId(uint32 indicator) internal pure returns (uint32) {
     if (indicator >= 50000) {
       return 1;
     } else if (indicator >= 25000 && indicator < 50000) {
@@ -147,7 +149,7 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @param indicator The result provided by the inspector for biodiversity.
    * @return The regeneration index ID corresponding to the indicator.
    */
-  function biodiversityRegenerationIndexId(uint32 indicator) internal pure returns (uint32) {
+  function _biodiversityRegenerationIndexId(uint32 indicator) internal pure returns (uint32) {
     if (indicator >= 160) {
       return 1;
     } else if (indicator >= 80 && indicator < 160) {

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.27;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { CommunityRules } from "./CommunityRules.sol";
@@ -149,7 +149,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
     address regeneratorAddress,
     uint256 regeneratorTotalInspections
   ) external mustBeAllowedCaller {
-    addLevelFromRegenerator(regeneratorAddress, regeneratorTotalInspections);
+    _addLevelFromRegenerator(regeneratorAddress, regeneratorTotalInspections);
   }
 
   /**
@@ -161,7 +161,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * @param inspectorTotalInspections The total number of inspections completed by the Inspector.
    */
   function addInspectorLevel(address inspectorAddress, uint256 inspectorTotalInspections) external mustBeAllowedCaller {
-    addLevelFromInspector(inspectorAddress, inspectorTotalInspections);
+    _addLevelFromInspector(inspectorAddress, inspectorTotalInspections);
   }
 
   /**
@@ -188,7 +188,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * @param regeneratorAddress Invited regenerator wallet
    * @param regeneratorTotalInspections Invited regenerator total inspections
    */
-  function addLevelFromRegenerator(address regeneratorAddress, uint256 regeneratorTotalInspections) internal {
+  function _addLevelFromRegenerator(address regeneratorAddress, uint256 regeneratorTotalInspections) internal {
     Invitation memory regeneratorInvitation = communityRules.getInvitation(regeneratorAddress);
     address activistAddress = regeneratorInvitation.inviter;
 
@@ -199,7 +199,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
       activistWonLevel[activistAddress][regeneratorAddress] = true;
       approvedInvites++;
 
-      setActivistLevel(activistAddress);
+      _setActivistLevel(activistAddress);
     }
   }
 
@@ -208,7 +208,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * @param inspectorAddress Invited inspector wallet
    * @param inspectorTotalInspections Invited inspector total inspections
    */
-  function addLevelFromInspector(address inspectorAddress, uint256 inspectorTotalInspections) internal {
+  function _addLevelFromInspector(address inspectorAddress, uint256 inspectorTotalInspections) internal {
     Invitation memory inspectorInvitation = communityRules.getInvitation(inspectorAddress);
     address activistAddress = inspectorInvitation.inviter;
 
@@ -219,7 +219,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
       activistWonLevel[activistAddress][inspectorAddress] = true;
       approvedInvites++;
 
-      setActivistLevel(activistAddress);
+      _setActivistLevel(activistAddress);
     }
   }
 
@@ -228,7 +228,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * to reflect this level increase for token withdrawal purposes.
    * @param activistAddress The wallet address of the activist whose level is to be increased.
    */
-  function setActivistLevel(address activistAddress) internal {
+  function _setActivistLevel(address activistAddress) internal {
     // Retrieve the activist's data.
     Activist storage activist = activists[activistAddress];
 

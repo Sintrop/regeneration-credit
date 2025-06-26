@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.27;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -54,22 +54,7 @@ contract RegenerationCredit is ERC20, Ownable {
     _mint(msg.sender, totalSupply);
   }
 
-  // --- Public Functions ---
-
-  /**
-   * @dev Allows any user to burn their own tokens.
-   * @notice Compensate your environmental degradation by burning Regeneration Credit tokens.
-   * Burning tokens permanently removes them from circulation and contributes to certified offset.
-   * @param amount The amount of tokens to burn from the caller's balance.
-   *
-   * Requirements:
-   * - The caller (`msg.sender`) must have `amount` tokens.
-   * - `amount` must be greater than 0.
-   */
-  function burnTokens(uint256 amount) public {
-    require(amount > 0, "Burn amount must be greater than 0");
-    burnTokensInternal(msg.sender, amount);
-  }
+  // --- Deploy functions ---
 
   /**
    * @dev Allows the contract owner to designate a new address as a "contract pool"
@@ -93,6 +78,23 @@ contract RegenerationCredit is ERC20, Ownable {
     totalLocked_ += _numTokens;
 
     return true;
+  }
+
+  // --- Public functions ---
+
+  /**
+   * @dev Allows any user to burn their own tokens.
+   * @notice Compensate your environmental degradation by burning Regeneration Credit tokens.
+   * Burning tokens permanently removes them from circulation and increases your compensation certificate.
+   * @param amount The amount of tokens to burn from the caller's balance.
+   *
+   * Requirements:
+   * - The caller (`msg.sender`) must have `amount` tokens.
+   * - `amount` must be greater than 0.
+   */
+  function burnTokens(uint256 amount) public {
+    require(amount > 0, "Burn amount must be greater than 0");
+    _burnTokensInternal(msg.sender, amount);
   }
 
   // --- Pool functions ---
@@ -158,7 +160,7 @@ contract RegenerationCredit is ERC20, Ownable {
    */
   function burnTokensWith(address tokenOwner, uint256 amount) public mustBeContractPool {
     require(amount > 0, "Burn amount must be greater than 0");
-    burnTokensInternal(tokenOwner, amount);
+    _burnTokensInternal(tokenOwner, amount);
   }
 
   // --- Internal functions ---
@@ -169,7 +171,7 @@ contract RegenerationCredit is ERC20, Ownable {
    * @param tokenOwner The address from which tokens are to be burned.
    * @param amount The amount of tokens to burn.
    */
-  function burnTokensInternal(address tokenOwner, uint256 amount) internal {
+  function _burnTokensInternal(address tokenOwner, uint256 amount) internal {
     // Call OpenZeppelin's internal _burn function to handle the actual burning.
     // _burn handles balance updates, total supply updates, and emits the Transfer event (to address(0)).
     _burn(tokenOwner, amount);

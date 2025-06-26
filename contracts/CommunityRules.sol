@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.27;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { UserType, Delation, Invitation, UserTypeSetting } from "./types/CommunityTypes.sol";
@@ -75,29 +75,7 @@ contract CommunityRules is Ownable, Callable {
     userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(contributorProportionality, false, true, 100000, true);
   }
 
-  // --- External Functions (State Modifying) ---
-
-  /**
-   * @notice Adds a new user to the system with a specified user type.
-   * @dev This function can only be called by an allowed caller (e.g., specific *Rules contracts for each user type).
-   * It enforces rules for single registration per address, valid user types, proportionality limits, and valid invitations if required.
-   * @param addr The address of the user to be registered.
-   * @param userType The desired `UserType` for the user.
-   */
-  function addUser(address addr, UserType userType) public mustBeAllowedCaller {
-    require(addr != address(0), "User address cannot be zero");
-    require(users[addr] == UserType.UNDEFINED, "User already exists"); // Only one registration per address
-    require(userType != UserType.UNDEFINED && userType != UserType.DENIED, "Invalid user type"); // Must selected the appropriate userType
-    require(registrationProportionalityAllowed(userType), "Proportionality invalid"); // Vacancies according to the number of regenerators
-    require(invitedTypeOnRegister(addr, userType), "Invalid invitation"); // Only with valid invitation
-
-    users[addr] = userType;
-    usersCount++;
-    userTypesCount[userType]++;
-    userTypesTotalCount[userType]++;
-
-    emit UserRegistered(addr, userType);
-  }
+  // --- Public functions (State Modifying) ---
 
   /**
    * @dev Adds a new delation to the system. Enforces character limits for title and testimony, and requires both reporter and reported user to be registered.
@@ -127,6 +105,30 @@ contract CommunityRules is Ownable, Callable {
     delationsCount++;
 
     emit DelationAdded(msg.sender, addr);
+  }
+
+  // --- MustBeAllowedCaller functions (State modifying) ---
+
+  /**
+   * @notice Adds a new user to the system with a specified user type.
+   * @dev This function can only be called by an allowed caller (e.g., specific *Rules contracts for each user type).
+   * It enforces rules for single registration per address, valid user types, proportionality limits, and valid invitations if required.
+   * @param addr The address of the user to be registered.
+   * @param userType The desired `UserType` for the user.
+   */
+  function addUser(address addr, UserType userType) public mustBeAllowedCaller {
+    require(addr != address(0), "User address cannot be zero");
+    require(users[addr] == UserType.UNDEFINED, "User already exists"); // Only one registration per address
+    require(userType != UserType.UNDEFINED && userType != UserType.DENIED, "Invalid user type"); // Must selected the appropriate userType
+    require(_registrationProportionalityAllowed(userType), "Proportionality invalid"); // Vacancies according to the number of regenerators
+    require(_invitedTypeOnRegister(addr, userType), "Invalid invitation"); // Only with valid invitation
+
+    users[addr] = userType;
+    usersCount++;
+    userTypesCount[userType]++;
+    userTypesTotalCount[userType]++;
+
+    emit UserRegistered(addr, userType);
   }
 
   /**
@@ -165,7 +167,7 @@ contract CommunityRules is Ownable, Callable {
     emit DeniedUserEvent(userAddress);
   }
 
-  // --- Internal Functions ---
+  // --- Internal functions ---
 
   /**
    * @dev Checks if a user can register with a specific user type based on invitation requirements.
@@ -173,7 +175,7 @@ contract CommunityRules is Ownable, Callable {
    * @param userType The `UserType` the user wishes to register as.
    * @return bool True if the user meets the invitation criteria for registration, false otherwise.
    */
-  function invitedTypeOnRegister(address addr, UserType userType) internal view returns (bool) {
+  function _invitedTypeOnRegister(address addr, UserType userType) internal view returns (bool) {
     // If the UserType does not require an invitation for registration, return true.
     if (!userTypeSettings[userType].needInvitationOnRegister) return true;
 
@@ -190,7 +192,7 @@ contract CommunityRules is Ownable, Callable {
    * @param userType The `UserType` for which registration is being checked.
    * @return bool True if registration is allowed according to proportionality, false otherwise.
    */
-  function registrationProportionalityAllowed(UserType userType) internal view returns (bool) {
+  function _registrationProportionalityAllowed(UserType userType) internal view returns (bool) {
     uint64 regeneratorsCount = userTypesCount[UserType.REGENERATOR];
     uint64 registeredUserTypeCount = userTypesCount[userType];
     UserTypeSetting memory setting = userTypeSettings[userType];
@@ -207,7 +209,7 @@ contract CommunityRules is Ownable, Callable {
     return registeredUserTypeCount <= regeneratorsCount / proportionality;
   }
 
-  // --- View Functions ---
+  // --- View functions ---
 
   /**
    * @notice Returns the total count of users currently classified as voters.

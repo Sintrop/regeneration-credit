@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.27;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { CommunityRules } from "./CommunityRules.sol";
@@ -90,7 +90,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * Requirements:
    * - The caller (`msg.sender`) must not already be a registered regenerator.
    * - The `name` string must not exceed `MAX_NAME_LENGTH` (50) characters in byte length.
-   * - The `proofPhoto` string must not exceed `MAX_PROOF_PHOTO_LENGTH` (100) characters in byte length.
+   * - The `proofPhoto` string must not exceed `MAX_PROOF_PHOTO_LENGTH` (150) characters in byte length.
    * - The `projectDescription` string must not exceed `MAX_PROJECT_DESCRIPTION_LENGTH` (200) characters in byte length.
    * - The `_coordinates` array must contain between (3) and (10) points.
    * - The `totalArea` must be between (500) and (500,000) square meters [m²].
@@ -108,7 +108,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     Coordinates[] memory _coordinates
   ) public {
     require(
-      bytes(name).length <= 50 && bytes(proofPhoto).length <= 100 && bytes(projectDescription).length <= 200,
+      bytes(name).length <= 50 && bytes(proofPhoto).length <= 150 && bytes(projectDescription).length <= 200,
       "Max characters reached"
     );
     require(_coordinates.length >= 3 && _coordinates.length <= 10, "Minimum 3 and maximum 10 coordinate points");
@@ -166,7 +166,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
     Regenerator storage regenerator = regenerators[msg.sender];
     // Check if the regenerator has completed the minimum required inspections.
-    require(minimumInspections(regenerator.totalInspections), "Minimum inspections");
+    require(_minimumInspections(regenerator.totalInspections), "Minimum inspections");
 
     // Current regenerator era before withdraw
     uint256 currentEra = regenerator.pool.currentEra;
@@ -190,13 +190,13 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * - The caller (`msg.sender`) must be a registered `REGENERATOR`.
    */
   function updateAreaPhoto(string memory newPhoto) public {
-    require(bytes(newPhoto).length <= 100, "Max 100 characters");
+    require(bytes(newPhoto).length <= 150, "Max characters");
     require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
 
     areaPhoto[msg.sender] = newPhoto;
   }
 
-  // --- MustBeAllowedCaller Functions (State modifying) ---
+  // --- MustBeAllowedCaller functions (State modifying) ---
 
   /**
    * @dev Allows an authorized caller to remove levels from a regenerator's pool.
@@ -213,7 +213,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
     if (levelsToRemove == 0) {
       regenerators[addr].regenerationScore.score = 0;
-      decrementArea(addr);
+      _decrementArea(addr);
     } else {
       regenerators[addr].regenerationScore.score -= levelsToRemove;
     }
@@ -246,23 +246,23 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /**
    * @dev Processes actions after a regenerator requests an inspection for their area.
-   * Sets the `pendingInspection` status to `true` and records the `lastRequestAt` timestamp.
+   * Sets the `_pendingInspection` status to `true` and records the `_lastRequestAt` timestamp.
    * @notice This function is intended to be called by a whitelisted contract, the InspectionRules.
    * @param addr The regenerator's wallet address.
    */
   function afterRequestInspection(address addr) public mustBeAllowedCaller {
-    pendingInspection(addr, true);
-    lastRequestAt(addr, block.number);
+    _pendingInspection(addr, true);
+    _lastRequestAt(addr, block.number);
   }
 
   /**
    * @dev Processes actions after an inspector accepts an inspection request from a regenerator.
-   * Sets the regenerator's `pendingInspection` status to `false`.
+   * Sets the regenerator's `_pendingInspection` status to `false`.
    * @notice This function is intended to be called by a whitelisted external contract, the InspectorRules.
    * @param addr The regenerator's wallet address.
    */
   function afterAcceptInspection(address addr) public mustBeAllowedCaller {
-    pendingInspection(addr, false);
+    _pendingInspection(addr, false);
   }
 
   /**
@@ -275,9 +275,9 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @return uint256 The updated total number of inspections for the regenerator.
    */
   function afterRealizeInspection(address addr, uint32 score) public mustBeAllowedCaller returns (uint256) {
-    uint256 totalInspections = incrementInspections(addr);
+    uint256 totalInspections = _incrementInspections(addr);
 
-    setRegenerationScore(addr, score);
+    _setRegenerationScore(addr, score);
 
     return totalInspections;
   }
@@ -289,7 +289,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param totalInspections The total number of inspections completed by the regenerator.
    * @return bool `true` if the total inspections meet or exceed the minimum, `false` otherwise.
    */
-  function minimumInspections(uint256 totalInspections) private pure returns (bool) {
+  function _minimumInspections(uint256 totalInspections) private pure returns (bool) {
     return totalInspections >= MINIMUM_INSPECTIONS_TO_POOL;
   }
 
@@ -299,7 +299,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param addr The regenerator's wallet address.
    * @param state The new pending inspection status (`true` for pending, `false` for not pending).
    */
-  function pendingInspection(address addr, bool state) private {
+  function _pendingInspection(address addr, bool state) private {
     regenerators[addr].pendingInspection = state;
   }
 
@@ -309,7 +309,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param addr The regenerator's wallet address.
    * @param regenerationScore The score to add to the regenerator's total regeneration score.
    */
-  function setRegenerationScore(address addr, uint32 regenerationScore) private {
+  function _setRegenerationScore(address addr, uint32 regenerationScore) private {
     Regenerator storage regenerator = regenerators[addr];
     require(regenerator.id != 0, "Regenerator does not exist");
 
@@ -317,7 +317,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     regenerator.regenerationScore.score += regenerationScore;
 
     // If minimum inspections are not met, only update score, not pool level.
-    if (!minimumInspections(regenerator.totalInspections)) return;
+    if (!_minimumInspections(regenerator.totalInspections)) return;
 
     uint256 levels = regenerationScore;
 
@@ -338,7 +338,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param addr The regenerator's wallet address.
    * @return uint256 The updated total number of inspections for the regenerator.
    */
-  function incrementInspections(address addr) private returns (uint256) {
+  function _incrementInspections(address addr) private returns (uint256) {
     Regenerator storage regenerator = regenerators[addr];
 
     regenerator.totalInspections++;
@@ -353,11 +353,11 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to set a regenerator's `lastRequestAt` block.
+   * @dev Internal function to set a regenerator's `_lastRequestAt` block.
    * @param addr The regenerator's wallet address.
    * @param blockNumber The block number at which the last request was made.
    */
-  function lastRequestAt(address addr, uint256 blockNumber) private {
+  function _lastRequestAt(address addr, uint256 blockNumber) private {
     regenerators[addr].lastRequestAt = blockNumber;
   }
 
@@ -370,7 +370,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * - The regenerator must exist.
    * - The `totalArea` of the regenerator must be accurately reflected in `regenerationArea`.
    */
-  function decrementArea(address addr) internal {
+  function _decrementArea(address addr) internal {
     regenerationArea -= regenerators[addr].totalArea;
   }
 

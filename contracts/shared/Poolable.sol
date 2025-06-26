@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.27;
 
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Era } from "contracts/types/PoolTypes.sol";
@@ -9,7 +9,7 @@ import { Era } from "contracts/types/PoolTypes.sol";
  * @author Sintrop
  * @notice Manages token distribution logic across different eras based on user levels and a halving mechanism.
  * @dev This abstract contract provides the core functionalities for calculating token allocations,
- * tracking user participation (levels and withdraws) within specific eras, and managing the pool token supply.
+ * tracking user participation (levels and withdrawals) within specific eras, and managing the pool token supply.
  * It is designed to be inherited by other pool contracts.
  */
 contract Poolable {
@@ -22,7 +22,7 @@ contract Poolable {
   uint256 internal immutable TOTAL_TOKENS;
 
   /// @dev Stores data for each era. Key is the era number.
-  /// @notice Era data includes: count of claims/withdraws, total tokens claimed, and total active levels or difficulty.
+  /// @notice Era data includes: count of claims/withdrawals, total tokens claimed, and total active levels or difficulty.
   mapping(uint256 => Era) public eras;
 
   /// @dev Tracks the levels of each user per era. Mapping: eraNumber => userAddress => levels.
@@ -61,7 +61,7 @@ contract Poolable {
     uint256 newEraUserLevels
   );
 
-  /// @notice Emitted when a user successfully withdraws tokens for a specific era.
+  /// @notice Emitted when a user successfully withdrawals tokens for a specific era.
   /// @param user The address of the user who withdrew tokens.
   /// @param era The era number from which tokens were withdrawn.
   /// @param amount The amount of tokens withdrawn.
@@ -128,6 +128,8 @@ contract Poolable {
     return TOTAL_TOKENS.div((2 ** currentEpoch));
   }
 
+  // --- Internal Functions (State Modifying) ---
+
   /**
    * @notice Internal function to check if a user have tokens to withdraw at an era
    * @param delegate User address
@@ -141,8 +143,6 @@ contract Poolable {
     return numTokens > 0;
   }
 
-  // --- Internal Functions (State Modifying) ---
-
   /**
    * @dev Updates era data after a user withdraw.
    * @notice This function should be called internally after a successful token withdrawal process.
@@ -151,7 +151,7 @@ contract Poolable {
    * @param user The address of the user who claimed tokens.
    * @param numTokens The amount of tokens claimed by the user.
    */
-  function updateEraAfterWithdraw(uint256 era, address user, uint256 numTokens) internal {
+  function _updateEraAfterWithdraw(uint256 era, address user, uint256 numTokens) internal {
     eras[era].claimsCount++;
     eras[era].tokens += numTokens;
     eraTokens[era][user] = numTokens;
@@ -166,14 +166,14 @@ contract Poolable {
    * @param levels The amount of levels to add.
    * @param era The number of the era.
    */
-  function addPoolLevel(address to, uint256 levels, uint256 era) internal {
+  function _addPoolLevel(address to, uint256 levels, uint256 era) internal {
     eras[era].levels = eras[era].levels.add(levels);
     eraLevels[era][to] += levels;
     // Emit event after levels are added
     emit PoolLevelAdded(to, era, levels, eras[era].levels, eraLevels[era][to]);
   }
 
-  function removePoolLevel(address _user, uint256 _era, uint256 _levelsToRemove) internal {
+  function _removePoolLevel(address _user, uint256 _era, uint256 _levelsToRemove) internal {
     uint256 currentLevels = eraLevels[_era][_user];
 
     if (currentLevels == 0) return;

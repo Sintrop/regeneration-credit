@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.27;
 
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
@@ -38,7 +38,7 @@ contract Blockable {
 
   constructor(uint256 blocksPerEra, uint256 _halving) {
     BLOCKS_PER_ERA = blocksPerEra;
-    DEPLOYED_AT = currentBlockNumber();
+    DEPLOYED_AT = _currentBlockNumber();
     HALVING = _halving;
   }
 
@@ -60,7 +60,7 @@ contract Blockable {
    * @return uint256 The current contract era.
    */
   function currentContractEra() public view returns (uint256) {
-    uint256 blocksSinceDeployment = currentBlockNumber().sub(DEPLOYED_AT);
+    uint256 blocksSinceDeployment = _currentBlockNumber().sub(DEPLOYED_AT);
 
     return blocksSinceDeployment.div(BLOCKS_PER_ERA).add(1);
   }
@@ -104,7 +104,7 @@ contract Blockable {
     // Target block is the first block of the (targetEra + 1)
     // Which is DEPLOYED_AT + (targetEra * BLOCKS_PER_ERA)
     uint256 endBlockOfTargetEra = DEPLOYED_AT.add(targetEra.mul(BLOCKS_PER_ERA));
-    return int256(endBlockOfTargetEra) - int256(currentBlockNumber());
+    return int256(endBlockOfTargetEra) - int256(_currentBlockNumber());
   }
 
   /**
@@ -138,7 +138,7 @@ contract Blockable {
    * @dev Returns the current block number.
    * @return uint256 The current block.number.
    */
-  function currentBlockNumber() internal view returns (uint256) {
+  function _currentBlockNumber() internal view returns (uint256) {
     return block.number;
   }
 

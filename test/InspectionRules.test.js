@@ -44,8 +44,7 @@ describe("InspectionRules", () => {
     open: 0,
     accepted: 1,
     inspected: 2,
-    expired: 3,
-    invalidated: 4,
+    invalidated: 3,
   };
 
   const USER_TYPES = {
@@ -432,7 +431,7 @@ describe("InspectionRules", () => {
         });
       });
 
-      describe("#afterRequestInspection", () => {
+      describe("#_afterRequestInspection", () => {
         it("initial status should be equal OPEN", async () => {
           const inspection = await instance.getInspection(1);
 
@@ -762,7 +761,7 @@ describe("InspectionRules", () => {
 
             context("when inspection is not expired", () => {
               context("when pass regenerationInspection equal 4 regenerationIndex size", () => {
-                describe(".setActivistLevel", () => {
+                describe("._setActivistLevel", () => {
                   context("when regenerator do not win minimum inspection", () => {
                     beforeEach(async () => {
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
