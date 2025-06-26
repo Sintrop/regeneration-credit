@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.27;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { CommunityRules } from "./CommunityRules.sol";
@@ -87,7 +87,7 @@ contract InvitationRules is Ownable {
     canBeInviteds[UserType.CONTRIBUTOR] = UserType.CONTRIBUTOR;
   }
 
-  // --- Core Logic Functions ---
+  // --- Public functions ---
 
   /**
    * @dev Allows a user to attempt to invite another wallet to the community.
@@ -99,9 +99,9 @@ contract InvitationRules is Ownable {
     UserType msgSenderUserType = communityRules.getUser(msg.sender);
 
     // Checks if the inviter has general permission to send invitations.
-    require(canSendInvite(msgSenderUserType), "Only most active users allowed to invite");
+    require(_canSendInvite(msgSenderUserType), "Only most active users allowed to invite");
     // Checks if the invitation delay for the inviter's type has been reached.
-    require(invitationDelayReached(msgSenderUserType), "Invite delay not reached");
+    require(_invitationDelayReached(msgSenderUserType), "Invite delay not reached");
     // Checks if the inviter can invite the specified user type.
     require(canBeInviteds[userType] == msgSenderUserType, "Can't invite this type");
 
@@ -127,7 +127,7 @@ contract InvitationRules is Ownable {
     // Checks if the invited user type is Regenerator or Inspector.
     require(userType == UserType.REGENERATOR || userType == UserType.INSPECTOR, "Only regenerators or inspectors");
     // Checks if the specific invitation delay for activists has been reached.
-    require(invitationDelayActivist(), "Invite delay not reached");
+    require(_invitationDelayActivist(), "Invite delay not reached");
 
     // Updates the last activist invitation block for the inviter.
     lastInviteActivist[msg.sender] = block.number;
@@ -139,13 +139,13 @@ contract InvitationRules is Ownable {
     emit UserInvited(msg.sender, invited, userType, block.number);
   }
 
-  // --- Helper Functions (Internal/View) ---
+  // --- Internal functions ---
 
   /**
    * @dev Based on the inviter userType, this function sends to the correct contract to check if user can invite
    * @param userType Inviter userType
    */
-  function canSendInvite(UserType userType) internal view returns (bool) {
+  function _canSendInvite(UserType userType) internal view returns (bool) {
     if (userType == UserType.ACTIVIST) {
       return activistRules.canSendInvite(msg.sender);
     } else if (userType == UserType.CONTRIBUTOR) {
@@ -166,18 +166,18 @@ contract InvitationRules is Ownable {
    * @param userType The user type of the inviter.
    * @return bool True if the user waited the delay blocks, false otherwise.
    */
-  function invitationDelayReached(UserType userType) internal view returns (bool) {
+  function _invitationDelayReached(UserType userType) internal view returns (bool) {
     uint32 delayBlocks = communityRules.getUserTypeSettings(userType).invitationDelayBlocks;
 
-    return hasInvitationDelayPassed(lastInviteBlocks[msg.sender], delayBlocks);
+    return _hasInvitationDelayPassed(lastInviteBlocks[msg.sender], delayBlocks);
   }
 
   /**
    * @dev Calculates if the activist has reached the specific invitation delay for activists.
    * @return bool True if the activist waited the delay blocks, false otherwise.
    */
-  function invitationDelayActivist() internal view returns (bool) {
-    return hasInvitationDelayPassed(lastInviteActivist[msg.sender], activistDelayBlocks);
+  function _invitationDelayActivist() internal view returns (bool) {
+    return _hasInvitationDelayPassed(lastInviteActivist[msg.sender], activistDelayBlocks);
   }
 
   /**
@@ -186,7 +186,7 @@ contract InvitationRules is Ownable {
    * @param delayBlocks The number of blocks that need to be waited.
    * @return bool True if the delay has been met, false otherwise.
    */
-  function hasInvitationDelayPassed(uint256 lastInviteBlock, uint32 delayBlocks) internal view returns (bool) {
+  function _hasInvitationDelayPassed(uint256 lastInviteBlock, uint32 delayBlocks) internal view returns (bool) {
     return lastInviteBlock == 0 || block.number - lastInviteBlock >= delayBlocks;
   }
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.27;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { CommunityRules } from "./CommunityRules.sol";
@@ -90,11 +90,11 @@ contract SupporterRules is ReentrancyGuard {
    * @dev Registers the sender as a Supporter, assigning them a unique ID and updating CommunityRules.
    * Requires name and profile photo length to be within limits.
    * @param name The name of the supporter (max 100 characters).
-   * @param profilePhoto The profile photo URL/hash of the supporter (max 100 characters).
+   * @param profilePhoto The profile photo URL/hash of the supporter (max 150 characters).
    */
   function addSupporter(string memory name, string memory description, string memory profilePhoto) public {
     require(
-      bytes(name).length <= 50 && bytes(description).length <= 200 && bytes(profilePhoto).length <= 100,
+      bytes(name).length <= 50 && bytes(description).length <= 200 && bytes(profilePhoto).length <= 150,
       "Max characters reached"
     );
 
@@ -112,10 +112,10 @@ contract SupporterRules is ReentrancyGuard {
    * @notice Allows a supporter to update their profile photo.
    * @dev Updates the 'profilePhoto' field for the calling supporter.
    * Only accessible by registered supporters, and enforces a max character limit.
-   * @param newPhoto User's new profile photo URL/hash (max 100 characters).
+   * @param newPhoto User's new profile photo URL/hash (max 150 characters).
    */
   function updateProfilePhoto(string memory newPhoto) public {
-    require(bytes(newPhoto).length <= 100, "Max 100 characters");
+    require(bytes(newPhoto).length <= 150, "Max characters");
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
 
     supporters[msg.sender].profilePhoto = newPhoto;
@@ -133,7 +133,7 @@ contract SupporterRules is ReentrancyGuard {
     require(amount >= 1000000000000000000, "Amount must be at least 1 RC");
     require(researcherRules.getCalculatorItem(calculatorItemId).id > 0, "Calculator item does not exist");
 
-    (uint256 amountToBurn, uint256 commission) = calculateCommission(amount);
+    (uint256 amountToBurn, uint256 commission) = _calculateCommission(amount);
 
     offsetsCount++;
     uint64 id = offsetsCount;
@@ -144,7 +144,7 @@ contract SupporterRules is ReentrancyGuard {
 
     supporters[msg.sender].offsetsCount++;
 
-    burnAndPayComissions(amountToBurn, commission);
+    _burnAndPayCommissions(amountToBurn, commission);
 
     emit OffsetMade(msg.sender, id, amountToBurn, calculatorItemId, block.number);
   }
@@ -162,7 +162,7 @@ contract SupporterRules is ReentrancyGuard {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount >= 1000000000000000000, "Amount must be at least 1 RC");
 
-    (uint256 amountToBurn, uint256 commission) = calculateCommission(amount);
+    (uint256 amountToBurn, uint256 commission) = _calculateCommission(amount);
 
     publicationsCount++;
     uint64 id = publicationsCount;
@@ -171,7 +171,7 @@ contract SupporterRules is ReentrancyGuard {
 
     supporters[msg.sender].publicationsCount++;
 
-    burnAndPayComissions(amountToBurn, commission);
+    _burnAndPayCommissions(amountToBurn, commission);
 
     emit PublicationPosted(msg.sender, id, amountToBurn, description, block.number);
   }
@@ -206,7 +206,7 @@ contract SupporterRules is ReentrancyGuard {
    * @return amountToBurn The net amount of tokens burned by the supporter (after commission).
    * @return commission The commission for the invitation service provided.
    */
-  function calculateCommission(uint256 amount) private view returns (uint256 amountToBurn, uint256 commission) {
+  function _calculateCommission(uint256 amount) private view returns (uint256 amountToBurn, uint256 commission) {
     Invitation memory invitation = communityRules.getInvitation(msg.sender);
     bool isInvited = invitation.createdAtBlock != 0; // Check if invitation exists
 
@@ -214,7 +214,7 @@ contract SupporterRules is ReentrancyGuard {
     amountToBurn = amount.sub(commission);
   }
 
-  function burnAndPayComissions(uint256 amountToBurn, uint256 commission) private {
+  function _burnAndPayCommissions(uint256 amountToBurn, uint256 commission) private {
     Invitation memory invitation = communityRules.getInvitation(msg.sender);
     supporterPool.burnTokens(msg.sender, invitation.inviter, amountToBurn, commission);
   }

@@ -8,7 +8,6 @@ enum InspectionStatus {
   OPEN,
   ACCEPTED,
   INSPECTED,
-  EXPIRED,
   INVALIDATED
 }
 

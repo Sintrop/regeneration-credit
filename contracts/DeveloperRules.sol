@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.27;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -108,7 +108,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
     voteRules = VoteRules(contractDependency.voteRulesAddress);
   }
 
-  // --- Public Functions ---
+  // --- Public functions ---
 
   /**
    * @dev Allows a user to attempt to register as a developer.
@@ -119,14 +119,14 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * Requirements:
    * - The caller (`msg.sender`) must not already be a registered developer.
    * - The `name` string must not exceed 50 characters in byte length.
-   * - The `proofPhoto` string must not exceed 100 characters in byte length.
+   * - The `proofPhoto` string must not exceed 150 characters in byte length.
    * - The total number of `DEVELOPER` users in the system must not exceed 16,000.
    * @param name The chosen name for the developer.
    * @param proofPhoto A hash or identifier (e.g., URL) for the developer's identity verification photo.
    */
   function addDeveloper(string memory name, string memory proofPhoto) public {
     // Character limit validation for name and proofPhoto.
-    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
+    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 150, "Max characters");
     // Max limit for developer users in the system.
     require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max user limit");
 
@@ -152,7 +152,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    *
    * Requirements:
    * - The `description` string must not exceed 300 characters in byte length.
-   * - The `report` hash/identifier string must not exceed 100 characters in byte length.
+   * - The `report` hash/identifier string must not exceed 150 characters in byte length.
    * - The caller (`msg.sender`) must be a registered `DEVELOPER`.
    * - The current block number must be greater than `SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS` blocks away
    * from the end of the current era (i.e., not within the security window).
@@ -162,7 +162,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    */
   function addReport(string memory description, string memory report) public {
     // Character limit validation for description and report.
-    require(bytes(description).length <= 300 && bytes(report).length <= 100, "Max characters reached");
+    require(bytes(description).length <= 300 && bytes(report).length <= 150, "Max characters reached");
     // Only registered developers can call this function.
     require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
     // Check if within the security window before era end.
@@ -184,7 +184,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
     reportsIds[msg.sender].push(id);
 
     // Increase the developer's pool level for this successful report.
-    updateLevel(msg.sender);
+    _updateLevel(msg.sender);
 
     // Emit an event for off-chain monitoring.
     emit ReportAdded(id, msg.sender, description, block.number);
@@ -224,7 +224,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
     if (mustInvalidateReport) {
       // If threshold reached, invalidate the report.
-      report = invalidateReport(report);
+      report = _invalidateReport(report);
       // Emit event for invalidation.
       emit ReportInvalidated(id, report.developer, justification, totalPenalties(report.developer), block.number);
     }
@@ -310,7 +310,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * and records the invalidation time.
    * @param report A `Report` storage reference to the report being invalidated.
    */
-  function invalidateReport(Report memory report) internal returns (Report memory) {
+  function _invalidateReport(Report memory report) internal returns (Report memory) {
     reportsCount--;
     report.valid = false;
     report.invalidatedAt = block.number;
@@ -324,7 +324,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * This function also updates the `lastPublishedAt` timestamp for the developer.
    * @param addr The wallet address of the developer whose level is to be increased.
    */
-  function updateLevel(address addr) internal {
+  function _updateLevel(address addr) internal {
     Developer storage developer = developers[addr];
     developer.lastPublishedAt = block.number;
     developer.pool.level++;
@@ -340,7 +340,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /**
    * @dev Checks if a specific developer address is eligible to send new invitations.
-   * @notice Only most active users canSendInvite.
+   * @notice Only most active users _canSendInvite.
    * @param addr The address of the developer to check.
    * @return bool `true` if the developer is eligible to send an invite, `false` otherwise.
    */

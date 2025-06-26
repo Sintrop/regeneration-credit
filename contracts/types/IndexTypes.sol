@@ -3,6 +3,9 @@ pragma solidity >=0.8.0 <0.9.0;
 
 /**
  * @dev RegenerationIndex category data structure
+ * @param id Unique id for the category
+ * @param name Category name
+ * @param description Category description
  */
 struct Category {
   uint64 id;

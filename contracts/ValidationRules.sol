@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.27;
 
 import { CommunityRules } from "./CommunityRules.sol";
 import { RegeneratorRules } from "./RegeneratorRules.sol";
@@ -109,7 +109,7 @@ contract ValidationRules is Callable {
     require(!communityRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
     require(!communityRules.userTypeIs(UserType.DENIED, userAddress), "User already denied");
 
-    uint256 currentEra = userCurrentEra(userAddress);
+    uint256 currentEra = _userCurrentEra(userAddress);
 
     require(!validatorUsersValidations[msg.sender][userAddress][currentEra], "Already voted");
     require(waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
@@ -123,7 +123,7 @@ contract ValidationRules is Callable {
 
     emit UserValidation(msg.sender, userAddress, justification);
 
-    if (validationsCount >= _votesToInvalidate) denyUser(userAddress);
+    if (validationsCount >= _votesToInvalidate) _denyUser(userAddress);
   }
 
   /**
@@ -158,11 +158,11 @@ contract ValidationRules is Callable {
     if (!addPenalty) return;
 
     uint256 inspectorTotalPenalties = inspectorRules.addPenalty(inspection.inspector, inspection.id);
-    removeUserInspection(inspection);
+    _removeUserInspection(inspection);
 
     emit ResourceInvalidated("Inspection", inspection.id, inspection.inspector, inspectorTotalPenalties); // Emit event
 
-    if (inspectorTotalPenalties >= inspectorRules.maxPenalties()) denyUser(inspection.inspector);
+    if (inspectorTotalPenalties >= inspectorRules.maxPenalties()) _denyUser(inspection.inspector);
   }
 
   /**
@@ -194,11 +194,11 @@ contract ValidationRules is Callable {
 
     uint256 developerTotalPenalties = developerRules.addPenalty(report.developer, report.id);
 
-    removeDeveloperReport(report);
+    _removeReport(report);
 
     emit ResourceInvalidated("Report", report.id, report.developer, developerTotalPenalties); // Emit event
 
-    if (developerTotalPenalties >= developerRules.MAX_PENALTIES()) denyUser(report.developer);
+    if (developerTotalPenalties >= developerRules.MAX_PENALTIES()) _denyUser(report.developer);
   }
 
   /**
@@ -230,11 +230,11 @@ contract ValidationRules is Callable {
 
     uint256 contributorTotalPenalties = contributorRules.addPenalty(contribution.user, contribution.id);
 
-    removeContributorContribution(contribution);
+    _removeContribution(contribution);
 
     emit ResourceInvalidated("Contribution", contribution.id, contribution.user, contributorTotalPenalties); // Emit event
 
-    if (contributorTotalPenalties >= contributorRules.MAX_PENALTIES()) denyUser(contribution.user);
+    if (contributorTotalPenalties >= contributorRules.MAX_PENALTIES()) _denyUser(contribution.user);
   }
 
   /**
@@ -265,11 +265,11 @@ contract ValidationRules is Callable {
     if (research.valid) return;
 
     uint256 totalPenalties = researcherRules.addPenalty(research.createdBy, research.id);
-    removeReseacherResearch(research);
+    _removeResearch(research);
 
     emit ResourceInvalidated("Research", research.id, research.createdBy, totalPenalties); // Emit event
 
-    if (totalPenalties >= researcherRules.MAX_PENALTIES()) denyUser(research.createdBy);
+    if (totalPenalties >= researcherRules.MAX_PENALTIES()) _denyUser(research.createdBy);
   }
 
   // --- Internal Functions ---
@@ -279,7 +279,7 @@ contract ValidationRules is Callable {
    * @param userAddress The address of the user.
    * @return era The current era for the user's specific type pool.
    */
-  function userCurrentEra(address userAddress) internal view returns (uint256 era) {
+  function _userCurrentEra(address userAddress) internal view returns (uint256 era) {
     UserType userType = communityRules.getUser(userAddress);
 
     if (userType == UserType.ACTIVIST) return activistRules.poolCurrentEra();
@@ -294,44 +294,44 @@ contract ValidationRules is Callable {
    * @dev Calls the fuction that removes the resource level from pool.
    * @param report Invalidated report.
    */
-  function removeDeveloperReport(Report memory report) internal {
-    removeUserLevels(report.developer, 1);
+  function _removeReport(Report memory report) internal {
+    _removeUserLevels(report.developer, 1);
   }
 
   /**
    * @dev Calls the fuction that removes the resource level from pool.
    * @param contribution Invalidated contribution.
    */
-  function removeContributorContribution(Contribution memory contribution) internal {
-    removeUserLevels(contribution.user, 1);
+  function _removeContribution(Contribution memory contribution) internal {
+    _removeUserLevels(contribution.user, 1);
   }
 
   /**
    * @dev Calls the fuction that removes the resource level from pool
    * @param research Invalidated research
    */
-  function removeReseacherResearch(Research memory research) internal {
-    removeUserLevels(research.createdBy, 1);
+  function _removeResearch(Research memory research) internal {
+    _removeUserLevels(research.createdBy, 1);
   }
 
   /**
    * @dev Calls the fuction that removes the resource level from pool.
    * @param inspection Invalidated inspection.
    */
-  function removeUserInspection(Inspection memory inspection) internal {
+  function _removeUserInspection(Inspection memory inspection) internal {
     inspectorRules.decrementInspections(inspection.inspector);
     regeneratorRules.decrementInspections(inspection.regenerator);
 
-    removeUserLevels(inspection.inspector, 1);
-    removeUserLevels(inspection.regenerator, inspection.regenerationScore);
+    _removeUserLevels(inspection.inspector, 1);
+    _removeUserLevels(inspection.regenerator, inspection.regenerationScore);
   }
 
   /**
    * @dev Sets a user's type to DENIED in CommunityRules and removes their levels from pools.
    * @param userAddress The address of the user to deny.
    */
-  function denyUser(address userAddress) internal {
-    removeUserLevels(userAddress, 0); // Remove all levels (0 means all for denied users)
+  function _denyUser(address userAddress) internal {
+    _removeUserLevels(userAddress, 0); // Remove all levels (0 means all for denied users)
 
     communityRules.setDeniedType(userAddress);
   }
@@ -341,7 +341,7 @@ contract ValidationRules is Callable {
    * @param userAddress Invalidated userAddress.
    * @param levels Levels to remove.
    */
-  function removeUserLevels(address userAddress, uint256 levels) internal {
+  function _removeUserLevels(address userAddress, uint256 levels) internal {
     UserType userType = communityRules.getUser(userAddress);
 
     if (userType == UserType.DENIED) return; // Already denied, nothing to do
