@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import { Callable } from "./shared/Callable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { Invitable } from "./shared/Invitable.sol";
 import { VoteRules } from "./VoteRules.sol";
 import { CommunityRules } from "./CommunityRules.sol";
@@ -21,7 +22,7 @@ import { ValidationRules } from "./ValidationRules.sol";
  * for general user management, `ResearcherPool` for reward distribution, `VoteRules` for voting
  * eligibility, and `ValidationRules` for research validation processes.
  */
-contract ResearcherRules is Callable, Invitable {
+contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   // --- State Variables ---
 
   /// @notice The maximum number of penalties a researcher can accumulate before facing invalidation.
@@ -275,7 +276,7 @@ contract ResearcherRules is Callable, Invitable {
    * (eligibility determined by `ResearcherPool` and includes having published at least one research in the current era).
    * Increments the researcher's `pool.currentEra` upon successful withdrawal attempt.
    */
-  function withdraw() public {
+  function withdraw() public nonReentrant {
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
 
     Researcher storage researcher = researchers[msg.sender];

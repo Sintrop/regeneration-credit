@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { CommunityRules } from "./CommunityRules.sol";
 import { Activist, Pool } from "./types/ActivistTypes.sol";
 import { UserType, Invitation } from "./types/CommunityTypes.sol";
@@ -19,7 +20,7 @@ import { Invitable } from "./shared/Invitable.sol";
  * and `ActivistPool` for reward distribution.
  */
 
-contract ActivistRules is Callable, Invitable {
+contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   // --- Constants & State Variables ---
 
   /// @notice The minimum number of inspections an invited Regenerator or Inspector must complete
@@ -113,7 +114,7 @@ contract ActivistRules is Callable, Invitable {
    * - The activist must have approvedUsers in their current era.
    * - The activist's current era (`activist.pool.currentEra`) will be incremented upon successful withdrawal attempt.
    */
-  function withdraw() public {
+  function withdraw() public nonReentrant {
     // Only activist can call the function
     require(communityRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Pool only to activist");
 
