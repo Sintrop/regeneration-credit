@@ -90,11 +90,11 @@ contract SupporterRules is ReentrancyGuard {
    * @dev Registers the sender as a Supporter, assigning them a unique ID and updating CommunityRules.
    * Requires name and profile photo length to be within limits.
    * @param name The name of the supporter (max 100 characters).
-   * @param profilePhoto The profile photo URL/hash of the supporter (max 100 characters).
+   * @param profilePhoto The profile photo URL/hash of the supporter (max 150 characters).
    */
   function addSupporter(string memory name, string memory description, string memory profilePhoto) public {
     require(
-      bytes(name).length <= 50 && bytes(description).length <= 200 && bytes(profilePhoto).length <= 100,
+      bytes(name).length <= 50 && bytes(description).length <= 200 && bytes(profilePhoto).length <= 150,
       "Max characters reached"
     );
 
@@ -112,10 +112,10 @@ contract SupporterRules is ReentrancyGuard {
    * @notice Allows a supporter to update their profile photo.
    * @dev Updates the 'profilePhoto' field for the calling supporter.
    * Only accessible by registered supporters, and enforces a max character limit.
-   * @param newPhoto User's new profile photo URL/hash (max 100 characters).
+   * @param newPhoto User's new profile photo URL/hash (max 150 characters).
    */
   function updateProfilePhoto(string memory newPhoto) public {
-    require(bytes(newPhoto).length <= 100, "Max 100 characters");
+    require(bytes(newPhoto).length <= 150, "Max characters");
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
 
     supporters[msg.sender].profilePhoto = newPhoto;

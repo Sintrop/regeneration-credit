@@ -90,7 +90,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * Requirements:
    * - The caller (`msg.sender`) must not already be a registered regenerator.
    * - The `name` string must not exceed `MAX_NAME_LENGTH` (50) characters in byte length.
-   * - The `proofPhoto` string must not exceed `MAX_PROOF_PHOTO_LENGTH` (100) characters in byte length.
+   * - The `proofPhoto` string must not exceed `MAX_PROOF_PHOTO_LENGTH` (150) characters in byte length.
    * - The `projectDescription` string must not exceed `MAX_PROJECT_DESCRIPTION_LENGTH` (200) characters in byte length.
    * - The `_coordinates` array must contain between (3) and (10) points.
    * - The `totalArea` must be between (500) and (500,000) square meters [m²].
@@ -108,7 +108,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     Coordinates[] memory _coordinates
   ) public {
     require(
-      bytes(name).length <= 50 && bytes(proofPhoto).length <= 100 && bytes(projectDescription).length <= 200,
+      bytes(name).length <= 50 && bytes(proofPhoto).length <= 150 && bytes(projectDescription).length <= 200,
       "Max characters reached"
     );
     require(_coordinates.length >= 3 && _coordinates.length <= 10, "Minimum 3 and maximum 10 coordinate points");
@@ -190,7 +190,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * - The caller (`msg.sender`) must be a registered `REGENERATOR`.
    */
   function updateAreaPhoto(string memory newPhoto) public {
-    require(bytes(newPhoto).length <= 100, "Max 100 characters");
+    require(bytes(newPhoto).length <= 150, "Max characters");
     require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
 
     areaPhoto[msg.sender] = newPhoto;

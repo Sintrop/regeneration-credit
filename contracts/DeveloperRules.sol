@@ -119,14 +119,14 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * Requirements:
    * - The caller (`msg.sender`) must not already be a registered developer.
    * - The `name` string must not exceed 50 characters in byte length.
-   * - The `proofPhoto` string must not exceed 100 characters in byte length.
+   * - The `proofPhoto` string must not exceed 150 characters in byte length.
    * - The total number of `DEVELOPER` users in the system must not exceed 16,000.
    * @param name The chosen name for the developer.
    * @param proofPhoto A hash or identifier (e.g., URL) for the developer's identity verification photo.
    */
   function addDeveloper(string memory name, string memory proofPhoto) public {
     // Character limit validation for name and proofPhoto.
-    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
+    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 150, "Max characters");
     // Max limit for developer users in the system.
     require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max user limit");
 
@@ -152,7 +152,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    *
    * Requirements:
    * - The `description` string must not exceed 300 characters in byte length.
-   * - The `report` hash/identifier string must not exceed 100 characters in byte length.
+   * - The `report` hash/identifier string must not exceed 150 characters in byte length.
    * - The caller (`msg.sender`) must be a registered `DEVELOPER`.
    * - The current block number must be greater than `SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS` blocks away
    * from the end of the current era (i.e., not within the security window).
@@ -162,7 +162,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    */
   function addReport(string memory description, string memory report) public {
     // Character limit validation for description and report.
-    require(bytes(description).length <= 300 && bytes(report).length <= 100, "Max characters reached");
+    require(bytes(description).length <= 300 && bytes(report).length <= 150, "Max characters reached");
     // Only registered developers can call this function.
     require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
     // Check if within the security window before era end.

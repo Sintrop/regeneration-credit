@@ -82,14 +82,14 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * Requirements:
    * - The caller (`msg.sender`) must not already be a registered user.
    * - The `name` string must not exceed `MAX_NAME_LENGTH` (50) characters in byte length.
-   * - The `proofPhoto` string must not exceed `MAX_PROOF_PHOTO_LENGTH` (100) characters in byte length.
+   * - The `proofPhoto` string must not exceed `MAX_PROOF_PHOTO_LENGTH` (150) characters in byte length.
    * - Number of vacancies is proportional to the number of regenerators.
    * - The caller must have a previous valid invitation.
    * @param name The chosen name for the inspector.
    * @param proofPhoto A hash or identifier (e.g., URL) for the inspector's identity verification photo.
    */
   function addInspector(string memory name, string memory proofPhoto) public {
-    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max 100 characters");
+    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 150, "Max characters");
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     inspectors[msg.sender] = Inspector(

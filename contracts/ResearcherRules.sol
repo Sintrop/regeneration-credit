@@ -125,10 +125,10 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @dev Requires the caller to have been previously invited (handled by `CommunityRules`)
    * and for researcher vacancies to be available.
    * @param name The public name or alias of the researcher (max 50 characters).
-   * @param proofPhoto A hash or identifier for the researcher's identity photo/document (max 100 characters).
+   * @param proofPhoto A hash or identifier for the researcher's identity photo/document (max 150 characters).
    */
   function addResearcher(string memory name, string memory proofPhoto) public {
-    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 100, "Max characters");
+    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 150, "Max characters");
     require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max user limit");
 
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
@@ -162,10 +162,10 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * period since their last research publication.
    * @param title The title of the research paper (max 100 characters).
    * @param thesis A short description or thesis statement (max 300 characters).
-   * @param file A hash or identifier for the research report file (max 100 characters).
+   * @param file A hash or identifier for the research report file (max 150 characters).
    */
   function addResearch(string memory title, string memory thesis, string memory file) public {
-    require(bytes(title).length <= 100 && bytes(thesis).length <= 300 && bytes(file).length <= 100, "Max characters");
+    require(bytes(title).length <= 100 && bytes(thesis).length <= 300 && bytes(file).length <= 150, "Max characters");
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
     require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era");
     require(_canPublishResearch(msg.sender), "Can't publish yet");

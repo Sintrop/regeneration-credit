@@ -223,7 +223,7 @@ contract InspectionRules is Callable {
     uint32 treesResult,
     uint32 biodiversityResult
   ) public {
-    require(bytes(proofPhotos).length <= 100, "Max length");
+    require(bytes(proofPhotos).length <= 150, "Max length");
     require(bytes(justificationReport).length <= 1000, "Max length");
 
     Inspection memory inspection = inspections[inspectionId];
