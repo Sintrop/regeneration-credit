@@ -9,7 +9,7 @@ import { Era } from "contracts/types/PoolTypes.sol";
  * @author Sintrop
  * @notice Manages token distribution logic across different eras based on user levels and a halving mechanism.
  * @dev This abstract contract provides the core functionalities for calculating token allocations,
- * tracking user participation (levels and withdraws) within specific eras, and managing the pool token supply.
+ * tracking user participation (levels and withdrawals) within specific eras, and managing the pool token supply.
  * It is designed to be inherited by other pool contracts.
  */
 contract Poolable {
@@ -22,7 +22,7 @@ contract Poolable {
   uint256 internal immutable TOTAL_TOKENS;
 
   /// @dev Stores data for each era. Key is the era number.
-  /// @notice Era data includes: count of claims/withdraws, total tokens claimed, and total active levels or difficulty.
+  /// @notice Era data includes: count of claims/withdrawals, total tokens claimed, and total active levels or difficulty.
   mapping(uint256 => Era) public eras;
 
   /// @dev Tracks the levels of each user per era. Mapping: eraNumber => userAddress => levels.
@@ -61,7 +61,7 @@ contract Poolable {
     uint256 newEraUserLevels
   );
 
-  /// @notice Emitted when a user successfully withdraws tokens for a specific era.
+  /// @notice Emitted when a user successfully withdrawals tokens for a specific era.
   /// @param user The address of the user who withdrew tokens.
   /// @param era The era number from which tokens were withdrawn.
   /// @param amount The amount of tokens withdrawn.

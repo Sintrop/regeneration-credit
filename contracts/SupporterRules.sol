@@ -144,7 +144,7 @@ contract SupporterRules is ReentrancyGuard {
 
     supporters[msg.sender].offsetsCount++;
 
-    burnAndPayComissions(amountToBurn, commission);
+    burnAndPayCommissions(amountToBurn, commission);
 
     emit OffsetMade(msg.sender, id, amountToBurn, calculatorItemId, block.number);
   }
@@ -171,7 +171,7 @@ contract SupporterRules is ReentrancyGuard {
 
     supporters[msg.sender].publicationsCount++;
 
-    burnAndPayComissions(amountToBurn, commission);
+    burnAndPayCommissions(amountToBurn, commission);
 
     emit PublicationPosted(msg.sender, id, amountToBurn, description, block.number);
   }
@@ -214,7 +214,7 @@ contract SupporterRules is ReentrancyGuard {
     amountToBurn = amount.sub(commission);
   }
 
-  function burnAndPayComissions(uint256 amountToBurn, uint256 commission) private {
+  function burnAndPayCommissions(uint256 amountToBurn, uint256 commission) private {
     Invitation memory invitation = communityRules.getInvitation(msg.sender);
     supporterPool.burnTokens(msg.sender, invitation.inviter, amountToBurn, commission);
   }

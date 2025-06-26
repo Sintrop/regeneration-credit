@@ -8,6 +8,11 @@ import "./CommunityTypes.sol";
  * @param id User id
  * @param supporterWallet Supporter wallet address
  * @param name User name
+ * @param description Brief user description or purpose
+ * @param profilePhoto User profilePhoto hash or content unique identifier
+ * @param publicationsCount Count of publications
+ * @param offsetsCount Count of offsets
+ * @param reductionItemsCount Count of declared reduction commitments.
  * @param createdAt Block of user creation
  */
 struct Supporter {

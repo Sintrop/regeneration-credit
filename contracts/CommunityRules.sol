@@ -88,8 +88,8 @@ contract CommunityRules is Ownable, Callable {
     require(addr != address(0), "User address cannot be zero");
     require(users[addr] == UserType.UNDEFINED, "User already exists"); // Only one registration per address
     require(userType != UserType.UNDEFINED && userType != UserType.DENIED, "Invalid user type"); // Must selected the appropriate userType
-    require(registrationProportionalityAllowed(userType), "Proportionality invalid"); // Vacancies according to the number of regenerators
-    require(invitedTypeOnRegister(addr, userType), "Invalid invitation"); // Only with valid invitation
+    require(_registrationProportionalityAllowed(userType), "Proportionality invalid"); // Vacancies according to the number of regenerators
+    require(_invitedTypeOnRegister(addr, userType), "Invalid invitation"); // Only with valid invitation
 
     users[addr] = userType;
     usersCount++;
@@ -173,7 +173,7 @@ contract CommunityRules is Ownable, Callable {
    * @param userType The `UserType` the user wishes to register as.
    * @return bool True if the user meets the invitation criteria for registration, false otherwise.
    */
-  function invitedTypeOnRegister(address addr, UserType userType) internal view returns (bool) {
+  function _invitedTypeOnRegister(address addr, UserType userType) internal view returns (bool) {
     // If the UserType does not require an invitation for registration, return true.
     if (!userTypeSettings[userType].needInvitationOnRegister) return true;
 
@@ -190,7 +190,7 @@ contract CommunityRules is Ownable, Callable {
    * @param userType The `UserType` for which registration is being checked.
    * @return bool True if registration is allowed according to proportionality, false otherwise.
    */
-  function registrationProportionalityAllowed(UserType userType) internal view returns (bool) {
+  function _registrationProportionalityAllowed(UserType userType) internal view returns (bool) {
     uint64 regeneratorsCount = userTypesCount[UserType.REGENERATOR];
     uint64 registeredUserTypeCount = userTypesCount[userType];
     UserTypeSetting memory setting = userTypeSettings[userType];
