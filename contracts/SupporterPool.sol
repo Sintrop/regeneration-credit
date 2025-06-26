@@ -30,16 +30,6 @@ contract SupporterPool is Callable {
   // --- External/Public Functions ---
 
   /**
-   * @notice Returns the RegenerationCredit token balance of a given address.
-   * @dev Delegates the call to the underlying RegenerationCredit contract.
-   * @param addr The address to query the balance of.
-   * @return uint256 The balance of RegenerationCredit tokens.
-   */
-  function balanceOf(address addr) public view returns (uint256) {
-    return regenerationCredit.balanceOf(addr);
-  }
-
-  /**
    * @notice Burns tokens from a user and potentially rewards an inviter.
    * @dev This function is intended to be called by an allowed caller (e.g., SupporterRules).
    * It burns a specified amount of `RegenerationCredit` tokens from `tokenOwner` and

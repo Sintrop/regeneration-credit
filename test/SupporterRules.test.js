@@ -156,12 +156,12 @@ describe("SupporterRules", () => {
               });
 
               it("Supporter balance must be 99000000000000000000", async () => {
-                const balance = await supporterPool.balanceOf(inv2Address);
+                const balance = await regenerationCredit.balanceOf(inv2Address);
                 expect(balance).to.equal(99000000000000000000n);
               });
 
               it("Supporter inviter balance must be 50000000000000000", async () => {
-                const balance = await supporterPool.balanceOf(inv1Address);
+                const balance = await regenerationCredit.balanceOf(inv1Address);
                 expect(balance).to.equal(50000000000000000n);
               });
 
@@ -200,12 +200,12 @@ describe("SupporterRules", () => {
               });
 
               it("Supporter balance must be 95000000000000000000", async () => {
-                const balance = await supporterPool.balanceOf(inv2Address);
+                const balance = await regenerationCredit.balanceOf(inv2Address);
                 expect(balance).to.equal(95000000000000000000n);
               });
 
               it("Supporter inviter balance must be 250000000000000000", async () => {
-                const balance = await supporterPool.balanceOf(inv1Address);
+                const balance = await regenerationCredit.balanceOf(inv1Address);
                 expect(balance).to.equal(250000000000000000n);
               });
 
@@ -227,7 +227,7 @@ describe("SupporterRules", () => {
               });
 
               it("Supporter balance must be 99000000000000000000", async () => {
-                const supporterBalance = await supporterPool.balanceOf(inv1Address);
+                const supporterBalance = await regenerationCredit.balanceOf(inv1Address);
 
                 expect(supporterBalance).to.equal(99000000000000000000n);
               });
@@ -251,7 +251,7 @@ describe("SupporterRules", () => {
               });
 
               it("Supporter balance must be 95000000000000000000", async () => {
-                const supporterBalance = await supporterPool.balanceOf(inv1Address);
+                const supporterBalance = await regenerationCredit.balanceOf(inv1Address);
 
                 expect(supporterBalance).to.equal(95000000000000000000n);
               });
@@ -352,12 +352,12 @@ describe("SupporterRules", () => {
               });
 
               it("Supporter balance must be 99000000000000000000", async () => {
-                const balance = await supporterPool.balanceOf(inv2Address);
+                const balance = await regenerationCredit.balanceOf(inv2Address);
                 expect(balance).to.equal(99000000000000000000n);
               });
 
               it("Supporter inviter balance must be 50000000000000000", async () => {
-                const balance = await supporterPool.balanceOf(inv1Address);
+                const balance = await regenerationCredit.balanceOf(inv1Address);
                 expect(balance).to.equal(50000000000000000n);
               });
 
@@ -391,12 +391,12 @@ describe("SupporterRules", () => {
               });
 
               it("Supporter balance must be 95000000000000000000", async () => {
-                const balance = await supporterPool.balanceOf(inv2Address);
+                const balance = await regenerationCredit.balanceOf(inv2Address);
                 expect(balance).to.equal(95000000000000000000n);
               });
 
               it("Supporter inviter balance must be 250000000000000000", async () => {
-                const balance = await supporterPool.balanceOf(inv1Address);
+                const balance = await regenerationCredit.balanceOf(inv1Address);
                 expect(balance).to.equal(250000000000000000n);
               });
 
@@ -418,7 +418,7 @@ describe("SupporterRules", () => {
               });
 
               it("Supporter balance must be 99000000000000000000", async () => {
-                const supporterBalance = await supporterPool.balanceOf(inv1Address);
+                const supporterBalance = await regenerationCredit.balanceOf(inv1Address);
 
                 expect(supporterBalance).to.equal(99000000000000000000n);
               });
@@ -436,7 +436,7 @@ describe("SupporterRules", () => {
               });
 
               it("Supporter balance must be 95000000000000000000", async () => {
-                const supporterBalance = await supporterPool.balanceOf(inv1Address);
+                const supporterBalance = await regenerationCredit.balanceOf(inv1Address);
 
                 expect(supporterBalance).to.equal(95000000000000000000n);
               });

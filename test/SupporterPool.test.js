@@ -34,12 +34,12 @@ describe("SupporterPool", () => {
       });
 
       it("user1Address balance must be 99000000000000000000", async () => {
-        const balance = await instance.balanceOf(user1Address);
+        const balance = await regenerationCredit.balanceOf(user1Address);
         expect(balance).to.equal(99000000000000000000n);
       });
 
       it("user2Address balance must be 50000000000000000", async () => {
-        const balance = await instance.balanceOf(user2Address);
+        const balance = await regenerationCredit.balanceOf(user2Address);
         expect(balance).to.equal(50000000000000000n);
       });
 
@@ -61,12 +61,12 @@ describe("SupporterPool", () => {
       });
 
       it("user1Address balance must be 99000000000000000000", async () => {
-        const balance = await instance.balanceOf(user1Address);
+        const balance = await regenerationCredit.balanceOf(user1Address);
         expect(balance).to.equal(99000000000000000000n);
       });
 
       it("user2Address balance must be 0", async () => {
-        const balance = await instance.balanceOf(user2Address);
+        const balance = await regenerationCredit.balanceOf(user2Address);
         expect(balance).to.equal(0);
       });
 
