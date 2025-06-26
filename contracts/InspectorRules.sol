@@ -186,7 +186,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param addr The inspector's wallet address.
    * @return uint256 The updated total number of inspections completed by the inspector.
    */
-  function _afterRealizeInspection(address addr) public mustBeAllowedCaller returns (uint256) {
+  function afterRealizeInspection(address addr) public mustBeAllowedCaller returns (uint256) {
     _decreaseGiveUps(addr);
 
     return _incrementInspections(addr);
@@ -295,6 +295,15 @@ contract InspectorRules is Callable, ReentrancyGuard {
     inspector.lastInspection = lastInspectionId;
   }
 
+  /**
+   * @dev Checks if an inspector has reached the `MINIMUM_INSPECTIONS_TO_POOL` threshold.
+   * @param totalInspections The total number of inspections completed by the inspector.
+   * @return bool `true` if the total inspections meet or exceed the minimum, `false` otherwise.
+   */
+  function _minimumInspections(uint256 totalInspections) internal pure returns (bool) {
+    return totalInspections >= MINIMUM_INSPECTIONS_TO_POOL;
+  }  
+
   // --- View functions ---
 
   /**
@@ -323,15 +332,6 @@ contract InspectorRules is Callable, ReentrancyGuard {
    */
   function poolCurrentEra() public view returns (uint256) {
     return inspectorPool.currentContractEra();
-  }
-
-  /**
-   * @dev Checks if an inspector has reached the `MINIMUM_INSPECTIONS_TO_POOL` threshold.
-   * @param totalInspections The total number of inspections completed by the inspector.
-   * @return bool `true` if the total inspections meet or exceed the minimum, `false` otherwise.
-   */
-  function _minimumInspections(uint256 totalInspections) internal pure returns (bool) {
-    return totalInspections >= MINIMUM_INSPECTIONS_TO_POOL;
   }
 
   /**

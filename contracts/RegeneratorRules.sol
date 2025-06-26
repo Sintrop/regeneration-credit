@@ -196,7 +196,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     areaPhoto[msg.sender] = newPhoto;
   }
 
-  // --- MustBeAllowedCaller Functions (State modifying) ---
+  // --- MustBeAllowedCaller functions (State modifying) ---
 
   /**
    * @dev Allows an authorized caller to remove levels from a regenerator's pool.
@@ -250,7 +250,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @notice This function is intended to be called by a whitelisted contract, the InspectionRules.
    * @param addr The regenerator's wallet address.
    */
-  function _afterRequestInspection(address addr) public mustBeAllowedCaller {
+  function afterRequestInspection(address addr) public mustBeAllowedCaller {
     _pendingInspection(addr, true);
     _lastRequestAt(addr, block.number);
   }
@@ -274,7 +274,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param score The score obtained from the realized inspection, to be added to the regenerator's total score.
    * @return uint256 The updated total number of inspections for the regenerator.
    */
-  function _afterRealizeInspection(address addr, uint32 score) public mustBeAllowedCaller returns (uint256) {
+  function afterRealizeInspection(address addr, uint32 score) public mustBeAllowedCaller returns (uint256) {
     uint256 totalInspections = _incrementInspections(addr);
 
     _setRegenerationScore(addr, score);

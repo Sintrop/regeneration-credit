@@ -109,7 +109,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
     voteRules = VoteRules(contractDependency.voteRulesAddress);
   }
 
-  // --- Public Functions ---
+  // --- Public functions ---
 
   /**
    * @dev Allows a user to attempt to register as a contributor.

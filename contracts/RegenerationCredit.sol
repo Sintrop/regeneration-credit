@@ -54,22 +54,7 @@ contract RegenerationCredit is ERC20, Ownable {
     _mint(msg.sender, totalSupply);
   }
 
-  // --- Public Functions ---
-
-  /**
-   * @dev Allows any user to burn their own tokens.
-   * @notice Compensate your environmental degradation by burning Regeneration Credit tokens.
-   * Burning tokens permanently removes them from circulation and contributes to certified offset.
-   * @param amount The amount of tokens to burn from the caller's balance.
-   *
-   * Requirements:
-   * - The caller (`msg.sender`) must have `amount` tokens.
-   * - `amount` must be greater than 0.
-   */
-  function burnTokens(uint256 amount) public {
-    require(amount > 0, "Burn amount must be greater than 0");
-    _burnTokensInternal(msg.sender, amount);
-  }
+  // --- Deploy functions ---
 
   /**
    * @dev Allows the contract owner to designate a new address as a "contract pool"
@@ -93,6 +78,23 @@ contract RegenerationCredit is ERC20, Ownable {
     totalLocked_ += _numTokens;
 
     return true;
+  }
+
+  // --- Public functions ---
+
+  /**
+   * @dev Allows any user to burn their own tokens.
+   * @notice Compensate your environmental degradation by burning Regeneration Credit tokens.
+   * Burning tokens permanently removes them from circulation and increases your compensation certificate.
+   * @param amount The amount of tokens to burn from the caller's balance.
+   *
+   * Requirements:
+   * - The caller (`msg.sender`) must have `amount` tokens.
+   * - `amount` must be greater than 0.
+   */
+  function burnTokens(uint256 amount) public {
+    require(amount > 0, "Burn amount must be greater than 0");
+    _burnTokensInternal(msg.sender, amount);
   }
 
   // --- Pool functions ---

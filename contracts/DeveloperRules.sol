@@ -108,7 +108,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
     voteRules = VoteRules(contractDependency.voteRulesAddress);
   }
 
-  // --- Public Functions ---
+  // --- Public functions ---
 
   /**
    * @dev Allows a user to attempt to register as a developer.
@@ -335,7 +335,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
     // Emit an event.
     emit DeveloperLevelIncreased(addr, developer.pool.level, block.number);
   }
-
+  
   // --- View functions ---
 
   /**

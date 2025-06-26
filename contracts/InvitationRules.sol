@@ -87,7 +87,7 @@ contract InvitationRules is Ownable {
     canBeInviteds[UserType.CONTRIBUTOR] = UserType.CONTRIBUTOR;
   }
 
-  // --- Core Logic Functions ---
+  // --- Public functions ---
 
   /**
    * @dev Allows a user to attempt to invite another wallet to the community.
@@ -139,7 +139,7 @@ contract InvitationRules is Ownable {
     emit UserInvited(msg.sender, invited, userType, block.number);
   }
 
-  // --- Helper Functions (Internal/View) ---
+  // --- Internal functions ---
 
   /**
    * @dev Based on the inviter userType, this function sends to the correct contract to check if user can invite

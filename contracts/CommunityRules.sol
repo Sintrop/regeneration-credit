@@ -75,29 +75,7 @@ contract CommunityRules is Ownable, Callable {
     userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(contributorProportionality, false, true, 100000, true);
   }
 
-  // --- External Functions (State Modifying) ---
-
-  /**
-   * @notice Adds a new user to the system with a specified user type.
-   * @dev This function can only be called by an allowed caller (e.g., specific *Rules contracts for each user type).
-   * It enforces rules for single registration per address, valid user types, proportionality limits, and valid invitations if required.
-   * @param addr The address of the user to be registered.
-   * @param userType The desired `UserType` for the user.
-   */
-  function addUser(address addr, UserType userType) public mustBeAllowedCaller {
-    require(addr != address(0), "User address cannot be zero");
-    require(users[addr] == UserType.UNDEFINED, "User already exists"); // Only one registration per address
-    require(userType != UserType.UNDEFINED && userType != UserType.DENIED, "Invalid user type"); // Must selected the appropriate userType
-    require(_registrationProportionalityAllowed(userType), "Proportionality invalid"); // Vacancies according to the number of regenerators
-    require(_invitedTypeOnRegister(addr, userType), "Invalid invitation"); // Only with valid invitation
-
-    users[addr] = userType;
-    usersCount++;
-    userTypesCount[userType]++;
-    userTypesTotalCount[userType]++;
-
-    emit UserRegistered(addr, userType);
-  }
+  // --- Public functions (State Modifying) ---
 
   /**
    * @dev Adds a new delation to the system. Enforces character limits for title and testimony, and requires both reporter and reported user to be registered.
@@ -127,6 +105,30 @@ contract CommunityRules is Ownable, Callable {
     delationsCount++;
 
     emit DelationAdded(msg.sender, addr);
+  }
+
+  // --- MustBeAllowedCaller functions (State modifying) ---
+
+  /**
+   * @notice Adds a new user to the system with a specified user type.
+   * @dev This function can only be called by an allowed caller (e.g., specific *Rules contracts for each user type).
+   * It enforces rules for single registration per address, valid user types, proportionality limits, and valid invitations if required.
+   * @param addr The address of the user to be registered.
+   * @param userType The desired `UserType` for the user.
+   */
+  function addUser(address addr, UserType userType) public mustBeAllowedCaller {
+    require(addr != address(0), "User address cannot be zero");
+    require(users[addr] == UserType.UNDEFINED, "User already exists"); // Only one registration per address
+    require(userType != UserType.UNDEFINED && userType != UserType.DENIED, "Invalid user type"); // Must selected the appropriate userType
+    require(_registrationProportionalityAllowed(userType), "Proportionality invalid"); // Vacancies according to the number of regenerators
+    require(_invitedTypeOnRegister(addr, userType), "Invalid invitation"); // Only with valid invitation
+
+    users[addr] = userType;
+    usersCount++;
+    userTypesCount[userType]++;
+    userTypesTotalCount[userType]++;
+
+    emit UserRegistered(addr, userType);
   }
 
   /**
@@ -165,7 +167,7 @@ contract CommunityRules is Ownable, Callable {
     emit DeniedUserEvent(userAddress);
   }
 
-  // --- Internal Functions ---
+  // --- Internal functions ---
 
   /**
    * @dev Checks if a user can register with a specific user type based on invitation requirements.
@@ -207,7 +209,7 @@ contract CommunityRules is Ownable, Callable {
     return registeredUserTypeCount <= regeneratorsCount / proportionality;
   }
 
-  // --- View Functions ---
+  // --- View functions ---
 
   /**
    * @notice Returns the total count of users currently classified as voters.

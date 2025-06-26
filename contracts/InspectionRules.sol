@@ -128,7 +128,7 @@ contract InspectionRules is Callable {
     voteRules = VoteRules(contractDependency.voteRulesAddress);
   }
 
-  // --- External Functions (State Modifying) ---
+  // --- Public functions (State Modifying) ---
 
   /**
    * @dev Allows a regenerator to request a new inspection for their registered area.
@@ -316,7 +316,7 @@ contract InspectionRules is Callable {
    * @dev Update regenerator data after request.
    */
   function _afterRequestInspection() internal {
-    regeneratorRules._afterRequestInspection(msg.sender);
+    regeneratorRules.afterRequestInspection(msg.sender);
   }
 
   /**
@@ -356,10 +356,10 @@ contract InspectionRules is Callable {
 
     activistRules.addRegeneratorLevel(
       regeneratorAddress,
-      regeneratorRules._afterRealizeInspection(regeneratorAddress, inspection.regenerationScore)
+      regeneratorRules.afterRealizeInspection(regeneratorAddress, inspection.regenerationScore)
     );
 
-    activistRules.addInspectorLevel(inspectorAddress, inspectorRules._afterRealizeInspection(inspectorAddress));
+    activistRules.addInspectorLevel(inspectorAddress, inspectorRules.afterRealizeInspection(inspectorAddress));
 
     regeneratorInspections[regeneratorAddress].push(inspection.id);
   }
