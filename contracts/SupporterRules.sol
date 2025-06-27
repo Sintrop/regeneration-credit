@@ -128,12 +128,12 @@ contract SupporterRules is ReentrancyGuard {
    * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
    * @param calculatorItemId The ID of the CalculatorItem, or 0 if not applicable.
    */
-  function offset(uint256 amount, uint64 calculatorItemId) public nonReentrant {
+  function offset(uint256 amount, uint64 calculatorItemId) public mustBeAllowedCaller returns (uint256 amountToBurn, uint256 commission, address inviter) {
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount >= 1000000000000000000, "Amount must be at least 1 RC");
     require(researcherRules.getCalculatorItem(calculatorItemId).id > 0, "Calculator item does not exist");
 
-    (uint256 amountToBurn, uint256 commission) = _calculateCommission(amount);
+    (uint256 amountToBurn, uint256 commission, address inviter) = _calculateCommission(amount);
 
     offsetsCount++;
     uint64 id = offsetsCount;
@@ -141,10 +141,9 @@ contract SupporterRules is ReentrancyGuard {
     calculatorItemCertificates[msg.sender][calculatorItemId] += amountToBurn;
 
     offsets[id] = Offset(msg.sender, block.number, amountToBurn, calculatorItemId);
-
     supporters[msg.sender].offsetsCount++;
 
-    _burnAndPayCommissions(amountToBurn, commission);
+    //_burnAndPayCommissions(amountToBurn, commission);
 
     emit OffsetMade(msg.sender, id, amountToBurn, calculatorItemId, block.number);
   }
@@ -157,12 +156,12 @@ contract SupporterRules is ReentrancyGuard {
    * @param description The description of the post (max 600 characters).
    * @param content The content of the post (max 600 characters).
    */
-  function publish(uint256 amount, string memory description, string memory content) public nonReentrant {
+  function publish(uint256 amount, string memory description, string memory content) public nonReentrant returns (uint256 amountToBurn, uint256 commission, address inviter) {
     require(bytes(description).length <= 600 && bytes(content).length <= 600, "Max 600 characters");
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount >= 1000000000000000000, "Amount must be at least 1 RC");
 
-    (uint256 amountToBurn, uint256 commission) = _calculateCommission(amount);
+    (uint256 amountToBurn, uint256 commission, address inviter) = _calculateCommission(amount);
 
     publicationsCount++;
     uint64 id = publicationsCount;
@@ -171,7 +170,7 @@ contract SupporterRules is ReentrancyGuard {
 
     supporters[msg.sender].publicationsCount++;
 
-    _burnAndPayCommissions(amountToBurn, commission);
+//    _burnAndPayCommissions(amountToBurn, commission);
 
     emit PublicationPosted(msg.sender, id, amountToBurn, description, block.number);
   }
@@ -206,18 +205,20 @@ contract SupporterRules is ReentrancyGuard {
    * @return amountToBurn The net amount of tokens burned by the supporter (after commission).
    * @return commission The commission for the invitation service provided.
    */
-  function _calculateCommission(uint256 amount) private view returns (uint256 amountToBurn, uint256 commission) {
+  function _calculateCommission(uint256 amount) private view returns (uint256 amountToBurn, uint256 commission, inviter) {
     Invitation memory invitation = communityRules.getInvitation(msg.sender);
     bool isInvited = invitation.createdAtBlock != 0; // Check if invitation exists
+
+    address inviter = invitation.inviter;
 
     commission = isInvited ? amount.mul(INVITER_PERCENTAGE).div(100) : 0;
     amountToBurn = amount.sub(commission);
   }
 
-  function _burnAndPayCommissions(uint256 amountToBurn, uint256 commission) private {
-    Invitation memory invitation = communityRules.getInvitation(msg.sender);
-    supporterPool.burnTokens(msg.sender, invitation.inviter, amountToBurn, commission);
-  }
+  // function _burnAndPayCommissions(uint256 amountToBurn, uint256 commission) private {
+  //   Invitation memory invitation = communityRules.getInvitation(msg.sender);
+  //   supporterPool.burnTokens(msg.sender, invitation.inviter, amountToBurn, commission);
+  // }
 
   // --- View Functions ---
 

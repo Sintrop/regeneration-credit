@@ -97,33 +97,49 @@ contract RegenerationCredit is ERC20, Ownable {
     _burnTokensInternal(msg.sender, amount);
   }
 
+  function offset(uint256 amount, uint64 calculatorItemId) public   {
+
+   (uint256 comission, uint256 amountToBurn, address inviter) = supporterRules.offset(amount, msg.sender)
+   
+   transfer(comission, inviter);
+   _burnTokensInternal(msg.sender, amountToBurn);
+  }
+
+  function publish(uint256 amount, string memory description, string memory content) public {
+
+   (uint256 comission, uint256 amountToBurn, address inviter) = supporterRules.offset(amount, msg.sender)
+
+    transfer(delegate, numTokens);
+   _burnTokensInternal(msg.sender, amountToBurn);
+  }  
+
   // --- Pool functions ---
 
-  /**
-   * @dev Allows a designated "contract pool" to transfer tokens to a user as a reward for
-   * providing environmental services.
-   * @notice This function facilitates token distribution from system pools.
-   * @param tokenOwner The address of the contract pool initiating the transfer.
-   * @param receiver The address of the user who will receive the tokens.
-   * @param numTokens The amount of tokens to transfer.
-   *
-   * Requirements:
-   * - Only a registered `contractPool` can call this function (`mustBeContractPool` modifier).
-   * - The `tokenOwner` (which is `contractPool` due to modifier) must have sufficient balance.
-   */
-  function transferWith(address tokenOwner, address receiver, uint256 numTokens) public mustBeContractPool {
-    require(numTokens <= balanceOf(tokenOwner), "You don't have RC Tokens");
+  // /**
+  //  * @dev Allows a designated "contract pool" to transfer tokens to a user as a reward for
+  //  * providing environmental services.
+  //  * @notice This function facilitates token distribution from system pools.
+  //  * @param tokenOwner The address of the contract pool initiating the transfer.
+  //  * @param receiver The address of the user who will receive the tokens.
+  //  * @param numTokens The amount of tokens to transfer.
+  //  *
+  //  * Requirements:
+  //  * - Only a registered `contractPool` can call this function (`mustBeContractPool` modifier).
+  //  * - The `tokenOwner` (which is `contractPool` due to modifier) must have sufficient balance.
+  //  */
+  // function transferWith(address tokenOwner, address receiver, uint256 numTokens) public mustBeContractPool {
+  //   require(numTokens <= balanceOf(tokenOwner), "You don't have RC Tokens");
 
-    // Perform the transfer using OpenZeppelin's internal _transfer function.
-    _transfer(tokenOwner, receiver, numTokens);
+  //   // Perform the transfer using OpenZeppelin's internal _transfer function.
+  //   _transfer(tokenOwner, receiver, numTokens);
 
-    // Update total locked tokens.
-    unchecked {
-      if (contractsPools[tokenOwner]) totalLocked_ -= numTokens;
-    }
-    // Emit event specific to pool transfers.
-    emit PoolTransfer(tokenOwner, receiver, numTokens);
-  }
+  //   // Update total locked tokens.
+  //   unchecked {
+  //     if (contractsPools[tokenOwner]) totalLocked_ -= numTokens;
+  //   }
+  //   // Emit event specific to pool transfers.
+  //   emit PoolTransfer(tokenOwner, receiver, numTokens);
+  // }
 
   /**
    * @dev Allows a designated "contract pool" to
@@ -146,22 +162,22 @@ contract RegenerationCredit is ERC20, Ownable {
     emit PoolTransfer(tokenOwner, receiver, numTokens);
   }
 
-  /**
-   * @dev Allows a designated "contract pool" to burn tokens on behalf of another address.
-   * @notice This function can only be called by the SupporterPool.
-   * @param tokenOwner The address from which tokens will be burned.
-   * @param amount The amount of tokens to burn.
-   *
-   * Requirements:
-   * - Only a registered `contractPool` can call this function (`mustBeContractPool` modifier).
-   * - `tokenOwner` must have `amount` tokens.
-   * - `amount` must be greater than 0.
-   * - `tokenOwner` must not be the zero address.
-   */
-  function burnTokensWith(address tokenOwner, uint256 amount) public mustBeContractPool {
-    require(amount > 0, "Burn amount must be greater than 0");
-    _burnTokensInternal(tokenOwner, amount);
-  }
+  // /**
+  //  * @dev Allows a designated "contract pool" to burn tokens on behalf of another address.
+  //  * @notice This function can only be called by the SupporterPool.
+  //  * @param tokenOwner The address from which tokens will be burned.
+  //  * @param amount The amount of tokens to burn.
+  //  *
+  //  * Requirements:
+  //  * - Only a registered `contractPool` can call this function (`mustBeContractPool` modifier).
+  //  * - `tokenOwner` must have `amount` tokens.
+  //  * - `amount` must be greater than 0.
+  //  * - `tokenOwner` must not be the zero address.
+  //  */
+  // function burnTokensWith(address tokenOwner, uint256 amount) public mustBeContractPool {
+  //   require(amount > 0, "Burn amount must be greater than 0");
+  //   _burnTokensInternal(tokenOwner, amount);
+  // }
 
   // --- Internal functions ---
 
