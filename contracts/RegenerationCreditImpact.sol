@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import { IRegenerationCredit_Impact } from "./interfaces/IRegenerationCredit_Impact.sol";
-import { InspectionRules } from "./InspectionRules.sol";
+import { IInspectionRules_Impact } from "./interfaces/IInspectionRules_Impact.sol";
 import { RegeneratorRules } from "./RegeneratorRules.sol";
 import { CommunityRules } from "./CommunityRules.sol";
 import { UserType } from "./types/CommunityTypes.sol";
@@ -11,7 +11,7 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 /**
  * @title RegenerationCreditImpact
  * @author Sintrop
- * @dev Total impact and token impact functions. These f
+ * @dev Total impact and token impact functions.
  * @notice Manages and calculates Regeneration Credit system impact. This contract is responsible for
  * calculating the system impact and also the impact per token. This is the foundation, the community impact is what is backing the Regeneration Credit.
  */
@@ -34,7 +34,7 @@ contract RegenerationCreditImpact {
   uint256 public constant CARBON_PER_TREE = 100000;
 
   IRegenerationCredit_Impact internal regenerationCredit;
-  InspectionRules internal inspectionRules;
+  IInspectionRules_Impact internal inspectionRules;
   CommunityRules internal communityRules;
   RegeneratorRules internal regeneratorRules;
 
@@ -55,7 +55,7 @@ contract RegenerationCreditImpact {
     address regeneratorRulesAddress
   ) {
     regenerationCredit = IRegenerationCredit_Impact(regenerationCreditAddress);
-    inspectionRules = InspectionRules(inspectionRulesAddress);
+    inspectionRules = IInspectionRules_Impact(inspectionRulesAddress);
     communityRules = CommunityRules(communityRulesAddress);
     regeneratorRules = RegeneratorRules(regeneratorRulesAddress);
   }
