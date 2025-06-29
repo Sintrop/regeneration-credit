@@ -4,11 +4,11 @@ pragma solidity ^0.8.27;
 import "contracts/types/InspectorTypes.sol";
 
 /**
- * @title IInspectorRules
+ * @title IInspectorRules_Inspection
  * @notice Interface for the InspectorRules contract, which manages the rules,
  * status, and actions for Inspector users.
  */
-interface IInspectorRules {
+interface IInspectorRules_Inspection {
   /**
    * @notice Checks if an inspector is still valid and has not exceeded their limits (e.g., give-ups).
    * @param account The address of the inspector to check.

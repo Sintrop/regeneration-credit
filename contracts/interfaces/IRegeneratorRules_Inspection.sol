@@ -4,11 +4,11 @@ pragma solidity ^0.8.27;
 import "contracts/types/RegeneratorTypes.sol";
 
 /**
- * @title IRegeneratorRules
+ * @title IRegeneratorRules_Inspection
  * @notice Interface for the RegeneratorRules contract, which manages the
  * data and state transitions for Regenerator users, especially regarding inspections.
  */
-interface IRegeneratorRules {
+interface IRegeneratorRules_Inspection {
   /**
    * @notice Retrieves the full Regenerator struct for a given account.
    * @param account The address of the regenerator.

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { IRegeneratorRules } from "./interfaces/IRegeneratorRules.sol";
-import { IInspectorRules } from "./interfaces/IInspectorRules.sol";
+import { IRegeneratorRules_Inspection } from "./interfaces/IRegeneratorRules_Inspection.sol";
+import { IInspectorRules_Inspection } from "./interfaces/IInspectorRules_Inspection.sol";
 import { IRegenerationIndexRules } from "./interfaces/IRegenerationIndexRules.sol";
 import { IValidationRules_Inspection } from "./interfaces/IValidationRules_Inspection.sol";
 import { IActivistRules_Inspection } from "./interfaces/IActivistRules_Inspection.sol";
@@ -64,10 +64,10 @@ contract InspectionRules is Callable {
   mapping(address => mapping(address => bool)) internal inspectorInspected;
 
   /// @notice InspectorRules contract instance for interacting with inspector-specific logic.
-  IInspectorRules private inspectorRules;
+  IInspectorRules_Inspection private inspectorRules;
 
   /// @notice RegeneratorRules contract instance for interacting with regenerator-specific logic.
-  IRegeneratorRules private regeneratorRules;
+  IRegeneratorRules_Inspection private regeneratorRules;
 
   /// @notice CommunityRules contract instance for checking user types and other community-wide rules.
   ICommunityRules_Inspection private communityRules;
@@ -120,9 +120,9 @@ contract InspectionRules is Callable {
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
     communityRules = ICommunityRules_Inspection(contractDependency.communityRulesAddress);
-    regeneratorRules = IRegeneratorRules(contractDependency.regeneratorRulesAddress);
+    regeneratorRules = IRegeneratorRules_Inspection(contractDependency.regeneratorRulesAddress);
     validationRules = IValidationRules_Inspection(contractDependency.validationRulesAddress);
-    inspectorRules = IInspectorRules(contractDependency.inspectorRulesAddress);
+    inspectorRules = IInspectorRules_Inspection(contractDependency.inspectorRulesAddress);
     regenerationIndexRules = IRegenerationIndexRules(contractDependency.regenerationIndexRulesAddress);
     activistRules = IActivistRules_Inspection(contractDependency.activistRulesAddress);
     voteRules = IVoteRules(contractDependency.voteRulesAddress);
