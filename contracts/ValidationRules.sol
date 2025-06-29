@@ -15,7 +15,7 @@ import { Inspection } from "./types/InspectionTypes.sol";
 import { Report } from "./types/DeveloperTypes.sol";
 import { Research } from "./types/ResearcherTypes.sol";
 import { Contribution } from "./types/ContributorTypes.sol";
-import { VoteRules } from "./VoteRules.sol";
+import { IVoteRules } from "./interfaces/IVoteRules.sol";
 
 /**
  * @title ValidationRules
@@ -56,7 +56,7 @@ contract ValidationRules is Callable {
   ActivistRules private activistRules;
 
   /// @notice VoteRules contract address.
-  VoteRules internal voteRules;
+  IVoteRules internal voteRules;
 
   /// @notice Amount of blocks between votes.
   uint256 private immutable timeBetweenVotes;
@@ -84,7 +84,7 @@ contract ValidationRules is Callable {
     researcherRules = ResearcherRules(contractDependency.researcherRulesAddress);
     contributorRules = ContributorRules(contractDependency.contributorRulesAddress);
     activistRules = ActivistRules(contractDependency.activistRulesAddress);
-    voteRules = VoteRules(contractDependency.voteRulesAddress);
+    voteRules = IVoteRules(contractDependency.voteRulesAddress);
   }
 
   // --- External Functions (State Modifying) ---

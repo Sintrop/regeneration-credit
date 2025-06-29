@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import { RegenerationCreditInterface } from "./interfaces/RegenerationCreditInterface.sol";
+import { IRegenerationCredit } from "./interfaces/IRegenerationCredit.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Blockable } from "./shared/Blockable.sol";
@@ -21,7 +21,7 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;
 
   /// @notice Interface to the Regeneration Credit token contract, used for token transfers.
-  RegenerationCreditInterface internal regenerationCredit;
+  IRegenerationCredit internal regenerationCredit;
 
   /// @notice The total supply of Regeneration Credit tokens designated for this researcher pool.
   /// This value represents the maximum tokens available for distribution through this contract.
@@ -41,7 +41,7 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
     uint256 _halving,
     uint256 _blocksPerEra
   ) Blockable(_blocksPerEra, _halving) Poolable(TOTAL_POOL_TOKENS) {
-    regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
+    regenerationCredit = IRegenerationCredit(regenerationCreditAddress);
   }
 
   /**

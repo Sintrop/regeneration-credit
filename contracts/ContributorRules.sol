@@ -3,14 +3,14 @@ pragma solidity ^0.8.27;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { CommunityRules } from "./CommunityRules.sol";
+import { ICommunityRules_User } from "./interfaces/ICommunityRules_User.sol";
+import { IVoteRules } from "./interfaces/IVoteRules.sol";
 import { UserType } from "./types/CommunityTypes.sol";
-import { ContributorPool } from "./ContributorPool.sol";
+import { IContributorPool } from "./interfaces/IContributorPool.sol";
 import { Contributor, Pool, Contribution, Penalty, ContractsDependency } from "./types/ContributorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
-import { VoteRules } from "./VoteRules.sol";
-import { ValidationRules } from "./ValidationRules.sol";
+import { IValidationRules_Contributor } from "./interfaces/IValidationRules_Contributor.sol";
 
 /**
  * @title ContributorRules
@@ -62,19 +62,19 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  CommunityRules internal communityRules;
+  ICommunityRules_User internal communityRules;
 
   /// @notice The address of the `ContributorPool` contract, responsible for managing
   /// and distributing token rewards to contributors.
-  ContributorPool internal contributorPool;
+  IContributorPool internal contributorPool;
 
   /// @notice The address of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating contributions.
-  ValidationRules internal validationRules;
+  IValidationRules_Contributor internal validationRules;
 
   /// @notice The address of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for contribution validation.
-  VoteRules internal voteRules;
+  IVoteRules internal voteRules;
 
   /// @notice The specific `UserType` enumeration value for a Contributor user.
   UserType private constant USER_TYPE = UserType.CONTRIBUTOR;
@@ -103,10 +103,10 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * @param contractDependency Addresses of system contracts used
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
-    communityRules = CommunityRules(contractDependency.communityRulesAddress);
-    contributorPool = ContributorPool(contractDependency.contributorPoolAddress);
-    validationRules = ValidationRules(contractDependency.validationRulesAddress);
-    voteRules = VoteRules(contractDependency.voteRulesAddress);
+    communityRules = ICommunityRules_User(contractDependency.communityRulesAddress);
+    contributorPool = IContributorPool(contractDependency.contributorPoolAddress);
+    validationRules = IValidationRules_Contributor(contractDependency.validationRulesAddress);
+    voteRules = IVoteRules(contractDependency.voteRulesAddress);
   }
 
   // --- Public functions ---
