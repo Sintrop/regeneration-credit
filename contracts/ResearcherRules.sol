@@ -306,7 +306,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param addr Researcher wallet
    * @param researchId Research id
    */
-  function addPenalty(address addr, uint256 researchId) public mustBeAllowedCaller returns (uint256) {
+  function addPenalty(address addr, uint64 researchId) public mustBeAllowedCaller returns (uint256) {
     penalties[addr].push(Penalty(researchId));
 
     return totalPenalties(addr);
