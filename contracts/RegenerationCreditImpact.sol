@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0 <0.9.0;
 
-import { RegenerationCredit } from "./RegenerationCredit.sol";
+import { IRegenerationCredit_Impact } from "./interfaces/IRegenerationCredit_Impact.sol";
 import { InspectionRules } from "./InspectionRules.sol";
 import { RegeneratorRules } from "./RegeneratorRules.sol";
 import { CommunityRules } from "./CommunityRules.sol";
@@ -33,7 +33,7 @@ contract RegenerationCreditImpact {
    */
   uint256 public constant CARBON_PER_TREE = 100000;
 
-  RegenerationCredit internal regenerationCredit;
+  IRegenerationCredit_Impact internal regenerationCredit;
   InspectionRules internal inspectionRules;
   CommunityRules internal communityRules;
   RegeneratorRules internal regeneratorRules;
@@ -54,7 +54,7 @@ contract RegenerationCreditImpact {
     address communityRulesAddress,
     address regeneratorRulesAddress
   ) {
-    regenerationCredit = RegenerationCredit(regenerationCreditAddress);
+    regenerationCredit = IRegenerationCredit_Impact(regenerationCreditAddress);
     inspectionRules = InspectionRules(inspectionRulesAddress);
     communityRules = CommunityRules(communityRulesAddress);
     regeneratorRules = RegeneratorRules(regeneratorRulesAddress);

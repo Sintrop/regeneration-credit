@@ -86,7 +86,6 @@ describe("RegenerationCreditImpact", () => {
       ZERO_ADDRESS,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
-      ZERO_ADDRESS,
       ZERO_ADDRESS
     );
 

@@ -7,7 +7,6 @@ import { IResearcherRules } from "./interfaces/IResearcherRules.sol";
 import { IDeveloperRules } from "./interfaces/IDeveloperRules.sol";
 import { IActivistRules_Invitation } from "./interfaces/IActivistRules_Invitation.sol";
 import { IContributorRules } from "./interfaces/IContributorRules.sol";
-import { ValidationRules } from "./ValidationRules.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 
 /**
@@ -47,9 +46,6 @@ contract InvitationRules is Ownable {
   /// @notice ContributorRules contract address
   IContributorRules internal contributorRules;
 
-  /// @notice ValidationRules contract address
-  ValidationRules internal validationRules;
-
   // --- Constructor ---
 
   /**
@@ -60,22 +56,19 @@ contract InvitationRules is Ownable {
    * @param developerRulesAddress Address of the DeveloperRules contract.
    * @param activistRulesAddress Address of the ActivistRules contract.
    * @param contributorRulesAddress Address of the ContributorRules contract.
-   * @param validationRulesAddress Address of the ValidationRules contract.
    */
   constructor(
     address communityRulesAddress,
     address researcherRulesAddress,
     address developerRulesAddress,
     address activistRulesAddress,
-    address contributorRulesAddress,
-    address validationRulesAddress
+    address contributorRulesAddress
   ) {
     communityRules = ICommunityRules_Invitation(communityRulesAddress);
     researcherRules = IResearcherRules(researcherRulesAddress);
     developerRules = IDeveloperRules(developerRulesAddress);
     activistRules = IActivistRules_Invitation(activistRulesAddress);
     contributorRules = IContributorRules(contributorRulesAddress);
-    validationRules = ValidationRules(validationRulesAddress);
 
     // Definition of invitation permissions: who can invite whom
     canBeInviteds[UserType.ACTIVIST] = UserType.ACTIVIST;

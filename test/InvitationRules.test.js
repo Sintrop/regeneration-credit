@@ -96,8 +96,7 @@ describe("InvitationRules", () => {
       researcherRules.target,
       developerRules.target,
       activistRules.target,
-      contributorRules.target,
-      validationRules.target
+      contributorRules.target
     );
 
     await communityRules.newAllowedCaller(instance.target);
