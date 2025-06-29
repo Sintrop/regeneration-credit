@@ -91,11 +91,7 @@ describe("RegenerationCreditImpact", () => {
 
     const instanceFactory = await ethers.getContractFactory("RegenerationCreditImpact");
 
-    instance = await instanceFactory.deploy(
-      regenerationCredit.target,
-      inspectionRules.target,
-      regeneratorRules.target
-    );
+    instance = await instanceFactory.deploy(regenerationCredit.target, inspectionRules.target, regeneratorRules.target);
 
     await communityRules.newAllowedCaller(invitationRules.target);
     await regeneratorRules.newAllowedCaller(owner);

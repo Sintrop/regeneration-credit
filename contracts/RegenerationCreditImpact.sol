@@ -45,11 +45,7 @@ contract RegenerationCreditImpact {
    * @param inspectionRulesAddress Address of the InspectionRules contract.
    * @param regeneratorRulesAddress Address of the RegeneratorRules contract.
    */
-  constructor(
-    address regenerationCreditAddress,
-    address inspectionRulesAddress,
-    address regeneratorRulesAddress
-  ) {
+  constructor(address regenerationCreditAddress, address inspectionRulesAddress, address regeneratorRulesAddress) {
     regenerationCredit = IRegenerationCredit_Impact(regenerationCreditAddress);
     inspectionRules = IInspectionRules_Impact(inspectionRulesAddress);
     regeneratorRules = IRegeneratorRules_Impact(regeneratorRulesAddress);
