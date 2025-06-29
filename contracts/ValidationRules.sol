@@ -3,19 +3,19 @@ pragma solidity ^0.8.27;
 
 import { ICommunityRules_Validation } from "./interfaces/ICommunityRules_Validation.sol";
 import { IRegeneratorRules_Validation } from "./interfaces/IRegeneratorRules_Validation.sol";
-import { ContractsDependency } from "./types/ValidationTypes.sol";
-import { UserType } from "./types/CommunityTypes.sol";
-import { Callable } from "./shared/Callable.sol";
 import { IInspectorRules_Validation } from "./interfaces/IInspectorRules_Validation.sol";
 import { IDeveloperRules_Validation } from "./interfaces/IDeveloperRules_Validation.sol";
 import { IResearcherRules_Validation } from "./interfaces/IResearcherRules_Validation.sol";
 import { IContributorRules_Validation } from "./interfaces/IContributorRules_Validation.sol";
 import { IActivistRules_Validation } from "./interfaces/IActivistRules_Validation.sol";
+import { IVoteRules } from "./interfaces/IVoteRules.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
 import { Report } from "./types/DeveloperTypes.sol";
 import { Research } from "./types/ResearcherTypes.sol";
 import { Contribution } from "./types/ContributorTypes.sol";
-import { IVoteRules } from "./interfaces/IVoteRules.sol";
+import { ContractsDependency } from "./types/ValidationTypes.sol";
+import { UserType } from "./types/CommunityTypes.sol";
+import { Callable } from "./shared/Callable.sol";
 
 /**
  * @title ValidationRules

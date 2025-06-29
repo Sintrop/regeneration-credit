@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.27;
 
+import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { IRegenerationCredit_Impact } from "./interfaces/IRegenerationCredit_Impact.sol";
 import { IInspectionRules_Impact } from "./interfaces/IInspectionRules_Impact.sol";
 import { IRegeneratorRules_Impact } from "./interfaces/IRegeneratorRules_Impact.sol";
 import { UserType } from "./types/CommunityTypes.sol";
-import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
  * @title RegenerationCreditImpact

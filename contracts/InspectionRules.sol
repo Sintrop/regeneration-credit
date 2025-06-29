@@ -7,12 +7,12 @@ import { IRegenerationIndexRules } from "./interfaces/IRegenerationIndexRules.so
 import { IValidationRules_Inspection } from "./interfaces/IValidationRules_Inspection.sol";
 import { IActivistRules_Inspection } from "./interfaces/IActivistRules_Inspection.sol";
 import { ICommunityRules_Inspection } from "./interfaces/ICommunityRules_Inspection.sol";
+import { IVoteRules } from "./interfaces/IVoteRules.sol";
 import { InspectionStatus, Inspection, ContractsDependency } from "./types/InspectionTypes.sol";
 import { Regenerator } from "./types/RegeneratorTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
-import { IVoteRules } from "./interfaces/IVoteRules.sol";
 
 /**
  * @title InspectionRules

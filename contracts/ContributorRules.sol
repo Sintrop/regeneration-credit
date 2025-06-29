@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ICommunityRules_User } from "./interfaces/ICommunityRules_User.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
-import { UserType } from "./types/CommunityTypes.sol";
 import { IContributorPool } from "./interfaces/IContributorPool.sol";
+import { IValidationRules_Contributor } from "./interfaces/IValidationRules_Contributor.sol";
+import { UserType } from "./types/CommunityTypes.sol";
 import { Contributor, Pool, Contribution, Penalty, ContractsDependency } from "./types/ContributorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
-import { IValidationRules_Contributor } from "./interfaces/IValidationRules_Contributor.sol";
 
 /**
  * @title ContributorRules

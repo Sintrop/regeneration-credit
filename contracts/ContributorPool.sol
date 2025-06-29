@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { IRegenerationCredit } from "./interfaces/IRegenerationCredit.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { IRegenerationCredit } from "./interfaces/IRegenerationCredit.sol";
 import { Blockable } from "./shared/Blockable.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Poolable } from "./shared/Poolable.sol";

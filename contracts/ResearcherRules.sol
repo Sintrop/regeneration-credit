@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { Callable } from "./shared/Callable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { Invitable } from "./shared/Invitable.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
 import { ICommunityRules_User } from "./interfaces/ICommunityRules_User.sol";
-import { Researcher, Research, Pool, CalculatorItem, EvaluationMethod, Penalty, ContractsDependency } from "./types/ResearcherTypes.sol";
-import { UserType } from "./types/CommunityTypes.sol";
 import { IResearcherPool } from "./interfaces/IResearcherPool.sol";
 import { IValidationRules_Researcher } from "./interfaces/IValidationRules_Researcher.sol";
+import { Researcher, Research, Pool, CalculatorItem, EvaluationMethod, Penalty, ContractsDependency } from "./types/ResearcherTypes.sol";
+import { UserType } from "./types/CommunityTypes.sol";
+import { Callable } from "./shared/Callable.sol";
 
 /**
  * @title ResearcherRules
