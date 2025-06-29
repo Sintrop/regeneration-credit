@@ -94,7 +94,6 @@ describe("RegenerationCreditImpact", () => {
     instance = await instanceFactory.deploy(
       regenerationCredit.target,
       inspectionRules.target,
-      communityRules.target,
       regeneratorRules.target
     );
 
