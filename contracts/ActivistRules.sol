@@ -21,11 +21,13 @@ import { Invitable } from "./shared/Invitable.sol";
  */
 
 contract ActivistRules is Callable, Invitable, ReentrancyGuard {
-  // --- Constants & State Variables ---
+  // --- Constants ---
+  uint16 private constant MAX_USER_COUNT = 16000;
+  uint16 private constant MAX_NAME_LENGTH = 50;
+  uint16 private constant MAX_HASH_LENGTH = 150;
+  uint16 private constant MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS = 3;
 
-  /// @notice The minimum number of inspections an invited Regenerator or Inspector must complete
-  /// for the inviting activist to "win a pool level".
-  uint8 private constant MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS = 3;
+  // --- State Variables ---
 
   /// @notice The total count of all invitations that have been successfully approved across the entire system.
   uint32 public approvedInvites;
@@ -84,9 +86,9 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    */
   function addActivist(string memory name, string memory proofPhoto) public {
     // Character limit validation for name and proofPhoto.
-    require(bytes(name).length <= 100 && bytes(proofPhoto).length <= 100, "Max 100 characters");
+    require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     // Max limit for activist users in the system.
-    require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max user limit");
+    require(communityRules.userTypesCount(USER_TYPE) <= MAX_USER_COUNT, "Max user limit");
 
     // Generate a unique ID for the new activist.
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;

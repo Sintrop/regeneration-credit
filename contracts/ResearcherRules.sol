@@ -26,14 +26,14 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   // --- State Variables ---
 
   /// @notice The maximum number of penalties a researcher can accumulate before facing invalidation.
-  uint8 public immutable MAX_PENALTIES;
+  uint8 public immutable maxPenalties;
 
   /// @notice Waiting blocks to publish research.
   uint32 internal immutable timeBetweenWorks;
 
   /// @notice The number of blocks before the end of an era during which no new researchs can be published.
   /// This period allows validators sufficient time to analyze and vote on researchs before the era concludes.
-  uint32 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
+  uint32 public immutable securityBlocksToValidation;
 
   /// @notice The total count of researchs that are currently considered valid (not invalidated).
   uint64 public researchesCount;
@@ -103,8 +103,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    */
   constructor(uint32 timeBetweenWorks_, uint8 maxPenalties_, uint32 securityBlocksToValidatorAnalysis) {
     timeBetweenWorks = timeBetweenWorks_;
-    MAX_PENALTIES = maxPenalties_;
-    SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
+    maxPenalties = maxPenalties_;
+    securityBlocksToValidation = securityBlocksToValidatorAnalysis;
   }
 
   // --- State-Modifying Functions ---
@@ -167,7 +167,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   function addResearch(string memory title, string memory thesis, string memory file) public {
     require(bytes(title).length <= 100 && bytes(thesis).length <= 300 && bytes(file).length <= 150, "Max characters");
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
-    require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era");
+    require(nextEraIn() > securityBlocksToValidation, "Wait until next era");
     require(_canPublishResearch(msg.sender), "Can't publish yet");
 
     researchesCount++;

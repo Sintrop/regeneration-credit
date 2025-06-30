@@ -198,7 +198,7 @@ contract ValidationRules is Callable {
 
     emit ResourceInvalidated("Report", report.id, report.developer, developerTotalPenalties); // Emit event
 
-    if (developerTotalPenalties >= developerRules.MAX_PENALTIES()) _denyUser(report.developer);
+    if (developerTotalPenalties >= developerRules.maxPenalties()) _denyUser(report.developer);
   }
 
   /**
@@ -234,7 +234,7 @@ contract ValidationRules is Callable {
 
     emit ResourceInvalidated("Contribution", contribution.id, contribution.user, contributorTotalPenalties); // Emit event
 
-    if (contributorTotalPenalties >= contributorRules.MAX_PENALTIES()) _denyUser(contribution.user);
+    if (contributorTotalPenalties >= contributorRules.maxPenalties()) _denyUser(contribution.user);
   }
 
   /**
@@ -269,7 +269,7 @@ contract ValidationRules is Callable {
 
     emit ResourceInvalidated("Research", research.id, research.createdBy, totalPenalties); // Emit event
 
-    if (totalPenalties >= researcherRules.MAX_PENALTIES()) _denyUser(research.createdBy);
+    if (totalPenalties >= researcherRules.maxPenalties()) _denyUser(research.createdBy);
   }
 
   // --- Internal Functions ---

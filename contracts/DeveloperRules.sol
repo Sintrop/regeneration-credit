@@ -24,10 +24,16 @@ import { Invitable } from "./shared/Invitable.sol";
  * eligibility, and `ValidationRules` for report validation processes.
  */
 contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
+  // --- Constants ---
+  uint16 private constant MAX_USER_COUNT = 16000;
+  uint16 private constant MAX_NAME_LENGTH = 50;
+  uint16 private constant MAX_HASH_LENGTH = 150;
+  uint16 private constant MAX_TEXT_LENGTH = 300;
+
   // --- State Variables ---
 
   /// @notice The maximum number of penalties a developer can accumulate before facing invalidation.
-  uint8 public immutable MAX_PENALTIES;
+  uint8 public immutable maxPenalties;
 
   /// @notice The minimum number of blocks that must elapse between a developer's successful report publications.
   /// This prevents spamming or rapid consecutive report submissions.
@@ -35,7 +41,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice The number of blocks before the end of an era during which no new reports can be published.
   /// This period allows validators sufficient time to analyze and vote on reports before the era concludes.
-  uint32 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
+  uint32 public immutable securityBlocksToValidation;
 
   /// @notice The total count of development reports that are currently considered valid (not invalidated).
   uint64 public reportsCount;
@@ -93,8 +99,8 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    */
   constructor(uint32 timeBetweenWorks_, uint8 maxPenalties_, uint32 securityBlocksToValidatorAnalysis) {
     timeBetweenWorks = timeBetweenWorks_;
-    MAX_PENALTIES = maxPenalties_;
-    SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
+    maxPenalties = maxPenalties_;
+    securityBlocksToValidation = securityBlocksToValidatorAnalysis;
   }
 
   /**
@@ -126,9 +132,9 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    */
   function addDeveloper(string memory name, string memory proofPhoto) public {
     // Character limit validation for name and proofPhoto.
-    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 150, "Max characters");
+    require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     // Max limit for developer users in the system.
-    require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max user limit");
+    require(communityRules.userTypesCount(USER_TYPE) <= MAX_USER_COUNT, "Max user limit");
 
     // Generate a unique ID for the new developer.
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
@@ -154,7 +160,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * - The `description` string must not exceed 300 characters in byte length.
    * - The `report` hash/identifier string must not exceed 150 characters in byte length.
    * - The caller (`msg.sender`) must be a registered `DEVELOPER`.
-   * - The current block number must be greater than `SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS` blocks away
+   * - The current block number must be greater than `securityBlocksToValidation` blocks away
    * from the end of the current era (i.e., not within the security window).
    * - The developer must be eligible to publish based on `timeBetweenWorks` (checked via `canPublishReport`).
    * @param description A title or brief description of the report.
@@ -162,11 +168,11 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    */
   function addReport(string memory description, string memory report) public {
     // Character limit validation for description and report.
-    require(bytes(description).length <= 300 && bytes(report).length <= 150, "Max characters reached");
+    require(bytes(description).length <= MAX_TEXT_LENGTH && bytes(report).length <= MAX_HASH_LENGTH, "Max characters reached");
     // Only registered developers can call this function.
     require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
     // Check if within the security window before era end.
-    require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add report");
+    require(nextEraIn() > securityBlocksToValidation, "Wait until next era to add report");
     // Check if enough time has passed since the last publication.
     require(canPublishReport(msg.sender), "Can't publish yet");
 
@@ -205,7 +211,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    */
   function addReportValidation(uint64 id, string memory justification) public {
     // Character limit validation for justification.
-    require(bytes(justification).length <= 300, "Max 300 characters");
+    require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max 300 characters");
     // Check if the caller is eligible to vote. User.level must be greater than average levels.
     require(voteRules.canVote(msg.sender), "Not a voter");
     // Check if the caller has waited the required time between votes.

@@ -19,7 +19,7 @@ interface IContributorRules_Validation {
    * @notice Returns the maximum number of penalties a contributor can have before being denied.
    * @return The maximum penalty count.
    */
-  function MAX_PENALTIES() external view returns (uint8);
+  function maxPenalties() external view returns (uint8);
 
   /**
    * @notice Returns the current era of the related pool.
