@@ -10,9 +10,9 @@ async function developerRulesDeploy() {
 
   const timeBetweenWorks = process.env["TIME_BETWEEN_WORKS"];
   const developerMaxPenalties = process.env["DEVELOPER_MAX_PENALTIES"];
-  const securityBlocksToValidatorAnalysis = process.env["DEVELOPER_SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS"];
+  const securityBlocksToValidation_ = process.env["DEVELOPER_SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS"];
 
-  const args = [timeBetweenWorks, developerMaxPenalties, securityBlocksToValidatorAnalysis];
+  const args = [timeBetweenWorks, developerMaxPenalties, securityBlocksToValidation_];
 
   const developerRules = await DeveloperRules.deploy(...args);
 

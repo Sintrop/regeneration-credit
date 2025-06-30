@@ -20,11 +20,34 @@ import { Callable } from "./shared/Callable.sol";
  * total area), regeneration score tracking, inspection processes, and penalty management.
  */
 contract RegeneratorRules is Callable, ReentrancyGuard {
-  // --- Contants & state Variables ---
+  // --- Contants ---
 
   /// @notice The minimum number of successful inspections a regenerator must have
   /// to be eligible for rewards from the Regenerator Pool.
   uint8 internal constant MINIMUM_INSPECTIONS_TO_POOL = 3;
+
+  /// @notice Minimum number of coordinate points to define a regeneration area.
+  uint8 private constant MIN_COORDINATES_COUNT = 3;
+
+  /// @notice Maximum number of coordinate points to define a regeneration area.
+  uint8 private constant MAX_COORDINATES_COUNT = 10;
+
+  /// @notice Maximum character length for the regenerator's name.
+  uint16 private constant MAX_NAME_LENGTH = 50;
+
+  /// @notice Maximum character length for photo URLs or IPFS hashes.
+  uint16 private constant MAX_HASH_LENGTH = 150;
+
+  /// @notice Maximum character length for the project description.
+  uint16 private constant MAX_PROJECT_DESCRIPTION_LENGTH = 200;
+
+  /// @notice Minimum total area in square meters (m²) for a regeneration project.
+  uint32 private constant MIN_REGENERATION_AREA = 500;
+
+  /// @notice Maximum total area in square meters (m²) for a regeneration project.
+  uint32 private constant MAX_REGENERATION_AREA = 500000;
+
+  // --- State variables ---
 
   /// @notice A mapping from a regenerator's wallet address to their detailed `Regenerator` data structure.
   /// This serves as the primary storage for regenerator profiles.
@@ -90,7 +113,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * Requirements:
    * - The caller (`msg.sender`) must not already be a registered regenerator.
    * - The `name` string must not exceed `MAX_NAME_LENGTH` (50) characters in byte length.
-   * - The `proofPhoto` string must not exceed `MAX_PROOF_PHOTO_LENGTH` (150) characters in byte length.
+   * - The `proofPhoto` string must not exceed `MAX_HASH_LENGTH` (150) characters in byte length.
    * - The `projectDescription` string must not exceed `MAX_PROJECT_DESCRIPTION_LENGTH` (200) characters in byte length.
    * - The `_coordinates` array must contain between (3) and (10) points.
    * - The `totalArea` must be between (500) and (500,000) square meters [m²].
@@ -108,11 +131,19 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     Coordinates[] memory _coordinates
   ) public {
     require(
-      bytes(name).length <= 50 && bytes(proofPhoto).length <= 150 && bytes(projectDescription).length <= 200,
+      bytes(name).length <= MAX_NAME_LENGTH &&
+        bytes(proofPhoto).length <= MAX_HASH_LENGTH &&
+        bytes(projectDescription).length <= MAX_PROJECT_DESCRIPTION_LENGTH,
       "Max characters reached"
     );
-    require(_coordinates.length >= 3 && _coordinates.length <= 10, "Minimum 3 and maximum 10 coordinate points");
-    require(totalArea >= 500 && totalArea <= 500000, "Minimum 500 and maximum 500.000 square meters");
+    require(
+      _coordinates.length >= MIN_COORDINATES_COUNT && _coordinates.length <= MAX_COORDINATES_COUNT,
+      "Minimum 3 and maximum 10 coordinate points"
+    );
+    require(
+      totalArea >= MIN_REGENERATION_AREA && totalArea <= MAX_REGENERATION_AREA,
+      "Minimum 500 and maximum 500.000 square meters"
+    );
 
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
@@ -186,11 +217,11 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param newPhoto The new hash or identifier of the area photo.
    *
    * Requirements:
-   * - The `newPhoto` string must not exceed 100 characters in byte length.
+   * - The `newPhoto` string must not exceed 150 characters in byte length.
    * - The caller (`msg.sender`) must be a registered `REGENERATOR`.
    */
   function updateAreaPhoto(string memory newPhoto) public {
-    require(bytes(newPhoto).length <= 150, "Max characters");
+    require(bytes(newPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
 
     areaPhoto[msg.sender] = newPhoto;

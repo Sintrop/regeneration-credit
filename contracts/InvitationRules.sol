@@ -16,10 +16,12 @@ import { UserType } from "./types/CommunityTypes.sol";
  * @notice This contract manages the rules and logic for users to invite others into the community.
  */
 contract InvitationRules is Ownable {
-  // --- State Variables ---
+  // --- Constants ---
 
   /// @notice The minimum number of blocks an activist needs to wait to invite Regenerators or Inspectors again.
-  uint16 public constant activistDelayBlocks = 1000;
+  uint16 private constant ACTIVIST_DELAY_BLOCKS = 1000;
+
+  // --- State variables ---
 
   /// @notice Relationship between address and last general invitation blockNumber.
   mapping(address => uint256) public lastInviteBlocks;
@@ -170,7 +172,7 @@ contract InvitationRules is Ownable {
    * @return bool True if the activist waited the delay blocks, false otherwise.
    */
   function _invitationDelayActivist() internal view returns (bool) {
-    return _hasInvitationDelayPassed(lastInviteActivist[msg.sender], activistDelayBlocks);
+    return _hasInvitationDelayPassed(lastInviteActivist[msg.sender], ACTIVIST_DELAY_BLOCKS);
   }
 
   /**

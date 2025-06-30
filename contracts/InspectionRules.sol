@@ -22,7 +22,27 @@ import { Callable } from "./shared/Callable.sol";
  * It integrates with various other rule contracts for user validation, level updates, and penalty management.
  */
 contract InspectionRules is Callable {
-  // --- State Variables ---
+  // --- Constants ---
+
+  /// @notice The maximum number of inspections a Regenerator can receive.
+  uint8 private constant MAX_REGENERATOR_INSPECTIONS = 12;
+
+  /// @notice Max character length for hash or url.
+  uint16 private constant MAX_HASH_LENGTH = 150;
+
+  /// @notice The maximum character length for the justification report string.
+  uint16 private constant MAX_JUSTIFICATION_REPORT_LENGTH = 1000;
+
+  /// @notice Max character length for text.
+  uint16 private constant MAX_TEXT_LENGTH = 300;
+
+  /// @notice The maximum result value for the number of trees in an inspection.
+  uint32 private constant MAX_TREES_RESULT = 200000;
+
+  /// @notice The maximum result value for the biodiversity score in an inspection.
+  uint32 private constant MAX_BIODIVERSITY_RESULT = 300;
+
+  // --- State variables ---
 
   /// @notice Number of initial inspection requests a regenerator can make without `timeBetweenInspections` delay.
   uint8 public immutable allowedInitialRequests;
@@ -37,7 +57,7 @@ contract InspectionRules is Callable {
   uint32 public immutable acceptInspectionDelayBlocks;
 
   /// @notice Amount of blocks for validators to analyze inspections before an era ends.
-  uint32 public immutable securityBlocksToValidatorAnalysis;
+  uint32 public immutable securityBlocksToValidation_;
 
   /// @notice Valid inspections count (inspections not invalidated).
   uint64 public inspectionsCount;
@@ -93,20 +113,20 @@ contract InspectionRules is Callable {
    * @param blocksToExpireAcceptedInspection_ The number of blocks before an accepted inspection expires.
    * @param allowedInitialRequests_ The number of initial requests allowed without delay.
    * @param acceptInspectionDelayBlocks_ The number of blocks inspectors must wait before accepting.
-   * @param securityBlocksToValidatorAnalysis_ The number of security blocks for validators before era end.
+   * @param securityBlocksToValidation__ The number of security blocks for validators before era end.
    */
   constructor(
     uint32 timeBetweenInspections_,
     uint32 blocksToExpireAcceptedInspection_,
     uint8 allowedInitialRequests_,
     uint32 acceptInspectionDelayBlocks_,
-    uint32 securityBlocksToValidatorAnalysis_
+    uint32 securityBlocksToValidation__
   ) {
     timeBetweenInspections = timeBetweenInspections_;
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
     allowedInitialRequests = allowedInitialRequests_;
     acceptInspectionDelayBlocks = acceptInspectionDelayBlocks_;
-    securityBlocksToValidatorAnalysis = securityBlocksToValidatorAnalysis_;
+    securityBlocksToValidation_ = securityBlocksToValidation__;
   }
 
   // --- Owner function (Setup Only) ---
@@ -149,7 +169,7 @@ contract InspectionRules is Callable {
     require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
     require(!regenerator.pendingInspection, "Request OPEN");
     require(waitToRequest(regenerator), "Wait to request");
-    require(regenerator.totalInspections < 12, "You have completed your mission");
+    require(regenerator.totalInspections < MAX_REGENERATOR_INSPECTIONS, "You have completed your mission");
 
     // Create the new inspection record.
     _createInspection();
@@ -173,7 +193,7 @@ contract InspectionRules is Callable {
    * - The inspector must not have previously inspected this specific regenerator.
    * - The inspection's status must be `OPEN`.
    * - The `acceptInspectionDelayBlocks` must have passed since the inspection was created.
-   * - The system must not be within the `securityBlocksToValidatorAnalysis` window before an era ends.
+   * - The system must not be within the `securityBlocksToValidation_` window before an era ends.
    * - The inspector must adhere to `inspectorRules.canAcceptInspection` (delay from last realized inspection).
    * - The `inspection.regenerator` must be a valid `REGENERATOR`.
    *
@@ -223,8 +243,8 @@ contract InspectionRules is Callable {
     uint32 treesResult,
     uint32 biodiversityResult
   ) public {
-    require(bytes(proofPhotos).length <= 150, "Max length");
-    require(bytes(justificationReport).length <= 1000, "Max length");
+    require(bytes(proofPhotos).length <= MAX_HASH_LENGTH, "Max length");
+    require(bytes(justificationReport).length <= MAX_JUSTIFICATION_REPORT_LENGTH, "Max length");
 
     Inspection memory inspection = inspections[inspectionId];
 
@@ -232,7 +252,7 @@ contract InspectionRules is Callable {
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept before");
     require(inspection.inspector == msg.sender, "Not your inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
-    require(treesResult <= 200000 && biodiversityResult <= 300, "Max result limit");
+    require(treesResult <= MAX_TREES_RESULT && biodiversityResult <= MAX_BIODIVERSITY_RESULT, "Max result limit");
 
     _markAsRealized(inspection, proofPhotos, justificationReport, treesResult, biodiversityResult);
 
@@ -270,7 +290,7 @@ contract InspectionRules is Callable {
    * @param justification A string explaining why the inspection is being invalidated.
    */
   function addInspectionValidation(uint64 id, string memory justification) public {
-    require(bytes(justification).length <= 300, "Max characters reached");
+    require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters reached");
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
@@ -445,7 +465,7 @@ contract InspectionRules is Callable {
   function beforeAcceptHaveSecurityBlocksToVote() private view returns (bool) {
     if (regeneratorRules.nextEraIn() < blocksToExpireAcceptedInspection) return false;
 
-    return regeneratorRules.nextEraIn() - blocksToExpireAcceptedInspection > securityBlocksToValidatorAnalysis;
+    return regeneratorRules.nextEraIn() - blocksToExpireAcceptedInspection > securityBlocksToValidation_;
   }
 
   // --- Events ---

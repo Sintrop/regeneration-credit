@@ -19,7 +19,7 @@ const inspectionRulesDeployed = async (owner, args = {}) => {
     blocksToExpireAcceptedInspection: 50,
     allowedInitialRequests: 3,
     acceptInspectionDelayBlocks: 5,
-    securityBlocksToValidatorAnalysis: 100,
+    securityBlocksToValidation_: 100,
   };
 
   const researcherPoolargs = {
@@ -125,7 +125,7 @@ const inspectionRulesDeployed = async (owner, args = {}) => {
     sintropArgs.blocksToExpireAcceptedInspection,
     sintropArgs.allowedInitialRequests,
     sintropArgs.acceptInspectionDelayBlocks,
-    sintropArgs.securityBlocksToValidatorAnalysis
+    sintropArgs.securityBlocksToValidation_
   );
 
   await instance.setContractAddressDependencies(inspectionRulesDependencies);

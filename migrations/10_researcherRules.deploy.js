@@ -10,9 +10,9 @@ async function researcherRulesDeploy() {
 
   const timeBetweenWorks = process.env["TIME_BETWEEN_WORKS"];
   const researcherMaxPenalties = process.env["RESEARCHER_MAX_PENALTIES"];
-  const securityBlocksToValidatorAnalysis = process.env["RESEARCHER_SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS"];
+  const securityBlocksToValidation_ = process.env["RESEARCHER_SECURITY_BLOCKS_TO_VALIDATION"];
 
-  const args = [timeBetweenWorks, researcherMaxPenalties, securityBlocksToValidatorAnalysis];
+  const args = [timeBetweenWorks, researcherMaxPenalties, securityBlocksToValidation_];
 
   const researcherRules = await ResearcherRules.deploy(...args);
 

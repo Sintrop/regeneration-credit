@@ -19,7 +19,7 @@ interface IResearcherRules_Validation {
    * @notice Returns the maximum number of penalties a researcher can have before being denied.
    * @return The maximum penalty count as a uint8.
    */
-  function MAX_PENALTIES() external view returns (uint8);
+  function maxPenalties() external view returns (uint8);
 
   /**
    * @notice Returns the current era of the related pool.

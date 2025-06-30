@@ -340,12 +340,12 @@ async function inviteUsers() {
   // await invitationRules.renounceOwnership();
 }
 
-async function offsetEnergy() {
-  const regenerationCredit = await getDeployedContract("RegenerationCredit");
+// async function offsetEnergy() {
+//   const regenerationCredit = await getDeployedContract("RegenerationCredit");
 
-  await regenerationCredit.burnTokens("30000000000000000000000000");
+//   await regenerationCredit.burnTokens("30000000000000000000000000");
 
-  console.log("After offset is OK");
-}
+//   console.log("After offset is OK");
+// }
 
 module.exports = afterDeploy;

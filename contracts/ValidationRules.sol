@@ -24,7 +24,36 @@ import { Callable } from "./shared/Callable.sol";
  * @notice Responsible for reviewing and voting to invalidate users and resources.
  */
 contract ValidationRules is Callable {
-  // --- State Variables ---
+  // --- Constants ---
+
+  /// @notice Max character length for the justification provided in a validation vote.
+  uint16 private constant MAX_JUSTIFICATION_LENGTH = 300;
+
+  /// @notice The number of levels to remove from a user when their resource is invalidated.
+  uint256 private constant RESOURCE_INVALIDATION_LEVEL_PENALTY = 1;
+
+  /// @notice Voter thresholds to invalidate a resource/user.
+  uint32 private constant VOTERS_THRESHOLD_LEVEL_1 = 50;
+  uint32 private constant VOTERS_THRESHOLD_LEVEL_2 = 500;
+  uint32 private constant VOTERS_THRESHOLD_LEVEL_3 = 1000;
+  uint32 private constant VOTERS_THRESHOLD_LEVEL_4 = 2000;
+  uint32 private constant VOTERS_THRESHOLD_LEVEL_5 = 4000;
+  uint32 private constant VOTERS_THRESHOLD_LEVEL_6 = 8000;
+  uint32 private constant VOTERS_THRESHOLD_LEVEL_7 = 16000;
+  uint32 private constant VOTERS_THRESHOLD_LEVEL_MAX = 32000;
+
+  /// @notice Votes thresholds to invalidate a resource/user.
+  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_1 = 2;
+  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_2 = 5;
+  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_3 = 10;
+  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_4 = 20;
+  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_5 = 40;
+  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_6 = 80;
+  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_7 = 160;
+  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_8 = 320;
+  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_MAX = 500;
+
+  // --- State variables ---
 
   /// @notice The relationship between address and validations received by era.
   mapping(address => mapping(uint256 => uint256)) public userValidations;
@@ -101,10 +130,10 @@ contract ValidationRules is Callable {
    * - The target user must be registered and not already denied.
    *
    * @param userAddress Invalidation user address.
-   * @param justification Invalidation justification (max 300 characters).
+   * @param justification Invalidation justification (Max characters).
    */
   function addUserValidation(address userAddress, string memory justification) public {
-    require(bytes(justification).length <= 300, "Max 300 characters");
+    require(bytes(justification).length <= MAX_JUSTIFICATION_LENGTH, "Max characters");
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(!communityRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
     require(!communityRules.userTypeIs(UserType.DENIED, userAddress), "User already denied");
@@ -198,7 +227,7 @@ contract ValidationRules is Callable {
 
     emit ResourceInvalidated("Report", report.id, report.developer, developerTotalPenalties); // Emit event
 
-    if (developerTotalPenalties >= developerRules.MAX_PENALTIES()) _denyUser(report.developer);
+    if (developerTotalPenalties >= developerRules.maxPenalties()) _denyUser(report.developer);
   }
 
   /**
@@ -234,7 +263,7 @@ contract ValidationRules is Callable {
 
     emit ResourceInvalidated("Contribution", contribution.id, contribution.user, contributorTotalPenalties); // Emit event
 
-    if (contributorTotalPenalties >= contributorRules.MAX_PENALTIES()) _denyUser(contribution.user);
+    if (contributorTotalPenalties >= contributorRules.maxPenalties()) _denyUser(contribution.user);
   }
 
   /**
@@ -269,7 +298,7 @@ contract ValidationRules is Callable {
 
     emit ResourceInvalidated("Research", research.id, research.createdBy, totalPenalties); // Emit event
 
-    if (totalPenalties >= researcherRules.MAX_PENALTIES()) _denyUser(research.createdBy);
+    if (totalPenalties >= researcherRules.maxPenalties()) _denyUser(research.createdBy);
   }
 
   // --- Internal Functions ---
@@ -295,7 +324,7 @@ contract ValidationRules is Callable {
    * @param report Invalidated report.
    */
   function _removeReport(Report memory report) internal {
-    _removeUserLevels(report.developer, 1);
+    _removeUserLevels(report.developer, RESOURCE_INVALIDATION_LEVEL_PENALTY);
   }
 
   /**
@@ -303,7 +332,7 @@ contract ValidationRules is Callable {
    * @param contribution Invalidated contribution.
    */
   function _removeContribution(Contribution memory contribution) internal {
-    _removeUserLevels(contribution.user, 1);
+    _removeUserLevels(contribution.user, RESOURCE_INVALIDATION_LEVEL_PENALTY);
   }
 
   /**
@@ -311,7 +340,7 @@ contract ValidationRules is Callable {
    * @param research Invalidated research
    */
   function _removeResearch(Research memory research) internal {
-    _removeUserLevels(research.createdBy, 1);
+    _removeUserLevels(research.createdBy, RESOURCE_INVALIDATION_LEVEL_PENALTY);
   }
 
   /**
@@ -322,7 +351,7 @@ contract ValidationRules is Callable {
     inspectorRules.decrementInspections(inspection.inspector);
     regeneratorRules.decrementInspections(inspection.regenerator);
 
-    _removeUserLevels(inspection.inspector, 1);
+    _removeUserLevels(inspection.inspector, RESOURCE_INVALIDATION_LEVEL_PENALTY);
     _removeUserLevels(inspection.regenerator, inspection.regenerationScore);
   }
 
@@ -376,15 +405,15 @@ contract ValidationRules is Callable {
   function votesToInvalidate() public view returns (uint256 count) {
     uint256 voters = communityRules.votersCount();
 
-    if (voters <= 50) return 2;
-    if (voters > 50 && voters <= 500) return 5;
-    if (voters > 500 && voters <= 1000) return 10;
-    if (voters > 1000 && voters <= 2000) return 20;
-    if (voters > 2000 && voters <= 4000) return 40;
-    if (voters > 4000 && voters <= 8000) return 80;
-    if (voters > 8000 && voters <= 16000) return 160;
-    if (voters > 16000 && voters <= 32000) return 320;
-    if (voters > 32000) return 500;
+    if (voters <= VOTERS_THRESHOLD_LEVEL_1) return VOTES_TO_INVALIDATE_LEVEL_1;
+    if (voters <= VOTERS_THRESHOLD_LEVEL_2) return VOTES_TO_INVALIDATE_LEVEL_2;
+    if (voters <= VOTERS_THRESHOLD_LEVEL_3) return VOTES_TO_INVALIDATE_LEVEL_3;
+    if (voters <= VOTERS_THRESHOLD_LEVEL_4) return VOTES_TO_INVALIDATE_LEVEL_4;
+    if (voters <= VOTERS_THRESHOLD_LEVEL_5) return VOTES_TO_INVALIDATE_LEVEL_5;
+    if (voters <= VOTERS_THRESHOLD_LEVEL_6) return VOTES_TO_INVALIDATE_LEVEL_6;
+    if (voters <= VOTERS_THRESHOLD_LEVEL_7) return VOTES_TO_INVALIDATE_LEVEL_7;
+    if (voters <= VOTERS_THRESHOLD_LEVEL_MAX) return VOTES_TO_INVALIDATE_LEVEL_8;
+    if (voters > VOTERS_THRESHOLD_LEVEL_MAX) return VOTES_TO_INVALIDATE_LEVEL_MAX;
   }
 
   /**
