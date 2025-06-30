@@ -23,6 +23,29 @@ import { Callable } from "./shared/Callable.sol";
  * eligibility, and `ValidationRules` for research validation processes.
  */
 contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
+  // --- Constants ---
+
+  /// @notice Maximum users count allowed for this UserType.
+  uint16 private constant MAX_USER_COUNT = 16000;
+
+  /// @notice Max character length for user name.
+  uint16 private constant MAX_NAME_LENGTH = 50;
+
+  /// @notice Max character length for hash or url.
+  uint16 private constant MAX_HASH_LENGTH = 150;
+
+  /// @notice Max character length for text.
+  uint16 private constant MAX_TEXT_LENGTH = 300; 
+
+  /// @notice Max character length for title.
+  uint16 private constant MAX_TITLE_LENGTH = 100;    
+
+  /// @notice Max character length for calculator item name.
+  uint16 private constant MAX_ITEM_LENGTH = 35;  
+
+  /// @notice Max character length for calculator item unit.
+  uint16 private constant MAX_UNIT_LENGTH = 20;        
+
   // --- State Variables ---
 
   /// @notice The maximum number of penalties a researcher can accumulate before facing invalidation.
@@ -128,8 +151,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param proofPhoto A hash or identifier for the researcher's identity photo/document (max 150 characters).
    */
   function addResearcher(string memory name, string memory proofPhoto) public {
-    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 150, "Max characters");
-    require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max user limit");
+    require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
+    require(communityRules.userTypesCount(USER_TYPE) <= MAX_USER_COUNT, "Max user limit");
 
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
@@ -165,7 +188,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param file A hash or identifier for the research report file (max 150 characters).
    */
   function addResearch(string memory title, string memory thesis, string memory file) public {
-    require(bytes(title).length <= 100 && bytes(thesis).length <= 300 && bytes(file).length <= 150, "Max characters");
+    require(bytes(title).length <= MAX_TITLE_LENGTH && bytes(thesis).length <= MAX_TEXT_LENGTH && bytes(file).length <= MAX_HASH_LENGTH, "Max characters");
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
     require(nextEraIn() > securityBlocksToValidation, "Wait until next era");
     require(_canPublishResearch(msg.sender), "Can't publish yet");
@@ -199,7 +222,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param justification A brief justification for invalidating the research (Max characters).
    */
   function addResearchValidation(uint64 id, string memory justification) public {
-    require(bytes(justification).length <= 300, "Max characters");
+    require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters");
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
@@ -236,7 +259,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     string memory unit,
     uint256 carbonImpact
   ) public {
-    require(bytes(item).length <= 35 && bytes(thesis).length <= 250 && bytes(unit).length <= 20, "Max characters");
+    require(bytes(item).length <= MAX_ITEM_LENGTH && bytes(thesis).length <= MAX_TEXT_LENGTH && bytes(unit).length <= MAX_UNIT_LENGTH, "Max characters");
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
 
     Researcher memory researcher = researchers[msg.sender];
@@ -260,6 +283,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param projectURL The URL of the project or code repository (max 100 characters).
    */
   function addEvaluationMethod(string memory title, string memory research, string memory projectURL) public {
+    require(bytes(title).length <= MAX_TITLE_LENGTH && bytes(research).length <= MAX_TEXT_LENGTH && bytes(projectURL).length <= MAX_HASH_LENGTH, "Max characters");
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
     require(researchers[msg.sender].canPublishMethod, "Only one method allowed");
 
