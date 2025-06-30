@@ -2,12 +2,11 @@
 pragma solidity ^0.8.27;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { CommunityRules } from "./CommunityRules.sol";
-import { ResearcherRules } from "./ResearcherRules.sol";
-import { DeveloperRules } from "./DeveloperRules.sol";
-import { ActivistRules } from "./ActivistRules.sol";
-import { ContributorRules } from "./ContributorRules.sol";
-import { ValidationRules } from "./ValidationRules.sol";
+import { ICommunityRules_Invitation } from "./interfaces/ICommunityRules_Invitation.sol";
+import { IResearcherRules_Invitation } from "./interfaces/IResearcherRules_Invitation.sol";
+import { IDeveloperRules_Invitation } from "./interfaces/IDeveloperRules_Invitation.sol";
+import { IActivistRules_Invitation } from "./interfaces/IActivistRules_Invitation.sol";
+import { IContributorRules_Invitation } from "./interfaces/IContributorRules_Invitation.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 
 /**
@@ -33,22 +32,19 @@ contract InvitationRules is Ownable {
   mapping(UserType => UserType) public canBeInviteds;
 
   /// @notice CommunityRules contract address
-  CommunityRules internal communityRules;
+  ICommunityRules_Invitation internal communityRules;
 
   /// @notice ResearcherRules contract address
-  ResearcherRules internal researcherRules;
+  IResearcherRules_Invitation internal researcherRules;
 
   /// @notice DeveloperRules contract address
-  DeveloperRules internal developerRules;
+  IDeveloperRules_Invitation internal developerRules;
 
   /// @notice ActivistRules contract address
-  ActivistRules internal activistRules;
+  IActivistRules_Invitation internal activistRules;
 
   /// @notice ContributorRules contract address
-  ContributorRules internal contributorRules;
-
-  /// @notice ValidationRules contract address
-  ValidationRules internal validationRules;
+  IContributorRules_Invitation internal contributorRules;
 
   // --- Constructor ---
 
@@ -60,22 +56,19 @@ contract InvitationRules is Ownable {
    * @param developerRulesAddress Address of the DeveloperRules contract.
    * @param activistRulesAddress Address of the ActivistRules contract.
    * @param contributorRulesAddress Address of the ContributorRules contract.
-   * @param validationRulesAddress Address of the ValidationRules contract.
    */
   constructor(
     address communityRulesAddress,
     address researcherRulesAddress,
     address developerRulesAddress,
     address activistRulesAddress,
-    address contributorRulesAddress,
-    address validationRulesAddress
+    address contributorRulesAddress
   ) {
-    communityRules = CommunityRules(communityRulesAddress);
-    researcherRules = ResearcherRules(researcherRulesAddress);
-    developerRules = DeveloperRules(developerRulesAddress);
-    activistRules = ActivistRules(activistRulesAddress);
-    contributorRules = ContributorRules(contributorRulesAddress);
-    validationRules = ValidationRules(validationRulesAddress);
+    communityRules = ICommunityRules_Invitation(communityRulesAddress);
+    researcherRules = IResearcherRules_Invitation(researcherRulesAddress);
+    developerRules = IDeveloperRules_Invitation(developerRulesAddress);
+    activistRules = IActivistRules_Invitation(activistRulesAddress);
+    contributorRules = IContributorRules_Invitation(contributorRulesAddress);
 
     // Definition of invitation permissions: who can invite whom
     canBeInviteds[UserType.ACTIVIST] = UserType.ACTIVIST;

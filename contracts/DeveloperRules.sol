@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ICommunityRules_User } from "./interfaces/ICommunityRules_User.sol";
+import { IVoteRules } from "./interfaces/IVoteRules.sol";
+import { IDeveloperPool } from "./interfaces/IDeveloperPool.sol";
+import { IValidationRules_Developer } from "./interfaces/IValidationRules_Developer.sol";
+import { UserType } from "./types/CommunityTypes.sol";
+import { Developer, Pool, Report, Penalty, ContractsDependency } from "./types/DeveloperTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
-import { VoteRules } from "./VoteRules.sol";
-import { CommunityRules } from "./CommunityRules.sol";
-import { UserType } from "./types/CommunityTypes.sol";
-import { DeveloperPool } from "./DeveloperPool.sol";
-import { ValidationRules } from "./ValidationRules.sol";
-import { Developer, Pool, Report, Penalty, ContractsDependency } from "./types/DeveloperTypes.sol";
 
 /**
  * @title DeveloperRules
@@ -64,19 +64,19 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  CommunityRules internal communityRules;
+  ICommunityRules_User internal communityRules;
 
   /// @notice The address of the `DeveloperPool` contract, responsible for managing
   /// and distributing token rewards to developers.
-  DeveloperPool internal developerPool;
+  IDeveloperPool internal developerPool;
 
   /// @notice The address of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating development reports.
-  ValidationRules internal validationRules;
+  IValidationRules_Developer internal validationRules;
 
   /// @notice The address of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for report validation.
-  VoteRules internal voteRules;
+  IVoteRules internal voteRules;
 
   /// @notice The specific `UserType` enumeration value for a Developer user.
   UserType private constant USER_TYPE = UserType.DEVELOPER;
@@ -102,10 +102,10 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * @param contractDependency Addresses of system contracts used
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
-    communityRules = CommunityRules(contractDependency.communityRulesAddress);
-    developerPool = DeveloperPool(contractDependency.developerPoolAddress);
-    validationRules = ValidationRules(contractDependency.validationRulesAddress);
-    voteRules = VoteRules(contractDependency.voteRulesAddress);
+    communityRules = ICommunityRules_User(contractDependency.communityRulesAddress);
+    developerPool = IDeveloperPool(contractDependency.developerPoolAddress);
+    validationRules = IValidationRules_Developer(contractDependency.validationRulesAddress);
+    voteRules = IVoteRules(contractDependency.voteRulesAddress);
   }
 
   // --- Public functions ---

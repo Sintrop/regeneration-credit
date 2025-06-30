@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import { CommunityRules } from "./CommunityRules.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ICommunityRules_User } from "./interfaces/ICommunityRules_User.sol";
+import { IRegeneratorPool } from "./interfaces/IRegeneratorPool.sol";
 import { Regenerator, Pool, Coordinates, RegenerationScore } from "./types/RegeneratorTypes.sol";
-import { Callable } from "./shared/Callable.sol";
-import { RegeneratorPool } from "./RegeneratorPool.sol";
 import { UserType } from "./types/CommunityTypes.sol";
+import { Callable } from "./shared/Callable.sol";
 
 /**
  * @title RegeneratorRules
@@ -50,11 +50,11 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules and user types.
-  CommunityRules internal communityRules;
+  ICommunityRules_User internal communityRules;
 
   /// @notice The address of the `RegeneratorPool` contract, responsible for managing
   /// and distributing token rewards to regenerators.
-  RegeneratorPool internal regeneratorPool;
+  IRegeneratorPool internal regeneratorPool;
 
   /// @notice The specific `UserType` enumeration value for a Regenerator user.
   UserType private constant USER_TYPE = UserType.REGENERATOR;
@@ -75,8 +75,8 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param regeneratorPoolAddress The address of the deployed `RegeneratorPool` contract.
    */
   constructor(address communityRulesAddress, address regeneratorPoolAddress) {
-    communityRules = CommunityRules(communityRulesAddress);
-    regeneratorPool = RegeneratorPool(regeneratorPoolAddress);
+    communityRules = ICommunityRules_User(communityRulesAddress);
+    regeneratorPool = IRegeneratorPool(regeneratorPoolAddress);
   }
 
   // --- Public Functions (State modifying) ---

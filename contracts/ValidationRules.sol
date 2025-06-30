@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { CommunityRules } from "./CommunityRules.sol";
-import { RegeneratorRules } from "./RegeneratorRules.sol";
-import { ContractsDependency } from "./types/ValidationTypes.sol";
-import { UserType } from "./types/CommunityTypes.sol";
-import { Callable } from "./shared/Callable.sol";
-import { InspectorRules } from "./InspectorRules.sol";
-import { DeveloperRules } from "./DeveloperRules.sol";
-import { ResearcherRules } from "./ResearcherRules.sol";
-import { ContributorRules } from "./ContributorRules.sol";
-import { ActivistRules } from "./ActivistRules.sol";
+import { ICommunityRules_Validation } from "./interfaces/ICommunityRules_Validation.sol";
+import { IRegeneratorRules_Validation } from "./interfaces/IRegeneratorRules_Validation.sol";
+import { IInspectorRules_Validation } from "./interfaces/IInspectorRules_Validation.sol";
+import { IDeveloperRules_Validation } from "./interfaces/IDeveloperRules_Validation.sol";
+import { IResearcherRules_Validation } from "./interfaces/IResearcherRules_Validation.sol";
+import { IContributorRules_Validation } from "./interfaces/IContributorRules_Validation.sol";
+import { IActivistRules_Validation } from "./interfaces/IActivistRules_Validation.sol";
+import { IVoteRules } from "./interfaces/IVoteRules.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
 import { Report } from "./types/DeveloperTypes.sol";
 import { Research } from "./types/ResearcherTypes.sol";
 import { Contribution } from "./types/ContributorTypes.sol";
-import { VoteRules } from "./VoteRules.sol";
+import { ContractsDependency } from "./types/ValidationTypes.sol";
+import { UserType } from "./types/CommunityTypes.sol";
+import { Callable } from "./shared/Callable.sol";
 
 /**
  * @title ValidationRules
@@ -47,16 +47,16 @@ contract ValidationRules is Callable {
   /// @notice Relationship between validator and last vote block.number.
   mapping(address => uint256) public validatorLastVoteAt;
 
-  CommunityRules private communityRules;
-  RegeneratorRules private regeneratorRules;
-  InspectorRules private inspectorRules;
-  DeveloperRules private developerRules;
-  ResearcherRules private researcherRules;
-  ContributorRules private contributorRules;
-  ActivistRules private activistRules;
+  ICommunityRules_Validation private communityRules;
+  IRegeneratorRules_Validation private regeneratorRules;
+  IInspectorRules_Validation private inspectorRules;
+  IDeveloperRules_Validation private developerRules;
+  IResearcherRules_Validation private researcherRules;
+  IContributorRules_Validation private contributorRules;
+  IActivistRules_Validation private activistRules;
 
   /// @notice VoteRules contract address.
-  VoteRules internal voteRules;
+  IVoteRules internal voteRules;
 
   /// @notice Amount of blocks between votes.
   uint256 private immutable timeBetweenVotes;
@@ -77,14 +77,14 @@ contract ValidationRules is Callable {
    * @param contractDependency Addresses of system contracts used
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
-    communityRules = CommunityRules(contractDependency.communityRulesAddress);
-    regeneratorRules = RegeneratorRules(contractDependency.regeneratorRulesAddress);
-    inspectorRules = InspectorRules(contractDependency.inspectorRulesAddress);
-    developerRules = DeveloperRules(contractDependency.developerRulesAddress);
-    researcherRules = ResearcherRules(contractDependency.researcherRulesAddress);
-    contributorRules = ContributorRules(contractDependency.contributorRulesAddress);
-    activistRules = ActivistRules(contractDependency.activistRulesAddress);
-    voteRules = VoteRules(contractDependency.voteRulesAddress);
+    communityRules = ICommunityRules_Validation(contractDependency.communityRulesAddress);
+    regeneratorRules = IRegeneratorRules_Validation(contractDependency.regeneratorRulesAddress);
+    inspectorRules = IInspectorRules_Validation(contractDependency.inspectorRulesAddress);
+    developerRules = IDeveloperRules_Validation(contractDependency.developerRulesAddress);
+    researcherRules = IResearcherRules_Validation(contractDependency.researcherRulesAddress);
+    contributorRules = IContributorRules_Validation(contractDependency.contributorRulesAddress);
+    activistRules = IActivistRules_Validation(contractDependency.activistRulesAddress);
+    voteRules = IVoteRules(contractDependency.voteRulesAddress);
   }
 
   // --- External Functions (State Modifying) ---

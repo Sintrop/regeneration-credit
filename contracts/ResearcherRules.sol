@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { Callable } from "./shared/Callable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { Invitable } from "./shared/Invitable.sol";
-import { VoteRules } from "./VoteRules.sol";
-import { CommunityRules } from "./CommunityRules.sol";
+import { IVoteRules } from "./interfaces/IVoteRules.sol";
+import { ICommunityRules_User } from "./interfaces/ICommunityRules_User.sol";
+import { IResearcherPool } from "./interfaces/IResearcherPool.sol";
+import { IValidationRules_Researcher } from "./interfaces/IValidationRules_Researcher.sol";
 import { Researcher, Research, Pool, CalculatorItem, EvaluationMethod, Penalty, ContractsDependency } from "./types/ResearcherTypes.sol";
 import { UserType } from "./types/CommunityTypes.sol";
-import { ResearcherPool } from "./ResearcherPool.sol";
-import { ValidationRules } from "./ValidationRules.sol";
+import { Callable } from "./shared/Callable.sol";
 
 /**
  * @title ResearcherRules
@@ -74,19 +74,19 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  CommunityRules internal communityRules;
+  ICommunityRules_User internal communityRules;
 
   /// @notice The address of the `ResearcherPool` contract, responsible for managing
   /// and distributing token rewards to researchers.
-  ResearcherPool internal researcherPool;
+  IResearcherPool internal researcherPool;
 
   /// @notice The address of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating development reports.
-  ValidationRules internal validationRules;
+  IValidationRules_Researcher internal validationRules;
 
   /// @notice The address of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for report validation.
-  VoteRules internal voteRules;
+  IVoteRules internal voteRules;
 
   /// @notice The specific `UserType` enumeration value for a Researcher user.
   UserType private constant USER_TYPE = UserType.RESEARCHER;
@@ -114,10 +114,10 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param contractDependency Addresses of system contracts used
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
-    communityRules = CommunityRules(contractDependency.communityRulesAddress);
-    researcherPool = ResearcherPool(contractDependency.researcherPoolAddress);
-    validationRules = ValidationRules(contractDependency.validationRulesAddress);
-    voteRules = VoteRules(contractDependency.voteRulesAddress);
+    communityRules = ICommunityRules_User(contractDependency.communityRulesAddress);
+    researcherPool = IResearcherPool(contractDependency.researcherPoolAddress);
+    validationRules = IValidationRules_Researcher(contractDependency.validationRulesAddress);
+    voteRules = IVoteRules(contractDependency.voteRulesAddress);
   }
 
   /**
@@ -306,7 +306,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param addr Researcher wallet
    * @param researchId Research id
    */
-  function addPenalty(address addr, uint256 researchId) public mustBeAllowedCaller returns (uint256) {
+  function addPenalty(address addr, uint64 researchId) public mustBeAllowedCaller returns (uint256) {
     penalties[addr].push(Penalty(researchId));
 
     return totalPenalties(addr);

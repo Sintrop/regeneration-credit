@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import { CommunityRules } from "./CommunityRules.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ICommunityRules_User } from "./interfaces/ICommunityRules_User.sol";
+import { IInspectorPool } from "./interfaces/IInspectorPool.sol";
 import { Inspector, Penalty, Pool } from "./types/InspectorTypes.sol";
-import { Callable } from "./shared/Callable.sol";
 import { UserType } from "./types/CommunityTypes.sol";
-import { InspectorPool } from "./InspectorPool.sol";
+import { Callable } from "./shared/Callable.sol";
 
 /**
  * @title InspectorRules
@@ -47,11 +47,11 @@ contract InspectorRules is Callable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules and user types.
-  CommunityRules internal communityRules;
+  ICommunityRules_User internal communityRules;
 
   /// @notice The address of the `InspectorPool` contract, responsible for managing
   /// and distributing token rewards to inspectors.
-  InspectorPool internal inspectorPool;
+  IInspectorPool internal inspectorPool;
 
   /// @notice The specific `UserType` enumeration value for an Inspector user.
   /// This is a constant for gas efficiency and clarity.
@@ -66,8 +66,8 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param maxPenalties_ The maximum allowed penalties for an inspector.
    */
   constructor(address communityRulesAddress, address inspectorPoolAddress, uint8 maxPenalties_) {
-    communityRules = CommunityRules(communityRulesAddress);
-    inspectorPool = InspectorPool(inspectorPoolAddress);
+    communityRules = ICommunityRules_User(communityRulesAddress);
+    inspectorPool = IInspectorPool(inspectorPoolAddress);
     maxPenalties = maxPenalties_;
   }
 

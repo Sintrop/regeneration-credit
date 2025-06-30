@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import { CommunityRules } from "./CommunityRules.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ICommunityRules_User } from "./interfaces/ICommunityRules_User.sol";
+import { IActivistPool } from "./interfaces/IActivistPool.sol";
 import { Activist, Pool } from "./types/ActivistTypes.sol";
 import { UserType, Invitation } from "./types/CommunityTypes.sol";
-import { ActivistPool } from "./ActivistPool.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
 
@@ -45,11 +45,11 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  CommunityRules internal communityRules;
+  ICommunityRules_User internal communityRules;
 
   /// @notice The address of the `ActivistPool` contract, responsible for managing
   /// and distributing token rewards to activists.
-  ActivistPool internal activistPool;
+  IActivistPool internal activistPool;
 
   /// @notice The specific `UserType` enumeration value for the Activist user.
   UserType private constant USER_TYPE = UserType.ACTIVIST;
@@ -63,8 +63,8 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * @param activistPoolAddress The address of the deployed `ActivistPool` contract.
    */
   constructor(address communityRulesAddress, address activistPoolAddress) {
-    communityRules = CommunityRules(communityRulesAddress);
-    activistPool = ActivistPool(activistPoolAddress);
+    communityRules = ICommunityRules_User(communityRulesAddress);
+    activistPool = IActivistPool(activistPoolAddress);
   }
 
   // --- Public functions (State modifying) ---
