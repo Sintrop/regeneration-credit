@@ -9,7 +9,7 @@ async function contributorRulesDeploy() {
   const ContributorRules = await ethers.getContractFactory("ContributorRules");
 
   const timeBetweenWorks = process.env["TIME_BETWEEN_WORKS"];
-  const contributorMaxPenalties = process.env["CONTRIBUTOR_maxPenalties"];
+  const contributorMaxPenalties = process.env["CONTRIBUTOR_MAX_PENALTIES"];
   const securityBlocksToValidation_ = process.env["CONTRIBUTOR_securityBlocksToValidation"];
 
   const args = [timeBetweenWorks, contributorMaxPenalties, securityBlocksToValidation_];

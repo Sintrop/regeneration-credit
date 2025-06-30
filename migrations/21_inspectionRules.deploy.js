@@ -10,7 +10,7 @@ async function inspectionRulesDeploy() {
 
   const acceptInspectionDelayBlocks = process.env["ACCEPT_INSPECTION_DELAY_BLOCKS"];
 
-  const securityBlocksToValidation_ = process.env["INSPECTION_securityBlocksToValidation"];
+  const securityBlocksToValidation_ = process.env["DEVELOPER_SECURITY_BLOCKS_TO_VALIDATION"];
 
   const InspectionRules = await ethers.getContractFactory("InspectionRules");
 
