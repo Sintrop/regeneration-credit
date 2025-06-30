@@ -25,9 +25,17 @@ import { Invitable } from "./shared/Invitable.sol";
  */
 contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
   // --- Constants ---
+
+  /// @notice Maximum users count allowed for this UserType.
   uint16 private constant MAX_USER_COUNT = 16000;
+
+  /// @notice Max character length for user name.
   uint16 private constant MAX_NAME_LENGTH = 50;
+
+  /// @notice Max character length for hash or url.
   uint16 private constant MAX_HASH_LENGTH = 150;
+
+  /// @notice Max character length for text.
   uint16 private constant MAX_TEXT_LENGTH = 300;
 
   // --- State Variables ---
@@ -178,7 +186,10 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
    */
   function addContribution(string memory description, string memory report) public {
     // Character limit validation for description and report.
-    require(bytes(description).length <= MAX_TEXT_LENGTH && bytes(report).length <= MAX_HASH_LENGTH, "Max characters reached");
+    require(
+      bytes(description).length <= MAX_TEXT_LENGTH && bytes(report).length <= MAX_HASH_LENGTH,
+      "Max characters reached"
+    );
 
     // Only registered contributors can call this function.
     require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Only Contributor");
@@ -221,7 +232,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
    */
   function addContributionValidation(uint64 id, string memory justification) public {
     // Character limit validation for justification.
-    require(bytes(justification).length <= 300, "Max 300 characters");
+    require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters");
     // Check if the caller is eligible to vote.
     require(voteRules.canVote(msg.sender), "Not a voter");
     // Check if the caller has waited the required time between votes.

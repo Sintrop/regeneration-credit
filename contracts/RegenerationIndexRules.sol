@@ -13,10 +13,12 @@ import { Callable } from "./shared/Callable.sol";
  * and calculate the RegnerationScore. The system will have only two categories: Trees & Biodiversity.
  */
 contract RegenerationIndexRules is Ownable, Callable {
-  // --- State Variables ---
+  // --- Constants ---
 
   /// @notice Allowed categories: Trees & Biodiversity.
-  uint8 public constant categoryCounts = 2;
+  uint8 public constant CATEGORY_COUNTS = 2;
+
+  // --- State Variables ---
 
   /// @notice Relationship between id and category data
   mapping(uint8 => Category) public categories;
@@ -99,7 +101,7 @@ contract RegenerationIndexRules is Ownable, Callable {
   function getCategoryRegenerationIndexDescription(
     uint8 categoryId
   ) public view returns (RegenerationIndexDescription[] memory) {
-    require(categoryId > 0 && categoryId <= categoryCounts, "Invalid category ID");
+    require(categoryId > 0 && categoryId <= CATEGORY_COUNTS, "Invalid category ID");
     return categoryRegenerationIndexDescriptions[categoryId];
   }
 

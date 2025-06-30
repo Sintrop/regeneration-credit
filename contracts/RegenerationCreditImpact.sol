@@ -17,10 +17,7 @@ import { UserType } from "./types/CommunityTypes.sol";
 contract RegenerationCreditImpact {
   using SafeMath for uint256;
 
-  // --- State Variables ---
-
-  /// @notice Constant of 32 decimals to calculate the impact. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
-  uint256 public constant IMPACT_DECIMALS = 10 ** 32;
+  // --- Constants ---
 
   /**
    * @notice [g]
@@ -31,6 +28,11 @@ contract RegenerationCreditImpact {
    * This result was obtained by estimating that, on average, each tree/plant sequesters 10 kg of carbon per year, living an average of 10 years. With the result expressed in grams [g].
    */
   uint256 public constant CARBON_PER_TREE = 100000;
+  
+  /// @notice Constant of 32 decimals to calculate the impact. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
+  uint256 public constant IMPACT_DECIMALS = 10 ** 32;
+
+  // --- State Variables ---
 
   IRegenerationCredit_Impact internal regenerationCredit;
   IInspectionRules_Impact internal inspectionRules;

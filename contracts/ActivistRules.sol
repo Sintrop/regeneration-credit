@@ -22,10 +22,18 @@ import { Invitable } from "./shared/Invitable.sol";
 
 contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   // --- Constants ---
+
+  /// @notice Maximum users count allowed for this UserType.
   uint16 private constant MAX_USER_COUNT = 16000;
-  uint16 private constant MAX_NAME_LENGTH = 50;
-  uint16 private constant MAX_HASH_LENGTH = 150;
+
+  /// @notice Minimum inspections an inviter must complete to add activist level.
   uint16 private constant MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS = 3;
+
+  /// @notice Max character length for user name.
+  uint16 private constant MAX_NAME_LENGTH = 50;
+
+  /// @notice Max character length for hash or URL.
+  uint16 private constant MAX_HASH_LENGTH = 150;
 
   // --- State Variables ---
 

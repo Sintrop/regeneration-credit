@@ -22,6 +22,26 @@ import { Callable } from "./shared/Callable.sol";
  * It integrates with various other rule contracts for user validation, level updates, and penalty management.
  */
 contract InspectionRules is Callable {
+  // --- Constants ---
+
+  /// @notice The maximum number of inspections a Regenerator can receive.
+  uint8 private constant MAX_REGENERATOR_INSPECTIONS = 12;
+
+  /// @notice Max character length for hash or url.
+  uint16 private constant MAX_HASH_LENGTH = 150;
+
+  /// @notice The maximum character length for the justification report string.
+  uint16 private constant MAX_JUSTIFICATION_REPORT_LENGTH = 1000;
+
+  /// @notice Max character length for text.
+  uint16 private constant MAX_TEXT_LENGTH = 300;
+
+  /// @notice The maximum result value for the number of trees in an inspection.
+  uint32 private constant MAX_TREES_RESULT = 200000;
+
+  /// @notice The maximum result value for the biodiversity score in an inspection.
+  uint32 private constant MAX_BIODIVERSITY_RESULT = 300;
+
   // --- State Variables ---
 
   /// @notice Number of initial inspection requests a regenerator can make without `timeBetweenInspections` delay.
@@ -149,7 +169,7 @@ contract InspectionRules is Callable {
     require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
     require(!regenerator.pendingInspection, "Request OPEN");
     require(waitToRequest(regenerator), "Wait to request");
-    require(regenerator.totalInspections < 12, "You have completed your mission");
+    require(regenerator.totalInspections < MAX_REGENERATOR_INSPECTIONS, "You have completed your mission");
 
     // Create the new inspection record.
     _createInspection();
@@ -223,8 +243,8 @@ contract InspectionRules is Callable {
     uint32 treesResult,
     uint32 biodiversityResult
   ) public {
-    require(bytes(proofPhotos).length <= 150, "Max length");
-    require(bytes(justificationReport).length <= 1000, "Max length");
+    require(bytes(proofPhotos).length <= MAX_HASH_LENGTH, "Max length");
+    require(bytes(justificationReport).length <= MAX_JUSTIFICATION_REPORT_LENGTH, "Max length");
 
     Inspection memory inspection = inspections[inspectionId];
 
@@ -232,7 +252,7 @@ contract InspectionRules is Callable {
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept before");
     require(inspection.inspector == msg.sender, "Not your inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
-    require(treesResult <= 200000 && biodiversityResult <= 300, "Max result limit");
+    require(treesResult <= MAX_TREES_RESULT && biodiversityResult <= MAX_BIODIVERSITY_RESULT, "Max result limit");
 
     _markAsRealized(inspection, proofPhotos, justificationReport, treesResult, biodiversityResult);
 
@@ -270,7 +290,7 @@ contract InspectionRules is Callable {
    * @param justification A string explaining why the inspection is being invalidated.
    */
   function addInspectionValidation(uint64 id, string memory justification) public {
-    require(bytes(justification).length <= 300, "Max characters reached");
+    require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters reached");
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 

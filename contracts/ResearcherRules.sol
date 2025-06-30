@@ -161,7 +161,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * (i.e., not too close to the end of an era), and to have waited the `timeBetweenWorks`
    * period since their last research publication.
    * @param title The title of the research paper (max 100 characters).
-   * @param thesis A short description or thesis statement (max 300 characters).
+   * @param thesis A short description or thesis statement (Max characters).
    * @param file A hash or identifier for the research report file (max 150 characters).
    */
   function addResearch(string memory title, string memory thesis, string memory file) public {
@@ -196,7 +196,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * and to have waited the `timeBetweenVotes` period (managed by `ValidationRules`).
    * If the validation count meets the threshold (`votesToInvalidate`), the research is marked as invalid.
    * @param id The ID of the research to validate.
-   * @param justification A brief justification for invalidating the research (max 300 characters).
+   * @param justification A brief justification for invalidating the research (Max characters).
    */
   function addResearchValidation(uint64 id, string memory justification) public {
     require(bytes(justification).length <= 300, "Max characters");

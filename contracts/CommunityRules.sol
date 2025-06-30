@@ -14,10 +14,24 @@ import { Callable } from "./shared/Callable.sol";
  * to whitelisted addresses. It defines critical parameters and logic for user onboarding and community governance.
  */
 contract CommunityRules is Ownable, Callable {
-  // --- State Variables ---
+  // --- Constants ---
 
   /// @notice Minimum number of users allowed for a specific type before proportionality rules apply.
-  uint8 public constant MINIMUM_REGISTERED_USERS_QUANTITY = 5;
+  uint16 private constant MINIMUM_REGISTERED_USERS_QUANTITY = 5;
+
+  /// @notice The number of blocks an invitation is delayed for Supporters.
+  uint32 private constant SUPPORTER_INVITATION_DELAY_BLOCKS = 150;
+
+  /// @notice The number of blocks an invitation is delayed for voter-type users.
+  uint32 private constant VOTER_INVITATION_DELAY_BLOCKS = 100000;
+
+  /// @notice Max character length for delation titles.
+  uint16 private constant MAX_TITLE_LENGTH = 100;
+
+  /// @notice Max character length for delation testimonies.
+  uint16 private constant MAX_TESTIMONY_LENGTH = 300;
+
+  // --- State Variables ---
 
   /// @notice Total count of delations received across all users.
   uint64 public delationsCount;
@@ -66,13 +80,37 @@ contract CommunityRules is Ownable, Callable {
     uint8 contributorProportionality
   ) {
     // Initialize settings for all relevant UserTypes
-    userTypeSettings[UserType.SUPPORTER] = UserTypeSetting(0, false, false, 150, false);
+    userTypeSettings[UserType.SUPPORTER] = UserTypeSetting(0, false, false, SUPPORTER_INVITATION_DELAY_BLOCKS, false);
     userTypeSettings[UserType.REGENERATOR] = UserTypeSetting(0, false, true, 0, false);
     userTypeSettings[UserType.INSPECTOR] = UserTypeSetting(inspectorProportionality, true, true, 0, false);
-    userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(activistProportionality, false, true, 100000, true);
-    userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(researcherProportionality, false, true, 100000, true);
-    userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(developerProportionality, false, true, 100000, true);
-    userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(contributorProportionality, false, true, 100000, true);
+    userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(
+      activistProportionality,
+      false,
+      true,
+      VOTER_INVITATION_DELAY_BLOCKS,
+      true
+    );
+    userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(
+      researcherProportionality,
+      false,
+      true,
+      VOTER_INVITATION_DELAY_BLOCKS,
+      true
+    );
+    userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(
+      developerProportionality,
+      false,
+      true,
+      VOTER_INVITATION_DELAY_BLOCKS,
+      true
+    );
+    userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(
+      contributorProportionality,
+      false,
+      true,
+      VOTER_INVITATION_DELAY_BLOCKS,
+      true
+    );
   }
 
   // --- Public functions (State Modifying) ---
@@ -92,10 +130,13 @@ contract CommunityRules is Ownable, Callable {
    *
    * @param addr The address of the user being reported.
    * @param title Title of the delation (max 100 characters).
-   * @param testimony Justification/details of the delation (max 300 characters).
+   * @param testimony Justification/details of the delation (Max characters).
    */
   function addDelation(address addr, string memory title, string memory testimony) public {
-    require(bytes(title).length <= 100 && bytes(testimony).length <= 300, "Max characters reached");
+    require(
+      bytes(title).length <= MAX_TITLE_LENGTH && bytes(testimony).length <= MAX_TESTIMONY_LENGTH,
+      "Max characters reached"
+    );
     require(users[msg.sender] != UserType.UNDEFINED, "Caller must be registered");
     require(users[msg.sender] != UserType.SUPPORTER, "Not allowed to supporters");
     require(users[addr] != UserType.UNDEFINED, "User must be registered");
