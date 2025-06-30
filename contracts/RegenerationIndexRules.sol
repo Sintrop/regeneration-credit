@@ -18,6 +18,22 @@ contract RegenerationIndexRules is Ownable, Callable {
   /// @notice Allowed categories: Trees & Biodiversity.
   uint8 public constant CATEGORY_COUNTS = 2;
 
+  // Tree thresholds
+  uint32 private constant TREES_THRESHOLD_LEVEL_1 = 50000;
+  uint32 private constant TREES_THRESHOLD_LEVEL_2 = 25000;
+  uint32 private constant TREES_THRESHOLD_LEVEL_3 = 12500;
+  uint32 private constant TREES_THRESHOLD_LEVEL_4 = 6250;
+  uint32 private constant TREES_THRESHOLD_LEVEL_5 = 3125;
+  uint32 private constant TREES_THRESHOLD_LEVEL_6 = 20;
+
+  // Biodiversity thresholds
+  uint32 private constant BIO_THRESHOLD_LEVEL_1 = 160;
+  uint32 private constant BIO_THRESHOLD_LEVEL_2 = 80;
+  uint32 private constant BIO_THRESHOLD_LEVEL_3 = 40;
+  uint32 private constant BIO_THRESHOLD_LEVEL_4 = 20;
+  uint32 private constant BIO_THRESHOLD_LEVEL_5 = 10;
+  uint32 private constant BIO_THRESHOLD_LEVEL_6 = 5;
+
   // --- State Variables ---
 
   /// @notice Relationship between id and category data
@@ -128,17 +144,17 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @return The regeneration index ID corresponding to the indicator.
    */
   function _treesRegenerationIndexId(uint32 indicator) internal pure returns (uint32) {
-    if (indicator >= 50000) {
+    if (indicator >= TREES_THRESHOLD_LEVEL_1) {
       return 1;
-    } else if (indicator >= 25000 && indicator < 50000) {
+    } else if (indicator >= TREES_THRESHOLD_LEVEL_2) {
       return 2;
-    } else if (indicator >= 12500 && indicator < 25000) {
+    } else if (indicator >= TREES_THRESHOLD_LEVEL_3) {
       return 3;
-    } else if (indicator >= 6250 && indicator < 12500) {
+    } else if (indicator >= TREES_THRESHOLD_LEVEL_4) {
       return 4;
-    } else if (indicator >= 3125 && indicator < 6250) {
+    } else if (indicator >= TREES_THRESHOLD_LEVEL_5) {
       return 5;
-    } else if (indicator >= 20 && indicator < 3125) {
+    } else if (indicator >= TREES_THRESHOLD_LEVEL_6) {
       return 6;
     } else {
       return 7;
@@ -152,17 +168,17 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @return The regeneration index ID corresponding to the indicator.
    */
   function _biodiversityRegenerationIndexId(uint32 indicator) internal pure returns (uint32) {
-    if (indicator >= 160) {
+    if (indicator >= BIO_THRESHOLD_LEVEL_1) {
       return 1;
-    } else if (indicator >= 80 && indicator < 160) {
+    } else if (indicator >= BIO_THRESHOLD_LEVEL_2) {
       return 2;
-    } else if (indicator >= 40 && indicator < 80) {
+    } else if (indicator >= BIO_THRESHOLD_LEVEL_3) {
       return 3;
-    } else if (indicator >= 20 && indicator < 40) {
+    } else if (indicator >= BIO_THRESHOLD_LEVEL_4) {
       return 4;
-    } else if (indicator >= 10 && indicator < 20) {
+    } else if (indicator >= BIO_THRESHOLD_LEVEL_5) {
       return 5;
-    } else if (indicator >= 5 && indicator < 10) {
+    } else if (indicator >= BIO_THRESHOLD_LEVEL_6) {
       return 6;
     } else {
       return 7;
