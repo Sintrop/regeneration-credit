@@ -62,7 +62,7 @@ describe("InspectionRules", () => {
     blocksToExpireAcceptedInspection: 50,
     allowedInitialRequests: 1,
     acceptInspectionDelayBlocks: 5,
-    securityBlocksToValidatorAnalysis: 100,
+    securityBlocksToValidation_: 100,
     BLOCKS_TO_ACCEPT: 6000,
   };
 
@@ -193,7 +193,7 @@ describe("InspectionRules", () => {
       sintropArgs.blocksToExpireAcceptedInspection,
       sintropArgs.allowedInitialRequests,
       sintropArgs.acceptInspectionDelayBlocks,
-      sintropArgs.securityBlocksToValidatorAnalysis
+      sintropArgs.securityBlocksToValidation_
     );
 
     const inspectionRulesDependencies = {

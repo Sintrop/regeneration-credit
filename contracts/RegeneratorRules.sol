@@ -131,11 +131,19 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     Coordinates[] memory _coordinates
   ) public {
     require(
-      bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH && bytes(projectDescription).length <= MAX_PROJECT_DESCRIPTION_LENGTH,
+      bytes(name).length <= MAX_NAME_LENGTH &&
+        bytes(proofPhoto).length <= MAX_HASH_LENGTH &&
+        bytes(projectDescription).length <= MAX_PROJECT_DESCRIPTION_LENGTH,
       "Max characters reached"
     );
-    require(_coordinates.length >= MIN_COORDINATES_COUNT && _coordinates.length <= MAX_COORDINATES_COUNT, "Minimum 3 and maximum 10 coordinate points");
-    require(totalArea >= MIN_REGENERATION_AREA && totalArea <= MAX_REGENERATION_AREA, "Minimum 500 and maximum 500.000 square meters");
+    require(
+      _coordinates.length >= MIN_COORDINATES_COUNT && _coordinates.length <= MAX_COORDINATES_COUNT,
+      "Minimum 3 and maximum 10 coordinate points"
+    );
+    require(
+      totalArea >= MIN_REGENERATION_AREA && totalArea <= MAX_REGENERATION_AREA,
+      "Minimum 500 and maximum 500.000 square meters"
+    );
 
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 

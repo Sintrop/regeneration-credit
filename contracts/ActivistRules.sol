@@ -35,7 +35,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   /// @notice Max character length for hash or URL.
   uint16 private constant MAX_HASH_LENGTH = 150;
 
-  // --- State Variables ---
+  // --- State variables ---
 
   /// @notice The total count of all invitations that have been successfully approved across the entire system.
   uint32 public approvedInvites;

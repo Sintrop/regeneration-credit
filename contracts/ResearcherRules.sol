@@ -35,18 +35,18 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   uint16 private constant MAX_HASH_LENGTH = 150;
 
   /// @notice Max character length for text.
-  uint16 private constant MAX_TEXT_LENGTH = 300; 
+  uint16 private constant MAX_TEXT_LENGTH = 300;
 
   /// @notice Max character length for title.
-  uint16 private constant MAX_TITLE_LENGTH = 100;    
+  uint16 private constant MAX_TITLE_LENGTH = 100;
 
   /// @notice Max character length for calculator item name.
-  uint16 private constant MAX_ITEM_LENGTH = 35;  
+  uint16 private constant MAX_ITEM_LENGTH = 35;
 
   /// @notice Max character length for calculator item unit.
-  uint16 private constant MAX_UNIT_LENGTH = 20;        
+  uint16 private constant MAX_UNIT_LENGTH = 20;
 
-  // --- State Variables ---
+  // --- State variables ---
 
   /// @notice The maximum number of penalties a researcher can accumulate before facing invalidation.
   uint8 public immutable maxPenalties;
@@ -121,13 +121,13 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * These parameters define crucial operational behaviors that cannot be changed after deployment.
    * @param timeBetweenWorks_ Minimum number of blocks that must pass between a researcher's publications (research or calculator item).
    * @param maxPenalties_ The maximum number of penalties a researcher can accumulate before block.
-   * @param securityBlocksToValidatorAnalysis The period in blocks before an era ends, during which new research cannot be added.
+   * @param securityBlocksToValidation_ The period in blocks before an era ends, during which new research cannot be added.
    * This allows validators sufficient time for analysis before era finalization.
    */
-  constructor(uint32 timeBetweenWorks_, uint8 maxPenalties_, uint32 securityBlocksToValidatorAnalysis) {
+  constructor(uint32 timeBetweenWorks_, uint8 maxPenalties_, uint32 securityBlocksToValidation_) {
     timeBetweenWorks = timeBetweenWorks_;
     maxPenalties = maxPenalties_;
-    securityBlocksToValidation = securityBlocksToValidatorAnalysis;
+    securityBlocksToValidation = securityBlocksToValidation_;
   }
 
   // --- State-Modifying Functions ---
@@ -188,7 +188,12 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param file A hash or identifier for the research report file (max 150 characters).
    */
   function addResearch(string memory title, string memory thesis, string memory file) public {
-    require(bytes(title).length <= MAX_TITLE_LENGTH && bytes(thesis).length <= MAX_TEXT_LENGTH && bytes(file).length <= MAX_HASH_LENGTH, "Max characters");
+    require(
+      bytes(title).length <= MAX_TITLE_LENGTH &&
+        bytes(thesis).length <= MAX_TEXT_LENGTH &&
+        bytes(file).length <= MAX_HASH_LENGTH,
+      "Max characters"
+    );
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
     require(nextEraIn() > securityBlocksToValidation, "Wait until next era");
     require(_canPublishResearch(msg.sender), "Can't publish yet");
@@ -259,7 +264,12 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     string memory unit,
     uint256 carbonImpact
   ) public {
-    require(bytes(item).length <= MAX_ITEM_LENGTH && bytes(thesis).length <= MAX_TEXT_LENGTH && bytes(unit).length <= MAX_UNIT_LENGTH, "Max characters");
+    require(
+      bytes(item).length <= MAX_ITEM_LENGTH &&
+        bytes(thesis).length <= MAX_TEXT_LENGTH &&
+        bytes(unit).length <= MAX_UNIT_LENGTH,
+      "Max characters"
+    );
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
 
     Researcher memory researcher = researchers[msg.sender];
@@ -283,7 +293,12 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param projectURL The URL of the project or code repository (max 100 characters).
    */
   function addEvaluationMethod(string memory title, string memory research, string memory projectURL) public {
-    require(bytes(title).length <= MAX_TITLE_LENGTH && bytes(research).length <= MAX_TEXT_LENGTH && bytes(projectURL).length <= MAX_HASH_LENGTH, "Max characters");
+    require(
+      bytes(title).length <= MAX_TITLE_LENGTH &&
+        bytes(research).length <= MAX_TEXT_LENGTH &&
+        bytes(projectURL).length <= MAX_HASH_LENGTH,
+      "Max characters"
+    );
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
     require(researchers[msg.sender].canPublishMethod, "Only one method allowed");
 

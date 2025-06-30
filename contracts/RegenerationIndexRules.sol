@@ -34,7 +34,7 @@ contract RegenerationIndexRules is Ownable, Callable {
   uint32 private constant BIO_THRESHOLD_LEVEL_5 = 10;
   uint32 private constant BIO_THRESHOLD_LEVEL_6 = 5;
 
-  // --- State Variables ---
+  // --- State variables ---
 
   /// @notice Relationship between id and category data
   mapping(uint8 => Category) public categories;

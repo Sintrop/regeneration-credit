@@ -22,7 +22,7 @@ import { Researcher } from "./types/ResearcherTypes.sol";
 contract VoteRules {
   using SafeMath for uint256;
 
-  // --- State Variables ---
+  // --- State variables ---
 
   /// @notice CommunityRules contract address
   ICommunityRules_Vote internal communityRules;

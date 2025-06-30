@@ -32,7 +32,7 @@ contract RegenerationCreditImpact {
   /// @notice Constant of 32 decimals to calculate the impact. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
   uint256 public constant IMPACT_DECIMALS = 10 ** 32;
 
-  // --- State Variables ---
+  // --- State variables ---
 
   IRegenerationCredit_Impact internal regenerationCredit;
   IInspectionRules_Impact internal inspectionRules;

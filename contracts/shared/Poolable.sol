@@ -15,7 +15,7 @@ import { Era } from "contracts/types/PoolTypes.sol";
 contract Poolable {
   using SafeMath for uint256;
 
-  // --- State Variables ---
+  // --- State variables ---
 
   /// @notice The total supply of tokens to be managed by this contract.
   /// @dev This value is set once during contract deployment and remains constant.

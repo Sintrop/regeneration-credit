@@ -10,7 +10,7 @@ async function inspectionRulesDeploy() {
 
   const acceptInspectionDelayBlocks = process.env["ACCEPT_INSPECTION_DELAY_BLOCKS"];
 
-  const securityBlocksToValidatorAnalysis = process.env["INSPECTION_securityBlocksToValidation"];
+  const securityBlocksToValidation_ = process.env["INSPECTION_securityBlocksToValidation"];
 
   const InspectionRules = await ethers.getContractFactory("InspectionRules");
 
@@ -19,7 +19,7 @@ async function inspectionRulesDeploy() {
     sintropBlocksToExpireAceeptedInspection,
     allowedInitialRequests,
     acceptInspectionDelayBlocks,
-    securityBlocksToValidatorAnalysis,
+    securityBlocksToValidation_,
   ];
 
   const sintrop = await InspectionRules.deploy(...args);

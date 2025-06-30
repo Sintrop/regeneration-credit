@@ -31,7 +31,7 @@ contract CommunityRules is Ownable, Callable {
   /// @notice Max character length for delation testimonies.
   uint16 private constant MAX_TESTIMONY_LENGTH = 300;
 
-  // --- State Variables ---
+  // --- State variables ---
 
   /// @notice Total count of delations received across all users.
   uint64 public delationsCount;

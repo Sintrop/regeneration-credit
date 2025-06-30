@@ -42,7 +42,7 @@ contract InspectionRules is Callable {
   /// @notice The maximum result value for the biodiversity score in an inspection.
   uint32 private constant MAX_BIODIVERSITY_RESULT = 300;
 
-  // --- State Variables ---
+  // --- State variables ---
 
   /// @notice Number of initial inspection requests a regenerator can make without `timeBetweenInspections` delay.
   uint8 public immutable allowedInitialRequests;
@@ -57,7 +57,7 @@ contract InspectionRules is Callable {
   uint32 public immutable acceptInspectionDelayBlocks;
 
   /// @notice Amount of blocks for validators to analyze inspections before an era ends.
-  uint32 public immutable securityBlocksToValidatorAnalysis;
+  uint32 public immutable securityBlocksToValidation_;
 
   /// @notice Valid inspections count (inspections not invalidated).
   uint64 public inspectionsCount;
@@ -113,20 +113,20 @@ contract InspectionRules is Callable {
    * @param blocksToExpireAcceptedInspection_ The number of blocks before an accepted inspection expires.
    * @param allowedInitialRequests_ The number of initial requests allowed without delay.
    * @param acceptInspectionDelayBlocks_ The number of blocks inspectors must wait before accepting.
-   * @param securityBlocksToValidatorAnalysis_ The number of security blocks for validators before era end.
+   * @param securityBlocksToValidation__ The number of security blocks for validators before era end.
    */
   constructor(
     uint32 timeBetweenInspections_,
     uint32 blocksToExpireAcceptedInspection_,
     uint8 allowedInitialRequests_,
     uint32 acceptInspectionDelayBlocks_,
-    uint32 securityBlocksToValidatorAnalysis_
+    uint32 securityBlocksToValidation__
   ) {
     timeBetweenInspections = timeBetweenInspections_;
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
     allowedInitialRequests = allowedInitialRequests_;
     acceptInspectionDelayBlocks = acceptInspectionDelayBlocks_;
-    securityBlocksToValidatorAnalysis = securityBlocksToValidatorAnalysis_;
+    securityBlocksToValidation_ = securityBlocksToValidation__;
   }
 
   // --- Owner function (Setup Only) ---
@@ -193,7 +193,7 @@ contract InspectionRules is Callable {
    * - The inspector must not have previously inspected this specific regenerator.
    * - The inspection's status must be `OPEN`.
    * - The `acceptInspectionDelayBlocks` must have passed since the inspection was created.
-   * - The system must not be within the `securityBlocksToValidatorAnalysis` window before an era ends.
+   * - The system must not be within the `securityBlocksToValidation_` window before an era ends.
    * - The inspector must adhere to `inspectorRules.canAcceptInspection` (delay from last realized inspection).
    * - The `inspection.regenerator` must be a valid `REGENERATOR`.
    *
@@ -465,7 +465,7 @@ contract InspectionRules is Callable {
   function beforeAcceptHaveSecurityBlocksToVote() private view returns (bool) {
     if (regeneratorRules.nextEraIn() < blocksToExpireAcceptedInspection) return false;
 
-    return regeneratorRules.nextEraIn() - blocksToExpireAcceptedInspection > securityBlocksToValidatorAnalysis;
+    return regeneratorRules.nextEraIn() - blocksToExpireAcceptedInspection > securityBlocksToValidation_;
   }
 
   // --- Events ---

@@ -10,9 +10,9 @@ async function contributorRulesDeploy() {
 
   const timeBetweenWorks = process.env["TIME_BETWEEN_WORKS"];
   const contributorMaxPenalties = process.env["CONTRIBUTOR_maxPenalties"];
-  const securityBlocksToValidatorAnalysis = process.env["CONTRIBUTOR_securityBlocksToValidation"];
+  const securityBlocksToValidation_ = process.env["CONTRIBUTOR_securityBlocksToValidation"];
 
-  const args = [timeBetweenWorks, contributorMaxPenalties, securityBlocksToValidatorAnalysis];
+  const args = [timeBetweenWorks, contributorMaxPenalties, securityBlocksToValidation_];
 
   const contributorRules = await ContributorRules.deploy(...args);
 

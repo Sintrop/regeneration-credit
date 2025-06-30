@@ -12,7 +12,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
  * If ownership is renounced, only previously added allowed callers will be able to call the functions.
  */
 contract Callable is Ownable {
-  // --- State Variables ---
+  // --- State variables ---
 
   /// @dev Mapping storing the addresses authorized to call protected functions.
   /// `true` if the address is allowed, `false` otherwise.

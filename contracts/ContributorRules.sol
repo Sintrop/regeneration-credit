@@ -38,7 +38,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
   /// @notice Max character length for text.
   uint16 private constant MAX_TEXT_LENGTH = 300;
 
-  // --- State Variables ---
+  // --- State variables ---
 
   /// @notice The maximum number of penalties a contributor can accumulate before being denied.
   uint8 public immutable maxPenalties;
@@ -104,12 +104,12 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * after deployment, following an `onlyOwner` pattern for secure initialization.
    * @param timeBetweenWorks_ The required blocks between contributions.
    * @param maxPenalties_ The maximum allowed penalties for a contributor.
-   * @param securityBlocksToValidatorAnalysis The number of blocks before era end to block new contributions.
+   * @param securityBlocksToValidation_ The number of blocks before era end to block new contributions.
    */
-  constructor(uint32 timeBetweenWorks_, uint8 maxPenalties_, uint32 securityBlocksToValidatorAnalysis) {
+  constructor(uint32 timeBetweenWorks_, uint8 maxPenalties_, uint32 securityBlocksToValidation_) {
     timeBetweenWorks = timeBetweenWorks_;
     maxPenalties = maxPenalties_;
-    securityBlocksToValidation = securityBlocksToValidatorAnalysis;
+    securityBlocksToValidation = securityBlocksToValidation_;
   }
 
   /**
