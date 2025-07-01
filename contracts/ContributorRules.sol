@@ -184,7 +184,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * @param description A title or brief description of the contribution.
    * @param report A hash or identifier (e.g., IPFS CID) of the detailed report file.
    */
-  function addContribution(string memory description, string memory report) public {
+  function addContribution(string memory description, string memory report) public nonReentrant {
     // Character limit validation for description and report.
     require(
       bytes(description).length <= MAX_TEXT_LENGTH && bytes(report).length <= MAX_HASH_LENGTH,
