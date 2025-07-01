@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { IRegeneratorRules_Inspection } from "./interfaces/IRegeneratorRules_Inspection.sol";
 import { IInspectorRules_Inspection } from "./interfaces/IInspectorRules_Inspection.sol";
 import { IRegenerationIndexRules } from "./interfaces/IRegenerationIndexRules.sol";
@@ -21,7 +22,7 @@ import { Callable } from "./shared/Callable.sol";
  * @dev This contract allows Regenerators to request inspections, and Inspectors to accept, perform, and submit them.
  * It integrates with various other rule contracts for user validation, level updates, and penalty management.
  */
-contract InspectionRules is Callable {
+contract InspectionRules is Callable, ReentrancyGuard {
   // --- Constants ---
 
   /// @notice The maximum number of inspections a Regenerator can receive.
@@ -199,7 +200,7 @@ contract InspectionRules is Callable {
    *
    * @param inspectionId The unique ID of the inspection the inspector wishes to accept.
    */
-  function acceptInspection(uint64 inspectionId) public {
+  function acceptInspection(uint64 inspectionId) public nonReentrant {
     require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Only inspectors");
     require(inspectorRules.isInspectorValid(msg.sender), "Only 3 giveUps allowed");
 
@@ -242,7 +243,7 @@ contract InspectionRules is Callable {
     string memory justificationReport,
     uint32 treesResult,
     uint32 biodiversityResult
-  ) public {
+  ) public nonReentrant {
     require(bytes(proofPhotos).length <= MAX_HASH_LENGTH, "Max length");
     require(bytes(justificationReport).length <= MAX_JUSTIFICATION_REPORT_LENGTH, "Max length");
 
