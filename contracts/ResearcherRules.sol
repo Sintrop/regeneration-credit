@@ -187,7 +187,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param thesis A short description or thesis statement (Max characters).
    * @param file A hash or identifier for the research report file (max 150 characters).
    */
-  function addResearch(string memory title, string memory thesis, string memory file) public {
+  function addResearch(string memory title, string memory thesis, string memory file) public nonReentrant {
     require(
       bytes(title).length <= MAX_TITLE_LENGTH &&
         bytes(thesis).length <= MAX_TEXT_LENGTH &&

@@ -174,7 +174,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * @param description A title or brief description of the report.
    * @param report A hash or identifier (e.g., IPFS CID) of the detailed development report file.
    */
-  function addReport(string memory description, string memory report) public {
+  function addReport(string memory description, string memory report) public nonReentrant {
     // Character limit validation for description and report.
     require(
       bytes(description).length <= MAX_TEXT_LENGTH && bytes(report).length <= MAX_HASH_LENGTH,
