@@ -3,7 +3,7 @@ const getDeployedContract = require("../scripts/shared/getDeployedContract");
 const verifyContract = require("../scripts/shared/verifyContract");
 
 async function inspectorRulesDeploy() {
-  const inspectorMaxPenalties = process.env["INSPECTOR_MAX_PENALTIES"];
+  const inspectorMaxPenalties = process.env["MAX_PENALTIES"];
 
   const communityRules = await getDeployedContract("CommunityRules");
   const inspectorPool = await getDeployedContract("InspectorPool");

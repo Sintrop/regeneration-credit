@@ -2,7 +2,7 @@ const saveContractAddress = require("../scripts/shared/saveContractAddress");
 const verifyContract = require("../scripts/shared/verifyContract");
 
 async function inspectionRulesDeploy() {
-  const sintropTimeBetweenRegeneratorInspections = process.env["TIME_BETWEEN_REGENERATOR_INSPECTIONS"];
+  const sintropTimeBetweenRegeneratorInspections = process.env["BLOCKS_PER_ERA"];
 
   const sintropBlocksToExpireAceeptedInspection = process.env["BLOCKS_TO_EXPIRE_ACCEPTED_INSPECTION"];
 
@@ -10,7 +10,7 @@ async function inspectionRulesDeploy() {
 
   const acceptInspectionDelayBlocks = process.env["ACCEPT_INSPECTION_DELAY_BLOCKS"];
 
-  const securityBlocksToValidation_ = process.env["DEVELOPER_SECURITY_BLOCKS_TO_VALIDATION"];
+  const securityBlocksToValidation_ = process.env["SECURITY_BLOCKS_TO_VALIDATION"];
 
   const InspectionRules = await ethers.getContractFactory("InspectionRules");
 

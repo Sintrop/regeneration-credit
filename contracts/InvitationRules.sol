@@ -19,7 +19,7 @@ contract InvitationRules is Ownable {
   // --- Constants ---
 
   /// @notice The minimum number of blocks an activist needs to wait to invite Regenerators or Inspectors again.
-  uint16 private constant ACTIVIST_DELAY_BLOCKS = 1000;
+  uint16 private constant ACTIVIST_DELAY_BLOCKS = 500;
 
   // --- State variables ---
 
