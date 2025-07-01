@@ -29,9 +29,6 @@ contract RegenerationCreditImpact {
    */
   uint256 public constant CARBON_PER_TREE = 100000;
 
-  // /// @notice Constant of 32 decimals to calculate the impact. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
-  // uint256 public constant IMPACT_DECIMALS = 10 ** 32;
-
   /// @notice A scaling factor to perform fixed-point math, ensuring the result has a standard 18-decimal precision.
   /// @dev This is calculated as 10**(token_decimals + result_decimals) = 10**(18 + 18) = 10**36.
   uint256 private constant PRECISION_FACTOR = 10 ** 36;
