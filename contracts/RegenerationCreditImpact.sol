@@ -54,7 +54,7 @@ contract RegenerationCreditImpact {
     regeneratorRules = IRegeneratorRules_Impact(regeneratorRulesAddress);
   }
 
-  // --- View Functions ---
+  // --- Public Functions ---
 
   /**
    * @notice Calculates the total trees impact of the system.
@@ -111,9 +111,7 @@ contract RegenerationCreditImpact {
    * @return uint256 Trees per token (with 18-decimal precision).
    */
   function treesPerToken() public view returns (uint256) {
-    uint256 effectiveSupply = regenerationCredit.totalSupply() +
-      regenerationCredit.totalCertified_() -
-      regenerationCredit.totalLocked_();
+    uint256 effectiveSupply = _getEffectiveSupply();
     if (effectiveSupply == 0) return 0;
 
     return totalTreesImpact().mul(PRECISION_FACTOR).div(effectiveSupply);
@@ -128,9 +126,7 @@ contract RegenerationCreditImpact {
    * @return uint256 Grams of carbon per token (with 18-decimal precision).
    */
   function carbonPerToken() public view returns (uint256) {
-    uint256 effectiveSupply = regenerationCredit.totalSupply() +
-      regenerationCredit.totalCertified_() -
-      regenerationCredit.totalLocked_();
+    uint256 effectiveSupply = _getEffectiveSupply();
     if (effectiveSupply == 0) return 0;
 
     return totalCarbonImpact().mul(PRECISION_FACTOR).div(effectiveSupply);
@@ -145,9 +141,7 @@ contract RegenerationCreditImpact {
    * @return uint256 Amount of species per token (with 18-decimal precision).
    */
   function biodiversityPerToken() public view returns (uint256) {
-    uint256 effectiveSupply = regenerationCredit.totalSupply() +
-      regenerationCredit.totalCertified_() -
-      regenerationCredit.totalLocked_();
+    uint256 effectiveSupply = _getEffectiveSupply();
     if (effectiveSupply == 0) return 0;
 
     return totalBiodiversityImpact().mul(PRECISION_FACTOR).div(effectiveSupply);
@@ -162,11 +156,19 @@ contract RegenerationCreditImpact {
    * @return uint256 Area [m²] per token (with 18-decimal precision).
    */
   function areaPerToken() public view returns (uint256) {
-    uint256 effectiveSupply = regenerationCredit.totalSupply() +
-      regenerationCredit.totalCertified_() -
-      regenerationCredit.totalLocked_();
+    uint256 effectiveSupply = _getEffectiveSupply();
     if (effectiveSupply == 0) return 0;
 
     return totalAreaImpact().mul(PRECISION_FACTOR).div(effectiveSupply);
+  }
+
+  // --- Internal Functions ---
+
+  /**
+   * @dev Internal helper function to calculate the effective token supply used in impact calculations.
+   * @return The total supply plus certified tokens minus locked tokens.
+   */
+  function _getEffectiveSupply() internal view returns (uint256) {
+    return regenerationCredit.totalSupply() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_();
   }
 }
