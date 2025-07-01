@@ -8,7 +8,6 @@ async function afterDeploy() {
   await configureResearcherRules();
   await inviteUsers();
   await transferTokens();
-  await offsetEnergy();
   await renounceOwnership();
 
   console.log("After Deploy OK");
@@ -338,14 +337,6 @@ async function inviteUsers() {
   await invitationRules.onlyOwnerInvite("0xE9CB014CEEEDCD55FAB7C42202D393CCDE93E41B", 1);
 
   // await invitationRules.renounceOwnership();
-}
-
-async function offsetEnergy() {
-  const regenerationCredit = await getDeployedContract("RegenerationCredit");
-
-  await regenerationCredit.burnTokens("30000000000000000000000000");
-
-  console.log("After offset is OK");
 }
 
 module.exports = afterDeploy;

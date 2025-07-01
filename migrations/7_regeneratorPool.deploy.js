@@ -3,8 +3,8 @@ const getDeployedContract = require("../scripts/shared/getDeployedContract");
 const verifyContract = require("../scripts/shared/verifyContract");
 
 async function regeneratorPoolDeploy() {
-  const poolHalving = process.env["REGENERATOR_POOL_HALVING"];
-  const poolBlocksPerEra = process.env["REGENERATOR_POOL_BLOCKS_PER_ERA"];
+  const poolHalving = process.env["POOL_HALVING"];
+  const poolBlocksPerEra = process.env["BLOCKS_PER_ERA"];
   const regeneratorPoolFunds = process.env["REGENERATOR_POOL_FUNDS"];
 
   const regenerationCredit = await getDeployedContract("RegenerationCredit");

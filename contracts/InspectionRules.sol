@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { RegeneratorRules } from "./RegeneratorRules.sol";
-import { InspectorRules } from "./InspectorRules.sol";
-import { RegenerationIndexRules } from "./RegenerationIndexRules.sol";
-import { ValidationRules } from "./ValidationRules.sol";
-import { ActivistRules } from "./ActivistRules.sol";
-import { CommunityRules } from "./CommunityRules.sol";
+import { IRegeneratorRules_Inspection } from "./interfaces/IRegeneratorRules_Inspection.sol";
+import { IInspectorRules_Inspection } from "./interfaces/IInspectorRules_Inspection.sol";
+import { IRegenerationIndexRules } from "./interfaces/IRegenerationIndexRules.sol";
+import { IValidationRules_Inspection } from "./interfaces/IValidationRules_Inspection.sol";
+import { IActivistRules_Inspection } from "./interfaces/IActivistRules_Inspection.sol";
+import { ICommunityRules_Inspection } from "./interfaces/ICommunityRules_Inspection.sol";
+import { IVoteRules } from "./interfaces/IVoteRules.sol";
 import { InspectionStatus, Inspection, ContractsDependency } from "./types/InspectionTypes.sol";
 import { Regenerator } from "./types/RegeneratorTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
-import { VoteRules } from "./VoteRules.sol";
 
 /**
  * @title InspectionRules
@@ -22,7 +22,27 @@ import { VoteRules } from "./VoteRules.sol";
  * It integrates with various other rule contracts for user validation, level updates, and penalty management.
  */
 contract InspectionRules is Callable {
-  // --- State Variables ---
+  // --- Constants ---
+
+  /// @notice The maximum number of inspections a Regenerator can receive.
+  uint8 private constant MAX_REGENERATOR_INSPECTIONS = 12;
+
+  /// @notice Max character length for hash or url.
+  uint16 private constant MAX_HASH_LENGTH = 150;
+
+  /// @notice The maximum character length for the justification report string.
+  uint16 private constant MAX_JUSTIFICATION_REPORT_LENGTH = 1000;
+
+  /// @notice Max character length for text.
+  uint16 private constant MAX_TEXT_LENGTH = 300;
+
+  /// @notice The maximum result value for the number of trees in an inspection.
+  uint32 private constant MAX_TREES_RESULT = 200000;
+
+  /// @notice The maximum result value for the biodiversity score in an inspection.
+  uint32 private constant MAX_BIODIVERSITY_RESULT = 300;
+
+  // --- State variables ---
 
   /// @notice Number of initial inspection requests a regenerator can make without `timeBetweenInspections` delay.
   uint8 public immutable allowedInitialRequests;
@@ -37,7 +57,7 @@ contract InspectionRules is Callable {
   uint32 public immutable acceptInspectionDelayBlocks;
 
   /// @notice Amount of blocks for validators to analyze inspections before an era ends.
-  uint32 public immutable securityBlocksToValidatorAnalysis;
+  uint32 public immutable securityBlocksToValidation_;
 
   /// @notice Valid inspections count (inspections not invalidated).
   uint64 public inspectionsCount;
@@ -64,25 +84,25 @@ contract InspectionRules is Callable {
   mapping(address => mapping(address => bool)) internal inspectorInspected;
 
   /// @notice InspectorRules contract instance for interacting with inspector-specific logic.
-  InspectorRules private inspectorRules;
+  IInspectorRules_Inspection private inspectorRules;
 
   /// @notice RegeneratorRules contract instance for interacting with regenerator-specific logic.
-  RegeneratorRules private regeneratorRules;
+  IRegeneratorRules_Inspection private regeneratorRules;
 
   /// @notice CommunityRules contract instance for checking user types and other community-wide rules.
-  CommunityRules private communityRules;
+  ICommunityRules_Inspection private communityRules;
 
   /// @notice ValidationRules contract instance for handling inspection invalidations.
-  ValidationRules private validationRules;
+  IValidationRules_Inspection private validationRules;
 
   /// @notice ActivistRules contract instance for updating activist levels based on inspection activities.
-  ActivistRules private activistRules;
+  IActivistRules_Inspection private activistRules;
 
   /// @notice VoteRules contract instance for checking voter eligibility.
-  VoteRules internal voteRules;
+  IVoteRules internal voteRules;
 
   /// @notice RegenerationIndexRules contract instance for calculating regeneration scores.
-  RegenerationIndexRules private regenerationIndexRules;
+  IRegenerationIndexRules private regenerationIndexRules;
 
   // --- Constructor ---
 
@@ -93,20 +113,20 @@ contract InspectionRules is Callable {
    * @param blocksToExpireAcceptedInspection_ The number of blocks before an accepted inspection expires.
    * @param allowedInitialRequests_ The number of initial requests allowed without delay.
    * @param acceptInspectionDelayBlocks_ The number of blocks inspectors must wait before accepting.
-   * @param securityBlocksToValidatorAnalysis_ The number of security blocks for validators before era end.
+   * @param securityBlocksToValidation__ The number of security blocks for validators before era end.
    */
   constructor(
     uint32 timeBetweenInspections_,
     uint32 blocksToExpireAcceptedInspection_,
     uint8 allowedInitialRequests_,
     uint32 acceptInspectionDelayBlocks_,
-    uint32 securityBlocksToValidatorAnalysis_
+    uint32 securityBlocksToValidation__
   ) {
     timeBetweenInspections = timeBetweenInspections_;
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
     allowedInitialRequests = allowedInitialRequests_;
     acceptInspectionDelayBlocks = acceptInspectionDelayBlocks_;
-    securityBlocksToValidatorAnalysis = securityBlocksToValidatorAnalysis_;
+    securityBlocksToValidation_ = securityBlocksToValidation__;
   }
 
   // --- Owner function (Setup Only) ---
@@ -119,13 +139,13 @@ contract InspectionRules is Callable {
    * @param contractDependency Struct containing addresses of all system contracts.
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
-    communityRules = CommunityRules(contractDependency.communityRulesAddress);
-    regeneratorRules = RegeneratorRules(contractDependency.regeneratorRulesAddress);
-    validationRules = ValidationRules(contractDependency.validationRulesAddress);
-    inspectorRules = InspectorRules(contractDependency.inspectorRulesAddress);
-    regenerationIndexRules = RegenerationIndexRules(contractDependency.regenerationIndexRulesAddress);
-    activistRules = ActivistRules(contractDependency.activistRulesAddress);
-    voteRules = VoteRules(contractDependency.voteRulesAddress);
+    communityRules = ICommunityRules_Inspection(contractDependency.communityRulesAddress);
+    regeneratorRules = IRegeneratorRules_Inspection(contractDependency.regeneratorRulesAddress);
+    validationRules = IValidationRules_Inspection(contractDependency.validationRulesAddress);
+    inspectorRules = IInspectorRules_Inspection(contractDependency.inspectorRulesAddress);
+    regenerationIndexRules = IRegenerationIndexRules(contractDependency.regenerationIndexRulesAddress);
+    activistRules = IActivistRules_Inspection(contractDependency.activistRulesAddress);
+    voteRules = IVoteRules(contractDependency.voteRulesAddress);
   }
 
   // --- Public functions (State Modifying) ---
@@ -149,7 +169,7 @@ contract InspectionRules is Callable {
     require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
     require(!regenerator.pendingInspection, "Request OPEN");
     require(waitToRequest(regenerator), "Wait to request");
-    require(regenerator.totalInspections < 12, "You have completed your mission");
+    require(regenerator.totalInspections < MAX_REGENERATOR_INSPECTIONS, "You have completed your mission");
 
     // Create the new inspection record.
     _createInspection();
@@ -173,7 +193,7 @@ contract InspectionRules is Callable {
    * - The inspector must not have previously inspected this specific regenerator.
    * - The inspection's status must be `OPEN`.
    * - The `acceptInspectionDelayBlocks` must have passed since the inspection was created.
-   * - The system must not be within the `securityBlocksToValidatorAnalysis` window before an era ends.
+   * - The system must not be within the `securityBlocksToValidation_` window before an era ends.
    * - The inspector must adhere to `inspectorRules.canAcceptInspection` (delay from last realized inspection).
    * - The `inspection.regenerator` must be a valid `REGENERATOR`.
    *
@@ -223,8 +243,8 @@ contract InspectionRules is Callable {
     uint32 treesResult,
     uint32 biodiversityResult
   ) public {
-    require(bytes(proofPhotos).length <= 150, "Max length");
-    require(bytes(justificationReport).length <= 1000, "Max length");
+    require(bytes(proofPhotos).length <= MAX_HASH_LENGTH, "Max length");
+    require(bytes(justificationReport).length <= MAX_JUSTIFICATION_REPORT_LENGTH, "Max length");
 
     Inspection memory inspection = inspections[inspectionId];
 
@@ -232,7 +252,7 @@ contract InspectionRules is Callable {
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept before");
     require(inspection.inspector == msg.sender, "Not your inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
-    require(treesResult <= 200000 && biodiversityResult <= 300, "Max result limit");
+    require(treesResult <= MAX_TREES_RESULT && biodiversityResult <= MAX_BIODIVERSITY_RESULT, "Max result limit");
 
     _markAsRealized(inspection, proofPhotos, justificationReport, treesResult, biodiversityResult);
 
@@ -270,7 +290,7 @@ contract InspectionRules is Callable {
    * @param justification A string explaining why the inspection is being invalidated.
    */
   function addInspectionValidation(uint64 id, string memory justification) public {
-    require(bytes(justification).length <= 300, "Max characters reached");
+    require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters reached");
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
@@ -445,7 +465,7 @@ contract InspectionRules is Callable {
   function beforeAcceptHaveSecurityBlocksToVote() private view returns (bool) {
     if (regeneratorRules.nextEraIn() < blocksToExpireAcceptedInspection) return false;
 
-    return regeneratorRules.nextEraIn() - blocksToExpireAcceptedInspection > securityBlocksToValidatorAnalysis;
+    return regeneratorRules.nextEraIn() - blocksToExpireAcceptedInspection > securityBlocksToValidation_;
   }
 
   // --- Events ---

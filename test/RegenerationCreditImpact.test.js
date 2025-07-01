@@ -86,18 +86,12 @@ describe("RegenerationCreditImpact", () => {
       ZERO_ADDRESS,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
-      ZERO_ADDRESS,
       ZERO_ADDRESS
     );
 
     const instanceFactory = await ethers.getContractFactory("RegenerationCreditImpact");
 
-    instance = await instanceFactory.deploy(
-      regenerationCredit.target,
-      inspectionRules.target,
-      communityRules.target,
-      regeneratorRules.target
-    );
+    instance = await instanceFactory.deploy(regenerationCredit.target, inspectionRules.target, regeneratorRules.target);
 
     await communityRules.newAllowedCaller(invitationRules.target);
     await regeneratorRules.newAllowedCaller(owner);

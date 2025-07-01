@@ -1,27 +1,23 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.27;
 
-import { RegenerationCredit } from "./RegenerationCredit.sol";
-import { InspectionRules } from "./InspectionRules.sol";
-import { RegeneratorRules } from "./RegeneratorRules.sol";
-import { CommunityRules } from "./CommunityRules.sol";
-import { UserType } from "./types/CommunityTypes.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import { IRegenerationCredit_Impact } from "./interfaces/IRegenerationCredit_Impact.sol";
+import { IInspectionRules_Impact } from "./interfaces/IInspectionRules_Impact.sol";
+import { IRegeneratorRules_Impact } from "./interfaces/IRegeneratorRules_Impact.sol";
+import { UserType } from "./types/CommunityTypes.sol";
 
 /**
  * @title RegenerationCreditImpact
  * @author Sintrop
- * @dev Total impact and token impact functions. These f
+ * @dev Total impact and token impact functions.
  * @notice Manages and calculates Regeneration Credit system impact. This contract is responsible for
  * calculating the system impact and also the impact per token. This is the foundation, the community impact is what is backing the Regeneration Credit.
  */
 contract RegenerationCreditImpact {
   using SafeMath for uint256;
 
-  // --- State Variables ---
-
-  /// @notice Constant of 32 decimals to calculate the impact. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
-  uint256 public constant IMPACT_DECIMALS = 10 ** 32;
+  // --- Constants ---
 
   /**
    * @notice [g]
@@ -33,10 +29,14 @@ contract RegenerationCreditImpact {
    */
   uint256 public constant CARBON_PER_TREE = 100000;
 
-  RegenerationCredit internal regenerationCredit;
-  InspectionRules internal inspectionRules;
-  CommunityRules internal communityRules;
-  RegeneratorRules internal regeneratorRules;
+  /// @notice Constant of 32 decimals to calculate the impact. To get the exact result, it is necessary to add 32 decimal places to the value returned by the function.
+  uint256 public constant IMPACT_DECIMALS = 10 ** 32;
+
+  // --- State variables ---
+
+  IRegenerationCredit_Impact internal regenerationCredit;
+  IInspectionRules_Impact internal inspectionRules;
+  IRegeneratorRules_Impact internal regeneratorRules;
 
   // --- Constructor ---
 
@@ -45,19 +45,12 @@ contract RegenerationCreditImpact {
    * @dev This constructor links to core system contracts required for impact calculations.
    * @param regenerationCreditAddress Address of the RegenerationCredit token contract.
    * @param inspectionRulesAddress Address of the InspectionRules contract.
-   * @param communityRulesAddress Address of the CommunityRules contract.
    * @param regeneratorRulesAddress Address of the RegeneratorRules contract.
    */
-  constructor(
-    address regenerationCreditAddress,
-    address inspectionRulesAddress,
-    address communityRulesAddress,
-    address regeneratorRulesAddress
-  ) {
-    regenerationCredit = RegenerationCredit(regenerationCreditAddress);
-    inspectionRules = InspectionRules(inspectionRulesAddress);
-    communityRules = CommunityRules(communityRulesAddress);
-    regeneratorRules = RegeneratorRules(regeneratorRulesAddress);
+  constructor(address regenerationCreditAddress, address inspectionRulesAddress, address regeneratorRulesAddress) {
+    regenerationCredit = IRegenerationCredit_Impact(regenerationCreditAddress);
+    inspectionRules = IInspectionRules_Impact(inspectionRulesAddress);
+    regeneratorRules = IRegeneratorRules_Impact(regeneratorRulesAddress);
   }
 
   // --- View Functions ---

@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.27;
 
-interface RegenerationCreditInterface {
+/**
+ * @title IRegenerationCredit
+ * @notice Interface for token interaction with the RegenerationCredit contract.
+ */
+interface IRegenerationCredit {
   function balanceOf(address tokenOwner) external view returns (uint256);
 
   function allowance(address owner, address delegate) external view returns (uint256);

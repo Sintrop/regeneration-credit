@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ICommunityRules_User } from "./interfaces/ICommunityRules_User.sol";
+import { IVoteRules } from "./interfaces/IVoteRules.sol";
+import { IDeveloperPool } from "./interfaces/IDeveloperPool.sol";
+import { IValidationRules_Developer } from "./interfaces/IValidationRules_Developer.sol";
+import { UserType } from "./types/CommunityTypes.sol";
+import { Developer, Pool, Report, Penalty, ContractsDependency } from "./types/DeveloperTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
-import { VoteRules } from "./VoteRules.sol";
-import { CommunityRules } from "./CommunityRules.sol";
-import { UserType } from "./types/CommunityTypes.sol";
-import { DeveloperPool } from "./DeveloperPool.sol";
-import { ValidationRules } from "./ValidationRules.sol";
-import { Developer, Pool, Report, Penalty, ContractsDependency } from "./types/DeveloperTypes.sol";
 
 /**
  * @title DeveloperRules
@@ -24,10 +24,24 @@ import { Developer, Pool, Report, Penalty, ContractsDependency } from "./types/D
  * eligibility, and `ValidationRules` for report validation processes.
  */
 contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
-  // --- State Variables ---
+  // --- Constants ---
+
+  /// @notice Maximum users count allowed for this UserType.
+  uint16 private constant MAX_USER_COUNT = 16000;
+
+  /// @notice Max character length for user name.
+  uint16 private constant MAX_NAME_LENGTH = 50;
+
+  /// @notice Max character length for hash or url.
+  uint16 private constant MAX_HASH_LENGTH = 150;
+
+  /// @notice Max character length for text.
+  uint16 private constant MAX_TEXT_LENGTH = 300;
+
+  // --- State variables ---
 
   /// @notice The maximum number of penalties a developer can accumulate before facing invalidation.
-  uint8 public immutable MAX_PENALTIES;
+  uint8 public immutable maxPenalties;
 
   /// @notice The minimum number of blocks that must elapse between a developer's successful report publications.
   /// This prevents spamming or rapid consecutive report submissions.
@@ -35,7 +49,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice The number of blocks before the end of an era during which no new reports can be published.
   /// This period allows validators sufficient time to analyze and vote on reports before the era concludes.
-  uint32 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
+  uint32 public immutable securityBlocksToValidation;
 
   /// @notice The total count of development reports that are currently considered valid (not invalidated).
   uint64 public reportsCount;
@@ -64,19 +78,19 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  CommunityRules internal communityRules;
+  ICommunityRules_User internal communityRules;
 
   /// @notice The address of the `DeveloperPool` contract, responsible for managing
   /// and distributing token rewards to developers.
-  DeveloperPool internal developerPool;
+  IDeveloperPool internal developerPool;
 
   /// @notice The address of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating development reports.
-  ValidationRules internal validationRules;
+  IValidationRules_Developer internal validationRules;
 
   /// @notice The address of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for report validation.
-  VoteRules internal voteRules;
+  IVoteRules internal voteRules;
 
   /// @notice The specific `UserType` enumeration value for a Developer user.
   UserType private constant USER_TYPE = UserType.DEVELOPER;
@@ -89,12 +103,12 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * after deployment, following an `onlyOwner` pattern for secure initialization.
    * @param timeBetweenWorks_ The required blocks between report publications.
    * @param maxPenalties_ The maximum allowed penalties for a developer.
-   * @param securityBlocksToValidatorAnalysis The number of blocks before era end to block new report submissions.
+   * @param securityBlocksToValidation_ The number of blocks before era end to block new report submissions.
    */
-  constructor(uint32 timeBetweenWorks_, uint8 maxPenalties_, uint32 securityBlocksToValidatorAnalysis) {
+  constructor(uint32 timeBetweenWorks_, uint8 maxPenalties_, uint32 securityBlocksToValidation_) {
     timeBetweenWorks = timeBetweenWorks_;
-    MAX_PENALTIES = maxPenalties_;
-    SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
+    maxPenalties = maxPenalties_;
+    securityBlocksToValidation = securityBlocksToValidation_;
   }
 
   /**
@@ -102,10 +116,10 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * @param contractDependency Addresses of system contracts used
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
-    communityRules = CommunityRules(contractDependency.communityRulesAddress);
-    developerPool = DeveloperPool(contractDependency.developerPoolAddress);
-    validationRules = ValidationRules(contractDependency.validationRulesAddress);
-    voteRules = VoteRules(contractDependency.voteRulesAddress);
+    communityRules = ICommunityRules_User(contractDependency.communityRulesAddress);
+    developerPool = IDeveloperPool(contractDependency.developerPoolAddress);
+    validationRules = IValidationRules_Developer(contractDependency.validationRulesAddress);
+    voteRules = IVoteRules(contractDependency.voteRulesAddress);
   }
 
   // --- Public functions ---
@@ -126,9 +140,9 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    */
   function addDeveloper(string memory name, string memory proofPhoto) public {
     // Character limit validation for name and proofPhoto.
-    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 150, "Max characters");
+    require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     // Max limit for developer users in the system.
-    require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max user limit");
+    require(communityRules.userTypesCount(USER_TYPE) <= MAX_USER_COUNT, "Max user limit");
 
     // Generate a unique ID for the new developer.
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
@@ -154,7 +168,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * - The `description` string must not exceed 300 characters in byte length.
    * - The `report` hash/identifier string must not exceed 150 characters in byte length.
    * - The caller (`msg.sender`) must be a registered `DEVELOPER`.
-   * - The current block number must be greater than `SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS` blocks away
+   * - The current block number must be greater than `securityBlocksToValidation` blocks away
    * from the end of the current era (i.e., not within the security window).
    * - The developer must be eligible to publish based on `timeBetweenWorks` (checked via `canPublishReport`).
    * @param description A title or brief description of the report.
@@ -162,11 +176,14 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    */
   function addReport(string memory description, string memory report) public {
     // Character limit validation for description and report.
-    require(bytes(description).length <= 300 && bytes(report).length <= 150, "Max characters reached");
+    require(
+      bytes(description).length <= MAX_TEXT_LENGTH && bytes(report).length <= MAX_HASH_LENGTH,
+      "Max characters reached"
+    );
     // Only registered developers can call this function.
     require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
     // Check if within the security window before era end.
-    require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add report");
+    require(nextEraIn() > securityBlocksToValidation, "Wait until next era to add report");
     // Check if enough time has passed since the last publication.
     require(canPublishReport(msg.sender), "Can't publish yet");
 
@@ -205,7 +222,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    */
   function addReportValidation(uint64 id, string memory justification) public {
     // Character limit validation for justification.
-    require(bytes(justification).length <= 300, "Max 300 characters");
+    require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters");
     // Check if the caller is eligible to vote. User.level must be greater than average levels.
     require(voteRules.canVote(msg.sender), "Not a voter");
     // Check if the caller has waited the required time between votes.
