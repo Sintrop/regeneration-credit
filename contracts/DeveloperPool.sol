@@ -63,7 +63,7 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
     require(era <= currentContractEra(), "Era in the future");
 
     // Calculate the number of tokens the user is eligible to receive for the given era.
-    uint256 numTokens = calculateUserEraTokens(era, delegate, tokensPerEra(getEpochForEra(era), HALVING));
+    uint256 numTokens = _calculateUserEraTokens(era, delegate, tokensPerEra(getEpochForEra(era), halving));
 
     // Update the user's era and token balance state after the withdrawal.
     _updateEraAfterWithdraw(era, delegate, numTokens);
@@ -83,7 +83,7 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
    * @return bool True if have tokens to withdraw, false if will just update era.
    */
   function haveTokensToWithdraw(address delegate, uint256 era) public view returns (bool) {
-    return _haveTokensToWithdraw(delegate, era, tokensPerEra(getEpochForEra(era), HALVING));
+    return _haveTokensToWithdraw(delegate, era, tokensPerEra(getEpochForEra(era), halving));
   }
 
   /**

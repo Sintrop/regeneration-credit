@@ -19,27 +19,27 @@ contract Blockable {
   uint256 public constant BLOCKS_PRECISION = 5;
 
   /// @notice The number of blocks that constitute a single ERA.
-  uint256 private immutable BLOCKS_PER_ERA;
+  uint256 private immutable blocksPerEra;
 
   /// @notice The block number at which this contract was deployed.
-  uint256 private immutable DEPLOYED_AT;
+  uint256 private immutable deployedAt;
 
   /// @dev Used to determine epoch changes, linked to reward halving adjustments
   /// @notice Defines the number of eras that form one EPOCH cycle.
-  uint256 internal immutable HALVING;
+  uint256 internal immutable halving;
 
   // --- Constructor ---
 
   /**
    * @dev Initializes the Blockable contract.
-   * @param blocksPerEra The number of blocks in each era. Must be greater than 0.
+   * @param _blocksPerEra The number of blocks in each era. Must be greater than 0.
    * @param _halving The number of eras that constitute one halving cycle/epoch.
    */
 
-  constructor(uint256 blocksPerEra, uint256 _halving) {
-    BLOCKS_PER_ERA = blocksPerEra;
-    DEPLOYED_AT = _currentBlockNumber();
-    HALVING = _halving;
+  constructor(uint256 _blocksPerEra, uint256 _halving) {
+    blocksPerEra = _blocksPerEra;
+    deployedAt = _currentBlockNumber();
+    halving = _halving;
   }
 
   // --- Public View Functions ---
@@ -60,16 +60,16 @@ contract Blockable {
    * @return uint256 The current contract era.
    */
   function currentContractEra() public view returns (uint256) {
-    uint256 blocksSinceDeployment = _currentBlockNumber().sub(DEPLOYED_AT);
+    uint256 blocksSinceDeployment = _currentBlockNumber().sub(deployedAt);
 
-    return blocksSinceDeployment.div(BLOCKS_PER_ERA).add(1);
+    return blocksSinceDeployment.div(blocksPerEra).add(1);
   }
 
   /**
    * @dev Calculates the current EPOCH of the contract.
    * @notice Epochs are 1-indexed. The calculation ensures that each epoch (including the first)
-   * comprises exactly `HALVING` eras, aligning with a conceptual 0-indexed era system for epoch grouping.
-   * For example, assuming HALVING = 12:
+   * comprises exactly `halving` eras, aligning with a conceptual 0-indexed era system for epoch grouping.
+   * For example, assuming halving = 12:
    * Eras 1-12 (contract era numbers) -> Epoch 1
    * Eras 13-24 (contract era numbers) -> Epoch 2
    * And so on.
@@ -88,8 +88,8 @@ contract Blockable {
   function getEpochForEra(uint256 era) public view returns (uint256) {
     require(era > 0, "Era must be greater than 0");
     // Subtract 1 from the given era to align with a 0-indexed concept for epoch calculation,
-    // then divide by HALVING and add 1 to get the 1-indexed epoch number.
-    return (era.sub(1)).div(HALVING).add(1);
+    // then divide by halving and add 1 to get the 1-indexed epoch number.
+    return (era.sub(1)).div(halving).add(1);
   }
 
   /**
@@ -102,13 +102,13 @@ contract Blockable {
     require(targetEra > 0, "Target era must be greater than 0");
 
     // Target block is the first block of the (targetEra + 1)
-    // Which is DEPLOYED_AT + (targetEra * BLOCKS_PER_ERA)
-    uint256 endBlockOfTargetEra = DEPLOYED_AT.add(targetEra.mul(BLOCKS_PER_ERA));
+    // Which is deployedAt + (targetEra * blocksPerEra)
+    uint256 endBlockOfTargetEra = deployedAt.add(targetEra.mul(blocksPerEra));
     return int256(endBlockOfTargetEra) - int256(_currentBlockNumber());
   }
 
   /**
-   * @dev Calculates a scaled value representing how many "BLOCKS_PER_ERA" periods have elapsed
+   * @dev Calculates a scaled value representing how many "blocksPerEra" periods have elapsed
    * since a given currentUserEra ended.
    * @notice Returns 0 if currentUserEra has not yet ended.
    * The result is scaled by 10**BLOCKS_PRECISION. For example, if 1.5 eras have passed,
@@ -128,8 +128,8 @@ contract Blockable {
     // Number of blocks passed since currentUserEra ended.
     uint256 blocksPassed = uint256(-blocksUntilEndOfUserEra);
 
-    // (blocksPassed / BLOCKS_PER_ERA) * (10**BLOCKS_PRECISION)
-    return blocksPassed.mul(10 ** BLOCKS_PRECISION).div(BLOCKS_PER_ERA);
+    // (blocksPassed / blocksPerEra) * (10**BLOCKS_PRECISION)
+    return blocksPassed.mul(10 ** BLOCKS_PRECISION).div(blocksPerEra);
   }
 
   // --- Internal View Functions ---
