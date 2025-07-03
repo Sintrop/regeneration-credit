@@ -71,7 +71,9 @@ contract RegeneratorPool is Poolable, Ownable, Blockable, Callable {
     if (numTokens == 0) return;
 
     // Transfer the calculated tokens from this contract to the delegate.
-    regenerationCredit.transfer(delegate, numTokens);
+    bool success = regenerationCredit.transfer(delegate, numTokens);
+    require(success, "ERC20: transfer failed");
+
     regenerationCredit.poolTransfer(address(this), delegate, numTokens);
   }
 
