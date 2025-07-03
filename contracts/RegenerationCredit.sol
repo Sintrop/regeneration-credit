@@ -3,6 +3,7 @@ pragma solidity ^0.8.27;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import { SupporterRulesInterface } from "./interfaces/SupporterRulesInterface.sol";
 
 /**
  * @title RegenerationCredit
@@ -42,6 +43,8 @@ contract RegenerationCredit is ERC20, Ownable {
   /// Represents their individual contribution to environmental offset.
   mapping(address => uint256) public certificate;
 
+  SupporterRulesInterface private supporterRules;
+
   // --- Constructor ---
 
   /**
@@ -80,6 +83,10 @@ contract RegenerationCredit is ERC20, Ownable {
     return true;
   }
 
+  function setContractDependencies(address supporterRulesAddress) public onlyOwner {
+    supporterRules = SupporterRulesInterface(supporterRulesAddress);
+  }
+
   // --- Public functions ---
 
   /**
@@ -97,49 +104,35 @@ contract RegenerationCredit is ERC20, Ownable {
     _burnTokensInternal(msg.sender, amount);
   }
 
-  function offset(uint256 amount, uint64 calculatorItemId) public   {
+  function offset(uint256 amount, uint64 calculatorItemId) public {
+    require(supporterRules.isSupporter(msg.sender), "Only supporters");
+    require(amount >= 1000000000000000000, "Amount must be at least 1 RC");
 
-   (uint256 comission, uint256 amountToBurn, address inviter) = supporterRules.offset(amount, msg.sender)
-   
-   transfer(comission, inviter);
-   _burnTokensInternal(msg.sender, amountToBurn);
+    supporterRules.offset(msg.sender, amount, calculatorItemId);
+
+    (uint256 amountToBurn, uint256 comission, address inviter) = supporterRules._calculateCommission(
+      msg.sender,
+      amount
+    );
+
+    transfer(inviter, comission);
+    _burnTokensInternal(msg.sender, amountToBurn);
   }
 
   function publish(uint256 amount, string memory description, string memory content) public {
+    require(supporterRules.isSupporter(msg.sender), "Only supporters");
+    require(amount >= 1000000000000000000, "Amount must be at least 1 RC");
+    require(bytes(description).length <= 600 && bytes(content).length <= 600, "Max 600 characters");
 
-   (uint256 comission, uint256 amountToBurn, address inviter) = supporterRules.offset(amount, msg.sender)
+    supporterRules.publish(msg.sender, amount, description, content);
+    (uint256 amountToBurn, uint256 comission, address inviter) = supporterRules._calculateCommission(
+      msg.sender,
+      amount
+    );
 
-    transfer(delegate, numTokens);
-   _burnTokensInternal(msg.sender, amountToBurn);
-  }  
-
-  // --- Pool functions ---
-
-  // /**
-  //  * @dev Allows a designated "contract pool" to transfer tokens to a user as a reward for
-  //  * providing environmental services.
-  //  * @notice This function facilitates token distribution from system pools.
-  //  * @param tokenOwner The address of the contract pool initiating the transfer.
-  //  * @param receiver The address of the user who will receive the tokens.
-  //  * @param numTokens The amount of tokens to transfer.
-  //  *
-  //  * Requirements:
-  //  * - Only a registered `contractPool` can call this function (`mustBeContractPool` modifier).
-  //  * - The `tokenOwner` (which is `contractPool` due to modifier) must have sufficient balance.
-  //  */
-  // function transferWith(address tokenOwner, address receiver, uint256 numTokens) public mustBeContractPool {
-  //   require(numTokens <= balanceOf(tokenOwner), "You don't have RC Tokens");
-
-  //   // Perform the transfer using OpenZeppelin's internal _transfer function.
-  //   _transfer(tokenOwner, receiver, numTokens);
-
-  //   // Update total locked tokens.
-  //   unchecked {
-  //     if (contractsPools[tokenOwner]) totalLocked_ -= numTokens;
-  //   }
-  //   // Emit event specific to pool transfers.
-  //   emit PoolTransfer(tokenOwner, receiver, numTokens);
-  // }
+    transfer(inviter, comission);
+    _burnTokensInternal(msg.sender, amountToBurn);
+  }
 
   /**
    * @dev Allows a designated "contract pool" to
