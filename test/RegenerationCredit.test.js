@@ -46,7 +46,7 @@ describe("RegenerationCredit", (accounts) => {
     researcherRules = await researcherRulesFactory.deploy(3, 10, 10);
 
     const supporterRulesFactory = await ethers.getContractFactory("SupporterRules");
-    supporterRules = await supporterRulesFactory.deploy(communityRules.target, ZERO_ADDRESS);
+    supporterRules = await supporterRulesFactory.deploy(communityRules.target, researcherRules.target);
 
     const regeneratorPoolFactory = await ethers.getContractFactory("RegeneratorPool");
     regeneratorPool = await regeneratorPoolFactory.deploy(
@@ -318,6 +318,61 @@ describe("RegenerationCredit", (accounts) => {
         await expect(instance.connect(anyContractAddress).offset("100000000000000000000", 1)).to.be.revertedWith(
           "Only supporters"
         );
+      });
+    });
+  });
+
+  describe("#publish", () => {
+    context("when is supporter", () => {
+      beforeEach(async () => {
+        await addInvitation(ownerAddress, supporter1Address, userTypes.Supporter, ownerAddress);
+        await addSupporter("Supporter A", "description", "profilePhoto", supporter1Address);
+
+        await instance.transfer(supporter1Address, 10000000000000000000n);
+      });
+
+      context("when amount is valid", () => {
+        beforeEach(async () => {
+          await instance.connect(supporter1Address).publish(1000000000000000000n, "description", "content");
+        });
+
+        it("inviter balance must increment in 50000000000000000", async () => {
+          const balanceOf = await instance.balanceOf(ownerAddress);
+
+          expect(balanceOf).to.eq(1499999990050000000000000000n);
+        });
+
+        it("supporter balance must be 9000000000000000000", async () => {
+          const balanceOf = await instance.balanceOf(supporter1Address);
+
+          expect(balanceOf).to.eq(9000000000000000000n);
+        });
+
+        context("when content and description are invalids", () => {
+          it("must return error message", async () => {
+            const longString = "x".repeat(650);
+
+            await expect(
+              instance.connect(supporter1Address).publish(1000000000000000000n, longString, longString)
+            ).to.be.revertedWith("Max 600 characters");
+          });
+        });
+      });
+
+      context("when amount is invalid", () => {
+        it("must return error message", async () => {
+          await expect(
+            instance.connect(supporter1Address).publish(100000000000000000n, "description", "content")
+          ).to.be.revertedWith("Amount must be at least 1 RC");
+        });
+      });
+    });
+
+    context("when is not supporter", () => {
+      it("must return error message", async () => {
+        await expect(
+          instance.connect(anyContractAddress).publish(100000000000000000000n, "description", "content")
+        ).to.be.revertedWith("Only supporters");
       });
     });
   });

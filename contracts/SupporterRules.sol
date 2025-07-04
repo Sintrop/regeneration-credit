@@ -117,14 +117,14 @@ contract SupporterRules is Callable {
 
   /**
    * @notice Allows a supporter to burn tokens to compensate for a specific item's degradation.
-   * @dev Burns tokens via the SupporterPool. If a valid calculatorItemId is provided,
+   * @dev Burns tokens. If a valid calculatorItemId is provided,
    * records the burned amount as a certificate for that item.
    * @param supporterAddress address of supporter
    * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
    * @param calculatorItemId The ID of the CalculatorItem, or 0 if not applicable.
    */
   function offset(address supporterAddress, uint256 amount, uint64 calculatorItemId) external mustBeAllowedCaller {
-    // require(researcherRules.getCalculatorItem(calculatorItemId).id > 0, "Calculator item does not exist");
+    require(researcherRules.getCalculatorItem(calculatorItemId).id > 0, "Calculator item does not exist");
 
     (uint256 amountToBurn, uint256 commission, address inviter) = _calculateCommission(supporterAddress, amount);
 
@@ -141,7 +141,7 @@ contract SupporterRules is Callable {
 
   /**
    * @notice Allows a supporter to burn tokens to post content.
-   * @dev Burns tokens via the SupporterPool and creates a new publication record.
+   * @dev Burns tokens and creates a new publication record.
    * Enforces character limits for description and content.
    * @param supporterAddress address of supporter
    * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
@@ -194,8 +194,8 @@ contract SupporterRules is Callable {
   // --- Internal Functions (State Modifying) ---
 
   /**
-   * @dev Internal function to handle token burning and inviter commission.
-   * It retrieves invitation data from CommunityRules and calls the SupporterPool to perform the burn.
+   * @dev Public function to handle token burning and inviter commission.
+   * It retrieves invitation data from CommunityRules to perform the burn.
    * @param amount The total amount of tokens to consider for burning (before commission).
    * @return amountToBurn The net amount of tokens burned by the supporter (after commission).
    * @return commission The commission for the invitation service provided.

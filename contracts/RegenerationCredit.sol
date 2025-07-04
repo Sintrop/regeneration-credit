@@ -157,7 +157,6 @@ contract RegenerationCredit is ERC20, Ownable {
 
   // /**
   //  * @dev Allows a designated "contract pool" to burn tokens on behalf of another address.
-  //  * @notice This function can only be called by the SupporterPool.
   //  * @param tokenOwner The address from which tokens will be burned.
   //  * @param amount The amount of tokens to burn.
   //  *

@@ -4,7 +4,7 @@ const { ethers } = require("hardhat");
 const { voteRulesDeployed } = require("./shared/vote_rules_deployed");
 
 describe("SupporterRules", () => {
-  let instance, communityRules, regenerationCredit, supporterPool, researcherRules;
+  let instance, communityRules, regenerationCredit, researcherRules;
   let ownerAddress, inv1Address, inv2Address, user1Address;
 
   const addSupporter = async (name, description, profilePhoto, from) => {
@@ -141,7 +141,7 @@ describe("SupporterRules", () => {
               beforeEach(async () => {
                 await instance.newAllowedCaller(inv2Address);
 
-                await instance.connect(inv2Address).offset(1000000000000000000n, 1);
+                await instance.connect(inv2Address).offset(inv2Address, 1000000000000000000n, 1);
               });
 
               it("calculatorItemCertificates to item 1 must be 950000000000000000n", async () => {
@@ -178,7 +178,7 @@ describe("SupporterRules", () => {
               beforeEach(async () => {
                 await instance.newAllowedCaller(inv1Address);
 
-                await instance.connect(inv1Address).offset(1000000000000000000n, 1);
+                await instance.connect(inv1Address).offset(inv2Address, 1000000000000000000n, 1);
               });
 
               it("calculatorItemCertificates to item 1 must be 1000000000000000000n", async () => {
@@ -192,7 +192,7 @@ describe("SupporterRules", () => {
               beforeEach(async () => {
                 await instance.newAllowedCaller(inv1Address);
 
-                await instance.connect(inv1Address).offset(5000000000000000000n, 1);
+                await instance.connect(inv1Address).offset(inv2Address, 5000000000000000000n, 1);
               });
 
               it("calculatorItemCertificates to item 1 must be 5000000000000000000n", async () => {
@@ -206,9 +206,9 @@ describe("SupporterRules", () => {
               beforeEach(async () => {
                 await instance.newAllowedCaller(inv1Address);
 
-                await instance.connect(inv1Address).offset(1000000000000000000n, 1);
-                await instance.connect(inv1Address).offset(1000000000000000000n, 1);
-                await instance.connect(inv1Address).offset(1500000000000000000n, 1);
+                await instance.connect(inv1Address).offset(inv1Address, 1000000000000000000n, 1);
+                await instance.connect(inv1Address).offset(inv1Address, 1000000000000000000n, 1);
+                await instance.connect(inv1Address).offset(inv1Address, 1500000000000000000n, 1);
               });
 
               it("calculatorItemCertificates must sum all offsets", async () => {
@@ -230,9 +230,9 @@ describe("SupporterRules", () => {
 
           context("when burn 1000000000000000000 tokens", () => {
             it("calculatorItemCertificates to item 10 must be 0", async () => {
-              await expect(instance.connect(inv2Address).offset(1000000000000000000n, 10)).to.be.revertedWith(
-                "Calculator item does not exist"
-              );
+              await expect(
+                instance.connect(inv2Address).offset(inv2Address, 1000000000000000000n, 10)
+              ).to.be.revertedWith("Calculator item does not exist");
             });
           });
         });
@@ -259,7 +259,7 @@ describe("SupporterRules", () => {
               beforeEach(async () => {
                 await instance.newAllowedCaller(inv2Address);
 
-                await instance.connect(inv2Address).publish("1000000000000000000", "text", "text");
+                await instance.connect(inv2Address).publish(inv2Address, 1000000000000000000n, "text", "text");
               });
 
               it("must add publication amount", async () => {
@@ -278,12 +278,6 @@ describe("SupporterRules", () => {
               it("must add publication supporter count", async () => {
                 const supporter = await instance.getSupporter(inv2Address);
                 expect(supporter.publicationsCount).to.equal(1);
-              });
-            });
-
-            context("when burn 5000000000000000000 tokens", () => {
-              beforeEach(async () => {
-                await instance.connect(inv2Address).publish(5000000000000000000n, "text", "text");
               });
             });
           });
