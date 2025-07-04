@@ -122,7 +122,11 @@ contract SupporterRules is Callable {
    * @param amountToBurn Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
    * @param calculatorItemId The ID of the CalculatorItem, or 0 if not applicable.
    */
-  function offset(address supporterAddress, uint256 amountToBurn, uint64 calculatorItemId) external mustBeAllowedCaller {
+  function offset(
+    address supporterAddress,
+    uint256 amountToBurn,
+    uint64 calculatorItemId
+  ) external mustBeAllowedCaller {
     require(researcherRules.getCalculatorItem(calculatorItemId).id > 0, "Calculator item does not exist");
 
     offsetsCount++;
@@ -149,7 +153,6 @@ contract SupporterRules is Callable {
     string memory description,
     string memory content
   ) external mustBeAllowedCaller {
-
     publicationsCount++;
     uint64 id = publicationsCount;
 
