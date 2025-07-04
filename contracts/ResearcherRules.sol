@@ -436,16 +436,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     return research;
   }
 
-  function _hasWaitedRequiredTime(uint256 lastActionTimestamp) internal view returns (bool) {
-    if (lastActionTimestamp == 0) {
-      return true;
-    }
-    return block.number > lastActionTimestamp + timeBetweenWorks;
-  }
-
   /**
-   * @notice Checks if a researcher is eligible to publish a research.
-   * @dev Calculates eligibility based on the `lastPublishedAt` block.number and `timeBetweenWorks`.
+   * @dev Checks if a researcher is eligible to publish a research.
    * @param addr The address of the potential publisher.
    * @return `true` if the user can publish research, `false` otherwise.
    */
@@ -460,6 +452,19 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    */
   function _canPublishCalculatorItem(Researcher memory researcher) internal view returns (bool) {
     return _hasWaitedRequiredTime(researcher.lastCalculatorItemAt);
+  }
+
+  /**
+   * @dev Calculates if a researcher is eligible to publish a research.
+   * Eligibility based on the `lastActionBlock` and `timeBetweenWorks`.
+   * @param lastActionBlock The block of last executed action.
+   * @return `true` if the user can publish, `false` otherwise.
+   */
+  function _hasWaitedRequiredTime(uint256 lastActionBlock) internal view returns (bool) {
+    if (lastActionBlock == 0) {
+      return true;
+    }
+    return block.number > lastActionBlock + timeBetweenWorks;
   }
 
   // --- Events ---
