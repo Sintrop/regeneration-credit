@@ -61,6 +61,15 @@ contract RegenerationCredit is ERC20, Ownable {
   // --- Deploy functions ---
 
   /**
+   * @dev onlyOwner function to set contracts dependency.
+   * This function must be called only once after the contract deploy and ownership must be renounced after.
+   * @param supporterRulesAddress Addresses of the SupporterRules contract.
+   */
+  function setContractDependencies(address supporterRulesAddress) public onlyOwner {
+    supporterRules = ISupporterRules(supporterRulesAddress);
+  }
+
+  /**
    * @dev Allows the contract owner to designate a new address as a "contract pool"
    * and transfer an initial allocation of tokens to it.
    * @notice This function is used to fund and activate distribution pools within the ecosystem.
@@ -82,10 +91,6 @@ contract RegenerationCredit is ERC20, Ownable {
     totalLocked_ += _numTokens;
 
     return true;
-  }
-
-  function setContractDependencies(address supporterRulesAddress) public onlyOwner {
-    supporterRules = ISupporterRules(supporterRulesAddress);
   }
 
   // --- Public functions ---
