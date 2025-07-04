@@ -3,7 +3,7 @@ pragma solidity ^0.8.27;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { SupporterRulesInterface } from "./interfaces/SupporterRulesInterface.sol";
+import { ISupporterRules } from "./interfaces/ISupporterRules.sol";
 
 /**
  * @title RegenerationCredit
@@ -43,7 +43,8 @@ contract RegenerationCredit is ERC20, Ownable {
   /// Represents their individual contribution to environmental offset.
   mapping(address => uint256) public certificate;
 
-  SupporterRulesInterface private supporterRules;
+  /// @notice SupporterRules contract address.
+  ISupporterRules private supporterRules;
 
   // --- Constructor ---
 
@@ -84,7 +85,7 @@ contract RegenerationCredit is ERC20, Ownable {
   }
 
   function setContractDependencies(address supporterRulesAddress) public onlyOwner {
-    supporterRules = SupporterRulesInterface(supporterRulesAddress);
+    supporterRules = ISupporterRules(supporterRulesAddress);
   }
 
   // --- Public functions ---
@@ -104,31 +105,47 @@ contract RegenerationCredit is ERC20, Ownable {
     _burnTokensInternal(msg.sender, amount);
   }
 
+  /**
+   * @notice Allows a supporter to burn tokens to compensate for a specific item's degradation.
+   * @dev Burns tokens. If a valid calculatorItemId is provided, calls the SupporterRules contract
+   * that records the burned amount as a certificate for that item.
+   * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
+   * @param calculatorItemId The ID of the CalculatorItem, or 0 if not applicable.
+   */
   function offset(uint256 amount, uint64 calculatorItemId) public {
     require(supporterRules.isSupporter(msg.sender), "Only supporters");
     require(amount >= 1000000000000000000, "Amount must be at least 1 RC");
-
-    supporterRules.offset(msg.sender, amount, calculatorItemId);
 
     (uint256 amountToBurn, uint256 comission, address inviter) = supporterRules._calculateCommission(
       msg.sender,
       amount
     );
+
+    supporterRules.offset(msg.sender, amountToBurn, calculatorItemId);
 
     transfer(inviter, comission);
     _burnTokensInternal(msg.sender, amountToBurn);
   }
 
+  /**
+   * @notice Allows a supporter to burn tokens to post content.
+   * @dev Burns tokens and creates a new publication record.
+   * Enforces character limits for description and content.
+   * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
+   * @param description The description of the post (max 600 characters).
+   * @param content The content of the post (max 600 characters).
+   */
   function publish(uint256 amount, string memory description, string memory content) public {
     require(supporterRules.isSupporter(msg.sender), "Only supporters");
     require(amount >= 1000000000000000000, "Amount must be at least 1 RC");
     require(bytes(description).length <= 600 && bytes(content).length <= 600, "Max 600 characters");
 
-    supporterRules.publish(msg.sender, amount, description, content);
     (uint256 amountToBurn, uint256 comission, address inviter) = supporterRules._calculateCommission(
       msg.sender,
       amount
     );
+
+    supporterRules.publish(msg.sender, amountToBurn, description, content);
 
     transfer(inviter, comission);
     _burnTokensInternal(msg.sender, amountToBurn);

@@ -116,54 +116,48 @@ contract SupporterRules is Callable {
   }
 
   /**
-   * @notice Allows a supporter to burn tokens to compensate for a specific item's degradation.
-   * @dev Burns tokens. If a valid calculatorItemId is provided,
+   * @dev Called by the RC offset function. If a valid calculatorItemId is provided,
    * records the burned amount as a certificate for that item.
    * @param supporterAddress address of supporter
-   * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
+   * @param amountToBurn Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
    * @param calculatorItemId The ID of the CalculatorItem, or 0 if not applicable.
    */
-  function offset(address supporterAddress, uint256 amount, uint64 calculatorItemId) external mustBeAllowedCaller {
+  function offset(address supporterAddress, uint256 amountToBurn, uint64 calculatorItemId) external mustBeAllowedCaller {
     require(researcherRules.getCalculatorItem(calculatorItemId).id > 0, "Calculator item does not exist");
-
-    (uint256 amountToBurn, uint256 commission, address inviter) = _calculateCommission(supporterAddress, amount);
 
     offsetsCount++;
     uint64 id = offsetsCount;
 
-    calculatorItemCertificates[msg.sender][calculatorItemId] += amountToBurn;
+    calculatorItemCertificates[supporterAddress][calculatorItemId] += amountToBurn;
 
-    offsets[id] = Offset(msg.sender, block.number, amountToBurn, calculatorItemId);
-    supporters[msg.sender].offsetsCount++;
+    offsets[id] = Offset(supporterAddress, block.number, amountToBurn, calculatorItemId);
+    supporters[supporterAddress].offsetsCount++;
 
-    emit OffsetMade(msg.sender, id, amountToBurn, calculatorItemId, block.number);
+    emit OffsetMade(supporterAddress, id, amountToBurn, calculatorItemId, block.number);
   }
 
   /**
-   * @notice Allows a supporter to burn tokens to post content.
-   * @dev Burns tokens and creates a new publication record.
-   * Enforces character limits for description and content.
+   * @dev Called by the RC offset function to create a new publication record.
    * @param supporterAddress address of supporter
-   * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
-   * @param description The description of the post (max 600 characters).
-   * @param content The content of the post (max 600 characters).
+   * @param amountToBurn Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
+   * @param description The description of the post.
+   * @param content The content of the post.
    */
   function publish(
     address supporterAddress,
-    uint256 amount,
+    uint256 amountToBurn,
     string memory description,
     string memory content
   ) external mustBeAllowedCaller {
-    (uint256 amountToBurn, uint256 commission, address inviter) = _calculateCommission(supporterAddress, amount);
 
     publicationsCount++;
     uint64 id = publicationsCount;
 
-    publications[id] = Publication(msg.sender, block.number, amountToBurn, description, content);
+    publications[id] = Publication(supporterAddress, block.number, amountToBurn, description, content);
 
-    supporters[msg.sender].publicationsCount++;
+    supporters[supporterAddress].publicationsCount++;
 
-    emit PublicationPosted(msg.sender, id, amountToBurn, description, block.number);
+    emit PublicationPosted(supporterAddress, id, amountToBurn, description, block.number);
   }
 
   /**

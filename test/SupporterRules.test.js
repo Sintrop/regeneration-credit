@@ -144,16 +144,16 @@ describe("SupporterRules", () => {
                 await instance.connect(inv2Address).offset(inv2Address, 1000000000000000000n, 1);
               });
 
-              it("calculatorItemCertificates to item 1 must be 950000000000000000n", async () => {
+              it("calculatorItemCertificates to item 1 must be 1000000000000000000n", async () => {
                 const value = await instance.calculatorItemCertificates(inv2Address, 1);
 
-                expect(value).to.equal(950000000000000000n);
+                expect(value).to.equal(1000000000000000000n);
               });
 
               it("must add offset amount", async () => {
                 const offset = await instance.offsets(1);
                 expect(offset.supporterAddress).to.equal(inv2Address);
-                expect(offset.amountBurn).to.equal("950000000000000000");
+                expect(offset.amountBurn).to.equal("1000000000000000000");
                 expect(offset.calculatorItemId).to.equal(1);
               });
 
@@ -182,7 +182,7 @@ describe("SupporterRules", () => {
               });
 
               it("calculatorItemCertificates to item 1 must be 1000000000000000000n", async () => {
-                const value = await instance.calculatorItemCertificates(inv1Address, 1);
+                const value = await instance.calculatorItemCertificates(inv2Address, 1);
 
                 expect(value).to.equal(1000000000000000000n);
               });
@@ -196,7 +196,7 @@ describe("SupporterRules", () => {
               });
 
               it("calculatorItemCertificates to item 1 must be 5000000000000000000n", async () => {
-                const value = await instance.calculatorItemCertificates(inv1Address, 1);
+                const value = await instance.calculatorItemCertificates(inv2Address, 1);
 
                 expect(value).to.equal(5000000000000000000n);
               });
@@ -265,7 +265,7 @@ describe("SupporterRules", () => {
               it("must add publication amount", async () => {
                 const publication = await instance.publications(1);
                 expect(publication.supporterAddress).to.equal(inv2Address);
-                expect(publication.amount).to.equal("950000000000000000");
+                expect(publication.amount).to.equal("1000000000000000000");
                 expect(publication.description).to.equal("text");
                 expect(publication.content).to.equal("text");
               });
