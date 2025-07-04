@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import { CommunityRules } from "./CommunityRules.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ICommunityRules_User } from "./interfaces/ICommunityRules_User.sol";
+import { IInspectorPool } from "./interfaces/IInspectorPool.sol";
 import { Inspector, Penalty, Pool } from "./types/InspectorTypes.sol";
-import { Callable } from "./shared/Callable.sol";
 import { UserType } from "./types/CommunityTypes.sol";
-import { InspectorPool } from "./InspectorPool.sol";
+import { Callable } from "./shared/Callable.sol";
 
 /**
  * @title InspectorRules
@@ -19,7 +19,7 @@ import { InspectorPool } from "./InspectorPool.sol";
  * This contract handles inspector registration, inspection tracking, give-ups, and penalties.
  */
 contract InspectorRules is Callable, ReentrancyGuard {
-  // --- Constants & state variables ---
+  // --- Constants ---
 
   /// @notice The minimum number of completed inspections required for an inspector to be eligible for pool rewards.
   uint8 internal constant MINIMUM_INSPECTIONS_TO_POOL = 3;
@@ -28,12 +28,19 @@ contract InspectorRules is Callable, ReentrancyGuard {
   /// before an inspector's validity is affected (blocked from accepting new inspections).
   uint8 private constant MAX_GIVEUPS = 3;
 
+  /// @notice The number of blocks an inspector must wait to accept a new inspection after realizing one.
+  uint32 private constant BLOCKS_TO_ACCEPT = 6000;
+
+  /// @notice Max character length for user name.
+  uint16 private constant MAX_NAME_LENGTH = 50;
+
+  /// @notice Max character length for hash or url.
+  uint16 private constant MAX_HASH_LENGTH = 150;
+
+  // --- State variables ---
+
   /// @notice The maximum number of penalties an inspector can accumulate before facing invalidation.
   uint8 public immutable maxPenalties;
-
-  /// @notice The number of blocks within which an accepted inspection must be realized.
-  /// If an inspection is not realized within this period after being accepted, inspectors will sum one "give-up".
-  uint32 public immutable blocksToAccept = 6000;
 
   /// @notice A mapping from an inspector's wallet address to their detailed `Inspector` data structure.
   /// This serves as the primary storage for inspector profiles.
@@ -47,11 +54,11 @@ contract InspectorRules is Callable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules and user types.
-  CommunityRules internal communityRules;
+  ICommunityRules_User internal communityRules;
 
   /// @notice The address of the `InspectorPool` contract, responsible for managing
   /// and distributing token rewards to inspectors.
-  InspectorPool internal inspectorPool;
+  IInspectorPool internal inspectorPool;
 
   /// @notice The specific `UserType` enumeration value for an Inspector user.
   /// This is a constant for gas efficiency and clarity.
@@ -66,8 +73,8 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param maxPenalties_ The maximum allowed penalties for an inspector.
    */
   constructor(address communityRulesAddress, address inspectorPoolAddress, uint8 maxPenalties_) {
-    communityRules = CommunityRules(communityRulesAddress);
-    inspectorPool = InspectorPool(inspectorPoolAddress);
+    communityRules = ICommunityRules_User(communityRulesAddress);
+    inspectorPool = IInspectorPool(inspectorPoolAddress);
     maxPenalties = maxPenalties_;
   }
 
@@ -89,7 +96,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param proofPhoto A hash or identifier (e.g., URL) for the inspector's identity verification photo.
    */
   function addInspector(string memory name, string memory proofPhoto) public {
-    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 150, "Max characters");
+    require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     inspectors[msg.sender] = Inspector(
@@ -357,8 +364,8 @@ contract InspectorRules is Callable, ReentrancyGuard {
     // 1. They have never realized an inspection before (`lastRealizedAt == 0`).
     if (lastRealizedAt <= 0) return true;
 
-    // 2. Enough time has passed since their last realized inspection (`block.number > lastRealizedAt + blocksToAccept`).
-    return block.number > lastRealizedAt + blocksToAccept;
+    // 2. Enough time has passed since their last realized inspection (`block.number > lastRealizedAt + BLOCKS_TO_ACCEPT`).
+    return block.number > lastRealizedAt + BLOCKS_TO_ACCEPT;
   }
 
   // --- Events ---

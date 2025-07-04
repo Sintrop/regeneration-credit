@@ -62,8 +62,8 @@ describe("InspectionRules", () => {
     blocksToExpireAcceptedInspection: 50,
     allowedInitialRequests: 1,
     acceptInspectionDelayBlocks: 5,
-    securityBlocksToValidatorAnalysis: 100,
-    blocksToAccept: 6000,
+    securityBlocksToValidation_: 100,
+    BLOCKS_TO_ACCEPT: 6000,
   };
 
   const addRegenerator = async (name, from) => {
@@ -193,7 +193,7 @@ describe("InspectionRules", () => {
       sintropArgs.blocksToExpireAcceptedInspection,
       sintropArgs.allowedInitialRequests,
       sintropArgs.acceptInspectionDelayBlocks,
-      sintropArgs.securityBlocksToValidatorAnalysis
+      sintropArgs.securityBlocksToValidation_
     );
 
     const inspectionRulesDependencies = {
@@ -663,7 +663,7 @@ describe("InspectionRules", () => {
               });
 
               it("should accept inspection with success after finishing previous one", async () => {
-                await advanceBlock(sintropArgs.blocksToAccept);
+                await advanceBlock(sintropArgs.BLOCKS_TO_ACCEPT);
                 await acceptInspection(2, inspectorAddress);
 
                 const inspection = await instance.getInspection(2);

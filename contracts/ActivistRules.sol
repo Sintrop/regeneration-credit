@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import { CommunityRules } from "./CommunityRules.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ICommunityRules_User } from "./interfaces/ICommunityRules_User.sol";
+import { IActivistPool } from "./interfaces/IActivistPool.sol";
 import { Activist, Pool } from "./types/ActivistTypes.sol";
 import { UserType, Invitation } from "./types/CommunityTypes.sol";
-import { ActivistPool } from "./ActivistPool.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
 
@@ -21,11 +21,21 @@ import { Invitable } from "./shared/Invitable.sol";
  */
 
 contract ActivistRules is Callable, Invitable, ReentrancyGuard {
-  // --- Constants & State Variables ---
+  // --- Constants ---
 
-  /// @notice The minimum number of inspections an invited Regenerator or Inspector must complete
-  /// for the inviting activist to "win a pool level".
-  uint8 private constant MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS = 3;
+  /// @notice Maximum users count allowed for this UserType.
+  uint16 private constant MAX_USER_COUNT = 16000;
+
+  /// @notice Minimum inspections an inviter must complete to add activist level.
+  uint16 private constant MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS = 3;
+
+  /// @notice Max character length for user name.
+  uint16 private constant MAX_NAME_LENGTH = 50;
+
+  /// @notice Max character length for hash or URL.
+  uint16 private constant MAX_HASH_LENGTH = 150;
+
+  // --- State variables ---
 
   /// @notice The total count of all invitations that have been successfully approved across the entire system.
   uint32 public approvedInvites;
@@ -45,11 +55,11 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  CommunityRules internal communityRules;
+  ICommunityRules_User internal communityRules;
 
   /// @notice The address of the `ActivistPool` contract, responsible for managing
   /// and distributing token rewards to activists.
-  ActivistPool internal activistPool;
+  IActivistPool internal activistPool;
 
   /// @notice The specific `UserType` enumeration value for the Activist user.
   UserType private constant USER_TYPE = UserType.ACTIVIST;
@@ -63,8 +73,8 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * @param activistPoolAddress The address of the deployed `ActivistPool` contract.
    */
   constructor(address communityRulesAddress, address activistPoolAddress) {
-    communityRules = CommunityRules(communityRulesAddress);
-    activistPool = ActivistPool(activistPoolAddress);
+    communityRules = ICommunityRules_User(communityRulesAddress);
+    activistPool = IActivistPool(activistPoolAddress);
   }
 
   // --- Public functions (State modifying) ---
@@ -84,9 +94,9 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    */
   function addActivist(string memory name, string memory proofPhoto) public {
     // Character limit validation for name and proofPhoto.
-    require(bytes(name).length <= 100 && bytes(proofPhoto).length <= 100, "Max 100 characters");
+    require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     // Max limit for activist users in the system.
-    require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max user limit");
+    require(communityRules.userTypesCount(USER_TYPE) <= MAX_USER_COUNT, "Max user limit");
 
     // Generate a unique ID for the new activist.
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;

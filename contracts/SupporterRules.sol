@@ -19,7 +19,7 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 contract SupporterRules is Callable {
   using SafeMath for uint256;
 
-  // --- State Variables ---
+  // --- State variables ---
 
   /// @notice The relationship between address and supporter data
   mapping(address => Supporter) internal supporters;

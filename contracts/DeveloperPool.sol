@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.27;
 
-import { RegenerationCreditInterface } from "./interfaces/RegenerationCreditInterface.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { IRegenerationCredit } from "./interfaces/IRegenerationCredit.sol";
 import { Blockable } from "./shared/Blockable.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Poolable } from "./shared/Poolable.sol";
@@ -21,12 +21,16 @@ import { Poolable } from "./shared/Poolable.sol";
 contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
   using SafeMath for uint256;
 
+  // --- Constants & state variables ---
+
   /// @notice Interface to the Regeneration Credit token contract, used for token transfers.
-  RegenerationCreditInterface internal regenerationCredit;
+  IRegenerationCredit internal regenerationCredit;
 
   /// @notice The total supply of Regeneration Credit tokens designated for this developer pool.
   /// This value represents the maximum tokens available for distribution through this contract.
   uint256 internal constant TOTAL_POOL_TOKENS = 40000000000000000000000000;
+
+  // --- Constructor ---
 
   /**
    * @dev Initializes the DeveloperPool contract.
@@ -42,7 +46,7 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
     uint256 _halving,
     uint256 _blocksPerEra
   ) Blockable(_blocksPerEra, _halving) Poolable(TOTAL_POOL_TOKENS) {
-    regenerationCredit = RegenerationCreditInterface(regenerationCreditAddress);
+    regenerationCredit = IRegenerationCredit(regenerationCreditAddress);
   }
 
   // --- Public Functions ---
@@ -59,7 +63,7 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
     require(era <= currentContractEra(), "Era in the future");
 
     // Calculate the number of tokens the user is eligible to receive for the given era.
-    uint256 numTokens = calculateUserEraTokens(era, delegate, tokensPerEra(getEpochForEra(era), HALVING));
+    uint256 numTokens = _calculateUserEraTokens(era, delegate, tokensPerEra(getEpochForEra(era), halving));
 
     // Update the user's era and token balance state after the withdrawal.
     _updateEraAfterWithdraw(era, delegate, numTokens);
@@ -68,7 +72,9 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
     if (numTokens == 0) return;
 
     // Transfer the calculated tokens from this contract to the delegate.
-    regenerationCredit.transfer(delegate, numTokens);
+    bool success = regenerationCredit.transfer(delegate, numTokens);
+    require(success, "ERC20: transfer failed");
+
     regenerationCredit.poolTransfer(address(this), delegate, numTokens);
   }
 
@@ -79,7 +85,7 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
    * @return bool True if have tokens to withdraw, false if will just update era.
    */
   function haveTokensToWithdraw(address delegate, uint256 era) public view returns (bool) {
-    return _haveTokensToWithdraw(delegate, era, tokensPerEra(getEpochForEra(era), HALVING));
+    return _haveTokensToWithdraw(delegate, era, tokensPerEra(getEpochForEra(era), halving));
   }
 
   /**

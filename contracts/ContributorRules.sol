@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { CommunityRules } from "./CommunityRules.sol";
+import { ICommunityRules_User } from "./interfaces/ICommunityRules_User.sol";
+import { IVoteRules } from "./interfaces/IVoteRules.sol";
+import { IContributorPool } from "./interfaces/IContributorPool.sol";
+import { IValidationRules_Contributor } from "./interfaces/IValidationRules_Contributor.sol";
 import { UserType } from "./types/CommunityTypes.sol";
-import { ContributorPool } from "./ContributorPool.sol";
 import { Contributor, Pool, Contribution, Penalty, ContractsDependency } from "./types/ContributorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
-import { VoteRules } from "./VoteRules.sol";
-import { ValidationRules } from "./ValidationRules.sol";
 
 /**
  * @title ContributorRules
@@ -24,10 +24,24 @@ import { ValidationRules } from "./ValidationRules.sol";
  * eligibility, and `ValidationRules` for contribution validation processes.
  */
 contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
-  // --- State Variables ---
+  // --- Constants ---
+
+  /// @notice Maximum users count allowed for this UserType.
+  uint16 private constant MAX_USER_COUNT = 16000;
+
+  /// @notice Max character length for user name.
+  uint16 private constant MAX_NAME_LENGTH = 50;
+
+  /// @notice Max character length for hash or url.
+  uint16 private constant MAX_HASH_LENGTH = 150;
+
+  /// @notice Max character length for text.
+  uint16 private constant MAX_TEXT_LENGTH = 300;
+
+  // --- State variables ---
 
   /// @notice The maximum number of penalties a contributor can accumulate before being denied.
-  uint8 public immutable MAX_PENALTIES;
+  uint8 public immutable maxPenalties;
 
   /// @notice The minimum number of blocks that must elapse between a contributor's successful contribution publications.
   /// This prevents spamming or rapid consecutive contributions.
@@ -35,7 +49,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice The number of blocks before the end of an era during which no new contributions can be published.
   /// This period allows validators sufficient time to analyze and vote on contributions before the era concludes.
-  uint32 public immutable SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS;
+  uint32 public immutable securityBlocksToValidation;
 
   /// @notice The total count of contributions that are currently considered valid (not invalidated).
   uint64 public contributionsCount;
@@ -62,19 +76,19 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  CommunityRules internal communityRules;
+  ICommunityRules_User internal communityRules;
 
   /// @notice The address of the `ContributorPool` contract, responsible for managing
   /// and distributing token rewards to contributors.
-  ContributorPool internal contributorPool;
+  IContributorPool internal contributorPool;
 
   /// @notice The address of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating contributions.
-  ValidationRules internal validationRules;
+  IValidationRules_Contributor internal validationRules;
 
   /// @notice The address of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for contribution validation.
-  VoteRules internal voteRules;
+  IVoteRules internal voteRules;
 
   /// @notice The specific `UserType` enumeration value for a Contributor user.
   UserType private constant USER_TYPE = UserType.CONTRIBUTOR;
@@ -90,12 +104,12 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * after deployment, following an `onlyOwner` pattern for secure initialization.
    * @param timeBetweenWorks_ The required blocks between contributions.
    * @param maxPenalties_ The maximum allowed penalties for a contributor.
-   * @param securityBlocksToValidatorAnalysis The number of blocks before era end to block new contributions.
+   * @param securityBlocksToValidation_ The number of blocks before era end to block new contributions.
    */
-  constructor(uint32 timeBetweenWorks_, uint8 maxPenalties_, uint32 securityBlocksToValidatorAnalysis) {
+  constructor(uint32 timeBetweenWorks_, uint8 maxPenalties_, uint32 securityBlocksToValidation_) {
     timeBetweenWorks = timeBetweenWorks_;
-    MAX_PENALTIES = maxPenalties_;
-    SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS = securityBlocksToValidatorAnalysis;
+    maxPenalties = maxPenalties_;
+    securityBlocksToValidation = securityBlocksToValidation_;
   }
 
   /**
@@ -103,10 +117,10 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * @param contractDependency Addresses of system contracts used
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
-    communityRules = CommunityRules(contractDependency.communityRulesAddress);
-    contributorPool = ContributorPool(contractDependency.contributorPoolAddress);
-    validationRules = ValidationRules(contractDependency.validationRulesAddress);
-    voteRules = VoteRules(contractDependency.voteRulesAddress);
+    communityRules = ICommunityRules_User(contractDependency.communityRulesAddress);
+    contributorPool = IContributorPool(contractDependency.contributorPoolAddress);
+    validationRules = IValidationRules_Contributor(contractDependency.validationRulesAddress);
+    voteRules = IVoteRules(contractDependency.voteRulesAddress);
   }
 
   // --- Public functions ---
@@ -127,9 +141,9 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
    */
   function addContributor(string memory name, string memory proofPhoto) public {
     // Character limit validation for name and proofPhoto.
-    require(bytes(name).length <= 50 && bytes(proofPhoto).length <= 150, "Max characters");
+    require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     // Max limit for contributor users in the system.
-    require(communityRules.userTypesCount(USER_TYPE) <= 16000, "Max user limit");
+    require(communityRules.userTypesCount(USER_TYPE) <= MAX_USER_COUNT, "Max user limit");
 
     // Generate a unique ID for the new contributor. Assumes userTypesTotalCount provides a globally unique counter.
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
@@ -164,21 +178,24 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * - The `description` string must not exceed 300 characters in byte length.
    * - The `report` hash/identifier string must not exceed 150 characters in byte length.
    * - The caller (`msg.sender`) must be a registered `CONTRIBUTOR`.
-   * - The current block number must be greater than `SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS` blocks away
+   * - The current block number must be greater than `securityBlocksToValidation` blocks away
    * from the end of the current era (not within the security window).
    * - The contributor must be eligible to publish based on `timeBetweenWorks` (checked via `canPublishContribution`).
    * @param description A title or brief description of the contribution.
    * @param report A hash or identifier (e.g., IPFS CID) of the detailed report file.
    */
-  function addContribution(string memory description, string memory report) public {
+  function addContribution(string memory description, string memory report) public nonReentrant {
     // Character limit validation for description and report.
-    require(bytes(description).length <= 300 && bytes(report).length <= 150, "Max characters reached");
+    require(
+      bytes(description).length <= MAX_TEXT_LENGTH && bytes(report).length <= MAX_HASH_LENGTH,
+      "Max characters reached"
+    );
 
     // Only registered contributors can call this function.
     require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Only Contributor");
 
     // Check if within the security window before era end.
-    require(nextEraIn() > SECURITY_BLOCKS_TO_VALIDATOR_ANALYSIS, "Wait until next era to add contribution");
+    require(nextEraIn() > securityBlocksToValidation, "Wait until next era to add contribution");
 
     // Check if enough time has passed since the last publication.
     require(canPublishContribution(msg.sender), "Can't publish yet");
@@ -215,7 +232,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
    */
   function addContributionValidation(uint64 id, string memory justification) public {
     // Character limit validation for justification.
-    require(bytes(justification).length <= 300, "Max 300 characters");
+    require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters");
     // Check if the caller is eligible to vote.
     require(voteRules.canVote(msg.sender), "Not a voter");
     // Check if the caller has waited the required time between votes.

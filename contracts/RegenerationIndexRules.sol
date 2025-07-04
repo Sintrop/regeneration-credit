@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { Category, RegenerationIndex, RegenerationIndexDescription } from "./types/IndexTypes.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { Category, RegenerationIndex, RegenerationIndexDescription } from "./types/IndexTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 
 /**
@@ -13,10 +13,28 @@ import { Callable } from "./shared/Callable.sol";
  * and calculate the RegnerationScore. The system will have only two categories: Trees & Biodiversity.
  */
 contract RegenerationIndexRules is Ownable, Callable {
-  // --- State Variables ---
+  // --- Constants ---
 
   /// @notice Allowed categories: Trees & Biodiversity.
-  uint8 public constant categoryCounts = 2;
+  uint8 public constant CATEGORY_COUNTS = 2;
+
+  // Tree thresholds
+  uint32 private constant TREES_THRESHOLD_LEVEL_1 = 50000;
+  uint32 private constant TREES_THRESHOLD_LEVEL_2 = 25000;
+  uint32 private constant TREES_THRESHOLD_LEVEL_3 = 12500;
+  uint32 private constant TREES_THRESHOLD_LEVEL_4 = 6250;
+  uint32 private constant TREES_THRESHOLD_LEVEL_5 = 3125;
+  uint32 private constant TREES_THRESHOLD_LEVEL_6 = 20;
+
+  // Biodiversity thresholds
+  uint32 private constant BIO_THRESHOLD_LEVEL_1 = 160;
+  uint32 private constant BIO_THRESHOLD_LEVEL_2 = 80;
+  uint32 private constant BIO_THRESHOLD_LEVEL_3 = 40;
+  uint32 private constant BIO_THRESHOLD_LEVEL_4 = 20;
+  uint32 private constant BIO_THRESHOLD_LEVEL_5 = 10;
+  uint32 private constant BIO_THRESHOLD_LEVEL_6 = 5;
+
+  // --- State variables ---
 
   /// @notice Relationship between id and category data
   mapping(uint8 => Category) public categories;
@@ -99,7 +117,7 @@ contract RegenerationIndexRules is Ownable, Callable {
   function getCategoryRegenerationIndexDescription(
     uint8 categoryId
   ) public view returns (RegenerationIndexDescription[] memory) {
-    require(categoryId > 0 && categoryId <= categoryCounts, "Invalid category ID");
+    require(categoryId > 0 && categoryId <= CATEGORY_COUNTS, "Invalid category ID");
     return categoryRegenerationIndexDescriptions[categoryId];
   }
 
@@ -126,17 +144,17 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @return The regeneration index ID corresponding to the indicator.
    */
   function _treesRegenerationIndexId(uint32 indicator) internal pure returns (uint32) {
-    if (indicator >= 50000) {
+    if (indicator >= TREES_THRESHOLD_LEVEL_1) {
       return 1;
-    } else if (indicator >= 25000 && indicator < 50000) {
+    } else if (indicator >= TREES_THRESHOLD_LEVEL_2) {
       return 2;
-    } else if (indicator >= 12500 && indicator < 25000) {
+    } else if (indicator >= TREES_THRESHOLD_LEVEL_3) {
       return 3;
-    } else if (indicator >= 6250 && indicator < 12500) {
+    } else if (indicator >= TREES_THRESHOLD_LEVEL_4) {
       return 4;
-    } else if (indicator >= 3125 && indicator < 6250) {
+    } else if (indicator >= TREES_THRESHOLD_LEVEL_5) {
       return 5;
-    } else if (indicator >= 20 && indicator < 3125) {
+    } else if (indicator >= TREES_THRESHOLD_LEVEL_6) {
       return 6;
     } else {
       return 7;
@@ -150,17 +168,17 @@ contract RegenerationIndexRules is Ownable, Callable {
    * @return The regeneration index ID corresponding to the indicator.
    */
   function _biodiversityRegenerationIndexId(uint32 indicator) internal pure returns (uint32) {
-    if (indicator >= 160) {
+    if (indicator >= BIO_THRESHOLD_LEVEL_1) {
       return 1;
-    } else if (indicator >= 80 && indicator < 160) {
+    } else if (indicator >= BIO_THRESHOLD_LEVEL_2) {
       return 2;
-    } else if (indicator >= 40 && indicator < 80) {
+    } else if (indicator >= BIO_THRESHOLD_LEVEL_3) {
       return 3;
-    } else if (indicator >= 20 && indicator < 40) {
+    } else if (indicator >= BIO_THRESHOLD_LEVEL_4) {
       return 4;
-    } else if (indicator >= 10 && indicator < 20) {
+    } else if (indicator >= BIO_THRESHOLD_LEVEL_5) {
       return 5;
-    } else if (indicator >= 5 && indicator < 10) {
+    } else if (indicator >= BIO_THRESHOLD_LEVEL_6) {
       return 6;
     } else {
       return 7;
