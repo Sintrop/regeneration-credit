@@ -177,22 +177,6 @@ contract RegenerationCredit is ERC20, Ownable {
     emit PoolTransfer(tokenOwner, receiver, numTokens);
   }
 
-  // /**
-  //  * @dev Allows a designated "contract pool" to burn tokens on behalf of another address.
-  //  * @param tokenOwner The address from which tokens will be burned.
-  //  * @param amount The amount of tokens to burn.
-  //  *
-  //  * Requirements:
-  //  * - Only a registered `contractPool` can call this function (`mustBeContractPool` modifier).
-  //  * - `tokenOwner` must have `amount` tokens.
-  //  * - `amount` must be greater than 0.
-  //  * - `tokenOwner` must not be the zero address.
-  //  */
-  // function burnTokensWith(address tokenOwner, uint256 amount) public mustBeContractPool {
-  //   require(amount > 0, "Burn amount must be greater than 0");
-  //   _burnTokensInternal(tokenOwner, amount);
-  // }
-
   // --- Internal functions ---
 
   /**
