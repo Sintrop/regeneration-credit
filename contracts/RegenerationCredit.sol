@@ -121,10 +121,7 @@ contract RegenerationCredit is ERC20, Ownable {
     require(supporterRules.isSupporter(msg.sender), "Only supporters");
     require(amount >= 1000000000000000000, "Amount must be at least 1 RC");
 
-    (uint256 amountToBurn, uint256 comission, address inviter) = supporterRules._calculateCommission(
-      msg.sender,
-      amount
-    );
+    (uint256 amountToBurn, uint256 comission, address inviter) = supporterRules.calculateCommission(msg.sender, amount);
 
     supporterRules.offset(msg.sender, amountToBurn, calculatorItemId);
 
@@ -145,10 +142,7 @@ contract RegenerationCredit is ERC20, Ownable {
     require(amount >= 1000000000000000000, "Amount must be at least 1 RC");
     require(bytes(description).length <= 600 && bytes(content).length <= 600, "Max 600 characters");
 
-    (uint256 amountToBurn, uint256 comission, address inviter) = supporterRules._calculateCommission(
-      msg.sender,
-      amount
-    );
+    (uint256 amountToBurn, uint256 comission, address inviter) = supporterRules.calculateCommission(msg.sender, amount);
 
     supporterRules.publish(msg.sender, amountToBurn, description, content);
 

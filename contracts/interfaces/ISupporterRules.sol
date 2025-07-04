@@ -13,7 +13,7 @@ interface ISupporterRules {
 
   function isSupporter(address addr) external returns (bool);
 
-  function _calculateCommission(
+  function calculateCommission(
     address supporterAddress,
     uint256 amount
   ) external returns (uint256 amountToBurn, uint256 commission, address inviter);

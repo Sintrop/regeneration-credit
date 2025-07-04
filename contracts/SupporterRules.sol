@@ -184,20 +184,18 @@ contract SupporterRules is Callable {
     emit ReductionCommitmentDeclared(msg.sender, calculatorItemId, block.number);
   }
 
-  function isSupporter(address addr) external view returns (bool) {
-    return communityRules.userTypeIs(UserType.SUPPORTER, addr);
-  }
-
-  // --- Internal Functions (State Modifying) ---
+  // --- View Functions ---
 
   /**
-   * @dev Public function to handle token burning and inviter commission.
+   * @notice This functions calculates the comission to be sent to the supporter inviter.
+   * @dev Public function to handle tokens to be burned and inviter commission.
    * It retrieves invitation data from CommunityRules to perform the burn.
    * @param amount The total amount of tokens to consider for burning (before commission).
    * @return amountToBurn The net amount of tokens burned by the supporter (after commission).
    * @return commission The commission for the invitation service provided.
+   * @return inviter The supporter inviter.
    */
-  function _calculateCommission(
+  function calculateCommission(
     address supporterAddress,
     uint256 amount
   ) public view returns (uint256 amountToBurn, uint256 commission, address inviter) {
@@ -210,8 +208,6 @@ contract SupporterRules is Callable {
     amountToBurn = amount.sub(commission);
   }
 
-  // --- View Functions ---
-
   /**
    * @notice Retrieves the list of reduction commitment item IDs for a specific address.
    * @param addr The address of the supporter.
@@ -222,13 +218,23 @@ contract SupporterRules is Callable {
   }
 
   /**
-   * @dev Retrieves the full Supporter struct data for a specific address.
    * @notice Returns the detailed information of a supporter.
+   * @dev Retrieves the full Supporter struct data for a specific address.
    * @param addr The address of the supporter.
    * @return Supporter The `Supporter` struct containing their data.
    */
   function getSupporter(address addr) public view returns (Supporter memory) {
     return supporters[addr];
+  }
+
+  /**
+   * @notice Checks if a user is a supporter or not.
+   * @dev Used by the RegenerationCredit contract to check if user is supporter.
+   * @param addr The address to check if is supporter.
+   * @return bool True if is supporter, false otherwise.
+   */
+  function isSupporter(address addr) external view returns (bool) {
+    return communityRules.userTypeIs(UserType.SUPPORTER, addr);
   }
 
   // --- Events ---
