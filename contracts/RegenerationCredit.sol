@@ -27,6 +27,14 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
   /// @notice The number of decimal places used by the token.
   uint8 public constant DECIMALS = 18;
 
+  // --- Custom constants ---
+
+  /// @notice Maximum character length for the project description.
+  uint16 private constant MAX_PUBLICATION_LENGTH = 600;
+
+  /// @notice The minimum number of tokens a user must burn to offset.
+  uint256 private constant MINIMUM_TOKENS_TO_OFFSET = 1000000000000000000;
+
   // --- Custom State Variables ---
 
   /// @notice A mapping to track whether an address is a designated "contract pool" for token distribution.
@@ -120,7 +128,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    */
   function offset(uint256 amount, uint64 calculatorItemId) public nonReentrant {
     require(supporterRules.isSupporter(msg.sender), "Only supporters");
-    require(amount >= 1000000000000000000, "Amount must be at least 1 RC");
+    require(amount >= MINIMUM_TOKENS_TO_OFFSET, "Amount must be at least 1 RC");
 
     (uint256 amountToBurn, uint256 comission, address inviter) = supporterRules.calculateCommission(msg.sender, amount);
 
@@ -140,15 +148,18 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    */
   function publish(uint256 amount, string memory description, string memory content) public nonReentrant {
     require(supporterRules.isSupporter(msg.sender), "Only supporters");
-    require(amount >= 1000000000000000000, "Amount must be at least 1 RC");
-    require(bytes(description).length <= 600 && bytes(content).length <= 600, "Max 600 characters");
+    require(amount >= MINIMUM_TOKENS_TO_OFFSET, "Amount must be at least 1 RC");
+    require(
+      bytes(description).length <= MAX_PUBLICATION_LENGTH && bytes(content).length <= MAX_PUBLICATION_LENGTH,
+      "Max 600 characters"
+    );
 
     (uint256 amountToBurn, uint256 comission, address inviter) = supporterRules.calculateCommission(msg.sender, amount);
 
     transfer(inviter, comission);
     _burnTokensInternal(msg.sender, amountToBurn);
 
-    supporterRules.publish(msg.sender, amountToBurn, description, content);    
+    supporterRules.publish(msg.sender, amountToBurn, description, content);
   }
 
   /**

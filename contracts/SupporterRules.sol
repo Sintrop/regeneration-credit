@@ -19,6 +19,20 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 contract SupporterRules is Callable {
   using SafeMath for uint256;
 
+  // --- Constants ---
+
+  /// @notice Commission percentage paid to the inviter when an invited supporter burns tokens.
+  uint8 public constant INVITER_PERCENTAGE = 5; // 5%
+
+  /// @notice Max character length for user name.
+  uint16 private constant MAX_NAME_LENGTH = 50;
+
+  /// @notice Max character length for hash or url.
+  uint16 private constant MAX_HASH_LENGTH = 150;
+
+  /// @notice Max character length for text.
+  uint16 private constant MAX_TEXT_LENGTH = 200;
+
   // --- State variables ---
 
   /// @notice The relationship between address and supporter data
@@ -35,9 +49,6 @@ contract SupporterRules is Callable {
 
   /// @notice The relationship between ID and supporter address.
   mapping(uint256 => address) public supportersAddress;
-
-  /// @notice Commission percentage paid to the inviter when an invited supporter burns tokens.
-  uint8 public constant INVITER_PERCENTAGE = 5; // 5%
 
   /// @notice Total number of offsets made across all supporters.
   uint64 public offsetsCount;
@@ -84,11 +95,14 @@ contract SupporterRules is Callable {
    * @dev Registers the sender as a Supporter, assigning them a unique ID and updating CommunityRules.
    * Requires name and profile photo length to be within limits.
    * @param name The name of the supporter (max 100 characters).
+   * @param description Brief description of the the supporter (max 200 characters).
    * @param profilePhoto The profile photo URL/hash of the supporter (max 150 characters).
    */
   function addSupporter(string memory name, string memory description, string memory profilePhoto) public {
     require(
-      bytes(name).length <= 50 && bytes(description).length <= 200 && bytes(profilePhoto).length <= 150,
+      bytes(name).length <= MAX_NAME_LENGTH &&
+        bytes(description).length <= MAX_TEXT_LENGTH &&
+        bytes(profilePhoto).length <= MAX_HASH_LENGTH,
       "Max characters reached"
     );
 
@@ -109,7 +123,7 @@ contract SupporterRules is Callable {
    * @param newPhoto User's new profile photo URL/hash (max 150 characters).
    */
   function updateProfilePhoto(string memory newPhoto) public {
-    require(bytes(newPhoto).length <= 150, "Max characters");
+    require(bytes(newPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
 
     supporters[msg.sender].profilePhoto = newPhoto;
