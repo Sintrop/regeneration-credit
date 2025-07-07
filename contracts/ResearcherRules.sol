@@ -351,6 +351,53 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     return totalPenalties(addr);
   }
 
+  // --- Internal  functions ---
+
+  /**
+   * @dev Internal helper function that invalidates a research by updating its status.
+   * Decrements the total count of valid researches.
+   * @param research The `Research` struct to be invalidated.
+   */
+  function _invalidateResearch(Research memory research) internal returns (Research memory) {
+    researchesCount--;
+    research.valid = false;
+    research.invalidatedAt = block.number;
+    researches[research.id] = research;
+
+    return research;
+  }
+
+  /**
+   * @dev Checks if a researcher is eligible to publish a research.
+   * @param addr The address of the potential publisher.
+   * @return `true` if the user can publish research, `false` otherwise.
+   */
+  function _canPublishResearch(address addr) internal view returns (bool) {
+    return _hasWaitedRequiredTime(researchers[addr].lastPublishedAt);
+  }
+
+  /**
+   * @dev Checks if a researcher is eligible to publish a calculator item.
+   * @param researcher The `Researcher` struct of the potential publisher.
+   * @return `true` if the user can publish a calculator item, `false` otherwise.
+   */
+  function _canPublishCalculatorItem(Researcher memory researcher) internal view returns (bool) {
+    return _hasWaitedRequiredTime(researcher.lastCalculatorItemAt);
+  }
+
+  /**
+   * @dev Calculates if a researcher is eligible to publish a research.
+   * Eligibility based on the `lastActionBlock` and `timeBetweenWorks`.
+   * @param lastActionBlock The block of last executed action.
+   * @return `true` if the user can publish, `false` otherwise.
+   */
+  function _hasWaitedRequiredTime(uint256 lastActionBlock) internal view returns (bool) {
+    if (lastActionBlock == 0) {
+      return true;
+    }
+    return block.number > lastActionBlock + timeBetweenWorks;
+  }
+
   // --- View Functions ---
 
   /**
@@ -418,47 +465,6 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    */
   function nextEraIn() public view returns (uint256) {
     return uint256(researcherPool.nextEraIn(poolCurrentEra()));
-  }
-
-  // --- Internal  functions ---
-
-  /**
-   * @dev Internal helper function that invalidates a research by updating its status.
-   * Decrements the total count of valid researches.
-   * @param research The `Research` struct to be invalidated.
-   */
-  function _invalidateResearch(Research memory research) internal returns (Research memory) {
-    researchesCount--;
-    research.valid = false;
-    research.invalidatedAt = block.number;
-    researches[research.id] = research;
-
-    return research;
-  }
-
-  /**
-   * @notice Checks if a researcher is eligible to publish a research.
-   * @dev Calculates eligibility based on the `lastPublishedAt` block.number and `timeBetweenWorks`.
-   * @param addr The address of the potential publisher.
-   * @return `true` if the user can publish research, `false` otherwise.
-   */
-  function _canPublishResearch(address addr) internal view returns (bool) {
-    uint256 lastPublishedAt = researchers[addr].lastPublishedAt;
-
-    bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
-    return canPublish || lastPublishedAt <= 0;
-  }
-
-  /**
-   * @dev Checks if a researcher is eligible to publish a calculator item.
-   * @param researcher The `Researcher` struct of the potential publisher.
-   * @return `true` if the user can publish a calculator item, `false` otherwise.
-   */
-  function _canPublishCalculatorItem(Researcher memory researcher) internal view returns (bool) {
-    uint256 lastCalculatorItemAt = researcher.lastCalculatorItemAt;
-
-    bool canPublish = block.number > lastCalculatorItemAt + timeBetweenWorks;
-    return canPublish || lastCalculatorItemAt <= 0;
   }
 
   // --- Events ---
