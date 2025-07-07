@@ -243,7 +243,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
     // Check if contribution exists, is valid, and was made in the current or a past era.
     // Note: Validation must occur within the same era.
-    require(contribution.valid && poolCurrentEra() <= contribution.era, "This contribution is not VALID");
+    require(contribution.valid && poolCurrentEra() == contribution.era, "This contribution is not VALID");
 
     // Increment the number of validations for this contribution.
     contribution.validationsCount += 1;
@@ -452,7 +452,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
     // 1. Their last publication was long enough ago (`block.number > lastPublishedAt + timeBetweenWorks`).
     // 2. They have never published before (`lastPublishedAt <= 0`).
     bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;
-    return canPublish || lastPublishedAt <= 0;
+    return canPublish || lastPublishedAt == 0;
   }
 
   /**

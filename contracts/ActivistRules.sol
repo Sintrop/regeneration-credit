@@ -243,7 +243,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
     Activist storage activist = activists[activistAddress];
 
     // If activist does not exist, return.
-    if (activist.id <= 0) return;
+    if (activist.id == 0) return;
 
     // Inscrease the activist pool level
     activist.pool.level++;

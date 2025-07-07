@@ -233,7 +233,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
     Research memory research = researches[id];
 
-    require(research.valid && poolCurrentEra() <= research.era, "Research not VALID");
+    require(research.valid && poolCurrentEra() == research.era, "Research not VALID");
 
     research.validationsCount += 1;
     researches[id] = research;

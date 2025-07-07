@@ -297,7 +297,7 @@ contract InspectionRules is Callable, ReentrancyGuard {
 
     Inspection storage inspection = inspections[id];
 
-    require(regeneratorRules.poolCurrentEra() <= inspection.inspectedAtEra, "Can't validade anymore");
+    require(regeneratorRules.poolCurrentEra() == inspection.inspectedAtEra, "Can't validade anymore");
     require(inspection.id >= 1 && inspection.id <= inspectionsTotalCount, "Inspection does not exist");
     require(inspection.status == InspectionStatus.INSPECTED, "Only to inspected inspections");
 

@@ -230,7 +230,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
     Report memory report = reports[id];
 
-    require(report.valid && poolCurrentEra() <= report.era, "This report is not VALID");
+    require(report.valid && poolCurrentEra() == report.era, "This report is not VALID");
 
     // Increment the number of validations for this report.
     report.validationsCount += 1;
@@ -436,7 +436,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
     // A user can publish if:
     // 1. Their last publication was long enough ago (`block.number > lastPublishedAt + timeBetweenWorks`).
     // 2. They have never published before (`lastPublishedAt == 0`).
-    return canPublish || lastPublishedAt <= 0;
+    return canPublish || lastPublishedAt == 0;
   }
 
   /**
