@@ -35,9 +35,9 @@ contract RegenerationCreditImpact {
 
   // --- State variables ---
 
-  IRegenerationCredit_Impact internal regenerationCredit;
-  IInspectionRules_Impact internal inspectionRules;
-  IRegeneratorRules_Impact internal regeneratorRules;
+  IRegenerationCredit_Impact private regenerationCredit;
+  IInspectionRules_Impact private inspectionRules;
+  IRegeneratorRules_Impact private regeneratorRules;
 
   // --- Constructor ---
 

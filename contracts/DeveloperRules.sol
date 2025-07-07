@@ -27,7 +27,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
   // --- Constants ---
 
   /// @notice Maximum users count allowed for this UserType.
-  uint16 private constant MAX_USER_COUNT = 16000;
+  uint16 public constant MAX_USER_COUNT = 16000;
 
   /// @notice Max character length for user name.
   uint16 private constant MAX_NAME_LENGTH = 50;
@@ -45,7 +45,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice The minimum number of blocks that must elapse between a developer's successful report publications.
   /// This prevents spamming or rapid consecutive report submissions.
-  uint32 internal immutable timeBetweenWorks;
+  uint32 public immutable timeBetweenWorks;
 
   /// @notice The number of blocks before the end of an era during which no new reports can be published.
   /// This period allows validators sufficient time to analyze and vote on reports before the era concludes.
@@ -60,7 +60,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice A mapping from a developer's wallet address to their detailed `Developer` data structure.
   /// This serves as the primary storage for developer profiles.
-  mapping(address => Developer) public developers;
+  mapping(address => Developer) private developers;
 
   /// @notice A mapping from a unique report ID to its detailed `Report` data structure.
   /// Stores all submitted development reports.
@@ -78,19 +78,19 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  ICommunityRules_User internal communityRules;
+  ICommunityRules_User private communityRules;
 
   /// @notice The address of the `DeveloperPool` contract, responsible for managing
   /// and distributing token rewards to developers.
-  IDeveloperPool internal developerPool;
+  IDeveloperPool private developerPool;
 
   /// @notice The address of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating development reports.
-  IValidationRules_Developer internal validationRules;
+  IValidationRules_Developer private validationRules;
 
   /// @notice The address of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for report validation.
-  IVoteRules internal voteRules;
+  IVoteRules private voteRules;
 
   /// @notice The specific `UserType` enumeration value for a Developer user.
   UserType private constant USER_TYPE = UserType.DEVELOPER;

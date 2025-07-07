@@ -24,7 +24,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /// @notice The minimum number of successful inspections a regenerator must have
   /// to be eligible for rewards from the Regenerator Pool.
-  uint8 internal constant MINIMUM_INSPECTIONS_TO_POOL = 3;
+  uint8 public constant MINIMUM_INSPECTIONS_TO_POOL = 3;
 
   /// @notice Minimum number of coordinate points to define a regeneration area.
   uint8 private constant MIN_COORDINATES_COUNT = 3;
@@ -42,16 +42,16 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   uint16 private constant MAX_PROJECT_DESCRIPTION_LENGTH = 200;
 
   /// @notice Minimum total area in square meters (m²) for a regeneration project.
-  uint32 private constant MIN_REGENERATION_AREA = 500;
+  uint32 public constant MIN_REGENERATION_AREA = 500;
 
   /// @notice Maximum total area in square meters (m²) for a regeneration project.
-  uint32 private constant MAX_REGENERATION_AREA = 500000;
+  uint32 public constant MAX_REGENERATION_AREA = 500000;
 
   // --- State variables ---
 
   /// @notice A mapping from a regenerator's wallet address to their detailed `Regenerator` data structure.
   /// This serves as the primary storage for regenerator profiles.
-  mapping(address => Regenerator) public regenerators;
+  mapping(address => Regenerator) private regenerators;
 
   /// @notice A mapping from a unique regenerator ID to their corresponding wallet address.
   /// Facilitates lookup of a regenerator's address by their ID.
@@ -73,11 +73,11 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules and user types.
-  ICommunityRules_User internal communityRules;
+  ICommunityRules_User private communityRules;
 
   /// @notice The address of the `RegeneratorPool` contract, responsible for managing
   /// and distributing token rewards to regenerators.
-  IRegeneratorPool internal regeneratorPool;
+  IRegeneratorPool private regeneratorPool;
 
   /// @notice The specific `UserType` enumeration value for a Regenerator user.
   UserType private constant USER_TYPE = UserType.REGENERATOR;

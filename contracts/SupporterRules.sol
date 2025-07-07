@@ -63,10 +63,10 @@ contract SupporterRules is Callable {
   mapping(uint64 => Offset) public offsets;
 
   /// @notice CommunityRules contract address
-  CommunityRules internal communityRules;
+  CommunityRules private communityRules;
 
   /// @notice ResearcherRules contract address
-  ResearcherRules internal researcherRules;
+  ResearcherRules private researcherRules;
 
   /// @notice Supporter UserType
   UserType private constant USER_TYPE = UserType.SUPPORTER;

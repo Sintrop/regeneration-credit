@@ -26,7 +26,7 @@ contract InspectionRules is Callable, ReentrancyGuard {
   // --- Constants ---
 
   /// @notice The maximum number of inspections a Regenerator can receive.
-  uint8 private constant MAX_REGENERATOR_INSPECTIONS = 12;
+  uint8 public constant MAX_REGENERATOR_INSPECTIONS = 12;
 
   /// @notice Max character length for hash or url.
   uint16 private constant MAX_HASH_LENGTH = 150;
@@ -38,10 +38,10 @@ contract InspectionRules is Callable, ReentrancyGuard {
   uint16 private constant MAX_TEXT_LENGTH = 300;
 
   /// @notice The maximum result value for the number of trees in an inspection.
-  uint32 private constant MAX_TREES_RESULT = 200000;
+  uint32 public constant MAX_TREES_RESULT = 200000;
 
   /// @notice The maximum result value for the biodiversity score in an inspection.
-  uint32 private constant MAX_BIODIVERSITY_RESULT = 300;
+  uint32 public constant MAX_BIODIVERSITY_RESULT = 300;
 
   // --- State variables ---
 
@@ -76,13 +76,13 @@ contract InspectionRules is Callable, ReentrancyGuard {
   uint256 public inspectionsBiodiversityImpact;
 
   /// @notice Stores inspection data by its unique ID.
-  mapping(uint64 => Inspection) internal inspections;
+  mapping(uint64 => Inspection) private inspections;
 
   /// Regenerator inspections ids list.
-  mapping(address => uint64[]) internal regeneratorInspections;
+  mapping(address => uint64[]) private regeneratorInspections;
 
   /// @notice Checks if an inspector has already inspected a specific regenerator.
-  mapping(address => mapping(address => bool)) internal inspectorInspected;
+  mapping(address => mapping(address => bool)) private inspectorInspected;
 
   /// @notice InspectorRules contract instance for interacting with inspector-specific logic.
   IInspectorRules_Inspection private inspectorRules;
@@ -100,7 +100,7 @@ contract InspectionRules is Callable, ReentrancyGuard {
   IActivistRules_Inspection private activistRules;
 
   /// @notice VoteRules contract instance for checking voter eligibility.
-  IVoteRules internal voteRules;
+  IVoteRules private voteRules;
 
   /// @notice RegenerationIndexRules contract instance for calculating regeneration scores.
   IRegenerationIndexRules private regenerationIndexRules;
@@ -415,6 +415,15 @@ contract InspectionRules is Callable, ReentrancyGuard {
    */
   function getInspection(uint64 id) public view returns (Inspection memory) {
     return inspections[id];
+  }
+
+  /**
+   * @notice Get all regenerators inspections ID's list.
+   * @dev Allows to get all regenerator inspections with status INSPECTED.
+   * @param addr Regenerator address to check.
+   */
+  function getInspectionsHistory(address addr) public view returns (uint64[] memory) {
+    return regeneratorInspections[addr];
   }
 
   /**
