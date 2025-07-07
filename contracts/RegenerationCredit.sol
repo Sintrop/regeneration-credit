@@ -3,6 +3,7 @@ pragma solidity ^0.8.27;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { ISupporterRules } from "./interfaces/ISupporterRules.sol";
 
 /**
@@ -14,7 +15,7 @@ import { ISupporterRules } from "./interfaces/ISupporterRules.sol";
  * and for burning tokens to certify environmental offset.
  * @dev Inherits from OpenZeppelin's `ERC20` for standard token functionalities and `Ownable` for deploy setup.
  */
-contract RegenerationCredit is ERC20, Ownable {
+contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
   // --- Constants (Standard ERC-20 Metadata) ---
 
   /// @notice The official name of the token.
@@ -115,18 +116,18 @@ contract RegenerationCredit is ERC20, Ownable {
    * @dev Burns tokens. If a valid calculatorItemId is provided, calls the SupporterRules contract
    * that records the burned amount as a certificate for that item.
    * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
-   * @param calculatorItemId The ID of the CalculatorItem, or 0 if not applicable.
+   * @param calculatorItemId The ID of the CalculatorItem.
    */
-  function offset(uint256 amount, uint64 calculatorItemId) public {
+  function offset(uint256 amount, uint64 calculatorItemId) public nonReentrant {
     require(supporterRules.isSupporter(msg.sender), "Only supporters");
     require(amount >= 1000000000000000000, "Amount must be at least 1 RC");
 
     (uint256 amountToBurn, uint256 comission, address inviter) = supporterRules.calculateCommission(msg.sender, amount);
 
-    supporterRules.offset(msg.sender, amountToBurn, calculatorItemId);
-
     transfer(inviter, comission);
     _burnTokensInternal(msg.sender, amountToBurn);
+
+    supporterRules.offset(msg.sender, amountToBurn, calculatorItemId);
   }
 
   /**
@@ -137,17 +138,17 @@ contract RegenerationCredit is ERC20, Ownable {
    * @param description The description of the post (max 600 characters).
    * @param content The content of the post (max 600 characters).
    */
-  function publish(uint256 amount, string memory description, string memory content) public {
+  function publish(uint256 amount, string memory description, string memory content) public nonReentrant {
     require(supporterRules.isSupporter(msg.sender), "Only supporters");
     require(amount >= 1000000000000000000, "Amount must be at least 1 RC");
     require(bytes(description).length <= 600 && bytes(content).length <= 600, "Max 600 characters");
 
     (uint256 amountToBurn, uint256 comission, address inviter) = supporterRules.calculateCommission(msg.sender, amount);
 
-    supporterRules.publish(msg.sender, amountToBurn, description, content);
-
     transfer(inviter, comission);
     _burnTokensInternal(msg.sender, amountToBurn);
+
+    supporterRules.publish(msg.sender, amountToBurn, description, content);    
   }
 
   /**
