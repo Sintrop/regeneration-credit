@@ -33,7 +33,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
   uint16 private constant MAX_PUBLICATION_LENGTH = 600;
 
   /// @notice The minimum number of tokens a user must burn to offset.
-  uint256 private constant MINIMUM_TOKENS_TO_OFFSET = 1000000000000000000;
+  uint256 private constant MINIMUM_TOKENS_TO_OFFSET = 1e18;
 
   // --- Custom State Variables ---
 

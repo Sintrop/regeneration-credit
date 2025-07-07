@@ -27,7 +27,7 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable {
 
   /// @notice The total supply of Regeneration Credit tokens designated for this researcher pool.
   /// This value represents the maximum tokens available for distribution through this contract.
-  uint256 internal constant TOTAL_POOL_TOKENS = 40000000000000000000000000;
+  uint256 internal constant TOTAL_POOL_TOKENS = 40000000e18;
 
   // --- Constructor ---
 
