@@ -23,11 +23,11 @@ contract ContributorPool is Poolable, Ownable, Blockable, Callable {
   // --- Constants & state variables ---
 
   /// @notice Interface to the Regeneration Credit token contract, used for token transfers
-  IRegenerationCredit internal regenerationCredit;
+  IRegenerationCredit private regenerationCredit;
 
   /// @notice The total supply of Regeneration Credit tokens designated for this contributor pool.
   /// This value represents the maximum tokens available for distribution through this contract.
-  uint256 internal constant TOTAL_POOL_TOKENS = 40000000e18;
+  uint256 private constant TOTAL_POOL_TOKENS = 40000000e18;
 
   // --- Constructor ---
 

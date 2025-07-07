@@ -25,19 +25,19 @@ contract VoteRules {
   // --- State variables ---
 
   /// @notice CommunityRules contract address
-  ICommunityRules_Vote internal communityRules;
+  ICommunityRules_Vote private communityRules;
 
   /// @notice ActivistRules contract address
-  IActivistRules_Vote internal activistRules;
+  IActivistRules_Vote private activistRules;
 
   /// @notice ContributorRules contract address
-  IContributorRules_Vote internal contributorRules;
+  IContributorRules_Vote private contributorRules;
 
   /// @notice DeveloperRules contract address
-  IDeveloperRules_Vote internal developerRules;
+  IDeveloperRules_Vote private developerRules;
 
   /// @notice ResearcherRules contract address
-  IResearcherRules_Vote internal researcherRules;
+  IResearcherRules_Vote private researcherRules;
 
   // --- Constructor ---
 

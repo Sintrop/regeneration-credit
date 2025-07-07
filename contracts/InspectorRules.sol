@@ -22,14 +22,14 @@ contract InspectorRules is Callable, ReentrancyGuard {
   // --- Constants ---
 
   /// @notice The minimum number of completed inspections required for an inspector to be eligible for pool rewards.
-  uint8 internal constant MINIMUM_INSPECTIONS_TO_POOL = 3;
+  uint8 public constant MINIMUM_INSPECTIONS_TO_POOL = 3;
 
   /// @notice The maximum allowed number of "give-ups" (accepted but unrealized inspections)
   /// before an inspector's validity is affected (blocked from accepting new inspections).
-  uint8 private constant MAX_GIVEUPS = 3;
+  uint8 public constant MAX_GIVEUPS = 3;
 
   /// @notice The number of blocks an inspector must wait to accept a new inspection after realizing one.
-  uint32 private constant BLOCKS_TO_ACCEPT = 6000;
+  uint32 public constant BLOCKS_TO_ACCEPT = 6000;
 
   /// @notice Max character length for user name.
   uint16 private constant MAX_NAME_LENGTH = 50;
@@ -44,7 +44,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
 
   /// @notice A mapping from an inspector's wallet address to their detailed `Inspector` data structure.
   /// This serves as the primary storage for inspector profiles.
-  mapping(address => Inspector) internal inspectors;
+  mapping(address => Inspector) private inspectors;
 
   /// @notice A mapping from an inspector's wallet address to an array of `Penalty` structs they have received.
   mapping(address => Penalty[]) public penalties;
@@ -54,11 +54,11 @@ contract InspectorRules is Callable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules and user types.
-  ICommunityRules_User internal communityRules;
+  ICommunityRules_User private communityRules;
 
   /// @notice The address of the `InspectorPool` contract, responsible for managing
   /// and distributing token rewards to inspectors.
-  IInspectorPool internal inspectorPool;
+  IInspectorPool private inspectorPool;
 
   /// @notice The specific `UserType` enumeration value for an Inspector user.
   /// This is a constant for gas efficiency and clarity.

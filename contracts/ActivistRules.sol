@@ -24,10 +24,10 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   // --- Constants ---
 
   /// @notice Maximum users count allowed for this UserType.
-  uint16 private constant MAX_USER_COUNT = 16000;
+  uint16 public constant MAX_USER_COUNT = 16000;
 
   /// @notice Minimum inspections an inviter must complete to add activist level.
-  uint16 private constant MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS = 3;
+  uint16 public constant MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS = 3;
 
   /// @notice Max character length for user name.
   uint16 private constant MAX_NAME_LENGTH = 50;
@@ -42,12 +42,12 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice A mapping from an activist's wallet address to their detailed `Activist` data structure.
   /// This serves as the primary storage for activist profiles.
-  mapping(address => Activist) internal activists;
+  mapping(address => Activist) private activists;
 
   /// @notice A nested mapping to track whether an activist has already "won a level" (received credit)
   /// from a specific invited user (Regenerator or Inspector). Prevents duplicate level gains.
   /// Key: `activistAddress` -> Key: `invitedUserAddress` -> Value: `true` if level won.
-  mapping(address => mapping(address => bool)) internal activistWonLevel;
+  mapping(address => mapping(address => bool)) private activistWonLevel;
 
   /// @notice A public mapping from a unique activist ID to their corresponding wallet address.
   /// Facilitates lookup of an activist's address by their ID.
@@ -55,11 +55,11 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  ICommunityRules_User internal communityRules;
+  ICommunityRules_User private communityRules;
 
   /// @notice The address of the `ActivistPool` contract, responsible for managing
   /// and distributing token rewards to activists.
-  IActivistPool internal activistPool;
+  IActivistPool private activistPool;
 
   /// @notice The specific `UserType` enumeration value for the Activist user.
   UserType private constant USER_TYPE = UserType.ACTIVIST;

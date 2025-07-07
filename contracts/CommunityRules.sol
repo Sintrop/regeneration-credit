@@ -20,10 +20,10 @@ contract CommunityRules is Ownable, Callable {
   uint16 private constant MINIMUM_REGISTERED_USERS_QUANTITY = 5;
 
   /// @notice The number of blocks an invitation is delayed for Supporters.
-  uint32 private constant SUPPORTER_INVITATION_DELAY_BLOCKS = 150;
+  uint32 public constant SUPPORTER_INVITATION_DELAY_BLOCKS = 150;
 
   /// @notice The number of blocks an invitation is delayed for voter-type users.
-  uint32 private constant VOTER_INVITATION_DELAY_BLOCKS = 100000;
+  uint32 public constant VOTER_INVITATION_DELAY_BLOCKS = 100000;
 
   /// @notice Max character length for delation titles.
   uint16 private constant MAX_TITLE_LENGTH = 100;
@@ -40,7 +40,7 @@ contract CommunityRules is Ownable, Callable {
   uint64 public usersCount;
 
   /// @notice A mapping from a user's wallet address to their assigned `UserType`.
-  mapping(address => UserType) internal users;
+  mapping(address => UserType) private users;
 
   /// @notice A mapping from a reported user's address to an array of `Delation` structs they have received.
   /// Stores a historical record of all delations against a user.

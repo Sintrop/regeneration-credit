@@ -85,10 +85,10 @@ contract ValidationRules is Callable {
   IActivistRules_Validation private activistRules;
 
   /// @notice VoteRules contract address.
-  IVoteRules internal voteRules;
+  IVoteRules private voteRules;
 
   /// @notice Amount of blocks between votes.
-  uint256 private immutable timeBetweenVotes;
+  uint256 public immutable timeBetweenVotes;
 
   // --- Constructor ---
 

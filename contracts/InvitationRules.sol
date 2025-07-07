@@ -19,7 +19,7 @@ contract InvitationRules is Ownable {
   // --- Constants ---
 
   /// @notice The minimum number of blocks an activist needs to wait to invite Regenerators or Inspectors again.
-  uint16 private constant ACTIVIST_DELAY_BLOCKS = 500;
+  uint16 public constant ACTIVIST_DELAY_BLOCKS = 500;
 
   // --- State variables ---
 
@@ -34,19 +34,19 @@ contract InvitationRules is Ownable {
   mapping(UserType => UserType) public canBeInviteds;
 
   /// @notice CommunityRules contract address
-  ICommunityRules_Invitation internal communityRules;
+  ICommunityRules_Invitation private communityRules;
 
   /// @notice ResearcherRules contract address
-  IResearcherRules_Invitation internal researcherRules;
+  IResearcherRules_Invitation private researcherRules;
 
   /// @notice DeveloperRules contract address
-  IDeveloperRules_Invitation internal developerRules;
+  IDeveloperRules_Invitation private developerRules;
 
   /// @notice ActivistRules contract address
-  IActivistRules_Invitation internal activistRules;
+  IActivistRules_Invitation private activistRules;
 
   /// @notice ContributorRules contract address
-  IContributorRules_Invitation internal contributorRules;
+  IContributorRules_Invitation private contributorRules;
 
   // --- Constructor ---
 

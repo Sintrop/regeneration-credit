@@ -27,7 +27,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
   // --- Constants ---
 
   /// @notice Maximum users count allowed for this UserType.
-  uint16 private constant MAX_USER_COUNT = 16000;
+  uint16 public constant MAX_USER_COUNT = 16000;
 
   /// @notice Max character length for user name.
   uint16 private constant MAX_NAME_LENGTH = 50;
@@ -45,7 +45,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice The minimum number of blocks that must elapse between a contributor's successful contribution publications.
   /// This prevents spamming or rapid consecutive contributions.
-  uint32 internal immutable timeBetweenWorks;
+  uint32 public immutable timeBetweenWorks;
 
   /// @notice The number of blocks before the end of an era during which no new contributions can be published.
   /// This period allows validators sufficient time to analyze and vote on contributions before the era concludes.
@@ -76,19 +76,19 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  ICommunityRules_User internal communityRules;
+  ICommunityRules_User private communityRules;
 
   /// @notice The address of the `ContributorPool` contract, responsible for managing
   /// and distributing token rewards to contributors.
-  IContributorPool internal contributorPool;
+  IContributorPool private contributorPool;
 
   /// @notice The address of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating contributions.
-  IValidationRules_Contributor internal validationRules;
+  IValidationRules_Contributor private validationRules;
 
   /// @notice The address of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for contribution validation.
-  IVoteRules internal voteRules;
+  IVoteRules private voteRules;
 
   /// @notice The specific `UserType` enumeration value for a Contributor user.
   UserType private constant USER_TYPE = UserType.CONTRIBUTOR;

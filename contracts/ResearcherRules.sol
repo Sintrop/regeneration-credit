@@ -26,7 +26,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   // --- Constants ---
 
   /// @notice Maximum users count allowed for this UserType.
-  uint16 private constant MAX_USER_COUNT = 16000;
+  uint16 public constant MAX_USER_COUNT = 16000;
 
   /// @notice Max character length for user name.
   uint16 private constant MAX_NAME_LENGTH = 50;
@@ -52,7 +52,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   uint8 public immutable maxPenalties;
 
   /// @notice Waiting blocks to publish research.
-  uint32 internal immutable timeBetweenWorks;
+  uint32 public immutable timeBetweenWorks;
 
   /// @notice The number of blocks before the end of an era during which no new researchs can be published.
   /// This period allows validators sufficient time to analyze and vote on researchs before the era concludes.
@@ -97,19 +97,19 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  ICommunityRules_User internal communityRules;
+  ICommunityRules_User private communityRules;
 
   /// @notice The address of the `ResearcherPool` contract, responsible for managing
   /// and distributing token rewards to researchers.
-  IResearcherPool internal researcherPool;
+  IResearcherPool private researcherPool;
 
   /// @notice The address of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating development reports.
-  IValidationRules_Researcher internal validationRules;
+  IValidationRules_Researcher private validationRules;
 
   /// @notice The address of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for report validation.
-  IVoteRules internal voteRules;
+  IVoteRules private voteRules;
 
   /// @notice The specific `UserType` enumeration value for a Researcher user.
   UserType private constant USER_TYPE = UserType.RESEARCHER;
