@@ -32,7 +32,6 @@ fuzz:
         - "contracts/ActivistRules"
         - "contracts/ResearcherPool"
         - "contracts/ResearcherRules"
-        - "contracts/SupporterPool"
         - "contracts/SupporterRules"
         - "contracts/ValidatorPool"
         - "contracts/ValidationRules"

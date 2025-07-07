@@ -19,7 +19,6 @@ const researcherRulesDeploy = require("../migrations/10_researcherRules.deploy.j
 const validationRulesDeploy = require("../migrations/14_validationRules.deploy.js");
 const activistPoolDeploy = require("../migrations/15_activistPool.deploy.js");
 const activistRulesDeploy = require("../migrations/16_activistRules.deploy.js");
-const supporterPoolDeploy = require("../migrations/17_supporterPool.deploy.js");
 const supporterRulesDeploy = require("../migrations/18_supporterRules.deploy.js");
 const invitationRulesDeploy = require("../migrations/19_invitationRules.deploy.js");
 const regenerationIndexRulesDeploy = require("../migrations/20_regenerationIndexRules.deploy.js");
@@ -81,7 +80,6 @@ async function main() {
   await contributorRulesDeploy();
   await activistPoolDeploy();
   await activistRulesDeploy();
-  await supporterPoolDeploy();
   await supporterRulesDeploy();
   await regenerationIndexRulesDeploy();
   await inspectionRulesDeploy();

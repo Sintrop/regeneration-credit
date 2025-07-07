@@ -3,6 +3,8 @@ pragma solidity ^0.8.27;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ISupporterRules } from "./interfaces/ISupporterRules.sol";
 
 /**
  * @title RegenerationCredit
@@ -13,7 +15,7 @@ import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
  * and for burning tokens to certify environmental offset.
  * @dev Inherits from OpenZeppelin's `ERC20` for standard token functionalities and `Ownable` for deploy setup.
  */
-contract RegenerationCredit is ERC20, Ownable {
+contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
   // --- Constants (Standard ERC-20 Metadata) ---
 
   /// @notice The official name of the token.
@@ -24,6 +26,14 @@ contract RegenerationCredit is ERC20, Ownable {
 
   /// @notice The number of decimal places used by the token.
   uint8 public constant DECIMALS = 18;
+
+  // --- Custom constants ---
+
+  /// @notice Maximum character length for the project description.
+  uint16 private constant MAX_PUBLICATION_LENGTH = 600;
+
+  /// @notice The minimum number of tokens a user must burn to offset.
+  uint256 private constant MINIMUM_TOKENS_TO_OFFSET = 1000000000000000000;
 
   // --- Custom State Variables ---
 
@@ -42,6 +52,9 @@ contract RegenerationCredit is ERC20, Ownable {
   /// Represents their individual contribution to environmental offset.
   mapping(address => uint256) public certificate;
 
+  /// @notice SupporterRules contract address.
+  ISupporterRules private supporterRules;
+
   // --- Constructor ---
 
   /**
@@ -55,6 +68,15 @@ contract RegenerationCredit is ERC20, Ownable {
   }
 
   // --- Deploy functions ---
+
+  /**
+   * @dev onlyOwner function to set contracts dependency.
+   * This function must be called only once after the contract deploy and ownership must be renounced after.
+   * @param supporterRulesAddress Addresses of the SupporterRules contract.
+   */
+  function setContractDependencies(address supporterRulesAddress) public onlyOwner {
+    supporterRules = ISupporterRules(supporterRulesAddress);
+  }
 
   /**
    * @dev Allows the contract owner to designate a new address as a "contract pool"
@@ -97,32 +119,47 @@ contract RegenerationCredit is ERC20, Ownable {
     _burnTokensInternal(msg.sender, amount);
   }
 
-  // --- Pool functions ---
+  /**
+   * @notice Allows a supporter to burn tokens to compensate for a specific item's degradation.
+   * @dev Burns tokens. If a valid calculatorItemId is provided, calls the SupporterRules contract
+   * that records the burned amount as a certificate for that item.
+   * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
+   * @param calculatorItemId The ID of the CalculatorItem.
+   */
+  function offset(uint256 amount, uint64 calculatorItemId) public nonReentrant {
+    require(supporterRules.isSupporter(msg.sender), "Only supporters");
+    require(amount >= MINIMUM_TOKENS_TO_OFFSET, "Amount must be at least 1 RC");
+
+    (uint256 amountToBurn, uint256 comission, address inviter) = supporterRules.calculateCommission(msg.sender, amount);
+
+    transfer(inviter, comission);
+    _burnTokensInternal(msg.sender, amountToBurn);
+
+    supporterRules.offset(msg.sender, amountToBurn, calculatorItemId);
+  }
 
   /**
-   * @dev Allows a designated "contract pool" to transfer tokens to a user as a reward for
-   * providing environmental services.
-   * @notice This function facilitates token distribution from system pools.
-   * @param tokenOwner The address of the contract pool initiating the transfer.
-   * @param receiver The address of the user who will receive the tokens.
-   * @param numTokens The amount of tokens to transfer.
-   *
-   * Requirements:
-   * - Only a registered `contractPool` can call this function (`mustBeContractPool` modifier).
-   * - The `tokenOwner` (which is `contractPool` due to modifier) must have sufficient balance.
+   * @notice Allows a supporter to burn tokens to post content.
+   * @dev Burns tokens and creates a new publication record.
+   * Enforces character limits for description and content.
+   * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
+   * @param description The description of the post (max 600 characters).
+   * @param content The content of the post (max 600 characters).
    */
-  function transferWith(address tokenOwner, address receiver, uint256 numTokens) public mustBeContractPool {
-    require(numTokens <= balanceOf(tokenOwner), "You don't have RC Tokens");
+  function publish(uint256 amount, string memory description, string memory content) public nonReentrant {
+    require(supporterRules.isSupporter(msg.sender), "Only supporters");
+    require(amount >= MINIMUM_TOKENS_TO_OFFSET, "Amount must be at least 1 RC");
+    require(
+      bytes(description).length <= MAX_PUBLICATION_LENGTH && bytes(content).length <= MAX_PUBLICATION_LENGTH,
+      "Max 600 characters"
+    );
 
-    // Perform the transfer using OpenZeppelin's internal _transfer function.
-    _transfer(tokenOwner, receiver, numTokens);
+    (uint256 amountToBurn, uint256 comission, address inviter) = supporterRules.calculateCommission(msg.sender, amount);
 
-    // Update total locked tokens.
-    unchecked {
-      if (contractsPools[tokenOwner]) totalLocked_ -= numTokens;
-    }
-    // Emit event specific to pool transfers.
-    emit PoolTransfer(tokenOwner, receiver, numTokens);
+    transfer(inviter, comission);
+    _burnTokensInternal(msg.sender, amountToBurn);
+
+    supporterRules.publish(msg.sender, amountToBurn, description, content);
   }
 
   /**
@@ -144,23 +181,6 @@ contract RegenerationCredit is ERC20, Ownable {
     }
     // Emit event specific to pool transfers.
     emit PoolTransfer(tokenOwner, receiver, numTokens);
-  }
-
-  /**
-   * @dev Allows a designated "contract pool" to burn tokens on behalf of another address.
-   * @notice This function can only be called by the SupporterPool.
-   * @param tokenOwner The address from which tokens will be burned.
-   * @param amount The amount of tokens to burn.
-   *
-   * Requirements:
-   * - Only a registered `contractPool` can call this function (`mustBeContractPool` modifier).
-   * - `tokenOwner` must have `amount` tokens.
-   * - `amount` must be greater than 0.
-   * - `tokenOwner` must not be the zero address.
-   */
-  function burnTokensWith(address tokenOwner, uint256 amount) public mustBeContractPool {
-    require(amount > 0, "Burn amount must be greater than 0");
-    _burnTokensInternal(tokenOwner, amount);
   }
 
   // --- Internal functions ---
