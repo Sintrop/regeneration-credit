@@ -60,7 +60,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice A mapping from a developer's wallet address to their detailed `Developer` data structure.
   /// This serves as the primary storage for developer profiles.
-  mapping(address => Developer) public developers;
+  mapping(address => Developer) private developers;
 
   /// @notice A mapping from a unique report ID to its detailed `Report` data structure.
   /// Stores all submitted development reports.

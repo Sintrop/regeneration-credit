@@ -51,7 +51,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /// @notice A mapping from a regenerator's wallet address to their detailed `Regenerator` data structure.
   /// This serves as the primary storage for regenerator profiles.
-  mapping(address => Regenerator) public regenerators;
+  mapping(address => Regenerator) private regenerators;
 
   /// @notice A mapping from a unique regenerator ID to their corresponding wallet address.
   /// Facilitates lookup of a regenerator's address by their ID.

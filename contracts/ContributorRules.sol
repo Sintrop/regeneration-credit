@@ -60,7 +60,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice A mapping from a contributor's wallet address to their detailed `Contributor` data structure.
   /// This serves as the primary storage for contributor profiles.
-  mapping(address => Contributor) public contributors;
+  mapping(address => Contributor) private contributors;
 
   /// @notice A mapping from a unique contribution ID to its detailed `Contribution` data structure.
   /// Stores all submitted contributions.

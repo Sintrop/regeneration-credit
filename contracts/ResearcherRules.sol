@@ -73,7 +73,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice A mapping from a researcher's wallet address to their detailed `Researcher` data structure.
   /// This serves as the primary storage for researcher profiles.
-  mapping(address => Researcher) internal researchers;
+  mapping(address => Researcher) private researchers;
 
   /// @notice A mapping from a unique research ID to its detailed `Research` data structure.
   /// Stores all submitted researchs.
