@@ -362,6 +362,13 @@ contract ValidationRules is Callable {
   function _denyUser(address userAddress) internal {
     _removeUserLevels(userAddress, 0); // Remove all levels (0 means all for denied users)
 
+    // Inviter slashing mechanism
+    Invitation memory invitation = communityRules.getInvitation(userAddress);
+    // If invited, add invitation penalty
+    if (invitation.inviter != address(0)) {
+        communityRules.addInviterPenalty(invitation.inviter);
+    }
+    
     communityRules.setDeniedType(userAddress);
   }
 

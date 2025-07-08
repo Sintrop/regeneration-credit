@@ -60,6 +60,9 @@ contract CommunityRules is Ownable, Callable {
   /// including proportionality rules, invitation requirements, and voter status.
   mapping(UserType => UserTypeSetting) public userTypeSettings;
 
+  /// @notice Tracks the number of times an inviter has had their invitees denied.
+  mapping(address => uint16) public inviterPenaltyPoints;
+
   // --- Constructor ---
 
   /**
@@ -207,6 +210,10 @@ contract CommunityRules is Ownable, Callable {
 
     emit DeniedUserEvent(userAddress);
   }
+
+function addInviterPenalty(address inviter) public mustBeAllowedCaller {
+    inviterPenaltyPoints[inviter]++;
+}
 
   // --- Internal functions ---
 
