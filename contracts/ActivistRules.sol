@@ -2,7 +2,7 @@
 pragma solidity ^0.8.27;
 
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import { ICommunityRules_User } from "./interfaces/ICommunityRules_User.sol";
+import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IActivistPool } from "./interfaces/IActivistPool.sol";
 import { Activist, Pool } from "./types/ActivistTypes.sol";
 import { UserType, Invitation } from "./types/CommunityTypes.sol";
@@ -55,7 +55,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  ICommunityRules_User private communityRules;
+  ICommunityRules private communityRules;
 
   /// @notice The address of the `ActivistPool` contract, responsible for managing
   /// and distributing token rewards to activists.
@@ -73,7 +73,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * @param activistPoolAddress The address of the deployed `ActivistPool` contract.
    */
   constructor(address communityRulesAddress, address activistPoolAddress) {
-    communityRules = ICommunityRules_User(communityRulesAddress);
+    communityRules = ICommunityRules(communityRulesAddress);
     activistPool = IActivistPool(activistPoolAddress);
   }
 

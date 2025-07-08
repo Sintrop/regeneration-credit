@@ -2,7 +2,7 @@
 pragma solidity ^0.8.27;
 
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import { ICommunityRules_User } from "./interfaces/ICommunityRules_User.sol";
+import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IInspectorPool } from "./interfaces/IInspectorPool.sol";
 import { Inspector, Penalty, Pool } from "./types/InspectorTypes.sol";
 import { UserType } from "./types/CommunityTypes.sol";
@@ -54,7 +54,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules and user types.
-  ICommunityRules_User private communityRules;
+  ICommunityRules private communityRules;
 
   /// @notice The address of the `InspectorPool` contract, responsible for managing
   /// and distributing token rewards to inspectors.
@@ -73,7 +73,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param maxPenalties_ The maximum allowed penalties for an inspector.
    */
   constructor(address communityRulesAddress, address inspectorPoolAddress, uint8 maxPenalties_) {
-    communityRules = ICommunityRules_User(communityRulesAddress);
+    communityRules = ICommunityRules(communityRulesAddress);
     inspectorPool = IInspectorPool(inspectorPoolAddress);
     maxPenalties = maxPenalties_;
   }

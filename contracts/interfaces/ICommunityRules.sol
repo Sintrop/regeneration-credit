@@ -4,10 +4,10 @@ pragma solidity ^0.8.27;
 import "contracts/types/CommunityTypes.sol";
 
 /**
- * @title ICommunityRules_User
+ * @title ICommunityRules
  * @notice Interface for the CommunityRules contract, which manages the rules for users.
  */
-interface ICommunityRules_User {
+interface ICommunityRules {
   /**
    * @notice Returns the count of a specific user type.
    * @dev Getter for the public state variable `mapping(UserType => uint256) public userTypesCount`.
@@ -45,4 +45,47 @@ interface ICommunityRules_User {
    * @return The Invitation struct containing the invitation data.
    */
   function getInvitation(address userAddress) external view returns (Invitation memory);
+
+  /**
+   * @notice Retrieves the UserType for a given account.
+   * @param account The address of the user.
+   * @return The user's UserType enum.
+   */
+  function getUser(address account) external view returns (UserType);
+
+  /**
+   * @notice Adds a new invitation to the system.
+   * @param inviter The user who is sending the invitation.
+   * @param invitee The user who is being invited.
+   * @param userType The UserType being assigned in the invitation.
+   */
+  function addInvitation(address inviter, address invitee, UserType userType) external;
+
+  /**
+   * @notice Retrieves the settings configuration for a specific UserType.
+   * @dev Returns a struct from which specific settings can be accessed.
+   * @param userType The UserType for which to get the settings.
+   * @return The UserTypeSettings struct containing configuration data.
+   */
+  function getUserTypeSettings(UserType userType) external view returns (UserTypeSetting memory);
+
+  /**
+   * @notice Sets a user's type to a 'denied' or 'invalid' state.
+   * @param account The address of the user to be denied.
+   */
+  function setDeniedType(address account) external;
+
+  /**
+   * @notice Returns the total number of users eligible to vote.
+   * @dev This might be a getter for a public state variable.
+   * @return The total count of voters.
+   */
+  function votersCount() external view returns (uint256);
+
+  /**
+   * @notice Checks if a given account has voting rights.
+   * @param account The address of the account to check.
+   * @return true if the account is a voter, false otherwise.
+   */
+  function isVoter(address account) external view returns (bool);
 }
