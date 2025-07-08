@@ -2,11 +2,11 @@
 pragma solidity ^0.8.27;
 
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import { ICommunityRules_Vote } from "./interfaces/ICommunityRules_Vote.sol";
-import { IActivistRules_Vote } from "./interfaces/IActivistRules_Vote.sol";
-import { IContributorRules_Vote } from "./interfaces/IContributorRules_Vote.sol";
-import { IDeveloperRules_Vote } from "./interfaces/IDeveloperRules_Vote.sol";
-import { IResearcherRules_Vote } from "./interfaces/IResearcherRules_Vote.sol";
+import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
+import { IActivistRules } from "./interfaces/IActivistRules.sol";
+import { IContributorRules } from "./interfaces/IContributorRules.sol";
+import { IDeveloperRules } from "./interfaces/IDeveloperRules.sol";
+import { IResearcherRules } from "./interfaces/IResearcherRules.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { Activist } from "./types/ActivistTypes.sol";
 import { Contributor } from "./types/ContributorTypes.sol";
@@ -25,19 +25,19 @@ contract VoteRules {
   // --- State variables ---
 
   /// @notice CommunityRules contract address
-  ICommunityRules_Vote private communityRules;
+  ICommunityRules private communityRules;
 
   /// @notice ActivistRules contract address
-  IActivistRules_Vote private activistRules;
+  IActivistRules private activistRules;
 
   /// @notice ContributorRules contract address
-  IContributorRules_Vote private contributorRules;
+  IContributorRules private contributorRules;
 
   /// @notice DeveloperRules contract address
-  IDeveloperRules_Vote private developerRules;
+  IDeveloperRules private developerRules;
 
   /// @notice ResearcherRules contract address
-  IResearcherRules_Vote private researcherRules;
+  IResearcherRules private researcherRules;
 
   // --- Constructor ---
 
@@ -56,11 +56,11 @@ contract VoteRules {
     address developerRulesAddress,
     address researcherRulesAddress
   ) {
-    communityRules = ICommunityRules_Vote(communityRulesAddress);
-    activistRules = IActivistRules_Vote(activistRulesAddress);
-    contributorRules = IContributorRules_Vote(contributorRulesAddress);
-    developerRules = IDeveloperRules_Vote(developerRulesAddress);
-    researcherRules = IResearcherRules_Vote(researcherRulesAddress);
+    communityRules = ICommunityRules(communityRulesAddress);
+    activistRules = IActivistRules(activistRulesAddress);
+    contributorRules = IContributorRules(contributorRulesAddress);
+    developerRules = IDeveloperRules(developerRulesAddress);
+    researcherRules = IResearcherRules(researcherRulesAddress);
   }
 
   // --- Core Logic Functions ---

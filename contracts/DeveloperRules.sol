@@ -3,10 +3,10 @@ pragma solidity ^0.8.27;
 
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { ICommunityRules_User } from "./interfaces/ICommunityRules_User.sol";
+import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
 import { IDeveloperPool } from "./interfaces/IDeveloperPool.sol";
-import { IValidationRules_Developer } from "./interfaces/IValidationRules_Developer.sol";
+import { IValidationRules } from "./interfaces/IValidationRules.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { Developer, Pool, Report, Penalty, ContractsDependency } from "./types/DeveloperTypes.sol";
 import { Callable } from "./shared/Callable.sol";
@@ -78,7 +78,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  ICommunityRules_User private communityRules;
+  ICommunityRules private communityRules;
 
   /// @notice The address of the `DeveloperPool` contract, responsible for managing
   /// and distributing token rewards to developers.
@@ -86,7 +86,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating development reports.
-  IValidationRules_Developer private validationRules;
+  IValidationRules private validationRules;
 
   /// @notice The address of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for report validation.
@@ -116,9 +116,9 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * @param contractDependency Addresses of system contracts used
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
-    communityRules = ICommunityRules_User(contractDependency.communityRulesAddress);
+    communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     developerPool = IDeveloperPool(contractDependency.developerPoolAddress);
-    validationRules = IValidationRules_Developer(contractDependency.validationRulesAddress);
+    validationRules = IValidationRules(contractDependency.validationRulesAddress);
     voteRules = IVoteRules(contractDependency.voteRulesAddress);
   }
 

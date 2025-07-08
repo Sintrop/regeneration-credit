@@ -2,9 +2,9 @@
 pragma solidity ^0.8.27;
 
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import { IRegenerationCredit_Impact } from "./interfaces/IRegenerationCredit_Impact.sol";
-import { IInspectionRules_Impact } from "./interfaces/IInspectionRules_Impact.sol";
-import { IRegeneratorRules_Impact } from "./interfaces/IRegeneratorRules_Impact.sol";
+import { IRegenerationCredit } from "./interfaces/IRegenerationCredit.sol";
+import { IInspectionRules } from "./interfaces/IInspectionRules.sol";
+import { IRegeneratorRules } from "./interfaces/IRegeneratorRules.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 
 /**
@@ -35,9 +35,9 @@ contract RegenerationCreditImpact {
 
   // --- State variables ---
 
-  IRegenerationCredit_Impact private regenerationCredit;
-  IInspectionRules_Impact private inspectionRules;
-  IRegeneratorRules_Impact private regeneratorRules;
+  IRegenerationCredit private regenerationCredit;
+  IInspectionRules private inspectionRules;
+  IRegeneratorRules private regeneratorRules;
 
   // --- Constructor ---
 
@@ -49,9 +49,9 @@ contract RegenerationCreditImpact {
    * @param regeneratorRulesAddress Address of the RegeneratorRules contract.
    */
   constructor(address regenerationCreditAddress, address inspectionRulesAddress, address regeneratorRulesAddress) {
-    regenerationCredit = IRegenerationCredit_Impact(regenerationCreditAddress);
-    inspectionRules = IInspectionRules_Impact(inspectionRulesAddress);
-    regeneratorRules = IRegeneratorRules_Impact(regeneratorRulesAddress);
+    regenerationCredit = IRegenerationCredit(regenerationCreditAddress);
+    inspectionRules = IInspectionRules(inspectionRulesAddress);
+    regeneratorRules = IRegeneratorRules(regeneratorRulesAddress);
   }
 
   // --- Public Functions ---

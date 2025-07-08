@@ -2,11 +2,11 @@
 pragma solidity ^0.8.27;
 
 /**
- * @title IInspectionRules_Impact
+ * @title IInspectionRules
  * @notice Interface for querying impact metrics and counters
  * from the InspectionRules contract.
  */
-interface IInspectionRules_Impact {
+interface IInspectionRules {
   /**
    * @notice Returns the total number of successfully completed inspections.
    * @return The total count of realized inspections.

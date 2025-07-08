@@ -1,12 +1,35 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
+import "contracts/types/ContributorTypes.sol";
+
 /**
- * @title IContributorRules_Validation
- * @notice Interface for the validation and penalty-related functionalities of
- * the ContributorRules contract.
+ * @title IContributorRules
+ * @notice Interface for the ContributorRules contract, defining rules
+ * and conditions specific to Contributor users.
  */
-interface IContributorRules_Validation {
+interface IContributorRules {
+  /**
+   * @notice Checks if a contributor is currently eligible to send an invitation.
+   * @param account The address of the contributor account to check.
+   * @return true if the contributor can send an invite, false otherwise.
+   */
+  function canSendInvite(address account) external view returns (bool);
+
+  /**
+   * @notice Retrieves the full Contributor struct for a given account.
+   * @param account The address of the contributor.
+   * @return The Contributor struct containing the user's data.
+   */
+  function getContributor(address account) external view returns (Contributor memory);
+
+  /**
+   * @notice Returns the total number of contributions made.
+   * @dev This is likely a getter for a public state variable.
+   * @return The total count of all contributions.
+   */
+  function contributionsTotalCount() external view returns (uint64);
+
   /**
    * @notice Adds a penalty to a contributor and returns their new total penalty count.
    * @param contributor The address of the contributor receiving the penalty.

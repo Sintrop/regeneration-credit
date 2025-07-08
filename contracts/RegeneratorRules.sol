@@ -2,7 +2,7 @@
 pragma solidity ^0.8.27;
 
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import { ICommunityRules_User } from "./interfaces/ICommunityRules_User.sol";
+import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IRegeneratorPool } from "./interfaces/IRegeneratorPool.sol";
 import { Regenerator, Pool, Coordinates, RegenerationScore } from "./types/RegeneratorTypes.sol";
 import { UserType } from "./types/CommunityTypes.sol";
@@ -73,7 +73,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules and user types.
-  ICommunityRules_User private communityRules;
+  ICommunityRules private communityRules;
 
   /// @notice The address of the `RegeneratorPool` contract, responsible for managing
   /// and distributing token rewards to regenerators.
@@ -98,7 +98,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param regeneratorPoolAddress The address of the deployed `RegeneratorPool` contract.
    */
   constructor(address communityRulesAddress, address regeneratorPoolAddress) {
-    communityRules = ICommunityRules_User(communityRulesAddress);
+    communityRules = ICommunityRules(communityRulesAddress);
     regeneratorPool = IRegeneratorPool(regeneratorPoolAddress);
   }
 

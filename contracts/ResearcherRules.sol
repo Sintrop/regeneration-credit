@@ -4,9 +4,9 @@ pragma solidity ^0.8.27;
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { Invitable } from "./shared/Invitable.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
-import { ICommunityRules_User } from "./interfaces/ICommunityRules_User.sol";
+import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IResearcherPool } from "./interfaces/IResearcherPool.sol";
-import { IValidationRules_Researcher } from "./interfaces/IValidationRules_Researcher.sol";
+import { IValidationRules } from "./interfaces/IValidationRules.sol";
 import { Researcher, Research, Pool, CalculatorItem, EvaluationMethod, Penalty, ContractsDependency } from "./types/ResearcherTypes.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
@@ -97,7 +97,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  ICommunityRules_User private communityRules;
+  ICommunityRules private communityRules;
 
   /// @notice The address of the `ResearcherPool` contract, responsible for managing
   /// and distributing token rewards to researchers.
@@ -105,7 +105,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating development reports.
-  IValidationRules_Researcher private validationRules;
+  IValidationRules private validationRules;
 
   /// @notice The address of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for report validation.
@@ -137,9 +137,9 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param contractDependency Addresses of system contracts used
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
-    communityRules = ICommunityRules_User(contractDependency.communityRulesAddress);
+    communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     researcherPool = IResearcherPool(contractDependency.researcherPoolAddress);
-    validationRules = IValidationRules_Researcher(contractDependency.validationRulesAddress);
+    validationRules = IValidationRules(contractDependency.validationRulesAddress);
     voteRules = IVoteRules(contractDependency.voteRulesAddress);
   }
 

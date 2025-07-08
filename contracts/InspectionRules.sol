@@ -2,12 +2,12 @@
 pragma solidity ^0.8.27;
 
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import { IRegeneratorRules_Inspection } from "./interfaces/IRegeneratorRules_Inspection.sol";
-import { IInspectorRules_Inspection } from "./interfaces/IInspectorRules_Inspection.sol";
+import { IRegeneratorRules } from "./interfaces/IRegeneratorRules.sol";
+import { IInspectorRules } from "./interfaces/IInspectorRules.sol";
 import { IRegenerationIndexRules } from "./interfaces/IRegenerationIndexRules.sol";
-import { IValidationRules_Inspection } from "./interfaces/IValidationRules_Inspection.sol";
-import { IActivistRules_Inspection } from "./interfaces/IActivistRules_Inspection.sol";
-import { ICommunityRules_Inspection } from "./interfaces/ICommunityRules_Inspection.sol";
+import { IValidationRules } from "./interfaces/IValidationRules.sol";
+import { IActivistRules } from "./interfaces/IActivistRules.sol";
+import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
 import { InspectionStatus, Inspection, ContractsDependency } from "./types/InspectionTypes.sol";
 import { Regenerator } from "./types/RegeneratorTypes.sol";
@@ -85,19 +85,19 @@ contract InspectionRules is Callable, ReentrancyGuard {
   mapping(address => mapping(address => bool)) private inspectorInspected;
 
   /// @notice InspectorRules contract instance for interacting with inspector-specific logic.
-  IInspectorRules_Inspection private inspectorRules;
+  IInspectorRules private inspectorRules;
 
   /// @notice RegeneratorRules contract instance for interacting with regenerator-specific logic.
-  IRegeneratorRules_Inspection private regeneratorRules;
+  IRegeneratorRules private regeneratorRules;
 
   /// @notice CommunityRules contract instance for checking user types and other community-wide rules.
-  ICommunityRules_Inspection private communityRules;
+  ICommunityRules private communityRules;
 
   /// @notice ValidationRules contract instance for handling inspection invalidations.
-  IValidationRules_Inspection private validationRules;
+  IValidationRules private validationRules;
 
   /// @notice ActivistRules contract instance for updating activist levels based on inspection activities.
-  IActivistRules_Inspection private activistRules;
+  IActivistRules private activistRules;
 
   /// @notice VoteRules contract instance for checking voter eligibility.
   IVoteRules private voteRules;
@@ -140,12 +140,12 @@ contract InspectionRules is Callable, ReentrancyGuard {
    * @param contractDependency Struct containing addresses of all system contracts.
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
-    communityRules = ICommunityRules_Inspection(contractDependency.communityRulesAddress);
-    regeneratorRules = IRegeneratorRules_Inspection(contractDependency.regeneratorRulesAddress);
-    validationRules = IValidationRules_Inspection(contractDependency.validationRulesAddress);
-    inspectorRules = IInspectorRules_Inspection(contractDependency.inspectorRulesAddress);
+    communityRules = ICommunityRules(contractDependency.communityRulesAddress);
+    regeneratorRules = IRegeneratorRules(contractDependency.regeneratorRulesAddress);
+    validationRules = IValidationRules(contractDependency.validationRulesAddress);
+    inspectorRules = IInspectorRules(contractDependency.inspectorRulesAddress);
     regenerationIndexRules = IRegenerationIndexRules(contractDependency.regenerationIndexRulesAddress);
-    activistRules = IActivistRules_Inspection(contractDependency.activistRulesAddress);
+    activistRules = IActivistRules(contractDependency.activistRulesAddress);
     voteRules = IVoteRules(contractDependency.voteRulesAddress);
   }
 

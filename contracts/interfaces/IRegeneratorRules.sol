@@ -4,11 +4,11 @@ pragma solidity ^0.8.27;
 import "contracts/types/RegeneratorTypes.sol";
 
 /**
- * @title IRegeneratorRules_Inspection
+ * @title IRegeneratorRules
  * @notice Interface for the RegeneratorRules contract, which manages the
  * data and state transitions for Regenerator users, especially regarding inspections.
  */
-interface IRegeneratorRules_Inspection {
+interface IRegeneratorRules {
   /**
    * @notice Retrieves the full Regenerator struct for a given account.
    * @param account The address of the regenerator.
@@ -46,4 +46,32 @@ interface IRegeneratorRules_Inspection {
    * @return The number of seconds or blocks until the next era.
    */
   function nextEraIn() external view returns (uint256);
+
+  /**
+   * @notice Decrements the valid inspections count for a regenerator.
+   * @dev Called when an inspection is invalidated.
+   * @param regenerator The address of the regenerator.
+   */
+  function decrementInspections(address regenerator) external;
+
+  /**
+   * @notice Removes specified levels from a user's pool configuration.
+   * @dev The use of 'return' in the calling contract suggests this function
+   * returns a status, likely a boolean indicating success.
+   * @param user The address of the regenerator.
+   * @param levelsToRemove Levels/score to be removed.
+   */
+  function removePoolLevels(address user, uint256 levelsToRemove) external;
+
+  /**
+   * @notice Returns the total number of impact regenerators, users that completed 3 inspections.
+   * @return The total impact regenerators.
+   */
+  function totalImpactRegenerators() external view returns (uint256);
+
+  /**
+   * @notice Returns the total area under regeneration across all regenerators.
+   * @return The total regeneration area, in square meters.
+   */
+  function regenerationArea() external view returns (uint256);
 }
