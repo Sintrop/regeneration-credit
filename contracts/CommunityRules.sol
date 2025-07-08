@@ -211,6 +211,12 @@ contract CommunityRules is Ownable, Callable {
     emit DeniedUserEvent(userAddress);
   }
 
+  /**
+   * @notice This functions adds a penalty to users when a invited user gets denied.
+   * @dev This function is intended to be called by an allowed caller (e.g., `ValidationRules`).
+   * It decrements the count of penalties for the inviter.
+   * @param inviter The address of the inviter receiving the penalty.
+   */
   function addInviterPenalty(address inviter) public mustBeAllowedCaller {
     inviterPenalties[inviter]++;
   }
