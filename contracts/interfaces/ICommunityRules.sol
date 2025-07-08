@@ -88,4 +88,18 @@ interface ICommunityRules {
    * @return true if the account is a voter, false otherwise.
    */
   function isVoter(address account) external view returns (bool);
+
+  /**
+   * @notice Function to add inviter penalties when invited user is denied.
+   * @param inviter The address of the account the inviter to receive penalty.
+   */
+  function addInviterPenalty(address inviter) external;
+
+  /**
+   * @notice Returns the total count of invitation penalties of a user.
+   * @dev Getter for the public state variable `mapping(address => uint16) public inviterPenalties`.
+   * @param addr The user address.
+   * @return The total count of penlaties for that user.
+   */
+  function inviterPenalties(address addr) external view returns (uint16);
 }

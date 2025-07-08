@@ -14,7 +14,7 @@ import { Report } from "./types/DeveloperTypes.sol";
 import { Research } from "./types/ResearcherTypes.sol";
 import { Contribution } from "./types/ContributorTypes.sol";
 import { ContractsDependency } from "./types/ValidationTypes.sol";
-import { UserType } from "./types/CommunityTypes.sol";
+import { UserType, Invitation } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 
 /**
@@ -366,9 +366,9 @@ contract ValidationRules is Callable {
     Invitation memory invitation = communityRules.getInvitation(userAddress);
     // If invited, add invitation penalty
     if (invitation.inviter != address(0)) {
-        communityRules.addInviterPenalty(invitation.inviter);
+      communityRules.addInviterPenalty(invitation.inviter);
     }
-    
+
     communityRules.setDeniedType(userAddress);
   }
 
