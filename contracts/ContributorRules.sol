@@ -3,10 +3,10 @@ pragma solidity ^0.8.27;
 
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { ICommunityRules_User } from "./interfaces/ICommunityRules_User.sol";
+import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
 import { IContributorPool } from "./interfaces/IContributorPool.sol";
-import { IValidationRules_Contributor } from "./interfaces/IValidationRules_Contributor.sol";
+import { IValidationRules } from "./interfaces/IValidationRules.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { Contributor, Pool, Contribution, Penalty, ContractsDependency } from "./types/ContributorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
@@ -76,7 +76,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  ICommunityRules_User private communityRules;
+  ICommunityRules private communityRules;
 
   /// @notice The address of the `ContributorPool` contract, responsible for managing
   /// and distributing token rewards to contributors.
@@ -84,7 +84,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating contributions.
-  IValidationRules_Contributor private validationRules;
+  IValidationRules private validationRules;
 
   /// @notice The address of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for contribution validation.
@@ -117,9 +117,9 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * @param contractDependency Addresses of system contracts used
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
-    communityRules = ICommunityRules_User(contractDependency.communityRulesAddress);
+    communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     contributorPool = IContributorPool(contractDependency.contributorPoolAddress);
-    validationRules = IValidationRules_Contributor(contractDependency.validationRulesAddress);
+    validationRules = IValidationRules(contractDependency.validationRulesAddress);
     voteRules = IVoteRules(contractDependency.voteRulesAddress);
   }
 

@@ -2,11 +2,11 @@
 pragma solidity ^0.8.27;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { ICommunityRules_Invitation } from "./interfaces/ICommunityRules_Invitation.sol";
-import { IResearcherRules_Invitation } from "./interfaces/IResearcherRules_Invitation.sol";
-import { IDeveloperRules_Invitation } from "./interfaces/IDeveloperRules_Invitation.sol";
-import { IActivistRules_Invitation } from "./interfaces/IActivistRules_Invitation.sol";
-import { IContributorRules_Invitation } from "./interfaces/IContributorRules_Invitation.sol";
+import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
+import { IResearcherRules } from "./interfaces/IResearcherRules.sol";
+import { IDeveloperRules } from "./interfaces/IDeveloperRules.sol";
+import { IActivistRules } from "./interfaces/IActivistRules.sol";
+import { IContributorRules } from "./interfaces/IContributorRules.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 
 /**
@@ -34,19 +34,19 @@ contract InvitationRules is Ownable {
   mapping(UserType => UserType) public canBeInviteds;
 
   /// @notice CommunityRules contract address
-  ICommunityRules_Invitation private communityRules;
+  ICommunityRules private communityRules;
 
   /// @notice ResearcherRules contract address
-  IResearcherRules_Invitation private researcherRules;
+  IResearcherRules private researcherRules;
 
   /// @notice DeveloperRules contract address
-  IDeveloperRules_Invitation private developerRules;
+  IDeveloperRules private developerRules;
 
   /// @notice ActivistRules contract address
-  IActivistRules_Invitation private activistRules;
+  IActivistRules private activistRules;
 
   /// @notice ContributorRules contract address
-  IContributorRules_Invitation private contributorRules;
+  IContributorRules private contributorRules;
 
   // --- Constructor ---
 
@@ -66,11 +66,11 @@ contract InvitationRules is Ownable {
     address activistRulesAddress,
     address contributorRulesAddress
   ) {
-    communityRules = ICommunityRules_Invitation(communityRulesAddress);
-    researcherRules = IResearcherRules_Invitation(researcherRulesAddress);
-    developerRules = IDeveloperRules_Invitation(developerRulesAddress);
-    activistRules = IActivistRules_Invitation(activistRulesAddress);
-    contributorRules = IContributorRules_Invitation(contributorRulesAddress);
+    communityRules = ICommunityRules(communityRulesAddress);
+    researcherRules = IResearcherRules(researcherRulesAddress);
+    developerRules = IDeveloperRules(developerRulesAddress);
+    activistRules = IActivistRules(activistRulesAddress);
+    contributorRules = IContributorRules(contributorRulesAddress);
 
     // Definition of invitation permissions: who can invite whom
     canBeInviteds[UserType.ACTIVIST] = UserType.ACTIVIST;

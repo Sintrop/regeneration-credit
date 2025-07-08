@@ -1,12 +1,28 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
+import "contracts/types/ResearcherTypes.sol";
+
 /**
- * @title IResearcherRules_Validation
- * @notice Interface for the validation and penalty-related functionalities of
- * the ResearcherRules contract.
+ * @title IResearcherRules
+ * @notice Interface for the voting-related query functionalities of the
+ * ResearcherRules contract.
  */
-interface IResearcherRules_Validation {
+interface IResearcherRules {
+  /**
+   * @notice Retrieves the full Researcher struct for a given account.
+   * @param account The address of the researcher.
+   * @return The Researcher struct containing the user's data.
+   */
+  function getResearcher(address account) external view returns (Researcher memory);
+
+  /**
+   * @notice Returns the total number of researches made.
+   * @dev This is likely a getter for a public state variable.
+   * @return The total count of all researches.
+   */
+  function researchesTotalCount() external view returns (uint64);
+
   /**
    * @notice Adds a penalty to a researcher and returns their new total penalty count.
    * @param researcher The address of the researcher receiving the penalty.
@@ -34,4 +50,11 @@ interface IResearcherRules_Validation {
    * @param levelToRemove The levels to be removed.
    */
   function removePoolLevels(address researcher, uint256 levelToRemove) external;
+
+  /**
+   * @notice Checks if a researcher is currently eligible to send an invitation.
+   * @param account The address of the researcher account to check.
+   * @return true if the researcher can send an invite, false otherwise.
+   */
+  function canSendInvite(address account) external view returns (bool);
 }
