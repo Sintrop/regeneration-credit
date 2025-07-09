@@ -18,6 +18,12 @@ import { UserType } from "./types/CommunityTypes.sol";
 contract InvitationRules is Ownable {
   // --- Constants ---
 
+  /// @notice The maximum allowed amount of invalidated invited users.
+  uint16 private constant MAX_INVITER_PENALTIES = 5;
+
+  /// @notice The maximum allowed amount of invalidated invited users for activists.
+  uint16 private constant MAX_ACTIVIST_PENALTIES = 10;
+
   /// @notice The minimum number of blocks an activist needs to wait to invite Regenerators or Inspectors again.
   uint16 public constant ACTIVIST_DELAY_BLOCKS = 500;
 
@@ -91,6 +97,8 @@ contract InvitationRules is Ownable {
    * @param userType The user type to which the invited user will be assigned.
    */
   function invite(address invited, UserType userType) public {
+    require(communityRules.inviterPenalties(msg.sender) < MAX_INVITER_PENALTIES, "Too many penalties");
+
     UserType msgSenderUserType = communityRules.getUser(msg.sender);
 
     // Checks if the inviter has general permission to send invitations.
@@ -117,6 +125,7 @@ contract InvitationRules is Ownable {
    * @param userType The user type to which the invited user will be assigned (must be REGENERATOR or INSPECTOR).
    */
   function inviteRegeneratorInspector(address invited, UserType userType) public {
+    require(communityRules.inviterPenalties(msg.sender) < MAX_ACTIVIST_PENALTIES, "Too many penalties");
     // Checks if the caller is an activist.
     require(communityRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Only to activists");
     // Checks if the invited user type is Regenerator or Inspector.

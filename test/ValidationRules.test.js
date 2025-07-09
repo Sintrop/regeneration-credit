@@ -296,6 +296,12 @@ describe("ValidationRules", () => {
 
                 expect(user).to.equal(DEVELOPER);
               });
+
+              it("inviter must not get penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(0);
+              });
             });
 
             context("when total users is bigger than 5", () => {
@@ -369,6 +375,12 @@ describe("ValidationRules", () => {
                 const CONTRIBUTOR = 5;
 
                 expect(user).to.equal(CONTRIBUTOR);
+              });
+
+              it("inviter must not get penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(0);
               });
             });
 
@@ -444,6 +456,12 @@ describe("ValidationRules", () => {
 
                 expect(user).to.equal(USER_TYPE);
               });
+
+              it("inviter must not get penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(0);
+              });
             });
 
             context("when total users is bigger than 5", () => {
@@ -517,6 +535,12 @@ describe("ValidationRules", () => {
                 const USER_TYPE = 6;
 
                 expect(user).to.equal(USER_TYPE);
+              });
+
+              it("inviter must not get penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(0);
               });
             });
 
@@ -624,6 +648,12 @@ describe("ValidationRules", () => {
                 const DENIED = 8;
 
                 expect(user).to.equal(DENIED);
+              });
+
+              it("inviter must get 1 penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(1);
               });
 
               it("remove user levels from pool", async () => {
@@ -1129,6 +1159,12 @@ describe("ValidationRules", () => {
 
                 expect(levels).to.equal(0);
               });
+
+              it("inviter must get 1 penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(1);
+              });
             });
 
             context("when inspectorTotal penalties is < inspectorRules.maxPenalties", () => {
@@ -1203,6 +1239,12 @@ describe("ValidationRules", () => {
                 const levels = await regeneratorPool.eraLevels(3, regenerator1Address);
 
                 expect(levels).to.equal(0);
+              });
+
+              it("inviter must not get penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(0);
               });
             });
           });
@@ -1350,6 +1392,12 @@ describe("ValidationRules", () => {
 
                   expect(levels).to.equal(0);
                 });
+
+                it("inviter must get 1 penalty", async () => {
+                  const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                  expect(inviterPenalties).to.equal(1);
+                });
               });
 
               context("when user is already denied", () => {
@@ -1407,6 +1455,12 @@ describe("ValidationRules", () => {
                 const levels = await developerPool.eraLevels(2, dev1Address);
 
                 expect(levels).to.equal(0);
+              });
+
+              it("inviter must not get penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(0);
               });
             });
           });
@@ -1505,6 +1559,12 @@ describe("ValidationRules", () => {
 
                 expect(levels).to.equal(0);
               });
+
+              it("inviter must get 1 penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(1);
+              });
             });
 
             context("when researcher total penalties is < researcherRules.maxPenalties", () => {
@@ -1534,6 +1594,12 @@ describe("ValidationRules", () => {
                 const levels = await researcherPool.eraLevels(research.era, resea1Address);
 
                 expect(levels).to.equal(0);
+              });
+
+              it("inviter must not get penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(0);
               });
             });
           });
@@ -1631,6 +1697,12 @@ describe("ValidationRules", () => {
 
                 expect(levels).to.equal(0);
               });
+
+              it("inviter must get 1 penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(1);
+              });
             });
 
             context("when contributor total penalties is < contributorRules.maxPenalties", () => {
@@ -1660,6 +1732,12 @@ describe("ValidationRules", () => {
                 const levels = await contributorPool.eraLevels(contribution.era, contributor1Address);
 
                 expect(levels).to.equal(0);
+              });
+
+              it("inviter must not get penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(0);
               });
             });
           });
