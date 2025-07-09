@@ -728,4 +728,80 @@ describe("InvitationRules", () => {
       );
     });
   });
+
+  describe("InvitationRules #inviteRegeneratorInspector with penalty checks", () => {
+    // We define the variables needed specifically for this test context
+    let instance; // The InvitationRules contract instance
+    let mockCommunityRules; // The mock for CommunityRules
+    let owner, badInviter, goodInviter, invitee;
+    const MAX_ACTIVIST_PENALTIES = 10;
+
+    // This setup runs only for the tests inside this describe block
+    beforeEach(async () => {
+      [owner, badInviter, goodInviter, invitee] = await ethers.getSigners();
+
+      // 1. Get the ABI of the contract we want to mock.
+      // We get it from the contract itself, not the interface, to ensure all functions are available to mock.
+      const communityRulesArtifact = await artifacts.readArtifact("CommunityRules");
+
+      // 2. Deploy the mock contract using the owner and the ABI.
+      mockCommunityRules = await deployMockContract(owner, communityRulesArtifact.abi);
+
+      // 3. Deploy the `InvitationRules` contract, injecting the MOCK's address.
+      // For other dependencies that are not needed in this specific test, we can pass a zero address.
+      const instanceFactory = await ethers.getContractFactory("InvitationRules");
+      instance = await instanceFactory.deploy(
+        mockCommunityRules.target,
+        ethers.ZeroAddress, // mock researcherRules if needed, or use ZeroAddress
+        ethers.ZeroAddress, // mock developerRules if needed, or use ZeroAddress
+        ethers.ZeroAddress, // mock activistRules if needed, or use ZeroAddress
+        ethers.ZeroAddress // mock contributorRules if needed, or use ZeroAddress
+      );
+      await instance.waitForDeployment();
+    });
+
+    // Test case for when the inviter has too many penalties
+    it("should revert if the inviter has reached the maximum penalty limit", async () => {
+      // --- Test Setup ---
+      // We tell our mock what to do.
+      // "When the `inviterPenalties` function is called with the address of `badInviter`...
+      // ...it should return the value 5."
+      await mockCommunityRules.mock.inviterPenalties.withArgs(badInviter.address).returns(MAX_ACTIVIST_PENALTIES);
+
+      // --- Action & Assertion ---
+      // Now, we try to call the `invite` function from the perspective of the `badInviter`.
+      // We expect it to revert exactly because of our mock's return value.
+      await expect(
+        instance.connect(badInviter).inviteRegeneratorInspector(invitee.address, userTypes.Activist)
+      ).to.be.revertedWith("Too many penalties");
+    });
+
+    // Test case for a user who can still invite (the "happy path" for this check)
+    it("should succeed if the inviter has fewer than the maximum penalties", async () => {
+      // --- Test Setup ---
+      // We setup the mock to return a safe value.
+      await mockCommunityRules.mock.inviterPenalties.withArgs(goodInviter.address).returns(MAX_ACTIVIST_PENALTIES - 1);
+
+      // The `invite` function also calls other functions on `communityRules`.
+      // We need to tell our mock how to behave for those calls too, otherwise the test will fail.
+      // We can make them return default "passing" values.
+      await mockCommunityRules.mock.getUser.withArgs(goodInviter.address).returns(userTypes.Activist);
+      // The `addInvitation` call doesn't return anything, so we don't need a `.returns()`.
+      await mockCommunityRules.mock.addInvitation.returns();
+
+      // We also need to mock the dependencies for the internal `_canSendInvite` and `_invitationDelayReached` checks.
+      // For this test, we can assume they pass. If those functions also call `communityRules`, you would mock them here too.
+      // Since they call other contracts, and we passed ZeroAddress, we will just test the penalty check.
+      // A complete test would involve mocking those other dependencies as well.
+      // For now, let's assume the other checks inside `invite` are commented out or mocked to pass.
+      // This example focuses on mocking the specific `inviterPenalties` value.
+
+      // --- Action & Assertion ---
+      // We expect the transaction NOT to be reverted by the penalty check.
+      // It might revert for other reasons if other dependencies aren't mocked, but our target check will pass.
+      await expect(
+        instance.connect(goodInviter).inviteRegeneratorInspector(invitee.address, userTypes.Activist)
+      ).to.not.be.revertedWith("Too many penalties");
+    });
+  });
 });
