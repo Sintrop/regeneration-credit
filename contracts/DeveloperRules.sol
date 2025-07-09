@@ -319,15 +319,15 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
     return totalPenalties(addr);
   }
 
-  // --- Internal functions ---
+  // --- Private functions ---
 
   /**
-   * @dev Internal function to execute the invalidation process for a development report.
+   * @dev Private function to execute the invalidation process for a development report.
    * Updates the report's status, decrements global valid reports count,
    * and records the invalidation time.
    * @param report A `Report` storage reference to the report being invalidated.
    */
-  function _invalidateReport(Report memory report) internal returns (Report memory) {
+  function _invalidateReport(Report memory report) private returns (Report memory) {
     reportsCount--;
     report.valid = false;
     report.invalidatedAt = block.number;
@@ -337,11 +337,11 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to add a level to a developer's pool.
+   * @dev Private function to add a level to a developer's pool.
    * This function also updates the `lastPublishedAt` timestamp for the developer.
    * @param addr The wallet address of the developer whose level is to be increased.
    */
-  function _updateLevel(address addr) internal {
+  function _updateLevel(address addr) private {
     Developer storage developer = developers[addr];
     developer.lastPublishedAt = block.number;
     developer.pool.level++;
@@ -428,7 +428,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * @param addr The address of the developer to check.
    * @return bool `true` if the developer can publish a report, `false` otherwise.
    */
-  function canPublishReport(address addr) internal view returns (bool) {
+  function canPublishReport(address addr) public view returns (bool) {
     uint256 lastPublishedAt = developers[addr].lastPublishedAt;
 
     bool canPublish = block.number > lastPublishedAt + timeBetweenWorks;

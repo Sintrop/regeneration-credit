@@ -313,7 +313,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     return totalInspections;
   }
 
-  // --- Internal/private functions ---
+  // --- Private functions ---
 
   /**
    * @dev Checks if a regenerator has reached the MINIMUM_INSPECTIONS_TO_POOL threshold.
@@ -393,7 +393,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to decrement the global `regenerationArea` when a regenerator's
+   * @dev Private function to decrement the global `regenerationArea` when a regenerator's
    * area is removed (due to invalidation).
    * @param addr The regenerator's wallet address whose area is to be decremented.
    *
@@ -401,7 +401,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * - The regenerator must exist.
    * - The `totalArea` of the regenerator must be accurately reflected in `regenerationArea`.
    */
-  function _decrementArea(address addr) internal {
+  function _decrementArea(address addr) private {
     regenerationArea -= regenerators[addr].totalArea;
   }
 

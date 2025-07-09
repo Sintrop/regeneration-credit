@@ -84,12 +84,8 @@ contract SupporterRules is Callable {
     researcherRules = ResearcherRules(researcherRulesAddress);
   }
 
-  // --- External Functions (State Modifying) ---
+  // --- Public functions (State Modifying) ---
 
-  /**
-   * @notice Allow new register of supporter
-   * @param name The name of the supporter
-   */
   /**
    * @notice Allows a new user to register as a Supporter.
    * @dev Registers the sender as a Supporter, assigning them a unique ID and updating CommunityRules.

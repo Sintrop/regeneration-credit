@@ -191,14 +191,14 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
     emit ActivistLevelRemoved(addr, levelsToRemove, activist.pool.level, block.number);
   }
 
-  // --- Internal functions ---
+  // --- Private functions ---
 
   /**
-   * @dev Add level to activist when invited regenerator reaches minimum inspections
-   * @param regeneratorAddress Invited regenerator wallet
-   * @param regeneratorTotalInspections Invited regenerator total inspections
+   * @dev Add level to activist when invited regenerator reaches minimum inspections.
+   * @param regeneratorAddress Invited regenerator wallet.
+   * @param regeneratorTotalInspections Invited regenerator total inspections.
    */
-  function _addLevelFromRegenerator(address regeneratorAddress, uint256 regeneratorTotalInspections) internal {
+  function _addLevelFromRegenerator(address regeneratorAddress, uint256 regeneratorTotalInspections) private {
     Invitation memory regeneratorInvitation = communityRules.getInvitation(regeneratorAddress);
     address activistAddress = regeneratorInvitation.inviter;
 
@@ -214,11 +214,11 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   }
 
   /**
-   * @dev Add level to activist when invited inspector reaches minimum inspections
-   * @param inspectorAddress Invited inspector wallet
-   * @param inspectorTotalInspections Invited inspector total inspections
+   * @dev Add level to activist when invited inspector reaches minimum inspections.
+   * @param inspectorAddress Invited inspector wallet.
+   * @param inspectorTotalInspections Invited inspector total inspections.
    */
-  function _addLevelFromInspector(address inspectorAddress, uint256 inspectorTotalInspections) internal {
+  function _addLevelFromInspector(address inspectorAddress, uint256 inspectorTotalInspections) private {
     Invitation memory inspectorInvitation = communityRules.getInvitation(inspectorAddress);
     address activistAddress = inspectorInvitation.inviter;
 
@@ -238,7 +238,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * to reflect this level increase for token withdrawal purposes.
    * @param activistAddress The wallet address of the activist whose level is to be increased.
    */
-  function _setActivistLevel(address activistAddress) internal {
+  function _setActivistLevel(address activistAddress) private {
     // Retrieve the activist's data.
     Activist storage activist = activists[activistAddress];
 

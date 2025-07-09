@@ -130,7 +130,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     securityBlocksToValidation = securityBlocksToValidation_;
   }
 
-  // --- State-Modifying Functions ---
+  // --- Owner function (Setup Only) ---
 
   /**
    * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced after
@@ -142,6 +142,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     validationRules = IValidationRules(contractDependency.validationRulesAddress);
     voteRules = IVoteRules(contractDependency.voteRulesAddress);
   }
+
+  // --- Public functions ---
 
   /**
    * @notice Allows a user to register as a researcher.
@@ -196,7 +198,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     );
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
     require(nextEraIn() > securityBlocksToValidation, "Wait until next era");
-    require(_canPublishResearch(msg.sender), "Can't publish yet");
+    require(canPublishResearch(msg.sender), "Can't publish yet");
 
     researchesCount++;
     researchesTotalCount++;
@@ -271,10 +273,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
       "Max characters"
     );
     require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
-
-    Researcher memory researcher = researchers[msg.sender];
-
-    require(_canPublishCalculatorItem(researcher), "Can't publish yet");
+    require(canPublishCalculatorItem(msg.sender), "Can't publish yet");
 
     uint64 id = calculatorItemsCount + 1;
 
@@ -328,9 +327,11 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     researcherPool.withdraw(msg.sender, currentEra);
   }
 
+  // --- MustBeAllowedCaller functions ---
+
   /**
-   * @dev Remove pool levels from researcher
-   * @param addr Researcher wallet
+   * @dev Remove pool levels from researcher.
+   * @param addr Researcher wallet.
    */
   function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
     Researcher memory researcher = researchers[addr];
@@ -341,9 +342,9 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   }
 
   /**
-   * @dev Add researcher penalty when invalidating a research
-   * @param addr Researcher wallet
-   * @param researchId Research id
+   * @dev Add researcher penalty when invalidating a research.
+   * @param addr Researcher wallet.
+   * @param researchId Research id.
    */
   function addPenalty(address addr, uint64 researchId) public mustBeAllowedCaller returns (uint256) {
     penalties[addr].push(Penalty(researchId));
@@ -351,14 +352,14 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     return totalPenalties(addr);
   }
 
-  // --- Internal  functions ---
+  // --- Private  functions ---
 
   /**
-   * @dev Internal helper function that invalidates a research by updating its status.
+   * @dev Private helper function that invalidates a research by updating its status.
    * Decrements the total count of valid researches.
    * @param research The `Research` struct to be invalidated.
    */
-  function _invalidateResearch(Research memory research) internal returns (Research memory) {
+  function _invalidateResearch(Research memory research) private returns (Research memory) {
     researchesCount--;
     research.valid = false;
     research.invalidatedAt = block.number;
@@ -368,30 +369,12 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   }
 
   /**
-   * @dev Checks if a researcher is eligible to publish a research.
-   * @param addr The address of the potential publisher.
-   * @return `true` if the user can publish research, `false` otherwise.
-   */
-  function _canPublishResearch(address addr) internal view returns (bool) {
-    return _hasWaitedRequiredTime(researchers[addr].lastPublishedAt);
-  }
-
-  /**
-   * @dev Checks if a researcher is eligible to publish a calculator item.
-   * @param researcher The `Researcher` struct of the potential publisher.
-   * @return `true` if the user can publish a calculator item, `false` otherwise.
-   */
-  function _canPublishCalculatorItem(Researcher memory researcher) internal view returns (bool) {
-    return _hasWaitedRequiredTime(researcher.lastCalculatorItemAt);
-  }
-
-  /**
    * @dev Calculates if a researcher is eligible to publish a research.
    * Eligibility based on the `lastActionBlock` and `timeBetweenWorks`.
    * @param lastActionBlock The block of last executed action.
    * @return `true` if the user can publish, `false` otherwise.
    */
-  function _hasWaitedRequiredTime(uint256 lastActionBlock) internal view returns (bool) {
+  function _hasWaitedRequiredTime(uint256 lastActionBlock) private view returns (bool) {
     if (lastActionBlock == 0) {
       return true;
     }
@@ -412,6 +395,24 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     if (researcher.id <= 0) return false;
 
     return canInvite(researchesTotalCount, communityRules.userTypesTotalCount(USER_TYPE), researcher.pool.level);
+  }
+
+  /**
+   * @dev Checks if a researcher is eligible to publish a research.
+   * @param addr The address of the potential publisher.
+   * @return `true` if the user can publish research, `false` otherwise.
+   */
+  function canPublishResearch(address addr) public view returns (bool) {
+    return _hasWaitedRequiredTime(researchers[addr].lastPublishedAt);
+  }
+
+  /**
+   * @dev Checks if a researcher is eligible to publish a calculator item.
+   * @param addr The address of the potential publisher.
+   * @return `true` if the user can publish a calculator item, `false` otherwise.
+   */
+  function canPublishCalculatorItem(address addr) public view returns (bool) {
+    return _hasWaitedRequiredTime(researchers[addr].lastCalculatorItemAt);
   }
 
   /**
@@ -442,8 +443,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   }
 
   /**
-   * @dev Current researcherPool era
-   * @return uint256 Return the current contract pool era
+   * @dev Current researcherPool era.
+   * @return uint256 Return the current contract pool era.
    */
   function poolCurrentEra() public view returns (uint256) {
     return researcherPool.currentContractEra();

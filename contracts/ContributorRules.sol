@@ -335,14 +335,14 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
     return totalPenalties(addr);
   }
 
-  // --- Internal functions ---
+  // --- Private functions ---
 
   /**
-   * @dev Internal function to add a level to a contributor's pool.
+   * @dev Private function to add a level to a contributor's pool.
    * This function also updates the `lastPublishedAt` timestamp for the contributor.
    * @param addr The wallet address of the contributor whose level is to be increased.
    */
-  function _addPoolLevel(address addr) internal {
+  function _addPoolLevel(address addr) private {
     Contributor storage contributor = contributors[addr];
     // If contributor does not exist, return.
     if (contributor.id == 0) return;
@@ -362,7 +362,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * and records the invalidation time.
    * @param contribution A `Contribution` storage reference to the contribution being invalidated.
    */
-  function _invalidateContribution(Contribution memory contribution) internal returns (Contribution memory) {
+  function _invalidateContribution(Contribution memory contribution) private returns (Contribution memory) {
     contributionsCount--;
     contribution.valid = false;
     contribution.invalidatedAt = block.number;
@@ -445,7 +445,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * @param addr The address of the contributor to check.
    * @return bool `true` if the contributor can publish a contribution, `false` otherwise.
    */
-  function canPublishContribution(address addr) internal view returns (bool) {
+  function canPublishContribution(address addr) public view returns (bool) {
     uint256 lastPublishedAt = contributors[addr].lastPublishedAt;
 
     // A user can publish if:

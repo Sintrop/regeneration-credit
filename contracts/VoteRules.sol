@@ -63,7 +63,7 @@ contract VoteRules {
     researcherRules = IResearcherRules(researcherRulesAddress);
   }
 
-  // --- Core Logic Functions ---
+  // --- Public functions ---
 
   /**
    * @notice Checks if a given address is eligible to send a vote based on predefined rules.
@@ -81,7 +81,7 @@ contract VoteRules {
     return _canVoteRules(_totalLevels(userType), totalUsers, _totalUserLevels(addr, userType));
   }
 
-  // --- Helper Functions (Internal/Pure/View) ---
+  // --- Private functions ---
 
   /**
    * @notice Determines voting eligibility based on user levels relative to type average.
@@ -92,7 +92,7 @@ contract VoteRules {
    * @param userLevels Total levels of the individual user.
    * @return bool True if the user meets the voting criteria, false otherwise.
    */
-  function _canVoteRules(uint256 totalTypeLevels, uint256 totalUsers, uint256 userLevels) internal pure returns (bool) {
+  function _canVoteRules(uint256 totalTypeLevels, uint256 totalUsers, uint256 userLevels) private pure returns (bool) {
     if (totalUsers <= 5) return true;
 
     uint256 avg = totalTypeLevels.div(totalUsers).add(1);
@@ -108,7 +108,7 @@ contract VoteRules {
    * @param userType The UserType of the user.
    * @return levels Total levels for the given address.
    */
-  function _totalUserLevels(address addr, UserType userType) internal view returns (uint256) {
+  function _totalUserLevels(address addr, UserType userType) private view returns (uint256) {
     if (userType == UserType.ACTIVIST) {
       Activist memory user = activistRules.getActivist(addr);
 
@@ -137,7 +137,7 @@ contract VoteRules {
    * @param userType The UserType to check.
    * @return levels Total aggregated levels for the specified user type.
    */
-  function _totalLevels(UserType userType) internal view returns (uint256) {
+  function _totalLevels(UserType userType) private view returns (uint256) {
     if (userType == UserType.ACTIVIST) {
       return activistRules.approvedInvites();
     } else if (userType == UserType.CONTRIBUTOR) {

@@ -54,7 +54,7 @@ contract RegenerationCreditImpact {
     regeneratorRules = IRegeneratorRules(regeneratorRulesAddress);
   }
 
-  // --- Public Functions ---
+  // --- Public functions ---
 
   /**
    * @notice Calculates the total trees impact of the system.
@@ -162,13 +162,13 @@ contract RegenerationCreditImpact {
     return totalAreaImpact().mul(PRECISION_FACTOR).div(effectiveSupply);
   }
 
-  // --- Internal Functions ---
+  // --- Private Functions ---
 
   /**
-   * @dev Internal helper function to calculate the effective token supply used in impact calculations.
+   * @dev Private helper function to calculate the effective token supply used in impact calculations.
    * @return The total supply plus certified tokens minus locked tokens.
    */
-  function _getEffectiveSupply() internal view returns (uint256) {
+  function _getEffectiveSupply() private view returns (uint256) {
     return regenerationCredit.totalSupply() + regenerationCredit.totalCertified_() - regenerationCredit.totalLocked_();
   }
 }

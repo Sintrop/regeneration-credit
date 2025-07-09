@@ -143,13 +143,13 @@ contract InvitationRules is Ownable {
     emit UserInvited(msg.sender, invited, userType, block.number);
   }
 
-  // --- Internal functions ---
+  // --- Private functions ---
 
   /**
-   * @dev Based on the inviter userType, this function sends to the correct contract to check if user can invite
-   * @param userType Inviter userType
+   * @dev Based on the inviter userType, this function sends to the correct contract to check if user can invite.
+   * @param userType Inviter userType.
    */
-  function _canSendInvite(UserType userType) internal view returns (bool) {
+  function _canSendInvite(UserType userType) private view returns (bool) {
     if (userType == UserType.ACTIVIST) {
       return activistRules.canSendInvite(msg.sender);
     } else if (userType == UserType.CONTRIBUTOR) {
@@ -170,7 +170,7 @@ contract InvitationRules is Ownable {
    * @param userType The user type of the inviter.
    * @return bool True if the user waited the delay blocks, false otherwise.
    */
-  function _invitationDelayReached(UserType userType) internal view returns (bool) {
+  function _invitationDelayReached(UserType userType) private view returns (bool) {
     uint32 delayBlocks = communityRules.getUserTypeSettings(userType).invitationDelayBlocks;
 
     return _hasInvitationDelayPassed(lastInviteBlocks[msg.sender], delayBlocks);
@@ -180,7 +180,7 @@ contract InvitationRules is Ownable {
    * @dev Calculates if the activist has reached the specific invitation delay for activists.
    * @return bool True if the activist waited the delay blocks, false otherwise.
    */
-  function _invitationDelayActivist() internal view returns (bool) {
+  function _invitationDelayActivist() private view returns (bool) {
     return _hasInvitationDelayPassed(lastInviteActivist[msg.sender], ACTIVIST_DELAY_BLOCKS);
   }
 
@@ -190,11 +190,11 @@ contract InvitationRules is Ownable {
    * @param delayBlocks The number of blocks that need to be waited.
    * @return bool True if the delay has been met, false otherwise.
    */
-  function _hasInvitationDelayPassed(uint256 lastInviteBlock, uint32 delayBlocks) internal view returns (bool) {
+  function _hasInvitationDelayPassed(uint256 lastInviteBlock, uint32 delayBlocks) private view returns (bool) {
     return lastInviteBlock == 0 || block.number - lastInviteBlock >= delayBlocks;
   }
 
-  // --- Deploy Functions ---
+  // --- Deploy functions ---
 
   /**
    * @dev Allows the contract owner to invite a wallet to the community.

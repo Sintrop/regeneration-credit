@@ -57,13 +57,13 @@ contract RegenerationIndexRules is Ownable, Callable {
     _addCategories();
   }
 
-  // --- Internal functions ---
+  // --- Private functions ---
 
   /**
-   * @dev Internal function that creates system categories and their regeneration index descriptions.
+   * @dev Private function that creates system categories and their regeneration index descriptions.
    * This function is intended to be called only during contract deployment.
    */
-  function _addCategories() internal {
+  function _addCategories() private {
     Category memory treesCategory = Category(
       1,
       "Trees",
