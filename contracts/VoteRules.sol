@@ -16,7 +16,7 @@ import { Researcher } from "./types/ResearcherTypes.sol";
 /**
  * @title VoteRules
  * @author Sintrop
- * @notice Defines the rules and logic for determining if a user is eligible to vote within the community.
+ * @notice Defines the rules and logic for determining if a user is eligible to vote for invalidation.
  * @dev This contract calculates voting eligibility based on a user's levels relative to their user type's average levels.
  */
 contract VoteRules {

@@ -1,0 +1,106 @@
+# IContributorPool
+
+## IContributorPool
+
+Interface for the ContributorPool contract, which handles token
+custody, distribution, and era-based logic for contributors.
+
+### canWithdraw
+
+```solidity
+function canWithdraw(uint256 era) external view returns (bool)
+```
+
+Checks if a contributor is eligible to withdraw rewards for a given era.
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| era | uint256 | The era number to check eligibility for. |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | bool | true if the contributor can withdraw, false otherwise. |
+
+### withdraw
+
+```solidity
+function withdraw(address user, uint256 era) external
+```
+
+Allows a user to withdraw their tokens for a specific era.
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| user | address | The address of the contributor withdrawing tokens. |
+| era | uint256 | The era for which the withdrawal is being made. |
+
+### removePoolLevels
+
+```solidity
+function removePoolLevels(address user, uint256 levelsToRemove) external
+```
+
+Removes specified levels from a user's pool configuration.
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| user | address | The address of the contributor. |
+| levelsToRemove | uint256 | Levels to be removed. |
+
+### addLevel
+
+```solidity
+function addLevel(address user, uint256 levels) external
+```
+
+Adds a new level to a user's pool configuration.
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| user | address | The address of the contributor. |
+| levels | uint256 | The levels to be added. |
+
+### currentContractEra
+
+```solidity
+function currentContractEra() external view returns (uint256)
+```
+
+Returns the current era of the contract.
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint256 | The current era number. |
+
+### nextEraIn
+
+```solidity
+function nextEraIn(uint256 currentEra) external view returns (uint256)
+```
+
+Calculates the time or blocks remaining until the next era begins.
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| currentEra | uint256 | The current era, passed as a parameter for calculation. |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint256 | The number of seconds or blocks until the next era. |
+

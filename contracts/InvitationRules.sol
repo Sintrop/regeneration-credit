@@ -92,7 +92,7 @@ contract InvitationRules is Ownable {
 
   /**
    * @dev Allows a user to attempt to invite another wallet to the community.
-   * @notice Most active users can invite new users to the system, respecting delay and type rules.
+   * @notice Only most active users can invite new users to the system, respecting delay and type rules.
    * @param invited The address of the wallet to be invited.
    * @param userType The user type to which the invited user will be assigned.
    */

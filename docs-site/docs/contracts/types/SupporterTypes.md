@@ -1,0 +1,59 @@
+# Supporter
+
+## Supporter
+
+_Supporter user type data structure_
+
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+
+```solidity
+struct Supporter {
+  uint64 id;
+  address supporterWallet;
+  string name;
+  string description;
+  string profilePhoto;
+  uint32 publicationsCount;
+  uint32 offsetsCount;
+  uint16 reductionItemsCount;
+  uint256 createdAt;
+}
+```
+## Publication
+
+_Publication data structure_
+
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+
+```solidity
+struct Publication {
+  address supporterAddress;
+  uint256 createdAt;
+  uint256 amount;
+  string description;
+  string content;
+}
+```
+## Offset
+
+_Offset data structure_
+
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+
+```solidity
+struct Offset {
+  address supporterAddress;
+  uint256 createdAt;
+  uint256 amountBurn;
+  uint256 calculatorItemId;
+}
+```

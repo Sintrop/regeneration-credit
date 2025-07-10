@@ -5,14 +5,13 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { IRegenerationCredit } from "./interfaces/IRegenerationCredit.sol";
 import { IInspectionRules } from "./interfaces/IInspectionRules.sol";
 import { IRegeneratorRules } from "./interfaces/IRegeneratorRules.sol";
-import { UserType } from "./types/CommunityTypes.sol";
 
 /**
  * @title RegenerationCreditImpact
  * @author Sintrop
- * @dev Total impact and token impact functions.
- * @notice Manages and calculates Regeneration Credit system impact. This contract is responsible for
- * calculating the system impact and also the impact per token. This is the foundation, the community impact is what is backing the Regeneration Credit.
+ * @dev Manages and calculates Regeneration Credit system impact.
+ * @notice This contract is responsible for calculating the system impact and also the impact per token.
+ * The community impact backs the Regeneration Credit, it is the foundation of the System.
  */
 contract RegenerationCreditImpact {
   using SafeMath for uint256;
