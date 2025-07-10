@@ -66,7 +66,7 @@ _Ensures that all contract addresses are valid (not null)._
 function invite(address invited, enum UserType userType) public
 ```
 
-Most active users can invite new users to the system, respecting delay and type rules.
+Only most active users can invite new users to the system, respecting delay and type rules.
 
 _Allows a user to attempt to invite another wallet to the community._
 

@@ -128,7 +128,7 @@ _Sets immutable values that govern inspection delays, expiration, and initial al
 | timeBetweenInspections_ | uint32 | The number of blocks a regenerator must wait between requests. |
 | blocksToExpireAcceptedInspection_ | uint32 | The number of blocks before an accepted inspection expires. |
 | allowedInitialRequests_ | uint8 | The number of initial requests allowed without delay. |
-| acceptInspectionDelayBlocks_ | uint32 | The number of blocks inspectors must wait before accepting. |
+| acceptInspectionDelayBlocks_ | uint32 | The number of blocks inspectors must wait before accept a new inspection. |
 | securityBlocksToValidation__ | uint32 | The number of security blocks for validators before era end. |
 
 ### setContractAddressDependencies

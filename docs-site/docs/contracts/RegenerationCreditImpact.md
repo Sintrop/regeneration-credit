@@ -2,10 +2,10 @@
 
 ## RegenerationCreditImpact
 
-Manages and calculates Regeneration Credit system impact. This contract is responsible for
-calculating the system impact and also the impact per token. This is the foundation, the community impact is what is backing the Regeneration Credit.
+This contract is responsible for calculating the system impact and also the impact per token.
+The community impact backs the Regeneration Credit, it is the foundation of the System.
 
-_Total impact and token impact functions._
+_Manages and calculates Regeneration Credit system impact._
 
 ### CARBON_PER_TREE
 

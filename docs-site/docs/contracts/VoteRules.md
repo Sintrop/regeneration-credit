@@ -2,7 +2,7 @@
 
 ## VoteRules
 
-Defines the rules and logic for determining if a user is eligible to vote within the community.
+Defines the rules and logic for determining if a user is eligible to vote for invalidation.
 
 _This contract calculates voting eligibility based on a user's levels relative to their user type's average levels._
 
