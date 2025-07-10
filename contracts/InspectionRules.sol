@@ -130,7 +130,7 @@ contract InspectionRules is Callable, ReentrancyGuard {
     securityBlocksToValidation_ = securityBlocksToValidation__;
   }
 
-  // --- Owner function (Setup Only) ---
+  // --- Deploy functions ---
 
   /**
    * @notice Sets the addresses of all essential external contracts this contract depends on.

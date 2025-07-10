@@ -130,7 +130,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     securityBlocksToValidation = securityBlocksToValidation_;
   }
 
-  // --- Owner function (Setup Only) ---
+  // --- Deploy functions ---
 
   /**
    * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced after
