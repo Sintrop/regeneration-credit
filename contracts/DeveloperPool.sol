@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IRegenerationCredit } from "./interfaces/IRegenerationCredit.sol";
@@ -18,7 +19,7 @@ import { Poolable } from "./shared/Poolable.sol";
  * @dev Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for deploy setup only),
  * `Blockable` (for era/epoch tracking), and `Callable` (for whitelisted caller control).
  */
-contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
+contract DeveloperPool is Poolable, Ownable, Blockable, Callable, ReentrancyGuard {
   using SafeMath for uint256;
 
   // --- Constants & state variables ---
@@ -59,7 +60,7 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
    * @param delegate The address of the user (developer) for whom the withdrawal is being processed.
    * @param era The last recorded era of the `delegate` user, used for reward calculation and eligibility.
    */
-  function withdraw(address delegate, uint256 era) public mustBeAllowedCaller canWithdrawModifier(era) {
+  function withdraw(address delegate, uint256 era) public mustBeAllowedCaller canWithdrawModifier(era) nonReentrant {
     require(era <= currentContractEra(), "Era in the future");
 
     // Calculate the number of tokens the user is eligible to receive for the given era.
@@ -85,7 +86,7 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
    * @param addr The wallet address of the developer.
    * @param levels The number of levels to increase the developer's pool level by.
    */
-  function addLevel(address addr, uint256 levels) public mustBeAllowedCaller {
+  function addLevel(address addr, uint256 levels) public mustBeAllowedCaller nonReentrant {
     // Calls the _addPoolLevel function from Poolable.sol.
     _addPoolLevel(addr, levels, currentContractEra());
   }
@@ -97,7 +98,7 @@ contract DeveloperPool is Poolable, Ownable, Blockable, Callable {
    * @param addr The wallet address of the developer.
    * @param levelsToRemove The number of levels to decrease the developer's pool level by.
    */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller nonReentrant {
     // Calls the _removePoolLevel function from Poolable.sol.
     _removePoolLevel(addr, currentContractEra(), levelsToRemove);
   }
