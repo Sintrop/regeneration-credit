@@ -38,11 +38,10 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
   // --- Custom State Variables ---
 
   /// @notice A mapping to track whether an address is a designated "contract pool" for token distribution.
-  /// Only addresses marked as true here can perform specific actions like `transferWith` and `burnTokensWith`.
   mapping(address => bool) internal contractsPools;
 
   /// @notice The total amount of tokens that have been permanently burned/retired (certified) across the system.
-  /// These tokens are removed from circulation and represent environmental offset.
+  /// These tokens are out from circulation and represent environmental offset.
   uint256 public totalCertified_;
 
   /// @notice The total amount of tokens that are currently held by designated contract pools.
@@ -82,14 +81,15 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * @dev Allows the contract owner to designate a new address as a "contract pool"
    * and transfer an initial allocation of tokens to it.
    * @notice This function is used to fund and activate distribution pools within the ecosystem.
-   * @param _fundAddress The address of the contract to be designated as a pool.
-   * @param _numTokens The amount of tokens to transfer to the new pool.
    *
    * Requirements:
    * - Only the contract owner can call this function.
    * - `fundAddress` must not be the zero address.
    * - The contract must have sufficient balance to transfer `numTokens`.
    * - `fundAddress` must not already be a contract pool (optional, but good practice to prevent re-funding issues).
+   *
+   * @param _fundAddress The address of the contract to be designated as a pool.
+   * @param _numTokens The amount of tokens to transfer to the new pool.
    */
   function addContractPool(address _fundAddress, uint256 _numTokens) public onlyOwner returns (bool) {
     contractsPools[_fundAddress] = true;
@@ -108,11 +108,12 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * @dev Allows any user to burn their own tokens.
    * @notice Compensate your environmental degradation by burning Regeneration Credit tokens.
    * Burning tokens permanently removes them from circulation and increases your compensation certificate.
-   * @param amount The amount of tokens to burn from the caller's balance.
    *
    * Requirements:
    * - The caller (`msg.sender`) must have `amount` tokens.
    * - `amount` must be greater than 0.
+   *
+   * @param amount The amount of tokens to burn from the caller's balance.
    */
   function burnTokens(uint256 amount) public {
     require(amount > 0, "Burn amount must be greater than 0");
@@ -163,14 +164,11 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
   }
 
   /**
-   * @dev Allows a designated "contract pool" to
+   * @dev Allows a designated "contract pool" to register a new poolTransfer.
+   * @notice Called only by a system pool contract, this function remove the transfered tokens from totalLocked.
    * @param tokenOwner The address of the contract pool initiating the transfer.
    * @param receiver The address of the user who will receive the tokens.
    * @param numTokens The amount of tokens to transfer.
-   *
-   * Requirements:
-   * - Only a registered `contractPool` can call this function (`mustBeContractPool` modifier).
-   * - The `tokenOwner` (which is `contractPool` due to modifier) must have sufficient balance.
    */
   function poolTransfer(address tokenOwner, address receiver, uint256 numTokens) public mustBeContractPool {
     require(numTokens <= balanceOf(tokenOwner), "You don't have RC Tokens");

@@ -28,7 +28,7 @@ const FeatureList = [
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
-        Created with solidity-docgen,, this documentation gets the code comments
+        Created with solidity-docgen, this documentation gets the code comments
         in a easier to read way. To further understand the project, see the source code.
       </>
     ),

@@ -113,7 +113,7 @@ contract InspectionRules is Callable, ReentrancyGuard {
    * @param timeBetweenInspections_ The number of blocks a regenerator must wait between requests.
    * @param blocksToExpireAcceptedInspection_ The number of blocks before an accepted inspection expires.
    * @param allowedInitialRequests_ The number of initial requests allowed without delay.
-   * @param acceptInspectionDelayBlocks_ The number of blocks inspectors must wait before accepting.
+   * @param acceptInspectionDelayBlocks_ The number of blocks inspectors must wait before accept a new inspection.
    * @param securityBlocksToValidation__ The number of security blocks for validators before era end.
    */
   constructor(
