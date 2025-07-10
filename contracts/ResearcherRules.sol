@@ -333,7 +333,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @dev Remove pool levels from researcher.
    * @param addr Researcher wallet.
    */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller nonReentrant {
     Researcher memory researcher = researchers[addr];
 
     researchers[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : researcher.pool.level;

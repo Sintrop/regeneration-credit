@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IResearcherRules } from "./interfaces/IResearcherRules.sol";
@@ -15,7 +16,7 @@ import { UserType } from "./types/CommunityTypes.sol";
  * @dev Manages the logic to allow users to invite others to the community.
  * @notice This contract manages the rules and logic for users to invite others into the community.
  */
-contract InvitationRules is Ownable {
+contract InvitationRules is Ownable, ReentrancyGuard {
   // --- Constants ---
 
   /// @notice The maximum allowed amount of invalidated invited users.
@@ -96,7 +97,7 @@ contract InvitationRules is Ownable {
    * @param invited The address of the wallet to be invited.
    * @param userType The user type to which the invited user will be assigned.
    */
-  function invite(address invited, UserType userType) public {
+  function invite(address invited, UserType userType) public nonReentrant {
     require(communityRules.inviterPenalties(msg.sender) < MAX_INVITER_PENALTIES, "Too many penalties");
 
     UserType msgSenderUserType = communityRules.getUser(msg.sender);
@@ -124,7 +125,7 @@ contract InvitationRules is Ownable {
    * @param invited The address of the wallet to be invited.
    * @param userType The user type to which the invited user will be assigned (must be REGENERATOR or INSPECTOR).
    */
-  function inviteRegeneratorInspector(address invited, UserType userType) public {
+  function inviteRegeneratorInspector(address invited, UserType userType) public nonReentrant {
     require(communityRules.inviterPenalties(msg.sender) < MAX_ACTIVIST_PENALTIES, "Too many penalties");
     // Checks if the caller is an activist.
     require(communityRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Only to activists");
