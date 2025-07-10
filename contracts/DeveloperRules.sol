@@ -222,7 +222,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * @param id The unique ID of the report to be validated/invalidated.
    * @param justification A string explaining why the report is being invalidated.
    */
-  function addReportValidation(uint64 id, string memory justification) public {
+  function addReportValidation(uint64 id, string memory justification) public nonReentrant {
     // Character limit validation for justification.
     require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters");
     // Check if the caller is eligible to vote. User.level must be greater than average levels.
