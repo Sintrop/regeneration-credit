@@ -170,7 +170,10 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * @param inspectorAddress The wallet address of the invited Inspector.
    * @param inspectorTotalInspections The total number of inspections completed by the Inspector.
    */
-  function addInspectorLevel(address inspectorAddress, uint256 inspectorTotalInspections) external mustBeAllowedCaller nonReentrant {
+  function addInspectorLevel(
+    address inspectorAddress,
+    uint256 inspectorTotalInspections
+  ) external mustBeAllowedCaller nonReentrant {
     _addLevelFromInspector(inspectorAddress, inspectorTotalInspections);
   }
 
