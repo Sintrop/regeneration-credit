@@ -16,6 +16,7 @@ import { Contribution } from "./types/ContributorTypes.sol";
 import { ContractsDependency } from "./types/ValidationTypes.sol";
 import { UserType, Invitation } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /**
  * @title ValidationRules
@@ -23,7 +24,7 @@ import { Callable } from "./shared/Callable.sol";
  * @dev Manage validators rules and data. This contract is responsible for reviewing and voting to invalidate wrong or corrupted actions across different user types and resources.
  * @notice Responsible for reviewing and voting to invalidate users and resources.
  */
-contract ValidationRules is Callable {
+contract ValidationRules is Callable, ReentrancyGuard {
   // --- Constants ---
 
   /// @notice Max character length for the justification provided in a validation vote.
@@ -147,7 +148,7 @@ contract ValidationRules is Callable {
    * @param userAddress Invalidation user address.
    * @param justification Invalidation justification (Max characters).
    */
-  function addUserValidation(address userAddress, string memory justification) public {
+  function addUserValidation(address userAddress, string memory justification) public nonReentrant {
     require(bytes(justification).length <= MAX_JUSTIFICATION_LENGTH, "Max characters");
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(!communityRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
@@ -187,7 +188,7 @@ contract ValidationRules is Callable {
     Inspection memory inspection,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller {
+  ) public mustBeAllowedCaller nonReentrant {
     require(!validatorInspectionsValidations[validatorAddress][inspection.id], "Already voted");
 
     validatorInspectionsValidations[validatorAddress][inspection.id] = true;
@@ -226,7 +227,7 @@ contract ValidationRules is Callable {
     Report memory report,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller {
+  ) public mustBeAllowedCaller nonReentrant {
     require(!validatorReportsValidations[validatorAddress][report.id], "Already voted");
 
     validatorReportsValidations[validatorAddress][report.id] = true;
@@ -262,7 +263,7 @@ contract ValidationRules is Callable {
     Contribution memory contribution,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller {
+  ) public mustBeAllowedCaller nonReentrant {
     require(!validatorContributionsValidations[validatorAddress][contribution.id], "Already voted");
 
     validatorContributionsValidations[validatorAddress][contribution.id] = true;
@@ -298,7 +299,7 @@ contract ValidationRules is Callable {
     Research memory research,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller {
+  ) public mustBeAllowedCaller nonReentrant {
     require(!validatorResearchesValidations[validatorAddress][research.id], "Already voted");
 
     validatorResearchesValidations[validatorAddress][research.id] = true;

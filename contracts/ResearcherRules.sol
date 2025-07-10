@@ -228,7 +228,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param id The ID of the research to validate.
    * @param justification A brief justification for invalidating the research (Max characters).
    */
-  function addResearchValidation(uint64 id, string memory justification) public {
+  function addResearchValidation(uint64 id, string memory justification) public nonReentrant {
     require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters");
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
@@ -333,7 +333,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @dev Remove pool levels from researcher.
    * @param addr Researcher wallet.
    */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller nonReentrant {
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
     Researcher memory researcher = researchers[addr];
 
     researchers[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : researcher.pool.level;
