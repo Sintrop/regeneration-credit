@@ -78,7 +78,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
     maxPenalties = maxPenalties_;
   }
 
-  // --- External functions (State modifying) ---
+  // --- Public functions (State modifying) ---
 
   /**
    * @dev Allows a user to attempt to register as an inspector.
@@ -234,7 +234,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
     inspector.totalInspections--;
   }
 
-  // --- Internal/private functions (State modifying) ---
+  // --- Private functions (State modifying) ---
 
   /**
    * @dev Internal function to increase an inspector's total completed inspections count
@@ -262,7 +262,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * but only if the inspector has reached the `MINIMUM_INSPECTIONS_TO_POOL` threshold.
    * @param inspector The inspector's wallet address.
    */
-  function _addLevel(Inspector storage inspector) internal {
+  function _addLevel(Inspector storage inspector) private {
     if (!_minimumInspections(inspector.totalInspections)) return;
 
     inspectorPool.addLevel(inspector.inspectorWallet, 1);
@@ -307,7 +307,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param totalInspections The total number of inspections completed by the inspector.
    * @return bool `true` if the total inspections meet or exceed the minimum, `false` otherwise.
    */
-  function _minimumInspections(uint256 totalInspections) internal pure returns (bool) {
+  function _minimumInspections(uint256 totalInspections) private pure returns (bool) {
     return totalInspections >= MINIMUM_INSPECTIONS_TO_POOL;
   }
 

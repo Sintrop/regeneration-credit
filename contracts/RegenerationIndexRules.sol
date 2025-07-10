@@ -57,13 +57,13 @@ contract RegenerationIndexRules is Ownable, Callable {
     _addCategories();
   }
 
-  // --- Internal functions ---
+  // --- Private functions ---
 
   /**
-   * @dev Internal function that creates system categories and their regeneration index descriptions.
+   * @dev Private function that creates system categories and their regeneration index descriptions.
    * This function is intended to be called only during contract deployment.
    */
-  function _addCategories() internal {
+  function _addCategories() private {
     Category memory treesCategory = Category(
       1,
       "Trees",
@@ -106,6 +106,54 @@ contract RegenerationIndexRules is Ownable, Callable {
     categories[2] = biodiversityCategory;
   }
 
+  /**
+   * @dev Calculates the regeneration index ID for the given trees indicator.
+   * This is a private pure function, meaning it does not read from or modify the contract's state.
+   * @param indicator The result provided by the inspector for trees.
+   * @return The regeneration index ID corresponding to the indicator.
+   */
+  function _treesRegenerationIndexId(uint32 indicator) private pure returns (uint32) {
+    if (indicator >= TREES_THRESHOLD_LEVEL_1) {
+      return 1;
+    } else if (indicator >= TREES_THRESHOLD_LEVEL_2) {
+      return 2;
+    } else if (indicator >= TREES_THRESHOLD_LEVEL_3) {
+      return 3;
+    } else if (indicator >= TREES_THRESHOLD_LEVEL_4) {
+      return 4;
+    } else if (indicator >= TREES_THRESHOLD_LEVEL_5) {
+      return 5;
+    } else if (indicator >= TREES_THRESHOLD_LEVEL_6) {
+      return 6;
+    } else {
+      return 7;
+    }
+  }
+
+  /**
+   * @dev Calculates the regeneration index ID for the given biodiversity indicator.
+   * This is a private pure function, meaning it does not read from or modify the contract's state.
+   * @param indicator The result provided by the inspector for biodiversity.
+   * @return The regeneration index ID corresponding to the indicator.
+   */
+  function _biodiversityRegenerationIndexId(uint32 indicator) private pure returns (uint32) {
+    if (indicator >= BIO_THRESHOLD_LEVEL_1) {
+      return 1;
+    } else if (indicator >= BIO_THRESHOLD_LEVEL_2) {
+      return 2;
+    } else if (indicator >= BIO_THRESHOLD_LEVEL_3) {
+      return 3;
+    } else if (indicator >= BIO_THRESHOLD_LEVEL_4) {
+      return 4;
+    } else if (indicator >= BIO_THRESHOLD_LEVEL_5) {
+      return 5;
+    } else if (indicator >= BIO_THRESHOLD_LEVEL_6) {
+      return 6;
+    } else {
+      return 7;
+    }
+  }
+
   // --- View functions ---
 
   /**
@@ -133,55 +181,5 @@ contract RegenerationIndexRules is Ownable, Callable {
     RegenerationIndex memory biodiversity = regenerationIndex[_biodiversityRegenerationIndexId(biodiversityResult)];
 
     return trees.value + biodiversity.value;
-  }
-
-  // --- Internal functions ---
-
-  /**
-   * @dev Calculates the regeneration index ID for the given trees indicator.
-   * This is an internal pure function, meaning it does not read from or modify the contract's state.
-   * @param indicator The result provided by the inspector for trees.
-   * @return The regeneration index ID corresponding to the indicator.
-   */
-  function _treesRegenerationIndexId(uint32 indicator) internal pure returns (uint32) {
-    if (indicator >= TREES_THRESHOLD_LEVEL_1) {
-      return 1;
-    } else if (indicator >= TREES_THRESHOLD_LEVEL_2) {
-      return 2;
-    } else if (indicator >= TREES_THRESHOLD_LEVEL_3) {
-      return 3;
-    } else if (indicator >= TREES_THRESHOLD_LEVEL_4) {
-      return 4;
-    } else if (indicator >= TREES_THRESHOLD_LEVEL_5) {
-      return 5;
-    } else if (indicator >= TREES_THRESHOLD_LEVEL_6) {
-      return 6;
-    } else {
-      return 7;
-    }
-  }
-
-  /**
-   * @dev Calculates the regeneration index ID for the given biodiversity indicator.
-   * This is an internal pure function, meaning it does not read from or modify the contract's state.
-   * @param indicator The result provided by the inspector for biodiversity.
-   * @return The regeneration index ID corresponding to the indicator.
-   */
-  function _biodiversityRegenerationIndexId(uint32 indicator) internal pure returns (uint32) {
-    if (indicator >= BIO_THRESHOLD_LEVEL_1) {
-      return 1;
-    } else if (indicator >= BIO_THRESHOLD_LEVEL_2) {
-      return 2;
-    } else if (indicator >= BIO_THRESHOLD_LEVEL_3) {
-      return 3;
-    } else if (indicator >= BIO_THRESHOLD_LEVEL_4) {
-      return 4;
-    } else if (indicator >= BIO_THRESHOLD_LEVEL_5) {
-      return 5;
-    } else if (indicator >= BIO_THRESHOLD_LEVEL_6) {
-      return 6;
-    } else {
-      return 7;
-    }
   }
 }

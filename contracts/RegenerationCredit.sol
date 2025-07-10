@@ -183,15 +183,15 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
     emit PoolTransfer(tokenOwner, receiver, numTokens);
   }
 
-  // --- Internal functions ---
+  // --- Private functions ---
 
   /**
-   * @dev Internal function to handle the burning of tokens and updating certification records.
+   * @dev Private function to handle the burning of tokens and updating certification records.
    * It calls the ERC-20 `_burn` function and updates custom `certificate` and `totalCertified_` state variables.
    * @param tokenOwner The address from which tokens are to be burned.
    * @param amount The amount of tokens to burn.
    */
-  function _burnTokensInternal(address tokenOwner, uint256 amount) internal {
+  function _burnTokensInternal(address tokenOwner, uint256 amount) private {
     // Call OpenZeppelin's internal _burn function to handle the actual burning.
     // _burn handles balance updates, total supply updates, and emits the Transfer event (to address(0)).
     _burn(tokenOwner, amount);

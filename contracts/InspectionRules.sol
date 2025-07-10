@@ -130,7 +130,7 @@ contract InspectionRules is Callable, ReentrancyGuard {
     securityBlocksToValidation_ = securityBlocksToValidation__;
   }
 
-  // --- Owner function (Setup Only) ---
+  // --- Deploy functions ---
 
   /**
    * @notice Sets the addresses of all essential external contracts this contract depends on.
@@ -310,13 +310,13 @@ contract InspectionRules is Callable, ReentrancyGuard {
     validationRules.addInspectionValidation(inspection, justification, msg.sender);
   }
 
-  // --- Internal functions ---
+  // --- Private functions ---
 
   /**
-   * @dev Internal function that creates a new inspection request record in the system.
+   * @dev Private function that creates a new inspection request record in the system.
    * Sets its status to `OPEN`, assigns the regenerator, and increments global counters.
    */
-  function _createInspection() internal {
+  function _createInspection() private {
     inspectionsTotalCount++;
     uint64 id = inspectionsTotalCount;
 
@@ -336,17 +336,19 @@ contract InspectionRules is Callable, ReentrancyGuard {
   /**
    * @dev Update regenerator data after request.
    */
-  function _afterRequestInspection() internal {
+  function _afterRequestInspection() private {
     regeneratorRules.afterRequestInspection(msg.sender);
   }
 
   /**
-   * @dev Update the inspection data
-   * @param inspection The current inspection
-   * @param proofPhotos The string of a photo with the regenerator or the string of a document with the proofPhoto with the regenerator and other area photos.
-   * @param treesResult The number of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
-   * @param biodiversityResult The number of different species of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area. Only plants managed or planted by the regenerator must be counted
-   * @param justificationReport The justification of the result found
+   * @dev Update the inspection data.
+   * @param inspection The current inspection.
+   * @param proofPhotos The string of a photo with the regenerator or the string of a document with the proofPhoto and other area photos.
+   * @param treesResult The number of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area.
+   * Only plants managed or planted by the regenerator must be counted.
+   * @param biodiversityResult The number of different species of trees, palm trees and other plants over 1m high and 3cm in diameter found in the regeneration area.
+   * Only plants managed or planted by the regenerator must be counted.
+   * @param justificationReport The justification of the result found.
    */
   function _markAsRealized(
     Inspection memory inspection,
@@ -354,7 +356,7 @@ contract InspectionRules is Callable, ReentrancyGuard {
     string memory justificationReport,
     uint32 treesResult,
     uint32 biodiversityResult
-  ) internal {
+  ) private {
     inspection.status = InspectionStatus.INSPECTED;
     inspection.treesResult = treesResult;
     inspection.biodiversityResult = biodiversityResult;
@@ -371,7 +373,7 @@ contract InspectionRules is Callable, ReentrancyGuard {
    * @dev Inscrement regenerator and inspector request actions.
    * @param inspection The inspected inspection.
    */
-  function _afterRealizeInspection(Inspection memory inspection) internal {
+  function _afterRealizeInspection(Inspection memory inspection) private {
     address regeneratorAddress = inspection.regenerator;
     address inspectorAddress = inspection.inspector;
 
@@ -386,13 +388,13 @@ contract InspectionRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to execute the invalidation process for an inspection.
+   * @dev Private function to execute the invalidation process for an inspection.
    * Updates global impact counters, decreases `inspectionsCount` and `realizedInspectionsCount`,
    * marks the inspection as `INVALIDATED`, and records the invalidation time.
    * It also adds penalties to the involved regenerator and inspector.
    * @param inspection A reference to the `Inspection` struct being invalidated.
    */
-  function _invalidateInspection(Inspection storage inspection) internal {
+  function _invalidateInspection(Inspection storage inspection) private {
     // Decrement global impact metrics.
     inspectionsTreesImpact -= inspection.treesResult;
     inspectionsBiodiversityImpact -= inspection.biodiversityResult;

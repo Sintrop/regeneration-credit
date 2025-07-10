@@ -76,12 +76,25 @@ contract ValidationRules is Callable {
   /// @notice Relationship between validator and last vote block.number.
   mapping(address => uint256) public validatorLastVoteAt;
 
+  /// @notice CommunityRules contract address
   ICommunityRules private communityRules;
+
+  /// @notice RegeneratorRules contract address
   IRegeneratorRules private regeneratorRules;
+
+  /// @notice InspectorRules contract address
   IInspectorRules private inspectorRules;
+
+  /// @notice DeveloperRules contract address
   IDeveloperRules private developerRules;
+
+  /// @notice ResearcherRules contract address
   IResearcherRules private researcherRules;
+
+  /// @notice ContributorRules contract address
   IContributorRules private contributorRules;
+
+  /// @notice ActivistRules contract address
   IActivistRules private activistRules;
 
   /// @notice VoteRules contract address.
@@ -100,6 +113,8 @@ contract ValidationRules is Callable {
   constructor(uint256 timeBetweenVotes_) {
     timeBetweenVotes = timeBetweenVotes_;
   }
+
+  // --- Deploy functions ---
 
   /**
    * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced after
@@ -301,14 +316,14 @@ contract ValidationRules is Callable {
     if (totalPenalties >= researcherRules.maxPenalties()) _denyUser(research.createdBy);
   }
 
-  // --- Internal Functions ---
+  // --- Private Functions ---
 
   /**
    * @dev Determines the current era for a given user's type.
    * @param userAddress The address of the user.
    * @return era The current era for the user's specific type pool.
    */
-  function _userCurrentEra(address userAddress) internal view returns (uint256 era) {
+  function _userCurrentEra(address userAddress) private view returns (uint256 era) {
     UserType userType = communityRules.getUser(userAddress);
 
     if (userType == UserType.ACTIVIST) return activistRules.poolCurrentEra();
@@ -323,7 +338,7 @@ contract ValidationRules is Callable {
    * @dev Calls the fuction that removes the resource level from pool.
    * @param report Invalidated report.
    */
-  function _removeReport(Report memory report) internal {
+  function _removeReport(Report memory report) private {
     _removeUserLevels(report.developer, RESOURCE_INVALIDATION_LEVEL_PENALTY);
   }
 
@@ -331,7 +346,7 @@ contract ValidationRules is Callable {
    * @dev Calls the fuction that removes the resource level from pool.
    * @param contribution Invalidated contribution.
    */
-  function _removeContribution(Contribution memory contribution) internal {
+  function _removeContribution(Contribution memory contribution) private {
     _removeUserLevels(contribution.user, RESOURCE_INVALIDATION_LEVEL_PENALTY);
   }
 
@@ -339,7 +354,7 @@ contract ValidationRules is Callable {
    * @dev Calls the fuction that removes the resource level from pool
    * @param research Invalidated research
    */
-  function _removeResearch(Research memory research) internal {
+  function _removeResearch(Research memory research) private {
     _removeUserLevels(research.createdBy, RESOURCE_INVALIDATION_LEVEL_PENALTY);
   }
 
@@ -347,7 +362,7 @@ contract ValidationRules is Callable {
    * @dev Calls the fuction that removes the resource level from pool.
    * @param inspection Invalidated inspection.
    */
-  function _removeUserInspection(Inspection memory inspection) internal {
+  function _removeUserInspection(Inspection memory inspection) private {
     inspectorRules.decrementInspections(inspection.inspector);
     regeneratorRules.decrementInspections(inspection.regenerator);
 
@@ -359,7 +374,7 @@ contract ValidationRules is Callable {
    * @dev Sets a user's type to DENIED in CommunityRules and removes their levels from pools.
    * @param userAddress The address of the user to deny.
    */
-  function _denyUser(address userAddress) internal {
+  function _denyUser(address userAddress) private {
     _removeUserLevels(userAddress, 0); // Remove all levels (0 means all for denied users)
 
     // Inviter slashing mechanism
@@ -377,7 +392,7 @@ contract ValidationRules is Callable {
    * @param userAddress Invalidated userAddress.
    * @param levels Levels to remove.
    */
-  function _removeUserLevels(address userAddress, uint256 levels) internal {
+  function _removeUserLevels(address userAddress, uint256 levels) private {
     UserType userType = communityRules.getUser(userAddress);
 
     if (userType == UserType.DENIED) return; // Already denied, nothing to do

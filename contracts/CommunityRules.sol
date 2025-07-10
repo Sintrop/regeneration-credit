@@ -221,7 +221,7 @@ contract CommunityRules is Ownable, Callable {
     inviterPenalties[inviter]++;
   }
 
-  // --- Internal functions ---
+  // --- Private functions ---
 
   /**
    * @dev Checks if a user can register with a specific user type based on invitation requirements.
@@ -229,7 +229,7 @@ contract CommunityRules is Ownable, Callable {
    * @param userType The `UserType` the user wishes to register as.
    * @return bool True if the user meets the invitation criteria for registration, false otherwise.
    */
-  function _invitedTypeOnRegister(address addr, UserType userType) internal view returns (bool) {
+  function _invitedTypeOnRegister(address addr, UserType userType) private view returns (bool) {
     // If the UserType does not require an invitation for registration, return true.
     if (!userTypeSettings[userType].needInvitationOnRegister) return true;
 
@@ -246,7 +246,7 @@ contract CommunityRules is Ownable, Callable {
    * @param userType The `UserType` for which registration is being checked.
    * @return bool True if registration is allowed according to proportionality, false otherwise.
    */
-  function _registrationProportionalityAllowed(UserType userType) internal view returns (bool) {
+  function _registrationProportionalityAllowed(UserType userType) private view returns (bool) {
     uint64 regeneratorsCount = userTypesCount[UserType.REGENERATOR];
     uint64 registeredUserTypeCount = userTypesCount[userType];
     UserTypeSetting memory setting = userTypeSettings[userType];

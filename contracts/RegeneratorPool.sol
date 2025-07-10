@@ -48,7 +48,7 @@ contract RegeneratorPool is Poolable, Ownable, Blockable, Callable {
     regenerationCredit = IRegenerationCredit(regenerationCreditAddress);
   }
 
-  // --- Public Functions ---
+  // --- MustBeAllowedCaller functions (State modifying) ---
 
   /**
    * @dev Allows an authorized caller, the Regenerator contract, to trigger a token withdrawal for a user.
@@ -75,16 +75,6 @@ contract RegeneratorPool is Poolable, Ownable, Blockable, Callable {
     require(success, "ERC20: transfer failed");
 
     regenerationCredit.poolTransfer(address(this), delegate, numTokens);
-  }
-
-  /**
-   * @notice View function to check if a user have tokens to withdraw at an era
-   * @param delegate User address
-   * @param era User current era
-   * @return bool True if have tokens to withdraw, false if will just update era.
-   */
-  function haveTokensToWithdraw(address delegate, uint256 era) public view returns (bool) {
-    return _haveTokensToWithdraw(delegate, era, tokensPerEra(getEpochForEra(era), halving));
   }
 
   /**
@@ -120,5 +110,17 @@ contract RegeneratorPool is Poolable, Ownable, Blockable, Callable {
   function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
     // Calls the _removePoolLevel function from Poolable.sol.
     _removePoolLevel(addr, currentContractEra(), levelsToRemove);
+  }
+
+  // --- View functions ---
+
+  /**
+   * @notice View function to check if a user have tokens to withdraw at an era.
+   * @param delegate User address.
+   * @param era User current era.
+   * @return bool True if have tokens to withdraw, false if will just update era.
+   */
+  function haveTokensToWithdraw(address delegate, uint256 era) public view returns (bool) {
+    return _haveTokensToWithdraw(delegate, era, tokensPerEra(getEpochForEra(era), halving));
   }
 }

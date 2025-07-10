@@ -21,7 +21,7 @@ contract Callable is Ownable {
   // --- Constructor ---
   // The Ownable constructor is called implicitly, setting msg.sender as the initial owner.
 
-  // --- Public Functions ---
+  // --- Public functions ---
 
   /**
    * @dev Allows the contract owner to add a new address to the list of allowed callers.
