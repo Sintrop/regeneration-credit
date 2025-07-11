@@ -164,7 +164,7 @@ contract InspectionRules is Callable, ReentrancyGuard {
    * - The regenerator must adhere to the `timeBetweenInspections` delay if `allowedInitialRequests` are used up.
    * - The regenerator must have completed less than 12 total inspections.
    */
-  function requestInspection() public {
+  function requestInspection() public nonReentrant {
     Regenerator memory regenerator = regeneratorRules.getRegenerator(msg.sender);
 
     require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
@@ -290,7 +290,7 @@ contract InspectionRules is Callable, ReentrancyGuard {
    * @param id The unique ID of the inspection to be validated/invalidated.
    * @param justification A string explaining why the inspection is being invalidated.
    */
-  function addInspectionValidation(uint64 id, string memory justification) public {
+  function addInspectionValidation(uint64 id, string memory justification) public nonReentrant {
     require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters reached");
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");

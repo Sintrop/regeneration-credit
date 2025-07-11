@@ -133,8 +133,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   // --- Deploy functions ---
 
   /**
-   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced after
-   * @param contractDependency Addresses of system contracts used
+   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param contractDependency Addresses of system contracts used.
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
@@ -228,7 +228,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param id The ID of the research to validate.
    * @param justification A brief justification for invalidating the research (Max characters).
    */
-  function addResearchValidation(uint64 id, string memory justification) public {
+  function addResearchValidation(uint64 id, string memory justification) public nonReentrant {
     require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters");
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");

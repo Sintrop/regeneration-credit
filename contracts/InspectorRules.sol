@@ -187,13 +187,13 @@ contract InspectorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to handle actions after an inspector successfully realizes (completes) an inspection.
+   * @dev MustBeAllowedCaller function to handle actions after an inspector successfully realizes (completes) an inspection.
    * This decrements give-ups and increments total inspections.
    * @notice This function is called by the InspectionRules contract after an inspection is realized.
    * @param addr The inspector's wallet address.
    * @return uint256 The updated total number of inspections completed by the inspector.
    */
-  function afterRealizeInspection(address addr) public mustBeAllowedCaller returns (uint256) {
+  function afterRealizeInspection(address addr) public mustBeAllowedCaller nonReentrant returns (uint256) {
     _decreaseGiveUps(addr);
 
     return _incrementInspections(addr);
@@ -206,7 +206,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param addr The wallet address of the inspector from whom levels are to be removed.
    * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
    * this function sets the inspector's pool level to 0. Otherwise, it subtracts the specified amount.   */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller nonReentrant {
     Inspector storage inspector = inspectors[addr];
 
     inspector.pool.level -= levelsToRemove > 0 ? levelsToRemove : inspector.pool.level;

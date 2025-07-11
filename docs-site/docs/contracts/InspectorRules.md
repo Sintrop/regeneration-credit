@@ -170,7 +170,7 @@ function afterRealizeInspection(address addr) public returns (uint256)
 
 This function is called by the InspectionRules contract after an inspection is realized.
 
-_Internal function to handle actions after an inspector successfully realizes (completes) an inspection.
+_MustBeAllowedCaller function to handle actions after an inspector successfully realizes (completes) an inspection.
 This decrements give-ups and increments total inspections._
 
 #### Parameters

@@ -115,8 +115,8 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
   // --- Deploy functions ---
 
   /**
-   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced after.
-   * @param contractDependency Addresses of system contracts used
+   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param contractDependency Addresses of system contracts used.
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
@@ -232,7 +232,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
    * @param id The unique ID of the contribution to be validated/invalidated.
    * @param justification A string explaining why the contribution is being invalidated.
    */
-  function addContributionValidation(uint64 id, string memory justification) public {
+  function addContributionValidation(uint64 id, string memory justification) public nonReentrant {
     // Character limit validation for justification.
     require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters");
     // Check if the caller is eligible to vote.

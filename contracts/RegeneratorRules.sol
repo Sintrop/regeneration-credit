@@ -241,7 +241,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param levelsToRemove The number of levels/score points to decrease. If `0`, the regenerator's
    * regeneration score is reset to `0`, and their area is decremented from the total `regenerationArea`.
    */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller nonReentrant {
     if (levelsToRemove == 0) {
       regenerators[addr].regenerationScore.score = 0;
       _decrementArea(addr);
@@ -287,9 +287,9 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Processes actions after an inspector accepts an inspection request from a regenerator.
+   * @notice Processes actions after an inspector accepts an inspection request from a regenerator.
    * Sets the regenerator's `_pendingInspection` status to `false`.
-   * @notice This function is intended to be called by a whitelisted external contract, the InspectorRules.
+   * @dev This function is intended to be called by a whitelisted external contract, the InspectorRules.
    * @param addr The regenerator's wallet address.
    */
   function afterAcceptInspection(address addr) public mustBeAllowedCaller {
@@ -297,9 +297,9 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Processes actions after an inspection is successfully realized for a regenerator's area.
+   * @notice Processes actions after an inspection is successfully realized for a regenerator's area.
    * Increments the regenerator's total inspections and updates their regeneration score.
-   * @notice This function is intended to be called by a whitelisted external contract, the InspectionRules
+   * @dev This function is intended to be called by a whitelisted external contract, the InspectionRules
    * after an inspection is completed.
    * @param addr The regenerator's wallet address.
    * @param score The score obtained from the realized inspection, to be added to the regenerator's total score.

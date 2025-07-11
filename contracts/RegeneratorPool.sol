@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IRegenerationCredit } from "./interfaces/IRegenerationCredit.sol";
@@ -17,7 +18,7 @@ import { Poolable } from "./shared/Poolable.sol";
  * @dev Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for deploy setup only),
  * `Blockable` (for era/epoch tracking), and `Callable` (for whitelisted caller control).
  */
-contract RegeneratorPool is Poolable, Ownable, Blockable, Callable {
+contract RegeneratorPool is Poolable, Ownable, Blockable, Callable, ReentrancyGuard {
   using SafeMath for uint256;
 
   // --- Constants & state variables ---
@@ -58,7 +59,7 @@ contract RegeneratorPool is Poolable, Ownable, Blockable, Callable {
    * @param delegate The address of the user (regenerator) for whom the withdrawal is being processed.
    * @param era The last recorded era of the `delegate` user, used for reward calculation and eligibility.
    */
-  function withdraw(address delegate, uint256 era) public mustBeAllowedCaller canWithdrawModifier(era) {
+  function withdraw(address delegate, uint256 era) public mustBeAllowedCaller canWithdrawModifier(era) nonReentrant {
     require(era <= currentContractEra(), "Era in the future");
 
     // Calculate the number of tokens the user is eligible to receive for the given era.
@@ -84,20 +85,9 @@ contract RegeneratorPool is Poolable, Ownable, Blockable, Callable {
    * @param regenerator The wallet address of the regenerator.
    * @param levels The number of levels to increase the regenerator's pool level by.
    */
-  function addLevel(address regenerator, uint256 levels) public mustBeAllowedCaller {
+  function addLevel(address regenerator, uint256 levels) public mustBeAllowedCaller nonReentrant {
     // Calls the _addPoolLevel function from Poolable.sol.
     _addPoolLevel(regenerator, levels, currentContractEra());
-  }
-
-  /**
-   * @dev Called by the regenerator contract, function to decrease regenerator regeneration level
-   * @param regenerator Regenerator wallet
-   * @param levels Levels to decrease
-   */
-  function removeLevel(address regenerator, uint256 levels) public mustBeAllowedCaller {
-    uint256 era = currentContractEra();
-
-    _removePoolLevel(regenerator, era, levels);
   }
 
   /**
@@ -107,7 +97,7 @@ contract RegeneratorPool is Poolable, Ownable, Blockable, Callable {
    * @param addr The wallet address of the regenerator.
    * @param levelsToRemove The number of levels to decrease the regenerator's pool level by.
    */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller nonReentrant {
     // Calls the _removePoolLevel function from Poolable.sol.
     _removePoolLevel(addr, currentContractEra(), levelsToRemove);
   }
