@@ -63,21 +63,6 @@ This function updates the regenerator level within the system's pooling mechanis
 | regenerator | address | The wallet address of the regenerator. |
 | levels | uint256 | The number of levels to increase the regenerator's pool level by. |
 
-### removeLevel
-
-```solidity
-function removeLevel(address regenerator, uint256 levels) public
-```
-
-_Called by the regenerator contract, function to decrease regenerator regeneration level_
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| regenerator | address | Regenerator wallet |
-| levels | uint256 | Levels to decrease |
-
 ### removePoolLevels
 
 ```solidity
