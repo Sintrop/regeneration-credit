@@ -432,7 +432,7 @@ contract InspectionRules is Callable, ReentrancyGuard {
    * @notice Checks if regenerator waited timeBetweenInspections.
    * @return bool True if can request.
    */
-  function waitToRequest(Regenerator memory regenerator) internal view returns (bool) {
+  function waitToRequest(Regenerator memory regenerator) public view returns (bool) {
     if (regenerator.totalInspections < allowedInitialRequests) return true;
 
     return block.number > regenerator.lastRequestAt + timeBetweenInspections;
@@ -450,7 +450,7 @@ contract InspectionRules is Callable, ReentrancyGuard {
    * @dev Function that checks if an inspector already have an open inspection.
    * @return bool True if can accept new inspection. False if has already an open inspection.
    */
-  function alreadyHaveInspectionAccepted() private view returns (bool) {
+  function alreadyHaveInspectionAccepted() public view returns (bool) {
     Inspector memory inspector = inspectorRules.getInspector(msg.sender);
     Inspection memory lastInspection = inspections[inspector.lastInspection];
 
@@ -466,7 +466,7 @@ contract InspectionRules is Callable, ReentrancyGuard {
    * @dev Function that checks if the inspection delay blocks has passed.
    * @return bool True if can accept, false if not.
    */
-  function acceptInspectionDelayBlocksPassed(Inspection memory inspection) private view returns (bool) {
+  function acceptInspectionDelayBlocksPassed(Inspection memory inspection) public view returns (bool) {
     return block.number > inspection.createdAt + acceptInspectionDelayBlocks;
   }
 
