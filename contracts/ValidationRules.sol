@@ -71,31 +71,31 @@ contract ValidationRules is Callable, ReentrancyGuard {
   /// @notice Relationship between validator and research validation. Only one validation per resource allowed.
   mapping(address => mapping(uint256 => bool)) private validatorResearchesValidations;
 
-  /// @notice Relationship between validator and user validation. Only one validation per user per era allowed
+  /// @notice Relationship between validator and user validation. Only one validation per user per era allowed.
   mapping(address => mapping(address => mapping(uint256 => bool))) private validatorUsersValidations;
 
   /// @notice Relationship between validator and last vote block.number.
   mapping(address => uint256) public validatorLastVoteAt;
 
-  /// @notice CommunityRules contract address
+  /// @notice CommunityRules contract address.
   ICommunityRules private communityRules;
 
-  /// @notice RegeneratorRules contract address
+  /// @notice RegeneratorRules contract address.
   IRegeneratorRules private regeneratorRules;
 
-  /// @notice InspectorRules contract address
+  /// @notice InspectorRules contract address.
   IInspectorRules private inspectorRules;
 
-  /// @notice DeveloperRules contract address
+  /// @notice DeveloperRules contract address.
   IDeveloperRules private developerRules;
 
-  /// @notice ResearcherRules contract address
+  /// @notice ResearcherRules contract address.
   IResearcherRules private researcherRules;
 
-  /// @notice ContributorRules contract address
+  /// @notice ContributorRules contract address.
   IContributorRules private contributorRules;
 
-  /// @notice ActivistRules contract address
+  /// @notice ActivistRules contract address.
   IActivistRules private activistRules;
 
   /// @notice VoteRules contract address.
@@ -118,8 +118,8 @@ contract ValidationRules is Callable, ReentrancyGuard {
   // --- Deploy functions ---
 
   /**
-   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced after
-   * @param contractDependency Addresses of system contracts used
+   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param contractDependency Addresses of system contracts used.
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
