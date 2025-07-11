@@ -70,7 +70,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
 
   /**
    * @dev onlyOwner function to set contracts dependency.
-   * This function must be called only once after the contract deploy and ownership must be renounced after.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param supporterRulesAddress Addresses of the SupporterRules contract.
    */
   function setContractDependencies(address supporterRulesAddress) public onlyOwner {

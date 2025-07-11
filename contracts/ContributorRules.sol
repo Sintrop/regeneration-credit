@@ -115,8 +115,8 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
   // --- Deploy functions ---
 
   /**
-   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced after.
-   * @param contractDependency Addresses of system contracts used
+   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param contractDependency Addresses of system contracts used.
    */
   function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
