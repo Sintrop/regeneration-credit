@@ -89,7 +89,7 @@ function setContractDependencies(address supporterRulesAddress) public
 ```
 
 _onlyOwner function to set contracts dependency.
-This function must be called only once after the contract deploy and ownership must be renounced after._
+This function must be called only once after the contract deploy and ownership must be renounced._
 
 #### Parameters
 

@@ -150,13 +150,13 @@ These parameters define crucial operational behaviors that cannot be changed aft
 function setContractAddressDependencies(struct ContractsDependency contractDependency) public
 ```
 
-_onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced after_
+_onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced._
 
 #### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| contractDependency | struct ContractsDependency | Addresses of system contracts used |
+| contractDependency | struct ContractsDependency | Addresses of system contracts used. |
 
 ### addResearcher
 
