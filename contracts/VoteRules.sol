@@ -1,36 +1,54 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity ^0.8.27;
 
 import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import { CommunityRules } from "./CommunityRules.sol";
-import { ActivistRules } from "./ActivistRules.sol";
-import { ContributorRules } from "./ContributorRules.sol";
-import { DeveloperRules } from "./DeveloperRules.sol";
-import { ResearcherRules } from "./ResearcherRules.sol";
+import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
+import { IActivistRules } from "./interfaces/IActivistRules.sol";
+import { IContributorRules } from "./interfaces/IContributorRules.sol";
+import { IDeveloperRules } from "./interfaces/IDeveloperRules.sol";
+import { IResearcherRules } from "./interfaces/IResearcherRules.sol";
 import { UserType } from "./types/CommunityTypes.sol";
 import { Activist } from "./types/ActivistTypes.sol";
 import { Contributor } from "./types/ContributorTypes.sol";
 import { Developer } from "./types/DeveloperTypes.sol";
 import { Researcher } from "./types/ResearcherTypes.sol";
 
+/**
+ * @title VoteRules
+ * @author Sintrop
+ * @notice Defines the rules and logic for determining if a user is eligible to vote for invalidation.
+ * @dev This contract calculates voting eligibility based on a user's levels relative to their user type's average levels.
+ */
 contract VoteRules {
   using SafeMath for uint256;
 
-  /// @notice CommunityRules contract address
-  CommunityRules internal communityRules;
+  // --- State variables ---
 
-  /// @notice ActivistRules contract address
-  ActivistRules internal activistRules;
+  /// @notice CommunityRules contract address.
+  ICommunityRules private communityRules;
 
-  /// @notice ContributorRules contract address
-  ContributorRules internal contributorRules;
+  /// @notice ActivistRules contract address.
+  IActivistRules private activistRules;
 
-  /// @notice DeveloperRules contract address
-  DeveloperRules internal developerRules;
+  /// @notice ContributorRules contract address.
+  IContributorRules private contributorRules;
 
-  /// @notice ResearcherRules contract address
-  ResearcherRules internal researcherRules;
+  /// @notice DeveloperRules contract address.
+  IDeveloperRules private developerRules;
 
+  /// @notice ResearcherRules contract address.
+  IResearcherRules private researcherRules;
+
+  // --- Constructor ---
+
+  /**
+   * @dev Initializes the contract with the addresses of the various rule contracts.
+   * @param communityRulesAddress Address of the CommunityRules contract.
+   * @param activistRulesAddress Address of the ActivistRules contract.
+   * @param contributorRulesAddress Address of the ContributorRules contract.
+   * @param developerRulesAddress Address of the DeveloperRules contract.
+   * @param researcherRulesAddress Address of the ResearcherRules contract.
+   */
   constructor(
     address communityRulesAddress,
     address activistRulesAddress,
@@ -38,16 +56,21 @@ contract VoteRules {
     address developerRulesAddress,
     address researcherRulesAddress
   ) {
-    communityRules = CommunityRules(communityRulesAddress);
-    activistRules = ActivistRules(activistRulesAddress);
-    contributorRules = ContributorRules(contributorRulesAddress);
-    developerRules = DeveloperRules(developerRulesAddress);
-    researcherRules = ResearcherRules(researcherRulesAddress);
+    communityRules = ICommunityRules(communityRulesAddress);
+    activistRules = IActivistRules(activistRulesAddress);
+    contributorRules = IContributorRules(contributorRulesAddress);
+    developerRules = IDeveloperRules(developerRulesAddress);
+    researcherRules = IResearcherRules(researcherRulesAddress);
   }
 
+  // --- Public functions ---
+
   /**
-   * @dev Calculate if a user can send vote
-   * @param addr The user address
+   * @notice Checks if a given address is eligible to send a vote based on predefined rules.
+   * @dev This function calculates a user's eligibility by comparing their levels to the average levels of their user type.
+   * It also requires the user to be designated as a 'voter' in CommunityRules.
+   * @param addr The address of the user to check.
+   * @return bool True if the user can vote, false otherwise.
    */
   function canVote(address addr) public view returns (bool) {
     require(communityRules.isVoter(addr), "Not a voter user");
@@ -55,16 +78,21 @@ contract VoteRules {
     UserType userType = communityRules.getUser(addr);
     uint256 totalUsers = communityRules.userTypesTotalCount(userType);
 
-    return canVoteRules(totalLevels(userType), totalUsers, totalUserLevels(addr, userType));
+    return _canVoteRules(_totalLevels(userType), totalUsers, _totalUserLevels(addr, userType));
   }
 
+  // --- Private functions ---
+
   /**
-   * @dev Calculate if a user can send vote
-   * @param totalTypeLevels total type levels on the system
-   * @param totalUsers total of user of specific type registered in the system
-   * @param userLevels total levels of the user
+   * @notice Determines voting eligibility based on user levels relative to type average.
+   * @dev Calculates if a user's levels meet or exceed the average levels of their user type.
+   * For user types with 5 or fewer total users, all are considered eligible.
+   * @param totalTypeLevels Total levels for the specific user type across the system.
+   * @param totalUsers Total number of users of the specific type registered in the system.
+   * @param userLevels Total levels of the individual user.
+   * @return bool True if the user meets the voting criteria, false otherwise.
    */
-  function canVoteRules(uint256 totalTypeLevels, uint256 totalUsers, uint256 userLevels) internal pure returns (bool) {
+  function _canVoteRules(uint256 totalTypeLevels, uint256 totalUsers, uint256 userLevels) private pure returns (bool) {
     if (totalUsers <= 5) return true;
 
     uint256 avg = totalTypeLevels.div(totalUsers).add(1);
@@ -73,12 +101,14 @@ contract VoteRules {
   }
 
   /**
-   * @dev Function to calculate the total user pool levels
-   * @param addr Checked address
-   * @param userType Checked userType
-   * @return levels Total addr levels
+   * @notice Calculates the total pool levels for a specific user.
+   * @dev Retrieves the 'level' from the 'pool' struct associated with the given user's address and user type.
+   * Returns 0 if the user type is not recognized or has no associated levels.
+   * @param addr The address of the user to check.
+   * @param userType The UserType of the user.
+   * @return levels Total levels for the given address.
    */
-  function totalUserLevels(address addr, UserType userType) internal view returns (uint256) {
+  function _totalUserLevels(address addr, UserType userType) private view returns (uint256) {
     if (userType == UserType.ACTIVIST) {
       Activist memory user = activistRules.getActivist(addr);
 
@@ -101,11 +131,13 @@ contract VoteRules {
   }
 
   /**
-   * @dev Function to calculate the total pool levels
-   * @param userType Checked userType
-   * @return levels Total userType levels
+   * @notice Calculates the total aggregated levels for a specific user type across the system.
+   * @dev Sums up levels based on specific metrics for each UserType (e.g., approved invites for Activists).
+   * Returns 0 if the user type is not recognized or has no aggregated levels.
+   * @param userType The UserType to check.
+   * @return levels Total aggregated levels for the specified user type.
    */
-  function totalLevels(UserType userType) internal view returns (uint256) {
+  function _totalLevels(UserType userType) private view returns (uint256) {
     if (userType == UserType.ACTIVIST) {
       return activistRules.approvedInvites();
     } else if (userType == UserType.CONTRIBUTOR) {

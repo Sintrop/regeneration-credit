@@ -1,10 +1,12 @@
 const { ethers } = require("hardhat");
 const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 const { expect } = require("chai");
+const { ZERO_ADDRESS } = require("./shared/zeroAddress");
+const { userTypes } = require("./shared/user_types");
 
 describe("RegenerationCredit", (accounts) => {
-  let instance;
-  let ownerAddress, user1Address, user2Address, anyContractAddress;
+  let instance, communityRules, supporterRules, researcherRules;
+  let ownerAddress, user1Address, user2Address, supporter1Address, researcher1Address, anyContractAddress;
   let regeneratorPool;
 
   let args = {
@@ -17,12 +19,34 @@ describe("RegenerationCredit", (accounts) => {
     blocksPerEra: 12,
   };
 
+  const addSupporter = async (name, description, profilePhoto, from) => {
+    await supporterRules.connect(from).addSupporter(name, description, profilePhoto);
+  };
+
+  const addResearcher = async (name, from) => {
+    await researcherRules.connect(from).addResearcher(name, "photoURL");
+  };
+
+  const addInvitation = async (inviter, invited, userType, from) => {
+    await communityRules.connect(from).addInvitation(inviter, invited, userType);
+  };
+
   beforeEach(async () => {
-    [ownerAddress, user1Address, user2Address, anyContractAddress] = await ethers.getSigners();
+    [ownerAddress, user1Address, user2Address, supporter1Address, researcher1Address, anyContractAddress] =
+      await ethers.getSigners();
 
     const instanceFactory = await ethers.getContractFactory("RegenerationCredit");
     instance = await instanceFactory.deploy(args.totalRegenerationCredits);
     communityRules = await communityRulesDeployed();
+
+    const reseacherPoolFactory = await ethers.getContractFactory("ResearcherPool");
+    const researcherPool = await reseacherPoolFactory.deploy(instance.target, 12, 12);
+
+    const researcherRulesFactory = await ethers.getContractFactory("ResearcherRules");
+    researcherRules = await researcherRulesFactory.deploy(3, 10, 10);
+
+    const supporterRulesFactory = await ethers.getContractFactory("SupporterRules");
+    supporterRules = await supporterRulesFactory.deploy(communityRules.target, researcherRules.target);
 
     const regeneratorPoolFactory = await ethers.getContractFactory("RegeneratorPool");
     regeneratorPool = await regeneratorPoolFactory.deploy(
@@ -30,6 +54,21 @@ describe("RegenerationCredit", (accounts) => {
       argsRegeneratorPool.halving,
       argsRegeneratorPool.blocksPerEra
     );
+
+    const researcherRulesContractDependencies = {
+      communityRulesAddress: communityRules.target,
+      researcherPoolAddress: researcherPool.target,
+      validationRulesAddress: ZERO_ADDRESS,
+      voteRulesAddress: ZERO_ADDRESS,
+    };
+
+    await researcherRules.setContractAddressDependencies(researcherRulesContractDependencies);
+
+    await instance.setContractDependencies(supporterRules.target);
+    await supporterRules.newAllowedCaller(instance.target);
+    await communityRules.newAllowedCaller(researcherRules.target);
+    await communityRules.newAllowedCaller(supporterRules.target);
+    await communityRules.newAllowedCaller(ownerAddress);
   });
 
   describe(".afterDeploy", () => {
@@ -82,105 +121,7 @@ describe("RegenerationCredit", (accounts) => {
     context("when totalTokens is less than tokens contract owner", () => {
       it("must return erro message", async () => {
         await expect(instance.transfer(regeneratorPool.target, "8000000000000000000000000000")).to.be.revertedWith(
-          "Insufficient balance."
-        );
-      });
-    });
-  });
-
-  describe("#transferWith", () => {
-    context("when caller is a contract pool", () => {
-      context("when tokenOwner is contract pool address", () => {
-        context("when caller have tokens", () => {
-          beforeEach(async () => {
-            await instance.addContractPool(anyContractAddress, "100000000000000000000");
-
-            await instance
-              .connect(anyContractAddress)
-              .transferWith(anyContractAddress, user1Address, "100000000000000000");
-          });
-
-          it("user1Address must receive 100000000000000000 tokens", async () => {
-            const balanceOf = await instance.balanceOf(user1Address);
-
-            expect(balanceOf).to.equal("100000000000000000");
-          });
-
-          it("totalLocked must be decremented to 99900000000000000000", async () => {
-            const totalLocked = await instance.totalLocked();
-
-            expect(totalLocked).to.equal("99900000000000000000");
-          });
-
-          it("balanceOf pool must be decremented to 99900000000000000000", async () => {
-            const balanceOf = await instance.balanceOf(anyContractAddress);
-
-            expect(balanceOf).to.equal("99900000000000000000");
-          });
-        });
-
-        context("when caller does not have tokens", () => {
-          beforeEach(async () => {
-            await instance.addContractPool(anyContractAddress, "0");
-          });
-
-          it("must return erro message", async () => {
-            await expect(
-              instance
-                .connect(anyContractAddress)
-                .transferWith(anyContractAddress, user1Address, "100000000000000000000")
-            ).to.be.revertedWith("You don't have RC Tokens");
-          });
-        });
-      });
-
-      context("when tokenOwner is not contract pool address", () => {
-        context("when caller have tokens", () => {
-          beforeEach(async () => {
-            await instance.addContractPool(anyContractAddress, "100000000000000000000");
-
-            await instance.connect(anyContractAddress).transferWith(ownerAddress, user1Address, "100000000000000000");
-          });
-
-          it("user1Address must receive 100000000000000000 tokens", async () => {
-            const balanceOf = await instance.balanceOf(user1Address);
-
-            expect(balanceOf).to.equal("100000000000000000");
-          });
-
-          it("totalLocked must be decremented to 100000000000000000000", async () => {
-            const totalLocked = await instance.totalLocked();
-
-            expect(totalLocked).to.equal("100000000000000000000");
-          });
-
-          it("balanceOf pool must be decremented to 100000000000000000000", async () => {
-            const balanceOf = await instance.balanceOf(anyContractAddress);
-
-            expect(balanceOf).to.equal("100000000000000000000");
-          });
-        });
-
-        context("when caller does not have tokens", () => {
-          beforeEach(async () => {
-            await instance.addContractPool(anyContractAddress, "0");
-          });
-
-          it("must return erro message", async () => {
-            await expect(
-              instance
-                .connect(anyContractAddress)
-                .transferWith(anyContractAddress, user1Address, "100000000000000000000")
-            ).to.be.revertedWith("You don't have RC Tokens");
-          });
-        });
-      });
-    });
-
-    context("when caller is not a contract pool", () => {
-      it("must return erro message", async () => {
-        await expect(instance.transferWith(ownerAddress, user1Address, "100000000000000000000")).to.be.revertedWith(
-          "Not a contract pool"
+          "ERC20: transfer amount exceeds balance"
         );
       });
     });
@@ -200,7 +141,7 @@ describe("RegenerationCredit", (accounts) => {
     context("when user doesn't have tokens", () => {
       it("must return erro message", async () => {
         await expect(instance.connect(user2Address).transfer(user1Address, "100000000000000000000")).to.be.revertedWith(
-          "Insufficient balance."
+          "ERC20: transfer amount exceeds balance"
         );
       });
     });
@@ -243,7 +184,7 @@ describe("RegenerationCredit", (accounts) => {
         it("must return erro message", async () => {
           await expect(
             instance.connect(user1Address).transferFrom(ownerAddress, user2Address, "13754999990000000000000000000")
-          ).to.be.revertedWith("Insufficient balance.");
+          ).to.be.revertedWith("ERC20: insufficient allowance");
         });
       });
     });
@@ -252,7 +193,7 @@ describe("RegenerationCredit", (accounts) => {
       it("must return erro message", async () => {
         await expect(
           instance.connect(user1Address).transferFrom(ownerAddress, user2Address, "1000000000000000000")
-        ).to.be.revertedWith("Insufficient allowance.");
+        ).to.be.revertedWith("ERC20: insufficient allowance");
       });
     });
   });
@@ -312,31 +253,7 @@ describe("RegenerationCredit", (accounts) => {
     context("when user does not have tokens", () => {
       it("must return error message", async () => {
         await expect(instance.connect(user2Address).burnTokens("100000000000000000000")).to.be.revertedWith(
-          "Burn amount exceeds balance"
-        );
-      });
-    });
-  });
-
-  describe("#burnTokensWith", () => {
-    context("when msg.sender is a contractPool", () => {
-      beforeEach(async () => {
-        await instance.addContractPool(ownerAddress, 0);
-        await instance.transfer(user1Address, "200000000000000000000");
-        await instance.connect(ownerAddress).burnTokensWith(user1Address, "100000000000000000000");
-      });
-
-      it("should burn when has tokens", async () => {
-        const burnedTokens = await instance.balanceOf(user1Address);
-
-        expect(burnedTokens).to.equal("100000000000000000000");
-      });
-    });
-
-    context("when msg.sender is not a contractPool", () => {
-      it("should return error", async () => {
-        await expect(instance.connect(ownerAddress).burnTokensWith(user1Address, 100)).to.be.revertedWith(
-          "Not a contract pool"
+          "ERC20: burn amount exceeds balance"
         );
       });
     });
@@ -351,6 +268,111 @@ describe("RegenerationCredit", (accounts) => {
       it("it should set totalLocked to 750000000000000000000000000", async () => {
         const totalLocked = await instance.totalLocked();
         expect(totalLocked).to.equal(750000000000000000000000000n);
+      });
+    });
+  });
+
+  describe("#offset", () => {
+    context("when is supporter", () => {
+      beforeEach(async () => {
+        await addInvitation(ownerAddress, researcher1Address, userTypes.Researcher, ownerAddress);
+        await addInvitation(ownerAddress, supporter1Address, userTypes.Supporter, ownerAddress);
+
+        await addResearcher("Researcher A", researcher1Address);
+        await addSupporter("Supporter A", "description", "profilePhoto", supporter1Address);
+
+        await instance.transfer(supporter1Address, 10000000000000000000n);
+      });
+
+      context("when amount is valid", () => {
+        beforeEach(async () => {
+          await researcherRules.connect(researcher1Address).addCalculatorItem("item", "thesis", "uni", 100);
+
+          await instance.connect(supporter1Address).offset(1000000000000000000n, 1);
+        });
+
+        it("inviter balance must increment in 50000000000000000", async () => {
+          const balanceOf = await instance.balanceOf(ownerAddress);
+
+          expect(balanceOf).to.eq(1499999990050000000000000000n);
+        });
+
+        it("supporter balance must be 9000000000000000000", async () => {
+          const balanceOf = await instance.balanceOf(supporter1Address);
+
+          expect(balanceOf).to.eq(9000000000000000000n);
+        });
+      });
+
+      context("when amount is invalid", () => {
+        it("must return error message", async () => {
+          await expect(instance.connect(supporter1Address).offset(100000000000000000n, 1)).to.be.revertedWith(
+            "Amount must be at least 1 RC"
+          );
+        });
+      });
+    });
+
+    context("when is not supporter", () => {
+      it("must return error message", async () => {
+        await expect(instance.connect(anyContractAddress).offset("100000000000000000000", 1)).to.be.revertedWith(
+          "Only supporters"
+        );
+      });
+    });
+  });
+
+  describe("#publish", () => {
+    context("when is supporter", () => {
+      beforeEach(async () => {
+        await addInvitation(ownerAddress, supporter1Address, userTypes.Supporter, ownerAddress);
+        await addSupporter("Supporter A", "description", "profilePhoto", supporter1Address);
+
+        await instance.transfer(supporter1Address, 10000000000000000000n);
+      });
+
+      context("when amount is valid", () => {
+        beforeEach(async () => {
+          await instance.connect(supporter1Address).publish(1000000000000000000n, "description", "content");
+        });
+
+        it("inviter balance must increment in 50000000000000000", async () => {
+          const balanceOf = await instance.balanceOf(ownerAddress);
+
+          expect(balanceOf).to.eq(1499999990050000000000000000n);
+        });
+
+        it("supporter balance must be 9000000000000000000", async () => {
+          const balanceOf = await instance.balanceOf(supporter1Address);
+
+          expect(balanceOf).to.eq(9000000000000000000n);
+        });
+
+        context("when content and description are invalids", () => {
+          it("must return error message", async () => {
+            const longString = "x".repeat(650);
+
+            await expect(
+              instance.connect(supporter1Address).publish(1000000000000000000n, longString, longString)
+            ).to.be.revertedWith("Max 600 characters");
+          });
+        });
+      });
+
+      context("when amount is invalid", () => {
+        it("must return error message", async () => {
+          await expect(
+            instance.connect(supporter1Address).publish(100000000000000000n, "description", "content")
+          ).to.be.revertedWith("Amount must be at least 1 RC");
+        });
+      });
+    });
+
+    context("when is not supporter", () => {
+      it("must return error message", async () => {
+        await expect(
+          instance.connect(anyContractAddress).publish(100000000000000000000n, "description", "content")
+        ).to.be.revertedWith("Only supporters");
       });
     });
   });

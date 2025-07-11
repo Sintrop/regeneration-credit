@@ -108,7 +108,7 @@ describe("ActivistRules", () => {
           });
 
           it("should return error message", async () => {
-            await expect(addActivist("Activist A", activ1Address)).to.be.revertedWith("Max limit reached");
+            await expect(addActivist("Activist A", activ1Address)).to.be.revertedWith("Max user limit");
           });
         });
       });
@@ -167,20 +167,6 @@ describe("ActivistRules", () => {
             const approvedInvites = await instance.approvedInvites();
 
             expect(approvedInvites).to.equal(2);
-          });
-
-          it("must increment activistApprovedInvites", async () => {
-            const activistApprovedInvites = await instance.activistApprovedInvites(activ1Address);
-
-            expect(activistApprovedInvites).to.equal(2);
-          });
-
-          it("must increment activistApprovedUsers", async () => {
-            const activistApprovedRegenerator = await instance.activistApprovedUsers(activ1Address, 0);
-            const activistApprovedInspector = await instance.activistApprovedUsers(activ1Address, 1);
-
-            expect(activistApprovedRegenerator).to.equal(regenerator1Address);
-            expect(activistApprovedInspector).to.equal(inspector1Address);
           });
         });
 
@@ -262,7 +248,9 @@ describe("ActivistRules", () => {
           });
 
           it("should return error message", async () => {
-            await expect(instance.connect(activ1Address).withdraw()).to.be.revertedWith("Can't approve withdraw");
+            await expect(instance.connect(activ1Address).withdraw()).to.be.revertedWith(
+              "Not eligible to withdraw for this era"
+            );
           });
         });
       });

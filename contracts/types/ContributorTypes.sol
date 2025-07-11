@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity ^0.8.27;
 
 import { UserType } from "./CommunityTypes.sol";
 
@@ -14,7 +14,7 @@ import { UserType } from "./CommunityTypes.sol";
  * @param lastPublishedAt Block of last contribution publication
  */
 struct Contributor {
-  uint256 id;
+  uint64 id;
   address contributorWallet;
   string name;
   string proofPhoto;
@@ -25,6 +25,8 @@ struct Contributor {
 
 /**
  * @dev Contributor pool data
+ * @param level User pool level
+ * @param currentEra User currentEra, updated after each withdraw
  */
 struct Pool {
   uint256 level;
@@ -41,7 +43,7 @@ struct Pool {
  * @param createdAtBlockNumber Block of contribution creation
  */
 struct Contribution {
-  uint256 id;
+  uint64 id;
   uint256 era;
   address user;
   string description;
@@ -56,7 +58,7 @@ struct Contribution {
  * @dev Contribution penalty
  */
 struct Penalty {
-  uint256 contributionId;
+  uint64 contributionId;
 }
 
 /**

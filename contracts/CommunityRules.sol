@@ -1,155 +1,126 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity ^0.8.27;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { UserType, Delation, Invitation, UserTypeSetting } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 
 /**
- * @author Sintrop
  * @title CommunityRules
- * @dev Users registration system
- * @notice Manage users types and data
+ * @author Sintrop
+ * @notice This contract serves as the central registry for user management within the community.
+ * It manages user types, registration processes, invitation mechanisms, and a delation system for reporting unwanted behavior.
+ * @dev Inherits from `Ownable` for deploy setup and `Callable` for restricting access to sensitive functions
+ * to whitelisted addresses. It defines critical parameters and logic for user onboarding and community governance.
  */
 contract CommunityRules is Ownable, Callable {
-  /// @notice The relationship between addresses and user type
-  mapping(address => UserType) internal users;
+  // --- Constants ---
 
-  /// @notice The relationship between addresses and delations received
+  /// @notice Minimum number of users allowed for a specific type before proportionality rules apply.
+  uint16 private constant MINIMUM_REGISTERED_USERS_QUANTITY = 5;
+
+  /// @notice The number of blocks an invitation is delayed for Supporters.
+  uint32 public constant SUPPORTER_INVITATION_DELAY_BLOCKS = 150;
+
+  /// @notice The number of blocks an invitation is delayed for voter-type users.
+  uint32 public constant VOTER_INVITATION_DELAY_BLOCKS = 100000;
+
+  /// @notice Max character length for delation titles.
+  uint16 private constant MAX_TITLE_LENGTH = 100;
+
+  /// @notice Max character length for delation testimonies.
+  uint16 private constant MAX_TESTIMONY_LENGTH = 300;
+
+  // --- State variables ---
+
+  /// @notice Total count of delations received across all users.
+  uint64 public delationsCount;
+
+  /// @notice The global total count of all active (non-`UNDEFINED`, non-`DENIED`) users in the system..
+  uint64 public usersCount;
+
+  /// @notice A mapping from a user's wallet address to their assigned `UserType`.
+  mapping(address => UserType) private users;
+
+  /// @notice A mapping from a reported user's address to an array of `Delation` structs they have received.
+  /// Stores a historical record of all delations against a user.
   mapping(address => Delation[]) private delations;
 
-  /// @notice The relationship between addresses and invitation received
+  /// @notice A mapping from an invited user's address to their `Invitation` details.
   mapping(address => Invitation) public invitations;
 
-  /// @notice Active user count by userType
-  mapping(UserType => uint256) public userTypesCount;
+  /// @notice A mapping to track the count of active users for each `UserType`.
+  mapping(UserType => uint64) public userTypesCount;
 
-  /// @notice Active and invalid user count by userType
-  mapping(UserType => uint256) public userTypesTotalCount;
+  /// @notice A mapping to track the total count of registered users for each `UserType`,
+  /// including both active and `DENIED` users. This count serves as a global counter for new user IDs.
+  mapping(UserType => uint64) public userTypesTotalCount;
 
-  /// @notice Settings by userType
+  /// @notice A mapping storing specific settings for each `UserType`,
+  /// including proportionality rules, invitation requirements, and voter status.
   mapping(UserType => UserTypeSetting) public userTypeSettings;
 
-  /// @notice Total delations count received
-  uint256 public delationsCount;
+  /// @notice Tracks the number of times an inviter has had their invitees denied.
+  mapping(address => uint16) public inviterPenalties;
 
-  /// @notice Total usersCount
-  uint256 public usersCount;
+  // --- Constructor ---
 
-  /// @notice Number of users allowed without proportion
-  uint256 public constant MINIMUM_REGISTERED_USERS_QUANTITY = 5;
+  /**
+   * @notice Initializes the CommunityRules contract by setting up initial proportionality and invitation rules for various user types.
+   * @dev Sets predefined `UserTypeSetting` for Regenerators, Inspectors, Activists, Researchers, Developers, and Contributors.
+   * @param inspectorProportionality Defines the proportionality ratio for Inspector registration.
+   * @param activistProportionality Defines the proportionality ratio for Activist registration.
+   * @param researcherProportionality Defines the proportionality ratio for Researcher registration.
+   * @param developerProportionality Defines the proportionality ratio for Developer registration.
+   * @param contributorProportionality Defines the proportionality ratio for Contributor registration.
+   */
 
   constructor(
-    uint256 inspectorProportionality,
-    uint256 activistProportionality,
-    uint256 researcherProportionality,
-    uint256 developerProportionality,
-    uint256 contributorProportionality
+    uint8 inspectorProportionality,
+    uint8 activistProportionality,
+    uint8 researcherProportionality,
+    uint8 developerProportionality,
+    uint8 contributorProportionality
   ) {
+    // Initialize settings for all relevant UserTypes
+    userTypeSettings[UserType.SUPPORTER] = UserTypeSetting(0, false, false, SUPPORTER_INVITATION_DELAY_BLOCKS, false);
     userTypeSettings[UserType.REGENERATOR] = UserTypeSetting(0, false, true, 0, false);
     userTypeSettings[UserType.INSPECTOR] = UserTypeSetting(inspectorProportionality, true, true, 0, false);
-    userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(activistProportionality, false, true, 100000, true);
-    userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(researcherProportionality, false, true, 200000, true);
-    userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(developerProportionality, false, true, 200000, true);
-    userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(contributorProportionality, false, true, 100000, true);
+    userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(
+      activistProportionality,
+      false,
+      true,
+      VOTER_INVITATION_DELAY_BLOCKS,
+      true
+    );
+    userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(
+      researcherProportionality,
+      false,
+      true,
+      VOTER_INVITATION_DELAY_BLOCKS,
+      true
+    );
+    userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(
+      developerProportionality,
+      false,
+      true,
+      VOTER_INVITATION_DELAY_BLOCKS,
+      true
+    );
+    userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(
+      contributorProportionality,
+      false,
+      true,
+      VOTER_INVITATION_DELAY_BLOCKS,
+      true
+    );
   }
 
-  event AddUserEvent(address addr, UserType userType);
-  event DeniedUserEvent(address addr);
-  event AddDelelationEvent(address informer, address reported);
-  event AddInvitationEvent(address inviter, address invited, UserType userTypeTo);
+  // --- Public functions (State Modifying) ---
 
   /**
-   * @dev Add new user in the system
-   * @param addr The address of the user
-   * @param userType The type of the user - enum UserType
-   */
-  function addUser(address addr, UserType userType) public mustBeAllowedCaller {
-    // Only one registration per address
-    require(users[addr] == UserType.UNDEFINED, "User already exists");
-    // Must selected the appropriate userType
-    require(userType != UserType.UNDEFINED, "Invalid user type");
-    // Vacancies according to the number of regenerators
-    require(registrationProportionalityAllowed(userType), "Proportionality invalid");
-    // Only with valid invitation
-    require(invitedTypeOnRegister(addr, userType), "Invalid invitation");
-
-    users[addr] = userType;
-    usersCount++;
-    userTypesCount[userType]++;
-    userTypesTotalCount[userType]++;
-
-    emit AddUserEvent(addr, userType);
-  }
-
-  /**
-   * @dev Checks if a user can invite a userType
-   * @param addr The address of the user
-   * @param userType The type of the user - enum UserType
-   */
-  function invitedTypeOnRegister(address addr, UserType userType) internal view returns (bool) {
-    if (!userTypeSettings[userType].needInvitationOnRegister) return true;
-
-    Invitation memory invitation = invitations[addr];
-
-    return invitation.createdAtBlock > 0 && invitation.userType == userType;
-  }
-
-  /**
-   * @dev Check if proportionality is allowed
-   * @param userType The type of the user - enum UserType
-   */
-  function registrationProportionalityAllowed(UserType userType) internal view returns (bool) {
-    uint256 regeneratorsCount = userTypesCount[UserType.REGENERATOR];
-    uint256 registeredUserTypeCount = userTypesCount[userType];
-    UserTypeSetting memory setting = userTypeSettings[userType];
-    uint256 proportionality = setting.proportionalityOnRegister;
-
-    if (proportionality == 0) return true;
-    if (registeredUserTypeCount < MINIMUM_REGISTERED_USERS_QUANTITY) return true;
-
-    if (setting.directProportionalityRegistration) return registeredUserTypeCount < regeneratorsCount * proportionality;
-    return registeredUserTypeCount < regeneratorsCount / proportionality;
-  }
-
-  /**
-   * @notice Get the total of voters
-   */
-  function votersCount() public view returns (uint256) {
-    return
-      userTypesCount[UserType.ACTIVIST] +
-      userTypesCount[UserType.CONTRIBUTOR] +
-      userTypesCount[UserType.DEVELOPER] +
-      userTypesCount[UserType.RESEARCHER];
-  }
-
-  /**
-   * @notice Checks if the user is a voter
-   * @param addr The user address
-   */
-  function isVoter(address addr) public view returns (bool) {
-    return getUserTypeSettings(users[addr]).isVoter;
-  }
-
-  /**
-   * @notice Get the type of a user
-   * @param addr Checked address
-   */
-  function getUser(address addr) public view returns (UserType) {
-    return users[addr];
-  }
-
-  /**
-   * @notice Get the userType settings of a userType
-   * @param userType Checked userType
-   */
-  function getUserTypeSettings(UserType userType) public view returns (UserTypeSetting memory) {
-    return userTypeSettings[userType];
-  }
-
-  /**
-   * @dev Add new delation in the system
-   * @notice Users should add delations to report users or resources that should be invalidated
+   * @dev Adds a new delation to the system. Enforces character limits for title and testimony, and requires both reporter and reported user to be registered.
+   * @notice Allows registered users (excluding Supporters) to report other users or resources that may require invalidation.
    *
    * Examples of unwanted behavior:
    *
@@ -160,46 +131,178 @@ contract CommunityRules is Ownable, Callable {
    * - Resources without valid justifications report
    * - Inactive users
    *
-   * @param addr The address of the user
-   * @param title Title the delation
-   * @param testimony Delation justification
+   * @param addr The address of the user being reported.
+   * @param title Title of the delation (max 100 characters).
+   * @param testimony Justification/details of the delation (Max characters).
    */
   function addDelation(address addr, string memory title, string memory testimony) public {
+    require(
+      bytes(title).length <= MAX_TITLE_LENGTH && bytes(testimony).length <= MAX_TESTIMONY_LENGTH,
+      "Max characters reached"
+    );
     require(users[msg.sender] != UserType.UNDEFINED, "Caller must be registered");
+    require(users[msg.sender] != UserType.SUPPORTER, "Not allowed to supporters");
     require(users[addr] != UserType.UNDEFINED, "User must be registered");
+    require(addr != address(0), "Cannot delate zero address");
 
     delations[addr].push(Delation(delationsCount + 1, msg.sender, addr, title, testimony));
     delationsCount++;
 
-    emit AddDelelationEvent(msg.sender, addr);
+    emit DelationAdded(msg.sender, addr);
+  }
+
+  // --- MustBeAllowedCaller functions (State modifying) ---
+
+  /**
+   * @notice Adds a new user to the system with a specified user type.
+   * @dev This function can only be called by an allowed caller (e.g., specific *Rules contracts for each user type).
+   * It enforces rules for single registration per address, valid user types, proportionality limits, and valid invitations if required.
+   * @param addr The address of the user to be registered.
+   * @param userType The desired `UserType` for the user.
+   */
+  function addUser(address addr, UserType userType) public mustBeAllowedCaller {
+    require(addr != address(0), "User address cannot be zero");
+    require(users[addr] == UserType.UNDEFINED, "User already exists"); // Only one registration per address
+    require(userType != UserType.UNDEFINED && userType != UserType.DENIED, "Invalid user type"); // Must selected the appropriate userType
+    require(_registrationProportionalityAllowed(userType), "Proportionality invalid"); // Vacancies according to the number of regenerators
+    require(_invitedTypeOnRegister(addr, userType), "Invalid invitation"); // Only with valid invitation
+
+    users[addr] = userType;
+    usersCount++;
+    userTypesCount[userType]++;
+    userTypesTotalCount[userType]++;
+
+    emit UserRegistered(addr, userType);
   }
 
   /**
-   * @dev Attemp to add an invitation, called by invitation contract
-   * @param inviter Inviter address
-   * @param invited Invited address
-   * @param userType Checked userType
+   * @notice Attempts to add an invitation for a user.
+   * @dev This function is intended to be called by an allowed caller, the Invitation Rules.
+   * It records an invitation for a specific user to register as a certain user type.
+   * Prevents re-inviting an already invited or registered address.
+   * @param inviter The address of the user who issued the invitation.
+   * @param invited The address of the user who received the invitation.
+   * @param userType The `UserType` the `invited` user is intended to register as.
    */
   function addInvitation(address inviter, address invited, UserType userType) public mustBeAllowedCaller {
+    require(invited != address(0), "Invited address cannot be zero");
     require(invitations[invited].invited == address(0), "Already invited");
     require(users[invited] == UserType.UNDEFINED, "Already registered");
 
     invitations[invited] = Invitation(invited, inviter, userType, block.number);
 
-    emit AddInvitationEvent(inviter, invited, userType);
+    emit InvitationAdded(inviter, invited, userType);
   }
 
   /**
-   * @dev Called by validationRules
-   * @notice Function to set an user to denied
-   * @param userAddress Denied user address
+   * @notice Sets a user's type to `DENIED`.
+   * @dev This function is intended to be called by an allowed caller (e.g., `ValidationRules`).
+   * It decrements the count of the user's previous type and sets their `UserType` to `DENIED`.
+   * Prevents re-denying an already denied user.
+   * @param userAddress The address of the user to be denied.
    */
   function setDeniedType(address userAddress) public mustBeAllowedCaller {
-    userTypesCount[users[userAddress]]--;
+    if (users[userAddress] == UserType.DENIED) return;
+
+    userTypesCount[users[userAddress]]--; // Decrement count of the old user type
 
     users[userAddress] = UserType.DENIED;
 
     emit DeniedUserEvent(userAddress);
+  }
+
+  /**
+   * @notice This functions adds a penalty to users when a invited user gets denied.
+   * @dev This function is intended to be called by an allowed caller (e.g., `ValidationRules`).
+   * It decrements the count of penalties for the inviter.
+   * @param inviter The address of the inviter receiving the penalty.
+   */
+  function addInviterPenalty(address inviter) public mustBeAllowedCaller {
+    inviterPenalties[inviter]++;
+  }
+
+  // --- Private functions ---
+
+  /**
+   * @dev Checks if a user can register with a specific user type based on invitation requirements.
+   * @param addr The address of the user attempting to register.
+   * @param userType The `UserType` the user wishes to register as.
+   * @return bool True if the user meets the invitation criteria for registration, false otherwise.
+   */
+  function _invitedTypeOnRegister(address addr, UserType userType) private view returns (bool) {
+    // If the UserType does not require an invitation for registration, return true.
+    if (!userTypeSettings[userType].needInvitationOnRegister) return true;
+
+    // Retrieve the invitation details for the given address.
+    Invitation memory invitation = invitations[addr];
+
+    // Check if an invitation exists for the address and if the invitation's userType matches the requested userType.
+    // An invitation exists if `createdAtBlock` is greater than 0.
+    return invitation.createdAtBlock > 0 && invitation.userType == userType;
+  }
+
+  /**
+   * @dev Checks if registration for a specific user type is allowed based on proportionality rules.
+   * @param userType The `UserType` for which registration is being checked.
+   * @return bool True if registration is allowed according to proportionality, false otherwise.
+   */
+  function _registrationProportionalityAllowed(UserType userType) private view returns (bool) {
+    uint64 regeneratorsCount = userTypesCount[UserType.REGENERATOR];
+    uint64 registeredUserTypeCount = userTypesCount[userType];
+    UserTypeSetting memory setting = userTypeSettings[userType];
+    uint8 proportionality = setting.proportionalityOnRegister;
+
+    // If proportionality is 0, no limit applies.
+    if (proportionality == 0) return true;
+    // Allow registration if below a minimum quantity for this user type, regardless of proportionality.
+    if (registeredUserTypeCount < MINIMUM_REGISTERED_USERS_QUANTITY) return true;
+
+    // Apply direct multiplication proportionality.
+    if (setting.directProportionalityRegistration) return registeredUserTypeCount < regeneratorsCount * proportionality;
+    // Apply inverse division proportionality.
+    return registeredUserTypeCount <= regeneratorsCount / proportionality;
+  }
+
+  // --- View functions ---
+
+  /**
+   * @notice Returns the total count of users currently classified as voters.
+   * @dev Sums the active counts of Activist, Contributor, Developer, and Researcher user types.
+   * @return uint256 The total number of voters.
+   */
+  function votersCount() public view returns (uint256) {
+    return
+      userTypesCount[UserType.ACTIVIST] +
+      userTypesCount[UserType.CONTRIBUTOR] +
+      userTypesCount[UserType.DEVELOPER] +
+      userTypesCount[UserType.RESEARCHER];
+  }
+
+  /**
+   * @notice Checks if a given address belongs to a user type that is considered a voter.
+   * @param addr The address of the user to check.
+   * @return bool True if the user is a voter, false otherwise.
+   */
+  function isVoter(address addr) public view returns (bool) {
+    return getUserTypeSettings(users[addr]).isVoter;
+  }
+
+  /**
+   * @notice Returns the `UserType` of a given address.
+   * @param addr The address to query.
+   * @return UserType The `UserType` enum value associated with the address.
+   */
+  function getUser(address addr) public view returns (UserType) {
+    return users[addr];
+  }
+
+  /**
+   * @notice Returns the `UserTypeSetting` configuration for a specific `UserType`.
+   * @param userType The `UserType` to query settings for.
+   * @return UserTypeSetting The `UserTypeSetting` struct containing configuration data.
+   */
+  function getUserTypeSettings(UserType userType) public view returns (UserTypeSetting memory) {
+    return userTypeSettings[userType];
   }
 
   /**
@@ -226,4 +329,34 @@ contract CommunityRules is Ownable, Callable {
   function getInvitation(address addr) public view returns (Invitation memory) {
     return invitations[addr];
   }
+
+  // --- Events ---
+
+  /**
+   * @notice Emitted when a new user is successfully added to the system.
+   * @param addr The address of the newly registered user.
+   * @param userType The `UserType` assigned to the new user.
+   */
+  event UserRegistered(address indexed addr, UserType userType);
+
+  /**
+   * @notice Emitted when a user's type is changed to `DENIED`.
+   * @param addr The address of the user who has been denied.
+   */
+  event DeniedUserEvent(address indexed addr);
+
+  /**
+   * @notice Emitted when a delation is successfully added.
+   * @param informer The address of the user who submitted the delation.
+   * @param reported The address of the user being reported.
+   */
+  event DelationAdded(address indexed informer, address indexed reported);
+
+  /**
+   * @notice Emitted when an invitation is successfully added to the system.
+   * @param inviter The address of the user who issued the invitation.
+   * @param invited The address of the user who received the invitation.
+   * @param userTypeTo The `UserType` the invited user is intended to register as.
+   */
+  event InvitationAdded(address indexed inviter, address indexed invited, UserType userTypeTo);
 }

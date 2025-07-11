@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity ^0.8.27;
 
 import "./CommunityTypes.sol";
 
@@ -19,11 +19,11 @@ import "./CommunityTypes.sol";
  * @param coordinatesCount Number of coordinate points
  */
 struct Regenerator {
-  uint256 id;
+  uint64 id;
   address regeneratorWallet;
   string name;
   string proofPhoto;
-  uint256 totalArea;
+  uint32 totalArea;
   bool pendingInspection;
   uint256 totalInspections;
   uint256 lastRequestAt;
@@ -35,6 +35,8 @@ struct Regenerator {
 
 /**
  * @dev Regenerator pool data
+ * @param onContractPool True if regenerator received 3 or more inspections
+ * @param currentEra User currentEra, updated after each withdraw
  */
 struct Pool {
   bool onContractPool;
@@ -43,6 +45,7 @@ struct Pool {
 
 /**
  * @dev Regenerator inspection score
+ * @param score Regenerator score, received after realized inspections
  */
 struct RegenerationScore {
   uint256 score;
@@ -50,6 +53,8 @@ struct RegenerationScore {
 
 /**
  * @dev Regenerator coordinate points
+ * @param latitutde The latitude coordinate points (e.g., -13.726317)
+ * @param longitude The longitude coordinate points (e.g., -39.462539)
  */
 struct Coordinates {
   string latitude;

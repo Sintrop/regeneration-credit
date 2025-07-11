@@ -78,7 +78,7 @@ describe("ValidationRules", () => {
   };
 
   const addRegenerator = async (name, from) => {
-    await regeneratorRules.connect(from).addRegenerator(1000, name, "photoURL", coordinates());
+    await regeneratorRules.connect(from).addRegenerator(1000, name, "projectDescription", "photoURL", coordinates());
   };
 
   const coordinates = () => {
@@ -287,8 +287,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(dev2Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(1);
+                expect(validations).to.equal(1);
               });
 
               it("user type must be the same", async () => {
@@ -296,6 +295,12 @@ describe("ValidationRules", () => {
                 const DEVELOPER = 4;
 
                 expect(user).to.equal(DEVELOPER);
+              });
+
+              it("inviter must not get penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(0);
               });
             });
 
@@ -320,7 +325,7 @@ describe("ValidationRules", () => {
                 it("should return error", async () => {
                   await expect(
                     instance.connect(dev1Address).addUserValidation(dev2Address, "my justification")
-                  ).to.be.revertedWith("User cannot vote");
+                  ).to.be.revertedWith("Not a voter");
                 });
               });
 
@@ -334,8 +339,7 @@ describe("ValidationRules", () => {
                 it("should add validation", async () => {
                   const validations = await instance.getUserValidations(dev2Address, 1);
 
-                  expect(validations[0].justification).to.equal("my justification");
-                  expect(validations.length).to.equal(1);
+                  expect(validations).to.equal(1);
                 });
 
                 it("user type must be the same", async () => {
@@ -363,8 +367,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(user2Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(1);
+                expect(validations).to.equal(1);
               });
 
               it("user type must be the same", async () => {
@@ -372,6 +375,12 @@ describe("ValidationRules", () => {
                 const CONTRIBUTOR = 5;
 
                 expect(user).to.equal(CONTRIBUTOR);
+              });
+
+              it("inviter must not get penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(0);
               });
             });
 
@@ -396,7 +405,7 @@ describe("ValidationRules", () => {
                 it("should return error", async () => {
                   await expect(
                     instance.connect(user1Address).addUserValidation(user2Address, "my justification")
-                  ).to.be.revertedWith("User cannot vote");
+                  ).to.be.revertedWith("Not a voter");
                 });
               });
 
@@ -410,8 +419,7 @@ describe("ValidationRules", () => {
                 it("should add validation", async () => {
                   const validations = await instance.getUserValidations(user2Address, 1);
 
-                  expect(validations[0].justification).to.equal("my justification");
-                  expect(validations.length).to.equal(1);
+                  expect(validations).to.equal(1);
                 });
 
                 it("user type must be the same", async () => {
@@ -439,8 +447,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(user2Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(1);
+                expect(validations).to.equal(1);
               });
 
               it("user type must be the same", async () => {
@@ -448,6 +455,12 @@ describe("ValidationRules", () => {
                 const USER_TYPE = 3;
 
                 expect(user).to.equal(USER_TYPE);
+              });
+
+              it("inviter must not get penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(0);
               });
             });
 
@@ -472,7 +485,7 @@ describe("ValidationRules", () => {
                 it("should return error", async () => {
                   await expect(
                     instance.connect(user1Address).addUserValidation(user2Address, "my justification")
-                  ).to.be.revertedWith("User cannot vote");
+                  ).to.be.revertedWith("Not a voter");
                 });
               });
 
@@ -486,8 +499,7 @@ describe("ValidationRules", () => {
                 it("should add validation", async () => {
                   const validations = await instance.getUserValidations(user2Address, 1);
 
-                  expect(validations[0].justification).to.equal("my justification");
-                  expect(validations.length).to.equal(1);
+                  expect(validations).to.equal(1);
                 });
 
                 it("user type must be the same", async () => {
@@ -515,8 +527,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(user2Address, 3);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(1);
+                expect(validations).to.equal(1);
               });
 
               it("user type must be the same", async () => {
@@ -524,6 +535,12 @@ describe("ValidationRules", () => {
                 const USER_TYPE = 6;
 
                 expect(user).to.equal(USER_TYPE);
+              });
+
+              it("inviter must not get penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(0);
               });
             });
 
@@ -548,7 +565,7 @@ describe("ValidationRules", () => {
                 it("should return error", async () => {
                   await expect(
                     instance.connect(user1Address).addUserValidation(user2Address, "my justification")
-                  ).to.be.revertedWith("User cannot vote");
+                  ).to.be.revertedWith("Not a voter");
                 });
               });
 
@@ -570,8 +587,7 @@ describe("ValidationRules", () => {
                 it("should add validation", async () => {
                   const validations = await instance.getUserValidations(user2Address, 4);
 
-                  expect(validations[0].justification).to.equal("my justification");
-                  expect(validations.length).to.equal(1);
+                  expect(validations).to.equal(1);
                 });
 
                 it("user type must be the same", async () => {
@@ -624,8 +640,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(regenerator1Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -633,6 +648,12 @@ describe("ValidationRules", () => {
                 const DENIED = 8;
 
                 expect(user).to.equal(DENIED);
+              });
+
+              it("inviter must get 1 penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(1);
               });
 
               it("remove user levels from pool", async () => {
@@ -685,8 +706,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(inspector1Address, 4);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -733,8 +753,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(contributor1Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -752,10 +771,10 @@ describe("ValidationRules", () => {
                 expect(levelsEra2).to.equal(0);
               });
 
-              it("do not remove user levels from contributor", async () => {
+              it("should remove user levels from contributor", async () => {
                 const contributor = await contributorRules.getContributor(contributor1Address);
 
-                expect(contributor.pool.level).to.equal(1);
+                expect(contributor.pool.level).to.equal(0);
               });
 
               it("userTypesCount must be decremented", async () => {
@@ -781,8 +800,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(dev1Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -829,8 +847,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(resea1Address, 1);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -880,8 +897,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(activist1Address, 4);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -933,8 +949,7 @@ describe("ValidationRules", () => {
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(regenerator1Address, 2);
 
-                expect(validations[0].justification).to.equal("my justification");
-                expect(validations.length).to.equal(2);
+                expect(validations).to.equal(2);
               });
 
               it("user type must be denied", async () => {
@@ -1047,8 +1062,8 @@ describe("ValidationRules", () => {
             treesResult: 10,
             biodiversityResult: 10,
             regenerationScore: 10,
-            proofPhoto: "",
-            report: "",
+            proofPhotos: "",
+            justificationReport: "",
             validationsCount: 0,
             createdAt: 100,
             acceptedAt: 100,
@@ -1080,8 +1095,8 @@ describe("ValidationRules", () => {
                   treesResult: 10,
                   biodiversityResult: 10,
                   regenerationScore: 20,
-                  proofPhoto: "",
-                  report: "",
+                  proofPhotos: "",
+                  justificationReport: "",
                   validationsCount: 2,
                   createdAt: 100,
                   acceptedAt: 100,
@@ -1144,6 +1159,12 @@ describe("ValidationRules", () => {
 
                 expect(levels).to.equal(0);
               });
+
+              it("inviter must get 1 penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(1);
+              });
             });
 
             context("when inspectorTotal penalties is < inspectorRules.maxPenalties", () => {
@@ -1156,8 +1177,8 @@ describe("ValidationRules", () => {
                   treesResult: 10,
                   biodiversityResult: 10,
                   regenerationScore: 20,
-                  proofPhoto: "",
-                  report: "",
+                  proofPhotos: "",
+                  justificationReport: "",
                   validationsCount: 2,
                   createdAt: 100,
                   acceptedAt: 100,
@@ -1219,6 +1240,12 @@ describe("ValidationRules", () => {
 
                 expect(levels).to.equal(0);
               });
+
+              it("inviter must not get penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(0);
+              });
             });
           });
 
@@ -1232,8 +1259,8 @@ describe("ValidationRules", () => {
                 treesResult: 10,
                 biodiversityResult: 10,
                 regenerationScore: 20,
-                proofPhoto: "",
-                report: "",
+                proofPhotos: "",
+                justificationReport: "",
                 validationsCount: 1,
                 createdAt: 100,
                 acceptedAt: 100,
@@ -1243,15 +1270,6 @@ describe("ValidationRules", () => {
               };
 
               await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", user1Address);
-            });
-
-            it("add inspection validation", async () => {
-              const validation = await instance.inspectionValidations(1, 0);
-
-              expect(validation[0]).to.equal(user1Address.address);
-              expect(validation[1]).to.equal(1);
-              expect(validation[2]).to.equal("foo");
-              expect(validation[3]).to.equal(2);
             });
           });
         });
@@ -1267,8 +1285,8 @@ describe("ValidationRules", () => {
                 treesResult: 10,
                 biodiversityResult: 10,
                 regenerationScore: 20,
-                proofPhoto: "",
-                report: "",
+                proofPhotos: "",
+                justificationReport: "",
                 validationsCount: 1,
                 createdAt: 100,
                 acceptedAt: 100,
@@ -1278,15 +1296,6 @@ describe("ValidationRules", () => {
               };
 
               await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", user1Address);
-            });
-
-            it("add inspection validation", async () => {
-              const validation = await instance.inspectionValidations(1, 0);
-
-              expect(validation[0]).to.equal(user1Address.address);
-              expect(validation[1]).to.equal(1);
-              expect(validation[2]).to.equal("foo");
-              expect(validation[3]).to.equal(2);
             });
           });
         });
@@ -1303,8 +1312,8 @@ describe("ValidationRules", () => {
           treesResult: 10,
           biodiversityResult: 10,
           regenerationScore: 20,
-          proofPhoto: "",
-          report: "",
+          proofPhotos: "",
+          justificationReport: "",
           validationsCount: 0,
           createdAt: 100,
           acceptedAt: 100,
@@ -1356,38 +1365,68 @@ describe("ValidationRules", () => {
         context("when current era is 1", () => {
           context("when report validations is => votesToInvalidate (addPenalty == true)", () => {
             context("when developer total penalties is >= developerRules.maxPenalties", () => {
-              beforeEach(async () => {
-                let report = await developerRules.getReport(1);
-                report = generateReportObject(report);
-                report.validationsCount = 1;
+              context("when user is not denied", () => {
+                beforeEach(async () => {
+                  let report = await developerRules.getReport(1);
+                  report = generateReportObject(report);
+                  report.validationsCount = 1;
 
-                await developerRules.addPenalty(dev1Address, report.id);
-                await developerRules.addPenalty(dev1Address, report.id);
+                  await developerRules.addPenalty(dev1Address, report.id);
+                  await developerRules.addPenalty(dev1Address, report.id);
 
-                report.validationsCount = 2;
-                report.valid = false;
-                await instance.connect(owner).addReportValidation(report, "justification", user1Address);
+                  report.validationsCount = 2;
+                  report.valid = false;
+                  await instance.connect(owner).addReportValidation(report, "justification", user1Address);
+
+                  const era = await developerRules.poolCurrentEra();
+                });
+
+                it("deny developer", async () => {
+                  const newDeveloperType = await communityRules.getUser(dev1Address);
+
+                  expect(newDeveloperType).to.equal(userTypes.Denied);
+                });
+
+                it("remove report regeneration score level from developer pool", async () => {
+                  const levels = await developerPool.eraLevels(1, dev1Address);
+
+                  expect(levels).to.equal(0);
+                });
+
+                it("inviter must get 1 penalty", async () => {
+                  const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                  expect(inviterPenalties).to.equal(1);
+                });
               });
 
-              it("should add report validation", async () => {
-                const validation = await instance.reportValidations(1, 0);
+              context("when user is already denied", () => {
+                beforeEach(async () => {
+                  let report = await developerRules.getReport(1);
+                  report = generateReportObject(report);
+                  report.validationsCount = 1;
 
-                expect(validation[0]).to.equal(user1Address.address);
-                expect(validation[1]).to.equal(1);
-                expect(validation[2]).to.equal("justification");
-                expect(validation[3]).to.equal(2);
-              });
+                  await developerRules.addPenalty(dev1Address, report.id);
+                  await developerRules.addPenalty(dev1Address, report.id);
 
-              it("deny developer", async () => {
-                const newDeveloperType = await communityRules.getUser(dev1Address);
+                  await communityRules.setDeniedType(dev1Address);
 
-                expect(newDeveloperType).to.equal(userTypes.Denied);
-              });
+                  report.validationsCount = 2;
+                  report.valid = false;
+                  await instance.connect(owner).addReportValidation(report, "justification", user1Address);
+                });
 
-              it("remove report regeneration score level from developer pool", async () => {
-                const levels = await developerPool.eraLevels(4, dev1Address);
+                it("do not remove any developer.pool.levels", async () => {
+                  const developer = await developerRules.getDeveloper(dev1Address);
 
-                expect(levels).to.equal(0);
+                  expect(developer.pool.level).to.equal(1);
+                });
+
+                it("do not remove any era levels", async () => {
+                  const levels = await developerPool.eraLevels(1, dev1Address);
+
+                  expect(levels).to.equal(1);
+                });
               });
             });
 
@@ -1416,6 +1455,12 @@ describe("ValidationRules", () => {
                 const levels = await developerPool.eraLevels(2, dev1Address);
 
                 expect(levels).to.equal(0);
+              });
+
+              it("inviter must not get penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(0);
               });
             });
           });
@@ -1474,15 +1519,6 @@ describe("ValidationRules", () => {
           await instance.connect(owner).addResearchValidation(research, "justification", user1Address);
         });
 
-        it("should add research validation", async () => {
-          const validation = await instance.researchValidations(1, 0);
-
-          expect(validation[0]).to.equal(user1Address.address);
-          expect(validation[1]).to.equal(1);
-          expect(validation[2]).to.equal("justification");
-          expect(validation[3]).to.equal(2);
-        });
-
         it("should return error", async () => {
           let research = await researcherRules.researches(1);
           research = generateResearchObject(research);
@@ -1508,6 +1544,7 @@ describe("ValidationRules", () => {
                 await instance.connect(owner).addResearchValidation(research, "justification", user1Address);
 
                 research.validationsCount = 2;
+                research.valid = false;
                 await instance.connect(owner).addResearchValidation(research, "justification", user2Address);
               });
 
@@ -1522,6 +1559,12 @@ describe("ValidationRules", () => {
 
                 expect(levels).to.equal(0);
               });
+
+              it("inviter must get 1 penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(1);
+              });
             });
 
             context("when researcher total penalties is < researcherRules.maxPenalties", () => {
@@ -1535,6 +1578,7 @@ describe("ValidationRules", () => {
                 research = await researcherRules.researches(1);
                 research = generateResearchObject(research);
                 research.validationsCount = 2;
+                research.valid = false;
 
                 await instance.connect(owner).addResearchValidation(research, "justification", user2Address);
               });
@@ -1550,6 +1594,12 @@ describe("ValidationRules", () => {
                 const levels = await researcherPool.eraLevels(research.era, resea1Address);
 
                 expect(levels).to.equal(0);
+              });
+
+              it("inviter must not get penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(0);
               });
             });
           });
@@ -1608,15 +1658,6 @@ describe("ValidationRules", () => {
           await instance.connect(owner).addContributionValidation(contribution, "justification", user1Address);
         });
 
-        it("should add contribution validation", async () => {
-          const validation = await instance.contributionValidations(1, 0);
-
-          expect(validation[0]).to.equal(user1Address.address);
-          expect(validation[1]).to.equal(1);
-          expect(validation[2]).to.equal("justification");
-          expect(validation[3]).to.equal(2);
-        });
-
         it("should return error", async () => {
           let contribution = await contributorRules.contributions(1);
           contribution = generateContributionObject(contribution);
@@ -1656,6 +1697,12 @@ describe("ValidationRules", () => {
 
                 expect(levels).to.equal(0);
               });
+
+              it("inviter must get 1 penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(1);
+              });
             });
 
             context("when contributor total penalties is < contributorRules.maxPenalties", () => {
@@ -1685,6 +1732,12 @@ describe("ValidationRules", () => {
                 const levels = await contributorPool.eraLevels(contribution.era, contributor1Address);
 
                 expect(levels).to.equal(0);
+              });
+
+              it("inviter must not get penalty", async () => {
+                const inviterPenalties = await communityRules.inviterPenalties(owner);
+
+                expect(inviterPenalties).to.equal(0);
               });
             });
           });

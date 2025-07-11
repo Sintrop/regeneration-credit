@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity ^0.8.27;
 
 import { UserType } from "./CommunityTypes.sol";
 
@@ -17,7 +17,7 @@ import { UserType } from "./CommunityTypes.sol";
  * @param createdAt Block of user creation
  */
 struct Inspector {
-  uint256 id;
+  uint64 id;
   address inspectorWallet;
   string name;
   string proofPhoto;
@@ -25,7 +25,7 @@ struct Inspector {
   uint256 giveUps;
   uint256 lastAcceptedAt;
   uint256 lastRealizedAt;
-  uint256 lastInspection;
+  uint64 lastInspection;
   Pool pool;
   uint256 createdAt;
 }
@@ -34,11 +34,13 @@ struct Inspector {
  * @dev Invalidated inspection penalty
  */
 struct Penalty {
-  uint256 inspectionId;
+  uint64 inspectionId;
 }
 
 /**
  * @dev Inspector pool data
+ * @param level User pool level
+ * @param currentEra User currentEra, updated after each withdraw
  */
 struct Pool {
   uint256 level;

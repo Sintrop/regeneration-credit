@@ -2,6 +2,7 @@ require("@nomicfoundation/hardhat-toolbox");
 require("@nomicfoundation/hardhat-verify");
 require("solidity-coverage");
 require("dotenv").config({ path: __dirname + "/.env" });
+require('solidity-docgen');
 
 const infuraKey = process.env.INFURA_API_KEY;
 const privateKey = process.env.PRIVATE_KEY_ACCOUNT_TO_DEPLOY || "set private key";
@@ -11,7 +12,15 @@ const gasReportEnabled = process.env.GAS_REPORT_ENABLED;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: "0.8.27",
+  solidity: {
+    version: "0.8.27",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
+    }
+  },
   networks: {
     hardhat: {
       allowUnlimitedContractSize: true,
@@ -98,4 +107,13 @@ module.exports = {
     reporter: "spec",
     ui: "bdd",
   },
+  docgen: {
+    outputDir: './docs-site/docs/contracts',         
+    pages: 'files',
+    templates: './docs-site/docgen-templates', 
+    clear: true, 
+    runOnCompile: true,
+    only: ['^contracts/'], 
+    except: [],
+  },  
 };

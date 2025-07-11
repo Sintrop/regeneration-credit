@@ -52,7 +52,7 @@ describe("ResearcherRules", () => {
   };
 
   const addCalculatorItem = async (from) => {
-    await instance.connect(from).addCalculatorItem("title", "kg", "justification", 1);
+    await instance.connect(from).addCalculatorItem("item", "thesis", "kg", 1);
   };
 
   const addEvaluationMethod = async (from) => {
@@ -169,7 +169,7 @@ describe("ResearcherRules", () => {
           });
 
           it("should return error message", async () => {
-            await expect(addResearcher("Researcher A", resea1Address)).to.be.revertedWith("Max limit reached");
+            await expect(addResearcher("Researcher A", resea1Address)).to.be.revertedWith("Max user limit");
           });
         });
       });
@@ -195,17 +195,17 @@ describe("ResearcherRules", () => {
       });
 
       it("return true", async () => {
-        const researcherExists = await instance.researcherExists(resea1Address);
+        const researcher = await instance.getResearcher(resea1Address);
 
-        expect(researcherExists).to.equal(true);
+        expect(researcher.id).to.equal(1);
       });
     });
 
     context("when researcher don't exist", () => {
       it("return false", async () => {
-        const researcherExists = await instance.researcherExists(resea1Address);
+        const researcher = await instance.getResearcher(resea1Address);
 
-        expect(researcherExists).to.equal(false);
+        expect(researcher.id).to.equal(0);
       });
     });
   });
@@ -218,7 +218,9 @@ describe("ResearcherRules", () => {
 
       context("when researcher is in era 1 and current era is 1", () => {
         it("should return error", async () => {
-          await expect(instance.connect(resea1Address).withdraw()).to.be.revertedWith("Can't approve withdraw");
+          await expect(instance.connect(resea1Address).withdraw()).to.be.revertedWith(
+            "Not eligible to withdraw for this era"
+          );
         });
       });
 
@@ -264,7 +266,7 @@ describe("ResearcherRules", () => {
 
     context("when is not a researcher", () => {
       it("should return error", async () => {
-        await expect(instance.connect(resea1Address).withdraw()).to.be.revertedWith("Pool only to researchers");
+        await expect(instance.connect(resea1Address).withdraw()).to.be.revertedWith("Only researchers");
       });
     });
   });
@@ -272,7 +274,7 @@ describe("ResearcherRules", () => {
   describe("#addResearch", () => {
     context("when is not a researcher", () => {
       it("should return error", async () => {
-        await expect(addResearch(owner)).to.be.revertedWith("Only allowed to researchers");
+        await expect(addResearch(owner)).to.be.revertedWith("Only researchers");
       });
     });
 
@@ -357,7 +359,7 @@ describe("ResearcherRules", () => {
         });
 
         it("should return error message", async () => {
-          await expect(addResearch(resea1Address)).to.be.revertedWith("Wait until next era to add research");
+          await expect(addResearch(resea1Address)).to.be.revertedWith("Wait until next era");
         });
       });
     });
@@ -381,19 +383,6 @@ describe("ResearcherRules", () => {
       expect(research.validationsCount).to.equal("0");
       expect(research.valid).to.equal(true);
       expect(research.invalidatedAt).to.equal("0");
-    });
-  });
-
-  describe("#getResearchesIds", () => {
-    beforeEach(async () => {
-      await addResearcher("Researcher A", resea1Address);
-      await addResearch(resea1Address);
-    });
-
-    it("should have id associated", async () => {
-      const userIds = await instance.connect(resea2Address).getResearchesIds(resea1Address);
-
-      expect(userIds.length).to.equal(1);
     });
   });
 
@@ -455,9 +444,9 @@ describe("ResearcherRules", () => {
           });
 
           it("must decrement researchesCount in one", async () => {
-            const researchesTotalCount = await instance.researchesTotalCount();
+            const researchesCount = await instance.researchesCount();
 
-            expect(researchesTotalCount).to.eq(0);
+            expect(researchesCount).to.eq(0);
           });
         });
 
@@ -539,7 +528,7 @@ describe("ResearcherRules", () => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user1Address).addResearchValidation(1, "justification")).to.be.revertedWith(
-              "This research is not VALID"
+              "Research not VALID"
             );
           });
         });
@@ -557,7 +546,7 @@ describe("ResearcherRules", () => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user3Address).addResearchValidation(1, "justification")).to.be.revertedWith(
-              "This research is not VALID"
+              "Research not VALID"
             );
           });
         });
@@ -601,7 +590,7 @@ describe("ResearcherRules", () => {
         context("when contribution do not exists", () => {
           it("should return error message", async () => {
             await expect(instance.connect(user1Address).addResearchValidation(0, "justification")).to.be.revertedWith(
-              "This research is not VALID"
+              "Research not VALID"
             );
           });
         });
@@ -665,9 +654,9 @@ describe("ResearcherRules", () => {
           });
 
           it("must decrement researchesCount in one", async () => {
-            const researchesTotalCount = await instance.researchesTotalCount();
+            const researchesCount = await instance.researchesCount();
 
-            expect(researchesTotalCount).to.eq(0);
+            expect(researchesCount).to.eq(0);
           });
         });
 
@@ -749,7 +738,7 @@ describe("ResearcherRules", () => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user1Address).addResearchValidation(1, "justification")).to.be.revertedWith(
-              "This research is not VALID"
+              "Research not VALID"
             );
           });
         });
@@ -767,7 +756,7 @@ describe("ResearcherRules", () => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user3Address).addResearchValidation(1, "justification")).to.be.revertedWith(
-              "This research is not VALID"
+              "Research not VALID"
             );
           });
         });
@@ -775,7 +764,7 @@ describe("ResearcherRules", () => {
         context("when contribution do not exists", () => {
           it("should return error message", async () => {
             await expect(instance.connect(user1Address).addResearchValidation(0, "justification")).to.be.revertedWith(
-              "This research is not VALID"
+              "Research not VALID"
             );
           });
         });
@@ -839,9 +828,9 @@ describe("ResearcherRules", () => {
           });
 
           it("must decrement researchesCount in one", async () => {
-            const researchesTotalCount = await instance.researchesTotalCount();
+            const researchesCount = await instance.researchesCount();
 
-            expect(researchesTotalCount).to.eq(0);
+            expect(researchesCount).to.eq(0);
           });
         });
 
@@ -923,7 +912,7 @@ describe("ResearcherRules", () => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user1Address).addResearchValidation(1, "justification")).to.be.revertedWith(
-              "This research is not VALID"
+              "Research not VALID"
             );
           });
         });
@@ -941,7 +930,7 @@ describe("ResearcherRules", () => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user3Address).addResearchValidation(1, "justification")).to.be.revertedWith(
-              "This research is not VALID"
+              "Research not VALID"
             );
           });
         });
@@ -949,7 +938,7 @@ describe("ResearcherRules", () => {
         context("when contribution do not exists", () => {
           it("should return error message", async () => {
             await expect(instance.connect(user1Address).addResearchValidation(0, "justification")).to.be.revertedWith(
-              "This research is not VALID"
+              "Research not VALID"
             );
           });
         });
@@ -1013,9 +1002,9 @@ describe("ResearcherRules", () => {
           });
 
           it("must decrement researchesCount in one", async () => {
-            const researchesTotalCount = await instance.researchesTotalCount();
+            const researchesCount = await instance.researchesCount();
 
-            expect(researchesTotalCount).to.eq(0);
+            expect(researchesCount).to.eq(0);
           });
         });
 
@@ -1097,7 +1086,7 @@ describe("ResearcherRules", () => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user1Address).addResearchValidation(1, "justification")).to.be.revertedWith(
-              "This research is not VALID"
+              "Research not VALID"
             );
           });
         });
@@ -1115,7 +1104,7 @@ describe("ResearcherRules", () => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user3Address).addResearchValidation(1, "justification")).to.be.revertedWith(
-              "This research is not VALID"
+              "Research not VALID"
             );
           });
         });
@@ -1123,7 +1112,7 @@ describe("ResearcherRules", () => {
         context("when contribution do not exists", () => {
           it("should return error message", async () => {
             await expect(instance.connect(user1Address).addResearchValidation(0, "justification")).to.be.revertedWith(
-              "This research is not VALID"
+              "Research not VALID"
             );
           });
         });
@@ -1175,7 +1164,7 @@ describe("ResearcherRules", () => {
   describe("#addCalculatorItem", () => {
     context("when is not a researcher", () => {
       it("should return error", async () => {
-        await expect(addCalculatorItem(owner)).to.be.revertedWith("Only allowed to researchers");
+        await expect(addCalculatorItem(owner)).to.be.revertedWith("Only researchers");
       });
     });
 
@@ -1211,7 +1200,7 @@ describe("ResearcherRules", () => {
   describe("#addEvaluationMethod", () => {
     context("when is not a researcher", () => {
       it("should return error", async () => {
-        await expect(addEvaluationMethod(owner)).to.be.revertedWith("Only allowed to researchers");
+        await expect(addEvaluationMethod(owner)).to.be.revertedWith("Only researchers");
       });
     });
 

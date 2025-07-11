@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity ^0.8.27;
 
 import "./CommunityTypes.sol";
 
@@ -8,16 +8,22 @@ import "./CommunityTypes.sol";
  * @param id User id
  * @param supporterWallet Supporter wallet address
  * @param name User name
+ * @param description Brief user description or purpose
+ * @param profilePhoto User profilePhoto hash or content unique identifier
+ * @param publicationsCount Count of publications
+ * @param offsetsCount Count of offsets
+ * @param reductionItemsCount Count of declared reduction commitments.
  * @param createdAt Block of user creation
  */
 struct Supporter {
-  uint256 id;
+  uint64 id;
   address supporterWallet;
   string name;
+  string description;
   string profilePhoto;
-  uint256 publicationsCount;
-  uint256 offsetsCount;
-  uint256 reductionItemsCount;
+  uint32 publicationsCount;
+  uint32 offsetsCount;
+  uint16 reductionItemsCount;
   uint256 createdAt;
 }
 
@@ -49,18 +55,4 @@ struct Offset {
   uint256 createdAt;
   uint256 amountBurn;
   uint256 calculatorItemId;
-}
-
-/**
- * @dev PublicationId data structure
- */
-struct PublicationId {
-  uint256 id;
-}
-
-/**
- * @dev OffsetId data structure
- */
-struct OffsetId {
-  uint256 id;
 }

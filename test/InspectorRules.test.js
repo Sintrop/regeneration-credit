@@ -129,17 +129,6 @@ describe("InspectorRules", () => {
     });
   });
 
-  context("when will check if inspector exists", () => {
-    it("should return true when exists", async () => {
-      await addInspector("Inspector A", inspe1Address);
-      const inspectorExists = await instance.inspectorExists(inspe1Address);
-
-      expect(inspectorExists).to.equal(true);
-    });
-
-    // Todo Add when not exists
-  });
-
   describe("#afterRealizeInspection", () => {
     context("with allowed caller", () => {
       describe(".decreaseGiveUps", () => {
@@ -285,7 +274,9 @@ describe("InspectorRules", () => {
           await instance.afterAcceptInspection(inspe1Address, 1);
           await instance.afterRealizeInspection(inspe1Address);
 
-          await expect(instance.connect(inspe1Address).withdraw()).to.be.revertedWith("Can't approve withdraw");
+          await expect(instance.connect(inspe1Address).withdraw()).to.be.revertedWith(
+            "Not eligible to withdraw for this era"
+          );
         });
       });
 

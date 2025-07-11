@@ -1,0 +1,420 @@
+# RegeneratorRules
+
+## RegeneratorRules
+
+This contract defines and manages the rules and data specific to "Regenerator" users
+within the system. Regenerators are individuals, families, or groups providing ecosystem
+regeneration services to an area.
+
+_Inherits functionalities from `Ownable` (for contract deploy setup) and `Callable` (for whitelisted
+function access). It interacts with `CommunityRules` for general user management and `RegeneratorPool`
+for reward distribution. This contract handles regenerator registration, area management (coordinates,
+total area), regeneration score tracking, inspection processes, and penalty management._
+
+### MINIMUM_INSPECTIONS_TO_POOL
+
+```solidity
+uint8 MINIMUM_INSPECTIONS_TO_POOL
+```
+
+The minimum number of successful inspections a regenerator must have
+to be eligible for rewards from the Regenerator Pool.
+
+### MIN_REGENERATION_AREA
+
+```solidity
+uint32 MIN_REGENERATION_AREA
+```
+
+Minimum total area in square meters (m²) for a regeneration project.
+
+### MAX_REGENERATION_AREA
+
+```solidity
+uint32 MAX_REGENERATION_AREA
+```
+
+Maximum total area in square meters (m²) for a regeneration project.
+
+### regeneratorsAddress
+
+```solidity
+mapping(uint256 => address) regeneratorsAddress
+```
+
+A mapping from a unique regenerator ID to their corresponding wallet address.
+Facilitates lookup of a regenerator's address by their ID.
+
+### coordinates
+
+```solidity
+mapping(address => struct Coordinates[]) coordinates
+```
+
+A mapping from a regenerator's wallet address to an array of coordinate points
+defining the boundaries of their regeneration area.
+
+### projectDescriptions
+
+```solidity
+mapping(address => string) projectDescriptions
+```
+
+A mapping from a regenerator's wallet address to their project description.
+
+### impactRegenerators
+
+```solidity
+mapping(address => bool) impactRegenerators
+```
+
+A mapping to track if a regenerator is an "impact regenerator" (has successfully
+completed at least treee inspections).
+
+### areaPhoto
+
+```solidity
+mapping(address => string) areaPhoto
+```
+
+A mapping from a regenerator's wallet address to a hash or identifier of their area photo.
+
+### totalImpactRegenerators
+
+```solidity
+uint256 totalImpactRegenerators
+```
+
+The total count of regenerators who are considered "impact regenerators"
+(have achieved the minimum of three inspections.
+
+### regenerationArea
+
+```solidity
+uint256 regenerationArea
+```
+
+The grand total sum of all regeneration area (in square meters [m²])
+managed by all registered regenerators in the system.
+
+### constructor
+
+```solidity
+constructor(address communityRulesAddress, address regeneratorPoolAddress) public
+```
+
+_Initializes the ContributorRules contract with key parameters._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| communityRulesAddress | address | The address of the deployed `CommunityRules` contract. |
+| regeneratorPoolAddress | address | The address of the deployed `RegeneratorPool` contract. |
+
+### addRegenerator
+
+```solidity
+function addRegenerator(uint32 totalArea, string name, string proofPhoto, string projectDescription, struct Coordinates[] _coordinates) public
+```
+
+Registers a new regenerator and their area of regeneration within the system.
+This area can be subject to inspections and potential rewards.
+
+Requirements:
+- The caller (`msg.sender`) must not already be a registered regenerator.
+- The `name` string must not exceed `MAX_NAME_LENGTH` (50) characters in byte length.
+- The `proofPhoto` string must not exceed `MAX_HASH_LENGTH` (150) characters in byte length.
+- The `projectDescription` string must not exceed `MAX_PROJECT_DESCRIPTION_LENGTH` (200) characters in byte length.
+- The `_coordinates` array must contain between (3) and (10) points.
+- The `totalArea` must be between (500) and (500,000) square meters [m²].
+
+_Allows a user to attempt to register as a regenerator.
+Creates a new `Regenerator` profile for the caller if all requirements are met._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| totalArea | uint32 | The total area (in square meters [m²]) to be registered. |
+| name | string | The chosen name for the regenerator. |
+| proofPhoto | string | A hash or identifier for the regenerator's identity verification photo. |
+| projectDescription | string | A brief description of the regeneration project. |
+| _coordinates | struct Coordinates[] | An array of coordinate points defining the boundaries of the regeneration area. |
+
+### withdraw
+
+```solidity
+function withdraw() public
+```
+
+Regenerators can claim tokens for their regeneration service, provided they meet
+the minimum inspection threshold and are eligible for the current era.
+To win more tokens, regenerators must plant more trees from different species.
+
+Requirements:
+- The caller (`msg.sender`) must be a registered `REGENERATOR`.
+- The regenerator must have completed at least (3) inspections.
+- The regenerator must have a positive regeneration score.
+- The regenerator's current era (`regenerator.pool.currentEra`) will be incremented upon successful withdrawal attempt.
+
+_Allows a regenerator to initiate a withdrawal of Regeneration Credits
+based on their completed inspections and current era._
+
+### updateAreaPhoto
+
+```solidity
+function updateAreaPhoto(string newPhoto) public
+```
+
+Allows a regenerator to update their area photo for their regeneration area.
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| newPhoto | string | The new hash or identifier of the area photo. Requirements: - The `newPhoto` string must not exceed 150 characters in byte length. - The caller (`msg.sender`) must be a registered `REGENERATOR`. |
+
+### removePoolLevels
+
+```solidity
+function removePoolLevels(address addr, uint256 levelsToRemove) public
+```
+
+Can only be called by the ValidatorRules address. If `levelsToRemove` is 0,
+this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
+
+Requirements:
+- Only addresses whitelisted via `Callable` can call this function.
+
+_Allows an authorized caller to remove levels from a regenerator's pool.
+This function updates the regenerator's local regeneration score and notifies the `RegeneratorPool` contract._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| addr | address | The wallet address of the regenerator from whom levels are to be removed. |
+| levelsToRemove | uint256 | The number of levels/score points to decrease. If `0`, the regenerator's regeneration score is reset to `0`, and their area is decremented from the total `regenerationArea`. |
+
+### decrementInspections
+
+```solidity
+function decrementInspections(address addr) public
+```
+
+Can only be called by the ValidatorRules address.
+
+Requirements:
+- The regenerator's `totalInspections` count must be greater than 0.
+- If `totalInspections` becomes 0 after decrement, the regenerator is removed from `impactRegenerators`.
+
+_Allows an authorized caller to decrement a regenerator's total completed inspections count.
+This function is typically called when an inspection previously counted as valid is invalidated._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| addr | address | The regenerator's wallet address. |
+
+### afterRequestInspection
+
+```solidity
+function afterRequestInspection(address addr) public
+```
+
+This function is intended to be called by a whitelisted contract, the InspectionRules.
+
+_Processes actions after a regenerator requests an inspection for their area.
+Sets the `_pendingInspection` status to `true` and records the `_lastRequestAt` timestamp._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| addr | address | The regenerator's wallet address. |
+
+### afterAcceptInspection
+
+```solidity
+function afterAcceptInspection(address addr) public
+```
+
+Processes actions after an inspector accepts an inspection request from a regenerator.
+Sets the regenerator's `_pendingInspection` status to `false`.
+
+_This function is intended to be called by a whitelisted external contract, the InspectorRules._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| addr | address | The regenerator's wallet address. |
+
+### afterRealizeInspection
+
+```solidity
+function afterRealizeInspection(address addr, uint32 score) public returns (uint256)
+```
+
+Processes actions after an inspection is successfully realized for a regenerator's area.
+Increments the regenerator's total inspections and updates their regeneration score.
+
+_This function is intended to be called by a whitelisted external contract, the InspectionRules
+after an inspection is completed._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| addr | address | The regenerator's wallet address. |
+| score | uint32 | The score obtained from the realized inspection, to be added to the regenerator's total score. |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint256 | uint256 The updated total number of inspections for the regenerator. |
+
+### getRegenerator
+
+```solidity
+function getRegenerator(address addr) public view returns (struct Regenerator regenerator)
+```
+
+Provides the full profile of a regenerator.
+
+_Returns the detailed `Regenerator` data for a given address._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| addr | address | The address of the regenerator to retrieve. |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| regenerator | struct Regenerator | The `Regenerator` struct containing the user's data. |
+
+### poolCurrentEra
+
+```solidity
+function poolCurrentEra() public view returns (uint256)
+```
+
+This function provides the current era from the perspective of the reward pool,
+which is essential for era-based eligibility and reward calculations for regenerators.
+
+_Returns the current era as determined by the `RegeneratorPool` contract._
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint256 | uint256 The current era of the `RegeneratorPool`. |
+
+### nextEraIn
+
+```solidity
+function nextEraIn() public view returns (uint256)
+```
+
+Provides a countdown to the next era for regenerator planning.
+
+_Calculates the number of blocks remaining until the start of the next era,
+according to the `RegeneratorPool` contract's era definition._
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint256 | uint256 The amount of blocks remaining until the next era begins. |
+
+### regenerationTotalArea
+
+```solidity
+function regenerationTotalArea() public view returns (uint256)
+```
+
+_Returns the grand total sum of all regeneration area (in square meters [m²])
+managed by all registered regenerators in the system._
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint256 | uint256 The total regeneration area in square meters [m²]. |
+
+### getCoordinates
+
+```solidity
+function getCoordinates(address addr) public view returns (struct Coordinates[])
+```
+
+_Returns all coordinate points defining a regenerator's area._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| addr | address | The regenerator's wallet address. |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | struct Coordinates[] | Coordinates[] An array of `Coordinates` structs representing the regenerator's area. |
+
+### RegeneratorRegistered
+
+```solidity
+event RegeneratorRegistered(uint256 id, address regeneratorAddress, string name, uint32 totalArea, uint256 blockNumber)
+```
+
+_Emitted when a new regenerator successfully registers._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| id | uint256 | The unique ID of the newly registered regenerator. |
+| regeneratorAddress | address | The wallet address of the regenerator. |
+| name | string | The name provided by the regenerator. |
+| totalArea | uint32 | The total area (in square meters) managed by the regenerator. |
+| blockNumber | uint256 | The block number at which the registration occurred. |
+
+### RegeneratorWithdrawalInitiated
+
+```solidity
+event RegeneratorWithdrawalInitiated(address regeneratorAddress, uint256 era, uint256 blockNumber)
+```
+
+_Emitted when a regenerator successfully initiates a withdrawal of tokens._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| regeneratorAddress | address | The address of the regenerator initiating the withdrawal. |
+| era | uint256 | The era for which the withdrawal was initiated. |
+| blockNumber | uint256 | The block number at which the withdrawal was initiated. |
+
+### RegeneratorEnteredPool
+
+```solidity
+event RegeneratorEnteredPool(address regeneratorAddress, uint256 blockNumber)
+```
+
+_Emitted when a regenerator initially enters the contract's reward pool
+by meeting the minimum inspection criteria and `onContractPool` is set to true._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| regeneratorAddress | address | The address of the regenerator entering the pool. |
+| blockNumber | uint256 | The block number at which the regenerator entered the pool. |
+

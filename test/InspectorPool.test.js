@@ -40,7 +40,7 @@ describe("InspectorPool", (accounts) => {
 
         expect(era.levels).to.equal(0);
         expect(era.tokens).to.equal(0);
-        expect(era.users).to.equal(0);
+        expect(era.claimsCount).to.equal(0);
       });
     });
   });
@@ -491,6 +491,14 @@ describe("InspectorPool", (accounts) => {
                   const balanceOf = await instance.eraTokens(2, inspector1Address);
 
                   expect(balanceOf).to.equal(3750000000000000000000000n);
+                });
+
+                it("must update eras", async () => {
+                  const era = await instance.getEra(2);
+
+                  expect(era.claimsCount).to.equal(2);
+                  expect(era.tokens).to.equal(7500000000000000000000000n);
+                  expect(era.levels).to.equal(6);
                 });
               });
 

@@ -44,8 +44,7 @@ describe("InspectionRules", () => {
     open: 0,
     accepted: 1,
     inspected: 2,
-    expired: 3,
-    invalidated: 4,
+    invalidated: 3,
   };
 
   const USER_TYPES = {
@@ -63,12 +62,12 @@ describe("InspectionRules", () => {
     blocksToExpireAcceptedInspection: 50,
     allowedInitialRequests: 1,
     acceptInspectionDelayBlocks: 5,
-    securityBlocksToValidatorAnalysis: 100,
-    blocksToAccept: 6000,
+    securityBlocksToValidation_: 100,
+    BLOCKS_TO_ACCEPT: 6000,
   };
 
   const addRegenerator = async (name, from) => {
-    await regeneratorRules.connect(from).addRegenerator(1000, name, "photoURL", coordinates());
+    await regeneratorRules.connect(from).addRegenerator(1000, name, "projectDescription", "photoURL", coordinates());
   };
 
   const coordinates = () => {
@@ -136,6 +135,10 @@ describe("InspectionRules", () => {
     await instance.connect(from).realizeInspection(id, proofPhoto, report, treesResult, biodiversityResult);
   };
 
+  const denyUser = async (userAddress) => {
+    await communityRules.setDeniedType(userAddress);
+  };
+
   beforeEach(async () => {
     [
       owner,
@@ -190,7 +193,7 @@ describe("InspectionRules", () => {
       sintropArgs.blocksToExpireAcceptedInspection,
       sintropArgs.allowedInitialRequests,
       sintropArgs.acceptInspectionDelayBlocks,
-      sintropArgs.securityBlocksToValidatorAnalysis
+      sintropArgs.securityBlocksToValidation_
     );
 
     const inspectionRulesDependencies = {
@@ -262,14 +265,6 @@ describe("InspectionRules", () => {
         expect(inspection.id).to.equal(1);
       });
     });
-
-    context("when inspection dont exists", () => {
-      it("should return inspection", async () => {
-        const inspection = await instance.getInspection(1);
-
-        expect(inspection.id).to.equal(0);
-      });
-    });
   });
 
   describe("#requestInspection", () => {
@@ -321,7 +316,7 @@ describe("InspectionRules", () => {
       context("when have more than ALLOWED_INITIAL_REQUESTS", () => {
         context("when has request OPEN or ACCEPTED", () => {
           it("should return error message", async () => {
-            await expect(requestInspection(regeneratorAddress)).to.be.revertedWith("Request already OPEN");
+            await expect(requestInspection(regeneratorAddress)).to.be.revertedWith("Request OPEN");
           });
         });
 
@@ -436,7 +431,7 @@ describe("InspectionRules", () => {
         });
       });
 
-      describe("#afterRequestInspection", () => {
+      describe("#_afterRequestInspection", () => {
         it("initial status should be equal OPEN", async () => {
           const inspection = await instance.getInspection(1);
 
@@ -478,7 +473,7 @@ describe("InspectionRules", () => {
     context("with non regenerator", () => {
       context("when is not regenerator and try request inspection", () => {
         it("should return message error", async () => {
-          await expect(instance.requestInspection()).to.be.revertedWith("Please register as regenerator");
+          await expect(instance.requestInspection()).to.be.revertedWith("Only regenerators");
         });
       });
     });
@@ -501,7 +496,7 @@ describe("InspectionRules", () => {
 
         context("when have not waited inspection delay time", () => {
           it("should return error message", async () => {
-            await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Wait inspection delay blocks");
+            await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Wait delay blocks");
           });
         });
 
@@ -515,7 +510,7 @@ describe("InspectionRules", () => {
             });
 
             it("should return error message", async () => {
-              await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Wait until next era to accept");
+              await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Wait until next era");
             });
           });
 
@@ -528,7 +523,7 @@ describe("InspectionRules", () => {
             });
 
             it("should return error message", async () => {
-              await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Wait until next era to accept");
+              await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Wait until next era");
             });
           });
         });
@@ -580,7 +575,7 @@ describe("InspectionRules", () => {
           });
 
           it("should return error message", async () => {
-            await expect(acceptInspection(4, inspectorAddress)).to.be.revertedWith("No more than 3 giveUps allowed");
+            await expect(acceptInspection(4, inspectorAddress)).to.be.revertedWith("Only 3 giveUps allowed");
           });
         });
 
@@ -625,7 +620,7 @@ describe("InspectionRules", () => {
             });
 
             it("should return error message", async () => {
-              await expect(acceptInspection(1, inspector2Address)).to.be.revertedWith("This inspection is not OPEN");
+              await expect(acceptInspection(1, inspector2Address)).to.be.revertedWith("Inspection must be OPEN");
             });
           });
 
@@ -640,9 +635,7 @@ describe("InspectionRules", () => {
 
             context("when last inspection is not expired", () => {
               it("should return error message", async () => {
-                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith(
-                  "You already have an inspection Accepted"
-                );
+                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Already accepted");
               });
             });
 
@@ -670,7 +663,7 @@ describe("InspectionRules", () => {
               });
 
               it("should accept inspection with success after finishing previous one", async () => {
-                await advanceBlock(sintropArgs.blocksToAccept);
+                await advanceBlock(sintropArgs.BLOCKS_TO_ACCEPT);
                 await acceptInspection(2, inspectorAddress);
 
                 const inspection = await instance.getInspection(2);
@@ -681,9 +674,7 @@ describe("InspectionRules", () => {
 
             context("when dont finished last inspection", () => {
               it("should return error message", async () => {
-                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith(
-                  "You already have an inspection Accepted"
-                );
+                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Already accepted");
               });
             });
           });
@@ -701,16 +692,24 @@ describe("InspectionRules", () => {
           });
 
           it("should return error message", async () => {
-            await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith(
-              "Already inspected this regenerator"
-            );
+            await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Already inspected");
           });
         });
       });
 
       context("when inspection dont exists", () => {
         it("should return error message", async () => {
-          await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("This inspection do not exist");
+          await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Inspection do not exist");
+        });
+      });
+
+      context("when regenerator is not valid", () => {
+        it("should return error message", async () => {
+          await requestInspection(regeneratorAddress);
+          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+
+          await denyUser(regeneratorAddress);
+          await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Regenerator invalid");
         });
       });
     });
@@ -718,7 +717,7 @@ describe("InspectionRules", () => {
     context("with non inspector", () => {
       it("should return error message", async () => {
         await requestInspection(regeneratorAddress);
-        await expect(acceptInspection(1, regeneratorAddress)).to.be.revertedWith("Please register as inspector");
+        await expect(acceptInspection(1, regeneratorAddress)).to.be.revertedWith("Only inspectors");
       });
     });
   });
@@ -762,7 +761,7 @@ describe("InspectionRules", () => {
 
             context("when inspection is not expired", () => {
               context("when pass regenerationInspection equal 4 regenerationIndex size", () => {
-                describe(".setActivistLevel", () => {
+                describe("._setActivistLevel", () => {
                   context("when regenerator do not win minimum inspection", () => {
                     beforeEach(async () => {
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
@@ -930,22 +929,6 @@ describe("InspectionRules", () => {
                     expect(inspector.totalInspections).to.equal(1);
                   });
 
-                  it("should add inspection to inspector in userInspections", async () => {
-                    const userInspections = await instance
-                      .connect(inspectorAddress)
-                      .getInspectionsHistory(inspectorAddress);
-
-                    expect(userInspections.length).to.equal(1);
-                  });
-
-                  it("should add inspection to regenerator in userInspections", async () => {
-                    const userInspections = await instance
-                      .connect(regeneratorAddress)
-                      .getInspectionsHistory(regeneratorAddress);
-
-                    expect(userInspections.length).to.equal(1);
-                  });
-
                   it("should increment realizedInspectionsCount", async () => {
                     const realizedInspectionsCount = await instance.realizedInspectionsCount();
 
@@ -954,10 +937,21 @@ describe("InspectionRules", () => {
                 });
 
                 context("when check inspection regenerationIndex", () => {
+                  context("when select result over the max limit", () => {
+                    it("should return error message", async () => {
+                      const treesResultValue = 10001;
+                      const biodiversityResultValue = 1071;
+
+                      await expect(
+                        realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress)
+                      ).to.be.revertedWith("Max result limit");
+                    });
+                  });
+
                   context("when select REGENERATIVE_6", () => {
                     beforeEach(async () => {
-                      const treesResultValue = 100001;
-                      const biodiversityResultValue = 1001;
+                      const treesResultValue = 80001;
+                      const biodiversityResultValue = 271;
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
@@ -971,7 +965,7 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_5", () => {
                     beforeEach(async () => {
-                      const treesResultValue = 10001;
+                      const treesResultValue = 30001;
                       const biodiversityResultValue = 130;
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
@@ -986,8 +980,8 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_4", () => {
                     beforeEach(async () => {
-                      const treesResultValue = 5801;
-                      const biodiversityResultValue = 101;
+                      const treesResultValue = 15001;
+                      const biodiversityResultValue = 79;
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
@@ -1001,8 +995,8 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_3", () => {
                     beforeEach(async () => {
-                      const treesResultValue = 1001;
-                      const biodiversityResultValue = 51;
+                      const treesResultValue = 8001;
+                      const biodiversityResultValue = 35;
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
@@ -1016,8 +1010,8 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_2", () => {
                     beforeEach(async () => {
-                      const treesResultValue = 500;
-                      const biodiversityResultValue = 21;
+                      const treesResultValue = 3500;
+                      const biodiversityResultValue = 18;
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
@@ -1032,7 +1026,7 @@ describe("InspectionRules", () => {
                   context("when select REGENERATIVE_1", () => {
                     beforeEach(async () => {
                       const treesResultValue = 50;
-                      const biodiversityResultValue = 10;
+                      const biodiversityResultValue = 8;
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
@@ -1072,7 +1066,7 @@ describe("InspectionRules", () => {
             it("should return error message", async () => {
               await expect(
                 realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspector2Address)
-              ).to.be.revertedWith("You have not accepted this inspection");
+              ).to.be.revertedWith("Not your inspection");
             });
           });
         });
@@ -1081,7 +1075,7 @@ describe("InspectionRules", () => {
           it("should return error message", async () => {
             await expect(
               realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress)
-            ).to.be.revertedWith("Accept this inspection before");
+            ).to.be.revertedWith("Accept before");
           });
         });
       });
@@ -1090,7 +1084,7 @@ describe("InspectionRules", () => {
         it("should return error message", async () => {
           await expect(
             realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress)
-          ).to.be.revertedWith("Accept this inspection before");
+          ).to.be.revertedWith("Accept before");
         });
       });
     });
@@ -1103,7 +1097,7 @@ describe("InspectionRules", () => {
 
         await expect(
           realizeInspection(1, report, treesResultValue, biodiversityResultValue, regeneratorAddress)
-        ).to.be.revertedWith("Please register as inspector");
+        ).to.be.revertedWith("Only inspectors");
       });
     });
   });
@@ -1144,12 +1138,9 @@ describe("InspectionRules", () => {
           });
 
           it("add validation", async () => {
-            const validation = await validationRules.inspectionValidations(1, 0);
+            const inspection = await instance.getInspection(1);
 
-            expect(validation[0]).to.equal(user1Address.address);
-            expect(validation[1]).to.equal(1);
-            expect(validation[2]).to.equal("justification");
-            expect(validation[3]).to.equal(2);
+            expect(inspection.validationsCount).to.equal(1);
           });
         });
 
@@ -1161,11 +1152,9 @@ describe("InspectionRules", () => {
             });
 
             it("add validations", async () => {
-              const validation1 = await validationRules.inspectionValidations(1, 0);
-              const validation2 = await validationRules.inspectionValidations(1, 1);
+              const inspection = await instance.getInspection(1);
 
-              expect(validation1.validator).to.equal(user1Address.address);
-              expect(validation2.validator).to.equal(user2Address.address);
+              expect(inspection.validationsCount).to.equal(2);
             });
 
             it("decrement inspectionsTreesImpact", async () => {
@@ -1266,7 +1255,7 @@ describe("InspectionRules", () => {
 
         it("should return error message", async () => {
           await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-            "Can not add validation anymore"
+            "Can't validade anymore"
           );
         });
       });
@@ -1274,7 +1263,7 @@ describe("InspectionRules", () => {
       context("when inspection is not inspected", () => {
         it("should return error message", async () => {
           await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-            "Can not add validation anymore"
+            "Can't validade anymore"
           );
         });
       });
@@ -1307,12 +1296,9 @@ describe("InspectionRules", () => {
           });
 
           it("add validation", async () => {
-            const validation = await validationRules.inspectionValidations(1, 0);
+            const inspection = await instance.getInspection(1);
 
-            expect(validation[0]).to.equal(user1Address.address);
-            expect(validation[1]).to.equal(1);
-            expect(validation[2]).to.equal("justification");
-            expect(validation[3]).to.equal(2);
+            expect(inspection.validationsCount).to.equal(1);
           });
         });
 
@@ -1324,11 +1310,9 @@ describe("InspectionRules", () => {
             });
 
             it("add validations", async () => {
-              const validation1 = await validationRules.inspectionValidations(1, 0);
-              const validation2 = await validationRules.inspectionValidations(1, 1);
+              const inspection = await instance.getInspection(1);
 
-              expect(validation1.validator).to.equal(user1Address.address);
-              expect(validation2.validator).to.equal(user2Address.address);
+              expect(inspection.validationsCount).to.equal(2);
             });
 
             it("decrement inspectionsTreesImpact", async () => {
@@ -1429,7 +1413,7 @@ describe("InspectionRules", () => {
 
         it("should return error message", async () => {
           await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-            "Can not add validation anymore"
+            "Can't validade anymore"
           );
         });
       });
@@ -1437,7 +1421,7 @@ describe("InspectionRules", () => {
       context("when inspection is not inspected", () => {
         it("should return error message", async () => {
           await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-            "Can not add validation anymore"
+            "Can't validade anymore"
           );
         });
       });
@@ -1470,12 +1454,9 @@ describe("InspectionRules", () => {
           });
 
           it("add validation", async () => {
-            const validation = await validationRules.inspectionValidations(1, 0);
+            const inspection = await instance.getInspection(1);
 
-            expect(validation[0]).to.equal(user1Address.address);
-            expect(validation[1]).to.equal(1);
-            expect(validation[2]).to.equal("justification");
-            expect(validation[3]).to.equal(2);
+            expect(inspection.validationsCount).to.equal(1);
           });
         });
 
@@ -1487,11 +1468,9 @@ describe("InspectionRules", () => {
             });
 
             it("add validations", async () => {
-              const validation1 = await validationRules.inspectionValidations(1, 0);
-              const validation2 = await validationRules.inspectionValidations(1, 1);
+              const inspection = await instance.getInspection(1);
 
-              expect(validation1.validator).to.equal(user1Address.address);
-              expect(validation2.validator).to.equal(user2Address.address);
+              expect(inspection.validationsCount).to.equal(2);
             });
 
             it("decrement inspectionsTreesImpact", async () => {
@@ -1592,7 +1571,7 @@ describe("InspectionRules", () => {
 
         it("should return error message", async () => {
           await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-            "Can not add validation anymore"
+            "Can't validade anymore"
           );
         });
       });
@@ -1600,7 +1579,7 @@ describe("InspectionRules", () => {
       context("when inspection is not inspected", () => {
         it("should return error message", async () => {
           await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-            "Can not add validation anymore"
+            "Can't validade anymore"
           );
         });
       });
@@ -1633,12 +1612,9 @@ describe("InspectionRules", () => {
           });
 
           it("add validation", async () => {
-            const validation = await validationRules.inspectionValidations(1, 0);
+            const inspection = await instance.getInspection(1);
 
-            expect(validation[0]).to.equal(user1Address.address);
-            expect(validation[1]).to.equal(1);
-            expect(validation[2]).to.equal("justification");
-            expect(validation[3]).to.equal(2);
+            expect(inspection.validationsCount).to.equal(1);
           });
         });
 
@@ -1650,11 +1626,9 @@ describe("InspectionRules", () => {
             });
 
             it("add validations", async () => {
-              const validation1 = await validationRules.inspectionValidations(1, 0);
-              const validation2 = await validationRules.inspectionValidations(1, 1);
+              const inspection = await instance.getInspection(1);
 
-              expect(validation1.validator).to.equal(user1Address.address);
-              expect(validation2.validator).to.equal(user2Address.address);
+              expect(inspection.validationsCount).to.equal(2);
             });
 
             it("decrement inspectionsTreesImpact", async () => {
@@ -1755,7 +1729,7 @@ describe("InspectionRules", () => {
 
         it("should return error message", async () => {
           await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-            "Can not add validation anymore"
+            "Can't validade anymore"
           );
         });
       });
@@ -1763,7 +1737,7 @@ describe("InspectionRules", () => {
       context("when inspection is not inspected", () => {
         it("should return error message", async () => {
           await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-            "Can not add validation anymore"
+            "Can't validade anymore"
           );
         });
       });

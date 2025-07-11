@@ -190,7 +190,7 @@ describe("DeveloperRules", (accounts) => {
           });
 
           it("should return error message", async () => {
-            await expect(addDeveloper("Developer A", dev1Address)).to.be.revertedWith("Max limit reached");
+            await expect(addDeveloper("Developer A", dev1Address)).to.be.revertedWith("Max user limit");
           });
         });
       });
@@ -1211,21 +1211,6 @@ describe("DeveloperRules", (accounts) => {
     });
   });
 
-  describe("#developerExists", () => {
-    it("should return true when exists", async () => {
-      await addDeveloper("Developer A", dev1Address);
-      const developerExists = await instance.developerExists(dev1Address);
-
-      expect(developerExists).to.equal(true);
-    });
-
-    it("it should return false when don't exists", async () => {
-      const developerExists = await instance.developerExists(dev1Address);
-
-      expect(developerExists).to.equal(false);
-    });
-  });
-
   describe("#withdraw", () => {
     context("when is developer", () => {
       beforeEach(async () => {
@@ -1314,7 +1299,9 @@ describe("DeveloperRules", (accounts) => {
           });
 
           it("should return error message", async () => {
-            await expect(instance.connect(dev1Address).withdraw()).to.be.revertedWith("Can't approve withdraw");
+            await expect(instance.connect(dev1Address).withdraw()).to.be.revertedWith(
+              "Not eligible to withdraw for this era"
+            );
           });
         });
 
@@ -1341,7 +1328,9 @@ describe("DeveloperRules", (accounts) => {
 
       context("when can't withdraw tokens", () => {
         it("should return error message", async () => {
-          await expect(instance.connect(dev1Address).withdraw()).to.be.revertedWith("Can't approve withdraw");
+          await expect(instance.connect(dev1Address).withdraw()).to.be.revertedWith(
+            "Not eligible to withdraw for this era"
+          );
         });
       });
     });

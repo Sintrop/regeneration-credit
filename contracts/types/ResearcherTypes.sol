@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity ^0.8.27;
 
 import "./CommunityTypes.sol";
 
@@ -17,7 +17,7 @@ import "./CommunityTypes.sol";
  * @param createdAt Block of user creation
  */
 struct Researcher {
-  uint256 id;
+  uint64 id;
   address researcherWallet;
   string name;
   Pool pool;
@@ -32,6 +32,8 @@ struct Researcher {
 
 /**
  * @dev Researcher pool data
+ * @param level User pool level
+ * @param currentEra User currentEra, updated after each withdraw
  */
 struct Pool {
   uint256 level;
@@ -52,7 +54,7 @@ struct Pool {
  * @param createdAtBlock Block of research creation
  */
 struct Research {
-  uint256 id;
+  uint64 id;
   uint256 era;
   address createdBy;
   string title;
@@ -74,11 +76,11 @@ struct Research {
  * @param carbonImpact Impact of each item unit in carbon. [g]
  */
 struct CalculatorItem {
-  uint256 id;
+  uint64 id;
   address createdBy;
-  string title;
+  string item;
+  string thesis;
   string unit;
-  string justification;
   uint256 carbonImpact;
 }
 
@@ -91,7 +93,7 @@ struct CalculatorItem {
  * @param projectURL Project URL or repository address
  */
 struct EvaluationMethod {
-  uint256 id;
+  uint64 id;
   address createdBy;
   string title;
   string research;
@@ -100,6 +102,7 @@ struct EvaluationMethod {
 
 /**
  * @dev Research penalty
+ * @param researchId ID of the research that incurred the penalty.
  */
 struct Penalty {
   uint256 researchId;
@@ -107,6 +110,10 @@ struct Penalty {
 
 /**
  * @dev System used contracts address
+ * @param communityRulesAddress Address of the CommunityRules contract
+ * @param researcherPoolAddress Address of the ResearcherPool contract
+ * @param validationRulesAddress Address of the ValidationRules contract
+ * @param voteRulesAddress Address of the VoteRules contract
  */
 struct ContractsDependency {
   address communityRulesAddress;

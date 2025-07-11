@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity ^0.8.27;
 
 /**
  * @dev RegenerationIndex category data structure
+ * @param id Unique id for the category
+ * @param name Category name
+ * @param description Category description
  */
 struct Category {
-  uint256 id;
+  uint64 id;
   string name;
   string description;
 }
@@ -14,7 +17,7 @@ struct Category {
  * @dev Description and id of each index
  */
 struct RegenerationIndexDescription {
-  uint256 regenerationIndexId;
+  uint8 regenerationIndexId;
   string description;
 }
 
@@ -23,5 +26,5 @@ struct RegenerationIndexDescription {
  */
 struct RegenerationIndex {
   string name;
-  uint256 value;
+  uint32 value;
 }

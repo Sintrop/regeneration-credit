@@ -40,7 +40,7 @@ describe("ResearcherPool", () => {
 
         expect(era.levels).to.equal(0);
         expect(era.tokens).to.equal(0);
-        expect(era.users).to.equal(0);
+        expect(era.claimsCount).to.equal(0);
       });
     });
   });
@@ -491,6 +491,14 @@ describe("ResearcherPool", () => {
                   const balanceOf = await instance.eraTokens(2, researcher1Address);
 
                   expect(balanceOf).to.equal(833333333333333333333333n);
+                });
+
+                it("must update eras", async () => {
+                  const era = await instance.getEra(2);
+
+                  expect(era.claimsCount).to.equal(2);
+                  expect(era.tokens).to.equal(1666666666666666666666666n);
+                  expect(era.levels).to.equal(6);
                 });
               });
 

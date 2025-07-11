@@ -13,12 +13,17 @@ describe("RegeneratorRules", () => {
 
   const addRegenerator = async (name, from, _coordinates = []) => {
     const test = _coordinates.length > 0 ? _coordinates : coordinates();
-    await instance.connect(from).addRegenerator(1000, name, "photoURL", test);
+    await instance.connect(from).addRegenerator(1000, name, "photoURL", "projectDescription", test);
   };
 
   const addRegenerator2 = async (name, from, _coordinates = []) => {
     const test = _coordinates.length > 0 ? _coordinates : coordinates();
-    await instance.connect(from).addRegenerator(10, name, "photoURL", test);
+    await instance.connect(from).addRegenerator(10, name, "photoURL", "projectDescription", test);
+  };
+
+  const addRegenerator3 = async (name, from, _coordinates = []) => {
+    const test = _coordinates.length > 0 ? _coordinates : coordinates();
+    await instance.connect(from).addRegenerator(4000000000, name, "photoURL", "projectDescription", test);
   };
 
   const coordinates = () => {
@@ -240,9 +245,19 @@ describe("RegeneratorRules", () => {
     });
   });
 
-  context("when totalArea is below 1000", () => {
+  context("when totalArea is below 500", () => {
     it("should return error", async () => {
-      await expect(addRegenerator2("Regenerator A", prod1Address)).to.be.revertedWith("Minimum 500 square meters");
+      await expect(addRegenerator2("Regenerator A", prod1Address)).to.be.revertedWith(
+        "Minimum 500 and maximum 500.000 square meters"
+      );
+    });
+  });
+
+  context("when totalArea is over 500.000", () => {
+    it("should return error", async () => {
+      await expect(addRegenerator3("Regenerator A", prod1Address)).to.be.revertedWith(
+        "Minimum 500 and maximum 500.000 square meters"
+      );
     });
   });
 
@@ -251,24 +266,6 @@ describe("RegeneratorRules", () => {
       await addRegenerator("Regenerator A", prod1Address);
 
       await expect(addRegenerator("Regenerator A", prod1Address)).to.be.revertedWith("User already exists");
-    });
-  });
-
-  context("when regenerator don't exist", () => {
-    it("should return false when regenerator don't exist", async () => {
-      const regeneratorExists = await instance.regeneratorExists(prod1Address);
-
-      expect(regeneratorExists).to.equal(false);
-    });
-  });
-
-  context("when regenerator exists", () => {
-    it("should return true when regenerator exists", async () => {
-      await addRegenerator("Regenerator A", prod1Address);
-
-      const regeneratorExists = await instance.regeneratorExists(prod1Address);
-
-      expect(regeneratorExists).to.equal(true);
     });
   });
 

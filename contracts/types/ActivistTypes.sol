@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <=0.9.0;
+pragma solidity ^0.8.27;
 
 import "./CommunityTypes.sol";
 
@@ -13,7 +13,7 @@ import "./CommunityTypes.sol";
  * @param createdAt Block of user creation
  */
 struct Activist {
-  uint256 id;
+  uint64 id;
   address activistWallet;
   string name;
   string proofPhoto;
@@ -23,6 +23,8 @@ struct Activist {
 
 /**
  * @dev Activist pool data
+ * @param level User pool level
+ * @param currentEra User currentEra, updated after each withdraw
  */
 struct Pool {
   uint256 level;
