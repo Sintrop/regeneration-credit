@@ -241,10 +241,10 @@ Sets the `_pendingInspection` status to `true` and records the `_lastRequestAt` 
 function afterAcceptInspection(address addr) public
 ```
 
-This function is intended to be called by a whitelisted external contract, the InspectorRules.
+Processes actions after an inspector accepts an inspection request from a regenerator.
+Sets the regenerator's `_pendingInspection` status to `false`.
 
-_Processes actions after an inspector accepts an inspection request from a regenerator.
-Sets the regenerator's `_pendingInspection` status to `false`._
+_This function is intended to be called by a whitelisted external contract, the InspectorRules._
 
 #### Parameters
 
@@ -258,11 +258,11 @@ Sets the regenerator's `_pendingInspection` status to `false`._
 function afterRealizeInspection(address addr, uint32 score) public returns (uint256)
 ```
 
-This function is intended to be called by a whitelisted external contract, the InspectionRules
-after an inspection is completed.
+Processes actions after an inspection is successfully realized for a regenerator's area.
+Increments the regenerator's total inspections and updates their regeneration score.
 
-_Processes actions after an inspection is successfully realized for a regenerator's area.
-Increments the regenerator's total inspections and updates their regeneration score._
+_This function is intended to be called by a whitelisted external contract, the InspectionRules
+after an inspection is completed._
 
 #### Parameters
 
