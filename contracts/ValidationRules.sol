@@ -10,6 +10,7 @@ import { IContributorRules } from "./interfaces/IContributorRules.sol";
 import { IActivistRules } from "./interfaces/IActivistRules.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
 import { Inspection } from "./types/InspectionTypes.sol";
+import { Regenerator } from "./types/RegeneratorTypes.sol";
 import { Report } from "./types/DeveloperTypes.sol";
 import { Research } from "./types/ResearcherTypes.sol";
 import { Contribution } from "./types/ContributorTypes.sol";
@@ -26,6 +27,9 @@ import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuar
  */
 contract ValidationRules is Callable, ReentrancyGuard {
   // --- Constants ---
+
+  /// @notice Number of inspections required for a Regenerator to achieve validation immunity.
+  uint8 private constant REGENERATOR_VALIDATION_IMMUNITY_THRESHOLD = 5;
 
   /// @notice Max character length for the justification provided in a validation vote.
   uint16 private constant MAX_JUSTIFICATION_LENGTH = 300;
@@ -144,6 +148,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
    * - Caller must have waited `timeBetweenVotes` since their last vote.
    * - Caller must vote only once per user per era.
    * - The target user must be registered and not already denied.
+   * - If the target user is a Regenerator, they must have fewer than 4 completed inspections to be eligible for invalidation.
    *
    * @param userAddress Invalidation user address.
    * @param justification Invalidation justification (Max characters).
@@ -153,6 +158,15 @@ contract ValidationRules is Callable, ReentrancyGuard {
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(!communityRules.userTypeIs(CommunityTypes.UserType.UNDEFINED, userAddress), "User not registered");
     require(!communityRules.userTypeIs(CommunityTypes.UserType.DENIED, userAddress), "User already denied");
+
+    if (communityRules.userTypeIs(UserType.REGENERATOR, userAddress)) {
+      Regenerator memory regenerator = regeneratorRules.getRegenerator(userAddress);
+
+      require(
+        regenerator.totalInspections < REGENERATOR_VALIDATION_IMMUNITY_THRESHOLD,
+        "Regenerator has reached validation immunity"
+      );
+    }
 
     uint256 currentEra = _userCurrentEra(userAddress);
 
