@@ -62,7 +62,7 @@ describe("ValidationRules - Regenerator Immunity Logic", () => {
     await mockRegeneratorRules.mock.poolCurrentEra.returns(1);
   });
 
-  it("should REVERT when trying to validate an IMMUNE Regenerator (>= 4 inspections)", async () => {
+  it("should REVERT when trying to validate an IMMUNE Regenerator (>= 5 inspections)", async () => {
     // --- SETUP ---
     // Create the mock data as an ARRAY that perfectly matches the Regenerator struct
     // The only important value here is `totalInspections`.
@@ -91,7 +91,7 @@ describe("ValidationRules - Regenerator Immunity Logic", () => {
   });
 
   // Find this specific `it` block in your test file and add the new line.
-  it("should PASS when trying to validate a NON-IMMUNE Regenerator (< 4 inspections)", async function () {
+  it("should PASS when trying to validate a NON-IMMUNE Regenerator (< 5 inspections)", async function () {
     // --- SETUP ---
     // This part is correct
     const mockRegeneratorDataAsArray = [

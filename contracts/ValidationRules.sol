@@ -158,15 +158,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(!communityRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
     require(!communityRules.userTypeIs(UserType.DENIED, userAddress), "User already denied");
-
-    if (communityRules.userTypeIs(UserType.REGENERATOR, userAddress)) {
-      Regenerator memory regenerator = regeneratorRules.getRegenerator(userAddress);
-
-      require(
-        regenerator.totalInspections < REGENERATOR_VALIDATION_IMMUNITY_THRESHOLD,
-        "Regenerator has reached validation immunity"
-      );
-    }
+    require(_checkImmunity(userAddress), "Regenerator has reached validation immunity");
 
     uint256 currentEra = _userCurrentEra(userAddress);
 
@@ -418,6 +410,14 @@ contract ValidationRules is Callable, ReentrancyGuard {
     if (userType == UserType.RESEARCHER) return researcherRules.removePoolLevels(userAddress, levels);
     if (userType == UserType.CONTRIBUTOR) return contributorRules.removePoolLevels(userAddress, levels);
     if (userType == UserType.ACTIVIST) return activistRules.removePoolLevels(userAddress, levels);
+  }
+
+  function _checkImmunity(address addr) private view returns (bool) {
+    if (!communityRules.userTypeIs(UserType.REGENERATOR, addr)) return true;
+
+    Regenerator memory regenerator = regeneratorRules.getRegenerator(addr);
+
+    return regenerator.totalInspections < REGENERATOR_VALIDATION_IMMUNITY_THRESHOLD;
   }
 
   // --- View Functions ---
