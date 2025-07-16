@@ -158,7 +158,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
       0,
       RegenerationScore(0),
       Pool(false, regeneratorPool.currentContractEra()),
-      0,
+      block.number,
       _coordinates.length
     );
 
