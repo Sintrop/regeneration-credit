@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IActivistRules } from "./interfaces/IActivistRules.sol";
 import { IContributorRules } from "./interfaces/IContributorRules.sol";
@@ -20,8 +19,6 @@ import { Researcher } from "./types/ResearcherTypes.sol";
  * @dev This contract calculates voting eligibility based on a user's levels relative to their user type's average levels.
  */
 contract VoteRules {
-  using SafeMath for uint256;
-
   // --- State variables ---
 
   /// @notice CommunityRules contract address.
@@ -95,7 +92,7 @@ contract VoteRules {
   function _canVoteRules(uint256 totalTypeLevels, uint256 totalUsers, uint256 userLevels) private pure returns (bool) {
     if (totalUsers <= 5) return true;
 
-    uint256 avg = totalTypeLevels.div(totalUsers).add(1);
+    uint256 avg = totalTypeLevels / totalUsers + 1;
 
     return userLevels >= avg;
   }

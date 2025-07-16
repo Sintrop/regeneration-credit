@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { IRegenerationCredit } from "./interfaces/IRegenerationCredit.sol";
 import { IInspectionRules } from "./interfaces/IInspectionRules.sol";
 import { IRegeneratorRules } from "./interfaces/IRegeneratorRules.sol";
@@ -14,8 +13,6 @@ import { IRegeneratorRules } from "./interfaces/IRegeneratorRules.sol";
  * The community impact backs the Regeneration Credit, it is the foundation of the System.
  */
 contract RegenerationCreditImpact {
-  using SafeMath for uint256;
-
   // --- Constants ---
 
   /**
@@ -64,9 +61,8 @@ contract RegenerationCreditImpact {
     if (inspectionRules.realizedInspectionsCount() == 0) return 0;
 
     return
-      inspectionRules.inspectionsTreesImpact().mul(regeneratorRules.totalImpactRegenerators()).div(
-        inspectionRules.realizedInspectionsCount()
-      );
+      (inspectionRules.inspectionsTreesImpact() * regeneratorRules.totalImpactRegenerators()) /
+      inspectionRules.realizedInspectionsCount();
   }
 
   /**
@@ -75,7 +71,7 @@ contract RegenerationCreditImpact {
    * @return uint256 Grams of carbon [g].
    */
   function totalCarbonImpact() public view returns (uint256) {
-    return totalTreesImpact().mul(CARBON_PER_TREE);
+    return totalTreesImpact() * CARBON_PER_TREE;
   }
 
   /**
@@ -87,9 +83,8 @@ contract RegenerationCreditImpact {
     if (inspectionRules.realizedInspectionsCount() == 0) return 0;
 
     return
-      inspectionRules.inspectionsBiodiversityImpact().mul(regeneratorRules.totalImpactRegenerators()).div(
-        inspectionRules.realizedInspectionsCount()
-      );
+      (inspectionRules.inspectionsBiodiversityImpact() * regeneratorRules.totalImpactRegenerators()) /
+      inspectionRules.realizedInspectionsCount();
   }
 
   /**
@@ -113,7 +108,7 @@ contract RegenerationCreditImpact {
     uint256 effectiveSupply = _getEffectiveSupply();
     if (effectiveSupply == 0) return 0;
 
-    return totalTreesImpact().mul(PRECISION_FACTOR).div(effectiveSupply);
+    return (totalTreesImpact() * PRECISION_FACTOR) / effectiveSupply;
   }
 
   /**
@@ -128,7 +123,7 @@ contract RegenerationCreditImpact {
     uint256 effectiveSupply = _getEffectiveSupply();
     if (effectiveSupply == 0) return 0;
 
-    return totalCarbonImpact().mul(PRECISION_FACTOR).div(effectiveSupply);
+    return (totalCarbonImpact() * PRECISION_FACTOR) / effectiveSupply;
   }
 
   /**
@@ -143,7 +138,7 @@ contract RegenerationCreditImpact {
     uint256 effectiveSupply = _getEffectiveSupply();
     if (effectiveSupply == 0) return 0;
 
-    return totalBiodiversityImpact().mul(PRECISION_FACTOR).div(effectiveSupply);
+    return (totalBiodiversityImpact() * PRECISION_FACTOR) / effectiveSupply;
   }
 
   /**
@@ -158,7 +153,7 @@ contract RegenerationCreditImpact {
     uint256 effectiveSupply = _getEffectiveSupply();
     if (effectiveSupply == 0) return 0;
 
-    return totalAreaImpact().mul(PRECISION_FACTOR).div(effectiveSupply);
+    return (totalAreaImpact() * PRECISION_FACTOR) / effectiveSupply;
   }
 
   // --- Private Functions ---

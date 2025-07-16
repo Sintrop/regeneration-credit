@@ -7,7 +7,6 @@ import { ResearcherRules } from "./ResearcherRules.sol";
 import { CalculatorItem } from "./types/ResearcherTypes.sol";
 import { Supporter, Publication, Offset } from "./types/SupporterTypes.sol";
 import { UserType, Invitation } from "./types/CommunityTypes.sol";
-import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
  * @title SupporterRules
@@ -17,8 +16,6 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * for environmental offsets and content publications, and management of reduction commitments.
  */
 contract SupporterRules is Callable {
-  using SafeMath for uint256;
-
   // --- Constants ---
 
   /// @notice Commission percentage paid to the inviter when an invited supporter burns tokens.
@@ -214,8 +211,8 @@ contract SupporterRules is Callable {
 
     inviter = invitation.inviter;
 
-    commission = isInvited ? amount.mul(INVITER_PERCENTAGE).div(100) : 0;
-    amountToBurn = amount.sub(commission);
+    commission = isInvited ? (amount * INVITER_PERCENTAGE) / 100 : 0;
+    amountToBurn = amount - commission;
   }
 
   /**
