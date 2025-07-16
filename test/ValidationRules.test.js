@@ -1040,6 +1040,57 @@ describe("ValidationRules", () => {
         ).to.be.revertedWith("User not registered");
       });
     });
+
+    context("when regenerator _checkRegeneratorImmunity", () => {
+      context("when reached REGENERATOR_VALIDATION_IMMUNITY_THRESHOLD", () => {
+        beforeEach(async () => {
+          await addInvitation(owner, user1Address, userTypes.Developer, owner);
+          await addDeveloper("User  A", user1Address);
+
+          await addInvitation(owner, user2Address, userTypes.Regenerator, owner);
+          await addRegenerator("Regenerator", user2Address);
+
+          await regeneratorRules.afterRealizeInspection(user2Address, 1);
+          await regeneratorRules.afterRealizeInspection(user2Address, 1);
+          await regeneratorRules.afterRealizeInspection(user2Address, 1);
+          await regeneratorRules.afterRealizeInspection(user2Address, 1);
+          await regeneratorRules.afterRealizeInspection(user2Address, 1);
+        });
+
+        it("must returns error message", async () => {
+          await expect(
+            instance.connect(user1Address).addUserValidation(user2Address.address, "justification")
+          ).to.be.revertedWith("Regenerator has reached validation immunity");
+        });
+      });
+
+      context("when do not reached REGENERATOR_VALIDATION_IMMUNITY_THRESHOLD", () => {
+        beforeEach(async () => {
+          await addInvitation(owner, user1Address, userTypes.Developer, owner);
+          await addDeveloper("User  A", user1Address);
+
+          await addInvitation(owner, user2Address, userTypes.Regenerator, owner);
+          await addRegenerator("Regenerator", user2Address);
+
+          await regeneratorRules.afterRealizeInspection(user2Address, 1);
+          await regeneratorRules.afterRealizeInspection(user2Address, 1);
+
+          await instance.connect(user1Address).addUserValidation(user2Address.address, "justification");
+        });
+
+        it("should add validation", async () => {
+          const validations = await instance.getUserValidations(user2Address, 1);
+
+          expect(validations).to.equal(1);
+        });
+
+        it("user type must be the same", async () => {
+          const user = await communityRules.getUser(user2Address);
+
+          expect(user).to.equal(userTypes.Regenerator);
+        });
+      });
+    });
   });
 
   describe("#addInspectionValidation", () => {
