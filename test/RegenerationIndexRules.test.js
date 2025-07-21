@@ -60,17 +60,10 @@ describe("RegenerationIndexRules", () => {
   });
 
   describe("#calculateScore", () => {
-    context("with allowed caller", () => {
-      beforeEach(async () => {
-        await instance.newAllowedCaller(owner);
-      });
-
-      context("when category and regeneration index exists", () => {
-        it("calculate regenerationScore", async () => {
-          const score = await instance.calculateScore(treesResultValue, biodiversityResultValue);
-
-          expect(score).to.equal(64);
-        });
+    context("when category and regeneration index exists", () => {
+      it("calculate regenerationScore", async () => {
+        const score = await instance.calculateScore(treesResultValue, biodiversityResultValue);
+        expect(score).to.equal(64);
       });
     });
   });

@@ -148,7 +148,6 @@ const inspectionRulesDeployed = async (owner, args = {}) => {
   await regeneratorRules.newAllowedCaller(validationRules.target);
   await regeneratorPool.newAllowedCaller(regeneratorRules.target);
   await inspectorPool.newAllowedCaller(inspectorRules.target);
-  await regenerationIndexRules.newAllowedCaller(instance.target);
 
   return {
     instance,
