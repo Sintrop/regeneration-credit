@@ -333,19 +333,19 @@ describe("RegenerationCredit", (accounts) => {
 
       context("when amount is valid", () => {
         beforeEach(async () => {
-          await instance.connect(supporter1Address).publish(1000000000000000000n, "description", "content");
+          await instance.connect(supporter1Address).publish(10000000000000000000n, "description", "content");
         });
 
         it("inviter balance must increment in 50000000000000000", async () => {
           const balanceOf = await instance.balanceOf(ownerAddress);
 
-          expect(balanceOf).to.eq(1499999990050000000000000000n);
+          expect(balanceOf).to.eq(1499999990500000000000000000n);
         });
 
-        it("supporter balance must be 9000000000000000000", async () => {
+        it("supporter balance must be 0", async () => {
           const balanceOf = await instance.balanceOf(supporter1Address);
 
-          expect(balanceOf).to.eq(9000000000000000000n);
+          expect(balanceOf).to.eq(0);
         });
 
         context("when content and description are invalids", () => {
@@ -353,7 +353,7 @@ describe("RegenerationCredit", (accounts) => {
             const longString = "x".repeat(650);
 
             await expect(
-              instance.connect(supporter1Address).publish(1000000000000000000n, longString, longString)
+              instance.connect(supporter1Address).publish(10000000000000000000n, longString, longString)
             ).to.be.revertedWith("Max 600 characters");
           });
         });
@@ -363,7 +363,7 @@ describe("RegenerationCredit", (accounts) => {
         it("must return error message", async () => {
           await expect(
             instance.connect(supporter1Address).publish(100000000000000000n, "description", "content")
-          ).to.be.revertedWith("Amount must be at least 1 RC");
+          ).to.be.revertedWith("Amount must be at least 10 RC");
         });
       });
     });
