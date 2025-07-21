@@ -93,11 +93,23 @@ contract ValidationRules is Callable, ReentrancyGuard {
   /// @notice DeveloperRules contract address.
   IDeveloperRules private developerRules;
 
+  /// @notice DeveloperRules contract address.
+  address private developerRulesAddress;
+
   /// @notice ResearcherRules contract address.
   IResearcherRules private researcherRules;
 
+  /// @notice ResarcherRules contract address.
+  address private researcherRulesAddress;
+
   /// @notice ContributorRules contract address.
   IContributorRules private contributorRules;
+
+  /// @notice ContributorRules contract address.
+  address private contributorRulesAddress;
+
+  // /// @notice InspectionRules contract address.
+  // address private inspectionRulesAddress;
 
   /// @notice ActivistRules contract address.
   IActivistRules private activistRules;
@@ -134,6 +146,10 @@ contract ValidationRules is Callable, ReentrancyGuard {
     contributorRules = IContributorRules(contractDependency.contributorRulesAddress);
     activistRules = IActivistRules(contractDependency.activistRulesAddress);
     voteRules = IVoteRules(contractDependency.voteRulesAddress);
+    developerRulesAddress = contractDependency.developerRulesAddress;
+    contributorRulesAddress = contractDependency.contributorRulesAddress;
+    researcherRulesAddress = contractDependency.researcherRulesAddress;
+    // inspectionRulesAddress = contractDependency.inspectionRulesAddress;
   }
 
   // --- External Functions (State Modifying) ---
@@ -195,6 +211,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     string memory justification,
     address validatorAddress
   ) public mustBeAllowedCaller nonReentrant {
+    // require(msg.sender == inspectionRulesAddress, "Only inspectionRules");
     require(!validatorInspectionsValidations[validatorAddress][inspection.id], "Already voted");
 
     validatorInspectionsValidations[validatorAddress][inspection.id] = true;
@@ -234,6 +251,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     string memory justification,
     address validatorAddress
   ) public mustBeAllowedCaller nonReentrant {
+    require(msg.sender == developerRulesAddress, "Only developerRules");
     require(!validatorReportsValidations[validatorAddress][report.id], "Already voted");
 
     validatorReportsValidations[validatorAddress][report.id] = true;
@@ -270,6 +288,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     string memory justification,
     address validatorAddress
   ) public mustBeAllowedCaller nonReentrant {
+    require(msg.sender == contributorRulesAddress, "Only contributorRules");
     require(!validatorContributionsValidations[validatorAddress][contribution.id], "Already voted");
 
     validatorContributionsValidations[validatorAddress][contribution.id] = true;
@@ -306,6 +325,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     string memory justification,
     address validatorAddress
   ) public mustBeAllowedCaller nonReentrant {
+    require(msg.sender == researcherRulesAddress, "Only researcherRules");
     require(!validatorResearchesValidations[validatorAddress][research.id], "Already voted");
 
     validatorResearchesValidations[validatorAddress][research.id] = true;
