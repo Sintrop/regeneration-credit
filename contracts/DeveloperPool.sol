@@ -2,7 +2,6 @@
 pragma solidity ^0.8.27;
 
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IRegenerationCredit } from "./interfaces/IRegenerationCredit.sol";
 import { Blockable } from "./shared/Blockable.sol";
 import { Callable } from "./shared/Callable.sol";
@@ -18,7 +17,7 @@ import { Poolable } from "./shared/Poolable.sol";
  * @dev Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for deploy setup only),
  * `Blockable` (for era/epoch tracking), and `Callable` (for whitelisted caller control).
  */
-contract DeveloperPool is Poolable, Ownable, Blockable, Callable, ReentrancyGuard {
+contract DeveloperPool is Poolable, Blockable, Callable, ReentrancyGuard {
   // --- Constants & state variables ---
 
   /// @notice Interface to the Regeneration Credit token contract, used for token transfers.

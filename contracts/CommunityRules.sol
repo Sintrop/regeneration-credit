@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 
@@ -13,7 +12,7 @@ import { Callable } from "./shared/Callable.sol";
  * @dev Inherits from `Ownable` for deploy setup and `Callable` for restricting access to sensitive functions
  * to whitelisted addresses. It defines critical parameters and logic for user onboarding and community governance.
  */
-contract CommunityRules is Ownable, Callable {
+contract CommunityRules is Callable {
   // --- Constants ---
 
   /// @notice Minimum number of users allowed for a specific type before proportionality rules apply.
