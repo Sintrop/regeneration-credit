@@ -238,8 +238,6 @@ describe("InspectionRules", () => {
     await inspectorRules.newAllowedCaller(instance.target);
     await inspectorRules.newAllowedCaller(validationRules.target);
     await inspectorRules.newAllowedCaller(owner);
-    await instance.newAllowedCaller(owner);
-    await instance.newAllowedCaller(developerRules);
 
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
     await addResearcher("Researcher 1", resea1Address);
