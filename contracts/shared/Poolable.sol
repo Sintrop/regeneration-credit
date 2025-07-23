@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Era } from "contracts/types/PoolTypes.sol";
 
 /**
@@ -13,8 +12,6 @@ import { Era } from "contracts/types/PoolTypes.sol";
  * It is designed to be inherited by other pool contracts.
  */
 contract Poolable {
-  using SafeMath for uint256;
-
   // --- State variables ---
 
   /// @notice The total supply of tokens to be managed by this contract.
@@ -61,7 +58,7 @@ contract Poolable {
    * @param halvingFactor The number of eras for halving.
    */
   function tokensPerEra(uint256 currentEpoch, uint256 halvingFactor) public view returns (uint256) {
-    return tokensPerEpoch(currentEpoch).div(halvingFactor);
+    return tokensPerEpoch(currentEpoch) / halvingFactor;
   }
 
   /**
@@ -71,7 +68,7 @@ contract Poolable {
    * @return The amount of tokens for the epoch.
    */
   function tokensPerEpoch(uint256 currentEpoch) public view returns (uint256) {
-    return totalTokens.div((2 ** currentEpoch));
+    return totalTokens / (2 ** currentEpoch);
   }
 
   // --- Internal Functions (State Modifying) ---
@@ -91,7 +88,7 @@ contract Poolable {
     // Return 0 if the user has no levels or there are no levels at all in the era to prevent division by zero.
     if (levelTo == 0 || levels == 0) return 0;
 
-    return levelTo.mul(_tokensPerEra).div(levels);
+    return (levelTo * _tokensPerEra) / levels;
   }
 
   /**
@@ -131,7 +128,7 @@ contract Poolable {
    * @param era The number of the era.
    */
   function _addPoolLevel(address to, uint256 levels, uint256 era) internal {
-    eras[era].levels = eras[era].levels.add(levels);
+    eras[era].levels = eras[era].levels + levels;
     eraLevels[era][to] += levels;
     // Emit event after levels are added
     emit PoolLevelAdded(to, era, levels, eras[era].levels, eraLevels[era][to]);

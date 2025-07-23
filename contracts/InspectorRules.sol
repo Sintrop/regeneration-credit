@@ -5,7 +5,7 @@ import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuar
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IInspectorPool } from "./interfaces/IInspectorPool.sol";
 import { Inspector, Penalty, Pool } from "./types/InspectorTypes.sol";
-import { UserType } from "./types/CommunityTypes.sol";
+import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 
 /**
@@ -68,7 +68,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
 
   /// @notice The specific `UserType` enumeration value for an Inspector user.
   /// This is a constant for gas efficiency and clarity.
-  UserType private constant USER_TYPE = UserType.INSPECTOR;
+  CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.INSPECTOR;
 
   // --- Constructor ---
 
@@ -153,7 +153,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    */
   function withdraw() public nonReentrant {
     // Only registered inspectors can call this function.
-    require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Pool only to inspectors");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.INSPECTOR, msg.sender), "Pool only to inspectors");
 
     Inspector storage inspector = inspectors[msg.sender];
     // Check if the inspector has completed the minimum required inspections.

@@ -12,8 +12,8 @@ import { IVoteRules } from "./interfaces/IVoteRules.sol";
 import { InspectionStatus, Inspection, ContractsDependency } from "./types/InspectionTypes.sol";
 import { Regenerator } from "./types/RegeneratorTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
-import { UserType } from "./types/CommunityTypes.sol";
-import { Callable } from "./shared/Callable.sol";
+import { CommunityTypes } from "./types/CommunityTypes.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title InspectionRules
@@ -22,7 +22,7 @@ import { Callable } from "./shared/Callable.sol";
  * @dev This contract allows Regenerators to request inspections, and Inspectors to accept, perform, and submit them.
  * It integrates with various other rule contracts for user validation, level updates, and penalty management.
  */
-contract InspectionRules is Callable, ReentrancyGuard {
+contract InspectionRules is Ownable, ReentrancyGuard {
   // --- Constants ---
 
   /// @notice The maximum number of inspections a Regenerator can receive.
@@ -167,7 +167,7 @@ contract InspectionRules is Callable, ReentrancyGuard {
   function requestInspection() public nonReentrant {
     Regenerator memory regenerator = regeneratorRules.getRegenerator(msg.sender);
 
-    require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.REGENERATOR, msg.sender), "Only regenerators");
     require(!regenerator.pendingInspection, "Request OPEN");
     require(waitToRequest(regenerator), "Wait to request");
     require(regenerator.totalInspections < MAX_REGENERATOR_INSPECTIONS, "You have completed your mission");
@@ -201,7 +201,7 @@ contract InspectionRules is Callable, ReentrancyGuard {
    * @param inspectionId The unique ID of the inspection the inspector wishes to accept.
    */
   function acceptInspection(uint64 inspectionId) public nonReentrant {
-    require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Only inspectors");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.INSPECTOR, msg.sender), "Only inspectors");
     require(inspectorRules.isInspectorValid(msg.sender), "Only 3 giveUps allowed");
 
     Inspection storage inspection = inspections[inspectionId];
@@ -213,7 +213,10 @@ contract InspectionRules is Callable, ReentrancyGuard {
     require(acceptInspectionDelayBlocksPassed(inspection), "Wait delay blocks");
     require(beforeAcceptHaveSecurityBlocksToVote(), "Wait until next era");
     require(inspectorRules.canAcceptInspection(msg.sender), "Wait to accept");
-    require(communityRules.userTypeIs(UserType.REGENERATOR, inspection.regenerator), "Regenerator invalid");
+    require(
+      communityRules.userTypeIs(CommunityTypes.UserType.REGENERATOR, inspection.regenerator),
+      "Regenerator invalid"
+    );
 
     inspection.status = InspectionStatus.ACCEPTED;
     inspection.acceptedAt = block.number;
@@ -249,7 +252,7 @@ contract InspectionRules is Callable, ReentrancyGuard {
 
     Inspection memory inspection = inspections[inspectionId];
 
-    require(communityRules.userTypeIs(UserType.INSPECTOR, msg.sender), "Only inspectors");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.INSPECTOR, msg.sender), "Only inspectors");
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept before");
     require(inspection.inspector == msg.sender, "Not your inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");

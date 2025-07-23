@@ -35,6 +35,9 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
   /// @notice The minimum number of tokens a user must burn to offset.
   uint256 private constant MINIMUM_TOKENS_TO_OFFSET = 1e18;
 
+  /// @notice The minimum number of tokens a user must burn to pulish offset.
+  uint256 private constant MINIMUM_TOKENS_TO_PUBLISH = 10e18;
+
   // --- Custom State Variables ---
 
   /// @notice A mapping to track whether an address is a designated "contract pool" for token distribution.
@@ -149,7 +152,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    */
   function publish(uint256 amount, string memory description, string memory content) public nonReentrant {
     require(supporterRules.isSupporter(msg.sender), "Only supporters");
-    require(amount >= MINIMUM_TOKENS_TO_OFFSET, "Amount must be at least 1 RC");
+    require(amount >= MINIMUM_TOKENS_TO_PUBLISH, "Amount must be at least 10 RC");
     require(
       bytes(description).length <= MAX_PUBLICATION_LENGTH && bytes(content).length <= MAX_PUBLICATION_LENGTH,
       "Max 600 characters"
@@ -164,21 +167,18 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
   }
 
   /**
-   * @dev Allows a designated "contract pool" to register a new poolTransfer.
+   * @dev Allows a designated "contract pool" to register a new decreaseLocked.
    * @notice Called only by a system pool contract, this function remove the transfered tokens from totalLocked.
    * @param tokenOwner The address of the contract pool initiating the transfer.
-   * @param receiver The address of the user who will receive the tokens.
    * @param numTokens The amount of tokens to transfer.
    */
-  function poolTransfer(address tokenOwner, address receiver, uint256 numTokens) public mustBeContractPool {
+  function decreaseLocked(address tokenOwner, uint256 numTokens) public mustBeContractPool {
     require(numTokens <= balanceOf(tokenOwner), "You don't have RC Tokens");
 
     // Update total locked tokens.
     unchecked {
       if (contractsPools[tokenOwner]) totalLocked_ -= numTokens;
     }
-    // Emit event specific to pool transfers.
-    emit PoolTransfer(tokenOwner, receiver, numTokens);
   }
 
   // --- Private functions ---
