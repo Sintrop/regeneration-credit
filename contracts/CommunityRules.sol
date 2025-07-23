@@ -211,15 +211,7 @@ contract CommunityRules is Callable {
    * @param invited The address of the user who received the invitation.
    * @param userType The `UserType` the `invited` user is intended to register as.
    */
-<<<<<<< HEAD
-  function addInvitation(address inviter, address invited, UserType userType) public mustBeAllowedCaller mustBeContractCall(address(invitationRules)) {
-=======
-  function addInvitation(
-    address inviter,
-    address invited,
-    CommunityTypes.UserType userType
-  ) public mustBeAllowedCaller {
->>>>>>> main
+  function addInvitation(address inviter, address invited, CommunityTypes.UserType userType) public mustBeAllowedCaller mustBeContractCall(address(invitationRules)) {
     require(invited != address(0), "Invited address cannot be zero");
     require(invitations[invited].invited == address(0), "Already invited");
     require(users[invited] == CommunityTypes.UserType.UNDEFINED, "Already registered");
