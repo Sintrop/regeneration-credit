@@ -99,9 +99,6 @@ contract ValidationRules is Callable, ReentrancyGuard {
   /// @notice ContributorRules contract address.
   IContributorRules private contributorRules;
 
-  // /// @notice InspectionRules contract address.
-  // address private inspectionRulesAddress;
-
   /// @notice ActivistRules contract address.
   IActivistRules private activistRules;
 
@@ -237,8 +234,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     Report memory report,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller nonReentrant {
-    require(msg.sender == address(developerRules), "Caller must be developerRules");
+  ) public mustBeAllowedCaller mustBeContractCall(address(developerRules)) nonReentrant {
     require(!validatorReportsValidations[validatorAddress][report.id], "Already voted");
 
     validatorReportsValidations[validatorAddress][report.id] = true;
@@ -274,8 +270,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     Contribution memory contribution,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller nonReentrant {
-    require(msg.sender == address(contributorRules), "Caller must be contributorRules");
+  ) public mustBeAllowedCaller mustBeContractCall(address(contributorRules)) nonReentrant {
     require(!validatorContributionsValidations[validatorAddress][contribution.id], "Already voted");
 
     validatorContributionsValidations[validatorAddress][contribution.id] = true;
@@ -311,8 +306,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     Research memory research,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller nonReentrant {
-    require(msg.sender == address(researcherRules), "Caller must be researcherRules");
+  ) public mustBeAllowedCaller mustBeContractCall(address(researcherRules)) nonReentrant {
     require(!validatorResearchesValidations[validatorAddress][research.id], "Already voted");
 
     validatorResearchesValidations[validatorAddress][research.id] = true;

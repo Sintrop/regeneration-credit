@@ -90,6 +90,12 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// managed by all registered regenerators in the system.
   uint256 public regenerationArea;
 
+  /// @notice The address of the `InspectionRules` contract.
+  address private inspectionRules;
+
+  /// @notice The address of the `InspectionRules` contract.
+  address private validationRules;  
+
   // --- Constructor ---
 
   /**
@@ -100,6 +106,18 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   constructor(address communityRulesAddress, address regeneratorPoolAddress) {
     communityRules = ICommunityRules(communityRulesAddress);
     regeneratorPool = IRegeneratorPool(regeneratorPoolAddress);
+  }
+
+  // --- Deploy functions ---
+
+  /**
+   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param inspectionRulesAddress Address of InspectionRules.
+   * @param validationRulesAddress Address of ValidationRules.
+   */
+  function setContractAddressDependencies(address inspectionRulesAddress, address validationRulesAddress) public onlyOwner {
+    inspectionRules = inspectionRulesAddress;
+    validationRules = validationRulesAddress;
   }
 
   // --- Public Functions (State modifying) ---
@@ -241,7 +259,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param levelsToRemove The number of levels/score points to decrease. If `0`, the regenerator's
    * regeneration score is reset to `0`, and their area is decremented from the total `regenerationArea`.
    */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller nonReentrant {
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller mustBeContractCall(address(validationRules)) nonReentrant {
     if (levelsToRemove == 0) {
       regenerators[addr].regenerationScore.score = 0;
       _decrementArea(addr);
@@ -254,7 +272,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /**
    * @dev Allows an authorized caller to decrement a regenerator's total completed inspections count.
-   * This function is typically called when an inspection previously counted as valid is invalidated.
+   * This function is called when an inspection previously counted as valid is invalidated.
    * @notice Can only be called by the ValidatorRules address.
    *
    * Requirements:
@@ -262,7 +280,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * - If `totalInspections` becomes 0 after decrement, the regenerator is removed from `impactRegenerators`.
    * @param addr The regenerator's wallet address.
    */
-  function decrementInspections(address addr) public mustBeAllowedCaller {
+  function decrementInspections(address addr) public mustBeAllowedCaller mustBeContractCall(address(validationRules)) {
     uint256 totalInspections = regenerators[addr].totalInspections;
 
     require(totalInspections > 0, "totalInspections invalid");
@@ -281,7 +299,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @notice This function is intended to be called by a whitelisted contract, the InspectionRules.
    * @param addr The regenerator's wallet address.
    */
-  function afterRequestInspection(address addr) public mustBeAllowedCaller {
+  function afterRequestInspection(address addr) public mustBeAllowedCaller mustBeContractCall(address(inspectionRules)) {
     _pendingInspection(addr, true);
     _lastRequestAt(addr, block.number);
   }
@@ -292,7 +310,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @dev This function is intended to be called by a whitelisted external contract, the InspectorRules.
    * @param addr The regenerator's wallet address.
    */
-  function afterAcceptInspection(address addr) public mustBeAllowedCaller {
+  function afterAcceptInspection(address addr) public mustBeAllowedCaller mustBeContractCall(address(inspectionRules)) {
     _pendingInspection(addr, false);
   }
 
@@ -305,7 +323,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param score The score obtained from the realized inspection, to be added to the regenerator's total score.
    * @return uint256 The updated total number of inspections for the regenerator.
    */
-  function afterRealizeInspection(address addr, uint32 score) public mustBeAllowedCaller returns (uint256) {
+  function afterRealizeInspection(address addr, uint32 score) public mustBeAllowedCaller mustBeContractCall(address(inspectionRules)) nonReentrant returns (uint256) {
     uint256 totalInspections = _incrementInspections(addr);
 
     _setRegenerationScore(addr, score);

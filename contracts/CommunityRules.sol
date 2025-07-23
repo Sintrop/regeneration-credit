@@ -63,6 +63,9 @@ contract CommunityRules is Ownable, Callable {
   /// @notice Tracks the number of times an inviter has had their invitees denied.
   mapping(address => uint16) public inviterPenalties;
 
+  /// @notice The address of the `InvitationRules` contract.
+  address private invitationRules;
+
   // --- Constructor ---
 
   /**
@@ -114,6 +117,16 @@ contract CommunityRules is Ownable, Callable {
       VOTER_INVITATION_DELAY_BLOCKS,
       true
     );
+  }
+
+  // --- Deploy functions ---
+
+  /**
+   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param invitationRulesAddress Address of InvitationRules.
+   */
+  function setContractAddressDependencies(address invitationRulesAddress) public onlyOwner {
+    invitationRules = invitationRulesAddress;    
   }
 
   // --- Public functions (State Modifying) ---
@@ -184,7 +197,7 @@ contract CommunityRules is Ownable, Callable {
    * @param invited The address of the user who received the invitation.
    * @param userType The `UserType` the `invited` user is intended to register as.
    */
-  function addInvitation(address inviter, address invited, UserType userType) public mustBeAllowedCaller {
+  function addInvitation(address inviter, address invited, UserType userType) public mustBeAllowedCaller mustBeContractCall(address(invitationRules)) {
     require(invited != address(0), "Invited address cannot be zero");
     require(invitations[invited].invited == address(0), "Already invited");
     require(users[invited] == UserType.UNDEFINED, "Already registered");

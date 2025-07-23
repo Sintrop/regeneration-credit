@@ -6,6 +6,10 @@ async function afterDeploy() {
   await configureDeveloperRules();
   await configureContributorRules();
   await configureResearcherRules();
+  await configureActivistRules();
+  await configureRegeneratorRules();
+  await configureInspectorRules();
+  await configureCommunityRules();
   await inviteUsers();
   await transferTokens();
   await renounceOwnership();
@@ -104,6 +108,45 @@ async function configureResearcherRules() {
   await researcherRules.newAllowedCaller(validationRules.target);
 
   console.log("After ResearcherRules deploy is OK");
+}
+
+async function configureActivistRules() {
+
+  const inspectionRules = await getDeployedContract("InspectionRules");
+  const validationRules = await getDeployedContract("ValidationRules");
+
+  await researcherRules.setContractAddressDependencies(inspectionRules, validationRules);
+
+  console.log("After ActivistRules deploy is OK");
+}
+
+async function configureInspectorRules() {
+
+  const inspectionRules = await getDeployedContract("InspectionRules");
+  const validationRules = await getDeployedContract("ValidationRules");
+
+  await researcherRules.setContractAddressDependencies(inspectionRules, validationRules);
+
+  console.log("After InspectorRules deploy is OK");
+}
+
+async function configureRegeneratorRules() {
+
+  const inspectionRules = await getDeployedContract("InspectionRules");
+  const validationRules = await getDeployedContract("ValidationRules");
+
+  await researcherRules.setContractAddressDependencies(inspectionRules, validationRules);
+
+  console.log("After RegeneratorRules deploy is OK");
+}
+
+async function configureCommunityRules() {
+
+  const invitationRules = await getDeployedContract("InvitationRules");
+
+  await researcherRules.setContractAddressDependencies(invitationRules);
+
+  console.log("After CommunityRules deploy is OK");
 }
 
 async function configureInspectionRules() {

@@ -51,4 +51,9 @@ contract Callable is Ownable {
     require(allowedCallers[msg.sender], "Not allowed caller");
     _;
   }
+
+  modifier mustBeContractCall(address addr) {
+    require(msg.sender == addr, "Caller must be system contract");
+    _;
+  }  
 }
