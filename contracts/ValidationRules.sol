@@ -15,7 +15,7 @@ import { Report } from "./types/DeveloperTypes.sol";
 import { Research } from "./types/ResearcherTypes.sol";
 import { Contribution } from "./types/ContributorTypes.sol";
 import { ContractsDependency } from "./types/ValidationTypes.sol";
-import { UserType, Invitation } from "./types/CommunityTypes.sol";
+import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
@@ -156,8 +156,8 @@ contract ValidationRules is Callable, ReentrancyGuard {
   function addUserValidation(address userAddress, string memory justification) public nonReentrant {
     require(bytes(justification).length <= MAX_JUSTIFICATION_LENGTH, "Max characters");
     require(voteRules.canVote(msg.sender), "Not a voter");
-    require(!communityRules.userTypeIs(UserType.UNDEFINED, userAddress), "User not registered");
-    require(!communityRules.userTypeIs(UserType.DENIED, userAddress), "User already denied");
+    require(!communityRules.userTypeIs(CommunityTypes.UserType.UNDEFINED, userAddress), "User not registered");
+    require(!communityRules.userTypeIs(CommunityTypes.UserType.DENIED, userAddress), "User already denied");
     require(_checkRegeneratorImmunity(userAddress), "Regenerator has reached validation immunity");
 
     uint256 currentEra = _userCurrentEra(userAddress);
@@ -331,14 +331,14 @@ contract ValidationRules is Callable, ReentrancyGuard {
    * @return era The current era for the user's specific type pool.
    */
   function _userCurrentEra(address userAddress) private view returns (uint256 era) {
-    UserType userType = communityRules.getUser(userAddress);
+    CommunityTypes.UserType userType = communityRules.getUser(userAddress);
 
-    if (userType == UserType.ACTIVIST) return activistRules.poolCurrentEra();
-    if (userType == UserType.CONTRIBUTOR) return contributorRules.poolCurrentEra();
-    if (userType == UserType.DEVELOPER) return developerRules.poolCurrentEra();
-    if (userType == UserType.INSPECTOR) return inspectorRules.poolCurrentEra();
-    if (userType == UserType.RESEARCHER) return researcherRules.poolCurrentEra();
-    if (userType == UserType.REGENERATOR) return regeneratorRules.poolCurrentEra();
+    if (userType == CommunityTypes.UserType.ACTIVIST) return activistRules.poolCurrentEra();
+    if (userType == CommunityTypes.UserType.CONTRIBUTOR) return contributorRules.poolCurrentEra();
+    if (userType == CommunityTypes.UserType.DEVELOPER) return developerRules.poolCurrentEra();
+    if (userType == CommunityTypes.UserType.INSPECTOR) return inspectorRules.poolCurrentEra();
+    if (userType == CommunityTypes.UserType.RESEARCHER) return researcherRules.poolCurrentEra();
+    if (userType == CommunityTypes.UserType.REGENERATOR) return regeneratorRules.poolCurrentEra();
   }
 
   /**
@@ -385,7 +385,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     _removeUserLevels(userAddress, 0); // Remove all levels (0 means all for denied users)
 
     // Inviter slashing mechanism
-    Invitation memory invitation = communityRules.getInvitation(userAddress);
+    CommunityTypes.Invitation memory invitation = communityRules.getInvitation(userAddress);
     // If invited, add invitation penalty
     if (invitation.inviter != address(0)) {
       communityRules.addInviterPenalty(invitation.inviter);
@@ -400,20 +400,20 @@ contract ValidationRules is Callable, ReentrancyGuard {
    * @param levels Levels to remove.
    */
   function _removeUserLevels(address userAddress, uint256 levels) private {
-    UserType userType = communityRules.getUser(userAddress);
+    CommunityTypes.UserType userType = communityRules.getUser(userAddress);
 
-    if (userType == UserType.DENIED) return; // Already denied, nothing to do
+    if (userType == CommunityTypes.UserType.DENIED) return; // Already denied, nothing to do
     // Check for each user type and call their respective removePoolLevels function
-    if (userType == UserType.INSPECTOR) return inspectorRules.removePoolLevels(userAddress, levels);
-    if (userType == UserType.REGENERATOR) return regeneratorRules.removePoolLevels(userAddress, levels);
-    if (userType == UserType.DEVELOPER) return developerRules.removePoolLevels(userAddress, levels);
-    if (userType == UserType.RESEARCHER) return researcherRules.removePoolLevels(userAddress, levels);
-    if (userType == UserType.CONTRIBUTOR) return contributorRules.removePoolLevels(userAddress, levels);
-    if (userType == UserType.ACTIVIST) return activistRules.removePoolLevels(userAddress, levels);
+    if (userType == CommunityTypes.UserType.INSPECTOR) return inspectorRules.removePoolLevels(userAddress, levels);
+    if (userType == CommunityTypes.UserType.REGENERATOR) return regeneratorRules.removePoolLevels(userAddress, levels);
+    if (userType == CommunityTypes.UserType.DEVELOPER) return developerRules.removePoolLevels(userAddress, levels);
+    if (userType == CommunityTypes.UserType.RESEARCHER) return researcherRules.removePoolLevels(userAddress, levels);
+    if (userType == CommunityTypes.UserType.CONTRIBUTOR) return contributorRules.removePoolLevels(userAddress, levels);
+    if (userType == CommunityTypes.UserType.ACTIVIST) return activistRules.removePoolLevels(userAddress, levels);
   }
 
   function _checkRegeneratorImmunity(address addr) private view returns (bool) {
-    if (!communityRules.userTypeIs(UserType.REGENERATOR, addr)) return true;
+    if (!communityRules.userTypeIs(CommunityTypes.UserType.REGENERATOR, addr)) return true;
 
     Regenerator memory regenerator = regeneratorRules.getRegenerator(addr);
 

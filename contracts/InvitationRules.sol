@@ -8,7 +8,7 @@ import { IResearcherRules } from "./interfaces/IResearcherRules.sol";
 import { IDeveloperRules } from "./interfaces/IDeveloperRules.sol";
 import { IActivistRules } from "./interfaces/IActivistRules.sol";
 import { IContributorRules } from "./interfaces/IContributorRules.sol";
-import { UserType } from "./types/CommunityTypes.sol";
+import { CommunityTypes } from "./types/CommunityTypes.sol";
 
 /**
  * @title InvitationRules
@@ -38,7 +38,7 @@ contract InvitationRules is Ownable, ReentrancyGuard {
 
   /// @notice Maps which UserType (inviter) can invite which other UserTypes (invited).
   /// @dev The key is the inviter's UserType, and the value is a mapping from UserType (invited) to a boolean (true if allowed).
-  mapping(UserType => UserType) public canBeInviteds;
+  mapping(CommunityTypes.UserType => CommunityTypes.UserType) public canBeInviteds;
 
   /// @notice CommunityRules contract address
   ICommunityRules private communityRules;
@@ -80,13 +80,13 @@ contract InvitationRules is Ownable, ReentrancyGuard {
     contributorRules = IContributorRules(contributorRulesAddress);
 
     // Definition of invitation permissions: who can invite whom
-    canBeInviteds[UserType.ACTIVIST] = UserType.ACTIVIST;
-    canBeInviteds[UserType.INSPECTOR] = UserType.ACTIVIST;
-    canBeInviteds[UserType.REGENERATOR] = UserType.ACTIVIST;
-    canBeInviteds[UserType.DEVELOPER] = UserType.DEVELOPER;
-    canBeInviteds[UserType.RESEARCHER] = UserType.RESEARCHER;
-    canBeInviteds[UserType.SUPPORTER] = UserType.SUPPORTER;
-    canBeInviteds[UserType.CONTRIBUTOR] = UserType.CONTRIBUTOR;
+    canBeInviteds[CommunityTypes.UserType.ACTIVIST] = CommunityTypes.UserType.ACTIVIST;
+    canBeInviteds[CommunityTypes.UserType.INSPECTOR] = CommunityTypes.UserType.ACTIVIST;
+    canBeInviteds[CommunityTypes.UserType.REGENERATOR] = CommunityTypes.UserType.ACTIVIST;
+    canBeInviteds[CommunityTypes.UserType.DEVELOPER] = CommunityTypes.UserType.DEVELOPER;
+    canBeInviteds[CommunityTypes.UserType.RESEARCHER] = CommunityTypes.UserType.RESEARCHER;
+    canBeInviteds[CommunityTypes.UserType.SUPPORTER] = CommunityTypes.UserType.SUPPORTER;
+    canBeInviteds[CommunityTypes.UserType.CONTRIBUTOR] = CommunityTypes.UserType.CONTRIBUTOR;
   }
 
   // --- Public functions ---
@@ -97,10 +97,10 @@ contract InvitationRules is Ownable, ReentrancyGuard {
    * @param invited The address of the wallet to be invited.
    * @param userType The user type to which the invited user will be assigned.
    */
-  function invite(address invited, UserType userType) public nonReentrant {
+  function invite(address invited, CommunityTypes.UserType userType) public nonReentrant {
     require(communityRules.inviterPenalties(msg.sender) < MAX_INVITER_PENALTIES, "Too many penalties");
 
-    UserType msgSenderUserType = communityRules.getUser(msg.sender);
+    CommunityTypes.UserType msgSenderUserType = communityRules.getUser(msg.sender);
 
     // Checks if the inviter has general permission to send invitations.
     require(_canSendInvite(msgSenderUserType), "Only most active users allowed to invite");
@@ -125,12 +125,15 @@ contract InvitationRules is Ownable, ReentrancyGuard {
    * @param invited The address of the wallet to be invited.
    * @param userType The user type to which the invited user will be assigned (must be REGENERATOR or INSPECTOR).
    */
-  function inviteRegeneratorInspector(address invited, UserType userType) public nonReentrant {
+  function inviteRegeneratorInspector(address invited, CommunityTypes.UserType userType) public nonReentrant {
     require(communityRules.inviterPenalties(msg.sender) < MAX_ACTIVIST_PENALTIES, "Too many penalties");
     // Checks if the caller is an activist.
-    require(communityRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Only to activists");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.ACTIVIST, msg.sender), "Only to activists");
     // Checks if the invited user type is Regenerator or Inspector.
-    require(userType == UserType.REGENERATOR || userType == UserType.INSPECTOR, "Only regenerators or inspectors");
+    require(
+      userType == CommunityTypes.UserType.REGENERATOR || userType == CommunityTypes.UserType.INSPECTOR,
+      "Only regenerators or inspectors"
+    );
     // Checks if the specific invitation delay for activists has been reached.
     require(_invitationDelayActivist(), "Invite delay not reached");
 
@@ -150,16 +153,16 @@ contract InvitationRules is Ownable, ReentrancyGuard {
    * @dev Based on the inviter userType, this function sends to the correct contract to check if user can invite.
    * @param userType Inviter userType.
    */
-  function _canSendInvite(UserType userType) private view returns (bool) {
-    if (userType == UserType.ACTIVIST) {
+  function _canSendInvite(CommunityTypes.UserType userType) private view returns (bool) {
+    if (userType == CommunityTypes.UserType.ACTIVIST) {
       return activistRules.canSendInvite(msg.sender);
-    } else if (userType == UserType.CONTRIBUTOR) {
+    } else if (userType == CommunityTypes.UserType.CONTRIBUTOR) {
       return contributorRules.canSendInvite(msg.sender);
-    } else if (userType == UserType.DEVELOPER) {
+    } else if (userType == CommunityTypes.UserType.DEVELOPER) {
       return developerRules.canSendInvite(msg.sender);
-    } else if (userType == UserType.RESEARCHER) {
+    } else if (userType == CommunityTypes.UserType.RESEARCHER) {
       return researcherRules.canSendInvite(msg.sender);
-    } else if (userType == UserType.SUPPORTER) {
+    } else if (userType == CommunityTypes.UserType.SUPPORTER) {
       return true;
     } else {
       return false;
@@ -171,7 +174,7 @@ contract InvitationRules is Ownable, ReentrancyGuard {
    * @param userType The user type of the inviter.
    * @return bool True if the user waited the delay blocks, false otherwise.
    */
-  function _invitationDelayReached(UserType userType) private view returns (bool) {
+  function _invitationDelayReached(CommunityTypes.UserType userType) private view returns (bool) {
     uint32 delayBlocks = communityRules.getUserTypeSettings(userType).invitationDelayBlocks;
 
     return _hasInvitationDelayPassed(lastInviteBlocks[msg.sender], delayBlocks);
@@ -204,7 +207,7 @@ contract InvitationRules is Ownable, ReentrancyGuard {
    * @param invited The address of the wallet to be invited.
    * @param userType The user type to which the invited user will be assigned.
    */
-  function onlyOwnerInvite(address invited, UserType userType) public onlyOwner {
+  function onlyOwnerInvite(address invited, CommunityTypes.UserType userType) public onlyOwner {
     communityRules.addInvitation(msg.sender, invited, userType);
     // Emits an event to log the invitation.
     emit UserInvited(msg.sender, invited, userType, block.number);
@@ -217,5 +220,10 @@ contract InvitationRules is Ownable, ReentrancyGuard {
   /// @param invited The address of the invited user.
   /// @param invitedType The user type assigned to the invited user.
   /// @param blockNumber The block number at which the invitation was made.
-  event UserInvited(address indexed inviter, address indexed invited, UserType invitedType, uint256 blockNumber);
+  event UserInvited(
+    address indexed inviter,
+    address indexed invited,
+    CommunityTypes.UserType invitedType,
+    uint256 blockNumber
+  );
 }

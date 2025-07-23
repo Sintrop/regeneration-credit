@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import "contracts/types/CommunityTypes.sol";
+import { CommunityTypes } from "./../types/CommunityTypes.sol";
 
 /**
  * @title ICommunityRules
@@ -14,7 +14,7 @@ interface ICommunityRules {
    * @param userType The user type to query.
    * @return The count of users for that type.
    */
-  function userTypesCount(UserType userType) external view returns (uint256);
+  function userTypesCount(CommunityTypes.UserType userType) external view returns (uint256);
 
   /**
    * @notice Returns the total count of a user type (used for generating IDs).
@@ -22,14 +22,14 @@ interface ICommunityRules {
    * @param userType The user type to query.
    * @return The total count for that type.
    */
-  function userTypesTotalCount(UserType userType) external view returns (uint64);
+  function userTypesTotalCount(CommunityTypes.UserType userType) external view returns (uint64);
 
   /**
    * @notice Adds a new user to the system with a specific type.
    * @param user The address of the new user.
    * @param userType The type to be assigned to the new user.
    */
-  function addUser(address user, UserType userType) external;
+  function addUser(address user, CommunityTypes.UserType userType) external;
 
   /**
    * @notice Checks if a user is of a specific type.
@@ -37,21 +37,21 @@ interface ICommunityRules {
    * @param user The address of the user to check.
    * @return true if the user is of the specified type, false otherwise.
    */
-  function userTypeIs(UserType userType, address user) external view returns (bool);
+  function userTypeIs(CommunityTypes.UserType userType, address user) external view returns (bool);
 
   /**
    * @notice Gets the invitation data for a specific address.
    * @param userAddress The address of the invited user.
    * @return The Invitation struct containing the invitation data.
    */
-  function getInvitation(address userAddress) external view returns (Invitation memory);
+  function getInvitation(address userAddress) external view returns (CommunityTypes.Invitation memory);
 
   /**
    * @notice Retrieves the UserType for a given account.
    * @param account The address of the user.
    * @return The user's UserType enum.
    */
-  function getUser(address account) external view returns (UserType);
+  function getUser(address account) external view returns (CommunityTypes.UserType);
 
   /**
    * @notice Adds a new invitation to the system.
@@ -59,7 +59,7 @@ interface ICommunityRules {
    * @param invitee The user who is being invited.
    * @param userType The UserType being assigned in the invitation.
    */
-  function addInvitation(address inviter, address invitee, UserType userType) external;
+  function addInvitation(address inviter, address invitee, CommunityTypes.UserType userType) external;
 
   /**
    * @notice Retrieves the settings configuration for a specific UserType.
@@ -67,7 +67,9 @@ interface ICommunityRules {
    * @param userType The UserType for which to get the settings.
    * @return The UserTypeSettings struct containing configuration data.
    */
-  function getUserTypeSettings(UserType userType) external view returns (UserTypeSetting memory);
+  function getUserTypeSettings(
+    CommunityTypes.UserType userType
+  ) external view returns (CommunityTypes.UserTypeSetting memory);
 
   /**
    * @notice Sets a user's type to a 'denied' or 'invalid' state.

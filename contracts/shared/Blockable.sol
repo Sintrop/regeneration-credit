@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-
 /**
  * @title Blockable
  * @author Sintrop
@@ -11,8 +9,6 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * Eras and Epochs are 1-indexed.
  */
 contract Blockable {
-  using SafeMath for uint256;
-
   // --- Constants and Immutables ---
 
   /// @dev Precision factor used in calculations.
@@ -60,9 +56,9 @@ contract Blockable {
    * @return uint256 The current contract era.
    */
   function currentContractEra() public view returns (uint256) {
-    uint256 blocksSinceDeployment = _currentBlockNumber().sub(deployedAt);
+    uint256 blocksSinceDeployment = _currentBlockNumber() - deployedAt;
 
-    return blocksSinceDeployment.div(blocksPerEra).add(1);
+    return blocksSinceDeployment / blocksPerEra + 1;
   }
 
   /**
@@ -89,7 +85,7 @@ contract Blockable {
     require(era > 0, "Era must be greater than 0");
     // Subtract 1 from the given era to align with a 0-indexed concept for epoch calculation,
     // then divide by halving and add 1 to get the 1-indexed epoch number.
-    return (era.sub(1)).div(halving).add(1);
+    return (era - 1) / halving + 1;
   }
 
   /**
@@ -103,7 +99,7 @@ contract Blockable {
 
     // Target block is the first block of the (targetEra + 1)
     // Which is deployedAt + (targetEra * blocksPerEra)
-    uint256 endBlockOfTargetEra = deployedAt.add(targetEra.mul(blocksPerEra));
+    uint256 endBlockOfTargetEra = deployedAt + (targetEra * blocksPerEra);
     return int256(endBlockOfTargetEra) - int256(_currentBlockNumber());
   }
 
@@ -129,7 +125,7 @@ contract Blockable {
     uint256 blocksPassed = uint256(-blocksUntilEndOfUserEra);
 
     // (blocksPassed / blocksPerEra) * (10**BLOCKS_PRECISION)
-    return blocksPassed.mul(10 ** BLOCKS_PRECISION).div(blocksPerEra);
+    return (blocksPassed * (10 ** BLOCKS_PRECISION)) / blocksPerEra;
   }
 
   // --- Internal View Functions ---
