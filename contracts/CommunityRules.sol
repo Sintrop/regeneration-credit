@@ -2,7 +2,7 @@
 pragma solidity ^0.8.27;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { UserType, Delation, Invitation, UserTypeSetting } from "./types/CommunityTypes.sol";
+import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 
 /**
@@ -40,25 +40,25 @@ contract CommunityRules is Ownable, Callable {
   uint64 public usersCount;
 
   /// @notice A mapping from a user's wallet address to their assigned `UserType`.
-  mapping(address => UserType) private users;
+  mapping(address => CommunityTypes.UserType) private users;
 
   /// @notice A mapping from a reported user's address to an array of `Delation` structs they have received.
   /// Stores a historical record of all delations against a user.
-  mapping(address => Delation[]) private delations;
+  mapping(address => CommunityTypes.Delation[]) private delations;
 
   /// @notice A mapping from an invited user's address to their `Invitation` details.
-  mapping(address => Invitation) public invitations;
+  mapping(address => CommunityTypes.Invitation) public invitations;
 
   /// @notice A mapping to track the count of active users for each `UserType`.
-  mapping(UserType => uint64) public userTypesCount;
+  mapping(CommunityTypes.UserType => uint64) public userTypesCount;
 
   /// @notice A mapping to track the total count of registered users for each `UserType`,
   /// including both active and `DENIED` users. This count serves as a global counter for new user IDs.
-  mapping(UserType => uint64) public userTypesTotalCount;
+  mapping(CommunityTypes.UserType => uint64) public userTypesTotalCount;
 
   /// @notice A mapping storing specific settings for each `UserType`,
   /// including proportionality rules, invitation requirements, and voter status.
-  mapping(UserType => UserTypeSetting) public userTypeSettings;
+  mapping(CommunityTypes.UserType => CommunityTypes.UserTypeSetting) public userTypeSettings;
 
   /// @notice Tracks the number of times an inviter has had their invitees denied.
   mapping(address => uint16) public inviterPenalties;
@@ -83,31 +83,43 @@ contract CommunityRules is Ownable, Callable {
     uint8 contributorProportionality
   ) {
     // Initialize settings for all relevant UserTypes
-    userTypeSettings[UserType.SUPPORTER] = UserTypeSetting(0, false, false, SUPPORTER_INVITATION_DELAY_BLOCKS, false);
-    userTypeSettings[UserType.REGENERATOR] = UserTypeSetting(0, false, true, 0, false);
-    userTypeSettings[UserType.INSPECTOR] = UserTypeSetting(inspectorProportionality, true, true, 0, false);
-    userTypeSettings[UserType.ACTIVIST] = UserTypeSetting(
+    userTypeSettings[CommunityTypes.UserType.SUPPORTER] = CommunityTypes.UserTypeSetting(
+      0,
+      false,
+      false,
+      SUPPORTER_INVITATION_DELAY_BLOCKS,
+      false
+    );
+    userTypeSettings[CommunityTypes.UserType.REGENERATOR] = CommunityTypes.UserTypeSetting(0, false, true, 0, false);
+    userTypeSettings[CommunityTypes.UserType.INSPECTOR] = CommunityTypes.UserTypeSetting(
+      inspectorProportionality,
+      true,
+      true,
+      0,
+      false
+    );
+    userTypeSettings[CommunityTypes.UserType.ACTIVIST] = CommunityTypes.UserTypeSetting(
       activistProportionality,
       false,
       true,
       VOTER_INVITATION_DELAY_BLOCKS,
       true
     );
-    userTypeSettings[UserType.RESEARCHER] = UserTypeSetting(
+    userTypeSettings[CommunityTypes.UserType.RESEARCHER] = CommunityTypes.UserTypeSetting(
       researcherProportionality,
       false,
       true,
       VOTER_INVITATION_DELAY_BLOCKS,
       true
     );
-    userTypeSettings[UserType.DEVELOPER] = UserTypeSetting(
+    userTypeSettings[CommunityTypes.UserType.DEVELOPER] = CommunityTypes.UserTypeSetting(
       developerProportionality,
       false,
       true,
       VOTER_INVITATION_DELAY_BLOCKS,
       true
     );
-    userTypeSettings[UserType.CONTRIBUTOR] = UserTypeSetting(
+    userTypeSettings[CommunityTypes.UserType.CONTRIBUTOR] = CommunityTypes.UserTypeSetting(
       contributorProportionality,
       false,
       true,
@@ -140,12 +152,12 @@ contract CommunityRules is Ownable, Callable {
       bytes(title).length <= MAX_TITLE_LENGTH && bytes(testimony).length <= MAX_TESTIMONY_LENGTH,
       "Max characters reached"
     );
-    require(users[msg.sender] != UserType.UNDEFINED, "Caller must be registered");
-    require(users[msg.sender] != UserType.SUPPORTER, "Not allowed to supporters");
-    require(users[addr] != UserType.UNDEFINED, "User must be registered");
+    require(users[msg.sender] != CommunityTypes.UserType.UNDEFINED, "Caller must be registered");
+    require(users[msg.sender] != CommunityTypes.UserType.SUPPORTER, "Not allowed to supporters");
+    require(users[addr] != CommunityTypes.UserType.UNDEFINED, "User must be registered");
     require(addr != address(0), "Cannot delate zero address");
 
-    delations[addr].push(Delation(delationsCount + 1, msg.sender, addr, title, testimony));
+    delations[addr].push(CommunityTypes.Delation(delationsCount + 1, msg.sender, addr, title, testimony));
     delationsCount++;
 
     emit DelationAdded(msg.sender, addr);
@@ -160,10 +172,13 @@ contract CommunityRules is Ownable, Callable {
    * @param addr The address of the user to be registered.
    * @param userType The desired `UserType` for the user.
    */
-  function addUser(address addr, UserType userType) public mustBeAllowedCaller {
+  function addUser(address addr, CommunityTypes.UserType userType) public mustBeAllowedCaller {
     require(addr != address(0), "User address cannot be zero");
-    require(users[addr] == UserType.UNDEFINED, "User already exists"); // Only one registration per address
-    require(userType != UserType.UNDEFINED && userType != UserType.DENIED, "Invalid user type"); // Must selected the appropriate userType
+    require(users[addr] == CommunityTypes.UserType.UNDEFINED, "User already exists"); // Only one registration per address
+    require(
+      userType != CommunityTypes.UserType.UNDEFINED && userType != CommunityTypes.UserType.DENIED,
+      "Invalid user type"
+    ); // Must selected the appropriate userType
     require(_registrationProportionalityAllowed(userType), "Proportionality invalid"); // Vacancies according to the number of regenerators
     require(_invitedTypeOnRegister(addr, userType), "Invalid invitation"); // Only with valid invitation
 
@@ -184,12 +199,16 @@ contract CommunityRules is Ownable, Callable {
    * @param invited The address of the user who received the invitation.
    * @param userType The `UserType` the `invited` user is intended to register as.
    */
-  function addInvitation(address inviter, address invited, UserType userType) public mustBeAllowedCaller {
+  function addInvitation(
+    address inviter,
+    address invited,
+    CommunityTypes.UserType userType
+  ) public mustBeAllowedCaller {
     require(invited != address(0), "Invited address cannot be zero");
     require(invitations[invited].invited == address(0), "Already invited");
-    require(users[invited] == UserType.UNDEFINED, "Already registered");
+    require(users[invited] == CommunityTypes.UserType.UNDEFINED, "Already registered");
 
-    invitations[invited] = Invitation(invited, inviter, userType, block.number);
+    invitations[invited] = CommunityTypes.Invitation(invited, inviter, userType, block.number);
 
     emit InvitationAdded(inviter, invited, userType);
   }
@@ -202,11 +221,11 @@ contract CommunityRules is Ownable, Callable {
    * @param userAddress The address of the user to be denied.
    */
   function setDeniedType(address userAddress) public mustBeAllowedCaller {
-    if (users[userAddress] == UserType.DENIED) return;
+    if (users[userAddress] == CommunityTypes.UserType.DENIED) return;
 
     userTypesCount[users[userAddress]]--; // Decrement count of the old user type
 
-    users[userAddress] = UserType.DENIED;
+    users[userAddress] = CommunityTypes.UserType.DENIED;
 
     emit DeniedUserEvent(userAddress);
   }
@@ -229,12 +248,12 @@ contract CommunityRules is Ownable, Callable {
    * @param userType The `UserType` the user wishes to register as.
    * @return bool True if the user meets the invitation criteria for registration, false otherwise.
    */
-  function _invitedTypeOnRegister(address addr, UserType userType) private view returns (bool) {
+  function _invitedTypeOnRegister(address addr, CommunityTypes.UserType userType) private view returns (bool) {
     // If the UserType does not require an invitation for registration, return true.
     if (!userTypeSettings[userType].needInvitationOnRegister) return true;
 
     // Retrieve the invitation details for the given address.
-    Invitation memory invitation = invitations[addr];
+    CommunityTypes.Invitation memory invitation = invitations[addr];
 
     // Check if an invitation exists for the address and if the invitation's userType matches the requested userType.
     // An invitation exists if `createdAtBlock` is greater than 0.
@@ -246,10 +265,10 @@ contract CommunityRules is Ownable, Callable {
    * @param userType The `UserType` for which registration is being checked.
    * @return bool True if registration is allowed according to proportionality, false otherwise.
    */
-  function _registrationProportionalityAllowed(UserType userType) private view returns (bool) {
-    uint64 regeneratorsCount = userTypesCount[UserType.REGENERATOR];
+  function _registrationProportionalityAllowed(CommunityTypes.UserType userType) private view returns (bool) {
+    uint64 regeneratorsCount = userTypesCount[CommunityTypes.UserType.REGENERATOR];
     uint64 registeredUserTypeCount = userTypesCount[userType];
-    UserTypeSetting memory setting = userTypeSettings[userType];
+    CommunityTypes.UserTypeSetting memory setting = userTypeSettings[userType];
     uint8 proportionality = setting.proportionalityOnRegister;
 
     // If proportionality is 0, no limit applies.
@@ -272,10 +291,10 @@ contract CommunityRules is Ownable, Callable {
    */
   function votersCount() public view returns (uint256) {
     return
-      userTypesCount[UserType.ACTIVIST] +
-      userTypesCount[UserType.CONTRIBUTOR] +
-      userTypesCount[UserType.DEVELOPER] +
-      userTypesCount[UserType.RESEARCHER];
+      userTypesCount[CommunityTypes.UserType.ACTIVIST] +
+      userTypesCount[CommunityTypes.UserType.CONTRIBUTOR] +
+      userTypesCount[CommunityTypes.UserType.DEVELOPER] +
+      userTypesCount[CommunityTypes.UserType.RESEARCHER];
   }
 
   /**
@@ -292,7 +311,7 @@ contract CommunityRules is Ownable, Callable {
    * @param addr The address to query.
    * @return UserType The `UserType` enum value associated with the address.
    */
-  function getUser(address addr) public view returns (UserType) {
+  function getUser(address addr) public view returns (CommunityTypes.UserType) {
     return users[addr];
   }
 
@@ -301,7 +320,9 @@ contract CommunityRules is Ownable, Callable {
    * @param userType The `UserType` to query settings for.
    * @return UserTypeSetting The `UserTypeSetting` struct containing configuration data.
    */
-  function getUserTypeSettings(UserType userType) public view returns (UserTypeSetting memory) {
+  function getUserTypeSettings(
+    CommunityTypes.UserType userType
+  ) public view returns (CommunityTypes.UserTypeSetting memory) {
     return userTypeSettings[userType];
   }
 
@@ -310,14 +331,14 @@ contract CommunityRules is Ownable, Callable {
    * @notice Function to check if an userAddress type is equal passed userType
    * @param userAddress Denied user address
    */
-  function userTypeIs(UserType userType, address userAddress) public view returns (bool) {
+  function userTypeIs(CommunityTypes.UserType userType, address userAddress) public view returns (bool) {
     return users[userAddress] == userType;
   }
 
   /**
    * @dev Returns the user address delated
    */
-  function getUserDelations(address addr) public view returns (Delation[] memory) {
+  function getUserDelations(address addr) public view returns (CommunityTypes.Delation[] memory) {
     return delations[addr];
   }
 
@@ -326,7 +347,7 @@ contract CommunityRules is Ownable, Callable {
    * @notice Get the invitation of an user
    * @param addr User address
    */
-  function getInvitation(address addr) public view returns (Invitation memory) {
+  function getInvitation(address addr) public view returns (CommunityTypes.Invitation memory) {
     return invitations[addr];
   }
 
@@ -337,7 +358,7 @@ contract CommunityRules is Ownable, Callable {
    * @param addr The address of the newly registered user.
    * @param userType The `UserType` assigned to the new user.
    */
-  event UserRegistered(address indexed addr, UserType userType);
+  event UserRegistered(address indexed addr, CommunityTypes.UserType userType);
 
   /**
    * @notice Emitted when a user's type is changed to `DENIED`.
@@ -358,5 +379,5 @@ contract CommunityRules is Ownable, Callable {
    * @param invited The address of the user who received the invitation.
    * @param userTypeTo The `UserType` the invited user is intended to register as.
    */
-  event InvitationAdded(address indexed inviter, address indexed invited, UserType userTypeTo);
+  event InvitationAdded(address indexed inviter, address indexed invited, CommunityTypes.UserType userTypeTo);
 }

@@ -8,7 +8,7 @@ import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IResearcherPool } from "./interfaces/IResearcherPool.sol";
 import { IValidationRules } from "./interfaces/IValidationRules.sol";
 import { Researcher, Research, Pool, CalculatorItem, EvaluationMethod, Penalty, ContractsDependency } from "./types/ResearcherTypes.sol";
-import { UserType } from "./types/CommunityTypes.sol";
+import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 
 /**
@@ -112,7 +112,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   IVoteRules private voteRules;
 
   /// @notice The specific `UserType` enumeration value for a Researcher user.
-  UserType private constant USER_TYPE = UserType.RESEARCHER;
+  CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.RESEARCHER;
 
   // --- Constructor ---
 
@@ -196,7 +196,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
         bytes(file).length <= MAX_HASH_LENGTH,
       "Max characters"
     );
-    require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.RESEARCHER, msg.sender), "Only researchers");
     require(nextEraIn() > securityBlocksToValidation, "Wait until next era");
     require(canPublishResearch(msg.sender), "Can't publish yet");
 
@@ -272,7 +272,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
         bytes(unit).length <= MAX_UNIT_LENGTH,
       "Max characters"
     );
-    require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.RESEARCHER, msg.sender), "Only researchers");
     require(canPublishCalculatorItem(msg.sender), "Can't publish yet");
 
     uint64 id = calculatorItemsCount + 1;
@@ -298,7 +298,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
         bytes(projectURL).length <= MAX_HASH_LENGTH,
       "Max characters"
     );
-    require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.RESEARCHER, msg.sender), "Only researchers");
     require(researchers[msg.sender].canPublishMethod, "Only one method allowed");
 
     uint64 id = evaluationMethodsCount + 1;
@@ -315,7 +315,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * Increments the researcher's `pool.currentEra` upon successful withdrawal attempt.
    */
   function withdraw() public nonReentrant {
-    require(communityRules.userTypeIs(UserType.RESEARCHER, msg.sender), "Only researchers");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.RESEARCHER, msg.sender), "Only researchers");
 
     Researcher storage researcher = researchers[msg.sender];
     uint256 currentEra = researcher.pool.currentEra;

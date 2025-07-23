@@ -6,8 +6,7 @@ import { CommunityRules } from "./CommunityRules.sol";
 import { ResearcherRules } from "./ResearcherRules.sol";
 import { CalculatorItem } from "./types/ResearcherTypes.sol";
 import { Supporter, Publication, Offset } from "./types/SupporterTypes.sol";
-import { UserType, Invitation } from "./types/CommunityTypes.sol";
-import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import { CommunityTypes } from "./types/CommunityTypes.sol";
 
 /**
  * @title SupporterRules
@@ -17,8 +16,6 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * for environmental offsets and content publications, and management of reduction commitments.
  */
 contract SupporterRules is Callable {
-  using SafeMath for uint256;
-
   // --- Constants ---
 
   /// @notice Commission percentage paid to the inviter when an invited supporter burns tokens.
@@ -69,7 +66,7 @@ contract SupporterRules is Callable {
   ResearcherRules private researcherRules;
 
   /// @notice Supporter UserType
-  UserType private constant USER_TYPE = UserType.SUPPORTER;
+  CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.SUPPORTER;
 
   // --- Constructor ---
 
@@ -120,7 +117,7 @@ contract SupporterRules is Callable {
    */
   function updateProfilePhoto(string memory newPhoto) public {
     require(bytes(newPhoto).length <= MAX_HASH_LENGTH, "Max characters");
-    require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.SUPPORTER, msg.sender), "Only supporters");
 
     supporters[msg.sender].profilePhoto = newPhoto;
   }
@@ -180,7 +177,7 @@ contract SupporterRules is Callable {
    * @param calculatorItemId The ID of the CalculatorItem for which the commitment is being declared.
    */
   function declareReductionCommitment(uint64 calculatorItemId) public {
-    require(communityRules.userTypeIs(UserType.SUPPORTER, msg.sender), "Only supporters");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.SUPPORTER, msg.sender), "Only supporters");
     require(!declaredReduction[msg.sender][calculatorItemId], "Commitment already declared");
 
     CalculatorItem memory calculatorItem = researcherRules.getCalculatorItem(calculatorItemId);
@@ -209,13 +206,13 @@ contract SupporterRules is Callable {
     address supporterAddress,
     uint256 amount
   ) public view returns (uint256 amountToBurn, uint256 commission, address inviter) {
-    Invitation memory invitation = communityRules.getInvitation(supporterAddress);
+    CommunityTypes.Invitation memory invitation = communityRules.getInvitation(supporterAddress);
     bool isInvited = invitation.createdAtBlock != 0; // Check if invitation exists
 
     inviter = invitation.inviter;
 
-    commission = isInvited ? amount.mul(INVITER_PERCENTAGE).div(100) : 0;
-    amountToBurn = amount.sub(commission);
+    commission = isInvited ? (amount * INVITER_PERCENTAGE) / 100 : 0;
+    amountToBurn = amount - commission;
   }
 
   /**
@@ -244,7 +241,7 @@ contract SupporterRules is Callable {
    * @return bool True if is supporter, false otherwise.
    */
   function isSupporter(address addr) external view returns (bool) {
-    return communityRules.userTypeIs(UserType.SUPPORTER, addr);
+    return communityRules.userTypeIs(CommunityTypes.UserType.SUPPORTER, addr);
   }
 
   // --- Events ---

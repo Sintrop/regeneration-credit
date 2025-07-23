@@ -5,7 +5,7 @@ import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuar
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IActivistPool } from "./interfaces/IActivistPool.sol";
 import { Activist, Pool } from "./types/ActivistTypes.sol";
-import { UserType, Invitation } from "./types/CommunityTypes.sol";
+import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
 
@@ -62,7 +62,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   IActivistPool private activistPool;
 
   /// @notice The specific `UserType` enumeration value for the Activist user.
-  UserType private constant USER_TYPE = UserType.ACTIVIST;
+  CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.ACTIVIST;
 
   // --- Constructor ---
 
@@ -126,7 +126,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    */
   function withdraw() public nonReentrant {
     // Only activist can call the function
-    require(communityRules.userTypeIs(UserType.ACTIVIST, msg.sender), "Pool only to activist");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.ACTIVIST, msg.sender), "Pool only to activist");
 
     // Retrieve activist data.
     Activist storage activist = activists[msg.sender];
@@ -202,7 +202,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * @param regeneratorTotalInspections Invited regenerator total inspections.
    */
   function _addLevelFromRegenerator(address regeneratorAddress, uint256 regeneratorTotalInspections) private {
-    Invitation memory regeneratorInvitation = communityRules.getInvitation(regeneratorAddress);
+    CommunityTypes.Invitation memory regeneratorInvitation = communityRules.getInvitation(regeneratorAddress);
     address activistAddress = regeneratorInvitation.inviter;
 
     if (
@@ -222,7 +222,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * @param inspectorTotalInspections Invited inspector total inspections.
    */
   function _addLevelFromInspector(address inspectorAddress, uint256 inspectorTotalInspections) private {
-    Invitation memory inspectorInvitation = communityRules.getInvitation(inspectorAddress);
+    CommunityTypes.Invitation memory inspectorInvitation = communityRules.getInvitation(inspectorAddress);
     address activistAddress = inspectorInvitation.inviter;
 
     if (

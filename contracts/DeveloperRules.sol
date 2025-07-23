@@ -7,7 +7,7 @@ import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
 import { IDeveloperPool } from "./interfaces/IDeveloperPool.sol";
 import { IValidationRules } from "./interfaces/IValidationRules.sol";
-import { UserType } from "./types/CommunityTypes.sol";
+import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Developer, Pool, Report, Penalty, ContractsDependency } from "./types/DeveloperTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
@@ -93,7 +93,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
   IVoteRules private voteRules;
 
   /// @notice The specific `UserType` enumeration value for a Developer user.
-  UserType private constant USER_TYPE = UserType.DEVELOPER;
+  CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.DEVELOPER;
 
   // --- Constructor ---
 
@@ -183,7 +183,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
       "Max characters reached"
     );
     // Only registered developers can call this function.
-    require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Only Developer");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.DEVELOPER, msg.sender), "Only Developer");
     // Check if within the security window before era end.
     require(nextEraIn() > securityBlocksToValidation, "Wait until next era to add report");
     // Check if enough time has passed since the last publication.
@@ -264,7 +264,7 @@ contract DeveloperRules is Ownable, Callable, Invitable, ReentrancyGuard {
    */
   function withdraw() public nonReentrant {
     // Only registered developers can call this function.
-    require(communityRules.userTypeIs(UserType.DEVELOPER, msg.sender), "Pool only to developer");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.DEVELOPER, msg.sender), "Pool only to developer");
 
     Developer storage developer = developers[msg.sender];
     uint256 currentEra = developer.pool.currentEra;

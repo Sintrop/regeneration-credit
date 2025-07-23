@@ -2,7 +2,6 @@
 pragma solidity ^0.8.27;
 
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IRegenerationCredit } from "./interfaces/IRegenerationCredit.sol";
 import { Blockable } from "./shared/Blockable.sol";
@@ -19,8 +18,6 @@ import { Poolable } from "./shared/Poolable.sol";
  * `Blockable` (for era/epoch tracking), and `Callable` (for whitelisted caller control).
  */
 contract InspectorPool is Poolable, Ownable, Blockable, Callable, ReentrancyGuard {
-  using SafeMath for uint256;
-
   // --- Constants & state variables ---
 
   /// @notice Interface to the Regeneration Credit token contract, used for token transfers.
@@ -75,7 +72,7 @@ contract InspectorPool is Poolable, Ownable, Blockable, Callable, ReentrancyGuar
     bool success = regenerationCredit.transfer(delegate, numTokens);
     require(success, "ERC20: transfer failed");
 
-    regenerationCredit.poolTransfer(address(this), delegate, numTokens);
+    regenerationCredit.decreaseLocked(address(this), numTokens);
   }
 
   /**

@@ -14,7 +14,7 @@ interface IRegenerationCredit {
 
   function transferFrom(address owner, address to, uint256 numTokens) external returns (bool);
 
-  function poolTransfer(address tokenOwner, address receiver, uint256 numTokens) external;
+  function decreaseLocked(address tokenOwner, uint256 numTokens) external;
 
   /**
    * @notice Returns the total supply of tokens in existence.

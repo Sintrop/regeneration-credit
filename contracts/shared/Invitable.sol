@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-
 /**
  * @title Invitable
  * @author Sintrop
@@ -11,8 +9,6 @@ import { SafeMath } from "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * @dev Contains a pure function to perform this check.
  */
 contract Invitable {
-  using SafeMath for uint256;
-
   /**
    * @dev The threshold of total users below (or equal to) which any user can invite.
    * This allows for easier invitations in the early stages of the system.
@@ -39,7 +35,7 @@ contract Invitable {
 
     // Calculate the average levels per user and add 1 to set the threshold.
     // This means a user needs slightly more than the strict average to invite.
-    uint256 avg = totalLevels.div(totalUsers).add(1);
+    uint256 avg = totalLevels / totalUsers + 1;
 
     // Rule 2: User must meet or exceed the calculated average level threshold.
     return userLevels >= avg;
