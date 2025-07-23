@@ -131,9 +131,7 @@ async function configureInspectionRules() {
   await activistRules.newAllowedCaller(inspectionRules.target);
   await inspectorRules.newAllowedCaller(inspectionRules.target);
   await regeneratorRules.newAllowedCaller(inspectionRules.target);
-  await communityRules.newAllowedCaller(inspectionRules.target);
   await validationRules.newAllowedCaller(inspectionRules.target);
-  await regenerationIndexRules.newAllowedCaller(inspectionRules.target);
 
   console.log("After InspectionRules deploy is OK");
 }

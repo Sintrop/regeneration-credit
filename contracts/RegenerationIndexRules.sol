@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Category, RegenerationIndex, RegenerationIndexDescription } from "./types/IndexTypes.sol";
-import { Callable } from "./shared/Callable.sol";
 
 /**
  * @title RegenerationIndexRules
@@ -12,7 +10,7 @@ import { Callable } from "./shared/Callable.sol";
  * @notice This contract handles the RegenerationIndexRules, used by the inspections to estimate the Regenerator impact
  * and calculate the RegnerationScore. The system will have only two categories: Trees & Biodiversity.
  */
-contract RegenerationIndexRules is Ownable, Callable {
+contract RegenerationIndexRules {
   // --- Constants ---
 
   /// @notice Allowed categories: Trees & Biodiversity.

@@ -2,7 +2,6 @@
 pragma solidity ^0.8.27;
 
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
 import { IContributorPool } from "./interfaces/IContributorPool.sol";
@@ -23,7 +22,7 @@ import { Invitable } from "./shared/Invitable.sol";
  * for general user management, `ContributorPool` for reward distribution, `VoteRules` for voting
  * eligibility, and `ValidationRules` for contribution validation processes.
  */
-contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
+contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   // --- Constants ---
 
   /// @notice Maximum users count allowed for this UserType.

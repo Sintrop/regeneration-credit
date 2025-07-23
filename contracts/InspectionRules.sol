@@ -13,7 +13,7 @@ import { InspectionStatus, Inspection, ContractsDependency } from "./types/Inspe
 import { Regenerator } from "./types/RegeneratorTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
-import { Callable } from "./shared/Callable.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title InspectionRules
@@ -22,7 +22,7 @@ import { Callable } from "./shared/Callable.sol";
  * @dev This contract allows Regenerators to request inspections, and Inspectors to accept, perform, and submit them.
  * It integrates with various other rule contracts for user validation, level updates, and penalty management.
  */
-contract InspectionRules is Callable, ReentrancyGuard {
+contract InspectionRules is Ownable, ReentrancyGuard {
   // --- Constants ---
 
   /// @notice The maximum number of inspections a Regenerator can receive.
