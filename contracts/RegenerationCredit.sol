@@ -164,21 +164,18 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
   }
 
   /**
-   * @dev Allows a designated "contract pool" to register a new poolTransfer.
+   * @dev Allows a designated "contract pool" to register a new decreaseLocked.
    * @notice Called only by a system pool contract, this function remove the transfered tokens from totalLocked.
    * @param tokenOwner The address of the contract pool initiating the transfer.
-   * @param receiver The address of the user who will receive the tokens.
    * @param numTokens The amount of tokens to transfer.
    */
-  function poolTransfer(address tokenOwner, address receiver, uint256 numTokens) public mustBeContractPool {
+  function decreaseLocked(address tokenOwner, uint256 numTokens) public mustBeContractPool {
     require(numTokens <= balanceOf(tokenOwner), "You don't have RC Tokens");
 
     // Update total locked tokens.
     unchecked {
       if (contractsPools[tokenOwner]) totalLocked_ -= numTokens;
     }
-    // Emit event specific to pool transfers.
-    emit PoolTransfer(tokenOwner, receiver, numTokens);
   }
 
   // --- Private functions ---

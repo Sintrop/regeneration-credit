@@ -72,7 +72,7 @@ contract ResearcherPool is Poolable, Ownable, Blockable, Callable, ReentrancyGua
     bool success = regenerationCredit.transfer(delegate, numTokens);
     require(success, "ERC20: transfer failed");
 
-    regenerationCredit.poolTransfer(address(this), delegate, numTokens);
+    regenerationCredit.decreaseLocked(address(this), numTokens);
   }
 
   /**

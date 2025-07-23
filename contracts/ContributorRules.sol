@@ -7,7 +7,7 @@ import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
 import { IContributorPool } from "./interfaces/IContributorPool.sol";
 import { IValidationRules } from "./interfaces/IValidationRules.sol";
-import { UserType } from "./types/CommunityTypes.sol";
+import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Contributor, Pool, Contribution, Penalty, ContractsDependency } from "./types/ContributorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
@@ -91,7 +91,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
   IVoteRules private voteRules;
 
   /// @notice The specific `UserType` enumeration value for a Contributor user.
-  UserType private constant USER_TYPE = UserType.CONTRIBUTOR;
+  CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.CONTRIBUTOR;
 
   /// @notice A mapping from a contributor's wallet address to an array of `Penalty` structs they have received.
   mapping(address => Penalty[]) public penalties;
@@ -194,7 +194,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
     );
 
     // Only registered contributors can call this function.
-    require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Only Contributor");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.CONTRIBUTOR, msg.sender), "Only Contributor");
 
     // Check if within the security window before era end.
     require(nextEraIn() > securityBlocksToValidation, "Wait until next era to add contribution");
@@ -284,7 +284,7 @@ contract ContributorRules is Ownable, Callable, Invitable, ReentrancyGuard {
    */
   function withdraw() public nonReentrant {
     // Only registered contributors can call this function.
-    require(communityRules.userTypeIs(UserType.CONTRIBUTOR, msg.sender), "Pool only to contributor");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.CONTRIBUTOR, msg.sender), "Pool only to contributor");
 
     // Retrieve contributor data.
     Contributor storage contributor = contributors[msg.sender];

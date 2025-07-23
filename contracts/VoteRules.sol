@@ -6,7 +6,7 @@ import { IActivistRules } from "./interfaces/IActivistRules.sol";
 import { IContributorRules } from "./interfaces/IContributorRules.sol";
 import { IDeveloperRules } from "./interfaces/IDeveloperRules.sol";
 import { IResearcherRules } from "./interfaces/IResearcherRules.sol";
-import { UserType } from "./types/CommunityTypes.sol";
+import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Activist } from "./types/ActivistTypes.sol";
 import { Contributor } from "./types/ContributorTypes.sol";
 import { Developer } from "./types/DeveloperTypes.sol";
@@ -72,7 +72,7 @@ contract VoteRules {
   function canVote(address addr) public view returns (bool) {
     require(communityRules.isVoter(addr), "Not a voter user");
 
-    UserType userType = communityRules.getUser(addr);
+    CommunityTypes.UserType userType = communityRules.getUser(addr);
     uint256 totalUsers = communityRules.userTypesTotalCount(userType);
 
     return _canVoteRules(_totalLevels(userType), totalUsers, _totalUserLevels(addr, userType));
@@ -105,20 +105,20 @@ contract VoteRules {
    * @param userType The UserType of the user.
    * @return levels Total levels for the given address.
    */
-  function _totalUserLevels(address addr, UserType userType) private view returns (uint256) {
-    if (userType == UserType.ACTIVIST) {
+  function _totalUserLevels(address addr, CommunityTypes.UserType userType) private view returns (uint256) {
+    if (userType == CommunityTypes.UserType.ACTIVIST) {
       Activist memory user = activistRules.getActivist(addr);
 
       return user.pool.level;
-    } else if (userType == UserType.CONTRIBUTOR) {
+    } else if (userType == CommunityTypes.UserType.CONTRIBUTOR) {
       Contributor memory user = contributorRules.getContributor(addr);
 
       return user.pool.level;
-    } else if (userType == UserType.DEVELOPER) {
+    } else if (userType == CommunityTypes.UserType.DEVELOPER) {
       Developer memory user = developerRules.getDeveloper(addr);
 
       return user.pool.level;
-    } else if (userType == UserType.RESEARCHER) {
+    } else if (userType == CommunityTypes.UserType.RESEARCHER) {
       Researcher memory user = researcherRules.getResearcher(addr);
 
       return user.pool.level;
@@ -134,14 +134,14 @@ contract VoteRules {
    * @param userType The UserType to check.
    * @return levels Total aggregated levels for the specified user type.
    */
-  function _totalLevels(UserType userType) private view returns (uint256) {
-    if (userType == UserType.ACTIVIST) {
+  function _totalLevels(CommunityTypes.UserType userType) private view returns (uint256) {
+    if (userType == CommunityTypes.UserType.ACTIVIST) {
       return activistRules.approvedInvites();
-    } else if (userType == UserType.CONTRIBUTOR) {
+    } else if (userType == CommunityTypes.UserType.CONTRIBUTOR) {
       return contributorRules.contributionsTotalCount();
-    } else if (userType == UserType.DEVELOPER) {
+    } else if (userType == CommunityTypes.UserType.DEVELOPER) {
       return developerRules.reportsTotalCount();
-    } else if (userType == UserType.RESEARCHER) {
+    } else if (userType == CommunityTypes.UserType.RESEARCHER) {
       return researcherRules.researchesTotalCount();
     } else {
       return 0;

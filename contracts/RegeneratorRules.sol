@@ -5,7 +5,7 @@ import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuar
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IRegeneratorPool } from "./interfaces/IRegeneratorPool.sol";
 import { Regenerator, Pool, Coordinates, RegenerationScore } from "./types/RegeneratorTypes.sol";
-import { UserType } from "./types/CommunityTypes.sol";
+import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 
 /**
@@ -80,7 +80,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   IRegeneratorPool private regeneratorPool;
 
   /// @notice The specific `UserType` enumeration value for a Regenerator user.
-  UserType private constant USER_TYPE = UserType.REGENERATOR;
+  CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.REGENERATOR;
 
   /// @notice The total count of regenerators who are considered "impact regenerators"
   /// (have achieved the minimum of three inspections.
@@ -193,7 +193,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    */
   function withdraw() public nonReentrant {
     // Only registered regenerators can call this function.
-    require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators pool");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.REGENERATOR, msg.sender), "Only regenerators pool");
 
     Regenerator storage regenerator = regenerators[msg.sender];
     // Check if the regenerator has completed the minimum required inspections.
@@ -222,7 +222,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    */
   function updateAreaPhoto(string memory newPhoto) public {
     require(bytes(newPhoto).length <= MAX_HASH_LENGTH, "Max characters");
-    require(communityRules.userTypeIs(UserType.REGENERATOR, msg.sender), "Only regenerators");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.REGENERATOR, msg.sender), "Only regenerators");
 
     areaPhoto[msg.sender] = newPhoto;
   }
