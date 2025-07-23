@@ -137,6 +137,8 @@ contract CommunityRules is Callable {
    * @param invitationRulesAddress Address of InvitationRules.
    */
   function setContractAddressDependencies(address invitationRulesAddress) public onlyOwner {
+    require(invitationRules == address(0), "Already set");
+
     invitationRules = invitationRulesAddress;    
   }
 

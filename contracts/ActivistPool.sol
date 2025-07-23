@@ -19,7 +19,7 @@ import { Poolable } from "./shared/Poolable.sol";
 contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
   // --- Constants & state variables ---
 
-  /// @notice Interface to the Regeneration Credit token contract, used for token transfers.
+  /// @notice Interface to the Regeneration Credit token contract, used to decrease total locked.
   IRegenerationCredit private regenerationCredit;
 
   /// @notice The total supply of Regeneration Credit tokens designated for this activist pool.
