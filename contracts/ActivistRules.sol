@@ -90,9 +90,10 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * @param inspectionRulesAddress Address of InspectionRules.
    * @param validationRulesAddress Address of ValidationRules.
    */
-  function setContractAddressDependencies(address inspectionRulesAddress, address validationRulesAddress) public onlyOwner {
-    require(inspectionRules == address(0), "Already set");
-
+  function setContractAddressDependencies(
+    address inspectionRulesAddress,
+    address validationRulesAddress
+  ) public onlyOwner {
     inspectionRules = inspectionRulesAddress;
     validationRules = validationRulesAddress;
   }
@@ -204,7 +205,10 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * @param addr The wallet address of the activist from whom levels are to be removed.
    * @param levelsToRemove The number of levels to decrease.
    */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller mustBeContractCall(address(validationRules)) nonReentrant {
+  function removePoolLevels(
+    address addr,
+    uint256 levelsToRemove
+  ) public mustBeAllowedCaller mustBeContractCall(address(validationRules)) nonReentrant {
     Activist storage activist = activists[addr];
 
     activist.pool.level -= levelsToRemove > 0 ? levelsToRemove : activist.pool.level;

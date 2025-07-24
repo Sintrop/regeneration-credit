@@ -55,5 +55,5 @@ contract Callable is Ownable {
   modifier mustBeContractCall(address addr) {
     require(msg.sender == addr, "Caller must be system contract");
     _;
-  }  
+  }
 }

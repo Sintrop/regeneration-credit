@@ -13,7 +13,7 @@ describe("ActivistRules", () => {
   const activistPoolArgs = {
     totalTokens: "40000000000000000000000000",
     halving: 12,
-    blocksPerEra: 20,
+    blocksPerEra: 25,
   };
 
   const addActivist = async (name, from) => {
@@ -41,10 +41,12 @@ describe("ActivistRules", () => {
     instanceContractFactory = await ethers.getContractFactory("ActivistRules");
     instance = await instanceContractFactory.deploy(communityRules.target, activistPool.target);
 
+    await communityRules.setContractAddressDependencies(owner);
+    await instance.setContractAddressDependencies(owner, owner);
+
     await communityRules.newAllowedCaller(activ1Address);
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(owner);
-
     await activistPool.newAllowedCaller(instance.target);
     await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(activistPool.target, activistPoolArgs.totalTokens);
@@ -143,6 +145,7 @@ describe("ActivistRules", () => {
         beforeEach(async () => {
           await addActivist("Activist A", activ1Address);
 
+          await communityRules.setContractAddressDependencies(activ1Address);
           await addInvitation(activ1Address, regenerator1Address, userTypes.Regenerator, activ1Address);
           await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
 
@@ -202,6 +205,7 @@ describe("ActivistRules", () => {
 
       context("when activist is not registered", () => {
         beforeEach(async () => {
+          await communityRules.setContractAddressDependencies(activ1Address);
           await addInvitation(activ1Address, regenerator1Address, userTypes.Regenerator, activ1Address);
           await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
 
@@ -235,6 +239,8 @@ describe("ActivistRules", () => {
   describe("#withdraw", () => {
     context("when is a activist", () => {
       beforeEach(async () => {
+        await communityRules.setContractAddressDependencies(activ1Address);
+
         await addActivist("Activist A", activ1Address);
       });
 
@@ -289,6 +295,7 @@ describe("ActivistRules", () => {
               await addActivist("Activist B", activ3Address);
 
               await communityRules.newAllowedCaller(activ3Address);
+              await communityRules.setContractAddressDependencies(activ3Address);
               await addInvitation(activ3Address, inspector2Address, userTypes.Inspector, activ3Address);
 
               await instance.addRegeneratorLevel(regenerator1Address, 0);
