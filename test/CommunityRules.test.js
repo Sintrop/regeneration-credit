@@ -33,6 +33,7 @@ describe("CommunityRules", function () {
     instance = await communityRulesDeployed(communityRulesParams);
 
     await instance.newAllowedCaller(owner);
+    await communityRules.setContractAddressDependencies(owner);
   });
 
   describe("#addUser", () => {
