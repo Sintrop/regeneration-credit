@@ -1179,7 +1179,7 @@ describe("ValidationRules", () => {
 
                 await inspectorRules.setContractAddressDependencies(instance.target, owner);
                 await inspectorRules.addPenalty(inspectionMock.inspector, 2);
-                await inspectorRules.setContractAddressDependencies(instance.target, instance);            
+                await inspectorRules.setContractAddressDependencies(instance.target, instance);
                 await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", user1Address);
               });
 
