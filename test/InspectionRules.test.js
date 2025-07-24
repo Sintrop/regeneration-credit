@@ -423,7 +423,7 @@ describe("InspectionRules", () => {
           await advanceBlock(20);
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-          await advanceBlock(200);
+          await advanceBlock(180);
           await acceptInspection(12, inspector12Address);
           await realizeInspection(12, report, treesResultValue, biodiversityResultValue, inspector12Address);
         });
