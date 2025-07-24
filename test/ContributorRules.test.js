@@ -91,6 +91,8 @@ describe("ContributorRules", (accounts) => {
     researcherRules = validatorRulesDeployed.researcherRules;
     activistRules = validatorRulesDeployed.activistRules;
 
+    await communityRules.setContractAddressDependencies(owner);
+
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(owner);
     await communityRules.newAllowedCaller(validationRules.target);
