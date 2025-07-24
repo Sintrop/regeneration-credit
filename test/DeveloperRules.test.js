@@ -94,6 +94,8 @@ describe("DeveloperRules", (accounts) => {
     await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(developerPool.target, "40000000000000000000000000");
 
+    await communityRules.setContractAddressDependencies(owner);
+
     await addInvitation(owner, dev1Address, userTypes.Developer, owner);
   });
 
@@ -1092,6 +1094,7 @@ describe("DeveloperRules", (accounts) => {
 
       context("when contributor reach max maxPenalties", () => {
         beforeEach(async () => {
+          await activistRules.setContractAddressDependencies(owner, owner);
           await communityRules.newAllowedCaller(user1Address);
           await communityRules.newAllowedCaller(user4Address);
           await communityRules.newAllowedCaller(user7Address);
@@ -1109,16 +1112,19 @@ describe("DeveloperRules", (accounts) => {
 
           await instance.connect(dev1Address).addReport("description", "report");
 
+          await communityRules.setContractAddressDependencies(user1Address);
           await addInvitation(user1Address, user2Address, userTypes.Regenerator, user1Address);
           await addInvitation(user1Address, user3Address, userTypes.Inspector, user1Address);
           await activistRules.addRegeneratorLevel(user2Address, 3);
           await activistRules.addInspectorLevel(user3Address, 3);
 
+          await communityRules.setContractAddressDependencies(user4Address);
           await addInvitation(user4Address, user5Address, userTypes.Regenerator, user4Address);
           await addInvitation(user4Address, user6Address, userTypes.Inspector, user4Address);
           await activistRules.addRegeneratorLevel(user5Address, 3);
           await activistRules.addInspectorLevel(user6Address, 3);
 
+          await communityRules.setContractAddressDependencies(user7Address);
           await addInvitation(user7Address, user8Address, userTypes.Regenerator, user7Address);
           await addInvitation(user7Address, user9Address, userTypes.Inspector, user7Address);
           await activistRules.addRegeneratorLevel(user8Address, 3);

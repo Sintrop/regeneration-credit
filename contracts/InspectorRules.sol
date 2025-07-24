@@ -95,8 +95,6 @@ contract InspectorRules is Callable, ReentrancyGuard {
     address inspectionRulesAddress,
     address validationRulesAddress
   ) public onlyOwner {
-    require(inspectionRules == address(0), "Already set");
-
     inspectionRules = inspectionRulesAddress;
     validationRules = validationRulesAddress;
   }
