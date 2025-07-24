@@ -83,6 +83,8 @@ describe("InvitationRules", () => {
     communityRules = validatorRulesDeployed.communityRules;
     validationRules = validatorRulesDeployed.validationRules;
     researcherRules = validatorRulesDeployed.researcherRules;
+    regeneratorRules = validatorRulesDeployed.regeneratorRules;
+    inspectorRules = validatorRulesDeployed.inspectorRules;
     researcherPool = validatorRulesDeployed.researcherPool;
     developerRules = validatorRulesDeployed.developerRules;
     developerPool = validatorRulesDeployed.developerPool;
@@ -112,6 +114,11 @@ describe("InvitationRules", () => {
     await activistPool.newAllowedCaller(activistRules.target);
     await developerPool.newAllowedCaller(developerRules.target);
     await contributorPool.newAllowedCaller(contributorRules.target);
+
+    await communityRules.setContractAddressDependencies(owner);
+    await activistRules.setContractAddressDependencies(owner, validationRules.target);
+    await regeneratorRules.setContractAddressDependencies(owner, validationRules.target);
+    await inspectorRules.setContractAddressDependencies(owner, validationRules.target);
   });
 
   describe("#invite", () => {
@@ -147,6 +154,7 @@ describe("InvitationRules", () => {
 
           await addActivist("Activist A", user2Address);
           await addActivist("Activist B", user3Address);
+          await communityRules.setContractAddressDependencies(instance);
         });
 
         context("when can invite", () => {
@@ -297,6 +305,7 @@ describe("InvitationRules", () => {
 
       context("when developer send invite", () => {
         beforeEach(async () => {
+          await communityRules.setContractAddressDependencies(owner);
           await addInvitation(owner, user2Address, userTypes.Developer, owner);
           await addInvitation(owner, user3Address, userTypes.Developer, owner);
           await addInvitation(owner, user5Address, userTypes.Developer, owner);

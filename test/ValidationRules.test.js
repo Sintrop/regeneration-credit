@@ -213,6 +213,7 @@ describe("ValidationRules", () => {
     developerPool = validatorRulesDeployed.developerPool;
     inspectorRules = validatorRulesDeployed.inspectorRules;
     inspectorPool = validatorRulesDeployed.inspectorPool;
+    inspectionRules = validatorRulesDeployed.inspectionRules;
     instance = validatorRulesDeployed.validationRules;
 
     await communityRules.newAllowedCaller(instance.target);
@@ -247,6 +248,10 @@ describe("ValidationRules", () => {
 
     await regenerationCredit.addContractPool(regeneratorRules.target, regeneratorPoolArgs.totalTokens);
 
+    await communityRules.setContractAddressDependencies(owner);
+    await activistRules.setContractAddressDependencies(owner, instance);
+    await regeneratorRules.setContractAddressDependencies(owner, instance);
+    await inspectorRules.setContractAddressDependencies(owner, instance);
     await addInvitation(owner, inspector1Address, userTypes.Inspector, owner);
   });
 
@@ -573,6 +578,7 @@ describe("ValidationRules", () => {
                 beforeEach(async () => {
                   await communityRules.newAllowedCaller(user1Address);
 
+                  await communityRules.setContractAddressDependencies(user1Address);
                   await addInvitation(user1Address, user7Address, userTypes.Regenerator, user1Address);
                   await addInvitation(user1Address, user8Address, userTypes.Regenerator, user1Address);
 
@@ -1171,7 +1177,9 @@ describe("ValidationRules", () => {
                 await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 10);
                 await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 30);
 
+                await inspectorRules.setContractAddressDependencies(instance.target, owner);
                 await inspectorRules.addPenalty(inspectionMock.inspector, 2);
+                await inspectorRules.setContractAddressDependencies(instance.target, instance);            
                 await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", user1Address);
               });
 
