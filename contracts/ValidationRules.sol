@@ -105,6 +105,9 @@ contract ValidationRules is Callable, ReentrancyGuard {
   /// @notice VoteRules contract address.
   IVoteRules private voteRules;
 
+  /// @notice The address of the `InspectionRules` contract.
+  address private inspectionRules;
+
   /// @notice Amount of blocks between votes.
   uint256 public immutable timeBetweenVotes;
 
@@ -134,6 +137,10 @@ contract ValidationRules is Callable, ReentrancyGuard {
     contributorRules = IContributorRules(contractDependency.contributorRulesAddress);
     activistRules = IActivistRules(contractDependency.activistRulesAddress);
     voteRules = IVoteRules(contractDependency.voteRulesAddress);
+  }
+
+  function setContractCall(address inspectionRulesAddress) public onlyOwner {
+    inspectionRules = inspectionRulesAddress;
   }
 
   // --- External Functions (State Modifying) ---
@@ -194,8 +201,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     Inspection memory inspection,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller nonReentrant {
-    // require(msg.sender == inspectionRulesAddress, "Only inspectionRules");
+  ) public mustBeAllowedCaller mustBeContractCall(address(inspectionRules)) nonReentrant {
     require(!validatorInspectionsValidations[validatorAddress][inspection.id], "Already voted");
 
     validatorInspectionsValidations[validatorAddress][inspection.id] = true;
