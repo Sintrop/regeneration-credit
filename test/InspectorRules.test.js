@@ -38,7 +38,7 @@ describe("InspectorRules", () => {
     instance = await instanceFactory.deploy(communityRules.target, inspectorPool.target, maxPenalties);
 
     await communityRules.setContractCall(owner);
-    await instance.setContractAddressDependencies(owner, owner);
+    await instance.setContractCall(owner, owner);
 
     await inspectorPool.newAllowedCaller(instance.target);
     await regenerationCredit.addContractPool(inspectorPool.target, args.totalTokens);
@@ -137,7 +137,7 @@ describe("InspectorRules", () => {
         beforeEach(async () => {
           await addInspector("Inspector A", inspe1Address);
 
-          await instance.setContractAddressDependencies(owner, owner);
+          await instance.setContractCall(owner, owner);
 
           await instance.afterAcceptInspection(inspe1Address, 1);
           await instance.afterAcceptInspection(inspe1Address, 1);
@@ -156,7 +156,7 @@ describe("InspectorRules", () => {
       describe(".incrementInspections", () => {
         beforeEach(async () => {
           await addInspector("Inspector A", inspe1Address);
-          await instance.setContractAddressDependencies(owner, owner);
+          await instance.setContractCall(owner, owner);
           await instance.afterAcceptInspection(inspe1Address, 1);
           await instance.afterRealizeInspection(inspe1Address);
         });
@@ -214,7 +214,7 @@ describe("InspectorRules", () => {
       describe(".incrementGiveUps", () => {
         beforeEach(async () => {
           await addInspector("Inspector A", inspe1Address);
-          await instance.setContractAddressDependencies(owner, owner);
+          await instance.setContractCall(owner, owner);
           await instance.afterAcceptInspection(inspe1Address, 1);
           await instance.afterAcceptInspection(inspe1Address, 1);
         });
@@ -231,7 +231,7 @@ describe("InspectorRules", () => {
       describe(".markLastInspection", () => {
         beforeEach(async () => {
           await addInspector("Inspector A", inspe1Address);
-          await instance.setContractAddressDependencies(owner, owner);
+          await instance.setContractCall(owner, owner);
           await instance.afterAcceptInspection(inspe1Address, 100);
         });
 
@@ -350,7 +350,7 @@ describe("InspectorRules", () => {
 
     context("with allowed caller", () => {
       it("add penalty with success", async () => {
-        await instance.setContractAddressDependencies(owner, owner);
+        await instance.setContractCall(owner, owner);
         await instance.addPenalty(inspe1Address, 1);
 
         const totalPenalties = await instance.totalPenalties(inspe1Address);
@@ -371,7 +371,7 @@ describe("InspectorRules", () => {
   describe("#totalPenalties", () => {
     beforeEach(async () => {
       await addInspector("Inspector A", inspe1Address);
-      await instance.setContractAddressDependencies(owner, owner);
+      await instance.setContractCall(owner, owner);
       await instance.addPenalty(inspe1Address, 1);
     });
 

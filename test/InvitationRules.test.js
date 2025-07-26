@@ -117,9 +117,9 @@ describe("InvitationRules", () => {
     await developerPool.newAllowedCaller(developerRules.target);
     await contributorPool.newAllowedCaller(contributorRules.target);
 
-    await activistRules.setContractAddressDependencies(owner, validationRules.target);
-    await regeneratorRules.setContractAddressDependencies(owner, validationRules.target);
-    await inspectorRules.setContractAddressDependencies(owner, validationRules.target);
+    await activistRules.setContractCall(owner, validationRules.target);
+    await regeneratorRules.setContractCall(owner, validationRules.target);
+    await inspectorRules.setContractCall(owner, validationRules.target);
   });
 
   describe("#invite", () => {

@@ -42,7 +42,7 @@ describe("ActivistRules", () => {
     instance = await instanceContractFactory.deploy(communityRules.target, activistPool.target);
 
     await communityRules.setContractCall(owner);
-    await instance.setContractAddressDependencies(owner, owner);
+    await instance.setContractCall(owner, owner);
 
     await communityRules.newAllowedCaller(activ1Address);
     await communityRules.newAllowedCaller(instance.target);

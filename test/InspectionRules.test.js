@@ -197,9 +197,9 @@ describe("InspectionRules", () => {
     );
 
     await communityRules.setContractCall(owner);
-    await activistRules.setContractAddressDependencies(instance.target, validationRules.target);
-    await regeneratorRules.setContractAddressDependencies(instance.target, validationRules.target);
-    await inspectorRules.setContractAddressDependencies(instance.target, validationRules.target);
+    await activistRules.setContractCall(instance.target, validationRules.target);
+    await regeneratorRules.setContractCall(instance.target, validationRules.target);
+    await inspectorRules.setContractCall(instance.target, validationRules.target);
 
     await validationRules.setContractCall(instance.target, owner, owner, owner);
 
@@ -808,12 +808,12 @@ describe("InspectionRules", () => {
 
                   context("when regenerator win minimum inspection", () => {
                     beforeEach(async () => {
-                      await regeneratorRules.setContractAddressDependencies(owner, owner);
+                      await regeneratorRules.setContractCall(owner, owner);
 
                       await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
                       await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
 
-                      await regeneratorRules.setContractAddressDependencies(instance.target, validationRules.target);
+                      await regeneratorRules.setContractCall(instance.target, validationRules.target);
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
@@ -833,7 +833,7 @@ describe("InspectionRules", () => {
 
                   context("when inspector win minimum inspection", () => {
                     beforeEach(async () => {
-                      await inspectorRules.setContractAddressDependencies(owner, owner);
+                      await inspectorRules.setContractCall(owner, owner);
 
                       await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 1);
                       await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 1);
@@ -841,7 +841,7 @@ describe("InspectionRules", () => {
                       await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
                       await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
 
-                      await inspectorRules.setContractAddressDependencies(instance.target, validationRules.target);
+                      await inspectorRules.setContractCall(instance.target, validationRules.target);
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
@@ -861,8 +861,8 @@ describe("InspectionRules", () => {
 
                   context("when regenerator and inspector win minimum inspection", () => {
                     beforeEach(async () => {
-                      await regeneratorRules.setContractAddressDependencies(owner, owner);
-                      await inspectorRules.setContractAddressDependencies(owner, owner);
+                      await regeneratorRules.setContractCall(owner, owner);
+                      await inspectorRules.setContractCall(owner, owner);
 
                       await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
                       await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
@@ -873,8 +873,8 @@ describe("InspectionRules", () => {
                       await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
                       await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
 
-                      await regeneratorRules.setContractAddressDependencies(instance.target, validationRules.target);
-                      await inspectorRules.setContractAddressDependencies(instance.target, validationRules.target);
+                      await regeneratorRules.setContractCall(instance.target, validationRules.target);
+                      await inspectorRules.setContractCall(instance.target, validationRules.target);
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
@@ -1241,14 +1241,14 @@ describe("InspectionRules", () => {
 
         context("when inspector receive max penalties alloweds", () => {
           beforeEach(async () => {
-            await inspectorRules.setContractAddressDependencies(instance.target, owner);
+            await inspectorRules.setContractCall(instance.target, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
             await communityRules.setContractCall(user1Address);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
             await communityRules.setContractCall(user2Address);
-            await inspectorRules.setContractAddressDependencies(instance.target, validationRules.target);
+            await inspectorRules.setContractCall(instance.target, validationRules.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
 
@@ -1404,14 +1404,14 @@ describe("InspectionRules", () => {
 
         context("when inspector receive max penalties alloweds", () => {
           beforeEach(async () => {
-            await inspectorRules.setContractAddressDependencies(instance.target, owner);
+            await inspectorRules.setContractCall(instance.target, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
             await communityRules.setContractCall(user1Address);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
             await communityRules.setContractCall(user2Address);
-            await inspectorRules.setContractAddressDependencies(instance.target, validationRules.target);
+            await inspectorRules.setContractCall(instance.target, validationRules.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
 
@@ -1567,14 +1567,14 @@ describe("InspectionRules", () => {
 
         context("when inspector receive max penalties alloweds", () => {
           beforeEach(async () => {
-            await inspectorRules.setContractAddressDependencies(instance.target, owner);
+            await inspectorRules.setContractCall(instance.target, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
             await communityRules.setContractCall(user1Address);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
             await communityRules.setContractCall(user2Address);
-            await inspectorRules.setContractAddressDependencies(instance.target, validationRules.target);
+            await inspectorRules.setContractCall(instance.target, validationRules.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
 
@@ -1730,14 +1730,14 @@ describe("InspectionRules", () => {
 
         context("when inspector receive max penalties alloweds", () => {
           beforeEach(async () => {
-            await inspectorRules.setContractAddressDependencies(instance.target, owner);
+            await inspectorRules.setContractCall(instance.target, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
             await communityRules.setContractCall(user1Address);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
             await communityRules.setContractCall(user2Address);
-            await inspectorRules.setContractAddressDependencies(instance.target, validationRules.target);
+            await inspectorRules.setContractCall(instance.target, validationRules.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
 

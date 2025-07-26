@@ -87,7 +87,7 @@ describe("RegeneratorRules", () => {
     await regeneratorPool.newAllowedCaller(instance.target);
 
     await communityRules.setContractCall(owner);
-    await instance.setContractAddressDependencies(owner, owner);
+    await instance.setContractCall(owner, owner);
     await addInvitation(owner, prod1Address, userTypes.Regenerator, owner);
     await addInvitation(owner, prod2Address, userTypes.Regenerator, owner);
   });

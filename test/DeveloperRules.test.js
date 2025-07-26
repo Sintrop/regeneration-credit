@@ -1098,7 +1098,7 @@ describe("DeveloperRules", (accounts) => {
 
       context("when contributor reach max maxPenalties", () => {
         beforeEach(async () => {
-          await activistRules.setContractAddressDependencies(owner, owner);
+          await activistRules.setContractCall(owner, owner);
           await communityRules.newAllowedCaller(user1Address);
           await communityRules.newAllowedCaller(user4Address);
           await communityRules.newAllowedCaller(user7Address);

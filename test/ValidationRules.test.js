@@ -245,9 +245,9 @@ describe("ValidationRules", () => {
     await instance.setContractCall(owner, owner, owner, owner);
 
     await communityRules.setContractCall(owner);
-    await activistRules.setContractAddressDependencies(owner, instance);
-    await regeneratorRules.setContractAddressDependencies(owner, instance);
-    await inspectorRules.setContractAddressDependencies(owner, instance);
+    await activistRules.setContractCall(owner, instance);
+    await regeneratorRules.setContractCall(owner, instance);
+    await inspectorRules.setContractCall(owner, instance);
     await addInvitation(owner, inspector1Address, userTypes.Inspector, owner);
   });
 
@@ -1173,9 +1173,9 @@ describe("ValidationRules", () => {
                 await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 10);
                 await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 30);
 
-                await inspectorRules.setContractAddressDependencies(instance.target, owner);
+                await inspectorRules.setContractCall(instance.target, owner);
                 await inspectorRules.addPenalty(inspectionMock.inspector, 2);
-                await inspectorRules.setContractAddressDependencies(instance.target, instance);
+                await inspectorRules.setContractCall(instance.target, instance);
                 await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", user1Address);
               });
 

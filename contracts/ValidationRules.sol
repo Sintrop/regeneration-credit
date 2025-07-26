@@ -108,10 +108,13 @@ contract ValidationRules is Callable, ReentrancyGuard {
   /// @notice The address of the `InspectionRules` contract.
   address private inspectionRulesAddress;
 
+  /// @notice The address of the `ContributorRules` contract.
   address private contributorRulesAddress;
 
+  /// @notice The address of the `DeveloperRules` contract.
   address private developerRulesAddress;
 
+  /// @notice The address of the `ResearcherRules` contract.
   address private researcherRulesAddress;
 
   /// @notice Amount of blocks between votes.

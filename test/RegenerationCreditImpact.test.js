@@ -98,9 +98,9 @@ describe("RegenerationCreditImpact", () => {
     await regeneratorRules.newAllowedCaller(owner);
 
     await communityRules.setContractCall(invitationRules.target);
-    await activistRules.setContractAddressDependencies(inspectionRules.target, validationRules.target);
-    await regeneratorRules.setContractAddressDependencies(inspectionRules.target, validationRules.target);
-    await inspectorRules.setContractAddressDependencies(inspectionRules.target, validationRules.target);
+    await activistRules.setContractCall(inspectionRules.target, validationRules.target);
+    await regeneratorRules.setContractCall(inspectionRules.target, validationRules.target);
+    await inspectorRules.setContractCall(inspectionRules.target, validationRules.target);
   });
 
   describe("totalTreesImpact", () => {
@@ -731,7 +731,7 @@ describe("RegenerationCreditImpact", () => {
 
       context("when only one regenerator is valid", async () => {
         beforeEach(async () => {
-          await regeneratorRules.setContractAddressDependencies(inspectionRules.target, owner);
+          await regeneratorRules.setContractCall(inspectionRules.target, owner);
           await regeneratorRules.removePoolLevels(regenerator2Address, 0);
         });
 
@@ -1452,7 +1452,7 @@ describe("RegenerationCreditImpact", () => {
 
       context("when only one regenerator is valid", async () => {
         beforeEach(async () => {
-          await regeneratorRules.setContractAddressDependencies(inspectionRules.target, owner);
+          await regeneratorRules.setContractCall(inspectionRules.target, owner);
           await regeneratorRules.removePoolLevels(regenerator2Address, 0);
         });
 

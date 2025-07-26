@@ -115,10 +115,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param inspectionRulesAddress Address of InspectionRules.
    * @param validationRulesAddress Address of ValidationRules.
    */
-  function setContractAddressDependencies(
-    address inspectionRulesAddress,
-    address validationRulesAddress
-  ) public onlyOwner {
+  function setContractCall(address inspectionRulesAddress, address validationRulesAddress) public onlyOwner {
     inspectionRules = inspectionRulesAddress;
     validationRules = validationRulesAddress;
   }
