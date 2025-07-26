@@ -62,10 +62,10 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   IActivistPool private activistPool;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private inspectionRules;
+  address private inspectionRulesAddress;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private validationRules;
+  address private validationRulesAddress;
 
   /// @notice The specific `UserType` enumeration value for the Activist user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.ACTIVIST;
@@ -87,12 +87,12 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
 
   /**
    * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
-   * @param inspectionRulesAddress Address of InspectionRules.
-   * @param validationRulesAddress Address of ValidationRules.
+   * @param _inspectionRulesAddress Address of InspectionRules.
+   * @param _validationRulesAddress Address of ValidationRules.
    */
-  function setContractCall(address inspectionRulesAddress, address validationRulesAddress) public onlyOwner {
-    inspectionRules = inspectionRulesAddress;
-    validationRules = validationRulesAddress;
+  function setContractCall(address _inspectionRulesAddress, address _validationRulesAddress) public onlyOwner {
+    inspectionRulesAddress = _inspectionRulesAddress;
+    validationRulesAddress = _validationRulesAddress;
   }
 
   // --- Public functions (State modifying) ---
@@ -176,7 +176,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   function addRegeneratorLevel(
     address regeneratorAddress,
     uint256 regeneratorTotalInspections
-  ) external mustBeAllowedCaller mustBeContractCall(address(inspectionRules)) nonReentrant {
+  ) external mustBeAllowedCaller mustBeContractCall(address(inspectionRulesAddress)) nonReentrant {
     _addLevelFromRegenerator(regeneratorAddress, regeneratorTotalInspections);
   }
 
@@ -191,7 +191,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   function addInspectorLevel(
     address inspectorAddress,
     uint256 inspectorTotalInspections
-  ) external mustBeAllowedCaller mustBeContractCall(address(inspectionRules)) nonReentrant {
+  ) external mustBeAllowedCaller mustBeContractCall(address(inspectionRulesAddress)) nonReentrant {
     _addLevelFromInspector(inspectorAddress, inspectorTotalInspections);
   }
 
@@ -205,7 +205,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   function removePoolLevels(
     address addr,
     uint256 levelsToRemove
-  ) public mustBeAllowedCaller mustBeContractCall(address(validationRules)) nonReentrant {
+  ) public mustBeAllowedCaller mustBeContractCall(address(validationRulesAddress)) nonReentrant {
     Activist storage activist = activists[addr];
 
     activist.pool.level -= levelsToRemove > 0 ? levelsToRemove : activist.pool.level;

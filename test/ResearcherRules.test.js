@@ -90,6 +90,8 @@ describe("ResearcherRules", () => {
     await regenerationCredit.addContractPool(researcherPool.target, args.totalTokens);
 
     await communityRules.setContractCall(owner, validationRules.target);
+    await instance.setContractCall(validationRules.target);
+
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
   });
 
@@ -1147,6 +1149,7 @@ describe("ResearcherRules", () => {
       await advanceBlock(timeBetweenWorks);
 
       await addResearch(resea1Address);
+      await instance.setContractCall(owner);
 
       await instance.removePoolLevels(resea1Address, 1);
     });

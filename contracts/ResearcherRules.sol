@@ -114,6 +114,9 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   /// @notice The specific `UserType` enumeration value for a Researcher user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.RESEARCHER;
 
+  /// @notice The address of the `InspectionRules` contract.
+  address private validationRulesAddress;
+
   // --- Constructor ---
 
   /**
@@ -141,6 +144,14 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     researcherPool = IResearcherPool(contractDependency.researcherPoolAddress);
     validationRules = IValidationRules(contractDependency.validationRulesAddress);
     voteRules = IVoteRules(contractDependency.voteRulesAddress);
+  }
+
+  /**
+   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param _validationRulesAddress Address of ValidationRules.
+   */
+  function setContractCall(address _validationRulesAddress) public onlyOwner {
+    validationRulesAddress = _validationRulesAddress;
   }
 
   // --- Public functions ---
@@ -333,7 +344,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @dev Remove pool levels from researcher.
    * @param addr Researcher wallet.
    */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     Researcher memory researcher = researchers[addr];
 
     researchers[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : researcher.pool.level;
@@ -346,7 +357,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param addr Researcher wallet.
    * @param researchId Research id.
    */
-  function addPenalty(address addr, uint64 researchId) public mustBeAllowedCaller returns (uint256) {
+  function addPenalty(address addr, uint64 researchId) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
     penalties[addr].push(Penalty(researchId));
 
     return totalPenalties(addr);

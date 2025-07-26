@@ -91,6 +91,9 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   /// eligibility, particularly for report validation.
   IVoteRules private voteRules;
 
+  /// @notice The address of the `InspectionRules` contract.
+  address private validationRulesAddress;
+
   /// @notice The specific `UserType` enumeration value for a Developer user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.DEVELOPER;
 
@@ -121,6 +124,14 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     developerPool = IDeveloperPool(contractDependency.developerPoolAddress);
     validationRules = IValidationRules(contractDependency.validationRulesAddress);
     voteRules = IVoteRules(contractDependency.voteRulesAddress);
+  }
+
+  /**
+   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param _validationRulesAddress Address of ValidationRules.
+   */
+  function setContractCall(address _validationRulesAddress) public onlyOwner {
+    validationRulesAddress = _validationRulesAddress;
   }
 
   // --- Public functions ---
@@ -291,7 +302,10 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
    * this function sets the developer's pool level to 0. Otherwise, it subtracts the specified amount.
    */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+  function removePoolLevels(
+    address addr,
+    uint256 levelsToRemove
+  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     Developer memory developer = developers[addr];
 
     developers[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : developer.pool.level;
@@ -310,7 +324,10 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * @param reportId The ID of the report associated with this penalty.
    * @return uint256 The total number of penalties the developer has accumulated.
    */
-  function addPenalty(address addr, uint64 reportId) public mustBeAllowedCaller returns (uint256) {
+  function addPenalty(
+    address addr,
+    uint64 reportId
+  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
     // Add the penalty record to the penalties array.
     penalties[addr].push(Penalty(reportId));
 

@@ -248,6 +248,10 @@ describe("ValidationRules", () => {
     await activistRules.setContractCall(owner, instance);
     await regeneratorRules.setContractCall(owner, instance);
     await inspectorRules.setContractCall(owner, instance);
+    await developerRules.setContractCall(instance);
+    await researcherRules.setContractCall(instance);
+    await contributorRules.setContractCall(instance);
+
     await addInvitation(owner, inspector1Address, userTypes.Inspector, owner);
   });
 
@@ -1428,11 +1432,14 @@ describe("ValidationRules", () => {
                   report = generateReportObject(report);
                   report.validationsCount = 1;
 
+                  await developerRules.setContractCall(owner);
                   await developerRules.addPenalty(dev1Address, report.id);
                   await developerRules.addPenalty(dev1Address, report.id);
 
                   report.validationsCount = 2;
                   report.valid = false;
+
+                  await developerRules.setContractCall(instance);
                   await instance.connect(owner).addReportValidation(report, "justification", user1Address);
 
                   const era = await developerRules.poolCurrentEra();
@@ -1463,6 +1470,7 @@ describe("ValidationRules", () => {
                   report = generateReportObject(report);
                   report.validationsCount = 1;
 
+                  await developerRules.setContractCall(owner);
                   await developerRules.addPenalty(dev1Address, report.id);
                   await developerRules.addPenalty(dev1Address, report.id);
 
@@ -1472,6 +1480,7 @@ describe("ValidationRules", () => {
                   report.validationsCount = 2;
                   report.valid = false;
 
+                  await developerRules.setContractCall(instance);
                   await communityRules.setContractCall(owner, instance);
                   await instance.connect(owner).addReportValidation(report, "justification", user1Address);
                 });
@@ -1597,6 +1606,7 @@ describe("ValidationRules", () => {
                 let research = await researcherRules.researches(1);
                 research = generateResearchObject(research);
                 research.validationsCount = 1;
+                await researcherRules.setContractCall(owner);
 
                 await researcherRules.addPenalty(research.createdBy, research.id);
                 await researcherRules.addPenalty(research.createdBy, research.id);
@@ -1605,6 +1615,8 @@ describe("ValidationRules", () => {
 
                 research.validationsCount = 2;
                 research.valid = false;
+
+                await researcherRules.setContractCall(instance);
                 await instance.connect(owner).addResearchValidation(research, "justification", user2Address);
               });
 
@@ -1736,13 +1748,15 @@ describe("ValidationRules", () => {
                 let contribution = await contributorRules.contributions(1);
                 contribution = generateContributionObject(contribution);
                 contribution.validationsCount = 1;
-
+           
+                await contributorRules.setContractCall(owner);
                 await contributorRules.addPenalty(contribution.user, contribution.id);
                 await contributorRules.addPenalty(contribution.user, contribution.id);
 
                 contribution.validationsCount = 2;
                 contribution.valid = false;
 
+                await contributorRules.setContractCall(instance);
                 await instance.connect(owner).addContributionValidation(contribution, "justification", user2Address);
               });
 

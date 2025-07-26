@@ -107,6 +107,7 @@ describe("ContributorRules", (accounts) => {
     await instance.newAllowedCaller(validationRules.target);
     await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(contributorPool.target, "40000000000000000000000000");
+    await instance.setContractCall(validationRules.target);
 
     await addInvitation(owner, contr1Address, userTypes.Contributor, owner);
   });

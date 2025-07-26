@@ -99,6 +99,7 @@ describe("DeveloperRules", (accounts) => {
     await regenerationCredit.addContractPool(developerPool.target, "40000000000000000000000000");
 
     await communityRules.setContractCall(owner, owner);
+    await instance.setContractCall(validationRules.target);
 
     await addInvitation(owner, dev1Address, userTypes.Developer, owner);
   });
@@ -1363,6 +1364,7 @@ describe("DeveloperRules", (accounts) => {
 
       await instance.connect(dev1Address).addReport("description", "report");
 
+      await instance.setContractCall(owner);
       await instance.removePoolLevels(dev1Address, 1);
     });
 
