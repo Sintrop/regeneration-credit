@@ -145,8 +145,9 @@ async function configureRegeneratorRules() {
 async function configureCommunityRules() {
 
   const invitationRules = await getDeployedContract("InvitationRules");
+  const validationRules = await getDeployedContract("ValidationRules");
 
-  await researcherRules.setContractCall(invitationRules);
+  await researcherRules.setContractCall(invitationRules, validationRules);
 
   console.log("After CommunityRules deploy is OK");
 }

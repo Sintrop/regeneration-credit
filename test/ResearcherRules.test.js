@@ -89,7 +89,7 @@ describe("ResearcherRules", () => {
     await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(researcherPool.target, args.totalTokens);
 
-    await communityRules.setContractCall(owner);
+    await communityRules.setContractCall(owner, validationRules.target);
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
   });
 

@@ -65,6 +65,9 @@ contract CommunityRules is Callable {
   /// @notice The address of the `InvitationRules` contract.
   address private invitationRulesAddress;
 
+  /// @notice The address of the `InvitationRules` contract.
+  address private validationRulesAddress;
+
   // --- Constructor ---
 
   /**
@@ -136,8 +139,9 @@ contract CommunityRules is Callable {
    * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _invitationRulesAddress Address of InvitationRules.
    */
-  function setContractCall(address _invitationRulesAddress) public onlyOwner {
+  function setContractCall(address _invitationRulesAddress, address _validationRulesAdress) public onlyOwner {
     invitationRulesAddress = _invitationRulesAddress;
+    validationRulesAddress = _validationRulesAdress;
   }
 
   // --- Public functions (State Modifying) ---
@@ -232,7 +236,7 @@ contract CommunityRules is Callable {
    * Prevents re-denying an already denied user.
    * @param userAddress The address of the user to be denied.
    */
-  function setDeniedType(address userAddress) public mustBeAllowedCaller {
+  function setDeniedType(address userAddress) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     if (users[userAddress] == CommunityTypes.UserType.DENIED) return;
 
     userTypesCount[users[userAddress]]--; // Decrement count of the old user type
@@ -248,7 +252,7 @@ contract CommunityRules is Callable {
    * It decrements the count of penalties for the inviter.
    * @param inviter The address of the inviter receiving the penalty.
    */
-  function addInviterPenalty(address inviter) public mustBeAllowedCaller {
+  function addInviterPenalty(address inviter) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     inviterPenalties[inviter]++;
   }
 

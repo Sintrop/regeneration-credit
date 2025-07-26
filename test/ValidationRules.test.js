@@ -244,7 +244,7 @@ describe("ValidationRules", () => {
 
     await instance.setContractCall(owner, owner, owner, owner);
 
-    await communityRules.setContractCall(owner);
+    await communityRules.setContractCall(owner, instance);
     await activistRules.setContractCall(owner, instance);
     await regeneratorRules.setContractCall(owner, instance);
     await inspectorRules.setContractCall(owner, instance);
@@ -260,6 +260,8 @@ describe("ValidationRules", () => {
 
           await addDeveloper("Developer  A", dev1Address);
           await addDeveloper("Developer  B", dev2Address);
+
+          await communityRules.setContractCall(owner, owner);
 
           await denyUser(dev2Address);
         });
@@ -574,7 +576,7 @@ describe("ValidationRules", () => {
                 beforeEach(async () => {
                   await communityRules.newAllowedCaller(user1Address);
 
-                  await communityRules.setContractCall(user1Address);
+                  await communityRules.setContractCall(user1Address, instance);
                   await addInvitation(user1Address, user7Address, userTypes.Regenerator, user1Address);
                   await addInvitation(user1Address, user8Address, userTypes.Regenerator, user1Address);
 
@@ -1464,10 +1466,13 @@ describe("ValidationRules", () => {
                   await developerRules.addPenalty(dev1Address, report.id);
                   await developerRules.addPenalty(dev1Address, report.id);
 
+                  await communityRules.setContractCall(owner, owner);
                   await communityRules.setDeniedType(dev1Address);
 
                   report.validationsCount = 2;
                   report.valid = false;
+
+                  await communityRules.setContractCall(owner, instance);
                   await instance.connect(owner).addReportValidation(report, "justification", user1Address);
                 });
 

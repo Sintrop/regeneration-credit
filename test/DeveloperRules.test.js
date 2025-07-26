@@ -35,9 +35,9 @@ describe("DeveloperRules", (accounts) => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await communityRules.setContractCall(from);
+    await communityRules.setContractCall(from, owner);
     await communityRules.connect(from).addInvitation(inviter, invited, userType);
-    await communityRules.setContractCall(instance.target);
+    await communityRules.setContractCall(instance.target, owner);
   };
 
   const addResearcher = async (name, from) => {
@@ -98,7 +98,7 @@ describe("DeveloperRules", (accounts) => {
     await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(developerPool.target, "40000000000000000000000000");
 
-    await communityRules.setContractCall(owner);
+    await communityRules.setContractCall(owner, owner);
 
     await addInvitation(owner, dev1Address, userTypes.Developer, owner);
   });
@@ -491,6 +491,7 @@ describe("DeveloperRules", (accounts) => {
           await instance.connect(user4Address).addReportValidation(10, "justification");
 
           await advanceBlock(10);
+          await communityRules.setContractCall(owner, validationRules.target);
 
           await instance.connect(user5Address).addReportValidation(15, "justification");
           await instance.connect(user2Address).addReportValidation(15, "justification");
@@ -706,6 +707,7 @@ describe("DeveloperRules", (accounts) => {
           await instance.connect(user3Address).addReportValidation(2, "justification");
 
           await advanceBlock(10);
+          await communityRules.setContractCall(owner, validationRules.target);
 
           await instance.connect(anyAddress).addReport("description", "report");
           await instance.connect(user1Address).addReportValidation(3, "justification");
@@ -926,6 +928,7 @@ describe("DeveloperRules", (accounts) => {
           await instance.connect(user4Address).addReportValidation(2, "justification");
 
           await advanceBlock(10);
+          await communityRules.setContractCall(owner, validationRules.target);
 
           await instance.connect(user5Address).addReportValidation(3, "justification");
           await instance.connect(user2Address).addReportValidation(3, "justification");
@@ -1140,6 +1143,7 @@ describe("DeveloperRules", (accounts) => {
           await instance.connect(user1Address).addReportValidation(2, "justification");
 
           await advanceBlock(10);
+          await communityRules.setContractCall(owner, validationRules.target);
 
           await instance.connect(user4Address).addReportValidation(3, "justification");
           await instance.connect(user7Address).addReportValidation(3, "justification");

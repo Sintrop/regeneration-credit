@@ -37,7 +37,7 @@ describe("InspectorRules", () => {
     const instanceFactory = await ethers.getContractFactory("InspectorRules");
     instance = await instanceFactory.deploy(communityRules.target, inspectorPool.target, maxPenalties);
 
-    await communityRules.setContractCall(owner);
+    await communityRules.setContractCall(owner, owner);
     await instance.setContractCall(owner, owner);
 
     await inspectorPool.newAllowedCaller(instance.target);

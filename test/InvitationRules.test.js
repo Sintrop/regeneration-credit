@@ -55,9 +55,9 @@ describe("InvitationRules", () => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await communityRules.setContractCall(from);
+    await communityRules.setContractCall(from, owner);
     await communityRules.connect(from).addInvitation(inviter, invited, userType);
-    await communityRules.setContractCall(instance.target);
+    await communityRules.setContractCall(instance.target, validationRules.target);
   };
 
   const userTypeDelayBlocks = async (userType) => {
@@ -155,7 +155,7 @@ describe("InvitationRules", () => {
 
           await addActivist("Activist A", user2Address);
           await addActivist("Activist B", user3Address);
-          await communityRules.setContractCall(instance);
+          await communityRules.setContractCall(instance, owner);
         });
 
         context("when can invite", () => {
@@ -644,7 +644,7 @@ describe("InvitationRules", () => {
     context("when invite", () => {
       context("with owner", () => {
         it("invite with success", async () => {
-          await communityRules.setContractCall(instance.target);
+          await communityRules.setContractCall(instance.target, validationRules.target);
           await instance.onlyOwnerInvite(user3Address, userTypes.Developer);
 
           const invitation = await communityRules.invitations(user3Address);
