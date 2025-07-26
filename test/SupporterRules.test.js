@@ -124,7 +124,7 @@ describe("SupporterRules", () => {
       context("when amount is greater than zero", () => {
         context("when calculatorItemId exists", () => {
           beforeEach(async () => {
-            await communityRules.setContractAddressDependencies(ownerAddress);
+            await communityRules.setContractCall(ownerAddress);
             await communityRules.addInvitation(inv1Address, user1Address, userTypes.Researcher);
             await researcherRules.connect(user1Address).addResearcher("Researcher  A", "photoURL");
 
@@ -224,7 +224,7 @@ describe("SupporterRules", () => {
         context("when calculatorItemId does not exists", () => {
           beforeEach(async () => {
             await instance.newAllowedCaller(inv2Address);
-            await communityRules.setContractAddressDependencies(ownerAddress);
+            await communityRules.setContractCall(ownerAddress);
             await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
             await addSupporter("Supporter B", "description", "profilePhoto", inv2Address);
             await transferTokensTo(inv2Address, 100000000000000000000n);
@@ -252,7 +252,7 @@ describe("SupporterRules", () => {
         context("when publish and burn", () => {
           context("when SUPPORTER was invited", () => {
             beforeEach(async () => {
-              await communityRules.setContractAddressDependencies(ownerAddress);
+              await communityRules.setContractCall(ownerAddress);
               await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
               await addSupporter("Supporter B", "description", "profilePhoto", inv2Address);
               await transferTokensTo(inv2Address, 100000000000000000000n);
@@ -297,7 +297,7 @@ describe("SupporterRules", () => {
     context("when is supporter", () => {
       context("when calculatorItem exists", () => {
         beforeEach(async () => {
-          await communityRules.setContractAddressDependencies(ownerAddress);
+          await communityRules.setContractCall(ownerAddress);
           await communityRules.addInvitation(inv1Address, user1Address, userTypes.Researcher);
           await researcherRules.connect(user1Address).addResearcher("Researcher  A", "photoURL");
 
@@ -320,7 +320,7 @@ describe("SupporterRules", () => {
 
       context("when try to declared the same item twice", () => {
         it("should return error", async () => {
-          await communityRules.setContractAddressDependencies(ownerAddress);
+          await communityRules.setContractCall(ownerAddress);
           await communityRules.addInvitation(inv1Address, user1Address, userTypes.Researcher);
           await researcherRules.connect(user1Address).addResearcher("Researcher  A", "photoURL");
 

@@ -33,7 +33,7 @@ describe("ContributorRules", (accounts) => {
   let contributorPoolParams = {
     totalTokens: "7500000000000000000000000",
     halving: 12,
-    blocksPerEra: 140,
+    blocksPerEra: 150,
   };
 
   const timeBetweenWorks = 10;
@@ -59,7 +59,9 @@ describe("ContributorRules", (accounts) => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
+    await communityRules.setContractCall(owner);
     await communityRules.connect(from).addInvitation(inviter, invited, userType);
+    await communityRules.setContractCall(instance.target);
   };
 
   beforeEach(async () => {
@@ -91,7 +93,7 @@ describe("ContributorRules", (accounts) => {
     researcherRules = validatorRulesDeployed.researcherRules;
     activistRules = validatorRulesDeployed.activistRules;
 
-    await communityRules.setContractAddressDependencies(owner);
+    await validationRules.setContractCall(owner, instance.target, owner, owner);
 
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(owner);
@@ -306,7 +308,7 @@ describe("ContributorRules", (accounts) => {
 
       context("when do not have time to validator analysis", () => {
         beforeEach(async () => {
-          await advanceBlock(102);
+          await advanceBlock(115);
         });
 
         it("should return error message", async () => {

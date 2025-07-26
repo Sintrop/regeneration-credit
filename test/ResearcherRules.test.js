@@ -24,7 +24,7 @@ describe("ResearcherRules", () => {
   const args = {
     totalTokens: "40000000000000000000000000",
     halving: 12,
-    blocksPerEra: 140,
+    blocksPerEra: 150,
   };
 
   const addResearcher = async (name, from) => {
@@ -74,6 +74,8 @@ describe("ResearcherRules", () => {
     contributorRules = validatorRulesDeployed.contributorRules;
     activistRules = validatorRulesDeployed.activistRules;
 
+    await validationRules.setContractCall(owner, owner, owner, instance.target);
+
     await communityRules.newAllowedCaller(validationRules.target);
     await communityRules.newAllowedCaller(developerRules.target);
     await communityRules.newAllowedCaller(contributorRules.target);
@@ -87,7 +89,7 @@ describe("ResearcherRules", () => {
     await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(researcherPool.target, args.totalTokens);
 
-    await communityRules.setContractAddressDependencies(owner);
+    await communityRules.setContractCall(owner);
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
   });
 
@@ -356,7 +358,7 @@ describe("ResearcherRules", () => {
 
       context("when do not have time to validator analysis", () => {
         beforeEach(async () => {
-          await advanceBlock(102);
+          await advanceBlock(115);
         });
 
         it("should return error message", async () => {

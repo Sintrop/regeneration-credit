@@ -63,7 +63,7 @@ contract CommunityRules is Callable {
   mapping(address => uint16) public inviterPenalties;
 
   /// @notice The address of the `InvitationRules` contract.
-  address private invitationRules;
+  address private invitationRulesAddress;
 
   // --- Constructor ---
 
@@ -134,10 +134,10 @@ contract CommunityRules is Callable {
 
   /**
    * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
-   * @param invitationRulesAddress Address of InvitationRules.
+   * @param _invitationRulesAddress Address of InvitationRules.
    */
-  function setContractAddressDependencies(address invitationRulesAddress) public onlyOwner {
-    invitationRules = invitationRulesAddress;
+  function setContractCall(address _invitationRulesAddress) public onlyOwner {
+    invitationRulesAddress = _invitationRulesAddress;
   }
 
   // --- Public functions (State Modifying) ---
@@ -215,7 +215,7 @@ contract CommunityRules is Callable {
     address inviter,
     address invited,
     CommunityTypes.UserType userType
-  ) public mustBeAllowedCaller mustBeContractCall(address(invitationRules)) {
+  ) public mustBeAllowedCaller mustBeContractCall(invitationRulesAddress) {
     require(invited != address(0), "Invited address cannot be zero");
     require(invitations[invited].invited == address(0), "Already invited");
     require(users[invited] == CommunityTypes.UserType.UNDEFINED, "Already registered");

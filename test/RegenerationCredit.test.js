@@ -275,7 +275,7 @@ describe("RegenerationCredit", (accounts) => {
   describe("#offset", () => {
     context("when is supporter", () => {
       beforeEach(async () => {
-        await communityRules.setContractAddressDependencies(ownerAddress);
+        await communityRules.setContractCall(ownerAddress);
         await addInvitation(ownerAddress, researcher1Address, userTypes.Researcher, ownerAddress);
         await addInvitation(ownerAddress, supporter1Address, userTypes.Supporter, ownerAddress);
 
@@ -326,7 +326,7 @@ describe("RegenerationCredit", (accounts) => {
   describe("#publish", () => {
     context("when is supporter", () => {
       beforeEach(async () => {
-        await communityRules.setContractAddressDependencies(ownerAddress);
+        await communityRules.setContractCall(ownerAddress);
         await addInvitation(ownerAddress, supporter1Address, userTypes.Supporter, ownerAddress);
         await addSupporter("Supporter A", "description", "profilePhoto", supporter1Address);
 

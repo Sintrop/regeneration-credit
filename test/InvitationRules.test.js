@@ -55,7 +55,9 @@ describe("InvitationRules", () => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
+    await communityRules.setContractCall(from);
     await communityRules.connect(from).addInvitation(inviter, invited, userType);
+    await communityRules.setContractCall(instance.target);
   };
 
   const userTypeDelayBlocks = async (userType) => {
@@ -115,7 +117,6 @@ describe("InvitationRules", () => {
     await developerPool.newAllowedCaller(developerRules.target);
     await contributorPool.newAllowedCaller(contributorRules.target);
 
-    await communityRules.setContractAddressDependencies(owner);
     await activistRules.setContractAddressDependencies(owner, validationRules.target);
     await regeneratorRules.setContractAddressDependencies(owner, validationRules.target);
     await inspectorRules.setContractAddressDependencies(owner, validationRules.target);
@@ -154,7 +155,7 @@ describe("InvitationRules", () => {
 
           await addActivist("Activist A", user2Address);
           await addActivist("Activist B", user3Address);
-          await communityRules.setContractAddressDependencies(instance);
+          await communityRules.setContractCall(instance);
         });
 
         context("when can invite", () => {
@@ -305,7 +306,6 @@ describe("InvitationRules", () => {
 
       context("when developer send invite", () => {
         beforeEach(async () => {
-          await communityRules.setContractAddressDependencies(owner);
           await addInvitation(owner, user2Address, userTypes.Developer, owner);
           await addInvitation(owner, user3Address, userTypes.Developer, owner);
           await addInvitation(owner, user5Address, userTypes.Developer, owner);
@@ -644,6 +644,7 @@ describe("InvitationRules", () => {
     context("when invite", () => {
       context("with owner", () => {
         it("invite with success", async () => {
+          await communityRules.setContractCall(instance.target);
           await instance.onlyOwnerInvite(user3Address, userTypes.Developer);
 
           const invitation = await communityRules.invitations(user3Address);

@@ -20,6 +20,7 @@ describe("ValidationRules", () => {
   let researcherRules;
   let contributorRules;
   let regenerationCredit;
+  let inspectionRules;
 
   let owner,
     regenerator1Address,
@@ -34,13 +35,6 @@ describe("ValidationRules", () => {
     user6Address,
     user7Address,
     user8Address,
-    user9Address,
-    user10Address,
-    user11Address,
-    user12Address,
-    user13Address,
-    user14Address,
-    user15Address,
     contributor1Address,
     contributor2Address,
     dev1Address,
@@ -248,7 +242,9 @@ describe("ValidationRules", () => {
 
     await regenerationCredit.addContractPool(regeneratorRules.target, regeneratorPoolArgs.totalTokens);
 
-    await communityRules.setContractAddressDependencies(owner);
+    await instance.setContractCall(owner, owner, owner, owner);
+
+    await communityRules.setContractCall(owner);
     await activistRules.setContractAddressDependencies(owner, instance);
     await regeneratorRules.setContractAddressDependencies(owner, instance);
     await inspectorRules.setContractAddressDependencies(owner, instance);
@@ -578,7 +574,7 @@ describe("ValidationRules", () => {
                 beforeEach(async () => {
                   await communityRules.newAllowedCaller(user1Address);
 
-                  await communityRules.setContractAddressDependencies(user1Address);
+                  await communityRules.setContractCall(user1Address);
                   await addInvitation(user1Address, user7Address, userTypes.Regenerator, user1Address);
                   await addInvitation(user1Address, user8Address, userTypes.Regenerator, user1Address);
 
@@ -710,7 +706,7 @@ describe("ValidationRules", () => {
               });
 
               it("should add validation", async () => {
-                const validations = await instance.getUserValidations(inspector1Address, 4);
+                const validations = await instance.getUserValidations(inspector1Address, 5);
 
                 expect(validations).to.equal(2);
               });

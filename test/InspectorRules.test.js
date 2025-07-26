@@ -21,7 +21,7 @@ describe("InspectorRules", () => {
   const args = {
     totalTokens: "180000000000000000000000000",
     halving: 12,
-    blocksPerEra: 24,
+    blocksPerEra: 26,
   };
 
   beforeEach(async () => {
@@ -37,7 +37,8 @@ describe("InspectorRules", () => {
     const instanceFactory = await ethers.getContractFactory("InspectorRules");
     instance = await instanceFactory.deploy(communityRules.target, inspectorPool.target, maxPenalties);
 
-    await communityRules.setContractAddressDependencies(owner);
+    await communityRules.setContractCall(owner);
+    await instance.setContractAddressDependencies(owner, owner);
 
     await inspectorPool.newAllowedCaller(instance.target);
     await regenerationCredit.addContractPool(inspectorPool.target, args.totalTokens);

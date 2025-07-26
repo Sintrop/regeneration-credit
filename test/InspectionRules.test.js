@@ -196,10 +196,12 @@ describe("InspectionRules", () => {
       sintropArgs.securityBlocksToValidation_
     );
 
-    await communityRules.setContractAddressDependencies(owner);
+    await communityRules.setContractCall(owner);
     await activistRules.setContractAddressDependencies(instance.target, validationRules.target);
     await regeneratorRules.setContractAddressDependencies(instance.target, validationRules.target);
     await inspectorRules.setContractAddressDependencies(instance.target, validationRules.target);
+
+    await validationRules.setContractCall(instance.target, owner, owner, owner);
 
     const inspectionRulesDependencies = {
       communityRulesAddress: communityRules.target,
@@ -732,7 +734,7 @@ describe("InspectionRules", () => {
       await addInvitation(owner, activist1Address, userTypes.Activist, owner);
       await addActivist("Activist 1", activist1Address);
 
-      await communityRules.setContractAddressDependencies(activist1Address);
+      await communityRules.setContractCall(activist1Address);
       await addInvitation(activist1Address, regeneratorAddress, userTypes.Regenerator, activist1Address);
       await addInvitation(activist1Address, inspectorAddress, userTypes.Inspector, activist1Address);
 
@@ -1081,7 +1083,7 @@ describe("InspectionRules", () => {
 
           context("when is accepted by other inspector", () => {
             beforeEach(async () => {
-              await communityRules.setContractAddressDependencies(owner);
+              await communityRules.setContractCall(owner);
 
               await addInvitation(owner, inspector2Address, userTypes.Inspector, owner);
               await addInspector("Inspector B", inspector2Address);
@@ -1242,10 +1244,10 @@ describe("InspectionRules", () => {
             await inspectorRules.setContractAddressDependencies(instance.target, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
-            await communityRules.setContractAddressDependencies(user1Address);
+            await communityRules.setContractCall(user1Address);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
-            await communityRules.setContractAddressDependencies(user2Address);
+            await communityRules.setContractCall(user2Address);
             await inspectorRules.setContractAddressDependencies(instance.target, validationRules.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
@@ -1405,10 +1407,10 @@ describe("InspectionRules", () => {
             await inspectorRules.setContractAddressDependencies(instance.target, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
-            await communityRules.setContractAddressDependencies(user1Address);
+            await communityRules.setContractCall(user1Address);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
-            await communityRules.setContractAddressDependencies(user2Address);
+            await communityRules.setContractCall(user2Address);
             await inspectorRules.setContractAddressDependencies(instance.target, validationRules.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
@@ -1568,10 +1570,10 @@ describe("InspectionRules", () => {
             await inspectorRules.setContractAddressDependencies(instance.target, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
-            await communityRules.setContractAddressDependencies(user1Address);
+            await communityRules.setContractCall(user1Address);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
-            await communityRules.setContractAddressDependencies(user2Address);
+            await communityRules.setContractCall(user2Address);
             await inspectorRules.setContractAddressDependencies(instance.target, validationRules.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
@@ -1731,10 +1733,10 @@ describe("InspectionRules", () => {
             await inspectorRules.setContractAddressDependencies(instance.target, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
-            await communityRules.setContractAddressDependencies(user1Address);
+            await communityRules.setContractCall(user1Address);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
-            await communityRules.setContractAddressDependencies(user2Address);
+            await communityRules.setContractCall(user2Address);
             await inspectorRules.setContractAddressDependencies(instance.target, validationRules.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
