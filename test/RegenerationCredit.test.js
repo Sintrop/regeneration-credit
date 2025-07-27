@@ -64,6 +64,7 @@ describe("RegenerationCredit", (accounts) => {
 
     await researcherRules.setContractAddressDependencies(researcherRulesContractDependencies);
 
+    await supporterRules.setContractCall(instance.target);
     await instance.setContractDependencies(supporterRules.target);
     await supporterRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(researcherRules.target);

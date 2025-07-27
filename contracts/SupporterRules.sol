@@ -65,6 +65,9 @@ contract SupporterRules is Callable {
   /// @notice ResearcherRules contract address
   ResearcherRules private researcherRules;
 
+  /// @notice The address of the `RegenerationCredit` contract.
+  address private regenerationCreditAddress;
+
   /// @notice Supporter UserType
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.SUPPORTER;
 
@@ -79,6 +82,16 @@ contract SupporterRules is Callable {
   constructor(address communityRulesAddress, address researcherRulesAddress) {
     communityRules = CommunityRules(communityRulesAddress);
     researcherRules = ResearcherRules(researcherRulesAddress);
+  }
+
+  // --- Deploy functions ---
+
+  /**
+   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param _regenerationCreditAddress Address of RegenerationCredit.
+   */
+  function setContractCall(address _regenerationCreditAddress) public onlyOwner {
+    regenerationCreditAddress = _regenerationCreditAddress;
   }
 
   // --- Public functions (State Modifying) ---
@@ -133,7 +146,7 @@ contract SupporterRules is Callable {
     address supporterAddress,
     uint256 amountToBurn,
     uint64 calculatorItemId
-  ) external mustBeAllowedCaller {
+  ) external mustBeAllowedCaller mustBeContractCall(address(regenerationCreditAddress)) {
     require(researcherRules.getCalculatorItem(calculatorItemId).id > 0, "Calculator item does not exist");
 
     offsetsCount++;
@@ -159,7 +172,7 @@ contract SupporterRules is Callable {
     uint256 amountToBurn,
     string memory description,
     string memory content
-  ) external mustBeAllowedCaller {
+  ) external mustBeAllowedCaller mustBeContractCall(address(regenerationCreditAddress)) {
     publicationsCount++;
     uint64 id = publicationsCount;
 

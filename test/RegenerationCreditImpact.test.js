@@ -80,6 +80,7 @@ describe("RegenerationCreditImpact", () => {
     inspectionRules = deployed.instance;
     regeneratorRules = deployed.regeneratorRules;
     activistRules = deployed.activistRules;
+    regeneratorPool = deployed.regeneratorPool;
 
     const invitationRulesFactory = await ethers.getContractFactory("InvitationRules");
     invitationRules = await invitationRulesFactory.deploy(
@@ -101,6 +102,7 @@ describe("RegenerationCreditImpact", () => {
     await activistRules.setContractCall(inspectionRules.target, validationRules.target);
     await regeneratorRules.setContractCall(inspectionRules.target, validationRules.target);
     await inspectorRules.setContractCall(inspectionRules.target, validationRules.target);
+    await regeneratorPool.setContractCall(regeneratorRules.target);
   });
 
   describe("totalTreesImpact", () => {

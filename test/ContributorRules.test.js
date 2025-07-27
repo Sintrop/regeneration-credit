@@ -89,6 +89,7 @@ describe("ContributorRules", (accounts) => {
     instance = validatorRulesDeployed.contributorRules;
     validationRules = validatorRulesDeployed.validationRules;
     contributorPool = validatorRulesDeployed.contributorPool;
+    researcherPool = validatorRulesDeployed.researcherPool;
     developerRules = validatorRulesDeployed.developerRules;
     researcherRules = validatorRulesDeployed.researcherRules;
     activistRules = validatorRulesDeployed.activistRules;
@@ -107,7 +108,10 @@ describe("ContributorRules", (accounts) => {
     await instance.newAllowedCaller(validationRules.target);
     await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(contributorPool.target, "40000000000000000000000000");
+
     await instance.setContractCall(validationRules.target);
+    await contributorPool.setContractCall(instance);
+    await researcherPool.setContractCall(researcherRules.target);
 
     await addInvitation(owner, contr1Address, userTypes.Contributor, owner);
   });

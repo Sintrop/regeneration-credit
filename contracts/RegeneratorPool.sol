@@ -26,6 +26,9 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
   /// This value represents the maximum tokens available for distribution through this contract.
   uint256 private constant TOTAL_POOL_TOKENS = 750000000e18;
 
+  /// @notice The address of the `RegeneratorRules` contract.
+  address private regeneratorRulesAddress;
+
   // --- Constructor ---
 
   /**
@@ -45,6 +48,16 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
     regenerationCredit = IRegenerationCredit(regenerationCreditAddress);
   }
 
+  // --- Deploy functions ---
+
+  /**
+   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param _regeneratorRulesAddress Address of RegeneratorRules.
+   */
+  function setContractCall(address _regeneratorRulesAddress) public onlyOwner {
+    regeneratorRulesAddress = _regeneratorRulesAddress;
+  }
+
   // --- MustBeAllowedCaller functions (State modifying) ---
 
   /**
@@ -55,7 +68,10 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * @param delegate The address of the user (regenerator) for whom the withdrawal is being processed.
    * @param era The last recorded era of the `delegate` user, used for reward calculation and eligibility.
    */
-  function withdraw(address delegate, uint256 era) public mustBeAllowedCaller canWithdrawModifier(era) nonReentrant {
+  function withdraw(
+    address delegate,
+    uint256 era
+  ) public mustBeAllowedCaller mustBeContractCall(regeneratorRulesAddress) canWithdrawModifier(era) nonReentrant {
     require(era <= currentContractEra(), "Era in the future");
 
     // Calculate the number of tokens the user is eligible to receive for the given era.
@@ -81,7 +97,10 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * @param regenerator The wallet address of the regenerator.
    * @param levels The number of levels to increase the regenerator's pool level by.
    */
-  function addLevel(address regenerator, uint256 levels) public mustBeAllowedCaller nonReentrant {
+  function addLevel(
+    address regenerator,
+    uint256 levels
+  ) public mustBeAllowedCaller mustBeContractCall(regeneratorRulesAddress) nonReentrant {
     // Calls the _addPoolLevel function from Poolable.sol.
     _addPoolLevel(regenerator, levels, currentContractEra());
   }
@@ -93,7 +112,10 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * @param addr The wallet address of the regenerator.
    * @param levelsToRemove The number of levels to decrease the regenerator's pool level by.
    */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller nonReentrant {
+  function removePoolLevels(
+    address addr,
+    uint256 levelsToRemove
+  ) public mustBeAllowedCaller mustBeContractCall(regeneratorRulesAddress) nonReentrant {
     // Calls the _removePoolLevel function from Poolable.sol.
     _removePoolLevel(addr, currentContractEra(), levelsToRemove);
   }

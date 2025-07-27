@@ -27,7 +27,7 @@ const voteRulesDeployed = async () => {
   let developerPoolParams = {
     totalTokens: "40000000000000000000000000",
     halving: 12,
-    blocksPerEra: 155,
+    blocksPerEra: 160,
   };
 
   let researcherPoolParams = {
@@ -45,7 +45,7 @@ const voteRulesDeployed = async () => {
   const activistPoolArgs = {
     totalTokens: "40000000000000000000000000",
     halving: 12,
-    blocksPerEra: 20,
+    blocksPerEra: 21,
   };
 
   const regenerationCredit = await regenerationCreditDeployed();

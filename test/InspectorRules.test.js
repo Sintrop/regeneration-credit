@@ -45,6 +45,7 @@ describe("InspectorRules", () => {
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(owner);
     await instance.newAllowedCaller(owner);
+    await inspectorPool.setContractCall(instance);
 
     await addInvitation(owner, inspe1Address, userTypes.Inspector, owner);
     await addInvitation(owner, inspe2Address, userTypes.Inspector, owner);

@@ -200,8 +200,10 @@ describe("InspectionRules", () => {
     await activistRules.setContractCall(instance.target, validationRules.target);
     await regeneratorRules.setContractCall(instance.target, validationRules.target);
     await inspectorRules.setContractCall(instance.target, validationRules.target);
-
+    await activistPool.setContractCall(activistRules.target);
     await validationRules.setContractCall(instance.target, owner, owner, owner);
+    await inspectorPool.setContractCall(inspectorRules.target);
+    await regeneratorPool.setContractCall(regeneratorRules.target);
 
     const inspectionRulesDependencies = {
       communityRulesAddress: communityRules.target,

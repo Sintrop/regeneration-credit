@@ -90,7 +90,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   IVoteRules private voteRules;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private validationRulesAddress;  
+  address private validationRulesAddress;
 
   /// @notice The specific `UserType` enumeration value for a Contributor user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.CONTRIBUTOR;
@@ -323,7 +323,10 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
    * this function sets the contributor's pool level to 0. Otherwise, it subtracts the specified amount.
    */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+  function removePoolLevels(
+    address addr,
+    uint256 levelsToRemove
+  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     Contributor memory contributor = contributors[addr];
 
     contributors[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : contributor.pool.level;
@@ -341,7 +344,10 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * @param contributionId The ID of the contribution associated with this penalty.
    * @return uint256 The total number of penalties the contributor has accumulated.
    */
-  function addPenalty(address addr, uint64 contributionId) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
+  function addPenalty(
+    address addr,
+    uint64 contributionId
+  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
     penalties[addr].push(Penalty(contributionId));
 
     return totalPenalties(addr);

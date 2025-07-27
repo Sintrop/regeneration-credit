@@ -82,6 +82,8 @@ describe("DeveloperRules", (accounts) => {
     contributorRules = validatorRulesDeployed.contributorRules;
     researcherRules = validatorRulesDeployed.researcherRules;
     activistRules = validatorRulesDeployed.activistRules;
+    activistPool = validatorRulesDeployed.activistPool;
+    researcherPool = validatorRulesDeployed.researcherPool;
 
     await validationRules.setContractCall(owner, owner, instance.target, owner);
 
@@ -100,6 +102,9 @@ describe("DeveloperRules", (accounts) => {
 
     await communityRules.setContractCall(owner, owner);
     await instance.setContractCall(validationRules.target);
+    await activistPool.setContractCall(activistRules.target);
+    await developerPool.setContractCall(instance);
+    await researcherPool.setContractCall(researcherRules.target);
 
     await addInvitation(owner, dev1Address, userTypes.Developer, owner);
   });

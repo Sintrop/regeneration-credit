@@ -344,7 +344,10 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @dev Remove pool levels from researcher.
    * @param addr Researcher wallet.
    */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+  function removePoolLevels(
+    address addr,
+    uint256 levelsToRemove
+  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     Researcher memory researcher = researchers[addr];
 
     researchers[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : researcher.pool.level;
@@ -357,7 +360,10 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param addr Researcher wallet.
    * @param researchId Research id.
    */
-  function addPenalty(address addr, uint64 researchId) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
+  function addPenalty(
+    address addr,
+    uint64 researchId
+  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
     penalties[addr].push(Penalty(researchId));
 
     return totalPenalties(addr);

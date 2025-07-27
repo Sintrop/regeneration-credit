@@ -22,6 +22,7 @@ describe("InspectorPool", (accounts) => {
     instance = await instanceFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra);
 
     await instance.newAllowedCaller(owner);
+    await instance.setContractCall(owner);
 
     await regenerationCredit.addContractPool(instance.target, args.totalInspectorPoolTokens);
   });

@@ -43,6 +43,7 @@ describe("ActivistRules", () => {
 
     await communityRules.setContractCall(owner, owner);
     await instance.setContractCall(owner, owner);
+    await activistPool.setContractCall(instance);
 
     await communityRules.newAllowedCaller(activ1Address);
     await communityRules.newAllowedCaller(instance.target);

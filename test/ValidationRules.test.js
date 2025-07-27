@@ -251,6 +251,12 @@ describe("ValidationRules", () => {
     await developerRules.setContractCall(instance);
     await researcherRules.setContractCall(instance);
     await contributorRules.setContractCall(instance);
+    await activistPool.setContractCall(activistRules.target);
+    await contributorPool.setContractCall(contributorRules.target);
+    await developerPool.setContractCall(developerRules.target);
+    await researcherPool.setContractCall(researcherRules.target);
+    await inspectorPool.setContractCall(inspectorRules.target);
+    await regeneratorPool.setContractCall(regeneratorRules.target);
 
     await addInvitation(owner, inspector1Address, userTypes.Inspector, owner);
   });
@@ -1748,7 +1754,7 @@ describe("ValidationRules", () => {
                 let contribution = await contributorRules.contributions(1);
                 contribution = generateContributionObject(contribution);
                 contribution.validationsCount = 1;
-           
+
                 await contributorRules.setContractCall(owner);
                 await contributorRules.addPenalty(contribution.user, contribution.id);
                 await contributorRules.addPenalty(contribution.user, contribution.id);

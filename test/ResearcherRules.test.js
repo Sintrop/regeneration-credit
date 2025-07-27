@@ -91,6 +91,7 @@ describe("ResearcherRules", () => {
 
     await communityRules.setContractCall(owner, validationRules.target);
     await instance.setContractCall(validationRules.target);
+    await researcherPool.setContractCall(instance);
 
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
   });

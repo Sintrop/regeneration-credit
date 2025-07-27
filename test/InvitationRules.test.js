@@ -93,7 +93,7 @@ describe("InvitationRules", () => {
     contributorRules = validatorRulesDeployed.contributorRules;
     contributorPool = validatorRulesDeployed.contributorPool;
     activistRules = validatorRulesDeployed.activistRules;
-    activistPool = validatorRulesDeployed.activistRules;
+    activistPool = validatorRulesDeployed.activistPool;
 
     const instanceFactory = await ethers.getContractFactory("InvitationRules");
     instance = await instanceFactory.deploy(
@@ -120,6 +120,10 @@ describe("InvitationRules", () => {
     await activistRules.setContractCall(owner, validationRules.target);
     await regeneratorRules.setContractCall(owner, validationRules.target);
     await inspectorRules.setContractCall(owner, validationRules.target);
+    await activistPool.setContractCall(activistRules.target);
+    await contributorPool.setContractCall(contributorRules.target);
+    await developerPool.setContractCall(developerRules.target);
+    await researcherPool.setContractCall(researcherRules.target);
   });
 
   describe("#invite", () => {

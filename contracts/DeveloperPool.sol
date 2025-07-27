@@ -27,6 +27,9 @@ contract DeveloperPool is Poolable, Blockable, Callable, ReentrancyGuard {
   /// This value represents the maximum tokens available for distribution through this contract.
   uint256 private constant TOTAL_POOL_TOKENS = 40000000e18;
 
+  /// @notice The address of the `DeveloperRules` contract.
+  address private developerRulesAddress;
+
   // --- Constructor ---
 
   /**
@@ -46,6 +49,16 @@ contract DeveloperPool is Poolable, Blockable, Callable, ReentrancyGuard {
     regenerationCredit = IRegenerationCredit(regenerationCreditAddress);
   }
 
+  // --- Deploy functions ---
+
+  /**
+   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param _developerRulesAddress Address of DeveloperRules.
+   */
+  function setContractCall(address _developerRulesAddress) public onlyOwner {
+    developerRulesAddress = _developerRulesAddress;
+  }
+
   // --- MustBeAllowedCaller functions (State modifying) ---
 
   /**
@@ -56,7 +69,10 @@ contract DeveloperPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * @param delegate The address of the user (developer) for whom the withdrawal is being processed.
    * @param era The last recorded era of the `delegate` user, used for reward calculation and eligibility.
    */
-  function withdraw(address delegate, uint256 era) public mustBeAllowedCaller canWithdrawModifier(era) nonReentrant {
+  function withdraw(
+    address delegate,
+    uint256 era
+  ) public mustBeAllowedCaller mustBeContractCall(developerRulesAddress) canWithdrawModifier(era) nonReentrant {
     require(era <= currentContractEra(), "Era in the future");
 
     // Calculate the number of tokens the user is eligible to receive for the given era.
@@ -82,7 +98,10 @@ contract DeveloperPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * @param addr The wallet address of the developer.
    * @param levels The number of levels to increase the developer's pool level by.
    */
-  function addLevel(address addr, uint256 levels) public mustBeAllowedCaller nonReentrant {
+  function addLevel(
+    address addr,
+    uint256 levels
+  ) public mustBeAllowedCaller mustBeContractCall(developerRulesAddress) nonReentrant {
     // Calls the _addPoolLevel function from Poolable.sol.
     _addPoolLevel(addr, levels, currentContractEra());
   }
@@ -94,7 +113,10 @@ contract DeveloperPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * @param addr The wallet address of the developer.
    * @param levelsToRemove The number of levels to decrease the developer's pool level by.
    */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller nonReentrant {
+  function removePoolLevels(
+    address addr,
+    uint256 levelsToRemove
+  ) public mustBeAllowedCaller mustBeContractCall(developerRulesAddress) nonReentrant {
     // Calls the _removePoolLevel function from Poolable.sol.
     _removePoolLevel(addr, currentContractEra(), levelsToRemove);
   }
