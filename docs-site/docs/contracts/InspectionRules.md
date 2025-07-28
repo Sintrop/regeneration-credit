@@ -131,10 +131,10 @@ _Sets immutable values that govern inspection delays, expiration, and initial al
 | acceptInspectionDelayBlocks_ | uint32 | The number of blocks inspectors must wait before accept a new inspection. |
 | securityBlocksToValidation__ | uint32 | The number of security blocks for validators before era end. |
 
-### setContractAddressDependencies
+### setContractInterfaces
 
 ```solidity
-function setContractAddressDependencies(struct ContractsDependency contractDependency) public
+function setContractInterfaces(struct ContractsDependency contractDependency) public
 ```
 
 Sets the addresses of all essential external contracts this contract depends on.

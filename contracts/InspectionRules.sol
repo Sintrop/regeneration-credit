@@ -84,25 +84,25 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   /// @notice Checks if an inspector has already inspected a specific regenerator.
   mapping(address => mapping(address => bool)) private inspectorInspected;
 
-  /// @notice InspectorRules contract instance for interacting with inspector-specific logic.
+  /// @notice InspectorRules contract interface for interacting with inspector-specific logic.
   IInspectorRules private inspectorRules;
 
-  /// @notice RegeneratorRules contract instance for interacting with regenerator-specific logic.
+  /// @notice RegeneratorRules contract interface for interacting with regenerator-specific logic.
   IRegeneratorRules private regeneratorRules;
 
-  /// @notice CommunityRules contract instance for checking user types and other community-wide rules.
+  /// @notice CommunityRules contract interface for checking user types and other community-wide rules.
   ICommunityRules private communityRules;
 
-  /// @notice ValidationRules contract instance for handling inspection invalidations.
+  /// @notice ValidationRules contract interface for handling inspection invalidations.
   IValidationRules private validationRules;
 
-  /// @notice ActivistRules contract instance for updating activist levels based on inspection activities.
+  /// @notice ActivistRules contract interface for updating activist levels based on inspection activities.
   IActivistRules private activistRules;
 
-  /// @notice VoteRules contract instance for checking voter eligibility.
+  /// @notice VoteRules contract interface for checking voter eligibility.
   IVoteRules private voteRules;
 
-  /// @notice RegenerationIndexRules contract instance for calculating regeneration scores.
+  /// @notice RegenerationIndexRules contract interface for calculating regeneration scores.
   IRegenerationIndexRules private regenerationIndexRules;
 
   // --- Constructor ---
@@ -133,13 +133,13 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   // --- Deploy functions ---
 
   /**
-   * @notice Sets the addresses of all essential external contracts this contract depends on.
+   * @notice Sets the addresses of all essential external contracts interfaces this contract depends on.
    * @dev This function can only be called once by the contract owner after deployment.
    * It initializes references to various *Rules contracts and the VoteRules contract.
    * Ownership should be renounced after this call.
-   * @param contractDependency Struct containing addresses of all system contracts.
+   * @param contractDependency Struct containing addresses of necessary system contracts.
    */
-  function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+  function setContractInterfaces(ContractsDependency memory contractDependency) public onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     regeneratorRules = IRegeneratorRules(contractDependency.regeneratorRulesAddress);
     validationRules = IValidationRules(contractDependency.validationRulesAddress);

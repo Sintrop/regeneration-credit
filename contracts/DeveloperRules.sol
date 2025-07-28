@@ -75,19 +75,19 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   /// Facilitates lookup of a developer's address by their ID.
   mapping(uint256 => address) public developersAddress;
 
-  /// @notice The address of the `CommunityRules` contract, used to interact with
+  /// @notice The interface of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
   ICommunityRules private communityRules;
 
-  /// @notice The address of the `DeveloperPool` contract, responsible for managing
+  /// @notice The interface of the `DeveloperPool` contract, responsible for managing
   /// and distributing token rewards to developers.
   IDeveloperPool private developerPool;
 
-  /// @notice The address of the `ValidationRules` contract, which defines the rules
+  /// @notice The interface of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating development reports.
   IValidationRules private validationRules;
 
-  /// @notice The address of the `VoteRules` contract, which defines rules for user voting
+  /// @notice The interface of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for report validation.
   IVoteRules private voteRules;
 
@@ -101,7 +101,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
 
   /**
    * @dev Initializes the DeveloperRules contract with key parameters for report management.
-   * Note: External contract addresses (`communityRules`, `developerPool`, etc.) are set via `setContractAddressDependencies`
+   * Note: External contract addresses (`communityRules`, `developerPool`, etc.) are set via `setContractInterfaces`
    * after deployment, following an `onlyOwner` pattern for secure initialization.
    * @param timeBetweenWorks_ The required blocks between report publications.
    * @param maxPenalties_ The maximum allowed penalties for a developer.
@@ -116,10 +116,11 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   // --- Deploy functions ---
 
   /**
-   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @dev onlyOwner function to set contract interfaces.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param contractDependency Addresses of system contracts used.
    */
-  function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+  function setContractInterfaces(ContractsDependency memory contractDependency) public onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     developerPool = IDeveloperPool(contractDependency.developerPoolAddress);
     validationRules = IValidationRules(contractDependency.validationRulesAddress);
@@ -127,7 +128,8 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   }
 
   /**
-   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @dev onlyOwner function to set contract call addresses.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _validationRulesAddress Address of ValidationRules.
    */
   function setContractCall(address _validationRulesAddress) public onlyOwner {

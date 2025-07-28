@@ -177,12 +177,12 @@ const voteRulesDeployed = async () => {
     sintropArgs.securityBlocksToValidation_
   );
 
-  await inspectionRules.setContractAddressDependencies(inspectionRulesDependencies);
+  await inspectionRules.setContractInterfaces(inspectionRulesDependencies);
 
   await activistPool.newAllowedCaller(activistRules.target);
   await researcherPool.newAllowedCaller(researcherRules.target);
 
-  await validationRules.setContractAddressDependencies(validationRulesDependencies);
+  await validationRules.setContractInterfaces(validationRulesDependencies);
 
   const developerRulesContractDependencies = {
     communityRulesAddress: communityRules.target,
@@ -191,7 +191,7 @@ const voteRulesDeployed = async () => {
     voteRulesAddress: voteRules.target,
   };
 
-  await developerRules.setContractAddressDependencies(developerRulesContractDependencies);
+  await developerRules.setContractInterfaces(developerRulesContractDependencies);
 
   const contributorRulesContractDependencies = {
     communityRulesAddress: communityRules.target,
@@ -200,7 +200,7 @@ const voteRulesDeployed = async () => {
     voteRulesAddress: voteRules.target,
   };
 
-  await contributorRules.setContractAddressDependencies(contributorRulesContractDependencies);
+  await contributorRules.setContractInterfaces(contributorRulesContractDependencies);
 
   const researcherRulesContractDependencies = {
     communityRulesAddress: communityRules.target,
@@ -209,7 +209,7 @@ const voteRulesDeployed = async () => {
     voteRulesAddress: voteRules.target,
   };
 
-  await researcherRules.setContractAddressDependencies(researcherRulesContractDependencies);
+  await researcherRules.setContractInterfaces(researcherRulesContractDependencies);
 
   return {
     activistRules,

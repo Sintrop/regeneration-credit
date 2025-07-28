@@ -215,7 +215,7 @@ describe("InspectionRules", () => {
       voteRulesAddress: voteRules.target,
     };
 
-    await instance.setContractAddressDependencies(inspectionRulesDependencies);
+    await instance.setContractInterfaces(inspectionRulesDependencies);
 
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(regeneratorRules.target);

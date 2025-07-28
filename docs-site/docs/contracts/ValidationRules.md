@@ -46,10 +46,10 @@ _Sets the immutable `timeBetweenVotes` which dictates how many blocks a validato
 | ---- | ---- | ----------- |
 | timeBetweenVotes_ | uint256 | The number of blocks a validator must wait between consecutive votes. |
 
-### setContractAddressDependencies
+### setContractInterfaces
 
 ```solidity
-function setContractAddressDependencies(struct ContractsDependency contractDependency) public
+function setContractInterfaces(struct ContractsDependency contractDependency) public
 ```
 
 _onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced._

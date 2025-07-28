@@ -54,7 +54,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
   /// Represents their individual contribution to environmental offset.
   mapping(address => uint256) public certificate;
 
-  /// @notice SupporterRules contract address.
+  /// @notice SupporterRules contract interface.
   ISupporterRules private supporterRules;
 
   // --- Constructor ---
@@ -72,11 +72,11 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
   // --- Deploy functions ---
 
   /**
-   * @dev onlyOwner function to set contracts dependency.
+   * @dev onlyOwner function to set contract interface dependency.
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param supporterRulesAddress Addresses of the SupporterRules contract.
    */
-  function setContractDependencies(address supporterRulesAddress) public onlyOwner {
+  function setContractInterfaces(address supporterRulesAddress) public onlyOwner {
     supporterRules = ISupporterRules(supporterRulesAddress);
   }
 

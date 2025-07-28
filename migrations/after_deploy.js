@@ -43,7 +43,7 @@ async function configureValidationRules() {
   };
 
   await validationRules.setContractCall(inspectionRules.target, contributorRules.target, developerRules.target, researcherRules.target);
-  await validationRules.setContractAddressDependencies(contractDependencies);
+  await validationRules.setContractInterfaces(contractDependencies);
   await regeneratorRules.newAllowedCaller(validationRules.target);
   await inspectorRules.newAllowedCaller(validationRules.target);
   await activistRules.newAllowedCaller(validationRules.target);
@@ -68,7 +68,7 @@ async function configureDeveloperRules() {
     voteRulesAddress: voteRules.target,
   };
 
-  await developerRules.setContractAddressDependencies(contractDependencies);
+  await developerRules.setContractInterfaces(contractDependencies);
   await developerRules.newAllowedCaller(validationRules.target);
   await developerRules.setContractCall(validationRules.target);
 
@@ -89,7 +89,7 @@ async function configureContributorRules() {
     voteRulesAddress: voteRules.target,
   };
 
-  await contributorRules.setContractAddressDependencies(contractDependencies);
+  await contributorRules.setContractInterfaces(contractDependencies);
   await contributorRules.newAllowedCaller(validationRules.target);
   await contributorRules.setContractCall(validationRules.target);
 
@@ -110,7 +110,7 @@ async function configureResearcherRules() {
     voteRulesAddress: voteRules.target,
   };
 
-  await researcherRules.setContractAddressDependencies(contractDependencies);
+  await researcherRules.setContractInterfaces(contractDependencies);
   await researcherRules.newAllowedCaller(validationRules.target);
   await researcherRules.setContractCall(validationRules.target);
 
@@ -191,7 +191,7 @@ async function configureInspectionRules() {
     voteRulesAddress: voteRules.target,
   };
 
-  await inspectionRules.setContractAddressDependencies(contractDependencies);
+  await inspectionRules.setContractInterfaces(contractDependencies);
 
   await activistRules.newAllowedCaller(inspectionRules.target);
   await inspectorRules.newAllowedCaller(inspectionRules.target);

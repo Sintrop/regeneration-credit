@@ -167,7 +167,7 @@ describe("ResearcherRules", () => {
               voteRulesAddress: ZERO_ADDRESS,
             };
 
-            await instance.setContractAddressDependencies(researcherRulesContractDependencies);
+            await instance.setContractInterfaces(researcherRulesContractDependencies);
 
             await communityRules.mock.userTypesCount.returns(16001);
           });

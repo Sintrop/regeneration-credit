@@ -95,19 +95,19 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   /// Facilitates lookup of a reseracher's address by their ID.
   mapping(uint256 => address) public researchersAddress;
 
-  /// @notice The address of the `CommunityRules` contract, used to interact with
+  /// @notice The interface of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
   ICommunityRules private communityRules;
 
-  /// @notice The address of the `ResearcherPool` contract, responsible for managing
+  /// @notice The interface of the `ResearcherPool` contract, responsible for managing
   /// and distributing token rewards to researchers.
   IResearcherPool private researcherPool;
 
-  /// @notice The address of the `ValidationRules` contract, which defines the rules
+  /// @notice The interface of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating development reports.
   IValidationRules private validationRules;
 
-  /// @notice The address of the `VoteRules` contract, which defines rules for user voting
+  /// @notice The interface of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for report validation.
   IVoteRules private voteRules;
 
@@ -136,10 +136,11 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   // --- Deploy functions ---
 
   /**
-   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @dev onlyOwner function to set contract interfaces.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param contractDependency Addresses of system contracts used.
    */
-  function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+  function setContractInterfaces(ContractsDependency memory contractDependency) public onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     researcherPool = IResearcherPool(contractDependency.researcherPoolAddress);
     validationRules = IValidationRules(contractDependency.validationRulesAddress);
@@ -147,7 +148,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   }
 
   /**
-   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @dev onlyOwner function to set contract call addresses.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _validationRulesAddress Address of ValidationRules.
    */
   function setContractCall(address _validationRulesAddress) public onlyOwner {

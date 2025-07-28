@@ -52,7 +52,8 @@ contract DeveloperPool is Poolable, Blockable, Callable, ReentrancyGuard {
   // --- Deploy functions ---
 
   /**
-   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @dev onlyOwner function to set contract call addresses.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _developerRulesAddress Address of DeveloperRules.
    */
   function setContractCall(address _developerRulesAddress) public onlyOwner {

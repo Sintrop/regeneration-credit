@@ -1872,7 +1872,7 @@ describe("ValidationRules", () => {
         voteRulesAddress: ZERO_ADDRESS,
       };
 
-      await instance.setContractAddressDependencies(validationRulesDependencies);
+      await instance.setContractInterfaces(validationRulesDependencies);
     });
 
     context("when votersCount is less than 50", () => {

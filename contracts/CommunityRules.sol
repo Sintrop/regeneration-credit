@@ -136,12 +136,14 @@ contract CommunityRules is Callable {
   // --- Deploy functions ---
 
   /**
-   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @dev onlyOwner function to set contract call addresses.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _invitationRulesAddress Address of InvitationRules.
+   * @param _validationRulesAddress Address of ValidationRules.
    */
-  function setContractCall(address _invitationRulesAddress, address _validationRulesAdress) public onlyOwner {
+  function setContractCall(address _invitationRulesAddress, address _validationRulesAddress) public onlyOwner {
     invitationRulesAddress = _invitationRulesAddress;
-    validationRulesAddress = _validationRulesAdress;
+    validationRulesAddress = _validationRulesAddress;
   }
 
   // --- Public functions (State Modifying) ---

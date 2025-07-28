@@ -62,10 +62,10 @@ describe("RegenerationCredit", (accounts) => {
       voteRulesAddress: ZERO_ADDRESS,
     };
 
-    await researcherRules.setContractAddressDependencies(researcherRulesContractDependencies);
+    await researcherRules.setContractInterfaces(researcherRulesContractDependencies);
 
     await supporterRules.setContractCall(instance.target);
-    await instance.setContractDependencies(supporterRules.target);
+    await instance.setContractInterfaces(supporterRules.target);
     await supporterRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(researcherRules.target);
     await communityRules.newAllowedCaller(supporterRules.target);

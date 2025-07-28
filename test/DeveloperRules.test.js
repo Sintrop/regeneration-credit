@@ -196,7 +196,7 @@ describe("DeveloperRules", (accounts) => {
               voteRulesAddress: ZERO_ADDRESS,
             };
 
-            await instance.setContractAddressDependencies(developerRulesContractDependencies);
+            await instance.setContractInterfaces(developerRulesContractDependencies);
 
             await communityRules.mock.userTypesCount.returns(16001);
           });

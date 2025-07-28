@@ -81,28 +81,28 @@ contract ValidationRules is Callable, ReentrancyGuard {
   /// @notice Relationship between validator and last vote block.number.
   mapping(address => uint256) public validatorLastVoteAt;
 
-  /// @notice CommunityRules contract address.
+  /// @notice CommunityRules contract interface.
   ICommunityRules private communityRules;
 
-  /// @notice RegeneratorRules contract address.
+  /// @notice RegeneratorRules contract interface.
   IRegeneratorRules private regeneratorRules;
 
-  /// @notice InspectorRules contract address.
+  /// @notice InspectorRules contract interface.
   IInspectorRules private inspectorRules;
 
-  /// @notice DeveloperRules contract address.
+  /// @notice DeveloperRules contract interface.
   IDeveloperRules private developerRules;
 
-  /// @notice ResearcherRules contract address.
+  /// @notice ResearcherRules contract interface.
   IResearcherRules private researcherRules;
 
-  /// @notice ContributorRules contract address.
+  /// @notice ContributorRules contract interface.
   IContributorRules private contributorRules;
 
-  /// @notice ActivistRules contract address.
+  /// @notice ActivistRules contract interface.
   IActivistRules private activistRules;
 
-  /// @notice VoteRules contract address.
+  /// @notice VoteRules contract interface.
   IVoteRules private voteRules;
 
   /// @notice The address of the `InspectionRules` contract.
@@ -134,10 +134,11 @@ contract ValidationRules is Callable, ReentrancyGuard {
   // --- Deploy functions ---
 
   /**
-   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @dev onlyOwner function to set contract interfaces.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param contractDependency Addresses of system contracts used.
    */
-  function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+  function setContractInterfaces(ContractsDependency memory contractDependency) public onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     regeneratorRules = IRegeneratorRules(contractDependency.regeneratorRulesAddress);
     inspectorRules = IInspectorRules(contractDependency.inspectorRulesAddress);
@@ -148,6 +149,14 @@ contract ValidationRules is Callable, ReentrancyGuard {
     voteRules = IVoteRules(contractDependency.voteRulesAddress);
   }
 
+  /**
+   * @dev onlyOwner function to set contract call addresses.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param _inspectionRulesAddress Address of InspectionRules.
+   * @param _contributorRulesAddress Address of ContributorRules.
+   * @param _developerRulesAddress Address of DeveloperRules.
+   * @param _researcherRulesAddress Address of ResearcherRules.
+   */
   function setContractCall(
     address _inspectionRulesAddress,
     address _contributorRulesAddress,
