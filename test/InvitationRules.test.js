@@ -1,10 +1,7 @@
 const { ethers } = require("hardhat");
-const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 const { advanceBlock } = require("./shared/advance_block");
-const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
-const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 const { voteRulesDeployed } = require("./shared/vote_rules_deployed");
 const { deployMockContract } = require("@clrfund/waffle-mock-contract");
 

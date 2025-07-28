@@ -4,7 +4,6 @@ const { regenerationCreditDeployed } = require("./shared/regeneration_credit_dep
 const { expect } = require("chai");
 const { advanceBlock } = require("./shared/advance_block");
 const { deployMockContract } = require("@clrfund/waffle-mock-contract");
-const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
 describe("ActivistRules", () => {
   let instance, communityRules, activistPool, regenerationCredit, instanceContractFactory;

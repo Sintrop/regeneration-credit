@@ -1,5 +1,4 @@
 const { expect } = require("chai");
-const { voteRulesDeployed } = require("./shared/vote_rules_deployed");
 const { userTypes } = require("./shared/user_types");
 const { deployMockContract } = require("@clrfund/waffle-mock-contract");
 const { ZERO_ADDRESS } = require("./shared/zeroAddress");
