@@ -176,7 +176,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   function addRegeneratorLevel(
     address regeneratorAddress,
     uint256 regeneratorTotalInspections
-  ) external mustBeAllowedCaller mustBeContractCall(address(inspectionRulesAddress)) nonReentrant {
+  ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant {
     _addLevelFromRegenerator(regeneratorAddress, regeneratorTotalInspections);
   }
 
@@ -191,7 +191,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   function addInspectorLevel(
     address inspectorAddress,
     uint256 inspectorTotalInspections
-  ) external mustBeAllowedCaller mustBeContractCall(address(inspectionRulesAddress)) nonReentrant {
+  ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant {
     _addLevelFromInspector(inspectorAddress, inspectorTotalInspections);
   }
 
@@ -205,7 +205,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   function removePoolLevels(
     address addr,
     uint256 levelsToRemove
-  ) public mustBeAllowedCaller mustBeContractCall(address(validationRulesAddress)) nonReentrant {
+  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
     Activist storage activist = activists[addr];
 
     activist.pool.level -= levelsToRemove > 0 ? levelsToRemove : activist.pool.level;

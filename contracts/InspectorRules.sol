@@ -61,10 +61,10 @@ contract InspectorRules is Callable, ReentrancyGuard {
   IInspectorPool private inspectorPool;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private inspectionRules;
+  address private inspectionRulesAddress;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private validationRules;
+  address private validationRulesAddress;
 
   /// @notice The specific `UserType` enumeration value for an Inspector user.
   /// This is a constant for gas efficiency and clarity.
@@ -88,12 +88,12 @@ contract InspectorRules is Callable, ReentrancyGuard {
 
   /**
    * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
-   * @param inspectionRulesAddress Address of InspectionRules.
-   * @param validationRulesAddress Address of ValidationRules.
+   * @param _inspectionRulesAddress Address of InspectionRules.
+   * @param _validationRulesAddress Address of ValidationRules.
    */
-  function setContractCall(address inspectionRulesAddress, address validationRulesAddress) public onlyOwner {
-    inspectionRules = inspectionRulesAddress;
-    validationRules = validationRulesAddress;
+  function setContractCall(address _inspectionRulesAddress, address _validationRulesAddress) public onlyOwner {
+    inspectionRulesAddress = _inspectionRulesAddress;
+    validationRulesAddress = _validationRulesAddress;
   }
 
   // --- Public functions (State modifying) ---
@@ -186,7 +186,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   function afterAcceptInspection(
     address addr,
     uint64 lastInspectionId
-  ) public mustBeAllowedCaller mustBeContractCall(address(inspectionRules)) {
+  ) public mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
     _markLastInspection(addr, lastInspectionId);
 
     _incrementGiveUps(addr);
@@ -201,7 +201,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    */
   function afterRealizeInspection(
     address addr
-  ) public mustBeAllowedCaller mustBeContractCall(address(inspectionRules)) nonReentrant returns (uint256) {
+  ) public mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant returns (uint256) {
     _decreaseGiveUps(addr);
 
     return _incrementInspections(addr);
@@ -219,7 +219,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   function addPenalty(
     address addr,
     uint64 inspectionId
-  ) public mustBeAllowedCaller mustBeContractCall(address(validationRules)) returns (uint256) {
+  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
     penalties[addr].push(Penalty(inspectionId));
 
     return totalPenalties(addr);
@@ -235,7 +235,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   function removePoolLevels(
     address addr,
     uint256 levelsToRemove
-  ) public mustBeAllowedCaller mustBeContractCall(address(validationRules)) nonReentrant {
+  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
     Inspector storage inspector = inspectors[addr];
 
     inspector.pool.level -= levelsToRemove > 0 ? levelsToRemove : inspector.pool.level;
@@ -255,7 +255,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * Requirements:
    * - The inspector's `totalInspections` count must be greater than 0.
    */
-  function decrementInspections(address addr) public mustBeAllowedCaller mustBeContractCall(address(validationRules)) {
+  function decrementInspections(address addr) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     Inspector storage inspector = inspectors[addr];
 
     require(inspector.totalInspections > 0, "totalInspections invalid");
