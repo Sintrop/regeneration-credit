@@ -148,7 +148,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     string memory proofPhoto,
     string memory projectDescription,
     Coordinates[] memory _coordinates
-  ) public {
+  ) external {
     require(
       bytes(name).length <= MAX_NAME_LENGTH &&
         bytes(proofPhoto).length <= MAX_HASH_LENGTH &&
@@ -210,7 +210,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * - The regenerator must have a positive regeneration score.
    * - The regenerator's current era (`regenerator.pool.currentEra`) will be incremented upon successful withdrawal attempt.
    */
-  function withdraw() public nonReentrant {
+  function withdraw() external nonReentrant {
     // Only registered regenerators can call this function.
     require(communityRules.userTypeIs(CommunityTypes.UserType.REGENERATOR, msg.sender), "Only regenerators pool");
 
@@ -239,7 +239,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * - The `newPhoto` string must not exceed 150 characters in byte length.
    * - The caller (`msg.sender`) must be a registered `REGENERATOR`.
    */
-  function updateAreaPhoto(string memory newPhoto) public {
+  function updateAreaPhoto(string memory newPhoto) external {
     require(bytes(newPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     require(communityRules.userTypeIs(CommunityTypes.UserType.REGENERATOR, msg.sender), "Only regenerators");
 
@@ -260,7 +260,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   function removePoolLevels(
     address addr,
     uint256 levelsToRemove
-  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
+  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
     if (levelsToRemove == 0) {
       regenerators[addr].regenerationScore.score = 0;
       _decrementArea(addr);
@@ -281,7 +281,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * - If `totalInspections` becomes 0 after decrement, the regenerator is removed from `impactRegenerators`.
    * @param addr The regenerator's wallet address.
    */
-  function decrementInspections(address addr) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+  function decrementInspections(address addr) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     uint256 totalInspections = regenerators[addr].totalInspections;
 
     require(totalInspections > 0, "totalInspections invalid");
@@ -300,7 +300,9 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @notice This function is intended to be called by a whitelisted contract, the InspectionRules.
    * @param addr The regenerator's wallet address.
    */
-  function afterRequestInspection(address addr) public mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
+  function afterRequestInspection(
+    address addr
+  ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
     _pendingInspection(addr, true);
     _lastRequestAt(addr, block.number);
   }
@@ -311,7 +313,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @dev This function is intended to be called by a whitelisted external contract, the InspectorRules.
    * @param addr The regenerator's wallet address.
    */
-  function afterAcceptInspection(address addr) public mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
+  function afterAcceptInspection(address addr) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
     _pendingInspection(addr, false);
   }
 
@@ -327,7 +329,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   function afterRealizeInspection(
     address addr,
     uint32 score
-  ) public mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant returns (uint256) {
+  ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant returns (uint256) {
     uint256 totalInspections = _incrementInspections(addr);
 
     _setRegenerationScore(addr, score);

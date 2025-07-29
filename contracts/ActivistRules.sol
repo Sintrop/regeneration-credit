@@ -111,7 +111,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * @param name The chosen name for the activist.
    * @param proofPhoto A hash or identifier for the activist's identity verification photo.
    */
-  function addActivist(string memory name, string memory proofPhoto) public {
+  function addActivist(string memory name, string memory proofPhoto) external {
     // Character limit validation for name and proofPhoto.
     require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     // Max limit for activist users in the system.
@@ -143,7 +143,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * - The activist must have approvedUsers in their current era.
    * - The activist's current era (`activist.pool.currentEra`) will be incremented upon successful withdrawal attempt.
    */
-  function withdraw() public nonReentrant {
+  function withdraw() external nonReentrant {
     // Only activist can call the function
     require(communityRules.userTypeIs(CommunityTypes.UserType.ACTIVIST, msg.sender), "Pool only to activist");
 
@@ -206,7 +206,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   function removePoolLevels(
     address addr,
     uint256 levelsToRemove
-  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
+  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
     Activist storage activist = activists[addr];
 
     activist.pool.level -= levelsToRemove > 0 ? levelsToRemove : activist.pool.level;

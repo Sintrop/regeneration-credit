@@ -162,7 +162,7 @@ contract RegenerationIndexRules {
    */
   function getCategoryRegenerationIndexDescription(
     uint8 categoryId
-  ) public view returns (RegenerationIndexDescription[] memory) {
+  ) external view returns (RegenerationIndexDescription[] memory) {
     require(categoryId > 0 && categoryId <= CATEGORY_COUNTS, "Invalid category ID");
     return categoryRegenerationIndexDescriptions[categoryId];
   }
@@ -174,7 +174,7 @@ contract RegenerationIndexRules {
    * @param biodiversityResult Inspection result provided by inspector for biodiversity.
    * @return uint256 The combined inspection score.
    */
-  function calculateScore(uint32 treesResult, uint32 biodiversityResult) public view returns (uint32) {
+  function calculateScore(uint32 treesResult, uint32 biodiversityResult) external view returns (uint32) {
     RegenerationIndex memory trees = regenerationIndex[_treesRegenerationIndexId(treesResult)];
     RegenerationIndex memory biodiversity = regenerationIndex[_biodiversityRegenerationIndexId(biodiversityResult)];
 

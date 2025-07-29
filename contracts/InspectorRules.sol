@@ -114,7 +114,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param name The chosen name for the inspector.
    * @param proofPhoto A hash or identifier (e.g., URL) for the inspector's identity verification photo.
    */
-  function addInspector(string memory name, string memory proofPhoto) public {
+  function addInspector(string memory name, string memory proofPhoto) external {
     require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
@@ -152,7 +152,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * - The inspector must be eligible for withdrawal in their current era (checked via `inspectorPool.canWithdraw`).
    * - The inspector's current era (`inspector.pool.currentEra`) will be incremented upon successful withdrawal attempt.
    */
-  function withdraw() public nonReentrant {
+  function withdraw() external nonReentrant {
     // Only registered inspectors can call this function.
     require(communityRules.userTypeIs(CommunityTypes.UserType.INSPECTOR, msg.sender), "Pool only to inspectors");
 
@@ -187,7 +187,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   function afterAcceptInspection(
     address addr,
     uint64 lastInspectionId
-  ) public mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
+  ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
     _markLastInspection(addr, lastInspectionId);
 
     _incrementGiveUps(addr);
@@ -202,7 +202,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    */
   function afterRealizeInspection(
     address addr
-  ) public mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant returns (uint256) {
+  ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant returns (uint256) {
     _decreaseGiveUps(addr);
 
     return _incrementInspections(addr);
@@ -220,7 +220,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   function addPenalty(
     address addr,
     uint64 inspectionId
-  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
+  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
     penalties[addr].push(Penalty(inspectionId));
 
     return totalPenalties(addr);
@@ -229,14 +229,14 @@ contract InspectorRules is Callable, ReentrancyGuard {
   /**
    * @dev Allows the validator rules to remove levels from an inspector's pool.
    * This function updates the inspector's local level and notifies the `InspectorPool` contract.
-   * @notice Should only be called by the ValidationRules address.
+   * @notice Should only be called by the ValidatorRules address.
    * @param addr The wallet address of the inspector from whom levels are to be removed.
    * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
    * this function sets the inspector's pool level to 0. Otherwise, it subtracts the specified amount.   */
   function removePoolLevels(
     address addr,
     uint256 levelsToRemove
-  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
+  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
     Inspector storage inspector = inspectors[addr];
 
     inspector.pool.level -= levelsToRemove > 0 ? levelsToRemove : inspector.pool.level;
@@ -250,13 +250,13 @@ contract InspectorRules is Callable, ReentrancyGuard {
   /**
    * @dev Decrements an inspector's total completed inspections count.
    * This function is called when an inspection previously counted as valid is invalidated.
-   * @notice Should only be called by the ValidationRules address.
+   * @notice Should only be called by the ValidatorRules address.
    * @param addr The inspector's wallet address.
    *
    * Requirements:
    * - The inspector's `totalInspections` count must be greater than 0.
    */
-  function decrementInspections(address addr) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+  function decrementInspections(address addr) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     Inspector storage inspector = inspectors[addr];
 
     require(inspector.totalInspections > 0, "totalInspections invalid");

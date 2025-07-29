@@ -130,7 +130,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
    * @param calculatorItemId The ID of the CalculatorItem.
    */
-  function offset(uint256 amount, uint64 calculatorItemId) public nonReentrant {
+  function offset(uint256 amount, uint64 calculatorItemId) external nonReentrant {
     require(supporterRules.isSupporter(msg.sender), "Only supporters");
     require(amount >= MINIMUM_TOKENS_TO_OFFSET, "Amount must be at least 1 RC");
 
@@ -150,7 +150,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * @param description The description of the post (max 600 characters).
    * @param content The content of the post (max 600 characters).
    */
-  function publish(uint256 amount, string memory description, string memory content) public nonReentrant {
+  function publish(uint256 amount, string memory description, string memory content) external nonReentrant {
     require(supporterRules.isSupporter(msg.sender), "Only supporters");
     require(amount >= MINIMUM_TOKENS_TO_PUBLISH, "Amount must be at least 10 RC");
     require(
@@ -172,7 +172,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * @param tokenOwner The address of the contract pool initiating the transfer.
    * @param numTokens The amount of tokens to transfer.
    */
-  function decreaseLocked(address tokenOwner, uint256 numTokens) public mustBeContractPool {
+  function decreaseLocked(address tokenOwner, uint256 numTokens) external mustBeContractPool {
     require(numTokens <= balanceOf(tokenOwner), "Pool out of balance");
 
     // Update total locked tokens.
