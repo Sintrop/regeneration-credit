@@ -146,7 +146,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * @notice Allows a supporter to burn tokens to post content.
    * @dev Burns tokens and creates a new publication record.
    * Enforces character limits for description and content.
-   * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
+   * @param amount Tokens to be burned (minimum 10 tokens in wei, i.e., 10e18).
    * @param description The description of the post (max 600 characters).
    * @param content The content of the post (max 600 characters).
    */
@@ -173,7 +173,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * @param numTokens The amount of tokens to transfer.
    */
   function decreaseLocked(address tokenOwner, uint256 numTokens) public mustBeContractPool {
-    require(numTokens <= balanceOf(tokenOwner), "You don't have RC Tokens");
+    require(numTokens <= balanceOf(tokenOwner), "Pool out of balance");
 
     // Update total locked tokens.
     unchecked {

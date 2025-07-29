@@ -20,7 +20,7 @@ import { Callable } from "./shared/Callable.sol";
  * total area), regeneration score tracking, inspection processes, and penalty management.
  */
 contract RegeneratorRules is Callable, ReentrancyGuard {
-  // --- Contants ---
+  // --- Constants ---
 
   /// @notice The minimum number of successful inspections a regenerator must have
   /// to be eligible for rewards from the Regenerator Pool.
@@ -218,7 +218,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     // Check if the regenerator has completed the minimum required inspections.
     require(_minimumInspections(regenerator.totalInspections), "Minimum inspections");
 
-    // Current regenerator era before withdraw
+    // Current regenerator era before withdraw.
     uint256 currentEra = regenerator.pool.currentEra;
 
     // Increment the regenerator's era in their local pool data.
@@ -251,11 +251,8 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /**
    * @dev Allows an authorized caller to remove levels from a regenerator's pool.
    * This function updates the regenerator's local regeneration score and notifies the `RegeneratorPool` contract.
-   * @notice Can only be called by the ValidatorRules address. If `levelsToRemove` is 0,
+   * @notice Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
    * this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
-   *
-   * Requirements:
-   * - Only addresses whitelisted via `Callable` can call this function.
    * @param addr The wallet address of the regenerator from whom levels are to be removed.
    * @param levelsToRemove The number of levels/score points to decrease. If `0`, the regenerator's
    * regeneration score is reset to `0`, and their area is decremented from the total `regenerationArea`.
@@ -277,7 +274,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /**
    * @dev Allows an authorized caller to decrement a regenerator's total completed inspections count.
    * This function is called when an inspection previously counted as valid is invalidated.
-   * @notice Can only be called by the ValidatorRules address.
+   * @notice Can only be called by the ValidationRules address.
    *
    * Requirements:
    * - The regenerator's `totalInspections` count must be greater than 0.
@@ -350,7 +347,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to update a regenerator's pending inspection status.
+   * @dev Private function to update a regenerator's pending inspection status.
    * @notice Sets whether a regenerator has a pending inspection request (`true`) or not (`false`).
    * @param addr The regenerator's wallet address.
    * @param state The new pending inspection status (`true` for pending, `false` for not pending).
@@ -389,7 +386,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to increment a regenerator's total completed inspections count.
+   * @dev Private function to increment a regenerator's total completed inspections count.
    * This also updates the `impactRegenerators` flag and `totalImpactRegenerators` count.
    * @param addr The regenerator's wallet address.
    * @return uint256 The updated total number of inspections for the regenerator.
@@ -409,7 +406,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to set a regenerator's `_lastRequestAt` block.
+   * @dev Private function to set a regenerator's `_lastRequestAt` block.
    * @param addr The regenerator's wallet address.
    * @param blockNumber The block number at which the last request was made.
    */

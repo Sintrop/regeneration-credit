@@ -229,7 +229,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   /**
    * @dev Allows the validator rules to remove levels from an inspector's pool.
    * This function updates the inspector's local level and notifies the `InspectorPool` contract.
-   * @notice Should only be called by the ValidatorRules address.
+   * @notice Should only be called by the ValidationRules address.
    * @param addr The wallet address of the inspector from whom levels are to be removed.
    * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
    * this function sets the inspector's pool level to 0. Otherwise, it subtracts the specified amount.   */
@@ -250,7 +250,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   /**
    * @dev Decrements an inspector's total completed inspections count.
    * This function is called when an inspection previously counted as valid is invalidated.
-   * @notice Should only be called by the ValidatorRules address.
+   * @notice Should only be called by the ValidationRules address.
    * @param addr The inspector's wallet address.
    *
    * Requirements:
@@ -267,7 +267,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   // --- Private functions (State modifying) ---
 
   /**
-   * @dev Internal function to increase an inspector's total completed inspections count
+   * @dev Private function to increase an inspector's total completed inspections count
    * and update their `lastRealizedAt` block. Also triggers a level increase.
    * @param addr The inspector's wallet address.
    * @return uint256 The updated total number of inspections for the inspector.
@@ -287,7 +287,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to add a level to an inspector's pool.
+   * @dev Private function to add a level to an inspector's pool.
    * This function increments the inspector's local pool level and notifies the `InspectorPool` contract,
    * but only if the inspector has reached the `MINIMUM_INSPECTIONS_TO_POOL` threshold.
    * @param inspector The inspector's wallet address.
@@ -301,7 +301,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to increase an inspector's "give-up" count.
+   * @dev Private function to increase an inspector's "give-up" count.
    * A give-up is recorded when an inspector accepts an inspection but fails to realize it in time.
    * @param addr The inspector's wallet address.
    */
@@ -310,7 +310,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to decrease an inspector's "give-up" count.
+   * @dev Private function to decrease an inspector's "give-up" count.
    * This is called when an inspector successfully realizes an inspection they had previously accepted.
    * @param addr The inspector's wallet address.
    */
@@ -319,7 +319,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to handle actions after an inspector successfully accepts an inspection.
+   * @dev Private function to handle actions after an inspector successfully accepts an inspection.
    * This updates the `lastAcceptedAt` block and the `lastInspection` ID.
    * @notice This function is called by an authorized external contract after an inspection is accepted.
    * @param addr The inspector's wallet address.

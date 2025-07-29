@@ -233,7 +233,7 @@ contract CommunityRules is Callable {
 
   /**
    * @notice Sets a user's type to `DENIED`.
-   * @dev This function is intended to be called by an allowed caller (e.g., `ValidationRules`).
+   * @dev This function is intended to be called by an allowed caller (`ValidationRules`).
    * It decrements the count of the user's previous type and sets their `UserType` to `DENIED`.
    * Prevents re-denying an already denied user.
    * @param userAddress The address of the user to be denied.
@@ -250,7 +250,7 @@ contract CommunityRules is Callable {
 
   /**
    * @notice This functions adds a penalty to users when a invited user gets denied.
-   * @dev This function is intended to be called by an allowed caller (e.g., `ValidationRules`).
+   * @dev This function is intended to be called by an allowed caller (`ValidationRules`).
    * It decrements the count of penalties for the inviter.
    * @param inviter The address of the inviter receiving the penalty.
    */

@@ -17,6 +17,13 @@ interface IResearcherRules {
   function getResearcher(address account) external view returns (Researcher memory);
 
   /**
+   * @notice Retrieves the full calculatorItem struct for a given id.
+   * @param id The id of the calculatorItem.
+   * @return The Calculator item struct containing the item's data.
+   */
+  function getCalculatorItem(uint64 id) external view returns (CalculatorItem memory);
+
+  /**
    * @notice Returns the total number of researches made.
    * @dev This is likely a getter for a public state variable.
    * @return The total count of all researches.

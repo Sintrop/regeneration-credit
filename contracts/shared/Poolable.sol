@@ -34,7 +34,6 @@ contract Poolable {
    * @dev Initializes the contract with the total amount of tokens for the pool.
    * @param _totalTokens The total supply of tokens to be managed by this contract.
    */
-
   constructor(uint256 _totalTokens) {
     totalTokens = _totalTokens;
   }
@@ -52,8 +51,8 @@ contract Poolable {
   }
 
   /**
-   * @dev Returns the amount of tokens to be distributed to users in current era
-   * @notice Tokens of actual ERA
+   * @dev Returns the amount of tokens to be distributed to users in current era.
+   * @notice Tokens of actual ERA.
    * @param currentEpoch The current epoch number, used to determine halving mechanism.
    * @param halvingFactor The number of eras for halving.
    */
@@ -76,9 +75,9 @@ contract Poolable {
   /**
    * @notice Calculates the amount of tokens a user is eligible to withdraw in a specific era.
    * @dev The calculation is based on the user's levels relative to the total levels in that era.
-   * @param era Era number
-   * @param to UserAddress
-   * @param _tokensPerEra The total tokens available for distribution in this specific era
+   * @param era Era number.
+   * @param to UserAddress.
+   * @param _tokensPerEra The total tokens available for distribution in this specific era.
    * @return The amount of tokens the user can claim. Returns 0 if the user has no levels.
    */
   function _calculateUserEraTokens(uint256 era, address to, uint256 _tokensPerEra) internal view returns (uint256) {
@@ -92,10 +91,10 @@ contract Poolable {
   }
 
   /**
-   * @notice Internal function to check if a user have tokens to withdraw at an era
-   * @param delegate User address
-   * @param era User current era
-   * @param _tokensPerEra Pool tokensPerEra
+   * @notice Private function to check if a user have tokens to withdraw at an era.
+   * @param delegate User address.
+   * @param era User current era.
+   * @param _tokensPerEra Pool tokensPerEra.
    * @return bool True if have tokens to withdraw, false if will just update era.
    */
   function _haveTokensToWithdraw(address delegate, uint256 era, uint256 _tokensPerEra) internal view returns (bool) {

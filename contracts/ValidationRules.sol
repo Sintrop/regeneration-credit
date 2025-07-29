@@ -391,8 +391,8 @@ contract ValidationRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Calls the fuction that removes the resource level from pool
-   * @param research Invalidated research
+   * @dev Calls the fuction that removes the resource level from pool.
+   * @param research Invalidated research.
    */
   function _removeResearch(Research memory research) private {
     _removeUserLevels(research.createdBy, RESOURCE_INVALIDATION_LEVEL_PENALTY);
@@ -417,9 +417,9 @@ contract ValidationRules is Callable, ReentrancyGuard {
   function _denyUser(address userAddress) private {
     _removeUserLevels(userAddress, 0); // Remove all levels (0 means all for denied users)
 
-    // Inviter slashing mechanism
+    // Inviter slashing mechanism.
     CommunityTypes.Invitation memory invitation = communityRules.getInvitation(userAddress);
-    // If invited, add invitation penalty
+    // If invited, add invitation penalty.
     if (invitation.inviter != address(0)) {
       communityRules.addInviterPenalty(invitation.inviter);
     }
@@ -436,7 +436,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     CommunityTypes.UserType userType = communityRules.getUser(userAddress);
 
     if (userType == CommunityTypes.UserType.DENIED) return; // Already denied, nothing to do
-    // Check for each user type and call their respective removePoolLevels function
+    // Check for each user type and call their respective removePoolLevels function.
     if (userType == CommunityTypes.UserType.INSPECTOR) return inspectorRules.removePoolLevels(userAddress, levels);
     if (userType == CommunityTypes.UserType.REGENERATOR) return regeneratorRules.removePoolLevels(userAddress, levels);
     if (userType == CommunityTypes.UserType.DEVELOPER) return developerRules.removePoolLevels(userAddress, levels);

@@ -52,6 +52,11 @@ contract Callable is Ownable {
     _;
   }
 
+  /**
+   * @dev Modifier to ensure that the function caller (`msg.sender`) is in the `addr`.
+   * It is used to only allow calls from a specific contract address.
+   * @notice Reverts if `msg.sender` is not addr.
+   */
   modifier mustBeContractCall(address addr) {
     require(msg.sender == addr, "Caller must be system contract");
     _;

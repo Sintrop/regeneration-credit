@@ -377,7 +377,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to execute the invalidation process for a contribution.
+   * @dev Private function to execute the invalidation process for a contribution.
    * Updates the contribution's status, decrements valid contributions count,
    * and records the invalidation time.
    * @param contribution A `Contribution` storage reference to the contribution being invalidated.

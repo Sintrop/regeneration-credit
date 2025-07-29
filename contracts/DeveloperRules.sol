@@ -299,7 +299,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   /**
    * @dev Allows an authorized caller to remove levels from a developer's pool.
    * This function updates the developer's local level and notifies the `DeveloperPool` contract.
-   * @notice Can only be called by whitelisted addresses, the ValidatorRules contract.
+   * @notice Can only be called by whitelisted addresses, the ValidationRules contract.
    * @param addr The wallet address of the developer from whom levels are to be removed.
    * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
    * this function sets the developer's pool level to 0. Otherwise, it subtracts the specified amount.

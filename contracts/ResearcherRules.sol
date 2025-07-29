@@ -16,7 +16,7 @@ import { Callable } from "./shared/Callable.sol";
  * @author Sintrop
  * @notice This contract defines and manages the rules and data specific to "Researcher" users within the system.
  * Researchers are primarily responsible for the development of the project impact calculator, for the creation and improvement
- * of evaluation methods and through submitting researchs, which are subject to validation and penalty mechanisms.
+ * of evaluation methods and through submitting researches, which are subject to validation and penalty mechanisms.
  * @dev Inherits functionalities from `Ownable` (for contract deploy setup), `Callable` (for whitelisted
  * function access), and `Invitable` (for managing invitation logic). It interacts with `CommunityRules`
  * for general user management, `ResearcherPool` for reward distribution, `VoteRules` for voting
@@ -343,8 +343,12 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   // --- MustBeAllowedCaller functions ---
 
   /**
-   * @dev Remove pool levels from researcher.
-   * @param addr Researcher wallet.
+   * @dev Allows an authorized caller to remove levels from a researcher's pool.
+   * This function updates the researcher's local score and notifies the `ResearcherPool` contract.
+   * @notice Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
+   * this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
+   * @param addr The wallet address of the researcher from whom levels are to be removed.
+   * @param levelsToRemove The number of levels/score points to decrease. If `0`, the researcher's level is reset to `0`.
    */
   function removePoolLevels(
     address addr,
@@ -358,9 +362,11 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   }
 
   /**
-   * @dev Add researcher penalty when invalidating a research.
-   * @param addr Researcher wallet.
-   * @param researchId Research id.
+   * @dev Adds a penalty to a researcher's record when one of their researches is invalidated.
+   * @notice This function must be called by the ValidationRules contract.
+   * @param addr The wallet address of the researcher receiving the penalty.
+   * @param researchId The ID of the research associated with this penalty.
+   * @return uint256 The total number of penalties the researcher has accumulated.
    */
   function addPenalty(
     address addr,
