@@ -82,13 +82,13 @@ Also sets the token's name, symbol, and decimals via the `ERC20` base constructo
 | ---- | ---- | ----------- |
 | totalSupply | uint256 | The total amount of tokens to be minted. |
 
-### setContractDependencies
+### setContractInterfaces
 
 ```solidity
-function setContractDependencies(address supporterRulesAddress) public
+function setContractInterfaces(address supporterRulesAddress) external
 ```
 
-_onlyOwner function to set contracts dependency.
+_onlyOwner function to set contract interface dependency.
 This function must be called only once after the contract deploy and ownership must be renounced._
 
 #### Parameters
@@ -100,7 +100,7 @@ This function must be called only once after the contract deploy and ownership m
 ### addContractPool
 
 ```solidity
-function addContractPool(address _fundAddress, uint256 _numTokens) public returns (bool)
+function addContractPool(address _fundAddress, uint256 _numTokens) external returns (bool)
 ```
 
 This function is used to fund and activate distribution pools within the ecosystem.
@@ -108,11 +108,10 @@ This function is used to fund and activate distribution pools within the ecosyst
 Requirements:
 - Only the contract owner can call this function.
 - `fundAddress` must not be the zero address.
-- The contract must have sufficient balance to transfer `numTokens`.
-- `fundAddress` must not already be a contract pool (optional, but good practice to prevent re-funding issues).
+- The caller must have sufficient balance to transfer `numTokens`.
 
 _Allows the contract owner to designate a new address as a "contract pool"
-and transfer an initial allocation of tokens to it._
+and transfer an initial allocation of tokens to it. Tokens are set as locked when transfered to the pool._
 
 #### Parameters
 
@@ -124,7 +123,7 @@ and transfer an initial allocation of tokens to it._
 ### burnTokens
 
 ```solidity
-function burnTokens(uint256 amount) public
+function burnTokens(uint256 amount) external
 ```
 
 Compensate your environmental degradation by burning Regeneration Credit tokens.
@@ -145,7 +144,7 @@ _Allows any user to burn their own tokens._
 ### offset
 
 ```solidity
-function offset(uint256 amount, uint64 calculatorItemId) public
+function offset(uint256 amount, uint64 calculatorItemId) external
 ```
 
 Allows a supporter to burn tokens to compensate for a specific item's degradation.
@@ -163,7 +162,7 @@ that records the burned amount as a certificate for that item._
 ### publish
 
 ```solidity
-function publish(uint256 amount, string description, string content) public
+function publish(uint256 amount, string description, string content) external
 ```
 
 Allows a supporter to burn tokens to post content.
@@ -175,26 +174,25 @@ Enforces character limits for description and content._
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| amount | uint256 | Tokens to be burned (minimum 1 token in wei, i.e., 1e18). |
+| amount | uint256 | Tokens to be burned (minimum 10 tokens in wei, i.e., 10e18). |
 | description | string | The description of the post (max 600 characters). |
 | content | string | The content of the post (max 600 characters). |
 
-### poolTransfer
+### decreaseLocked
 
 ```solidity
-function poolTransfer(address tokenOwner, address receiver, uint256 numTokens) public
+function decreaseLocked(address tokenOwner, uint256 numTokens) external
 ```
 
 Called only by a system pool contract, this function remove the transfered tokens from totalLocked.
 
-_Allows a designated "contract pool" to register a new poolTransfer._
+_Allows a designated "contract pool" to register a new decreaseLocked._
 
 #### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | tokenOwner | address | The address of the contract pool initiating the transfer. |
-| receiver | address | The address of the user who will receive the tokens. |
 | numTokens | uint256 | The amount of tokens to transfer. |
 
 ### totalCertified

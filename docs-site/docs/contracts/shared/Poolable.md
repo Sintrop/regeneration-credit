@@ -86,9 +86,9 @@ _Provides access to `claimsCount`, `tokens` claimed, and `levels` for the reques
 function tokensPerEra(uint256 currentEpoch, uint256 halvingFactor) public view returns (uint256)
 ```
 
-Tokens of actual ERA
+Tokens of actual ERA.
 
-_Returns the amount of tokens to be distributed to users in current era_
+_Returns the amount of tokens to be distributed to users in current era._
 
 #### Parameters
 
@@ -133,9 +133,9 @@ _The calculation is based on the user's levels relative to the total levels in t
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| era | uint256 | Era number |
-| to | address | UserAddress |
-| _tokensPerEra | uint256 | The total tokens available for distribution in this specific era |
+| era | uint256 | Era number. |
+| to | address | UserAddress. |
+| _tokensPerEra | uint256 | The total tokens available for distribution in this specific era. |
 
 #### Return Values
 
@@ -149,15 +149,15 @@ _The calculation is based on the user's levels relative to the total levels in t
 function _haveTokensToWithdraw(address delegate, uint256 era, uint256 _tokensPerEra) internal view returns (bool)
 ```
 
-Internal function to check if a user have tokens to withdraw at an era
+Private function to check if a user have tokens to withdraw at an era.
 
 #### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| delegate | address | User address |
-| era | uint256 | User current era |
-| _tokensPerEra | uint256 | Pool tokensPerEra |
+| delegate | address | User address. |
+| era | uint256 | User current era. |
+| _tokensPerEra | uint256 | Pool tokensPerEra. |
 
 #### Return Values
 

@@ -49,10 +49,11 @@ _Sets the immutable `timeBetweenVotes` which dictates how many blocks a validato
 ### setContractInterfaces
 
 ```solidity
-function setContractInterfaces(struct ContractsDependency contractDependency) public
+function setContractInterfaces(struct ContractsDependency contractDependency) external
 ```
 
-_onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced._
+_onlyOwner function to set contract interfaces.
+This function must be called only once after the contract deploy and ownership must be renounced._
 
 #### Parameters
 
@@ -60,10 +61,28 @@ _onlyOwner function to set contracts dependency. This function must be called on
 | ---- | ---- | ----------- |
 | contractDependency | struct ContractsDependency | Addresses of system contracts used. |
 
+### setContractCall
+
+```solidity
+function setContractCall(address _inspectionRulesAddress, address _contributorRulesAddress, address _developerRulesAddress, address _researcherRulesAddress) external
+```
+
+_onlyOwner function to set contract call addresses.
+This function must be called only once after the contract deploy and ownership must be renounced._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _inspectionRulesAddress | address | Address of InspectionRules. |
+| _contributorRulesAddress | address | Address of ContributorRules. |
+| _developerRulesAddress | address | Address of DeveloperRules. |
+| _researcherRulesAddress | address | Address of ResearcherRules. |
+
 ### addUserValidation
 
 ```solidity
-function addUserValidation(address userAddress, string justification) public
+function addUserValidation(address userAddress, string justification) external
 ```
 
 Allows users to attempt to vote to invalidate an user.
@@ -75,7 +94,8 @@ Requirements:
 - Caller level must be above average (verified by VoteRules.canVote implicitly).
 - Caller must have waited `timeBetweenVotes` since their last vote.
 - Caller must vote only once per user per era.
-- The target user must be registered and not already denied._
+- The target user must be registered and not already denied.
+- If the target user is a Regenerator, they must have fewer than 4 completed inspections to be eligible for invalidation._
 
 #### Parameters
 
@@ -87,7 +107,7 @@ Requirements:
 ### addInspectionValidation
 
 ```solidity
-function addInspectionValidation(struct Inspection inspection, string justification, address validatorAddress) public
+function addInspectionValidation(struct Inspection inspection, string justification, address validatorAddress) external
 ```
 
 Allows allowed callers (e.g., InspectorRules) to record a validation vote against an inspection.
@@ -110,7 +130,7 @@ Requirements:
 ### addReportValidation
 
 ```solidity
-function addReportValidation(struct Report report, string justification, address validatorAddress) public
+function addReportValidation(struct Report report, string justification, address validatorAddress) external
 ```
 
 Allows allowed callers (e.g., DeveloperRules) to record a validation vote against a report.
@@ -133,7 +153,7 @@ Requirements:
 ### addContributionValidation
 
 ```solidity
-function addContributionValidation(struct Contribution contribution, string justification, address validatorAddress) public
+function addContributionValidation(struct Contribution contribution, string justification, address validatorAddress) external
 ```
 
 Allows allowed callers (e.g., ContributorRules) to record a validation vote against a contribution.
@@ -156,7 +176,7 @@ Requirements:
 ### addResearchValidation
 
 ```solidity
-function addResearchValidation(struct Research research, string justification, address validatorAddress) public
+function addResearchValidation(struct Research research, string justification, address validatorAddress) external
 ```
 
 Allows allowed callers (e.g., ResearcherRules) to record a validation vote against a research.

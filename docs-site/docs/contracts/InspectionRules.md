@@ -63,10 +63,10 @@ uint32 acceptInspectionDelayBlocks
 
 Amount of blocks that inspectors must wait after a request is made before they can accept it.
 
-### securityBlocksToValidation_
+### securityBlocksToValidation
 
 ```solidity
-uint32 securityBlocksToValidation_
+uint32 securityBlocksToValidation
 ```
 
 Amount of blocks for validators to analyze inspections before an era ends.
@@ -114,7 +114,7 @@ Sum of all valid inspections' biodiversity impact.
 ### constructor
 
 ```solidity
-constructor(uint32 timeBetweenInspections_, uint32 blocksToExpireAcceptedInspection_, uint8 allowedInitialRequests_, uint32 acceptInspectionDelayBlocks_, uint32 securityBlocksToValidation__) public
+constructor(uint32 timeBetweenInspections_, uint32 blocksToExpireAcceptedInspection_, uint8 allowedInitialRequests_, uint32 acceptInspectionDelayBlocks_, uint32 securityBlocksToValidation_) public
 ```
 
 Initializes the InspectionRules contract with key time and quantity parameters.
@@ -129,15 +129,15 @@ _Sets immutable values that govern inspection delays, expiration, and initial al
 | blocksToExpireAcceptedInspection_ | uint32 | The number of blocks before an accepted inspection expires. |
 | allowedInitialRequests_ | uint8 | The number of initial requests allowed without delay. |
 | acceptInspectionDelayBlocks_ | uint32 | The number of blocks inspectors must wait before accept a new inspection. |
-| securityBlocksToValidation__ | uint32 | The number of security blocks for validators before era end. |
+| securityBlocksToValidation_ | uint32 | The number of security blocks for validators before era end. |
 
 ### setContractInterfaces
 
 ```solidity
-function setContractInterfaces(struct ContractsDependency contractDependency) public
+function setContractInterfaces(struct ContractsDependency contractDependency) external
 ```
 
-Sets the addresses of all essential external contracts this contract depends on.
+Sets the addresses of all essential external contracts interfaces this contract depends on.
 
 _This function can only be called once by the contract owner after deployment.
 It initializes references to various *Rules contracts and the VoteRules contract.
@@ -147,12 +147,12 @@ Ownership should be renounced after this call._
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| contractDependency | struct ContractsDependency | Struct containing addresses of all system contracts. |
+| contractDependency | struct ContractsDependency | Struct containing addresses of necessary system contracts. |
 
 ### requestInspection
 
 ```solidity
-function requestInspection() public
+function requestInspection() external
 ```
 
 Regenerators agree to receive an inspector to assess their registered area.
@@ -171,7 +171,7 @@ _Allows a regenerator to request a new inspection for their registered area._
 ### acceptInspection
 
 ```solidity
-function acceptInspection(uint64 inspectionId) public
+function acceptInspection(uint64 inspectionId) external
 ```
 
 Inspectors must only accept inspections they are capable of performing, being aware
@@ -187,7 +187,7 @@ Requirements:
 - The inspector must not have previously inspected this specific regenerator.
 - The inspection's status must be `OPEN`.
 - The `acceptInspectionDelayBlocks` must have passed since the inspection was created.
-- The system must not be within the `securityBlocksToValidation_` window before an era ends.
+- The system must not be within the `securityBlocksToValidation` window before an era ends.
 - The inspector must adhere to `inspectorRules.canAcceptInspection` (delay from last realized inspection).
 - The `inspection.regenerator` must be a valid `REGENERATOR`.
 
@@ -202,7 +202,7 @@ _Allows an inspector to accept an open inspection request._
 ### realizeInspection
 
 ```solidity
-function realizeInspection(uint64 inspectionId, string proofPhotos, string justificationReport, uint32 treesResult, uint32 biodiversityResult) public
+function realizeInspection(uint64 inspectionId, string proofPhotos, string justificationReport, uint32 treesResult, uint32 biodiversityResult) external
 ```
 
 Inspectors must evaluate the amount of trees and species of the regeneration area.
@@ -225,7 +225,7 @@ _Allow a inspector realize a inspection and mark as INSPECTED._
 ### addInspectionValidation
 
 ```solidity
-function addInspectionValidation(uint64 id, string justification) public
+function addInspectionValidation(uint64 id, string justification) external
 ```
 
 Allows a voter to cast a vote to invalidate an inspection.
@@ -279,7 +279,7 @@ _Allows to get all regenerator inspections with status INSPECTED._
 ### waitToRequest
 
 ```solidity
-function waitToRequest(struct Regenerator regenerator) internal view returns (bool)
+function waitToRequest(struct Regenerator regenerator) public view returns (bool)
 ```
 
 Checks if regenerator waited timeBetweenInspections.
@@ -303,6 +303,34 @@ Function to calculate amount of blocks to expire an inspection.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | [0] | uint256 | uint256 Return amount of blocks to expire an inspection. |
+
+### alreadyHaveInspectionAccepted
+
+```solidity
+function alreadyHaveInspectionAccepted() public view returns (bool)
+```
+
+_Function that checks if an inspector already have an open inspection._
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | bool | bool True if can accept new inspection. False if has already an open inspection. |
+
+### acceptInspectionDelayBlocksPassed
+
+```solidity
+function acceptInspectionDelayBlocksPassed(struct Inspection inspection) public view returns (bool)
+```
+
+_Function that checks if the inspection delay blocks has passed._
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | bool | bool True if can accept, false if not. |
 
 ### InspectionRequested
 

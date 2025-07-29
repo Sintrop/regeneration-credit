@@ -7,7 +7,7 @@ Interface for the CommunityRules contract, which manages the rules for users.
 ### userTypesCount
 
 ```solidity
-function userTypesCount(enum UserType userType) external view returns (uint256)
+function userTypesCount(enum CommunityTypes.UserType userType) external view returns (uint256)
 ```
 
 Returns the count of a specific user type.
@@ -18,7 +18,7 @@ _Getter for the public state variable `mapping(UserType => uint256) public userT
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| userType | enum UserType | The user type to query. |
+| userType | enum CommunityTypes.UserType | The user type to query. |
 
 #### Return Values
 
@@ -29,7 +29,7 @@ _Getter for the public state variable `mapping(UserType => uint256) public userT
 ### userTypesTotalCount
 
 ```solidity
-function userTypesTotalCount(enum UserType userType) external view returns (uint64)
+function userTypesTotalCount(enum CommunityTypes.UserType userType) external view returns (uint64)
 ```
 
 Returns the total count of a user type (used for generating IDs).
@@ -40,7 +40,7 @@ _Getter for the public state variable `mapping(UserType => uint64) public userTy
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| userType | enum UserType | The user type to query. |
+| userType | enum CommunityTypes.UserType | The user type to query. |
 
 #### Return Values
 
@@ -51,7 +51,7 @@ _Getter for the public state variable `mapping(UserType => uint64) public userTy
 ### addUser
 
 ```solidity
-function addUser(address user, enum UserType userType) external
+function addUser(address user, enum CommunityTypes.UserType userType) external
 ```
 
 Adds a new user to the system with a specific type.
@@ -61,12 +61,12 @@ Adds a new user to the system with a specific type.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | user | address | The address of the new user. |
-| userType | enum UserType | The type to be assigned to the new user. |
+| userType | enum CommunityTypes.UserType | The type to be assigned to the new user. |
 
 ### userTypeIs
 
 ```solidity
-function userTypeIs(enum UserType userType, address user) external view returns (bool)
+function userTypeIs(enum CommunityTypes.UserType userType, address user) external view returns (bool)
 ```
 
 Checks if a user is of a specific type.
@@ -75,7 +75,7 @@ Checks if a user is of a specific type.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| userType | enum UserType | The user type to check against. |
+| userType | enum CommunityTypes.UserType | The user type to check against. |
 | user | address | The address of the user to check. |
 
 #### Return Values
@@ -87,7 +87,7 @@ Checks if a user is of a specific type.
 ### getInvitation
 
 ```solidity
-function getInvitation(address userAddress) external view returns (struct Invitation)
+function getInvitation(address userAddress) external view returns (struct CommunityTypes.Invitation)
 ```
 
 Gets the invitation data for a specific address.
@@ -102,12 +102,12 @@ Gets the invitation data for a specific address.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | struct Invitation | The Invitation struct containing the invitation data. |
+| [0] | struct CommunityTypes.Invitation | The Invitation struct containing the invitation data. |
 
 ### getUser
 
 ```solidity
-function getUser(address account) external view returns (enum UserType)
+function getUser(address account) external view returns (enum CommunityTypes.UserType)
 ```
 
 Retrieves the UserType for a given account.
@@ -122,12 +122,12 @@ Retrieves the UserType for a given account.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | enum UserType | The user's UserType enum. |
+| [0] | enum CommunityTypes.UserType | The user's UserType enum. |
 
 ### addInvitation
 
 ```solidity
-function addInvitation(address inviter, address invitee, enum UserType userType) external
+function addInvitation(address inviter, address invitee, enum CommunityTypes.UserType userType) external
 ```
 
 Adds a new invitation to the system.
@@ -138,12 +138,12 @@ Adds a new invitation to the system.
 | ---- | ---- | ----------- |
 | inviter | address | The user who is sending the invitation. |
 | invitee | address | The user who is being invited. |
-| userType | enum UserType | The UserType being assigned in the invitation. |
+| userType | enum CommunityTypes.UserType | The UserType being assigned in the invitation. |
 
 ### getUserTypeSettings
 
 ```solidity
-function getUserTypeSettings(enum UserType userType) external view returns (struct UserTypeSetting)
+function getUserTypeSettings(enum CommunityTypes.UserType userType) external view returns (struct CommunityTypes.UserTypeSetting)
 ```
 
 Retrieves the settings configuration for a specific UserType.
@@ -154,13 +154,13 @@ _Returns a struct from which specific settings can be accessed._
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| userType | enum UserType | The UserType for which to get the settings. |
+| userType | enum CommunityTypes.UserType | The UserType for which to get the settings. |
 
 #### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | struct UserTypeSetting | The UserTypeSettings struct containing configuration data. |
+| [0] | struct CommunityTypes.UserTypeSetting | The UserTypeSettings struct containing configuration data. |
 
 ### setDeniedType
 

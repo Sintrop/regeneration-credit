@@ -117,10 +117,11 @@ after deployment, following an `onlyOwner` pattern for secure initialization._
 ### setContractInterfaces
 
 ```solidity
-function setContractInterfaces(struct ContractsDependency contractDependency) public
+function setContractInterfaces(struct ContractsDependency contractDependency) external
 ```
 
-_onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced._
+_onlyOwner function to set contract interfaces.
+This function must be called only once after the contract deploy and ownership must be renounced._
 
 #### Parameters
 
@@ -128,10 +129,25 @@ _onlyOwner function to set contracts dependency. This function must be called on
 | ---- | ---- | ----------- |
 | contractDependency | struct ContractsDependency | Addresses of system contracts used. |
 
+### setContractCall
+
+```solidity
+function setContractCall(address _validationRulesAddress) external
+```
+
+_onlyOwner function to set contract call addresses.
+This function must be called only once after the contract deploy and ownership must be renounced._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _validationRulesAddress | address | Address of ValidationRules. |
+
 ### addDeveloper
 
 ```solidity
-function addDeveloper(string name, string proofPhoto) public
+function addDeveloper(string name, string proofPhoto) external
 ```
 
 Users must meet specific criteria (previous invitation, system vacancies)
@@ -156,7 +172,7 @@ Creates a new `Developer` profile for the caller if all requirements are met._
 ### addReport
 
 ```solidity
-function addReport(string description, string report) public
+function addReport(string description, string report) external
 ```
 
 Development reports can only be published if certain time conditions and user type requirements are met.
@@ -181,7 +197,7 @@ _Allows a developer to attempt to publish a new development report._
 ### addReportValidation
 
 ```solidity
-function addReportValidation(uint64 id, string justification) public
+function addReportValidation(uint64 id, string justification) external
 ```
 
 Only authorized validators can initiate this process after meeting specific time requirements.
@@ -205,7 +221,7 @@ This process increments the validation count for the report and may trigger its 
 ### withdraw
 
 ```solidity
-function withdraw() public
+function withdraw() external
 ```
 
 Developers can claim tokens for their development service.
@@ -221,7 +237,7 @@ based on their published reports and current era._
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, uint256 levelsToRemove) public
+function removePoolLevels(address addr, uint256 levelsToRemove) external
 ```
 
 Can only be called by whitelisted addresses, the ValidatorRules contract.
@@ -239,7 +255,7 @@ This function updates the developer's local level and notifies the `DeveloperPoo
 ### addPenalty
 
 ```solidity
-function addPenalty(address addr, uint64 reportId) public returns (uint256)
+function addPenalty(address addr, uint64 reportId) external returns (uint256)
 ```
 
 This function should be called by authorized contracts.

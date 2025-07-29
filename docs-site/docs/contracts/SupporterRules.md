@@ -102,10 +102,25 @@ _Initializes the SupporterRules contract with addresses of crucial external cont
 | communityRulesAddress | address | Address of the CommunityRules contract. |
 | researcherRulesAddress | address | Address of the ResearcherRules contract, used for CalculatorItem data. |
 
+### setContractCall
+
+```solidity
+function setContractCall(address _regenerationCreditAddress) external
+```
+
+_onlyOwner function to set contract call addresses.
+This function must be called only once after the contract deploy and ownership must be renounced._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _regenerationCreditAddress | address | Address of RegenerationCredit. |
+
 ### addSupporter
 
 ```solidity
-function addSupporter(string name, string description, string profilePhoto) public
+function addSupporter(string name, string description, string profilePhoto) external
 ```
 
 Allows a new user to register as a Supporter.
@@ -124,7 +139,7 @@ Requires name and profile photo length to be within limits._
 ### updateProfilePhoto
 
 ```solidity
-function updateProfilePhoto(string newPhoto) public
+function updateProfilePhoto(string newPhoto) external
 ```
 
 Allows a supporter to update their profile photo.
@@ -151,7 +166,7 @@ records the burned amount as a certificate for that item._
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| supporterAddress | address | address of supporter |
+| supporterAddress | address | address of supporter. |
 | amountToBurn | uint256 | Tokens to be burned (minimum 1 token in wei, i.e., 1e18). |
 | calculatorItemId | uint64 | The ID of the CalculatorItem, or 0 if not applicable. |
 
@@ -167,15 +182,15 @@ _Called by the RC offset function to create a new publication record._
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| supporterAddress | address | address of supporter |
-| amountToBurn | uint256 | Tokens to be burned (minimum 1 token in wei, i.e., 1e18). |
+| supporterAddress | address | address of supporter. |
+| amountToBurn | uint256 | Tokens to be burned (minimum 10 tokens in wei, i.e., 10e18). |
 | description | string | The description of the post. |
 | content | string | The content of the post. |
 
 ### declareReductionCommitment
 
 ```solidity
-function declareReductionCommitment(uint64 calculatorItemId) public
+function declareReductionCommitment(uint64 calculatorItemId) external
 ```
 
 Allows a supporter to declare a reduction commitment for a specific calculator item.

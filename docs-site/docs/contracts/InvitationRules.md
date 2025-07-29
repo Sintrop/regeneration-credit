@@ -33,7 +33,7 @@ Relationship between activist address and last activist invitation blockNumber (
 ### canBeInviteds
 
 ```solidity
-mapping(enum UserType => enum UserType) canBeInviteds
+mapping(enum CommunityTypes.UserType => enum CommunityTypes.UserType) canBeInviteds
 ```
 
 Maps which UserType (inviter) can invite which other UserTypes (invited).
@@ -63,7 +63,7 @@ _Ensures that all contract addresses are valid (not null)._
 ### invite
 
 ```solidity
-function invite(address invited, enum UserType userType) public
+function invite(address invited, enum CommunityTypes.UserType userType) external
 ```
 
 Only most active users can invite new users to the system, respecting delay and type rules.
@@ -75,12 +75,12 @@ _Allows a user to attempt to invite another wallet to the community._
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | invited | address | The address of the wallet to be invited. |
-| userType | enum UserType | The user type to which the invited user will be assigned. |
+| userType | enum CommunityTypes.UserType | The user type to which the invited user will be assigned. |
 
 ### inviteRegeneratorInspector
 
 ```solidity
-function inviteRegeneratorInspector(address invited, enum UserType userType) public
+function inviteRegeneratorInspector(address invited, enum CommunityTypes.UserType userType) external
 ```
 
 Activists can invite Regenerators or Inspectors to the system, respecting the specific activist delay.
@@ -92,12 +92,12 @@ _Allows an activist to invite Regenerators or Inspectors to the community._
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | invited | address | The address of the wallet to be invited. |
-| userType | enum UserType | The user type to which the invited user will be assigned (must be REGENERATOR or INSPECTOR). |
+| userType | enum CommunityTypes.UserType | The user type to which the invited user will be assigned (must be REGENERATOR or INSPECTOR). |
 
 ### onlyOwnerInvite
 
 ```solidity
-function onlyOwnerInvite(address invited, enum UserType userType) public
+function onlyOwnerInvite(address invited, enum CommunityTypes.UserType userType) public
 ```
 
 The owner can invite any user type without delay or type restrictions.
@@ -110,12 +110,12 @@ _Allows the contract owner to invite a wallet to the community._
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | invited | address | The address of the wallet to be invited. |
-| userType | enum UserType | The user type to which the invited user will be assigned. |
+| userType | enum CommunityTypes.UserType | The user type to which the invited user will be assigned. |
 
 ### UserInvited
 
 ```solidity
-event UserInvited(address inviter, address invited, enum UserType invitedType, uint256 blockNumber)
+event UserInvited(address inviter, address invited, enum CommunityTypes.UserType invitedType, uint256 blockNumber)
 ```
 
 Event emitted when a user invites another.
@@ -126,6 +126,6 @@ Event emitted when a user invites another.
 | ---- | ---- | ----------- |
 | inviter | address | The address of the user who made the invitation. |
 | invited | address | The address of the invited user. |
-| invitedType | enum UserType | The user type assigned to the invited user. |
+| invitedType | enum CommunityTypes.UserType | The user type assigned to the invited user. |
 | blockNumber | uint256 | The block number at which the invitation was made. |
 

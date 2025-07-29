@@ -25,6 +25,26 @@ Retrieves the full Researcher struct for a given account.
 | ---- | ---- | ----------- |
 | [0] | struct Researcher | The Researcher struct containing the user's data. |
 
+### getCalculatorItem
+
+```solidity
+function getCalculatorItem(uint64 id) external view returns (struct CalculatorItem)
+```
+
+Retrieves the full calculatorItem struct for a given id.
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| id | uint64 | The id of the calculatorItem. |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | struct CalculatorItem | The Calculator item struct containing the item's data. |
+
 ### researchesTotalCount
 
 ```solidity

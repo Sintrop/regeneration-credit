@@ -28,10 +28,10 @@ function transfer(address to, uint256 amount) external returns (bool)
 function transferFrom(address owner, address to, uint256 numTokens) external returns (bool)
 ```
 
-### poolTransfer
+### decreaseLocked
 
 ```solidity
-function poolTransfer(address tokenOwner, address receiver, uint256 numTokens) external
+function decreaseLocked(address tokenOwner, uint256 numTokens) external
 ```
 
 ### totalSupply
