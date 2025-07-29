@@ -345,25 +345,28 @@ contract CommunityRules is Callable {
   }
 
   /**
-   * @dev True if userAddress is equal userType
-   * @notice Function to check if an userAddress type is equal passed userType
-   * @param userAddress Denied user address
+   * @notice Function to check if an userAddress type is equal passed userType.
+   * @param userAddress Denied user address.
+   * @return true If userAddress is equal userType.
    */
-  function userTypeIs(CommunityTypes.UserType userType, address userAddress) external view returns (bool) {
+  function userTypeIs(CommunityTypes.UserType userType, address userAddress) public view returns (bool) {
     return users[userAddress] == userType;
   }
 
   /**
-   * @dev Returns the user address delated
+   * @notice Get the delations of a user.
+   * @param addr User address.
+   * @return array Of delations.
    */
-  function getUserDelations(address addr) external view returns (CommunityTypes.Delation[] memory) {
+  function getUserDelations(address addr) public view returns (CommunityTypes.Delation[] memory) {
     return delations[addr];
   }
 
   /**
-   * @dev Returns the invitation
-   * @notice Get the invitation of an user
-   * @param addr User address
+   * @dev Returns the invitation.
+   * @notice Get the invitation of a user.
+   * @param addr User address.
+   * @return the Invitation data struct.
    */
   function getInvitation(address addr) external view returns (CommunityTypes.Invitation memory) {
     return invitations[addr];

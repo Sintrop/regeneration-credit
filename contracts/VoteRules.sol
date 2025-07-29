@@ -69,7 +69,7 @@ contract VoteRules {
    * @param addr The address of the user to check.
    * @return bool True if the user can vote, false otherwise.
    */
-  function canVote(address addr) external view returns (bool) {
+  function canVote(address addr) public view returns (bool) {
     require(communityRules.isVoter(addr), "Not a voter user");
 
     CommunityTypes.UserType userType = communityRules.getUser(addr);
