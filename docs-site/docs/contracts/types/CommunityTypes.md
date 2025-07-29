@@ -1,6 +1,8 @@
-# UserType
+# CommunityTypes
 
-## UserType
+## CommunityTypes
+
+### UserType
 
 Summary of User Roles:
 
@@ -42,12 +44,13 @@ enum UserType {
   DENIED
 }
 ```
-## Delation
+
+### Delation
 
 _Struct representing a delation against a user or a resource.
 These delations are intended to be filed due to unwanted behavior or non-compliance._
 
-### Parameters
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -61,12 +64,13 @@ struct Delation {
   string testimony;
 }
 ```
-## Invitation
+
+### Invitation
 
 _Struct representing an invitation for a user to join the system as a specific `UserType`.
 This data forms a chain connecting every invited user to their inviter._
 
-### Parameters
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -75,16 +79,17 @@ This data forms a chain connecting every invited user to their inviter._
 struct Invitation {
   address invited;
   address inviter;
-  enum UserType userType;
+  enum CommunityTypes.UserType userType;
   uint256 createdAtBlock;
 }
 ```
-## UserTypeSetting
+
+### UserTypeSetting
 
 _Struct containing configuration settings and rules for each `UserType`.
 These settings define behavior related to registration proportionality, invitation requirements, and voting status._
 
-### Parameters
+#### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -98,3 +103,4 @@ struct UserTypeSetting {
   bool isVoter;
 }
 ```
+

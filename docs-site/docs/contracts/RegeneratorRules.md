@@ -112,10 +112,26 @@ _Initializes the ContributorRules contract with key parameters._
 | communityRulesAddress | address | The address of the deployed `CommunityRules` contract. |
 | regeneratorPoolAddress | address | The address of the deployed `RegeneratorPool` contract. |
 
+### setContractCall
+
+```solidity
+function setContractCall(address _inspectionRulesAddress, address _validationRulesAddress) external
+```
+
+_onlyOwner function to set contract call addresses.
+This function must be called only once after the contract deploy and ownership must be renounced._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _inspectionRulesAddress | address | Address of InspectionRules. |
+| _validationRulesAddress | address | Address of ValidationRules. |
+
 ### addRegenerator
 
 ```solidity
-function addRegenerator(uint32 totalArea, string name, string proofPhoto, string projectDescription, struct Coordinates[] _coordinates) public
+function addRegenerator(uint32 totalArea, string name, string proofPhoto, string projectDescription, struct Coordinates[] _coordinates) external
 ```
 
 Registers a new regenerator and their area of regeneration within the system.
@@ -145,7 +161,7 @@ Creates a new `Regenerator` profile for the caller if all requirements are met._
 ### withdraw
 
 ```solidity
-function withdraw() public
+function withdraw() external
 ```
 
 Regenerators can claim tokens for their regeneration service, provided they meet
@@ -164,7 +180,7 @@ based on their completed inspections and current era._
 ### updateAreaPhoto
 
 ```solidity
-function updateAreaPhoto(string newPhoto) public
+function updateAreaPhoto(string newPhoto) external
 ```
 
 Allows a regenerator to update their area photo for their regeneration area.
@@ -178,14 +194,11 @@ Allows a regenerator to update their area photo for their regeneration area.
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, uint256 levelsToRemove) public
+function removePoolLevels(address addr, uint256 levelsToRemove) external
 ```
 
-Can only be called by the ValidatorRules address. If `levelsToRemove` is 0,
+Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
 this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
-
-Requirements:
-- Only addresses whitelisted via `Callable` can call this function.
 
 _Allows an authorized caller to remove levels from a regenerator's pool.
 This function updates the regenerator's local regeneration score and notifies the `RegeneratorPool` contract._
@@ -200,17 +213,17 @@ This function updates the regenerator's local regeneration score and notifies th
 ### decrementInspections
 
 ```solidity
-function decrementInspections(address addr) public
+function decrementInspections(address addr) external
 ```
 
-Can only be called by the ValidatorRules address.
+Can only be called by the ValidationRules address.
 
 Requirements:
 - The regenerator's `totalInspections` count must be greater than 0.
 - If `totalInspections` becomes 0 after decrement, the regenerator is removed from `impactRegenerators`.
 
 _Allows an authorized caller to decrement a regenerator's total completed inspections count.
-This function is typically called when an inspection previously counted as valid is invalidated._
+This function is called when an inspection previously counted as valid is invalidated._
 
 #### Parameters
 
@@ -221,7 +234,7 @@ This function is typically called when an inspection previously counted as valid
 ### afterRequestInspection
 
 ```solidity
-function afterRequestInspection(address addr) public
+function afterRequestInspection(address addr) external
 ```
 
 This function is intended to be called by a whitelisted contract, the InspectionRules.
@@ -238,7 +251,7 @@ Sets the `_pendingInspection` status to `true` and records the `_lastRequestAt` 
 ### afterAcceptInspection
 
 ```solidity
-function afterAcceptInspection(address addr) public
+function afterAcceptInspection(address addr) external
 ```
 
 Processes actions after an inspector accepts an inspection request from a regenerator.
@@ -255,7 +268,7 @@ _This function is intended to be called by a whitelisted external contract, the 
 ### afterRealizeInspection
 
 ```solidity
-function afterRealizeInspection(address addr, uint32 score) public returns (uint256)
+function afterRealizeInspection(address addr, uint32 score) external returns (uint256)
 ```
 
 Processes actions after an inspection is successfully realized for a regenerator's area.

@@ -91,7 +91,7 @@ contract SupporterRules is Callable {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _regenerationCreditAddress Address of RegenerationCredit.
    */
-  function setContractCall(address _regenerationCreditAddress) public onlyOwner {
+  function setContractCall(address _regenerationCreditAddress) external onlyOwner {
     regenerationCreditAddress = _regenerationCreditAddress;
   }
 
@@ -105,7 +105,7 @@ contract SupporterRules is Callable {
    * @param description Brief description of the the supporter (max 200 characters).
    * @param profilePhoto The profile photo URL/hash of the supporter (max 150 characters).
    */
-  function addSupporter(string memory name, string memory description, string memory profilePhoto) public {
+  function addSupporter(string memory name, string memory description, string memory profilePhoto) external {
     require(
       bytes(name).length <= MAX_NAME_LENGTH &&
         bytes(description).length <= MAX_TEXT_LENGTH &&
@@ -129,7 +129,7 @@ contract SupporterRules is Callable {
    * Only accessible by registered supporters, and enforces a max character limit.
    * @param newPhoto User's new profile photo URL/hash (max 150 characters).
    */
-  function updateProfilePhoto(string memory newPhoto) public {
+  function updateProfilePhoto(string memory newPhoto) external {
     require(bytes(newPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     require(communityRules.userTypeIs(CommunityTypes.UserType.SUPPORTER, msg.sender), "Only supporters");
 
@@ -190,7 +190,7 @@ contract SupporterRules is Callable {
    * Requires the calculator item to exist and the sender to be a registered supporter.
    * @param calculatorItemId The ID of the CalculatorItem for which the commitment is being declared.
    */
-  function declareReductionCommitment(uint64 calculatorItemId) public {
+  function declareReductionCommitment(uint64 calculatorItemId) external {
     require(communityRules.userTypeIs(CommunityTypes.UserType.SUPPORTER, msg.sender), "Only supporters");
     require(!declaredReduction[msg.sender][calculatorItemId], "Commitment already declared");
 

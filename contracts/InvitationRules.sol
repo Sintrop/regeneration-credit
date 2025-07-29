@@ -97,7 +97,7 @@ contract InvitationRules is Ownable, ReentrancyGuard {
    * @param invited The address of the wallet to be invited.
    * @param userType The user type to which the invited user will be assigned.
    */
-  function invite(address invited, CommunityTypes.UserType userType) public nonReentrant {
+  function invite(address invited, CommunityTypes.UserType userType) external nonReentrant {
     require(communityRules.inviterPenalties(msg.sender) < MAX_INVITER_PENALTIES, "Too many penalties");
 
     CommunityTypes.UserType msgSenderUserType = communityRules.getUser(msg.sender);
@@ -125,7 +125,7 @@ contract InvitationRules is Ownable, ReentrancyGuard {
    * @param invited The address of the wallet to be invited.
    * @param userType The user type to which the invited user will be assigned (must be REGENERATOR or INSPECTOR).
    */
-  function inviteRegeneratorInspector(address invited, CommunityTypes.UserType userType) public nonReentrant {
+  function inviteRegeneratorInspector(address invited, CommunityTypes.UserType userType) external nonReentrant {
     require(communityRules.inviterPenalties(msg.sender) < MAX_ACTIVIST_PENALTIES, "Too many penalties");
     // Checks if the caller is an activist.
     require(communityRules.userTypeIs(CommunityTypes.UserType.ACTIVIST, msg.sender), "Only to activists");

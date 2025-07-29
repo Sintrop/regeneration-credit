@@ -48,7 +48,7 @@ constructor() public
 ### getCategoryRegenerationIndexDescription
 
 ```solidity
-function getCategoryRegenerationIndexDescription(uint8 categoryId) public view returns (struct RegenerationIndexDescription[])
+function getCategoryRegenerationIndexDescription(uint8 categoryId) external view returns (struct RegenerationIndexDescription[])
 ```
 
 Returns all added regeneration index descriptions for a specific category.
@@ -70,7 +70,7 @@ _Validates the provided category ID to ensure it exists._
 ### calculateScore
 
 ```solidity
-function calculateScore(uint32 treesResult, uint32 biodiversityResult) public view returns (uint32)
+function calculateScore(uint32 treesResult, uint32 biodiversityResult) external view returns (uint32)
 ```
 
 Calculates the overall inspection score based on trees and biodiversity results.

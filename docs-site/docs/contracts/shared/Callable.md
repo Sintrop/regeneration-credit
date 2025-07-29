@@ -62,3 +62,14 @@ Reverts if `msg.sender` is not an allowed caller.
 
 _Modifier to ensure that the function caller (`msg.sender`) is in the `allowedCallers` list._
 
+### mustBeContractCall
+
+```solidity
+modifier mustBeContractCall(address addr)
+```
+
+Reverts if `msg.sender` is not addr.
+
+_Modifier to ensure that the function caller (`msg.sender`) is in the `addr`.
+It is used to only allow calls from a specific contract address._
+

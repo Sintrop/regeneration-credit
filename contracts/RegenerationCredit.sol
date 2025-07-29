@@ -76,25 +76,24 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param supporterRulesAddress Addresses of the SupporterRules contract.
    */
-  function setContractInterfaces(address supporterRulesAddress) public onlyOwner {
+  function setContractInterfaces(address supporterRulesAddress) external onlyOwner {
     supporterRules = ISupporterRules(supporterRulesAddress);
   }
 
   /**
    * @dev Allows the contract owner to designate a new address as a "contract pool"
-   * and transfer an initial allocation of tokens to it.
+   * and transfer an initial allocation of tokens to it. Tokens are set as locked when transfered to the pool.
    * @notice This function is used to fund and activate distribution pools within the ecosystem.
    *
    * Requirements:
    * - Only the contract owner can call this function.
    * - `fundAddress` must not be the zero address.
-   * - The contract must have sufficient balance to transfer `numTokens`.
-   * - `fundAddress` must not already be a contract pool (optional, but good practice to prevent re-funding issues).
+   * - The caller must have sufficient balance to transfer `numTokens`.
    *
    * @param _fundAddress The address of the contract to be designated as a pool.
    * @param _numTokens The amount of tokens to transfer to the new pool.
    */
-  function addContractPool(address _fundAddress, uint256 _numTokens) public onlyOwner returns (bool) {
+  function addContractPool(address _fundAddress, uint256 _numTokens) external onlyOwner returns (bool) {
     contractsPools[_fundAddress] = true;
 
     _transfer(msg.sender, _fundAddress, _numTokens);
@@ -118,7 +117,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    *
    * @param amount The amount of tokens to burn from the caller's balance.
    */
-  function burnTokens(uint256 amount) public {
+  function burnTokens(uint256 amount) external {
     require(amount > 0, "Burn amount must be greater than 0");
     _burnTokensInternal(msg.sender, amount);
   }
@@ -130,7 +129,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
    * @param calculatorItemId The ID of the CalculatorItem.
    */
-  function offset(uint256 amount, uint64 calculatorItemId) public nonReentrant {
+  function offset(uint256 amount, uint64 calculatorItemId) external nonReentrant {
     require(supporterRules.isSupporter(msg.sender), "Only supporters");
     require(amount >= MINIMUM_TOKENS_TO_OFFSET, "Amount must be at least 1 RC");
 
@@ -150,7 +149,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * @param description The description of the post (max 600 characters).
    * @param content The content of the post (max 600 characters).
    */
-  function publish(uint256 amount, string memory description, string memory content) public nonReentrant {
+  function publish(uint256 amount, string memory description, string memory content) external nonReentrant {
     require(supporterRules.isSupporter(msg.sender), "Only supporters");
     require(amount >= MINIMUM_TOKENS_TO_PUBLISH, "Amount must be at least 10 RC");
     require(
@@ -172,7 +171,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * @param tokenOwner The address of the contract pool initiating the transfer.
    * @param numTokens The amount of tokens to transfer.
    */
-  function decreaseLocked(address tokenOwner, uint256 numTokens) public mustBeContractPool {
+  function decreaseLocked(address tokenOwner, uint256 numTokens) external mustBeContractPool {
     require(numTokens <= balanceOf(tokenOwner), "Pool out of balance");
 
     // Update total locked tokens.

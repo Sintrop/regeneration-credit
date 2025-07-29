@@ -43,7 +43,7 @@ The global total count of all active (non-`UNDEFINED`, non-`DENIED`) users in th
 ### invitations
 
 ```solidity
-mapping(address => struct Invitation) invitations
+mapping(address => struct CommunityTypes.Invitation) invitations
 ```
 
 A mapping from an invited user's address to their `Invitation` details.
@@ -51,7 +51,7 @@ A mapping from an invited user's address to their `Invitation` details.
 ### userTypesCount
 
 ```solidity
-mapping(enum UserType => uint64) userTypesCount
+mapping(enum CommunityTypes.UserType => uint64) userTypesCount
 ```
 
 A mapping to track the count of active users for each `UserType`.
@@ -59,7 +59,7 @@ A mapping to track the count of active users for each `UserType`.
 ### userTypesTotalCount
 
 ```solidity
-mapping(enum UserType => uint64) userTypesTotalCount
+mapping(enum CommunityTypes.UserType => uint64) userTypesTotalCount
 ```
 
 A mapping to track the total count of registered users for each `UserType`,
@@ -68,7 +68,7 @@ including both active and `DENIED` users. This count serves as a global counter 
 ### userTypeSettings
 
 ```solidity
-mapping(enum UserType => struct UserTypeSetting) userTypeSettings
+mapping(enum CommunityTypes.UserType => struct CommunityTypes.UserTypeSetting) userTypeSettings
 ```
 
 A mapping storing specific settings for each `UserType`,
@@ -102,10 +102,26 @@ _Sets predefined `UserTypeSetting` for Regenerators, Inspectors, Activists, Rese
 | developerProportionality | uint8 | Defines the proportionality ratio for Developer registration. |
 | contributorProportionality | uint8 | Defines the proportionality ratio for Contributor registration. |
 
+### setContractCall
+
+```solidity
+function setContractCall(address _invitationRulesAddress, address _validationRulesAddress) external
+```
+
+_onlyOwner function to set contract call addresses.
+This function must be called only once after the contract deploy and ownership must be renounced._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _invitationRulesAddress | address | Address of InvitationRules. |
+| _validationRulesAddress | address | Address of ValidationRules. |
+
 ### addDelation
 
 ```solidity
-function addDelation(address addr, string title, string testimony) public
+function addDelation(address addr, string title, string testimony) external
 ```
 
 Allows registered users (excluding Supporters) to report other users or resources that may require invalidation.
@@ -132,7 +148,7 @@ _Adds a new delation to the system. Enforces character limits for title and test
 ### addUser
 
 ```solidity
-function addUser(address addr, enum UserType userType) public
+function addUser(address addr, enum CommunityTypes.UserType userType) external
 ```
 
 Adds a new user to the system with a specified user type.
@@ -145,12 +161,12 @@ It enforces rules for single registration per address, valid user types, proport
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The address of the user to be registered. |
-| userType | enum UserType | The desired `UserType` for the user. |
+| userType | enum CommunityTypes.UserType | The desired `UserType` for the user. |
 
 ### addInvitation
 
 ```solidity
-function addInvitation(address inviter, address invited, enum UserType userType) public
+function addInvitation(address inviter, address invited, enum CommunityTypes.UserType userType) external
 ```
 
 Attempts to add an invitation for a user.
@@ -165,17 +181,17 @@ Prevents re-inviting an already invited or registered address._
 | ---- | ---- | ----------- |
 | inviter | address | The address of the user who issued the invitation. |
 | invited | address | The address of the user who received the invitation. |
-| userType | enum UserType | The `UserType` the `invited` user is intended to register as. |
+| userType | enum CommunityTypes.UserType | The `UserType` the `invited` user is intended to register as. |
 
 ### setDeniedType
 
 ```solidity
-function setDeniedType(address userAddress) public
+function setDeniedType(address userAddress) external
 ```
 
 Sets a user's type to `DENIED`.
 
-_This function is intended to be called by an allowed caller (e.g., `ValidationRules`).
+_This function is intended to be called by an allowed caller (`ValidationRules`).
 It decrements the count of the user's previous type and sets their `UserType` to `DENIED`.
 Prevents re-denying an already denied user._
 
@@ -188,12 +204,12 @@ Prevents re-denying an already denied user._
 ### addInviterPenalty
 
 ```solidity
-function addInviterPenalty(address inviter) public
+function addInviterPenalty(address inviter) external
 ```
 
 This functions adds a penalty to users when a invited user gets denied.
 
-_This function is intended to be called by an allowed caller (e.g., `ValidationRules`).
+_This function is intended to be called by an allowed caller (`ValidationRules`).
 It decrements the count of penalties for the inviter._
 
 #### Parameters
@@ -241,7 +257,7 @@ Checks if a given address belongs to a user type that is considered a voter.
 ### getUser
 
 ```solidity
-function getUser(address addr) public view returns (enum UserType)
+function getUser(address addr) public view returns (enum CommunityTypes.UserType)
 ```
 
 Returns the `UserType` of a given address.
@@ -256,12 +272,12 @@ Returns the `UserType` of a given address.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | enum UserType | UserType The `UserType` enum value associated with the address. |
+| [0] | enum CommunityTypes.UserType | UserType The `UserType` enum value associated with the address. |
 
 ### getUserTypeSettings
 
 ```solidity
-function getUserTypeSettings(enum UserType userType) public view returns (struct UserTypeSetting)
+function getUserTypeSettings(enum CommunityTypes.UserType userType) public view returns (struct CommunityTypes.UserTypeSetting)
 ```
 
 Returns the `UserTypeSetting` configuration for a specific `UserType`.
@@ -270,59 +286,81 @@ Returns the `UserTypeSetting` configuration for a specific `UserType`.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| userType | enum UserType | The `UserType` to query settings for. |
+| userType | enum CommunityTypes.UserType | The `UserType` to query settings for. |
 
 #### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | struct UserTypeSetting | UserTypeSetting The `UserTypeSetting` struct containing configuration data. |
+| [0] | struct CommunityTypes.UserTypeSetting | UserTypeSetting The `UserTypeSetting` struct containing configuration data. |
 
 ### userTypeIs
 
 ```solidity
-function userTypeIs(enum UserType userType, address userAddress) public view returns (bool)
+function userTypeIs(enum CommunityTypes.UserType userType, address userAddress) public view returns (bool)
 ```
 
-Function to check if an userAddress type is equal passed userType
-
-_True if userAddress is equal userType_
+Function to check if an userAddress type is equal passed userType.
 
 #### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| userType | enum UserType |  |
-| userAddress | address | Denied user address |
+| userType | enum CommunityTypes.UserType |  |
+| userAddress | address | Denied user address. |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | bool | true If userAddress is equal userType. |
 
 ### getUserDelations
 
 ```solidity
-function getUserDelations(address addr) public view returns (struct Delation[])
+function getUserDelations(address addr) public view returns (struct CommunityTypes.Delation[])
 ```
 
-_Returns the user address delated_
-
-### getInvitation
-
-```solidity
-function getInvitation(address addr) public view returns (struct Invitation)
-```
-
-Get the invitation of an user
-
-_Returns the invitation_
+Get the delations of a user.
 
 #### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| addr | address | User address |
+| addr | address | User address. |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | struct CommunityTypes.Delation[] | array Of delations. |
+
+### getInvitation
+
+```solidity
+function getInvitation(address addr) external view returns (struct CommunityTypes.Invitation)
+```
+
+Get the invitation of a user.
+
+_Returns the invitation._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| addr | address | User address. |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | struct CommunityTypes.Invitation | the Invitation data struct. |
 
 ### UserRegistered
 
 ```solidity
-event UserRegistered(address addr, enum UserType userType)
+event UserRegistered(address addr, enum CommunityTypes.UserType userType)
 ```
 
 Emitted when a new user is successfully added to the system.
@@ -332,7 +370,7 @@ Emitted when a new user is successfully added to the system.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The address of the newly registered user. |
-| userType | enum UserType | The `UserType` assigned to the new user. |
+| userType | enum CommunityTypes.UserType | The `UserType` assigned to the new user. |
 
 ### DeniedUserEvent
 
@@ -366,7 +404,7 @@ Emitted when a delation is successfully added.
 ### InvitationAdded
 
 ```solidity
-event InvitationAdded(address inviter, address invited, enum UserType userTypeTo)
+event InvitationAdded(address inviter, address invited, enum CommunityTypes.UserType userTypeTo)
 ```
 
 Emitted when an invitation is successfully added to the system.
@@ -377,5 +415,5 @@ Emitted when an invitation is successfully added to the system.
 | ---- | ---- | ----------- |
 | inviter | address | The address of the user who issued the invitation. |
 | invited | address | The address of the user who received the invitation. |
-| userTypeTo | enum UserType | The `UserType` the invited user is intended to register as. |
+| userTypeTo | enum CommunityTypes.UserType | The `UserType` the invited user is intended to register as. |
 

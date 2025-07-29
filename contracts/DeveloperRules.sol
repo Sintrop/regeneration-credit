@@ -120,7 +120,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param contractDependency Addresses of system contracts used.
    */
-  function setContractInterfaces(ContractsDependency memory contractDependency) public onlyOwner {
+  function setContractInterfaces(ContractsDependency memory contractDependency) external onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     developerPool = IDeveloperPool(contractDependency.developerPoolAddress);
     validationRules = IValidationRules(contractDependency.validationRulesAddress);
@@ -132,7 +132,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _validationRulesAddress Address of ValidationRules.
    */
-  function setContractCall(address _validationRulesAddress) public onlyOwner {
+  function setContractCall(address _validationRulesAddress) external onlyOwner {
     validationRulesAddress = _validationRulesAddress;
   }
 
@@ -152,7 +152,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * @param name The chosen name for the developer.
    * @param proofPhoto A hash or identifier (e.g., URL) for the developer's identity verification photo.
    */
-  function addDeveloper(string memory name, string memory proofPhoto) public {
+  function addDeveloper(string memory name, string memory proofPhoto) external {
     // Character limit validation for name and proofPhoto.
     require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     // Max limit for developer users in the system.
@@ -188,7 +188,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * @param description A title or brief description of the report.
    * @param report A hash or identifier (e.g., IPFS CID) of the detailed development report file.
    */
-  function addReport(string memory description, string memory report) public nonReentrant {
+  function addReport(string memory description, string memory report) external nonReentrant {
     // Character limit validation for description and report.
     require(
       bytes(description).length <= MAX_TEXT_LENGTH && bytes(report).length <= MAX_HASH_LENGTH,
@@ -234,7 +234,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * @param id The unique ID of the report to be validated/invalidated.
    * @param justification A string explaining why the report is being invalidated.
    */
-  function addReportValidation(uint64 id, string memory justification) public nonReentrant {
+  function addReportValidation(uint64 id, string memory justification) external nonReentrant {
     // Character limit validation for justification.
     require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters");
     // Check if the caller is eligible to vote. User.level must be greater than average levels.
@@ -274,7 +274,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * - The developer must be eligible for withdrawal in their current era (checked via `developerPool.canWithdraw`).
    * - The developer's current era (`developer.pool.currentEra`) will be incremented upon successful withdrawal attempt.
    */
-  function withdraw() public nonReentrant {
+  function withdraw() external nonReentrant {
     // Only registered developers can call this function.
     require(communityRules.userTypeIs(CommunityTypes.UserType.DEVELOPER, msg.sender), "Pool only to developer");
 
@@ -299,7 +299,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   /**
    * @dev Allows an authorized caller to remove levels from a developer's pool.
    * This function updates the developer's local level and notifies the `DeveloperPool` contract.
-   * @notice Can only be called by whitelisted addresses, the ValidationRules contract.
+   * @notice Can only be called by whitelisted addresses, the ValidatorRules contract.
    * @param addr The wallet address of the developer from whom levels are to be removed.
    * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
    * this function sets the developer's pool level to 0. Otherwise, it subtracts the specified amount.
@@ -307,7 +307,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   function removePoolLevels(
     address addr,
     uint256 levelsToRemove
-  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     Developer memory developer = developers[addr];
 
     developers[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : developer.pool.level;
@@ -329,7 +329,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   function addPenalty(
     address addr,
     uint64 reportId
-  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
+  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
     // Add the penalty record to the penalties array.
     penalties[addr].push(Penalty(reportId));
 

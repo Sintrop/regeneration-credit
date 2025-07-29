@@ -55,7 +55,7 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _regeneratorRulesAddress Address of RegeneratorRules.
    */
-  function setContractCall(address _regeneratorRulesAddress) public onlyOwner {
+  function setContractCall(address _regeneratorRulesAddress) external onlyOwner {
     regeneratorRulesAddress = _regeneratorRulesAddress;
   }
 
@@ -72,7 +72,7 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
   function withdraw(
     address delegate,
     uint256 era
-  ) public mustBeAllowedCaller mustBeContractCall(regeneratorRulesAddress) canWithdrawModifier(era) nonReentrant {
+  ) external mustBeAllowedCaller mustBeContractCall(regeneratorRulesAddress) canWithdrawModifier(era) nonReentrant {
     require(era <= currentContractEra(), "Era in the future");
 
     // Calculate the number of tokens the user is eligible to receive for the given era.
@@ -101,7 +101,7 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
   function addLevel(
     address regenerator,
     uint256 levels
-  ) public mustBeAllowedCaller mustBeContractCall(regeneratorRulesAddress) nonReentrant {
+  ) external mustBeAllowedCaller mustBeContractCall(regeneratorRulesAddress) nonReentrant {
     // Calls the _addPoolLevel function from Poolable.sol.
     _addPoolLevel(regenerator, levels, currentContractEra());
   }
@@ -116,7 +116,7 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
   function removePoolLevels(
     address addr,
     uint256 levelsToRemove
-  ) public mustBeAllowedCaller mustBeContractCall(regeneratorRulesAddress) nonReentrant {
+  ) external mustBeAllowedCaller mustBeContractCall(regeneratorRulesAddress) nonReentrant {
     // Calls the _removePoolLevel function from Poolable.sol.
     _removePoolLevel(addr, currentContractEra(), levelsToRemove);
   }

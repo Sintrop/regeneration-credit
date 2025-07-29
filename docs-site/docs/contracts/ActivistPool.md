@@ -26,10 +26,25 @@ Sets up the Regeneration Credit token interface and initializes inherited base c
 | _halving | uint256 | The number of eras that constitute one halving cycle/epoch for reward adjustments. Passed to the `Blockable` base contract. |
 | _blocksPerEra | uint256 | The number of blocks that constitute a single era. Passed to the `Blockable` base contract. |
 
+### setContractCall
+
+```solidity
+function setContractCall(address _activistRulesAddress) external
+```
+
+_onlyOwner function to set contract call addresses.
+This function must be called only once after the contract deploy and ownership must be renounced._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _activistRulesAddress | address | Address of ActivistRules. |
+
 ### withdraw
 
 ```solidity
-function withdraw(address delegate, uint256 era) public
+function withdraw(address delegate, uint256 era) external
 ```
 
 This function can only be called by the ActivistRules contract, whitelisted via the `Callable` contract's mechanisms.
@@ -48,7 +63,7 @@ This function calculates the eligible tokens for the user's era and transfers th
 ### addLevel
 
 ```solidity
-function addLevel(address addr, uint256 levels) public
+function addLevel(address addr, uint256 levels) external
 ```
 
 Can only be called by the ActivistRules address.
@@ -66,7 +81,7 @@ This function updates the activist level within the system's pooling mechanism._
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, uint256 levelsToRemove) public
+function removePoolLevels(address addr, uint256 levelsToRemove) external
 ```
 
 Can only be called by activistRules address.

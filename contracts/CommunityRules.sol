@@ -141,7 +141,7 @@ contract CommunityRules is Callable {
    * @param _invitationRulesAddress Address of InvitationRules.
    * @param _validationRulesAddress Address of ValidationRules.
    */
-  function setContractCall(address _invitationRulesAddress, address _validationRulesAddress) public onlyOwner {
+  function setContractCall(address _invitationRulesAddress, address _validationRulesAddress) external onlyOwner {
     invitationRulesAddress = _invitationRulesAddress;
     validationRulesAddress = _validationRulesAddress;
   }
@@ -165,7 +165,7 @@ contract CommunityRules is Callable {
    * @param title Title of the delation (max 100 characters).
    * @param testimony Justification/details of the delation (Max characters).
    */
-  function addDelation(address addr, string memory title, string memory testimony) public {
+  function addDelation(address addr, string memory title, string memory testimony) external {
     require(
       bytes(title).length <= MAX_TITLE_LENGTH && bytes(testimony).length <= MAX_TESTIMONY_LENGTH,
       "Max characters reached"
@@ -190,7 +190,7 @@ contract CommunityRules is Callable {
    * @param addr The address of the user to be registered.
    * @param userType The desired `UserType` for the user.
    */
-  function addUser(address addr, CommunityTypes.UserType userType) public mustBeAllowedCaller {
+  function addUser(address addr, CommunityTypes.UserType userType) external mustBeAllowedCaller {
     require(addr != address(0), "User address cannot be zero");
     require(users[addr] == CommunityTypes.UserType.UNDEFINED, "User already exists"); // Only one registration per address
     require(
@@ -221,7 +221,7 @@ contract CommunityRules is Callable {
     address inviter,
     address invited,
     CommunityTypes.UserType userType
-  ) public mustBeAllowedCaller mustBeContractCall(invitationRulesAddress) {
+  ) external mustBeAllowedCaller mustBeContractCall(invitationRulesAddress) {
     require(invited != address(0), "Invited address cannot be zero");
     require(invitations[invited].invited == address(0), "Already invited");
     require(users[invited] == CommunityTypes.UserType.UNDEFINED, "Already registered");
@@ -238,7 +238,7 @@ contract CommunityRules is Callable {
    * Prevents re-denying an already denied user.
    * @param userAddress The address of the user to be denied.
    */
-  function setDeniedType(address userAddress) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+  function setDeniedType(address userAddress) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     if (users[userAddress] == CommunityTypes.UserType.DENIED) return;
 
     userTypesCount[users[userAddress]]--; // Decrement count of the old user type
@@ -254,7 +254,7 @@ contract CommunityRules is Callable {
    * It decrements the count of penalties for the inviter.
    * @param inviter The address of the inviter receiving the penalty.
    */
-  function addInviterPenalty(address inviter) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+  function addInviterPenalty(address inviter) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     inviterPenalties[inviter]++;
   }
 
@@ -345,27 +345,30 @@ contract CommunityRules is Callable {
   }
 
   /**
-   * @dev True if userAddress is equal userType
-   * @notice Function to check if an userAddress type is equal passed userType
-   * @param userAddress Denied user address
+   * @notice Function to check if an userAddress type is equal passed userType.
+   * @param userAddress Denied user address.
+   * @return true If userAddress is equal userType.
    */
   function userTypeIs(CommunityTypes.UserType userType, address userAddress) public view returns (bool) {
     return users[userAddress] == userType;
   }
 
   /**
-   * @dev Returns the user address delated
+   * @notice Get the delations of a user.
+   * @param addr User address.
+   * @return array Of delations.
    */
   function getUserDelations(address addr) public view returns (CommunityTypes.Delation[] memory) {
     return delations[addr];
   }
 
   /**
-   * @dev Returns the invitation
-   * @notice Get the invitation of an user
-   * @param addr User address
+   * @dev Returns the invitation.
+   * @notice Get the invitation of a user.
+   * @param addr User address.
+   * @return the Invitation data struct.
    */
-  function getInvitation(address addr) public view returns (CommunityTypes.Invitation memory) {
+  function getInvitation(address addr) external view returns (CommunityTypes.Invitation memory) {
     return invitations[addr];
   }
 

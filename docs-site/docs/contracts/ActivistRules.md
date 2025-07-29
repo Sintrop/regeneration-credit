@@ -59,10 +59,26 @@ Sets the addresses for the `CommunityRules` and `ActivistPool` contracts._
 | communityRulesAddress | address | The address of the deployed `CommunityRules` contract. |
 | activistPoolAddress | address | The address of the deployed `ActivistPool` contract. |
 
+### setContractCall
+
+```solidity
+function setContractCall(address _inspectionRulesAddress, address _validationRulesAddress) external
+```
+
+_onlyOwner function to set contract call addresses.
+This function must be called only once after the contract deploy and ownership must be renounced._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _inspectionRulesAddress | address | Address of InspectionRules. |
+| _validationRulesAddress | address | Address of ValidationRules. |
+
 ### addActivist
 
 ```solidity
-function addActivist(string name, string proofPhoto) public
+function addActivist(string name, string proofPhoto) external
 ```
 
 Users must meet specific criteria (previously invitation, system proportionality)
@@ -86,7 +102,7 @@ Creates a new `Activist` profile for the caller if all requirements are met._
 ### withdraw
 
 ```solidity
-function withdraw() public
+function withdraw() external
 ```
 
 Activists can claim tokens for the services provided. The distribution
@@ -141,7 +157,7 @@ when an invited Inspector reaches the minimum inspection threshold._
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, uint256 levelsToRemove) public
+function removePoolLevels(address addr, uint256 levelsToRemove) external
 ```
 
 Can only be called by the ValidationRules contract.

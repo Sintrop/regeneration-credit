@@ -140,7 +140,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param contractDependency Addresses of system contracts used.
    */
-  function setContractInterfaces(ContractsDependency memory contractDependency) public onlyOwner {
+  function setContractInterfaces(ContractsDependency memory contractDependency) external onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     researcherPool = IResearcherPool(contractDependency.researcherPoolAddress);
     validationRules = IValidationRules(contractDependency.validationRulesAddress);
@@ -152,7 +152,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _validationRulesAddress Address of ValidationRules.
    */
-  function setContractCall(address _validationRulesAddress) public onlyOwner {
+  function setContractCall(address _validationRulesAddress) external onlyOwner {
     validationRulesAddress = _validationRulesAddress;
   }
 
@@ -165,7 +165,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param name The public name or alias of the researcher (max 50 characters).
    * @param proofPhoto A hash or identifier for the researcher's identity photo/document (max 150 characters).
    */
-  function addResearcher(string memory name, string memory proofPhoto) public {
+  function addResearcher(string memory name, string memory proofPhoto) external {
     require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     require(communityRules.userTypesCount(USER_TYPE) <= MAX_USER_COUNT, "Max user limit");
 
@@ -202,7 +202,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param thesis A short description or thesis statement (Max characters).
    * @param file A hash or identifier for the research report file (max 150 characters).
    */
-  function addResearch(string memory title, string memory thesis, string memory file) public nonReentrant {
+  function addResearch(string memory title, string memory thesis, string memory file) external nonReentrant {
     require(
       bytes(title).length <= MAX_TITLE_LENGTH &&
         bytes(thesis).length <= MAX_TEXT_LENGTH &&
@@ -241,7 +241,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param id The ID of the research to validate.
    * @param justification A brief justification for invalidating the research (Max characters).
    */
-  function addResearchValidation(uint64 id, string memory justification) public nonReentrant {
+  function addResearchValidation(uint64 id, string memory justification) external nonReentrant {
     require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters");
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
@@ -278,7 +278,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     string memory thesis,
     string memory unit,
     uint256 carbonImpact
-  ) public {
+  ) external {
     require(
       bytes(item).length <= MAX_ITEM_LENGTH &&
         bytes(thesis).length <= MAX_TEXT_LENGTH &&
@@ -304,7 +304,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param research The associated paper or research link (e.g., IPFS hash or URL) (max 100 characters).
    * @param projectURL The URL of the project or code repository (max 100 characters).
    */
-  function addEvaluationMethod(string memory title, string memory research, string memory projectURL) public {
+  function addEvaluationMethod(string memory title, string memory research, string memory projectURL) external {
     require(
       bytes(title).length <= MAX_TITLE_LENGTH &&
         bytes(research).length <= MAX_TEXT_LENGTH &&
@@ -327,7 +327,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * (eligibility determined by `ResearcherPool` and includes having published at least one research in the current era).
    * Increments the researcher's `pool.currentEra` upon successful withdrawal attempt.
    */
-  function withdraw() public nonReentrant {
+  function withdraw() external nonReentrant {
     require(communityRules.userTypeIs(CommunityTypes.UserType.RESEARCHER, msg.sender), "Only researchers");
 
     Researcher storage researcher = researchers[msg.sender];
@@ -353,7 +353,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   function removePoolLevels(
     address addr,
     uint256 levelsToRemove
-  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     Researcher memory researcher = researchers[addr];
 
     researchers[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : researcher.pool.level;
@@ -371,7 +371,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   function addPenalty(
     address addr,
     uint64 researchId
-  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
+  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
     penalties[addr].push(Penalty(researchId));
 
     return totalPenalties(addr);

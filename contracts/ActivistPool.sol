@@ -55,7 +55,7 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _activistRulesAddress Address of ActivistRules.
    */
-  function setContractCall(address _activistRulesAddress) public onlyOwner {
+  function setContractCall(address _activistRulesAddress) external onlyOwner {
     activistRulesAddress = _activistRulesAddress;
   }
 
@@ -72,7 +72,7 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
   function withdraw(
     address delegate,
     uint256 era
-  ) public mustBeAllowedCaller mustBeContractCall(activistRulesAddress) canWithdrawModifier(era) nonReentrant {
+  ) external mustBeAllowedCaller mustBeContractCall(activistRulesAddress) canWithdrawModifier(era) nonReentrant {
     require(era <= currentContractEra(), "Era in the future");
 
     // Calculate the number of tokens the user is eligible to receive for the given era.
@@ -101,7 +101,7 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
   function addLevel(
     address addr,
     uint256 levels
-  ) public mustBeAllowedCaller mustBeContractCall(activistRulesAddress) nonReentrant {
+  ) external mustBeAllowedCaller mustBeContractCall(activistRulesAddress) nonReentrant {
     // Calls the _addPoolLevel function from Poolable.sol.
     _addPoolLevel(addr, levels, currentContractEra());
   }
@@ -116,7 +116,7 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
   function removePoolLevels(
     address addr,
     uint256 levelsToRemove
-  ) public mustBeAllowedCaller mustBeContractCall(activistRulesAddress) nonReentrant {
+  ) external mustBeAllowedCaller mustBeContractCall(activistRulesAddress) nonReentrant {
     // Calls the _removePoolLevel function from Poolable.sol.
     _removePoolLevel(addr, currentContractEra(), levelsToRemove);
   }

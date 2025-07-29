@@ -139,7 +139,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * Ownership should be renounced after this call.
    * @param contractDependency Struct containing addresses of necessary system contracts.
    */
-  function setContractInterfaces(ContractsDependency memory contractDependency) public onlyOwner {
+  function setContractInterfaces(ContractsDependency memory contractDependency) external onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     regeneratorRules = IRegeneratorRules(contractDependency.regeneratorRulesAddress);
     validationRules = IValidationRules(contractDependency.validationRulesAddress);
@@ -164,7 +164,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * - The regenerator must adhere to the `timeBetweenInspections` delay if `allowedInitialRequests` are used up.
    * - The regenerator must have completed less than 12 total inspections.
    */
-  function requestInspection() public nonReentrant {
+  function requestInspection() external nonReentrant {
     Regenerator memory regenerator = regeneratorRules.getRegenerator(msg.sender);
 
     require(communityRules.userTypeIs(CommunityTypes.UserType.REGENERATOR, msg.sender), "Only regenerators");
@@ -200,7 +200,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    *
    * @param inspectionId The unique ID of the inspection the inspector wishes to accept.
    */
-  function acceptInspection(uint64 inspectionId) public nonReentrant {
+  function acceptInspection(uint64 inspectionId) external nonReentrant {
     require(communityRules.userTypeIs(CommunityTypes.UserType.INSPECTOR, msg.sender), "Only inspectors");
     require(inspectorRules.isInspectorValid(msg.sender), "Only 3 giveUps allowed");
 
@@ -246,7 +246,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     string memory justificationReport,
     uint32 treesResult,
     uint32 biodiversityResult
-  ) public nonReentrant {
+  ) external nonReentrant {
     require(bytes(proofPhotos).length <= MAX_HASH_LENGTH, "Max length");
     require(bytes(justificationReport).length <= MAX_JUSTIFICATION_REPORT_LENGTH, "Max length");
 
@@ -293,7 +293,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * @param id The unique ID of the inspection to be validated/invalidated.
    * @param justification A string explaining why the inspection is being invalidated.
    */
-  function addInspectionValidation(uint64 id, string memory justification) public nonReentrant {
+  function addInspectionValidation(uint64 id, string memory justification) external nonReentrant {
     require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters reached");
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");

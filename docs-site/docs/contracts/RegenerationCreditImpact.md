@@ -105,7 +105,7 @@ _This directly returns the total regeneration area reported by regenerators._
 ### treesPerToken
 
 ```solidity
-function treesPerToken() public view returns (uint256)
+function treesPerToken() external view returns (uint256)
 ```
 
 Calculates the trees impact per Regeneration Credit. The effectiveSupply is the sum of currently
@@ -124,7 +124,7 @@ in a frontend using standard libraries (e.g., ethers.utils.formatUnits(result, 1
 ### carbonPerToken
 
 ```solidity
-function carbonPerToken() public view returns (uint256)
+function carbonPerToken() external view returns (uint256)
 ```
 
 Calculates the carbon impact per Regeneration Credit. The effectiveSupply is the sum of currently
@@ -143,7 +143,7 @@ in a frontend using standard libraries (e.g., ethers.utils.formatUnits(result, 1
 ### biodiversityPerToken
 
 ```solidity
-function biodiversityPerToken() public view returns (uint256)
+function biodiversityPerToken() external view returns (uint256)
 ```
 
 Calculates the biodiversity impact per Regeneration Credit. The effectiveSupply is the sum of currently
@@ -162,7 +162,7 @@ in a frontend using standard libraries (e.g., ethers.utils.formatUnits(result, 1
 ### areaPerToken
 
 ```solidity
-function areaPerToken() public view returns (uint256)
+function areaPerToken() external view returns (uint256)
 ```
 
 Calculates the area impact per Regeneration Credit. The effectiveSupply is the sum of currently

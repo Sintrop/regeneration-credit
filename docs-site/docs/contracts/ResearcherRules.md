@@ -4,7 +4,7 @@
 
 This contract defines and manages the rules and data specific to "Researcher" users within the system.
 Researchers are primarily responsible for the development of the project impact calculator, for the creation and improvement
-of evaluation methods and through submitting researchs, which are subject to validation and penalty mechanisms.
+of evaluation methods and through submitting researches, which are subject to validation and penalty mechanisms.
 
 _Inherits functionalities from `Ownable` (for contract deploy setup), `Callable` (for whitelisted
 function access), and `Invitable` (for managing invitation logic). It interacts with `CommunityRules`
@@ -147,10 +147,11 @@ These parameters define crucial operational behaviors that cannot be changed aft
 ### setContractInterfaces
 
 ```solidity
-function setContractInterfaces(struct ContractsDependency contractDependency) public
+function setContractInterfaces(struct ContractsDependency contractDependency) external
 ```
 
-_onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced._
+_onlyOwner function to set contract interfaces.
+This function must be called only once after the contract deploy and ownership must be renounced._
 
 #### Parameters
 
@@ -158,10 +159,25 @@ _onlyOwner function to set contracts dependency. This function must be called on
 | ---- | ---- | ----------- |
 | contractDependency | struct ContractsDependency | Addresses of system contracts used. |
 
+### setContractCall
+
+```solidity
+function setContractCall(address _validationRulesAddress) external
+```
+
+_onlyOwner function to set contract call addresses.
+This function must be called only once after the contract deploy and ownership must be renounced._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _validationRulesAddress | address | Address of ValidationRules. |
+
 ### addResearcher
 
 ```solidity
-function addResearcher(string name, string proofPhoto) public
+function addResearcher(string name, string proofPhoto) external
 ```
 
 Allows a user to register as a researcher.
@@ -179,7 +195,7 @@ and for researcher vacancies to be available._
 ### addResearch
 
 ```solidity
-function addResearch(string title, string thesis, string file) public
+function addResearch(string title, string thesis, string file) external
 ```
 
 Allows a registered researcher to publish a new 'research' report. A 'research' can be
@@ -200,7 +216,7 @@ period since their last research publication._
 ### addResearchValidation
 
 ```solidity
-function addResearchValidation(uint64 id, string justification) public
+function addResearchValidation(uint64 id, string justification) external
 ```
 
 Allows a voter to vote to invalidate a research.
@@ -219,7 +235,7 @@ If the validation count meets the threshold (`votesToInvalidate`), the research 
 ### addCalculatorItem
 
 ```solidity
-function addCalculatorItem(string item, string thesis, string unit, uint256 carbonImpact) public
+function addCalculatorItem(string item, string thesis, string unit, uint256 carbonImpact) external
 ```
 
 Allows a researcher to publish a calculator item, used by users to calculate degradation.
@@ -239,7 +255,7 @@ period since their last calculator item publication._
 ### addEvaluationMethod
 
 ```solidity
-function addEvaluationMethod(string title, string research, string projectURL) public
+function addEvaluationMethod(string title, string research, string projectURL) external
 ```
 
 Allows a researcher to publish an off-chain evaluation method or project.
@@ -258,7 +274,7 @@ Each researcher is allowed to publish only one method._
 ### withdraw
 
 ```solidity
-function withdraw() public
+function withdraw() external
 ```
 
 Allows a researcher to attempt to withdraw regeneration credit from the researcher pool.
@@ -270,32 +286,44 @@ Increments the researcher's `pool.currentEra` upon successful withdrawal attempt
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, uint256 levelsToRemove) public
+function removePoolLevels(address addr, uint256 levelsToRemove) external
 ```
 
-_Remove pool levels from researcher._
+Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
+this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
+
+_Allows an authorized caller to remove levels from a researcher's pool.
+This function updates the researcher's local score and notifies the `ResearcherPool` contract._
 
 #### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| addr | address | Researcher wallet. |
-| levelsToRemove | uint256 |  |
+| addr | address | The wallet address of the researcher from whom levels are to be removed. |
+| levelsToRemove | uint256 | The number of levels/score points to decrease. If `0`, the researcher's level is reset to `0`. |
 
 ### addPenalty
 
 ```solidity
-function addPenalty(address addr, uint64 researchId) public returns (uint256)
+function addPenalty(address addr, uint64 researchId) external returns (uint256)
 ```
 
-_Add researcher penalty when invalidating a research._
+This function must be called by the ValidationRules contract.
+
+_Adds a penalty to a researcher's record when one of their researches is invalidated._
 
 #### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| addr | address | Researcher wallet. |
-| researchId | uint64 | Research id. |
+| addr | address | The wallet address of the researcher receiving the penalty. |
+| researchId | uint64 | The ID of the research associated with this penalty. |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint256 | uint256 The total number of penalties the researcher has accumulated. |
 
 ### canSendInvite
 

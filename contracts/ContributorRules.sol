@@ -121,7 +121,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param contractDependency Addresses of system contracts used.
    */
-  function setContractInterfaces(ContractsDependency memory contractDependency) public onlyOwner {
+  function setContractInterfaces(ContractsDependency memory contractDependency) external onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     contributorPool = IContributorPool(contractDependency.contributorPoolAddress);
     validationRules = IValidationRules(contractDependency.validationRulesAddress);
@@ -133,7 +133,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _validationRulesAddress Address of ValidationRules.
    */
-  function setContractCall(address _validationRulesAddress) public onlyOwner {
+  function setContractCall(address _validationRulesAddress) external onlyOwner {
     validationRulesAddress = _validationRulesAddress;
   }
 
@@ -153,7 +153,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * @param name The chosen name for the contributor.
    * @param proofPhoto A hash or identifier for the contributor's identity verification photo.
    */
-  function addContributor(string memory name, string memory proofPhoto) public {
+  function addContributor(string memory name, string memory proofPhoto) external {
     // Character limit validation for name and proofPhoto.
     require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     // Max limit for contributor users in the system.
@@ -198,7 +198,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * @param description A title or brief description of the contribution.
    * @param report A hash or identifier (e.g., IPFS CID) of the detailed report file.
    */
-  function addContribution(string memory description, string memory report) public nonReentrant {
+  function addContribution(string memory description, string memory report) external nonReentrant {
     // Character limit validation for description and report.
     require(
       bytes(description).length <= MAX_TEXT_LENGTH && bytes(report).length <= MAX_HASH_LENGTH,
@@ -244,7 +244,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * @param id The unique ID of the contribution to be validated/invalidated.
    * @param justification A string explaining why the contribution is being invalidated.
    */
-  function addContributionValidation(uint64 id, string memory justification) public nonReentrant {
+  function addContributionValidation(uint64 id, string memory justification) external nonReentrant {
     // Character limit validation for justification.
     require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters");
     // Check if the caller is eligible to vote.
@@ -294,7 +294,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * - The contributor must be eligible for withdrawal in their current era (checked via `contributorPool.canWithdraw`).
    * - The contributor's current era (`contributor.pool.currentEra`) will be incremented upon successful withdrawal attempt.
    */
-  function withdraw() public nonReentrant {
+  function withdraw() external nonReentrant {
     // Only registered contributors can call this function.
     require(communityRules.userTypeIs(CommunityTypes.UserType.CONTRIBUTOR, msg.sender), "Pool only to contributor");
 
@@ -328,7 +328,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   function removePoolLevels(
     address addr,
     uint256 levelsToRemove
-  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     Contributor memory contributor = contributors[addr];
 
     contributors[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : contributor.pool.level;
@@ -349,7 +349,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   function addPenalty(
     address addr,
     uint64 contributionId
-  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
+  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
     penalties[addr].push(Penalty(contributionId));
 
     return totalPenalties(addr);

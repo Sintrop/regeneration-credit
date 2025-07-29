@@ -138,7 +138,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param contractDependency Addresses of system contracts used.
    */
-  function setContractInterfaces(ContractsDependency memory contractDependency) public onlyOwner {
+  function setContractInterfaces(ContractsDependency memory contractDependency) external onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     regeneratorRules = IRegeneratorRules(contractDependency.regeneratorRulesAddress);
     inspectorRules = IInspectorRules(contractDependency.inspectorRulesAddress);
@@ -162,7 +162,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     address _contributorRulesAddress,
     address _developerRulesAddress,
     address _researcherRulesAddress
-  ) public onlyOwner {
+  ) external onlyOwner {
     inspectionRulesAddress = _inspectionRulesAddress;
     contributorRulesAddress = _contributorRulesAddress;
     developerRulesAddress = _developerRulesAddress;
@@ -186,7 +186,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
    * @param userAddress Invalidation user address.
    * @param justification Invalidation justification (Max characters).
    */
-  function addUserValidation(address userAddress, string memory justification) public nonReentrant {
+  function addUserValidation(address userAddress, string memory justification) external nonReentrant {
     require(bytes(justification).length <= MAX_JUSTIFICATION_LENGTH, "Max characters");
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(!communityRules.userTypeIs(CommunityTypes.UserType.UNDEFINED, userAddress), "User not registered");
@@ -227,7 +227,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     Inspection memory inspection,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant {
+  ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant {
     require(!validatorInspectionsValidations[validatorAddress][inspection.id], "Already voted");
 
     validatorInspectionsValidations[validatorAddress][inspection.id] = true;
@@ -266,7 +266,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     Report memory report,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller mustBeContractCall(developerRulesAddress) nonReentrant {
+  ) external mustBeAllowedCaller mustBeContractCall(developerRulesAddress) nonReentrant {
     require(!validatorReportsValidations[validatorAddress][report.id], "Already voted");
 
     validatorReportsValidations[validatorAddress][report.id] = true;
@@ -302,7 +302,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     Contribution memory contribution,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller mustBeContractCall(contributorRulesAddress) nonReentrant {
+  ) external mustBeAllowedCaller mustBeContractCall(contributorRulesAddress) nonReentrant {
     require(!validatorContributionsValidations[validatorAddress][contribution.id], "Already voted");
 
     validatorContributionsValidations[validatorAddress][contribution.id] = true;
@@ -338,7 +338,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     Research memory research,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller mustBeContractCall(researcherRulesAddress) nonReentrant {
+  ) external mustBeAllowedCaller mustBeContractCall(researcherRulesAddress) nonReentrant {
     require(!validatorResearchesValidations[validatorAddress][research.id], "Already voted");
 
     validatorResearchesValidations[validatorAddress][research.id] = true;

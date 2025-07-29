@@ -75,10 +75,26 @@ _Initializes the InspectorRules contract with key parameters._
 | inspectorPoolAddress | address | The address of the deployed `InspectorPool` contract. |
 | maxPenalties_ | uint8 | The maximum allowed penalties for an inspector. |
 
+### setContractCall
+
+```solidity
+function setContractCall(address _inspectionRulesAddress, address _validationRulesAddress) public
+```
+
+_onlyOwner function to set contract call addresses.
+This function must be called only once after the contract deploy and ownership must be renounced._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _inspectionRulesAddress | address | Address of InspectionRules. |
+| _validationRulesAddress | address | Address of ValidationRules. |
+
 ### addInspector
 
 ```solidity
-function addInspector(string name, string proofPhoto) public
+function addInspector(string name, string proofPhoto) external
 ```
 
 Users must meet specific criteria (previous invitation, system vacancies)
@@ -104,7 +120,7 @@ Creates a new `Inspector` profile for the caller if all requirements are met._
 ### withdraw
 
 ```solidity
-function withdraw() public
+function withdraw() external
 ```
 
 Inspectors can claim tokens for their inspection service, provided they meet
@@ -119,10 +135,51 @@ Requirements:
 _Allows an inspector to initiate a withdrawal of Regeneration Credits
 based on their completed inspections and current era._
 
+### afterAcceptInspection
+
+```solidity
+function afterAcceptInspection(address addr, uint64 lastInspectionId) external
+```
+
+This function is intended to be called by the InspectionRules contract.
+
+_Processes actions after an inspection is accepted by an inspector.
+This marks the time of acceptance and increments the inspector's "give-up" count._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| addr | address | The inspector's wallet address. |
+| lastInspectionId | uint64 | The ID of the inspection that was accepted. |
+
+### afterRealizeInspection
+
+```solidity
+function afterRealizeInspection(address addr) external returns (uint256)
+```
+
+This function is called by the InspectionRules contract after an inspection is realized.
+
+_MustBeAllowedCaller function to handle actions after an inspector successfully realizes (completes) an inspection.
+This decrements give-ups and increments total inspections._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| addr | address | The inspector's wallet address. |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint256 | uint256 The updated total number of inspections completed by the inspector. |
+
 ### addPenalty
 
 ```solidity
-function addPenalty(address addr, uint64 inspectionId) public returns (uint256)
+function addPenalty(address addr, uint64 inspectionId) external returns (uint256)
 ```
 
 This function can only be called by addresses whitelisted via the `Callable` contract's mechanisms.
@@ -144,51 +201,10 @@ without justification or proofPhoto._
 | ---- | ---- | ----------- |
 | [0] | uint256 | uint256 The total number of penalties the inspector has accumulated. |
 
-### afterAcceptInspection
-
-```solidity
-function afterAcceptInspection(address addr, uint64 lastInspectionId) public
-```
-
-This function is intended to be called by the InspectionRules contract.
-
-_Processes actions after an inspection is accepted by an inspector.
-This marks the time of acceptance and increments the inspector's "give-up" count._
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| addr | address | The inspector's wallet address. |
-| lastInspectionId | uint64 | The ID of the inspection that was accepted. |
-
-### afterRealizeInspection
-
-```solidity
-function afterRealizeInspection(address addr) public returns (uint256)
-```
-
-This function is called by the InspectionRules contract after an inspection is realized.
-
-_MustBeAllowedCaller function to handle actions after an inspector successfully realizes (completes) an inspection.
-This decrements give-ups and increments total inspections._
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| addr | address | The inspector's wallet address. |
-
-#### Return Values
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | uint256 The updated total number of inspections completed by the inspector. |
-
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, uint256 levelsToRemove) public
+function removePoolLevels(address addr, uint256 levelsToRemove) external
 ```
 
 Should only be called by the ValidatorRules address.
@@ -206,7 +222,7 @@ This function updates the inspector's local level and notifies the `InspectorPoo
 ### decrementInspections
 
 ```solidity
-function decrementInspections(address addr) public
+function decrementInspections(address addr) external
 ```
 
 Should only be called by the ValidatorRules address.

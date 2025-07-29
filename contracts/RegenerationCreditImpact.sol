@@ -109,7 +109,7 @@ contract RegenerationCreditImpact {
    * in a frontend using standard libraries (e.g., ethers.utils.formatUnits(result, 18)).
    * @return uint256 Trees per token (with 18-decimal precision).
    */
-  function treesPerToken() public view returns (uint256) {
+  function treesPerToken() external view returns (uint256) {
     uint256 effectiveSupply = _getEffectiveSupply();
     if (effectiveSupply == 0) return 0;
 
@@ -124,7 +124,7 @@ contract RegenerationCreditImpact {
    * in a frontend using standard libraries (e.g., ethers.utils.formatUnits(result, 18)).
    * @return uint256 Grams of carbon per token (with 18-decimal precision).
    */
-  function carbonPerToken() public view returns (uint256) {
+  function carbonPerToken() external view returns (uint256) {
     uint256 effectiveSupply = _getEffectiveSupply();
     if (effectiveSupply == 0) return 0;
 
@@ -139,7 +139,7 @@ contract RegenerationCreditImpact {
    * in a frontend using standard libraries (e.g., ethers.utils.formatUnits(result, 18)).
    * @return uint256 Amount of species per token (with 18-decimal precision).
    */
-  function biodiversityPerToken() public view returns (uint256) {
+  function biodiversityPerToken() external view returns (uint256) {
     uint256 effectiveSupply = _getEffectiveSupply();
     if (effectiveSupply == 0) return 0;
 
@@ -154,7 +154,7 @@ contract RegenerationCreditImpact {
    * in a frontend using standard libraries (e.g., ethers.utils.formatUnits(result, 18)).
    * @return uint256 Area [m²] per token (with 18-decimal precision).
    */
-  function areaPerToken() public view returns (uint256) {
+  function areaPerToken() external view returns (uint256) {
     uint256 effectiveSupply = _getEffectiveSupply();
     if (effectiveSupply == 0) return 0;
 
