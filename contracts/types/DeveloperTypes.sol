@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
+import { CommunityTypes } from "./CommunityTypes.sol";
+
 /**
  * @dev Developer user type data structure
  * @param id User id
