@@ -144,10 +144,10 @@ These parameters define crucial operational behaviors that cannot be changed aft
 | maxPenalties_ | uint8 | The maximum number of penalties a researcher can accumulate before block. |
 | securityBlocksToValidation_ | uint32 | The period in blocks before an era ends, during which new research cannot be added. This allows validators sufficient time for analysis before era finalization. |
 
-### setContractAddressDependencies
+### setContractInterfaces
 
 ```solidity
-function setContractAddressDependencies(struct ContractsDependency contractDependency) public
+function setContractInterfaces(struct ContractsDependency contractDependency) public
 ```
 
 _onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced._

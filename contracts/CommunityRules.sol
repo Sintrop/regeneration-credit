@@ -62,6 +62,12 @@ contract CommunityRules is Callable {
   /// @notice Tracks the number of times an inviter has had their invitees denied.
   mapping(address => uint16) public inviterPenalties;
 
+  /// @notice The address of the `InvitationRules` contract.
+  address private invitationRulesAddress;
+
+  /// @notice The address of the `InvitationRules` contract.
+  address private validationRulesAddress;
+
   // --- Constructor ---
 
   /**
@@ -125,6 +131,19 @@ contract CommunityRules is Callable {
       VOTER_INVITATION_DELAY_BLOCKS,
       true
     );
+  }
+
+  // --- Deploy functions ---
+
+  /**
+   * @dev onlyOwner function to set contract call addresses.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param _invitationRulesAddress Address of InvitationRules.
+   * @param _validationRulesAddress Address of ValidationRules.
+   */
+  function setContractCall(address _invitationRulesAddress, address _validationRulesAddress) public onlyOwner {
+    invitationRulesAddress = _invitationRulesAddress;
+    validationRulesAddress = _validationRulesAddress;
   }
 
   // --- Public functions (State Modifying) ---
@@ -202,7 +221,7 @@ contract CommunityRules is Callable {
     address inviter,
     address invited,
     CommunityTypes.UserType userType
-  ) public mustBeAllowedCaller {
+  ) public mustBeAllowedCaller mustBeContractCall(invitationRulesAddress) {
     require(invited != address(0), "Invited address cannot be zero");
     require(invitations[invited].invited == address(0), "Already invited");
     require(users[invited] == CommunityTypes.UserType.UNDEFINED, "Already registered");
@@ -214,12 +233,12 @@ contract CommunityRules is Callable {
 
   /**
    * @notice Sets a user's type to `DENIED`.
-   * @dev This function is intended to be called by an allowed caller (e.g., `ValidationRules`).
+   * @dev This function is intended to be called by an allowed caller (`ValidationRules`).
    * It decrements the count of the user's previous type and sets their `UserType` to `DENIED`.
    * Prevents re-denying an already denied user.
    * @param userAddress The address of the user to be denied.
    */
-  function setDeniedType(address userAddress) public mustBeAllowedCaller {
+  function setDeniedType(address userAddress) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     if (users[userAddress] == CommunityTypes.UserType.DENIED) return;
 
     userTypesCount[users[userAddress]]--; // Decrement count of the old user type
@@ -231,11 +250,11 @@ contract CommunityRules is Callable {
 
   /**
    * @notice This functions adds a penalty to users when a invited user gets denied.
-   * @dev This function is intended to be called by an allowed caller (e.g., `ValidationRules`).
+   * @dev This function is intended to be called by an allowed caller (`ValidationRules`).
    * It decrements the count of penalties for the inviter.
    * @param inviter The address of the inviter receiving the penalty.
    */
-  function addInviterPenalty(address inviter) public mustBeAllowedCaller {
+  function addInviterPenalty(address inviter) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     inviterPenalties[inviter]++;
   }
 

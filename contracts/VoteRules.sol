@@ -21,19 +21,19 @@ import { Researcher } from "./types/ResearcherTypes.sol";
 contract VoteRules {
   // --- State variables ---
 
-  /// @notice CommunityRules contract address.
+  /// @notice CommunityRules contract interface.
   ICommunityRules private communityRules;
 
-  /// @notice ActivistRules contract address.
+  /// @notice ActivistRules contract interface.
   IActivistRules private activistRules;
 
-  /// @notice ContributorRules contract address.
+  /// @notice ContributorRules contract interface.
   IContributorRules private contributorRules;
 
-  /// @notice DeveloperRules contract address.
+  /// @notice DeveloperRules contract interface.
   IDeveloperRules private developerRules;
 
-  /// @notice ResearcherRules contract address.
+  /// @notice ResearcherRules contract interface.
   IResearcherRules private researcherRules;
 
   // --- Constructor ---

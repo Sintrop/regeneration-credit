@@ -81,29 +81,41 @@ contract ValidationRules is Callable, ReentrancyGuard {
   /// @notice Relationship between validator and last vote block.number.
   mapping(address => uint256) public validatorLastVoteAt;
 
-  /// @notice CommunityRules contract address.
+  /// @notice CommunityRules contract interface.
   ICommunityRules private communityRules;
 
-  /// @notice RegeneratorRules contract address.
+  /// @notice RegeneratorRules contract interface.
   IRegeneratorRules private regeneratorRules;
 
-  /// @notice InspectorRules contract address.
+  /// @notice InspectorRules contract interface.
   IInspectorRules private inspectorRules;
 
-  /// @notice DeveloperRules contract address.
+  /// @notice DeveloperRules contract interface.
   IDeveloperRules private developerRules;
 
-  /// @notice ResearcherRules contract address.
+  /// @notice ResearcherRules contract interface.
   IResearcherRules private researcherRules;
 
-  /// @notice ContributorRules contract address.
+  /// @notice ContributorRules contract interface.
   IContributorRules private contributorRules;
 
-  /// @notice ActivistRules contract address.
+  /// @notice ActivistRules contract interface.
   IActivistRules private activistRules;
 
-  /// @notice VoteRules contract address.
+  /// @notice VoteRules contract interface.
   IVoteRules private voteRules;
+
+  /// @notice The address of the `InspectionRules` contract.
+  address private inspectionRulesAddress;
+
+  /// @notice The address of the `ContributorRules` contract.
+  address private contributorRulesAddress;
+
+  /// @notice The address of the `DeveloperRules` contract.
+  address private developerRulesAddress;
+
+  /// @notice The address of the `ResearcherRules` contract.
+  address private researcherRulesAddress;
 
   /// @notice Amount of blocks between votes.
   uint256 public immutable timeBetweenVotes;
@@ -122,10 +134,11 @@ contract ValidationRules is Callable, ReentrancyGuard {
   // --- Deploy functions ---
 
   /**
-   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @dev onlyOwner function to set contract interfaces.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param contractDependency Addresses of system contracts used.
    */
-  function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+  function setContractInterfaces(ContractsDependency memory contractDependency) public onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     regeneratorRules = IRegeneratorRules(contractDependency.regeneratorRulesAddress);
     inspectorRules = IInspectorRules(contractDependency.inspectorRulesAddress);
@@ -134,6 +147,26 @@ contract ValidationRules is Callable, ReentrancyGuard {
     contributorRules = IContributorRules(contractDependency.contributorRulesAddress);
     activistRules = IActivistRules(contractDependency.activistRulesAddress);
     voteRules = IVoteRules(contractDependency.voteRulesAddress);
+  }
+
+  /**
+   * @dev onlyOwner function to set contract call addresses.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param _inspectionRulesAddress Address of InspectionRules.
+   * @param _contributorRulesAddress Address of ContributorRules.
+   * @param _developerRulesAddress Address of DeveloperRules.
+   * @param _researcherRulesAddress Address of ResearcherRules.
+   */
+  function setContractCall(
+    address _inspectionRulesAddress,
+    address _contributorRulesAddress,
+    address _developerRulesAddress,
+    address _researcherRulesAddress
+  ) public onlyOwner {
+    inspectionRulesAddress = _inspectionRulesAddress;
+    contributorRulesAddress = _contributorRulesAddress;
+    developerRulesAddress = _developerRulesAddress;
+    researcherRulesAddress = _researcherRulesAddress;
   }
 
   // --- External Functions (State Modifying) ---
@@ -194,7 +227,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     Inspection memory inspection,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller nonReentrant {
+  ) public mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant {
     require(!validatorInspectionsValidations[validatorAddress][inspection.id], "Already voted");
 
     validatorInspectionsValidations[validatorAddress][inspection.id] = true;
@@ -233,7 +266,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     Report memory report,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller nonReentrant {
+  ) public mustBeAllowedCaller mustBeContractCall(developerRulesAddress) nonReentrant {
     require(!validatorReportsValidations[validatorAddress][report.id], "Already voted");
 
     validatorReportsValidations[validatorAddress][report.id] = true;
@@ -269,7 +302,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     Contribution memory contribution,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller nonReentrant {
+  ) public mustBeAllowedCaller mustBeContractCall(contributorRulesAddress) nonReentrant {
     require(!validatorContributionsValidations[validatorAddress][contribution.id], "Already voted");
 
     validatorContributionsValidations[validatorAddress][contribution.id] = true;
@@ -305,7 +338,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     Research memory research,
     string memory justification,
     address validatorAddress
-  ) public mustBeAllowedCaller nonReentrant {
+  ) public mustBeAllowedCaller mustBeContractCall(researcherRulesAddress) nonReentrant {
     require(!validatorResearchesValidations[validatorAddress][research.id], "Already voted");
 
     validatorResearchesValidations[validatorAddress][research.id] = true;
@@ -358,8 +391,8 @@ contract ValidationRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Calls the fuction that removes the resource level from pool
-   * @param research Invalidated research
+   * @dev Calls the fuction that removes the resource level from pool.
+   * @param research Invalidated research.
    */
   function _removeResearch(Research memory research) private {
     _removeUserLevels(research.createdBy, RESOURCE_INVALIDATION_LEVEL_PENALTY);
@@ -384,9 +417,9 @@ contract ValidationRules is Callable, ReentrancyGuard {
   function _denyUser(address userAddress) private {
     _removeUserLevels(userAddress, 0); // Remove all levels (0 means all for denied users)
 
-    // Inviter slashing mechanism
+    // Inviter slashing mechanism.
     CommunityTypes.Invitation memory invitation = communityRules.getInvitation(userAddress);
-    // If invited, add invitation penalty
+    // If invited, add invitation penalty.
     if (invitation.inviter != address(0)) {
       communityRules.addInviterPenalty(invitation.inviter);
     }
@@ -403,7 +436,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     CommunityTypes.UserType userType = communityRules.getUser(userAddress);
 
     if (userType == CommunityTypes.UserType.DENIED) return; // Already denied, nothing to do
-    // Check for each user type and call their respective removePoolLevels function
+    // Check for each user type and call their respective removePoolLevels function.
     if (userType == CommunityTypes.UserType.INSPECTOR) return inspectorRules.removePoolLevels(userAddress, levels);
     if (userType == CommunityTypes.UserType.REGENERATOR) return regeneratorRules.removePoolLevels(userAddress, levels);
     if (userType == CommunityTypes.UserType.DEVELOPER) return developerRules.removePoolLevels(userAddress, levels);

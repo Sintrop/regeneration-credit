@@ -33,7 +33,7 @@ describe("ContributorRules", (accounts) => {
   let contributorPoolParams = {
     totalTokens: "7500000000000000000000000",
     halving: 12,
-    blocksPerEra: 140,
+    blocksPerEra: 150,
   };
 
   const timeBetweenWorks = 10;
@@ -59,7 +59,9 @@ describe("ContributorRules", (accounts) => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
+    await communityRules.setContractCall(owner, owner);
     await communityRules.connect(from).addInvitation(inviter, invited, userType);
+    await communityRules.setContractCall(instance.target, owner);
   };
 
   beforeEach(async () => {
@@ -87,9 +89,12 @@ describe("ContributorRules", (accounts) => {
     instance = validatorRulesDeployed.contributorRules;
     validationRules = validatorRulesDeployed.validationRules;
     contributorPool = validatorRulesDeployed.contributorPool;
+    researcherPool = validatorRulesDeployed.researcherPool;
     developerRules = validatorRulesDeployed.developerRules;
     researcherRules = validatorRulesDeployed.researcherRules;
     activistRules = validatorRulesDeployed.activistRules;
+
+    await validationRules.setContractCall(owner, instance.target, owner, owner);
 
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(owner);
@@ -103,6 +108,10 @@ describe("ContributorRules", (accounts) => {
     await instance.newAllowedCaller(validationRules.target);
     await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(contributorPool.target, "40000000000000000000000000");
+
+    await instance.setContractCall(validationRules.target);
+    await contributorPool.setContractCall(instance);
+    await researcherPool.setContractCall(researcherRules.target);
 
     await addInvitation(owner, contr1Address, userTypes.Contributor, owner);
   });
@@ -194,7 +203,7 @@ describe("ContributorRules", (accounts) => {
               voteRulesAddress: ZERO_ADDRESS,
             };
 
-            await instance.setContractAddressDependencies(contributorRulesContractDependencies);
+            await instance.setContractInterfaces(contributorRulesContractDependencies);
 
             await communityRules.mock.userTypesCount.returns(16001);
           });
@@ -304,7 +313,7 @@ describe("ContributorRules", (accounts) => {
 
       context("when do not have time to validator analysis", () => {
         beforeEach(async () => {
-          await advanceBlock(102);
+          await advanceBlock(115);
         });
 
         it("should return error message", async () => {
@@ -613,6 +622,7 @@ describe("ContributorRules", (accounts) => {
           await instance.connect(user3Address).addContributionValidation(2, "justification");
 
           await advanceBlock(contributorPoolParams.blocksPerEra);
+          await communityRules.setContractCall(owner, validationRules.target);
 
           await addContribution(contr1Address);
           await instance.connect(user1Address).addContributionValidation(3, "justification");
@@ -832,6 +842,7 @@ describe("ContributorRules", (accounts) => {
           await instance.connect(user4Address).addContributionValidation(2, "justification");
 
           await advanceBlock(10);
+          await communityRules.setContractCall(owner, validationRules.target);
 
           await instance.connect(user5Address).addContributionValidation(3, "justification");
           await instance.connect(user2Address).addContributionValidation(3, "justification");
@@ -1051,6 +1062,7 @@ describe("ContributorRules", (accounts) => {
           await instance.connect(user4Address).addContributionValidation(2, "justification");
 
           await advanceBlock(10);
+          await communityRules.setContractCall(owner, validationRules.target);
 
           await instance.connect(user5Address).addContributionValidation(3, "justification");
           await instance.connect(user2Address).addContributionValidation(3, "justification");
@@ -1225,6 +1237,7 @@ describe("ContributorRules", (accounts) => {
           await instance.connect(user3Address).addContributionValidation(2, "justification");
 
           await advanceBlock(contributorPoolParams.blocksPerEra);
+          await communityRules.setContractCall(owner, validationRules.target);
 
           await addContribution(contr1Address);
           await instance.connect(user1Address).addContributionValidation(3, "justification");

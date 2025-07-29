@@ -62,9 +62,10 @@ describe("RegenerationCredit", (accounts) => {
       voteRulesAddress: ZERO_ADDRESS,
     };
 
-    await researcherRules.setContractAddressDependencies(researcherRulesContractDependencies);
+    await researcherRules.setContractInterfaces(researcherRulesContractDependencies);
 
-    await instance.setContractDependencies(supporterRules.target);
+    await supporterRules.setContractCall(instance.target);
+    await instance.setContractInterfaces(supporterRules.target);
     await supporterRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(researcherRules.target);
     await communityRules.newAllowedCaller(supporterRules.target);
@@ -275,6 +276,7 @@ describe("RegenerationCredit", (accounts) => {
   describe("#offset", () => {
     context("when is supporter", () => {
       beforeEach(async () => {
+        await communityRules.setContractCall(ownerAddress, ownerAddress);
         await addInvitation(ownerAddress, researcher1Address, userTypes.Researcher, ownerAddress);
         await addInvitation(ownerAddress, supporter1Address, userTypes.Supporter, ownerAddress);
 
@@ -325,6 +327,7 @@ describe("RegenerationCredit", (accounts) => {
   describe("#publish", () => {
     context("when is supporter", () => {
       beforeEach(async () => {
+        await communityRules.setContractCall(ownerAddress, ownerAddress);
         await addInvitation(ownerAddress, supporter1Address, userTypes.Supporter, ownerAddress);
         await addSupporter("Supporter A", "description", "profilePhoto", supporter1Address);
 

@@ -1,4 +1,3 @@
-const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
 
 describe("Poolable", () => {

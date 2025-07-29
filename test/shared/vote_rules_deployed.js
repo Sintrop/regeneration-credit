@@ -4,6 +4,14 @@ const { communityRulesDeployed } = require("./user_contract_deployed");
 const voteRulesDeployed = async () => {
   const timeBetweenVotes = 10;
 
+  const sintropArgs = {
+    timeBetweenInspections: 20,
+    blocksToExpireAcceptedInspection: 50,
+    allowedInitialRequests: 3,
+    acceptInspectionDelayBlocks: 5,
+    securityBlocksToValidation_: 100,
+  };
+
   const regeneratorPoolArgs = {
     totalTokens: "750000000000000000000000000",
     halving: 12,
@@ -19,25 +27,25 @@ const voteRulesDeployed = async () => {
   let developerPoolParams = {
     totalTokens: "40000000000000000000000000",
     halving: 12,
-    blocksPerEra: 140,
+    blocksPerEra: 160,
   };
 
   let researcherPoolParams = {
     totalTokens: "40000000000000000000000000",
     halving: 12,
-    blocksPerEra: 140,
+    blocksPerEra: 160,
   };
 
   let contributorPoolParams = {
     totalTokens: "40000000000000000000000000",
     halving: 12,
-    blocksPerEra: 140,
+    blocksPerEra: 160,
   };
 
   const activistPoolArgs = {
     totalTokens: "40000000000000000000000000",
     halving: 12,
-    blocksPerEra: 20,
+    blocksPerEra: 21,
   };
 
   const regenerationCredit = await regenerationCreditDeployed();
@@ -150,10 +158,31 @@ const voteRulesDeployed = async () => {
     voteRulesAddress: voteRules.target,
   };
 
+  const inspectionRulesDependencies = {
+    communityRulesAddress: communityRules.target,
+    regeneratorRulesAddress: regeneratorRules.target,
+    validationRulesAddress: validationRules.target,
+    inspectorRulesAddress: inspectorRules.target,
+    activistRulesAddress: activistRules.target,
+    regenerationIndexRulesAddress: regenerationIndexRules.target,
+    voteRulesAddress: voteRules.target,
+  };
+
+  const inspectionRulesFactory = await ethers.getContractFactory("InspectionRules");
+  const inspectionRules = await inspectionRulesFactory.deploy(
+    sintropArgs.timeBetweenInspections,
+    sintropArgs.blocksToExpireAcceptedInspection,
+    sintropArgs.allowedInitialRequests,
+    sintropArgs.acceptInspectionDelayBlocks,
+    sintropArgs.securityBlocksToValidation_
+  );
+
+  await inspectionRules.setContractInterfaces(inspectionRulesDependencies);
+
   await activistPool.newAllowedCaller(activistRules.target);
   await researcherPool.newAllowedCaller(researcherRules.target);
 
-  await validationRules.setContractAddressDependencies(validationRulesDependencies);
+  await validationRules.setContractInterfaces(validationRulesDependencies);
 
   const developerRulesContractDependencies = {
     communityRulesAddress: communityRules.target,
@@ -162,7 +191,7 @@ const voteRulesDeployed = async () => {
     voteRulesAddress: voteRules.target,
   };
 
-  await developerRules.setContractAddressDependencies(developerRulesContractDependencies);
+  await developerRules.setContractInterfaces(developerRulesContractDependencies);
 
   const contributorRulesContractDependencies = {
     communityRulesAddress: communityRules.target,
@@ -171,7 +200,7 @@ const voteRulesDeployed = async () => {
     voteRulesAddress: voteRules.target,
   };
 
-  await contributorRules.setContractAddressDependencies(contributorRulesContractDependencies);
+  await contributorRules.setContractInterfaces(contributorRulesContractDependencies);
 
   const researcherRulesContractDependencies = {
     communityRulesAddress: communityRules.target,
@@ -180,7 +209,7 @@ const voteRulesDeployed = async () => {
     voteRulesAddress: voteRules.target,
   };
 
-  await researcherRules.setContractAddressDependencies(researcherRulesContractDependencies);
+  await researcherRules.setContractInterfaces(researcherRulesContractDependencies);
 
   return {
     activistRules,
@@ -192,6 +221,7 @@ const voteRulesDeployed = async () => {
     regeneratorRules,
     inspectorRules,
     inspectorPool,
+    inspectionRules,
     developerRules,
     developerPool,
     researcherRules,

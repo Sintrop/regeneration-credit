@@ -1,6 +1,5 @@
 const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
-
 const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
@@ -22,7 +21,7 @@ describe("InspectorRules", () => {
   const args = {
     totalTokens: "180000000000000000000000000",
     halving: 12,
-    blocksPerEra: 24,
+    blocksPerEra: 26,
   };
 
   beforeEach(async () => {
@@ -38,11 +37,15 @@ describe("InspectorRules", () => {
     const instanceFactory = await ethers.getContractFactory("InspectorRules");
     instance = await instanceFactory.deploy(communityRules.target, inspectorPool.target, maxPenalties);
 
+    await communityRules.setContractCall(owner, owner);
+    await instance.setContractCall(owner, owner);
+
     await inspectorPool.newAllowedCaller(instance.target);
     await regenerationCredit.addContractPool(inspectorPool.target, args.totalTokens);
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(owner);
     await instance.newAllowedCaller(owner);
+    await inspectorPool.setContractCall(instance);
 
     await addInvitation(owner, inspe1Address, userTypes.Inspector, owner);
     await addInvitation(owner, inspe2Address, userTypes.Inspector, owner);
@@ -134,6 +137,9 @@ describe("InspectorRules", () => {
       describe(".decreaseGiveUps", () => {
         beforeEach(async () => {
           await addInspector("Inspector A", inspe1Address);
+
+          await instance.setContractCall(owner, owner);
+
           await instance.afterAcceptInspection(inspe1Address, 1);
           await instance.afterAcceptInspection(inspe1Address, 1);
           await instance.afterRealizeInspection(inspe1Address);
@@ -151,6 +157,7 @@ describe("InspectorRules", () => {
       describe(".incrementInspections", () => {
         beforeEach(async () => {
           await addInspector("Inspector A", inspe1Address);
+          await instance.setContractCall(owner, owner);
           await instance.afterAcceptInspection(inspe1Address, 1);
           await instance.afterRealizeInspection(inspe1Address);
         });
@@ -208,6 +215,7 @@ describe("InspectorRules", () => {
       describe(".incrementGiveUps", () => {
         beforeEach(async () => {
           await addInspector("Inspector A", inspe1Address);
+          await instance.setContractCall(owner, owner);
           await instance.afterAcceptInspection(inspe1Address, 1);
           await instance.afterAcceptInspection(inspe1Address, 1);
         });
@@ -224,6 +232,7 @@ describe("InspectorRules", () => {
       describe(".markLastInspection", () => {
         beforeEach(async () => {
           await addInspector("Inspector A", inspe1Address);
+          await instance.setContractCall(owner, owner);
           await instance.afterAcceptInspection(inspe1Address, 100);
         });
 
@@ -291,7 +300,7 @@ describe("InspectorRules", () => {
             await instance.connect(inspe1Address).withdraw();
           });
 
-          it("withdraw 7200000000000000000000000 tokens", async () => {
+          it("withdraw 7500000000000000000000000n tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(inspe1Address);
             const expectedBalance = 7500000000000000000000000n;
 
@@ -318,7 +327,7 @@ describe("InspectorRules", () => {
             await instance.connect(inspe1Address).withdraw();
           });
 
-          it("withdraw 3600000000000000000000000n tokens", async () => {
+          it("withdraw 3750000000000000000000000n tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(inspe1Address);
             const expectedBalance = 3750000000000000000000000n;
 
@@ -342,6 +351,7 @@ describe("InspectorRules", () => {
 
     context("with allowed caller", () => {
       it("add penalty with success", async () => {
+        await instance.setContractCall(owner, owner);
         await instance.addPenalty(inspe1Address, 1);
 
         const totalPenalties = await instance.totalPenalties(inspe1Address);
@@ -362,6 +372,7 @@ describe("InspectorRules", () => {
   describe("#totalPenalties", () => {
     beforeEach(async () => {
       await addInspector("Inspector A", inspe1Address);
+      await instance.setContractCall(owner, owner);
       await instance.addPenalty(inspe1Address, 1);
     });
 

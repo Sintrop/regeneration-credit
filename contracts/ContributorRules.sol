@@ -73,21 +73,24 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   /// @dev This array can grow indefinitely per contributor.
   mapping(address => uint256[]) public contributionsIds;
 
-  /// @notice The address of the `CommunityRules` contract, used to interact with
+  /// @notice The interface of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
   ICommunityRules private communityRules;
 
-  /// @notice The address of the `ContributorPool` contract, responsible for managing
+  /// @notice The interface of the `ContributorPool` contract, responsible for managing
   /// and distributing token rewards to contributors.
   IContributorPool private contributorPool;
 
-  /// @notice The address of the `ValidationRules` contract, which defines the rules
+  /// @notice The interface of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating contributions.
   IValidationRules private validationRules;
 
-  /// @notice The address of the `VoteRules` contract, which defines rules for user voting
+  /// @notice The interface of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for contribution validation.
   IVoteRules private voteRules;
+
+  /// @notice The address of the `InspectionRules` contract.
+  address private validationRulesAddress;
 
   /// @notice The specific `UserType` enumeration value for a Contributor user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.CONTRIBUTOR;
@@ -99,7 +102,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
 
   /**
    * @dev Initializes the ContributorRules contract with key parameters for contribution management.
-   * Note: External contract addresses (`communityRules`, `contributorPool`, etc.) are set via `setContractAddressDependencies`
+   * Note: External contract addresses (`communityRules`, `contributorPool`, etc.) are set via `setContractInterfaces`
    * after deployment, following an `onlyOwner` pattern for secure initialization.
    * @param timeBetweenWorks_ The required blocks between contributions.
    * @param maxPenalties_ The maximum allowed penalties for a contributor.
@@ -114,14 +117,24 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   // --- Deploy functions ---
 
   /**
-   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @dev onlyOwner function to set contract interfaces.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param contractDependency Addresses of system contracts used.
    */
-  function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+  function setContractInterfaces(ContractsDependency memory contractDependency) public onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     contributorPool = IContributorPool(contractDependency.contributorPoolAddress);
     validationRules = IValidationRules(contractDependency.validationRulesAddress);
     voteRules = IVoteRules(contractDependency.voteRulesAddress);
+  }
+
+  /**
+   * @dev onlyOwner function to set contract interfaces.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param _validationRulesAddress Address of ValidationRules.
+   */
+  function setContractCall(address _validationRulesAddress) public onlyOwner {
+    validationRulesAddress = _validationRulesAddress;
   }
 
   // --- Public functions ---
@@ -312,7 +325,10 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
    * this function sets the contributor's pool level to 0. Otherwise, it subtracts the specified amount.
    */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+  function removePoolLevels(
+    address addr,
+    uint256 levelsToRemove
+  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     Contributor memory contributor = contributors[addr];
 
     contributors[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : contributor.pool.level;
@@ -330,7 +346,10 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * @param contributionId The ID of the contribution associated with this penalty.
    * @return uint256 The total number of penalties the contributor has accumulated.
    */
-  function addPenalty(address addr, uint64 contributionId) public mustBeAllowedCaller returns (uint256) {
+  function addPenalty(
+    address addr,
+    uint64 contributionId
+  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
     penalties[addr].push(Penalty(contributionId));
 
     return totalPenalties(addr);
@@ -358,7 +377,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to execute the invalidation process for a contribution.
+   * @dev Private function to execute the invalidation process for a contribution.
    * Updates the contribution's status, decrements valid contributions count,
    * and records the invalidation time.
    * @param contribution A `Contribution` storage reference to the contribution being invalidated.

@@ -58,7 +58,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   uint32 public immutable acceptInspectionDelayBlocks;
 
   /// @notice Amount of blocks for validators to analyze inspections before an era ends.
-  uint32 public immutable securityBlocksToValidation_;
+  uint32 public immutable securityBlocksToValidation;
 
   /// @notice Valid inspections count (inspections not invalidated).
   uint64 public inspectionsCount;
@@ -84,25 +84,25 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   /// @notice Checks if an inspector has already inspected a specific regenerator.
   mapping(address => mapping(address => bool)) private inspectorInspected;
 
-  /// @notice InspectorRules contract instance for interacting with inspector-specific logic.
+  /// @notice InspectorRules contract interface for interacting with inspector-specific logic.
   IInspectorRules private inspectorRules;
 
-  /// @notice RegeneratorRules contract instance for interacting with regenerator-specific logic.
+  /// @notice RegeneratorRules contract interface for interacting with regenerator-specific logic.
   IRegeneratorRules private regeneratorRules;
 
-  /// @notice CommunityRules contract instance for checking user types and other community-wide rules.
+  /// @notice CommunityRules contract interface for checking user types and other community-wide rules.
   ICommunityRules private communityRules;
 
-  /// @notice ValidationRules contract instance for handling inspection invalidations.
+  /// @notice ValidationRules contract interface for handling inspection invalidations.
   IValidationRules private validationRules;
 
-  /// @notice ActivistRules contract instance for updating activist levels based on inspection activities.
+  /// @notice ActivistRules contract interface for updating activist levels based on inspection activities.
   IActivistRules private activistRules;
 
-  /// @notice VoteRules contract instance for checking voter eligibility.
+  /// @notice VoteRules contract interface for checking voter eligibility.
   IVoteRules private voteRules;
 
-  /// @notice RegenerationIndexRules contract instance for calculating regeneration scores.
+  /// @notice RegenerationIndexRules contract interface for calculating regeneration scores.
   IRegenerationIndexRules private regenerationIndexRules;
 
   // --- Constructor ---
@@ -114,32 +114,32 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * @param blocksToExpireAcceptedInspection_ The number of blocks before an accepted inspection expires.
    * @param allowedInitialRequests_ The number of initial requests allowed without delay.
    * @param acceptInspectionDelayBlocks_ The number of blocks inspectors must wait before accept a new inspection.
-   * @param securityBlocksToValidation__ The number of security blocks for validators before era end.
+   * @param securityBlocksToValidation_ The number of security blocks for validators before era end.
    */
   constructor(
     uint32 timeBetweenInspections_,
     uint32 blocksToExpireAcceptedInspection_,
     uint8 allowedInitialRequests_,
     uint32 acceptInspectionDelayBlocks_,
-    uint32 securityBlocksToValidation__
+    uint32 securityBlocksToValidation_
   ) {
     timeBetweenInspections = timeBetweenInspections_;
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
     allowedInitialRequests = allowedInitialRequests_;
     acceptInspectionDelayBlocks = acceptInspectionDelayBlocks_;
-    securityBlocksToValidation_ = securityBlocksToValidation__;
+    securityBlocksToValidation = securityBlocksToValidation_;
   }
 
   // --- Deploy functions ---
 
   /**
-   * @notice Sets the addresses of all essential external contracts this contract depends on.
+   * @notice Sets the addresses of all essential external contracts interfaces this contract depends on.
    * @dev This function can only be called once by the contract owner after deployment.
    * It initializes references to various *Rules contracts and the VoteRules contract.
    * Ownership should be renounced after this call.
-   * @param contractDependency Struct containing addresses of all system contracts.
+   * @param contractDependency Struct containing addresses of necessary system contracts.
    */
-  function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+  function setContractInterfaces(ContractsDependency memory contractDependency) public onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     regeneratorRules = IRegeneratorRules(contractDependency.regeneratorRulesAddress);
     validationRules = IValidationRules(contractDependency.validationRulesAddress);
@@ -194,7 +194,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * - The inspector must not have previously inspected this specific regenerator.
    * - The inspection's status must be `OPEN`.
    * - The `acceptInspectionDelayBlocks` must have passed since the inspection was created.
-   * - The system must not be within the `securityBlocksToValidation_` window before an era ends.
+   * - The system must not be within the `securityBlocksToValidation` window before an era ends.
    * - The inspector must adhere to `inspectorRules.canAcceptInspection` (delay from last realized inspection).
    * - The `inspection.regenerator` must be a valid `REGENERATOR`.
    *
@@ -480,7 +480,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   function beforeAcceptHaveSecurityBlocksToVote() private view returns (bool) {
     if (regeneratorRules.nextEraIn() < blocksToExpireAcceptedInspection) return false;
 
-    return regeneratorRules.nextEraIn() - blocksToExpireAcceptedInspection > securityBlocksToValidation_;
+    return regeneratorRules.nextEraIn() - blocksToExpireAcceptedInspection > securityBlocksToValidation;
   }
 
   // --- Events ---

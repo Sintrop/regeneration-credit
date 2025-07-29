@@ -4,7 +4,6 @@ const { regenerationCreditDeployed } = require("./shared/regeneration_credit_dep
 const { expect } = require("chai");
 const { advanceBlock } = require("./shared/advance_block");
 const { deployMockContract } = require("@clrfund/waffle-mock-contract");
-const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 
 describe("ActivistRules", () => {
   let instance, communityRules, activistPool, regenerationCredit, instanceContractFactory;
@@ -13,7 +12,7 @@ describe("ActivistRules", () => {
   const activistPoolArgs = {
     totalTokens: "40000000000000000000000000",
     halving: 12,
-    blocksPerEra: 20,
+    blocksPerEra: 25,
   };
 
   const addActivist = async (name, from) => {
@@ -41,10 +40,13 @@ describe("ActivistRules", () => {
     instanceContractFactory = await ethers.getContractFactory("ActivistRules");
     instance = await instanceContractFactory.deploy(communityRules.target, activistPool.target);
 
+    await communityRules.setContractCall(owner, owner);
+    await instance.setContractCall(owner, owner);
+    await activistPool.setContractCall(instance);
+
     await communityRules.newAllowedCaller(activ1Address);
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(owner);
-
     await activistPool.newAllowedCaller(instance.target);
     await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(activistPool.target, activistPoolArgs.totalTokens);
@@ -143,6 +145,7 @@ describe("ActivistRules", () => {
         beforeEach(async () => {
           await addActivist("Activist A", activ1Address);
 
+          await communityRules.setContractCall(activ1Address, owner);
           await addInvitation(activ1Address, regenerator1Address, userTypes.Regenerator, activ1Address);
           await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
 
@@ -202,6 +205,7 @@ describe("ActivistRules", () => {
 
       context("when activist is not registered", () => {
         beforeEach(async () => {
+          await communityRules.setContractCall(activ1Address, owner);
           await addInvitation(activ1Address, regenerator1Address, userTypes.Regenerator, activ1Address);
           await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
 
@@ -235,6 +239,8 @@ describe("ActivistRules", () => {
   describe("#withdraw", () => {
     context("when is a activist", () => {
       beforeEach(async () => {
+        await communityRules.setContractCall(activ1Address, owner);
+
         await addActivist("Activist A", activ1Address);
       });
 
@@ -289,6 +295,7 @@ describe("ActivistRules", () => {
               await addActivist("Activist B", activ3Address);
 
               await communityRules.newAllowedCaller(activ3Address);
+              await communityRules.setContractCall(activ3Address, owner);
               await addInvitation(activ3Address, inspector2Address, userTypes.Inspector, activ3Address);
 
               await instance.addRegeneratorLevel(regenerator1Address, 0);

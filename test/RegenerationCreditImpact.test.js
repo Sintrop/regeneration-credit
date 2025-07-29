@@ -79,6 +79,8 @@ describe("RegenerationCreditImpact", () => {
     inspectorRules = deployed.inspectorRules;
     inspectionRules = deployed.instance;
     regeneratorRules = deployed.regeneratorRules;
+    activistRules = deployed.activistRules;
+    regeneratorPool = deployed.regeneratorPool;
 
     const invitationRulesFactory = await ethers.getContractFactory("InvitationRules");
     invitationRules = await invitationRulesFactory.deploy(
@@ -95,6 +97,12 @@ describe("RegenerationCreditImpact", () => {
 
     await communityRules.newAllowedCaller(invitationRules.target);
     await regeneratorRules.newAllowedCaller(owner);
+
+    await communityRules.setContractCall(invitationRules.target, validationRules.target);
+    await activistRules.setContractCall(inspectionRules.target, validationRules.target);
+    await regeneratorRules.setContractCall(inspectionRules.target, validationRules.target);
+    await inspectorRules.setContractCall(inspectionRules.target, validationRules.target);
+    await regeneratorPool.setContractCall(regeneratorRules.target);
   });
 
   describe("totalTreesImpact", () => {
@@ -725,6 +733,7 @@ describe("RegenerationCreditImpact", () => {
 
       context("when only one regenerator is valid", async () => {
         beforeEach(async () => {
+          await regeneratorRules.setContractCall(inspectionRules.target, owner);
           await regeneratorRules.removePoolLevels(regenerator2Address, 0);
         });
 
@@ -1445,6 +1454,7 @@ describe("RegenerationCreditImpact", () => {
 
       context("when only one regenerator is valid", async () => {
         beforeEach(async () => {
+          await regeneratorRules.setContractCall(inspectionRules.target, owner);
           await regeneratorRules.removePoolLevels(regenerator2Address, 0);
         });
 

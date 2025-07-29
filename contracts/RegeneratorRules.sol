@@ -20,7 +20,7 @@ import { Callable } from "./shared/Callable.sol";
  * total area), regeneration score tracking, inspection processes, and penalty management.
  */
 contract RegeneratorRules is Callable, ReentrancyGuard {
-  // --- Contants ---
+  // --- Constants ---
 
   /// @notice The minimum number of successful inspections a regenerator must have
   /// to be eligible for rewards from the Regenerator Pool.
@@ -90,6 +90,12 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// managed by all registered regenerators in the system.
   uint256 public regenerationArea;
 
+  /// @notice The address of the `InspectionRules` contract.
+  address private inspectionRulesAddress;
+
+  /// @notice The address of the `InspectionRules` contract.
+  address private validationRulesAddress;
+
   // --- Constructor ---
 
   /**
@@ -100,6 +106,19 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   constructor(address communityRulesAddress, address regeneratorPoolAddress) {
     communityRules = ICommunityRules(communityRulesAddress);
     regeneratorPool = IRegeneratorPool(regeneratorPoolAddress);
+  }
+
+  // --- Deploy functions ---
+
+  /**
+   * @dev onlyOwner function to set contract call addresses.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param _inspectionRulesAddress Address of InspectionRules.
+   * @param _validationRulesAddress Address of ValidationRules.
+   */
+  function setContractCall(address _inspectionRulesAddress, address _validationRulesAddress) public onlyOwner {
+    inspectionRulesAddress = _inspectionRulesAddress;
+    validationRulesAddress = _validationRulesAddress;
   }
 
   // --- Public Functions (State modifying) ---
@@ -199,7 +218,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     // Check if the regenerator has completed the minimum required inspections.
     require(_minimumInspections(regenerator.totalInspections), "Minimum inspections");
 
-    // Current regenerator era before withdraw
+    // Current regenerator era before withdraw.
     uint256 currentEra = regenerator.pool.currentEra;
 
     // Increment the regenerator's era in their local pool data.
@@ -232,16 +251,16 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /**
    * @dev Allows an authorized caller to remove levels from a regenerator's pool.
    * This function updates the regenerator's local regeneration score and notifies the `RegeneratorPool` contract.
-   * @notice Can only be called by the ValidatorRules address. If `levelsToRemove` is 0,
+   * @notice Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
    * this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
-   *
-   * Requirements:
-   * - Only addresses whitelisted via `Callable` can call this function.
    * @param addr The wallet address of the regenerator from whom levels are to be removed.
    * @param levelsToRemove The number of levels/score points to decrease. If `0`, the regenerator's
    * regeneration score is reset to `0`, and their area is decremented from the total `regenerationArea`.
    */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller nonReentrant {
+  function removePoolLevels(
+    address addr,
+    uint256 levelsToRemove
+  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
     if (levelsToRemove == 0) {
       regenerators[addr].regenerationScore.score = 0;
       _decrementArea(addr);
@@ -254,15 +273,15 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /**
    * @dev Allows an authorized caller to decrement a regenerator's total completed inspections count.
-   * This function is typically called when an inspection previously counted as valid is invalidated.
-   * @notice Can only be called by the ValidatorRules address.
+   * This function is called when an inspection previously counted as valid is invalidated.
+   * @notice Can only be called by the ValidationRules address.
    *
    * Requirements:
    * - The regenerator's `totalInspections` count must be greater than 0.
    * - If `totalInspections` becomes 0 after decrement, the regenerator is removed from `impactRegenerators`.
    * @param addr The regenerator's wallet address.
    */
-  function decrementInspections(address addr) public mustBeAllowedCaller {
+  function decrementInspections(address addr) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     uint256 totalInspections = regenerators[addr].totalInspections;
 
     require(totalInspections > 0, "totalInspections invalid");
@@ -281,7 +300,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @notice This function is intended to be called by a whitelisted contract, the InspectionRules.
    * @param addr The regenerator's wallet address.
    */
-  function afterRequestInspection(address addr) public mustBeAllowedCaller {
+  function afterRequestInspection(address addr) public mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
     _pendingInspection(addr, true);
     _lastRequestAt(addr, block.number);
   }
@@ -292,7 +311,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @dev This function is intended to be called by a whitelisted external contract, the InspectorRules.
    * @param addr The regenerator's wallet address.
    */
-  function afterAcceptInspection(address addr) public mustBeAllowedCaller {
+  function afterAcceptInspection(address addr) public mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
     _pendingInspection(addr, false);
   }
 
@@ -305,7 +324,10 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param score The score obtained from the realized inspection, to be added to the regenerator's total score.
    * @return uint256 The updated total number of inspections for the regenerator.
    */
-  function afterRealizeInspection(address addr, uint32 score) public mustBeAllowedCaller returns (uint256) {
+  function afterRealizeInspection(
+    address addr,
+    uint32 score
+  ) public mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant returns (uint256) {
     uint256 totalInspections = _incrementInspections(addr);
 
     _setRegenerationScore(addr, score);
@@ -325,7 +347,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to update a regenerator's pending inspection status.
+   * @dev Private function to update a regenerator's pending inspection status.
    * @notice Sets whether a regenerator has a pending inspection request (`true`) or not (`false`).
    * @param addr The regenerator's wallet address.
    * @param state The new pending inspection status (`true` for pending, `false` for not pending).
@@ -364,7 +386,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to increment a regenerator's total completed inspections count.
+   * @dev Private function to increment a regenerator's total completed inspections count.
    * This also updates the `impactRegenerators` flag and `totalImpactRegenerators` count.
    * @param addr The regenerator's wallet address.
    * @return uint256 The updated total number of inspections for the regenerator.
@@ -384,7 +406,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to set a regenerator's `_lastRequestAt` block.
+   * @dev Private function to set a regenerator's `_lastRequestAt` block.
    * @param addr The regenerator's wallet address.
    * @param blockNumber The block number at which the last request was made.
    */

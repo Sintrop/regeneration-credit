@@ -2,7 +2,6 @@ const { expect } = require("chai");
 
 describe("RegenerationIndexRules", () => {
   let instance;
-  let owner;
 
   const treesResultValue = 100001;
 

@@ -2,8 +2,8 @@
 pragma solidity ^0.8.27;
 
 import { Callable } from "./shared/Callable.sol";
-import { CommunityRules } from "./CommunityRules.sol";
-import { ResearcherRules } from "./ResearcherRules.sol";
+import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
+import { IResearcherRules } from "./interfaces/IResearcherRules.sol";
 import { CalculatorItem } from "./types/ResearcherTypes.sol";
 import { Supporter, Publication, Offset } from "./types/SupporterTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
@@ -59,13 +59,16 @@ contract SupporterRules is Callable {
   /// @notice The relationship between offset id and its data.
   mapping(uint64 => Offset) public offsets;
 
-  /// @notice CommunityRules contract address
-  CommunityRules private communityRules;
+  /// @notice CommunityRules contract interface.
+  ICommunityRules private communityRules;
 
-  /// @notice ResearcherRules contract address
-  ResearcherRules private researcherRules;
+  /// @notice ResearcherRules contract interface.
+  IResearcherRules private researcherRules;
 
-  /// @notice Supporter UserType
+  /// @notice The address of the `RegenerationCredit` contract.
+  address private regenerationCreditAddress;
+
+  /// @notice Supporter UserType.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.SUPPORTER;
 
   // --- Constructor ---
@@ -77,8 +80,19 @@ contract SupporterRules is Callable {
    */
 
   constructor(address communityRulesAddress, address researcherRulesAddress) {
-    communityRules = CommunityRules(communityRulesAddress);
-    researcherRules = ResearcherRules(researcherRulesAddress);
+    communityRules = ICommunityRules(communityRulesAddress);
+    researcherRules = IResearcherRules(researcherRulesAddress);
+  }
+
+  // --- Deploy functions ---
+
+  /**
+   * @dev onlyOwner function to set contract call addresses.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param _regenerationCreditAddress Address of RegenerationCredit.
+   */
+  function setContractCall(address _regenerationCreditAddress) public onlyOwner {
+    regenerationCreditAddress = _regenerationCreditAddress;
   }
 
   // --- Public functions (State Modifying) ---
@@ -125,7 +139,7 @@ contract SupporterRules is Callable {
   /**
    * @dev Called by the RC offset function. If a valid calculatorItemId is provided,
    * records the burned amount as a certificate for that item.
-   * @param supporterAddress address of supporter
+   * @param supporterAddress address of supporter.
    * @param amountToBurn Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
    * @param calculatorItemId The ID of the CalculatorItem, or 0 if not applicable.
    */
@@ -133,7 +147,7 @@ contract SupporterRules is Callable {
     address supporterAddress,
     uint256 amountToBurn,
     uint64 calculatorItemId
-  ) external mustBeAllowedCaller {
+  ) external mustBeAllowedCaller mustBeContractCall(address(regenerationCreditAddress)) {
     require(researcherRules.getCalculatorItem(calculatorItemId).id > 0, "Calculator item does not exist");
 
     offsetsCount++;
@@ -149,8 +163,8 @@ contract SupporterRules is Callable {
 
   /**
    * @dev Called by the RC offset function to create a new publication record.
-   * @param supporterAddress address of supporter
-   * @param amountToBurn Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
+   * @param supporterAddress address of supporter.
+   * @param amountToBurn Tokens to be burned (minimum 10 tokens in wei, i.e., 10e18).
    * @param description The description of the post.
    * @param content The content of the post.
    */
@@ -159,7 +173,7 @@ contract SupporterRules is Callable {
     uint256 amountToBurn,
     string memory description,
     string memory content
-  ) external mustBeAllowedCaller {
+  ) external mustBeAllowedCaller mustBeContractCall(address(regenerationCreditAddress)) {
     publicationsCount++;
     uint64 id = publicationsCount;
 

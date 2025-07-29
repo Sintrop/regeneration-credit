@@ -60,6 +60,12 @@ contract InspectorRules is Callable, ReentrancyGuard {
   /// and distributing token rewards to inspectors.
   IInspectorPool private inspectorPool;
 
+  /// @notice The address of the `InspectionRules` contract.
+  address private inspectionRulesAddress;
+
+  /// @notice The address of the `InspectionRules` contract.
+  address private validationRulesAddress;
+
   /// @notice The specific `UserType` enumeration value for an Inspector user.
   /// This is a constant for gas efficiency and clarity.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.INSPECTOR;
@@ -76,6 +82,19 @@ contract InspectorRules is Callable, ReentrancyGuard {
     communityRules = ICommunityRules(communityRulesAddress);
     inspectorPool = IInspectorPool(inspectorPoolAddress);
     maxPenalties = maxPenalties_;
+  }
+
+  // --- Deploy functions ---
+
+  /**
+   * @dev onlyOwner function to set contract call addresses.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param _inspectionRulesAddress Address of InspectionRules.
+   * @param _validationRulesAddress Address of ValidationRules.
+   */
+  function setContractCall(address _inspectionRulesAddress, address _validationRulesAddress) public onlyOwner {
+    inspectionRulesAddress = _inspectionRulesAddress;
+    validationRulesAddress = _validationRulesAddress;
   }
 
   // --- Public functions (State modifying) ---
@@ -159,28 +178,16 @@ contract InspectorRules is Callable, ReentrancyGuard {
   // --- MustBeAllowedCaller functions (State modifying) ---
 
   /**
-   * @dev Allows an authorized caller (`ValidationRules` contract) to add a penalty to an inspector's record.
-   * This function should be called when an inspector's performance is unsatisfactory, for example,
-   * without justification or proofPhoto.
-   * @notice This function can only be called by addresses whitelisted via the `Callable` contract's mechanisms.
-   * @param addr The wallet address of the inspector receiving the penalty.
-   * @param inspectionId The ID of the inspection associated with this penalty.
-   * @return uint256 The total number of penalties the inspector has accumulated.
-   */
-  function addPenalty(address addr, uint64 inspectionId) public mustBeAllowedCaller returns (uint256) {
-    penalties[addr].push(Penalty(inspectionId));
-
-    return totalPenalties(addr);
-  }
-
-  /**
    * @dev Processes actions after an inspection is accepted by an inspector.
    * This marks the time of acceptance and increments the inspector's "give-up" count.
    * @notice This function is intended to be called by the InspectionRules contract.
    * @param addr The inspector's wallet address.
    * @param lastInspectionId The ID of the inspection that was accepted.
    */
-  function afterAcceptInspection(address addr, uint64 lastInspectionId) public mustBeAllowedCaller {
+  function afterAcceptInspection(
+    address addr,
+    uint64 lastInspectionId
+  ) public mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
     _markLastInspection(addr, lastInspectionId);
 
     _incrementGiveUps(addr);
@@ -193,20 +200,43 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param addr The inspector's wallet address.
    * @return uint256 The updated total number of inspections completed by the inspector.
    */
-  function afterRealizeInspection(address addr) public mustBeAllowedCaller nonReentrant returns (uint256) {
+  function afterRealizeInspection(
+    address addr
+  ) public mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant returns (uint256) {
     _decreaseGiveUps(addr);
 
     return _incrementInspections(addr);
   }
 
   /**
+   * @dev Allows an authorized caller (`ValidationRules` contract) to add a penalty to an inspector's record.
+   * This function should be called when an inspector's performance is unsatisfactory, for example,
+   * without justification or proofPhoto.
+   * @notice This function can only be called by addresses whitelisted via the `Callable` contract's mechanisms.
+   * @param addr The wallet address of the inspector receiving the penalty.
+   * @param inspectionId The ID of the inspection associated with this penalty.
+   * @return uint256 The total number of penalties the inspector has accumulated.
+   */
+  function addPenalty(
+    address addr,
+    uint64 inspectionId
+  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
+    penalties[addr].push(Penalty(inspectionId));
+
+    return totalPenalties(addr);
+  }
+
+  /**
    * @dev Allows the validator rules to remove levels from an inspector's pool.
    * This function updates the inspector's local level and notifies the `InspectorPool` contract.
-   * @notice Should only be called by the ValidatorRules address.
+   * @notice Should only be called by the ValidationRules address.
    * @param addr The wallet address of the inspector from whom levels are to be removed.
    * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
    * this function sets the inspector's pool level to 0. Otherwise, it subtracts the specified amount.   */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller nonReentrant {
+  function removePoolLevels(
+    address addr,
+    uint256 levelsToRemove
+  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
     Inspector storage inspector = inspectors[addr];
 
     inspector.pool.level -= levelsToRemove > 0 ? levelsToRemove : inspector.pool.level;
@@ -220,13 +250,13 @@ contract InspectorRules is Callable, ReentrancyGuard {
   /**
    * @dev Decrements an inspector's total completed inspections count.
    * This function is called when an inspection previously counted as valid is invalidated.
-   * @notice Should only be called by the ValidatorRules address.
+   * @notice Should only be called by the ValidationRules address.
    * @param addr The inspector's wallet address.
    *
    * Requirements:
    * - The inspector's `totalInspections` count must be greater than 0.
    */
-  function decrementInspections(address addr) public mustBeAllowedCaller {
+  function decrementInspections(address addr) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     Inspector storage inspector = inspectors[addr];
 
     require(inspector.totalInspections > 0, "totalInspections invalid");
@@ -237,7 +267,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   // --- Private functions (State modifying) ---
 
   /**
-   * @dev Internal function to increase an inspector's total completed inspections count
+   * @dev Private function to increase an inspector's total completed inspections count
    * and update their `lastRealizedAt` block. Also triggers a level increase.
    * @param addr The inspector's wallet address.
    * @return uint256 The updated total number of inspections for the inspector.
@@ -257,7 +287,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to add a level to an inspector's pool.
+   * @dev Private function to add a level to an inspector's pool.
    * This function increments the inspector's local pool level and notifies the `InspectorPool` contract,
    * but only if the inspector has reached the `MINIMUM_INSPECTIONS_TO_POOL` threshold.
    * @param inspector The inspector's wallet address.
@@ -271,7 +301,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to increase an inspector's "give-up" count.
+   * @dev Private function to increase an inspector's "give-up" count.
    * A give-up is recorded when an inspector accepts an inspection but fails to realize it in time.
    * @param addr The inspector's wallet address.
    */
@@ -280,7 +310,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to decrease an inspector's "give-up" count.
+   * @dev Private function to decrease an inspector's "give-up" count.
    * This is called when an inspector successfully realizes an inspection they had previously accepted.
    * @param addr The inspector's wallet address.
    */
@@ -289,7 +319,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Internal function to handle actions after an inspector successfully accepts an inspection.
+   * @dev Private function to handle actions after an inspector successfully accepts an inspection.
    * This updates the `lastAcceptedAt` block and the `lastInspection` ID.
    * @notice This function is called by an authorized external contract after an inspection is accepted.
    * @param addr The inspector's wallet address.

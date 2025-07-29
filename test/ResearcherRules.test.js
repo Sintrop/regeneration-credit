@@ -1,6 +1,4 @@
-const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
-const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
 const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
@@ -24,7 +22,7 @@ describe("ResearcherRules", () => {
   const args = {
     totalTokens: "40000000000000000000000000",
     halving: 12,
-    blocksPerEra: 140,
+    blocksPerEra: 150,
   };
 
   const addResearcher = async (name, from) => {
@@ -74,6 +72,8 @@ describe("ResearcherRules", () => {
     contributorRules = validatorRulesDeployed.contributorRules;
     activistRules = validatorRulesDeployed.activistRules;
 
+    await validationRules.setContractCall(owner, owner, owner, instance.target);
+
     await communityRules.newAllowedCaller(validationRules.target);
     await communityRules.newAllowedCaller(developerRules.target);
     await communityRules.newAllowedCaller(contributorRules.target);
@@ -86,6 +86,10 @@ describe("ResearcherRules", () => {
     await instance.newAllowedCaller(validationRules.target);
     await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(researcherPool.target, args.totalTokens);
+
+    await communityRules.setContractCall(owner, validationRules.target);
+    await instance.setContractCall(validationRules.target);
+    await researcherPool.setContractCall(instance);
 
     await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
   });
@@ -163,7 +167,7 @@ describe("ResearcherRules", () => {
               voteRulesAddress: ZERO_ADDRESS,
             };
 
-            await instance.setContractAddressDependencies(researcherRulesContractDependencies);
+            await instance.setContractInterfaces(researcherRulesContractDependencies);
 
             await communityRules.mock.userTypesCount.returns(16001);
           });
@@ -355,7 +359,7 @@ describe("ResearcherRules", () => {
 
       context("when do not have time to validator analysis", () => {
         beforeEach(async () => {
-          await advanceBlock(102);
+          await advanceBlock(115);
         });
 
         it("should return error message", async () => {
@@ -1144,6 +1148,7 @@ describe("ResearcherRules", () => {
       await advanceBlock(timeBetweenWorks);
 
       await addResearch(resea1Address);
+      await instance.setContractCall(owner);
 
       await instance.removePoolLevels(resea1Address, 1);
     });

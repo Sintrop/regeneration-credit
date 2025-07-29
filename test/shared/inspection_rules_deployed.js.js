@@ -128,8 +128,8 @@ const inspectionRulesDeployed = async (owner, args = {}) => {
     sintropArgs.securityBlocksToValidation_
   );
 
-  await instance.setContractAddressDependencies(inspectionRulesDependencies);
-  await validationRules.setContractAddressDependencies(validationRulesDependencies);
+  await instance.setContractInterfaces(inspectionRulesDependencies);
+  await validationRules.setContractInterfaces(validationRulesDependencies);
 
   await communityRules.newAllowedCaller(inspectorRules.target);
   await communityRules.newAllowedCaller(regeneratorRules.target);

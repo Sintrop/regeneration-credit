@@ -27,7 +27,7 @@ describe("DeveloperRules", (accounts) => {
   let developerPoolParams = {
     totalTokens: "40000000000000000000000000",
     halving: 12,
-    blocksPerEra: 140,
+    blocksPerEra: 155,
   };
 
   const addDeveloper = async (name, from) => {
@@ -35,7 +35,9 @@ describe("DeveloperRules", (accounts) => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
+    await communityRules.setContractCall(from, owner);
     await communityRules.connect(from).addInvitation(inviter, invited, userType);
+    await communityRules.setContractCall(instance.target, owner);
   };
 
   const addResearcher = async (name, from) => {
@@ -80,6 +82,10 @@ describe("DeveloperRules", (accounts) => {
     contributorRules = validatorRulesDeployed.contributorRules;
     researcherRules = validatorRulesDeployed.researcherRules;
     activistRules = validatorRulesDeployed.activistRules;
+    activistPool = validatorRulesDeployed.activistPool;
+    researcherPool = validatorRulesDeployed.researcherPool;
+
+    await validationRules.setContractCall(owner, owner, instance.target, owner);
 
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(owner);
@@ -93,6 +99,12 @@ describe("DeveloperRules", (accounts) => {
     await instance.newAllowedCaller(validationRules.target);
     await instance.newAllowedCaller(owner);
     await regenerationCredit.addContractPool(developerPool.target, "40000000000000000000000000");
+
+    await communityRules.setContractCall(owner, owner);
+    await instance.setContractCall(validationRules.target);
+    await activistPool.setContractCall(activistRules.target);
+    await developerPool.setContractCall(instance);
+    await researcherPool.setContractCall(researcherRules.target);
 
     await addInvitation(owner, dev1Address, userTypes.Developer, owner);
   });
@@ -184,7 +196,7 @@ describe("DeveloperRules", (accounts) => {
               voteRulesAddress: ZERO_ADDRESS,
             };
 
-            await instance.setContractAddressDependencies(developerRulesContractDependencies);
+            await instance.setContractInterfaces(developerRulesContractDependencies);
 
             await communityRules.mock.userTypesCount.returns(16001);
           });
@@ -265,7 +277,7 @@ describe("DeveloperRules", (accounts) => {
 
       context("when do not have security blocks to validator analysis", () => {
         beforeEach(async () => {
-          await advanceBlock(100);
+          await advanceBlock(110);
         });
 
         it("should return error message", async () => {
@@ -485,6 +497,7 @@ describe("DeveloperRules", (accounts) => {
           await instance.connect(user4Address).addReportValidation(10, "justification");
 
           await advanceBlock(10);
+          await communityRules.setContractCall(owner, validationRules.target);
 
           await instance.connect(user5Address).addReportValidation(15, "justification");
           await instance.connect(user2Address).addReportValidation(15, "justification");
@@ -700,6 +713,7 @@ describe("DeveloperRules", (accounts) => {
           await instance.connect(user3Address).addReportValidation(2, "justification");
 
           await advanceBlock(10);
+          await communityRules.setContractCall(owner, validationRules.target);
 
           await instance.connect(anyAddress).addReport("description", "report");
           await instance.connect(user1Address).addReportValidation(3, "justification");
@@ -920,6 +934,7 @@ describe("DeveloperRules", (accounts) => {
           await instance.connect(user4Address).addReportValidation(2, "justification");
 
           await advanceBlock(10);
+          await communityRules.setContractCall(owner, validationRules.target);
 
           await instance.connect(user5Address).addReportValidation(3, "justification");
           await instance.connect(user2Address).addReportValidation(3, "justification");
@@ -1092,6 +1107,7 @@ describe("DeveloperRules", (accounts) => {
 
       context("when contributor reach max maxPenalties", () => {
         beforeEach(async () => {
+          await activistRules.setContractCall(owner, owner);
           await communityRules.newAllowedCaller(user1Address);
           await communityRules.newAllowedCaller(user4Address);
           await communityRules.newAllowedCaller(user7Address);
@@ -1133,6 +1149,7 @@ describe("DeveloperRules", (accounts) => {
           await instance.connect(user1Address).addReportValidation(2, "justification");
 
           await advanceBlock(10);
+          await communityRules.setContractCall(owner, validationRules.target);
 
           await instance.connect(user4Address).addReportValidation(3, "justification");
           await instance.connect(user7Address).addReportValidation(3, "justification");
@@ -1352,6 +1369,7 @@ describe("DeveloperRules", (accounts) => {
 
       await instance.connect(dev1Address).addReport("description", "report");
 
+      await instance.setContractCall(owner);
       await instance.removePoolLevels(dev1Address, 1);
     });
 

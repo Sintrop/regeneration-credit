@@ -19,12 +19,15 @@ import { Poolable } from "./shared/Poolable.sol";
 contract InspectorPool is Poolable, Blockable, Callable, ReentrancyGuard {
   // --- Constants & state variables ---
 
-  /// @notice Interface to the Regeneration Credit token contract, used for token transfers.
+  /// @notice Interface to the Regeneration Credit token contract, used to decrease total locked.
   IRegenerationCredit private regenerationCredit;
 
   /// @notice The total supply of Regeneration Credit tokens designated for this inspector pool.
   /// This value represents the maximum tokens available for distribution through this contract.
   uint256 private constant TOTAL_POOL_TOKENS = 180000000e18;
+
+  /// @notice The address of the `InspectorRules` contract.
+  address private inspectorRulesAddress;
 
   // --- Constructor ---
 
@@ -45,6 +48,17 @@ contract InspectorPool is Poolable, Blockable, Callable, ReentrancyGuard {
     regenerationCredit = IRegenerationCredit(regenerationCreditAddress);
   }
 
+  // --- Deploy functions ---
+
+  /**
+   * @dev onlyOwner function to set contract call addresses.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param _inspectorRulesAddress Address of InspectorRules.
+   */
+  function setContractCall(address _inspectorRulesAddress) public onlyOwner {
+    inspectorRulesAddress = _inspectorRulesAddress;
+  }
+
   // --- MustBeAllowedCaller functions (State modifying) ---
 
   /**
@@ -55,7 +69,10 @@ contract InspectorPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * @param delegate The address of the user (inspector) for whom the withdrawal is being processed.
    * @param era The last recorded era of the `delegate` user, used for reward calculation and eligibility.
    */
-  function withdraw(address delegate, uint256 era) public mustBeAllowedCaller canWithdrawModifier(era) nonReentrant {
+  function withdraw(
+    address delegate,
+    uint256 era
+  ) public mustBeAllowedCaller mustBeContractCall(inspectorRulesAddress) canWithdrawModifier(era) nonReentrant {
     require(era <= currentContractEra(), "Era in the future");
 
     // Calculate the number of tokens the user is eligible to receive for the given era.
@@ -81,7 +98,10 @@ contract InspectorPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * @param addr The wallet address of the inspector.
    * @param levels The number of levels to increase the inspector's pool level by.
    */
-  function addLevel(address addr, uint256 levels) public mustBeAllowedCaller nonReentrant {
+  function addLevel(
+    address addr,
+    uint256 levels
+  ) public mustBeAllowedCaller mustBeContractCall(inspectorRulesAddress) nonReentrant {
     // Calls the _addPoolLevel function from Poolable.sol.
     _addPoolLevel(addr, levels, currentContractEra());
   }
@@ -93,7 +113,10 @@ contract InspectorPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * @param addr The wallet address of the inspector.
    * @param levelsToRemove The number of levels to decrease the inspector's pool level by.
    */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller nonReentrant {
+  function removePoolLevels(
+    address addr,
+    uint256 levelsToRemove
+  ) public mustBeAllowedCaller mustBeContractCall(inspectorRulesAddress) nonReentrant {
     // Calls the _removePoolLevel function from Poolable.sol.
     _removePoolLevel(addr, currentContractEra(), levelsToRemove);
   }

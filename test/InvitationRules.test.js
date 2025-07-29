@@ -1,10 +1,7 @@
 const { ethers } = require("hardhat");
-const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
 const { advanceBlock } = require("./shared/advance_block");
-const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
-const { ZERO_ADDRESS } = require("./shared/zeroAddress");
 const { voteRulesDeployed } = require("./shared/vote_rules_deployed");
 const { deployMockContract } = require("@clrfund/waffle-mock-contract");
 
@@ -55,7 +52,9 @@ describe("InvitationRules", () => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
+    await communityRules.setContractCall(from, owner);
     await communityRules.connect(from).addInvitation(inviter, invited, userType);
+    await communityRules.setContractCall(instance.target, validationRules.target);
   };
 
   const userTypeDelayBlocks = async (userType) => {
@@ -83,13 +82,15 @@ describe("InvitationRules", () => {
     communityRules = validatorRulesDeployed.communityRules;
     validationRules = validatorRulesDeployed.validationRules;
     researcherRules = validatorRulesDeployed.researcherRules;
+    regeneratorRules = validatorRulesDeployed.regeneratorRules;
+    inspectorRules = validatorRulesDeployed.inspectorRules;
     researcherPool = validatorRulesDeployed.researcherPool;
     developerRules = validatorRulesDeployed.developerRules;
     developerPool = validatorRulesDeployed.developerPool;
     contributorRules = validatorRulesDeployed.contributorRules;
     contributorPool = validatorRulesDeployed.contributorPool;
     activistRules = validatorRulesDeployed.activistRules;
-    activistPool = validatorRulesDeployed.activistRules;
+    activistPool = validatorRulesDeployed.activistPool;
 
     const instanceFactory = await ethers.getContractFactory("InvitationRules");
     instance = await instanceFactory.deploy(
@@ -112,6 +113,14 @@ describe("InvitationRules", () => {
     await activistPool.newAllowedCaller(activistRules.target);
     await developerPool.newAllowedCaller(developerRules.target);
     await contributorPool.newAllowedCaller(contributorRules.target);
+
+    await activistRules.setContractCall(owner, validationRules.target);
+    await regeneratorRules.setContractCall(owner, validationRules.target);
+    await inspectorRules.setContractCall(owner, validationRules.target);
+    await activistPool.setContractCall(activistRules.target);
+    await contributorPool.setContractCall(contributorRules.target);
+    await developerPool.setContractCall(developerRules.target);
+    await researcherPool.setContractCall(researcherRules.target);
   });
 
   describe("#invite", () => {
@@ -147,6 +156,7 @@ describe("InvitationRules", () => {
 
           await addActivist("Activist A", user2Address);
           await addActivist("Activist B", user3Address);
+          await communityRules.setContractCall(instance, owner);
         });
 
         context("when can invite", () => {
@@ -635,6 +645,7 @@ describe("InvitationRules", () => {
     context("when invite", () => {
       context("with owner", () => {
         it("invite with success", async () => {
+          await communityRules.setContractCall(instance.target, validationRules.target);
           await instance.onlyOwnerInvite(user3Address, userTypes.Developer);
 
           const invitation = await communityRules.invitations(user3Address);

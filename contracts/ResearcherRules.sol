@@ -16,7 +16,7 @@ import { Callable } from "./shared/Callable.sol";
  * @author Sintrop
  * @notice This contract defines and manages the rules and data specific to "Researcher" users within the system.
  * Researchers are primarily responsible for the development of the project impact calculator, for the creation and improvement
- * of evaluation methods and through submitting researchs, which are subject to validation and penalty mechanisms.
+ * of evaluation methods and through submitting researches, which are subject to validation and penalty mechanisms.
  * @dev Inherits functionalities from `Ownable` (for contract deploy setup), `Callable` (for whitelisted
  * function access), and `Invitable` (for managing invitation logic). It interacts with `CommunityRules`
  * for general user management, `ResearcherPool` for reward distribution, `VoteRules` for voting
@@ -95,24 +95,27 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   /// Facilitates lookup of a reseracher's address by their ID.
   mapping(uint256 => address) public researchersAddress;
 
-  /// @notice The address of the `CommunityRules` contract, used to interact with
+  /// @notice The interface of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
   ICommunityRules private communityRules;
 
-  /// @notice The address of the `ResearcherPool` contract, responsible for managing
+  /// @notice The interface of the `ResearcherPool` contract, responsible for managing
   /// and distributing token rewards to researchers.
   IResearcherPool private researcherPool;
 
-  /// @notice The address of the `ValidationRules` contract, which defines the rules
+  /// @notice The interface of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating development reports.
   IValidationRules private validationRules;
 
-  /// @notice The address of the `VoteRules` contract, which defines rules for user voting
+  /// @notice The interface of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for report validation.
   IVoteRules private voteRules;
 
   /// @notice The specific `UserType` enumeration value for a Researcher user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.RESEARCHER;
+
+  /// @notice The address of the `InspectionRules` contract.
+  address private validationRulesAddress;
 
   // --- Constructor ---
 
@@ -133,14 +136,24 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   // --- Deploy functions ---
 
   /**
-   * @dev onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced.
+   * @dev onlyOwner function to set contract interfaces.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param contractDependency Addresses of system contracts used.
    */
-  function setContractAddressDependencies(ContractsDependency memory contractDependency) public onlyOwner {
+  function setContractInterfaces(ContractsDependency memory contractDependency) public onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     researcherPool = IResearcherPool(contractDependency.researcherPoolAddress);
     validationRules = IValidationRules(contractDependency.validationRulesAddress);
     voteRules = IVoteRules(contractDependency.voteRulesAddress);
+  }
+
+  /**
+   * @dev onlyOwner function to set contract call addresses.
+   * This function must be called only once after the contract deploy and ownership must be renounced.
+   * @param _validationRulesAddress Address of ValidationRules.
+   */
+  function setContractCall(address _validationRulesAddress) public onlyOwner {
+    validationRulesAddress = _validationRulesAddress;
   }
 
   // --- Public functions ---
@@ -330,10 +343,17 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   // --- MustBeAllowedCaller functions ---
 
   /**
-   * @dev Remove pool levels from researcher.
-   * @param addr Researcher wallet.
+   * @dev Allows an authorized caller to remove levels from a researcher's pool.
+   * This function updates the researcher's local score and notifies the `ResearcherPool` contract.
+   * @notice Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
+   * this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
+   * @param addr The wallet address of the researcher from whom levels are to be removed.
+   * @param levelsToRemove The number of levels/score points to decrease. If `0`, the researcher's level is reset to `0`.
    */
-  function removePoolLevels(address addr, uint256 levelsToRemove) public mustBeAllowedCaller {
+  function removePoolLevels(
+    address addr,
+    uint256 levelsToRemove
+  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     Researcher memory researcher = researchers[addr];
 
     researchers[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : researcher.pool.level;
@@ -342,11 +362,16 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   }
 
   /**
-   * @dev Add researcher penalty when invalidating a research.
-   * @param addr Researcher wallet.
-   * @param researchId Research id.
+   * @dev Adds a penalty to a researcher's record when one of their researches is invalidated.
+   * @notice This function must be called by the ValidationRules contract.
+   * @param addr The wallet address of the researcher receiving the penalty.
+   * @param researchId The ID of the research associated with this penalty.
+   * @return uint256 The total number of penalties the researcher has accumulated.
    */
-  function addPenalty(address addr, uint64 researchId) public mustBeAllowedCaller returns (uint256) {
+  function addPenalty(
+    address addr,
+    uint64 researchId
+  ) public mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
     penalties[addr].push(Penalty(researchId));
 
     return totalPenalties(addr);

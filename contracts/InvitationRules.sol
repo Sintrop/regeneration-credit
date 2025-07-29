@@ -40,19 +40,19 @@ contract InvitationRules is Ownable, ReentrancyGuard {
   /// @dev The key is the inviter's UserType, and the value is a mapping from UserType (invited) to a boolean (true if allowed).
   mapping(CommunityTypes.UserType => CommunityTypes.UserType) public canBeInviteds;
 
-  /// @notice CommunityRules contract address
+  /// @notice CommunityRules contract interface
   ICommunityRules private communityRules;
 
-  /// @notice ResearcherRules contract address
+  /// @notice ResearcherRules contract interface
   IResearcherRules private researcherRules;
 
-  /// @notice DeveloperRules contract address
+  /// @notice DeveloperRules contract interface
   IDeveloperRules private developerRules;
 
-  /// @notice ActivistRules contract address
+  /// @notice ActivistRules contract interface
   IActivistRules private activistRules;
 
-  /// @notice ContributorRules contract address
+  /// @notice ContributorRules contract interface
   IContributorRules private contributorRules;
 
   // --- Constructor ---

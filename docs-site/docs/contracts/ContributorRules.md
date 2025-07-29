@@ -105,7 +105,7 @@ constructor(uint32 timeBetweenWorks_, uint8 maxPenalties_, uint32 securityBlocks
 ```
 
 _Initializes the ContributorRules contract with key parameters for contribution management.
-Note: External contract addresses (`communityRules`, `contributorPool`, etc.) are set via `setContractAddressDependencies`
+Note: External contract addresses (`communityRules`, `contributorPool`, etc.) are set via `setContractInterfaces`
 after deployment, following an `onlyOwner` pattern for secure initialization._
 
 #### Parameters
@@ -116,10 +116,10 @@ after deployment, following an `onlyOwner` pattern for secure initialization._
 | maxPenalties_ | uint8 | The maximum allowed penalties for a contributor. |
 | securityBlocksToValidation_ | uint32 | The number of blocks before era end to block new contributions. |
 
-### setContractAddressDependencies
+### setContractInterfaces
 
 ```solidity
-function setContractAddressDependencies(struct ContractsDependency contractDependency) public
+function setContractInterfaces(struct ContractsDependency contractDependency) public
 ```
 
 _onlyOwner function to set contracts dependency. This function must be called only once after the contract deploy and ownership must be renounced._

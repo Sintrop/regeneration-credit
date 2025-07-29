@@ -54,7 +54,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
   /// Represents their individual contribution to environmental offset.
   mapping(address => uint256) public certificate;
 
-  /// @notice SupporterRules contract address.
+  /// @notice SupporterRules contract interface.
   ISupporterRules private supporterRules;
 
   // --- Constructor ---
@@ -72,11 +72,11 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
   // --- Deploy functions ---
 
   /**
-   * @dev onlyOwner function to set contracts dependency.
+   * @dev onlyOwner function to set contract interface dependency.
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param supporterRulesAddress Addresses of the SupporterRules contract.
    */
-  function setContractDependencies(address supporterRulesAddress) public onlyOwner {
+  function setContractInterfaces(address supporterRulesAddress) public onlyOwner {
     supporterRules = ISupporterRules(supporterRulesAddress);
   }
 
@@ -146,7 +146,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * @notice Allows a supporter to burn tokens to post content.
    * @dev Burns tokens and creates a new publication record.
    * Enforces character limits for description and content.
-   * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
+   * @param amount Tokens to be burned (minimum 10 tokens in wei, i.e., 10e18).
    * @param description The description of the post (max 600 characters).
    * @param content The content of the post (max 600 characters).
    */
@@ -173,7 +173,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * @param numTokens The amount of tokens to transfer.
    */
   function decreaseLocked(address tokenOwner, uint256 numTokens) public mustBeContractPool {
-    require(numTokens <= balanceOf(tokenOwner), "You don't have RC Tokens");
+    require(numTokens <= balanceOf(tokenOwner), "Pool out of balance");
 
     // Update total locked tokens.
     unchecked {

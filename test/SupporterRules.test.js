@@ -39,6 +39,7 @@ describe("SupporterRules", () => {
     await communityRules.newAllowedCaller(researcherRules.target);
     await communityRules.newAllowedCaller(ownerAddress);
     await instance.newAllowedCaller(ownerAddress);
+    await instance.setContractCall(ownerAddress);
   });
 
   describe("#addSupporter", () => {
@@ -124,6 +125,7 @@ describe("SupporterRules", () => {
       context("when amount is greater than zero", () => {
         context("when calculatorItemId exists", () => {
           beforeEach(async () => {
+            await communityRules.setContractCall(ownerAddress, ownerAddress);
             await communityRules.addInvitation(inv1Address, user1Address, userTypes.Researcher);
             await researcherRules.connect(user1Address).addResearcher("Researcher  A", "photoURL");
 
@@ -140,6 +142,7 @@ describe("SupporterRules", () => {
             context("when burn 1000000000000000000 tokens", () => {
               beforeEach(async () => {
                 await instance.newAllowedCaller(inv2Address);
+                await instance.setContractCall(inv2Address);
 
                 await instance.connect(inv2Address).offset(inv2Address, 1000000000000000000n, 1);
               });
@@ -177,6 +180,7 @@ describe("SupporterRules", () => {
             context("when burn 1000000000000000000 tokens", () => {
               beforeEach(async () => {
                 await instance.newAllowedCaller(inv1Address);
+                await instance.setContractCall(inv1Address);
 
                 await instance.connect(inv1Address).offset(inv2Address, 1000000000000000000n, 1);
               });
@@ -191,6 +195,7 @@ describe("SupporterRules", () => {
             context("when burn 5000000000000000000 tokens", () => {
               beforeEach(async () => {
                 await instance.newAllowedCaller(inv1Address);
+                await instance.setContractCall(inv1Address);
 
                 await instance.connect(inv1Address).offset(inv2Address, 5000000000000000000n, 1);
               });
@@ -205,6 +210,7 @@ describe("SupporterRules", () => {
             context("when burn multiple times", () => {
               beforeEach(async () => {
                 await instance.newAllowedCaller(inv1Address);
+                await instance.setContractCall(inv1Address);
 
                 await instance.connect(inv1Address).offset(inv1Address, 1000000000000000000n, 1);
                 await instance.connect(inv1Address).offset(inv1Address, 1000000000000000000n, 1);
@@ -223,6 +229,7 @@ describe("SupporterRules", () => {
         context("when calculatorItemId does not exists", () => {
           beforeEach(async () => {
             await instance.newAllowedCaller(inv2Address);
+            await communityRules.setContractCall(ownerAddress, ownerAddress);
             await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
             await addSupporter("Supporter B", "description", "profilePhoto", inv2Address);
             await transferTokensTo(inv2Address, 100000000000000000000n);
@@ -230,6 +237,7 @@ describe("SupporterRules", () => {
 
           context("when burn 1000000000000000000 tokens", () => {
             it("calculatorItemCertificates to item 10 must be 0", async () => {
+              await instance.setContractCall(inv2Address);
               await expect(
                 instance.connect(inv2Address).offset(inv2Address, 1000000000000000000n, 10)
               ).to.be.revertedWith("Calculator item does not exist");
@@ -250,6 +258,7 @@ describe("SupporterRules", () => {
         context("when publish and burn", () => {
           context("when SUPPORTER was invited", () => {
             beforeEach(async () => {
+              await communityRules.setContractCall(ownerAddress, ownerAddress);
               await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
               await addSupporter("Supporter B", "description", "profilePhoto", inv2Address);
               await transferTokensTo(inv2Address, 100000000000000000000n);
@@ -258,6 +267,7 @@ describe("SupporterRules", () => {
             context("when burn 1000000000000000000 tokens", () => {
               beforeEach(async () => {
                 await instance.newAllowedCaller(inv2Address);
+                await instance.setContractCall(inv2Address);
 
                 await instance.connect(inv2Address).publish(inv2Address, 1000000000000000000n, "text", "text");
               });
@@ -294,6 +304,7 @@ describe("SupporterRules", () => {
     context("when is supporter", () => {
       context("when calculatorItem exists", () => {
         beforeEach(async () => {
+          await communityRules.setContractCall(ownerAddress, ownerAddress);
           await communityRules.addInvitation(inv1Address, user1Address, userTypes.Researcher);
           await researcherRules.connect(user1Address).addResearcher("Researcher  A", "photoURL");
 
@@ -316,6 +327,7 @@ describe("SupporterRules", () => {
 
       context("when try to declared the same item twice", () => {
         it("should return error", async () => {
+          await communityRules.setContractCall(ownerAddress, ownerAddress);
           await communityRules.addInvitation(inv1Address, user1Address, userTypes.Researcher);
           await researcherRules.connect(user1Address).addResearcher("Researcher  A", "photoURL");
 
