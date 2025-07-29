@@ -139,7 +139,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * Ownership should be renounced after this call.
    * @param contractDependency Struct containing addresses of necessary system contracts.
    */
-  function setContractInterfaces(ContractsDependency memory contractDependency) public onlyOwner {
+  function setContractInterfaces(ContractsDependency memory contractDependency) external onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     regeneratorRules = IRegeneratorRules(contractDependency.regeneratorRulesAddress);
     validationRules = IValidationRules(contractDependency.validationRulesAddress);

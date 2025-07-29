@@ -55,7 +55,7 @@ contract ResearcherPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _researcherRulesAddress Address of DeveloperRules.
    */
-  function setContractCall(address _researcherRulesAddress) public onlyOwner {
+  function setContractCall(address _researcherRulesAddress) external onlyOwner {
     researcherRulesAddress = _researcherRulesAddress;
   }
 

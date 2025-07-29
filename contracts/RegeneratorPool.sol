@@ -55,7 +55,7 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _regeneratorRulesAddress Address of RegeneratorRules.
    */
-  function setContractCall(address _regeneratorRulesAddress) public onlyOwner {
+  function setContractCall(address _regeneratorRulesAddress) external onlyOwner {
     regeneratorRulesAddress = _regeneratorRulesAddress;
   }
 

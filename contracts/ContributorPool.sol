@@ -55,7 +55,7 @@ contract ContributorPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _contributorRulesAddress Address of ContributorRules.
    */
-  function setContractCall(address _contributorRulesAddress) public onlyOwner {
+  function setContractCall(address _contributorRulesAddress) external onlyOwner {
     contributorRulesAddress = _contributorRulesAddress;
   }
 

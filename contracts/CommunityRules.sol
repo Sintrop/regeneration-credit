@@ -141,7 +141,7 @@ contract CommunityRules is Callable {
    * @param _invitationRulesAddress Address of InvitationRules.
    * @param _validationRulesAddress Address of ValidationRules.
    */
-  function setContractCall(address _invitationRulesAddress, address _validationRulesAddress) public onlyOwner {
+  function setContractCall(address _invitationRulesAddress, address _validationRulesAddress) external onlyOwner {
     invitationRulesAddress = _invitationRulesAddress;
     validationRulesAddress = _validationRulesAddress;
   }

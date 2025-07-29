@@ -55,7 +55,7 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _activistRulesAddress Address of ActivistRules.
    */
-  function setContractCall(address _activistRulesAddress) public onlyOwner {
+  function setContractCall(address _activistRulesAddress) external onlyOwner {
     activistRulesAddress = _activistRulesAddress;
   }
 

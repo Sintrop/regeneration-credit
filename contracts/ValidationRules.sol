@@ -138,7 +138,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param contractDependency Addresses of system contracts used.
    */
-  function setContractInterfaces(ContractsDependency memory contractDependency) public onlyOwner {
+  function setContractInterfaces(ContractsDependency memory contractDependency) external onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     regeneratorRules = IRegeneratorRules(contractDependency.regeneratorRulesAddress);
     inspectorRules = IInspectorRules(contractDependency.inspectorRulesAddress);
@@ -162,7 +162,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     address _contributorRulesAddress,
     address _developerRulesAddress,
     address _researcherRulesAddress
-  ) public onlyOwner {
+  ) external onlyOwner {
     inspectionRulesAddress = _inspectionRulesAddress;
     contributorRulesAddress = _contributorRulesAddress;
     developerRulesAddress = _developerRulesAddress;

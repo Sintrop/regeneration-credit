@@ -121,7 +121,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param contractDependency Addresses of system contracts used.
    */
-  function setContractInterfaces(ContractsDependency memory contractDependency) public onlyOwner {
+  function setContractInterfaces(ContractsDependency memory contractDependency) external onlyOwner {
     communityRules = ICommunityRules(contractDependency.communityRulesAddress);
     contributorPool = IContributorPool(contractDependency.contributorPoolAddress);
     validationRules = IValidationRules(contractDependency.validationRulesAddress);
@@ -133,7 +133,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _validationRulesAddress Address of ValidationRules.
    */
-  function setContractCall(address _validationRulesAddress) public onlyOwner {
+  function setContractCall(address _validationRulesAddress) external onlyOwner {
     validationRulesAddress = _validationRulesAddress;
   }
 

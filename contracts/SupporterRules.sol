@@ -91,7 +91,7 @@ contract SupporterRules is Callable {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _regenerationCreditAddress Address of RegenerationCredit.
    */
-  function setContractCall(address _regenerationCreditAddress) public onlyOwner {
+  function setContractCall(address _regenerationCreditAddress) external onlyOwner {
     regenerationCreditAddress = _regenerationCreditAddress;
   }
 
