@@ -279,7 +279,7 @@ async function transferTokens() {
   await regenerationCredit.transfer("0xc38eF1d3b5915c22CFe9Ec3FC11F953EE4751768", "1773050000000000000000000");
   await regenerationCredit.transfer("0x835dbFd7ac5Db0C556A4416b62B6B67Cb05FDf88", "531915000000000000000000");
   await regenerationCredit.transfer("0x05A6129c3f77db419bD85A6315b95691b212456D", "354610000000000000000000");
-  await regenerationCredit.transfer("0x6202401216350f2266c090AA0d1Ca58bAA57fA8E", "354610000000000000000000");
+  await regenerationCredit.transfer("0x41f8a4536EBd107288beF29044F3Bd81C2CEbf0b", "354610000000000000000000");
   await regenerationCredit.transfer("0x8b92474120e7D586C8F570902E0e4F5967368597", "354610000000000000000000");
   await regenerationCredit.transfer("0x3e49Ee483A2289946D4992b3A8eEe7aa03e2615B", "177305000000000000000000");
   await regenerationCredit.transfer("0xa16c1B21487281AaFe1Ee64A8385f92afE91bfe6", "354610000000000000000000");
@@ -287,13 +287,44 @@ async function transferTokens() {
   await regenerationCredit.transfer("0x95c4F371055F2c5a130Da0e78B3DF54e7028331e", "106383000000000000000000");
   await regenerationCredit.transfer("0x68CD2862072381F62cfa25701c450B6842690ccB", "100000000000000000000000");
   await regenerationCredit.transfer("0xcDeCe2eEFe17dDb09aD3664b8910e66A17b907F4", "90426000000000000000000");
-  await regenerationCredit.transfer("0x1f9B196DA7B2813b3D0C7442E5Ba4C36a7a8E736", "35461000000000000000000");
+  await regenerationCredit.transfer("0x1f9B196DA7B2813b3D0C7442E5Ba4C36a7a8E736", "55461000000000000000000");
   await regenerationCredit.transfer("0x25822ca8524Fcd0D7446b167413CE71880A69f43", "17730000000000000000000");
   await regenerationCredit.transfer("0xd672Bbff8726AAD5Df56DDB5f9f8719022DE50cA", "35461000000000000000000");
   await regenerationCredit.transfer("0xaD611ba99d45aF2aA7868FC7DFB346f062a1Dac3", "35461000000000000000000");
   await regenerationCredit.transfer("0x01AFF7942F9f27fEEEe98E0203493365e10F5C06", "35461000000000000000000");
   await regenerationCredit.transfer("0xFbF12d63D54b9a9cC68ff2aBFc71EE3567C57B70", "10638000000000000000000");
   await regenerationCredit.transfer("0x0Ef5eF923CF01da31673eeaAB7E63D273b609ca3", "109500000000000000000000");
+  await regenerationCredit.transfer("0x137c9547ade09859bF6e8B3C2954482915F629F1", "35461000000000000000000");
+
+  //mainnet - pre-launch contributors
+  await regenerationCredit.transfer("0x15a9B50a41121C2bff2D474f361Cb5F50E087f2A", "1000000000000000000000000");
+  await regenerationCredit.transfer("0xE6642b52fD8B9FC3a4389FE5473f2C49a2fDA7d9", "500000000000000000000000");
+  await regenerationCredit.transfer("0x284a5C0656B5Ca18823F4AcED0E4dfcBF0a5563b", "200000000000000000000000");
+  await regenerationCredit.transfer("0xaf6aCf0963EBb984228721d176B1F5b5972F115F", "10000000000000000000000000");
+  await regenerationCredit.transfer("0xC94Ed9ee622c17F04D7F99A7046A0dCD53a7cFd5", "2500000000000000000000000");
+  await regenerationCredit.transfer("0x382BAd7c1E0b549bedCf1bd525F3D767839D7E94", "5000000000000000000000000");
+  await regenerationCredit.transfer("0xeEdc82b741B41b4888d6997Fa1967df710D9c8F3", "2500000000000000000000000");
+  await regenerationCredit.transfer("0x33054376f9074C9025Cc275afAa92EC63725D194", "10000000000000000000000000");
+  await regenerationCredit.transfer("0xAbEb1652c418d049474ceabf9b224Ec0dEEc4a19", "5000000000000000000000000");
+  await regenerationCredit.transfer("0x9Dc5235C5691862b759b85B7eF1Ac6adfbFdb4Fc", "50000000000000000000000");
+  await regenerationCredit.transfer("0x3210030eC8114f575b21009319576F9B99126672", "200000000000000000000000");
+  await regenerationCredit.transfer("0x6c74D0aEBC1b7379d0089381AE4c5d0660B917C9", "50000000000000000000000");
+  await regenerationCredit.transfer("0xe85C393b185d9a57D68A3129E311FdA8eb0622dB", "250000000000000000000000");
+  await regenerationCredit.transfer("0xB2223b463282d3e6877e997a60F4b2c0A280DeBE", "25000000000000000000000");
+  await regenerationCredit.transfer("0x2e6D3D01Db13b1bFf09570cc52D7F6abafbF6615", "15000000000000000000000000");
+  await regenerationCredit.transfer("0x083Ccc7563C62Cf1Ba7cb356E67ff25539B4bc60", "15000000000000000000000000");
+  await regenerationCredit.transfer("0x8ef5143F6F933B06A7859aDF9EF19942298c4062", "10000000000000000000000000");
+  await regenerationCredit.transfer("0xAF7aEFD875785E25d8423e574C6F724A8a3E1c64", "10000000000000000000000000");
+  await regenerationCredit.transfer("0xDAb7f1c57E584a1940E129EBe1ea770DD414ead9", "10000000000000000000000000");
+  await regenerationCredit.transfer("0xe38335670B0f8Ce1b7262502E50aCfe454EED2b6", "10000000000000000000000000");
+  await regenerationCredit.transfer("0xa7AC50826b7068dB815215d54eA6Ac1B5F7fd8fD", "5000000000000000000000000");
+  await regenerationCredit.transfer("0x50b11a99666A66ee649c98397723850d6bb1F1Ca", "5000000000000000000000000");
+  await regenerationCredit.transfer("0xf681059129B77500C27e14DF9FF6297a8AE58ed8", "5000000000000000000000000");
+  await regenerationCredit.transfer("0x370641C6606960E6FaA32561f7371129E3feA6D1", "5000000000000000000000000");
+  await regenerationCredit.transfer("0x1e1A04485259908Ea37D013A1e35150F59D82759", "5000000000000000000000000");
+  await regenerationCredit.transfer("0x0BFb33B3F730388af349594520F0a774c76D67BB", "5000000000000000000000000");
+  await regenerationCredit.transfer("0x157D079F5D4BD384ab5c343D800e45d230B2F456", "5000000000000000000000000");
+  await regenerationCredit.transfer("0xD1a16F1512f6934f27367Dc7A0c2039544b39119", "1560284000000000000000000");
 
   console.log("After token transfer is OK");
 }
@@ -301,7 +332,7 @@ async function transferTokens() {
 async function inviteUsers() {
   const invitationRules = await getDeployedContract("InvitationRules");
 
-  //testnet - v8 users
+  //testnet users
   await invitationRules.onlyOwnerInvite("0x9D89B8562B00713a034DEb7A867D5d3Bc45e19E6", 1);
   await invitationRules.onlyOwnerInvite("0x49B85E2D9F48252BF32BA35221B361DA77AAC683", 4);
   await invitationRules.onlyOwnerInvite("0x219ADF489CF316EA2392827097C5196C437D2C2B", 4);
@@ -332,6 +363,13 @@ async function inviteUsers() {
   await invitationRules.onlyOwnerInvite("0x44730EE06B2C7A56378F57A93D35136FA610BB91", 8);
   await invitationRules.onlyOwnerInvite("0x900BD2ED98BE55299928AD1DA36B50021EC1856D", 4);
 
+  await invitationRules.onlyOwnerInvite("0x6582110F1b7928e70fdd0e5E6A4b87FC1EF43aA0", 1);
+  await invitationRules.onlyOwnerInvite("0x79EA5902CDb137E19B2fc03cD0D3173520efc978", 2);
+  await invitationRules.onlyOwnerInvite("0xb4d17556e6Be4d3f0522633824a31199F70135BB", 3);
+  await invitationRules.onlyOwnerInvite("0xfFacb421cB11fb4b572C6ED1e2d6014F3d7FBDb4", 5);
+  await invitationRules.onlyOwnerInvite("0xb6D6FFE5FC60eb8d6a01e25480B3e6610880BF86", 4);
+  await invitationRules.onlyOwnerInvite("0x77760E118B69703AC52BF40F345053812f832fE5", 6);
+  
   //mainnet - v6 users
   await invitationRules.onlyOwnerInvite("0xAA863C3B4A0AAF54F42ABE0F627A6F73133003B3", 2);
   await invitationRules.onlyOwnerInvite("0x8D95EB224D5D136726EDFB7C40EA1AD9D03C9FE1", 2);
