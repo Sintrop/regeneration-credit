@@ -47,10 +47,10 @@ module.exports = {
     //   url: `https://rpc.holesky.ethpandaops.io`,
     //   accounts: [privateKey],
     // },
-    sequoiaTestnet: {
-      url: "https://sequoiarpc.sintrop.com",
-      accounts: [privateKey],
-    }
+    // sequoiaTestnet: {
+    //   url: "https://sequoiarpc.sintrop.com",
+    //   accounts: [privateKey],
+    // }
   },
   etherscan: {
     apiKey: {
