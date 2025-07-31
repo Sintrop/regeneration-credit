@@ -88,7 +88,7 @@ contract ContributorPool is Poolable, Blockable, Callable, ReentrancyGuard {
     bool success = regenerationCredit.transfer(delegate, numTokens);
     require(success, "ERC20: transfer failed");
 
-    regenerationCredit.decreaseLocked(address(this), numTokens);
+    regenerationCredit.decreaseLocked(numTokens);
   }
 
   /**

@@ -168,15 +168,14 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
   /**
    * @dev Allows a designated "contract pool" to register a new decreaseLocked.
    * @notice Called only by a system pool contract, this function remove the transfered tokens from totalLocked.
-   * @param tokenOwner The address of the contract pool initiating the transfer.
    * @param numTokens The amount of tokens to transfer.
    */
-  function decreaseLocked(address tokenOwner, uint256 numTokens) external mustBeContractPool {
-    require(numTokens <= balanceOf(tokenOwner), "Pool out of balance");
+  function decreaseLocked(uint256 numTokens) external mustBeContractPool {
+    require(numTokens <= balanceOf(msg.sender), "Pool out of balance");
 
     // Update total locked tokens.
     unchecked {
-      if (contractsPools[tokenOwner]) totalLocked_ -= numTokens;
+      if (contractsPools[msg.sender]) totalLocked_ -= numTokens;
     }
   }
 
