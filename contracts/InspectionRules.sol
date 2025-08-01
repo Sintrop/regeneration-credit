@@ -37,8 +37,8 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   /// @notice Max character length for text.
   uint16 private constant MAX_TEXT_LENGTH = 300;
 
-  /// @notice The maximum result value for the number of trees in an inspection.
-  uint32 public constant MAX_TREES_RESULT = 200000;
+  /// @notice Maximum plausible density of trees per square meter.
+  uint8 private constant MAX_TREES_PER_SQM = 4;
 
   /// @notice The maximum result value for the biodiversity score in an inspection.
   uint32 public constant MAX_BIODIVERSITY_RESULT = 300;
@@ -256,7 +256,13 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept before");
     require(inspection.inspector == msg.sender, "Not your inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
-    require(treesResult <= MAX_TREES_RESULT && biodiversityResult <= MAX_BIODIVERSITY_RESULT, "Max result limit");
+
+    Regenerator memory regenerator = regeneratorRules.getRegenerator(inspection.regenerator);
+    uint256 maxTreesForThisArea = uint256(regenerator.totalArea) * MAX_TREES_PER_SQM;
+
+    require(treesResult <= maxTreesForThisArea, "Tree count exceeds density limit for this area");
+
+    require(biodiversityResult <= MAX_BIODIVERSITY_RESULT, "Max result limit");
 
     _markAsRealized(inspection, proofPhotos, justificationReport, treesResult, biodiversityResult);
 
