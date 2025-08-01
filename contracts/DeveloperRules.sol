@@ -97,6 +97,9 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   /// @notice The specific `UserType` enumeration value for a Developer user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.DEVELOPER;
 
+  /// @notice Tracks which validator has voted on which report to prevent duplicate votes.
+  mapping(uint64 => mapping(address => bool)) private hasVotedOnReport;
+
   // --- Constructor ---
 
   /**
@@ -241,6 +244,10 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     require(voteRules.canVote(msg.sender), "Not a voter");
     // Check if the caller has waited the required time between votes.
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
+    // Check if the caller has already voted for this resource.
+    require(!hasVotedOnReport[id][msg.sender], "Already voted");
+
+    hasVotedOnReport[id][msg.sender] = true;
 
     Report memory report = reports[id];
 
