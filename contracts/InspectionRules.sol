@@ -105,6 +105,9 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   /// @notice RegenerationIndexRules contract interface for calculating regeneration scores.
   IRegenerationIndexRules private regenerationIndexRules;
 
+  /// @notice Tracks which validator has voted on which inspection to prevent duplicate votes.
+  mapping(uint64 => mapping(address => bool)) private hasVotedOnInspection;
+
   // --- Constructor ---
 
   /**
@@ -294,9 +297,16 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * @param justification A string explaining why the inspection is being invalidated.
    */
   function addInspectionValidation(uint64 id, string memory justification) external nonReentrant {
+    // Character limit validation for justification.
     require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters reached");
+    // Check if the caller is eligible to vote.
     require(voteRules.canVote(msg.sender), "Not a voter");
+    // Check if the caller has waited the required time between votes.
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
+    // Check if the caller has already voted for this resource.
+    require(!hasVotedOnInspection[id][msg.sender], "Already voted");
+
+    hasVotedOnInspection[id][msg.sender] = true;
 
     Inspection storage inspection = inspections[id];
 

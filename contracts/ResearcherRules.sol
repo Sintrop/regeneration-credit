@@ -117,6 +117,9 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   /// @notice The address of the `InspectionRules` contract.
   address private validationRulesAddress;
 
+  /// @notice Tracks which validator has voted on which research to prevent duplicate votes.
+  mapping(uint64 => mapping(address => bool)) private hasVotedOnResearch;
+
   // --- Constructor ---
 
   /**
@@ -242,9 +245,16 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param justification A brief justification for invalidating the research (Max characters).
    */
   function addResearchValidation(uint64 id, string memory justification) external nonReentrant {
+    // Character limit validation for justification.
     require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters");
+    // Check if the caller is eligible to vote.
     require(voteRules.canVote(msg.sender), "Not a voter");
+    // Check if the caller has waited the required time between votes.
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
+    // Check if the caller has already voted for this resource.
+    require(!hasVotedOnResearch[id][msg.sender], "Already voted");
+
+    hasVotedOnResearch[id][msg.sender] = true;
 
     Research memory research = researches[id];
 
