@@ -29,6 +29,9 @@ contract ResearcherPool is Poolable, Blockable, Callable, ReentrancyGuard {
   /// @notice The address of the `ResearcherRules` contract.
   address private researcherRulesAddress;
 
+  /// @notice Tracks withdrawals to ensure a user can only claim rewards once per era.
+  mapping(uint256 => mapping(address => bool)) public hasWithdrawn;
+
   // --- Constructor ---
 
   /**
@@ -74,6 +77,9 @@ contract ResearcherPool is Poolable, Blockable, Callable, ReentrancyGuard {
     uint256 era
   ) external mustBeAllowedCaller mustBeContractCall(researcherRulesAddress) canWithdrawModifier(era) nonReentrant {
     require(era <= currentContractEra(), "Era in the future");
+    require(!hasWithdrawn[era][delegate], "Pool: Already withdrawn for this era");
+
+    hasWithdrawn[era][delegate] = true;
 
     // Calculate the number of tokens the user is eligible to receive for the given era.
     uint256 numTokens = _calculateUserEraTokens(era, delegate, tokensPerEra(getEpochForEra(era), halving));
