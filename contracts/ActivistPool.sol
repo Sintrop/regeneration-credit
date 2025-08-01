@@ -77,7 +77,7 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
     uint256 era
   ) external mustBeAllowedCaller mustBeContractCall(activistRulesAddress) canWithdrawModifier(era) nonReentrant {
     require(era <= currentContractEra(), "Era in the future");
-    require(!hasWithdrawn[era][delegate], "Pool: Already withdrawn for this era");
+    require(!hasWithdrawn[era][delegate], "Already withdrawn for this era");
 
     hasWithdrawn[era][delegate] = true;
 
