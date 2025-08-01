@@ -14,6 +14,9 @@ import { Era } from "contracts/types/PoolTypes.sol";
 contract Poolable {
   // --- State variables ---
 
+  /// @notice A scaling factor to preserve precision in reward calculations.
+  uint256 internal constant PRECISION_FACTOR = 10 ** 18;
+
   /// @notice The total supply of tokens to be managed by this contract.
   /// @dev This value is set once during contract deployment and remains constant.
   uint256 internal immutable totalTokens;
@@ -87,7 +90,7 @@ contract Poolable {
     // Return 0 if the user has no levels or there are no levels at all in the era to prevent division by zero.
     if (levelTo == 0 || levels == 0) return 0;
 
-    return (levelTo * _tokensPerEra) / levels;
+    return (levelTo * _tokensPerEra * PRECISION_FACTOR) / levels;
   }
 
   /**

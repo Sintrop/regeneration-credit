@@ -75,8 +75,11 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
   ) external mustBeAllowedCaller mustBeContractCall(activistRulesAddress) canWithdrawModifier(era) nonReentrant {
     require(era <= currentContractEra(), "Era in the future");
 
-    // Calculate the number of tokens the user is eligible to receive for the given era.
-    uint256 numTokens = _calculateUserEraTokens(era, delegate, tokensPerEra(getEpochForEra(era), halving));
+    // `highPrecisionTokens` is the value user is eligible to receive for the given era with 18 extra decimals of precision.
+    uint256 highPrecisionTokens = _calculateUserEraTokens(era, delegate, tokensPerEra(getEpochForEra(era), halving));
+
+    // Calculate the real number of tokens to transfer, scaling it back down.
+    uint256 numTokens = highPrecisionTokens / PRECISION_FACTOR;
 
     // Update the user's era and token balance state after the withdrawal.
     _updateEraAfterWithdraw(era, delegate, numTokens);
