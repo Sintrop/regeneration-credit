@@ -98,8 +98,8 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   /// @notice A mapping from a contributor's wallet address to an array of `Penalty` structs they have received.
   mapping(address => Penalty[]) public penalties;
 
-  /// @notice Tracks which validator has voted on which report to prevent duplicate votes.
-  mapping(uint64 => mapping(address => bool)) private hasVotedOnReport;
+  /// @notice Tracks which validator has voted on which contribution to prevent duplicate votes.
+  mapping(uint64 => mapping(address => bool)) private hasVotedOnContribution;
 
   // --- Constructor ---
 
@@ -255,9 +255,9 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     // Check if the caller has waited the required time between votes.
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
     // Check if the caller has already voted for this resource.
-    require(!hasVotedOnReport[id][msg.sender], "Already voted");
+    require(!hasVotedOnContribution[id][msg.sender], "Already voted");
 
-    hasVotedOnReport[id][msg.sender] = true;
+    hasVotedOnContribution[id][msg.sender] = true;
 
     // Retrieve the contribution using a storage reference to modify it directly.
     Contribution memory contribution = contributions[id];

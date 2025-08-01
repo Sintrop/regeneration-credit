@@ -117,8 +117,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   /// @notice The address of the `InspectionRules` contract.
   address private validationRulesAddress;
 
-  /// @notice Tracks which validator has voted on which report to prevent duplicate votes.
-  mapping(uint64 => mapping(address => bool)) private hasVotedOnReport;
+  /// @notice Tracks which validator has voted on which research to prevent duplicate votes.
+  mapping(uint64 => mapping(address => bool)) private hasVotedOnResearch;
 
   // --- Constructor ---
 
@@ -252,9 +252,9 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     // Check if the caller has waited the required time between votes.
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
     // Check if the caller has already voted for this resource.
-    require(!hasVotedOnReport[id][msg.sender], "Already voted");
+    require(!hasVotedOnResearch[id][msg.sender], "Already voted");
 
-    hasVotedOnReport[id][msg.sender] = true;
+    hasVotedOnResearch[id][msg.sender] = true;
 
     Research memory research = researches[id];
 
