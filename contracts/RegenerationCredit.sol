@@ -172,11 +172,9 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    */
   function decreaseLocked(uint256 numTokens) external mustBeContractPool {
     require(numTokens <= balanceOf(msg.sender), "Pool out of balance");
+    require(numTokens <= totalLocked_, "Cannot decrease more than total locked");
 
-    // Update total locked tokens.
-    unchecked {
-      if (contractsPools[msg.sender]) totalLocked_ -= numTokens;
-    }
+    if (contractsPools[msg.sender]) totalLocked_ -= numTokens;
   }
 
   // --- Private functions ---
