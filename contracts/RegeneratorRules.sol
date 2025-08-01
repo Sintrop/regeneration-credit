@@ -341,6 +341,8 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     address addr,
     uint32 score
   ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant returns (uint256) {
+    require(score <= 64, "Maximum score");
+
     uint256 totalInspections = _incrementInspections(addr);
 
     _setRegenerationScore(addr, score);
