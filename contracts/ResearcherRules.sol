@@ -167,7 +167,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    */
   function addResearcher(string memory name, string memory proofPhoto) external {
     require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
-    require(communityRules.userTypesCount(USER_TYPE) <= MAX_USER_COUNT, "Max user limit");
+    require(communityRules.userTypesCount(USER_TYPE) < MAX_USER_COUNT, "Max user limit");
 
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
