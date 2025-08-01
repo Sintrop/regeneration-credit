@@ -114,7 +114,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * Requirements:
    * - The caller (`msg.sender`) must have `amount` tokens.
    * - `amount` must be greater than 0.
-   * 
+   *
    * Note: This functions uses the token 18 decimals, to burn 1 RC user must write 1000000000000000000.
    *
    * @param amount The amount of tokens to burn from the caller's balance.
