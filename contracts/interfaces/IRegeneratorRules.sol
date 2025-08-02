@@ -39,7 +39,11 @@ interface IRegeneratorRules {
    * @param regenerator The address of the regenerator that was inspected.
    * @param regenerationScore The score calculated from the inspection.
    */
-  function afterRealizeInspection(address regenerator, uint32 regenerationScore) external returns (uint256);
+  function afterRealizeInspection(
+    address regenerator,
+    uint32 regenerationScore,
+    uint64 inspectionId
+  ) external returns (uint256);
 
   /**
    * @notice Calculates the time or blocks remaining until the next era begins.

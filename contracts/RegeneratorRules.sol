@@ -32,6 +32,9 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// @notice Maximum number of coordinate points to define a regeneration area.
   uint8 private constant MAX_COORDINATES_COUNT = 10;
 
+  /// @notice Maximum inspection score.
+  uint8 private constant MAX_SCORE = 64;
+
   /// @notice Maximum character length for the regenerator's name.
   uint16 private constant MAX_NAME_LENGTH = 50;
 
@@ -70,6 +73,9 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /// @notice A mapping from a regenerator's wallet address to a hash or identifier of their area photo.
   mapping(address => string) public areaPhoto;
+
+  /// @notice Tracks which inspection IDs have already been processed to prevent replay attacks.
+  mapping(uint64 => bool) private processedInspections;
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules and user types.
@@ -324,13 +330,18 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * after an inspection is completed.
    * @param addr The regenerator's wallet address.
    * @param score The score obtained from the realized inspection, to be added to the regenerator's total score.
+   * @param inspectionId The id of the realized inspection.
    * @return uint256 The updated total number of inspections for the regenerator.
    */
   function afterRealizeInspection(
     address addr,
-    uint32 score
+    uint32 score,
+    uint64 inspectionId
   ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant returns (uint256) {
-    require(score <= 64, "Maximum score");
+    require(score <= MAX_SCORE, "Maximum score");
+    require(!processedInspections[inspectionId], "Inspection results already submitted");
+
+    processedInspections[inspectionId] = true;
 
     uint256 totalInspections = _incrementInspections(addr);
 
