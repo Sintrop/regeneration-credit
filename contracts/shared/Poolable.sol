@@ -147,7 +147,7 @@ contract Poolable {
     uint256 amountToRemove = _levelsToRemove > 0 ? _levelsToRemove : userCurrentEraLevels;
 
     if (amountToRemove > userCurrentEraLevels) {
-        amountToRemove = userCurrentEraLevels;
+      amountToRemove = userCurrentEraLevels;
     }
 
     eras[_era].levels -= amountToRemove;
