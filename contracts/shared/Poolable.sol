@@ -140,16 +140,20 @@ contract Poolable {
    * @param _era The number of the era.
    */
   function _removePoolLevel(address _user, uint256 _era, uint256 _levelsToRemove) internal {
-    uint256 currentLevels = eraLevels[_era][_user];
+    uint256 userCurrentEraLevels = eraLevels[_era][_user];
 
-    if (currentLevels == 0) return;
+    if (userCurrentEraLevels == 0) return;
 
-    uint256 levels = _levelsToRemove > 0 ? _levelsToRemove : eraLevels[_era][_user];
+    uint256 amountToRemove = _levelsToRemove > 0 ? _levelsToRemove : userCurrentEraLevels;
 
-    eras[_era].levels -= levels;
-    eraLevels[_era][_user] -= levels;
+    if (amountToRemove > userCurrentEraLevels) {
+        amountToRemove = userCurrentEraLevels;
+    }
 
-    emit PoolLevelRemoved(_user, _era, levels, eras[_era].levels, eraLevels[_era][_user]);
+    eras[_era].levels -= amountToRemove;
+    eraLevels[_era][_user] -= amountToRemove;
+
+    emit PoolLevelRemoved(_user, _era, amountToRemove, eras[_era].levels, eraLevels[_era][_user]);
   }
 
   // --- Events ---
