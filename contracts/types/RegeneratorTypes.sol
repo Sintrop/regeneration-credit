@@ -29,6 +29,7 @@ struct Regenerator {
   Pool pool;
   uint256 createdAt;
   uint256 coordinatesCount;
+  bool isFullyInvalidated;
 }
 
 /**

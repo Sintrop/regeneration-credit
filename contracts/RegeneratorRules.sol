@@ -178,7 +178,8 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
       RegenerationScore(0),
       Pool(false, regeneratorPool.currentContractEra()),
       block.number,
-      _coordinates.length
+      _coordinates.length,
+      false
     );
 
     regeneratorsAddress[id] = msg.sender;
@@ -261,15 +262,25 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     address addr,
     uint256 levelsToRemove
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
+    Regenerator storage regenerator = regenerators[addr];
+
     if (levelsToRemove == 0) {
+      require(!regenerator.isFullyInvalidated, "Regenerator already fully invalidated");
+      regenerator.isFullyInvalidated = true;
+
       regenerators[addr].regenerationScore.score = 0;
       _decrementArea(addr);
     } else {
+      
+      if (levelsToRemove > regenerator.regenerationScore.score) {
+          levelsToRemove = regenerator.regenerationScore.score;
+      }      
       regenerators[addr].regenerationScore.score -= levelsToRemove;
     }
 
     regeneratorPool.removePoolLevels(addr, levelsToRemove);
   }
+
 
   /**
    * @dev Allows an authorized caller to decrement a regenerator's total completed inspections count.
