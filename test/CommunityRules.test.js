@@ -469,7 +469,7 @@ describe("CommunityRules", function () {
         });
 
         it("must emit DelationAdded", async () => {
-          await expect(receipt).to.emit(instance, "DelationAdded").withArgs(user2Address, user1Address);
+          await expect(receipt).to.emit(instance, "DelationAdded").withArgs(user2Address, user1Address, 1);
         });
       });
     });

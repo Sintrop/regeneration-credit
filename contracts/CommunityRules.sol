@@ -45,6 +45,9 @@ contract CommunityRules is Callable {
   /// Stores a historical record of all delations against a user.
   mapping(address => CommunityTypes.Delation[]) private delations;
 
+  /// @notice A mapping from a delation id to the `Delation` struct.
+  mapping(uint256 => CommunityTypes.Delation) public delationsById;
+
   /// @notice A mapping from an invited user's address to their `Invitation` details.
   mapping(address => CommunityTypes.Invitation) public invitations;
 
@@ -175,10 +178,24 @@ contract CommunityRules is Callable {
     require(users[addr] != CommunityTypes.UserType.UNDEFINED, "User must be registered");
     require(addr != address(0), "Cannot delate zero address");
 
-    delations[addr].push(CommunityTypes.Delation(delationsCount + 1, msg.sender, addr, title, testimony));
-    delationsCount++;
+    // delations[addr].push(CommunityTypes.Delation(delationsCount + 1, msg.sender, addr, title, testimony));
+    // delationsCount++;
 
-    emit DelationAdded(msg.sender, addr);
+    delationsCount++;
+    uint64 newDelationId = delationsCount;
+
+    CommunityTypes.Delation memory newDelation = CommunityTypes.Delation(
+      newDelationId,
+      msg.sender,
+      addr,
+      title,
+      testimony
+    );
+
+    delations[addr].push(newDelation);
+    delationsById[newDelationId] = newDelation;
+
+    emit DelationAdded(msg.sender, addr, newDelationId);
   }
 
   // --- MustBeAllowedCaller functions (State modifying) ---
@@ -392,7 +409,7 @@ contract CommunityRules is Callable {
    * @param informer The address of the user who submitted the delation.
    * @param reported The address of the user being reported.
    */
-  event DelationAdded(address indexed informer, address indexed reported);
+  event DelationAdded(address indexed informer, address indexed reported, uint64 newDelationId);
 
   /**
    * @notice Emitted when an invitation is successfully added to the system.
