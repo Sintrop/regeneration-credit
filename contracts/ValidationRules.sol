@@ -17,7 +17,7 @@ import { Contribution } from "./types/ContributorTypes.sol";
 import { ContractsDependency } from "./types/ValidationTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title ValidationRules
@@ -127,7 +127,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
    * @dev Sets the immutable `timeBetweenVotes` which dictates how many blocks a validator must wait between votes.
    * @param timeBetweenVotes_ The number of blocks a validator must wait between consecutive votes.
    */
-  constructor(uint256 timeBetweenVotes_) {
+  constructor(uint256 timeBetweenVotes_) ReentrancyGuard() {
     timeBetweenVotes = timeBetweenVotes_;
   }
 

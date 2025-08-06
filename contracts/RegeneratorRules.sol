@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IRegeneratorPool } from "./interfaces/IRegeneratorPool.sol";
 import { Regenerator, Pool, Coordinates, RegenerationScore } from "./types/RegeneratorTypes.sol";
@@ -103,7 +103,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param communityRulesAddress The address of the deployed `CommunityRules` contract.
    * @param regeneratorPoolAddress The address of the deployed `RegeneratorPool` contract.
    */
-  constructor(address communityRulesAddress, address regeneratorPoolAddress) {
+  constructor(address communityRulesAddress, address regeneratorPoolAddress) ReentrancyGuard() {
     communityRules = ICommunityRules(communityRulesAddress);
     regeneratorPool = IRegeneratorPool(regeneratorPoolAddress);
   }

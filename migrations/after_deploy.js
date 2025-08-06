@@ -8,7 +8,6 @@ async function afterDeploy() {
   await configureResearcherRules();
   await configureActivistRules();
   await configureRegeneratorRules();
-  await configureSupporterRules();
   await configureInspectorRules();
   await configureCommunityRules();
   await configurePools();
@@ -150,16 +149,6 @@ async function configureRegeneratorRules() {
   console.log("After RegeneratorRules deploy is OK");
 }
 
-async function configureSupporterRules() {
-
-  const regenerationCredit = await getDeployedContract("RegenerationCredit");
-  const supporterRules = await getDeployedContract("SupporterRules");
-
-  await supporterRules.setContractCall(regenerationCredit.target);
-
-  console.log("After SupporterRules deploy is OK");
-}
-
 async function configureCommunityRules() {
 
   const invitationRules = await getDeployedContract("InvitationRules");
@@ -255,7 +244,6 @@ async function renounceOwnership() {
   await developerRules.renounceOwnership();
   await researcherRules.renounceOwnership();
   await contributorRules.renounceOwnership();
-  await supporterRules.renounceOwnership();
   await regeneratorPool.renounceOwnership();
   await inspectorPool.renounceOwnership();
   await researcherPool.renounceOwnership();

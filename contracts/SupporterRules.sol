@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { Callable } from "./shared/Callable.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IResearcherRules } from "./interfaces/IResearcherRules.sol";
 import { CalculatorItem } from "./types/ResearcherTypes.sol";
 import { Supporter, Publication, Offset } from "./types/SupporterTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
+import { IERC20Permit } from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { ERC20Burnable } from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title SupporterRules
@@ -15,7 +18,7 @@ import { CommunityTypes } from "./types/CommunityTypes.sol";
  * @dev This contract handles supporter registration, profile updates, token burning
  * for environmental offsets and content publications, and management of reduction commitments.
  */
-contract SupporterRules is Callable {
+contract SupporterRules is ReentrancyGuard {
   // --- Constants ---
 
   /// @notice Commission percentage paid to the inviter when an invited supporter burns tokens.
@@ -65,11 +68,20 @@ contract SupporterRules is Callable {
   /// @notice ResearcherRules contract interface.
   IResearcherRules private researcherRules;
 
-  /// @notice The address of the `RegenerationCredit` contract.
-  address private regenerationCreditAddress;
-
   /// @notice Supporter UserType.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.SUPPORTER;
+
+  /// @notice IERC20Permit interface.
+  IERC20Permit public regenerationCredit;
+
+  /// @notice The minimum number of tokens a user must burn to offset.
+  uint256 private constant MINIMUM_TOKENS_TO_OFFSET = 1e18;
+
+  /// @notice The minimum number of tokens a user must burn to pulish offset.
+  uint256 private constant MINIMUM_TOKENS_TO_PUBLISH = 10e18;
+
+  /// @notice Maximum character length for the project description.
+  uint16 private constant MAX_PUBLICATION_LENGTH = 600;  
 
   // --- Constructor ---
 
@@ -79,20 +91,10 @@ contract SupporterRules is Callable {
    * @param researcherRulesAddress Address of the ResearcherRules contract, used for CalculatorItem data.
    */
 
-  constructor(address communityRulesAddress, address researcherRulesAddress) {
+  constructor(address communityRulesAddress, address researcherRulesAddress, address regenerationCreditAddress) ReentrancyGuard() {
     communityRules = ICommunityRules(communityRulesAddress);
     researcherRules = IResearcherRules(researcherRulesAddress);
-  }
-
-  // --- Deploy functions ---
-
-  /**
-   * @dev onlyOwner function to set contract call addresses.
-   * This function must be called only once after the contract deploy and ownership must be renounced.
-   * @param _regenerationCreditAddress Address of RegenerationCredit.
-   */
-  function setContractCall(address _regenerationCreditAddress) external onlyOwner {
-    regenerationCreditAddress = _regenerationCreditAddress;
+    regenerationCredit = IERC20Permit(regenerationCreditAddress);
   }
 
   // --- Public functions (State Modifying) ---
@@ -136,53 +138,147 @@ contract SupporterRules is Callable {
     supporters[msg.sender].profilePhoto = newPhoto;
   }
 
+  // /**
+  //  * @dev Called by the RC offset function. If a valid calculatorItemId is provided,
+  //  * records the burned amount as a certificate for that item.
+  //  * @param supporterAddress address of supporter.
+  //  * @param amountToBurn Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
+  //  * @param calculatorItemId The ID of the CalculatorItem, or 0 if not applicable.
+  //  */
+  // function offset(
+  //   address supporterAddress,
+  //   uint256 amountToBurn,
+  //   uint64 calculatorItemId
+  // ) external mustBeAllowedCaller mustBeContractCall(address(regenerationCreditAddress)) {
+  //   require(researcherRules.getCalculatorItem(calculatorItemId).id > 0, "Calculator item does not exist");
+
+  //   offsetsCount++;
+  //   uint64 id = offsetsCount;
+
+  //   calculatorItemCertificates[supporterAddress][calculatorItemId] += amountToBurn;
+
+  //   offsets[id] = Offset(supporterAddress, block.number, amountToBurn, calculatorItemId);
+  //   supporters[supporterAddress].offsetsCount++;
+
+  //   emit OffsetMade(supporterAddress, id, amountToBurn, calculatorItemId, block.number);
+  // }
+
   /**
-   * @dev Called by the RC offset function. If a valid calculatorItemId is provided,
-   * records the burned amount as a certificate for that item.
-   * @param supporterAddress address of supporter.
-   * @param amountToBurn Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
-   * @param calculatorItemId The ID of the CalculatorItem, or 0 if not applicable.
+   * @notice Burns tokens for an offset using a signature (EIP-2612 permit).
+   * @param amount The total amount of tokens the user agrees to use.
+   * @param calculatorItemId The ID of the calculator item.
+   * @param minAmountToBurn Slippage protection: the minimum amount the user expects to burn after commission.
+   * @param deadline The deadline for the permit signature.
+   * @param v, r, s The components of the ECDSA signature.
    */
-  function offset(
-    address supporterAddress,
-    uint256 amountToBurn,
-    uint64 calculatorItemId
-  ) external mustBeAllowedCaller mustBeContractCall(address(regenerationCreditAddress)) {
+  function offsetWithPermit(
+    uint256 amount,
+    uint64 calculatorItemId,
+    uint256 minAmountToBurn, // Proteção contra slippage
+    uint256 deadline,
+    uint8 v,
+    bytes32 r,
+    bytes32 s
+  ) external nonReentrant {
+    require(communityRules.userTypeIs(CommunityTypes.UserType.SUPPORTER, msg.sender), "Only supporters");
+    require(amount >= MINIMUM_TOKENS_TO_OFFSET, "Amount must be at least 1 RC");
     require(researcherRules.getCalculatorItem(calculatorItemId).id > 0, "Calculator item does not exist");
+
+    regenerationCredit.permit(msg.sender, address(this), amount, deadline, v, r, s);
+
+    (uint256 amountToBurn, uint256 commission, address inviter) = calculateCommission(msg.sender, amount);
+
+    require(amountToBurn >= minAmountToBurn, "Slippage: amount to burn is less than minimum");
+
+    if (commission > 0 && inviter != address(0)) {
+      IERC20(address(regenerationCredit)).transferFrom(msg.sender, inviter, commission);
+    }
+
+    ERC20Burnable(payable(address(regenerationCredit))).burnFrom(msg.sender, amountToBurn);
 
     offsetsCount++;
     uint64 id = offsetsCount;
 
-    calculatorItemCertificates[supporterAddress][calculatorItemId] += amountToBurn;
+    calculatorItemCertificates[msg.sender][calculatorItemId] += amountToBurn;
 
-    offsets[id] = Offset(supporterAddress, block.number, amountToBurn, calculatorItemId);
-    supporters[supporterAddress].offsetsCount++;
+    offsets[id] = Offset(msg.sender, block.number, amountToBurn, calculatorItemId);
+    supporters[msg.sender].offsetsCount++;
 
-    emit OffsetMade(supporterAddress, id, amountToBurn, calculatorItemId, block.number);
+    emit OffsetMade(msg.sender, id, amountToBurn, calculatorItemId, block.number);
   }
 
-  /**
-   * @dev Called by the RC offset function to create a new publication record.
-   * @param supporterAddress address of supporter.
-   * @param amountToBurn Tokens to be burned (minimum 10 tokens in wei, i.e., 10e18).
-   * @param description The description of the post.
-   * @param content The content of the post.
+/**
+   * @notice Publishes content by burning tokens, using a signature (EIP-2612 permit).
+   * @dev Allows a supporter to publish content in a single transaction. The function uses the
+   * user's signature to gain allowance, pays the inviter's commission, and burns the remaining amount.
+   * @param amount The total amount of tokens the user agrees to use for publishing.
+   * @param description The description of the post (max 600 characters).
+   * @param content The content of the post (max 600 characters).
+   * @param minAmountToBurn Slippage protection: the minimum amount the user expects to burn after commission.
+   * @param deadline The deadline for the permit signature.
+   * @param v, r, s The components of the ECDSA signature.
    */
-  function publish(
-    address supporterAddress,
-    uint256 amountToBurn,
+  function publishWithPermit(
+    uint256 amount,
     string memory description,
-    string memory content
-  ) external mustBeAllowedCaller mustBeContractCall(address(regenerationCreditAddress)) {
+    string memory content,
+    uint256 minAmountToBurn,
+    uint256 deadline,
+    uint8 v,
+    bytes32 r,
+    bytes32 s
+  ) external nonReentrant {
+    require(communityRules.userTypeIs(CommunityTypes.UserType.SUPPORTER, msg.sender), "Only supporters");
+    require(amount >= MINIMUM_TOKENS_TO_PUBLISH, "Amount must be at least 10 RC");
+    require(
+      bytes(description).length <= MAX_PUBLICATION_LENGTH && bytes(content).length <= MAX_PUBLICATION_LENGTH,
+      "Max 600 characters"
+    );
+
+    regenerationCredit.permit(msg.sender, address(this), amount, deadline, v, r, s);
+
+    (uint256 amountToBurn, uint256 commission, address inviter) = calculateCommission(msg.sender, amount);
+    
+    require(amountToBurn >= minAmountToBurn, "Slippage: amount to burn is less than minimum");
+
+    if (commission > 0 && inviter != address(0)) {
+      IERC20(address(regenerationCredit)).transferFrom(msg.sender, inviter, commission);
+    }
+
+    ERC20Burnable(payable(address(regenerationCredit))).burnFrom(msg.sender, amountToBurn);
+
     publicationsCount++;
     uint64 id = publicationsCount;
 
-    publications[id] = Publication(supporterAddress, block.number, amountToBurn, description, content);
+    publications[id] = Publication(msg.sender, block.number, amountToBurn, description, content);
 
-    supporters[supporterAddress].publicationsCount++;
+    supporters[msg.sender].publicationsCount++;
 
-    emit PublicationPosted(supporterAddress, id, amountToBurn, description, block.number);
+    emit PublicationPosted(msg.sender, id, amountToBurn, description, block.number);
   }
+
+  // /**
+  //  * @dev Called by the RC offset function to create a new publication record.
+  //  * @param supporterAddress address of supporter.
+  //  * @param amountToBurn Tokens to be burned (minimum 10 tokens in wei, i.e., 10e18).
+  //  * @param description The description of the post.
+  //  * @param content The content of the post.
+  //  */
+  // function publish(
+  //   address supporterAddress,
+  //   uint256 amountToBurn,
+  //   string memory description,
+  //   string memory content
+  // ) external mustBeAllowedCaller mustBeContractCall(address(regenerationCreditAddress)) {
+  //   publicationsCount++;
+  //   uint64 id = publicationsCount;
+
+  //   publications[id] = Publication(supporterAddress, block.number, amountToBurn, description, content);
+
+  //   supporters[supporterAddress].publicationsCount++;
+
+  //   emit PublicationPosted(supporterAddress, id, amountToBurn, description, block.number);
+  // }
 
   /**
    * @notice Allows a supporter to declare a reduction commitment for a specific calculator item.
@@ -219,14 +315,21 @@ contract SupporterRules is Callable {
   function calculateCommission(
     address supporterAddress,
     uint256 amount
-  ) public view returns (uint256 amountToBurn, uint256 commission, address inviter) {
+  ) internal view returns (uint256 amountToBurn, uint256 commission, address inviter) {
     CommunityTypes.Invitation memory invitation = communityRules.getInvitation(supporterAddress);
-    bool isInvited = invitation.createdAtBlock != 0; // Check if invitation exists
 
-    inviter = invitation.inviter;
-
-    commission = isInvited ? (amount * INVITER_PERCENTAGE) / 100 : 0;
-    amountToBurn = amount - commission;
+    // Check if a valid invitation exists (inviter is not the zero address and it was created).
+    if (invitation.inviter != address(0) && invitation.createdAtBlock != 0) {
+        // --- Logic for an invited user ---
+        inviter = invitation.inviter;
+        commission = (amount * INVITER_PERCENTAGE) / 100;
+        amountToBurn = amount - commission;
+    } else {
+        // --- Logic for a user without an invitation ---
+        inviter = address(0);
+        commission = 0;
+        amountToBurn = amount;
+    }
   }
 
   /**
