@@ -121,9 +121,9 @@ describe("RegenerationCredit", (accounts) => {
 
     context("when totalTokens is less than tokens contract owner", () => {
       it("must return erro message", async () => {
-        await expect(instance.transfer(regeneratorPool.target, "8000000000000000000000000000")).to.be.revertedWith(
-          "ERC20: transfer amount exceeds balance"
-        );
+        await expect(
+          instance.transfer(regeneratorPool.target, "8000000000000000000000000000")
+        ).to.be.revertedWithCustomError(instance, "ERC20InsufficientBalance");
       });
     });
   });
@@ -141,9 +141,9 @@ describe("RegenerationCredit", (accounts) => {
 
     context("when user doesn't have tokens", () => {
       it("must return erro message", async () => {
-        await expect(instance.connect(user2Address).transfer(user1Address, "100000000000000000000")).to.be.revertedWith(
-          "ERC20: transfer amount exceeds balance"
-        );
+        await expect(
+          instance.connect(user2Address).transfer(user1Address, "100000000000000000000")
+        ).to.be.revertedWithCustomError(instance, "ERC20InsufficientBalance");
       });
     });
   });
@@ -185,7 +185,7 @@ describe("RegenerationCredit", (accounts) => {
         it("must return erro message", async () => {
           await expect(
             instance.connect(user1Address).transferFrom(ownerAddress, user2Address, "13754999990000000000000000000")
-          ).to.be.revertedWith("ERC20: insufficient allowance");
+          ).to.be.revertedWithCustomError(instance, "ERC20InsufficientAllowance");
         });
       });
     });
@@ -194,7 +194,7 @@ describe("RegenerationCredit", (accounts) => {
       it("must return erro message", async () => {
         await expect(
           instance.connect(user1Address).transferFrom(ownerAddress, user2Address, "1000000000000000000")
-        ).to.be.revertedWith("ERC20: insufficient allowance");
+        ).to.be.revertedWithCustomError(instance, "ERC20InsufficientAllowance");
       });
     });
   });
@@ -253,8 +253,9 @@ describe("RegenerationCredit", (accounts) => {
 
     context("when user does not have tokens", () => {
       it("must return error message", async () => {
-        await expect(instance.connect(user2Address).burnTokens("100000000000000000000")).to.be.revertedWith(
-          "ERC20: burn amount exceeds balance"
+        await expect(instance.connect(user2Address).burnTokens("100000000000000000000")).to.be.revertedWithCustomError(
+          instance,
+          "ERC20InsufficientBalance"
         );
       });
     });

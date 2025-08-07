@@ -3,7 +3,7 @@ pragma solidity ^0.8.27;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { ISupporterRules } from "./interfaces/ISupporterRules.sol";
 
 /**
@@ -64,7 +64,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * Also sets the token's name, symbol, and decimals via the `ERC20` base constructor.
    * @param totalSupply The total amount of tokens to be minted.
    */
-  constructor(uint256 totalSupply) ERC20(NAME, SYMBOL) {
+  constructor(uint256 totalSupply) ERC20(NAME, SYMBOL) Ownable(msg.sender) {
     // Mint the initial supply directly to the deployer using OpenZeppelin's internal _mint function.
     _mint(msg.sender, totalSupply);
   }

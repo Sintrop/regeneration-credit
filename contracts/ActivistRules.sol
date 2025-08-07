@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IActivistPool } from "./interfaces/IActivistPool.sol";
 import { Activist, Pool } from "./types/ActivistTypes.sol";

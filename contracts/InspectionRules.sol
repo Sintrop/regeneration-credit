@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { IRegeneratorRules } from "./interfaces/IRegeneratorRules.sol";
 import { IInspectorRules } from "./interfaces/IInspectorRules.sol";
 import { IRegenerationIndexRules } from "./interfaces/IRegenerationIndexRules.sol";
@@ -125,7 +125,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     uint8 allowedInitialRequests_,
     uint32 acceptInspectionDelayBlocks_,
     uint32 securityBlocksToValidation_
-  ) {
+  ) Ownable(msg.sender) {
     timeBetweenInspections = timeBetweenInspections_;
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
     allowedInitialRequests = allowedInitialRequests_;
