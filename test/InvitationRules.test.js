@@ -658,7 +658,7 @@ describe("InvitationRules", () => {
         it("revert", async () => {
           await expect(
             instance.connect(user1Address).onlyOwnerInvite(user2Address, userTypes.Activist)
-          ).to.be.revertedWith("Ownable: caller is not the owner");
+          ).to.be.revertedWithCustomError(instance, "OwnableUnauthorizedAccount");
         });
       });
     });

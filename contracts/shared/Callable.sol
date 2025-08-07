@@ -19,8 +19,13 @@ contract Callable is Ownable {
   mapping(address => bool) public allowedCallers;
 
   // --- Constructor ---
-  // The Ownable constructor is called implicitly, setting msg.sender as the initial owner.
 
+  /**
+   * @dev Initializes the contract, setting the deployer as the initial owner.
+   */
+  constructor() Ownable(msg.sender) {
+    // The constructor body is empty. Its only job is to call the parent Ownable constructor.
+  }
   // --- Public functions ---
 
   /**

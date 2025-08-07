@@ -17,7 +17,7 @@ import { Contribution } from "./types/ContributorTypes.sol";
 import { ContractsDependency } from "./types/ValidationTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title ValidationRules
