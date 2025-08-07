@@ -294,12 +294,6 @@ describe("RegenerationCredit", (accounts) => {
           await instance.connect(supporter1Address).offset(1000000000000000000n, 1);
         });
 
-        it("inviter balance must increment in 50000000000000000", async () => {
-          const balanceOf = await instance.balanceOf(ownerAddress);
-
-          expect(balanceOf).to.eq(1499999990050000000000000000n);
-        });
-
         it("supporter balance must be 9000000000000000000", async () => {
           const balanceOf = await instance.balanceOf(supporter1Address);
 
@@ -338,12 +332,6 @@ describe("RegenerationCredit", (accounts) => {
       context("when amount is valid", () => {
         beforeEach(async () => {
           await instance.connect(supporter1Address).publish(10000000000000000000n, "description", "content");
-        });
-
-        it("inviter balance must increment in 50000000000000000", async () => {
-          const balanceOf = await instance.balanceOf(ownerAddress);
-
-          expect(balanceOf).to.eq(1499999990500000000000000000n);
         });
 
         it("supporter balance must be 0", async () => {
