@@ -287,7 +287,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * - If `totalInspections` becomes 0 after decrement, the regenerator is removed from `impactRegenerators`.
    * @param addr The regenerator's wallet address.
    */
-  function decrementInspections(address addr) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+  function decrementInspections(address addr) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
     uint256 totalInspections = regenerators[addr].totalInspections;
 
     require(totalInspections > 0, "totalInspections invalid");

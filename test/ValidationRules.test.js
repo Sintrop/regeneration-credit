@@ -1203,18 +1203,6 @@ describe("ValidationRules", () => {
                 expect(inspector.pool.level).to.equal(0);
               });
 
-              it("decrement total inspections of inspector", async () => {
-                const inspector = await inspectorRules.getInspector(inspector1Address);
-
-                expect(inspector.totalInspections).to.equal(1);
-              });
-
-              it("decrement total inspections of regenerator", async () => {
-                const regenerator = await regeneratorRules.getRegenerator(regenerator1Address);
-
-                expect(regenerator.totalInspections).to.equal(2);
-              });
-
               it("remove inspection regeneration score level from regenerator regenerationScore", async () => {
                 const regenerator = await regeneratorRules.getRegenerator(regenerator1Address);
 
@@ -1282,18 +1270,6 @@ describe("ValidationRules", () => {
                 const inspector = await inspectorRules.getInspector(inspector1Address);
 
                 expect(inspector.pool.level).to.equal(1);
-              });
-
-              it("decrement total inspections of inspector", async () => {
-                const inspector = await inspectorRules.getInspector(inspector1Address);
-
-                expect(inspector.totalInspections).to.equal(1);
-              });
-
-              it("decrement total inspections of regenerator", async () => {
-                const regenerator = await regeneratorRules.getRegenerator(regenerator1Address);
-
-                expect(regenerator.totalInspections).to.equal(2);
               });
 
               it("remove inspection regeneration score level from regenerator regenerationScore", async () => {
