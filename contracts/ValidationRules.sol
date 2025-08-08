@@ -432,9 +432,6 @@ contract ValidationRules is Callable, ReentrancyGuard {
    * @param inspection Invalidated inspection.
    */
   function _removeUserInspection(Inspection memory inspection) private {
-    inspectorRules.decrementInspections(inspection.inspector);
-    regeneratorRules.decrementInspections(inspection.regenerator);
-
     _removeUserLevels(inspection.inspector, RESOURCE_INVALIDATION_LEVEL_PENALTY);
     _removeUserLevels(inspection.regenerator, inspection.regenerationScore);
   }
