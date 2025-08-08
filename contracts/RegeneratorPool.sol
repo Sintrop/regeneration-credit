@@ -29,6 +29,9 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
   /// @notice The address of the `RegeneratorRules` contract.
   address private regeneratorRulesAddress;
 
+  /// @notice Maximum possible score from a single resource.
+  uint256 public constant MAX_NEW_LEVELS = 192;
+
   // --- Constructor ---
 
   /**
@@ -111,6 +114,8 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
     address regenerator,
     uint256 levels
   ) external mustBeAllowedCaller mustBeContractCall(regeneratorRulesAddress) nonReentrant {
+    require(levels <= MAX_NEW_LEVELS, "Exceeds max levels");
+
     // Calls the _addPoolLevel function from Poolable.sol.
     _addPoolLevel(regenerator, levels, currentContractEra());
   }

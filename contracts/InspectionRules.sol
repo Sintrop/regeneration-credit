@@ -401,7 +401,10 @@ contract InspectionRules is Ownable, ReentrancyGuard {
       regeneratorRules.afterRealizeInspection(regeneratorAddress, inspection.regenerationScore, inspection.id)
     );
 
-    activistRules.addInspectorLevel(inspectorAddress, inspectorRules.afterRealizeInspection(inspectorAddress));
+    activistRules.addInspectorLevel(
+      inspectorAddress,
+      inspectorRules.afterRealizeInspection(inspectorAddress, inspection.id)
+    );
 
     regeneratorInspections[regeneratorAddress].push(inspection.id);
   }

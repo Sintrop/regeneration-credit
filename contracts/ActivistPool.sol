@@ -29,6 +29,9 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
   /// @notice The address of the `ActivistRules` contract.
   address private activistRulesAddress;
 
+  /// @notice Maximum possible level from a single invite.
+  uint256 public constant MAX_NEW_LEVELS = 1;
+
   // --- Constructor ---
 
   /**
@@ -111,6 +114,8 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
     address addr,
     uint256 levels
   ) external mustBeAllowedCaller mustBeContractCall(activistRulesAddress) nonReentrant {
+    require(levels <= MAX_NEW_LEVELS, "Exceeds max levels");
+
     // Calls the _addPoolLevel function from Poolable.sol.
     _addPoolLevel(addr, levels, currentContractEra());
   }

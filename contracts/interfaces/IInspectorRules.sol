@@ -37,7 +37,7 @@ interface IInspectorRules {
    * @param inspector The address of the inspector who completed the inspection.
    * @return The new calculated level for the inspector.
    */
-  function afterRealizeInspection(address inspector) external returns (uint256);
+  function afterRealizeInspection(address inspector, uint64 inspectionId) external returns (uint256);
 
   /**
    * @notice Retrieves the full Inspector struct for a given account.

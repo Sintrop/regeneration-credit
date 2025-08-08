@@ -229,10 +229,10 @@ describe("RegeneratorPool", () => {
             });
           });
 
-          context("when totalScores is 80", () => {
-            context("when regenerator1 have 80 regenerationScore", () => {
+          context("when totalScores is 64", () => {
+            context("when regenerator1 have 64 regenerationScore", () => {
               beforeEach(async () => {
-                await instance.addLevel(regenerator1Address, 80);
+                await instance.addLevel(regenerator1Address, 64);
                 await advanceBlock(args.blocksPerEra);
               });
 
@@ -254,17 +254,17 @@ describe("RegeneratorPool", () => {
 
           context("when totalScores is 125", () => {
             beforeEach(async () => {
-              await instance.addLevel(regenerator1Address, 80);
+              await instance.addLevel(regenerator1Address, 64);
               await instance.addLevel(regenerator2Address, 45);
               await advanceBlock(args.blocksPerEra);
             });
 
-            context("when regenerator1 have 80 isaScore", () => {
+            context("when regenerator1 have 64 isaScore", () => {
               it("must withdraw 20000000000000000000000000 of tokens", async () => {
                 await instance.withdraw(regenerator1Address, 1);
                 const balanceOf = await regenerationCredit.balanceOf(regenerator1Address);
 
-                expect(balanceOf).to.equal(20000000000000000000000000n);
+                expect(balanceOf).to.equal(18348623853211009174311926n);
               });
             });
 
@@ -273,7 +273,7 @@ describe("RegeneratorPool", () => {
                 await instance.withdraw(regenerator2Address, 1);
                 const balanceOf = await regenerationCredit.balanceOf(regenerator2Address);
 
-                expect(balanceOf).to.equal(11250000000000000000000000n);
+                expect(balanceOf).to.equal(12901376146788990825688073n);
               });
             });
           });
@@ -294,10 +294,10 @@ describe("RegeneratorPool", () => {
               });
             });
 
-            context("when totalScores is 80", () => {
-              context("when regenerator1 have 80 regenerationScore", () => {
+            context("when totalScores is 64", () => {
+              context("when regenerator1 have 64 regenerationScore", () => {
                 beforeEach(async () => {
-                  await instance.addLevel(regenerator1Address, 80);
+                  await instance.addLevel(regenerator1Address, 64);
                   await advanceBlock(args.blocksPerEra * args.halving);
                 });
 
@@ -319,17 +319,17 @@ describe("RegeneratorPool", () => {
 
             context("when totalScores is 125", () => {
               beforeEach(async () => {
-                await instance.addLevel(regenerator1Address, 80);
+                await instance.addLevel(regenerator1Address, 64);
                 await instance.addLevel(regenerator2Address, 45);
                 await advanceBlock(args.blocksPerEra * args.halving);
               });
 
-              context("when regenerator1 have 80 isaScore", () => {
+              context("when regenerator1 have 64 isaScore", () => {
                 it("must withdraw 20000000000000000000000000 of tokens", async () => {
                   await instance.withdraw(regenerator1Address, 1);
                   const balanceOf = await regenerationCredit.balanceOf(regenerator1Address);
 
-                  expect(balanceOf).to.equal(20000000000000000000000000n);
+                  expect(balanceOf).to.equal(18348623853211009174311926n);
                 });
               });
 
@@ -338,7 +338,7 @@ describe("RegeneratorPool", () => {
                   await instance.withdraw(regenerator2Address, 1);
                   const balanceOf = await regenerationCredit.balanceOf(regenerator2Address);
 
-                  expect(balanceOf).to.equal(11250000000000000000000000n);
+                  expect(balanceOf).to.equal(12901376146788990825688073n);
                 });
               });
             });
@@ -401,7 +401,7 @@ describe("RegeneratorPool", () => {
         context("when regenerators have levels in era 1", () => {
           beforeEach(async () => {
             await instance.addLevel(regenerator1Address, 1);
-            await instance.addLevel(regenerator1Address, 80);
+            await instance.addLevel(regenerator1Address, 64);
 
             await instance.addLevel(regenerator2Address, 1);
             await instance.addLevel(regenerator2Address, 1);
@@ -417,7 +417,7 @@ describe("RegeneratorPool", () => {
             it("era 1 must have 7 level", async () => {
               const era1 = await instance.getEra(1);
 
-              expect(era1.levels).to.equal(86);
+              expect(era1.levels).to.equal(70);
             });
 
             it("era 2 must have 0 level", async () => {
@@ -429,7 +429,7 @@ describe("RegeneratorPool", () => {
             it("eraLevels must have 82 level to regenerator1", async () => {
               const eraLevels = await instance.eraLevels(1, regenerator1Address);
 
-              expect(eraLevels).to.equal(82);
+              expect(eraLevels).to.equal(66);
             });
 
             it("eraLevels must have 4 level to regenerator2", async () => {
@@ -444,7 +444,7 @@ describe("RegeneratorPool", () => {
       context("when add level in era 2", () => {
         context("when regenerators have levels in era 1", () => {
           beforeEach(async () => {
-            await instance.addLevel(regenerator1Address, 80);
+            await instance.addLevel(regenerator1Address, 64);
           });
 
           context("when add level", () => {
@@ -458,7 +458,7 @@ describe("RegeneratorPool", () => {
             it("era 1 must have 80 level", async () => {
               const era1 = await instance.getEra(1);
 
-              expect(era1.levels).to.equal(80);
+              expect(era1.levels).to.equal(64);
             });
 
             it("era 2 must have 40 level", async () => {
@@ -470,7 +470,7 @@ describe("RegeneratorPool", () => {
             it("eraLevels must have 80 level to regenerator1", async () => {
               const eraLevels = await instance.eraLevels(1, regenerator1Address);
 
-              expect(eraLevels).to.equal(80);
+              expect(eraLevels).to.equal(64);
             });
 
             it("eraLevels must have 4 level to regenerator2", async () => {

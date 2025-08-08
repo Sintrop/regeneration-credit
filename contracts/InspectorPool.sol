@@ -29,6 +29,12 @@ contract InspectorPool is Poolable, Blockable, Callable, ReentrancyGuard {
   /// @notice The address of the `InspectorRules` contract.
   address private inspectorRulesAddress;
 
+  /// @notice Maximum possible level from a single resource.
+  uint256 public constant MAX_NEW_LEVELS = 1;
+
+  /// @notice Tracks unique event IDs to ensure levels for an event are added only once.
+  mapping(bytes32 => bool) public hasProcessedEvent;
+
   // --- Constructor ---
 
   /**
@@ -109,8 +115,13 @@ contract InspectorPool is Poolable, Blockable, Callable, ReentrancyGuard {
    */
   function addLevel(
     address addr,
-    uint256 levels
+    uint256 levels,
+    bytes32 eventId
   ) external mustBeAllowedCaller mustBeContractCall(inspectorRulesAddress) nonReentrant {
+    require(levels <= MAX_NEW_LEVELS, "Exceeds max levels");
+    require(!hasProcessedEvent[eventId], "Event already processed");
+    hasProcessedEvent[eventId] = true;
+
     // Calls the _addPoolLevel function from Poolable.sol.
     _addPoolLevel(addr, levels, currentContractEra());
   }

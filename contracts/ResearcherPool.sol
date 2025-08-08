@@ -29,6 +29,9 @@ contract ResearcherPool is Poolable, Blockable, Callable, ReentrancyGuard {
   /// @notice The address of the `ResearcherRules` contract.
   address private researcherRulesAddress;
 
+  /// @notice Maximum possible level from a single resource.
+  uint256 public constant MAX_NEW_LEVELS = 1;
+
   // --- Constructor ---
 
   /**
@@ -111,6 +114,8 @@ contract ResearcherPool is Poolable, Blockable, Callable, ReentrancyGuard {
     address addr,
     uint256 levels
   ) external mustBeAllowedCaller mustBeContractCall(researcherRulesAddress) nonReentrant {
+    require(levels <= MAX_NEW_LEVELS, "Exceeds max levels");
+
     // Calls the _addPoolLevel function from Poolable.sol.
     _addPoolLevel(addr, levels, currentContractEra());
   }

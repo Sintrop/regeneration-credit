@@ -106,7 +106,7 @@ describe("ContributorPool", () => {
         context("when contributors have levels in era 1", () => {
           beforeEach(async () => {
             await instance.addLevel(contr1Address, 1);
-            await instance.addLevel(contr1Address, 5);
+            await instance.addLevel(contr1Address, 1);
 
             await instance.addLevel(contr2Address, 1);
             await instance.addLevel(contr2Address, 1);
@@ -122,7 +122,7 @@ describe("ContributorPool", () => {
             it("era 1 must have 11 level", async () => {
               const era1 = await instance.getEra(1);
 
-              expect(era1.levels).to.equal(11);
+              expect(era1.levels).to.equal(7);
             });
 
             it("era 2 must have 0 level", async () => {
@@ -131,10 +131,10 @@ describe("ContributorPool", () => {
               expect(era2.levels).to.equal(0);
             });
 
-            it("eraLevels must have 7 level to contributor1", async () => {
+            it("eraLevels must have 3 level to contributor1", async () => {
               const eraLevels = await instance.eraLevels(1, contr1Address);
 
-              expect(eraLevels).to.equal(7);
+              expect(eraLevels).to.equal(3);
             });
 
             it("eraLevels must have 4 level to contributor2", async () => {
