@@ -425,6 +425,9 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     inspection.status = InspectionStatus.INVALIDATED;
     inspection.invalidatedAt = block.number;
 
+    regeneratorRules.decrementInspections(inspection.regenerator);
+    inspectorRules.decrementInspections(inspection.inspector);
+
     emit InspectionInvalidated(inspection.id, inspection.inspector, inspection.regenerator, block.number);
   }
 
