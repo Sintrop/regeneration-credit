@@ -256,7 +256,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * Requirements:
    * - The inspector's `totalInspections` count must be greater than 0.
    */
-  function decrementInspections(address addr) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+  function decrementInspections(address addr) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
     Inspector storage inspector = inspectors[addr];
 
     require(inspector.totalInspections > 0, "totalInspections invalid");
