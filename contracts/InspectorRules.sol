@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IInspectorPool } from "./interfaces/IInspectorPool.sol";
 import { Inspector, Penalty, Pool } from "./types/InspectorTypes.sol";
@@ -256,7 +256,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * Requirements:
    * - The inspector's `totalInspections` count must be greater than 0.
    */
-  function decrementInspections(address addr) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+  function decrementInspections(address addr) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
     Inspector storage inspector = inspectors[addr];
 
     require(inspector.totalInspections > 0, "totalInspections invalid");

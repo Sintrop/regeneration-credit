@@ -3,7 +3,7 @@ pragma solidity ^0.8.27;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { ISupporterRules } from "./interfaces/ISupporterRules.sol";
 
 /**
@@ -64,7 +64,7 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * Also sets the token's name, symbol, and decimals via the `ERC20` base constructor.
    * @param totalSupply The total amount of tokens to be minted.
    */
-  constructor(uint256 totalSupply) ERC20(NAME, SYMBOL) {
+  constructor(uint256 totalSupply) ERC20(NAME, SYMBOL) Ownable(msg.sender) {
     // Mint the initial supply directly to the deployer using OpenZeppelin's internal _mint function.
     _mint(msg.sender, totalSupply);
   }
@@ -114,6 +114,8 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * Requirements:
    * - The caller (`msg.sender`) must have `amount` tokens.
    * - `amount` must be greater than 0.
+   *
+   * Note: This functions uses the token 18 decimals, to burn 1 RC user must write 1000000000000000000.
    *
    * @param amount The amount of tokens to burn from the caller's balance.
    */
@@ -168,16 +170,13 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
   /**
    * @dev Allows a designated "contract pool" to register a new decreaseLocked.
    * @notice Called only by a system pool contract, this function remove the transfered tokens from totalLocked.
-   * @param tokenOwner The address of the contract pool initiating the transfer.
    * @param numTokens The amount of tokens to transfer.
    */
-  function decreaseLocked(address tokenOwner, uint256 numTokens) external mustBeContractPool {
-    require(numTokens <= balanceOf(tokenOwner), "Pool out of balance");
+  function decreaseLocked(uint256 numTokens) external mustBeContractPool {
+    require(numTokens <= balanceOf(msg.sender), "Pool out of balance");
+    require(numTokens <= totalLocked_, "Cannot decrease more than total locked");
 
-    // Update total locked tokens.
-    unchecked {
-      if (contractsPools[tokenOwner]) totalLocked_ -= numTokens;
-    }
+    if (contractsPools[msg.sender]) totalLocked_ -= numTokens;
   }
 
   // --- Private functions ---

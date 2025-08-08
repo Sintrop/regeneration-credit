@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { IRegenerationCredit } from "./interfaces/IRegenerationCredit.sol";
 import { Blockable } from "./shared/Blockable.sol";
 import { Callable } from "./shared/Callable.sol";
@@ -90,11 +90,11 @@ contract ResearcherPool is Poolable, Blockable, Callable, ReentrancyGuard {
     // If no tokens are to be transferred, return.
     if (numTokens == 0) return;
 
+    regenerationCredit.decreaseLocked(numTokens);
+
     // Transfer the calculated tokens from this contract to the delegate.
     bool success = regenerationCredit.transfer(delegate, numTokens);
     require(success, "ERC20: transfer failed");
-
-    regenerationCredit.decreaseLocked(address(this), numTokens);
   }
 
   /**
