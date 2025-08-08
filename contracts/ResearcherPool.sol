@@ -29,9 +29,6 @@ contract ResearcherPool is Poolable, Blockable, Callable, ReentrancyGuard {
   /// @notice The address of the `ResearcherRules` contract.
   address private researcherRulesAddress;
 
-  /// @notice Tracks withdrawals to ensure a user can only claim rewards once per era.
-  mapping(uint256 => mapping(address => bool)) public hasWithdrawn;
-
   // --- Constructor ---
 
   /**
@@ -75,9 +72,15 @@ contract ResearcherPool is Poolable, Blockable, Callable, ReentrancyGuard {
   function withdraw(
     address delegate,
     uint256 era
-  ) external mustBeAllowedCaller mustBeContractCall(researcherRulesAddress) canWithdrawModifier(era) nonReentrant {
+  )
+    external
+    mustBeAllowedCaller
+    mustBeContractCall(researcherRulesAddress)
+    canWithdrawModifier(era)
+    canWithdrawEraModifier(era, delegate)
+    nonReentrant
+  {
     require(era <= currentContractEra(), "Era in the future");
-    require(!hasWithdrawn[era][delegate], "Already withdrawn for this era");
 
     hasWithdrawn[era][delegate] = true;
 

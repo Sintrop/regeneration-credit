@@ -29,9 +29,6 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
   /// @notice The address of the `ActivistRules` contract.
   address private activistRulesAddress;
 
-  /// @notice Tracks withdrawals to ensure a user can only claim rewards once per era.
-  mapping(uint256 => mapping(address => bool)) public hasWithdrawn;
-
   // --- Constructor ---
 
   /**
@@ -75,9 +72,15 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
   function withdraw(
     address delegate,
     uint256 era
-  ) external mustBeAllowedCaller mustBeContractCall(activistRulesAddress) canWithdrawModifier(era) nonReentrant {
+  )
+    external
+    mustBeAllowedCaller
+    mustBeContractCall(activistRulesAddress)
+    canWithdrawModifier(era)
+    canWithdrawEraModifier(era, delegate)
+    nonReentrant
+  {
     require(era <= currentContractEra(), "Era in the future");
-    require(!hasWithdrawn[era][delegate], "Already withdrawn for this era");
 
     hasWithdrawn[era][delegate] = true;
 
