@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
 import { IDeveloperPool } from "./interfaces/IDeveloperPool.sol";
@@ -97,6 +97,9 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   /// @notice The specific `UserType` enumeration value for a Developer user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.DEVELOPER;
 
+  /// @notice Tracks which validator has voted on which report to prevent duplicate votes.
+  mapping(uint64 => mapping(address => bool)) private hasVotedOnReport;
+
   // --- Constructor ---
 
   /**
@@ -156,7 +159,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     // Character limit validation for name and proofPhoto.
     require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     // Max limit for developer users in the system.
-    require(communityRules.userTypesCount(USER_TYPE) <= MAX_USER_COUNT, "Max user limit");
+    require(communityRules.userTypesCount(USER_TYPE) < MAX_USER_COUNT, "Max user limit");
 
     // Generate a unique ID for the new developer.
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
@@ -241,6 +244,10 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     require(voteRules.canVote(msg.sender), "Not a voter");
     // Check if the caller has waited the required time between votes.
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
+    // Check if the caller has already voted for this resource.
+    require(!hasVotedOnReport[id][msg.sender], "Already voted");
+
+    hasVotedOnReport[id][msg.sender] = true;
 
     Report memory report = reports[id];
 

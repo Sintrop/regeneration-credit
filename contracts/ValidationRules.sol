@@ -17,7 +17,7 @@ import { Contribution } from "./types/ContributorTypes.sol";
 import { ContractsDependency } from "./types/ValidationTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title ValidationRules
@@ -80,6 +80,18 @@ contract ValidationRules is Callable, ReentrancyGuard {
 
   /// @notice Relationship between validator and last vote block.number.
   mapping(address => uint256) public validatorLastVoteAt;
+
+  /// @notice Tracks inspection IDs that have already been processed.
+  mapping(uint256 => bool) public inspectionAlreadyInvalidated;
+
+  /// @notice Tracks report IDs that have already been processed.
+  mapping(uint256 => bool) public reportAlreadyInvalidated;
+
+  /// @notice Tracks research IDs that have already been processed.
+  mapping(uint256 => bool) public researchAlreadyInvalidated;
+
+  /// @notice Tracks contribution IDs that have already been processed.
+  mapping(uint256 => bool) public contributionAlreadyInvalidated;
 
   /// @notice CommunityRules contract interface.
   ICommunityRules private communityRules;
@@ -241,6 +253,10 @@ contract ValidationRules is Callable, ReentrancyGuard {
 
     if (!addPenalty) return;
 
+    require(!inspectionAlreadyInvalidated[inspection.id], "Penalties already applied");
+
+    inspectionAlreadyInvalidated[inspection.id] = true;
+
     uint256 inspectorTotalPenalties = inspectorRules.addPenalty(inspection.inspector, inspection.id);
     _removeUserInspection(inspection);
 
@@ -275,6 +291,10 @@ contract ValidationRules is Callable, ReentrancyGuard {
     emit ReportValidation(validatorAddress, report.id, justification);
 
     if (report.valid) return;
+
+    require(!reportAlreadyInvalidated[report.id], "Penalties already applied");
+
+    reportAlreadyInvalidated[report.id] = true;
 
     uint256 developerTotalPenalties = developerRules.addPenalty(report.developer, report.id);
 
@@ -312,6 +332,10 @@ contract ValidationRules is Callable, ReentrancyGuard {
 
     if (contribution.valid) return;
 
+    require(!contributionAlreadyInvalidated[contribution.id], "Penalties already applied");
+
+    contributionAlreadyInvalidated[contribution.id] = true;
+
     uint256 contributorTotalPenalties = contributorRules.addPenalty(contribution.user, contribution.id);
 
     _removeContribution(contribution);
@@ -348,7 +372,12 @@ contract ValidationRules is Callable, ReentrancyGuard {
 
     if (research.valid) return;
 
+    require(!researchAlreadyInvalidated[research.id], "Penalties already applied");
+
+    researchAlreadyInvalidated[research.id] = true;
+
     uint256 totalPenalties = researcherRules.addPenalty(research.createdBy, research.id);
+
     _removeResearch(research);
 
     emit ResourceInvalidated("Research", research.id, research.createdBy, totalPenalties); // Emit event
@@ -403,9 +432,6 @@ contract ValidationRules is Callable, ReentrancyGuard {
    * @param inspection Invalidated inspection.
    */
   function _removeUserInspection(Inspection memory inspection) private {
-    inspectorRules.decrementInspections(inspection.inspector);
-    regeneratorRules.decrementInspections(inspection.regenerator);
-
     _removeUserLevels(inspection.inspector, RESOURCE_INVALIDATION_LEVEL_PENALTY);
     _removeUserLevels(inspection.regenerator, inspection.regenerationScore);
   }

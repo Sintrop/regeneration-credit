@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
 import { IContributorPool } from "./interfaces/IContributorPool.sol";
@@ -98,6 +98,9 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   /// @notice A mapping from a contributor's wallet address to an array of `Penalty` structs they have received.
   mapping(address => Penalty[]) public penalties;
 
+  /// @notice Tracks which validator has voted on which contribution to prevent duplicate votes.
+  mapping(uint64 => mapping(address => bool)) private hasVotedOnContribution;
+
   // --- Constructor ---
 
   /**
@@ -157,7 +160,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     // Character limit validation for name and proofPhoto.
     require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     // Max limit for contributor users in the system.
-    require(communityRules.userTypesCount(USER_TYPE) <= MAX_USER_COUNT, "Max user limit");
+    require(communityRules.userTypesCount(USER_TYPE) < MAX_USER_COUNT, "Max user limit");
 
     // Generate a unique ID for the new contributor. Assumes userTypesTotalCount provides a globally unique counter.
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
@@ -251,6 +254,10 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     require(voteRules.canVote(msg.sender), "Not a voter");
     // Check if the caller has waited the required time between votes.
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
+    // Check if the caller has already voted for this resource.
+    require(!hasVotedOnContribution[id][msg.sender], "Already voted");
+
+    hasVotedOnContribution[id][msg.sender] = true;
 
     // Retrieve the contribution using a storage reference to modify it directly.
     Contribution memory contribution = contributions[id];
