@@ -184,7 +184,8 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
       RegenerationScore(0),
       Pool(false, regeneratorPool.currentContractEra()),
       block.number,
-      _coordinates.length
+      _coordinates.length,
+      0
     );
 
     regeneratorsAddress[id] = msg.sender;
@@ -396,8 +397,12 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
       emit RegeneratorEnteredPool(addr, block.number); // Emit event for entering pool
     }
 
+    regenerator.levelPayoutCount++;
+
+    bytes32 eventId = keccak256(abi.encodePacked("regenerator_payout", addr, regenerator.levelPayoutCount));
+
     // Add level(s) to the regenerator pool.
-    regeneratorPool.addLevel(addr, levels);
+    regeneratorPool.addLevel(addr, levels, eventId);
   }
 
   /**
