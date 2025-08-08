@@ -155,7 +155,7 @@ contract Poolable {
     emit PoolLevelRemoved(_user, _era, levels, eras[_era].levels, eraLevels[_era][_user]);
   }
 
-  modifier canWithdrawEraModifier(uint256 era, address delegate) {
+  modifier hasWithdrawnEraModifier(uint256 era, address delegate) {
     require(!hasWithdrawn[era][delegate], "Already withdrawn for this era");
     _;
   }

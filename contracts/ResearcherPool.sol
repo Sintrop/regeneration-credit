@@ -77,7 +77,7 @@ contract ResearcherPool is Poolable, Blockable, Callable, ReentrancyGuard {
     mustBeAllowedCaller
     mustBeContractCall(researcherRulesAddress)
     canWithdrawModifier(era)
-    canWithdrawEraModifier(era, delegate)
+    hasWithdrawnEraModifier(era, delegate)
     nonReentrant
   {
     require(era <= currentContractEra(), "Era in the future");
