@@ -13,8 +13,9 @@ describe("Callable", () => {
   });
 
   it("should return error when .newAllowedCaller and is not owner", async () => {
-    await expect(instance.connect(user1Address).newAllowedCaller(user1Address)).to.be.revertedWith(
-      "Ownable: caller is not the owner"
+    await expect(instance.connect(user1Address).newAllowedCaller(user1Address)).to.be.revertedWithCustomError(
+      instance,
+      "OwnableUnauthorizedAccount"
     );
   });
 

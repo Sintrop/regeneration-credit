@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import "contracts/types/ResearcherTypes.sol";
+import "../types/ResearcherTypes.sol";
 
 /**
  * @title IResearcherRules

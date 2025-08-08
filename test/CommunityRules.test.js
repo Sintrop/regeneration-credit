@@ -422,8 +422,9 @@ describe("CommunityRules", function () {
 
     context("without owner", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(user1Address).newAllowedCaller(user1Address)).to.be.revertedWith(
-          "Ownable: caller is not the owner"
+        await expect(instance.connect(user1Address).newAllowedCaller(user1Address)).to.be.revertedWithCustomError(
+          instance,
+          "OwnableUnauthorizedAccount"
         );
       });
     });
