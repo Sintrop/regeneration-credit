@@ -208,28 +208,6 @@ contract SupporterRules is Callable {
   // --- View Functions ---
 
   /**
-   * @notice This functions calculates the comission to be sent to the supporter inviter.
-   * @dev Public function to handle tokens to be burned and inviter commission.
-   * It retrieves invitation data from CommunityRules to perform the burn.
-   * @param amount The total amount of tokens to consider for burning (before commission).
-   * @return amountToBurn The net amount of tokens burned by the supporter (after commission).
-   * @return commission The commission for the invitation service provided.
-   * @return inviter The supporter inviter.
-   */
-  function calculateCommission(
-    address supporterAddress,
-    uint256 amount
-  ) public view returns (uint256 amountToBurn, uint256 commission, address inviter) {
-    CommunityTypes.Invitation memory invitation = communityRules.getInvitation(supporterAddress);
-    bool isInvited = invitation.createdAtBlock != 0; // Check if invitation exists
-
-    inviter = invitation.inviter;
-
-    commission = isInvited ? (amount * INVITER_PERCENTAGE) / 100 : 0;
-    amountToBurn = amount - commission;
-  }
-
-  /**
    * @notice Retrieves the list of reduction commitment item IDs for a specific address.
    * @param addr The address of the supporter.
    * @return uint256[] An array of calculator item IDs representing the commitments.

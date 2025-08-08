@@ -135,12 +135,9 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
     require(supporterRules.isSupporter(msg.sender), "Only supporters");
     require(amount >= MINIMUM_TOKENS_TO_OFFSET, "Amount must be at least 1 RC");
 
-    (uint256 amountToBurn, uint256 comission, address inviter) = supporterRules.calculateCommission(msg.sender, amount);
+    _burnTokensInternal(msg.sender, amount);
 
-    transfer(inviter, comission);
-    _burnTokensInternal(msg.sender, amountToBurn);
-
-    supporterRules.offset(msg.sender, amountToBurn, calculatorItemId);
+    supporterRules.offset(msg.sender, amount, calculatorItemId);
   }
 
   /**
@@ -159,12 +156,9 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
       "Max 600 characters"
     );
 
-    (uint256 amountToBurn, uint256 comission, address inviter) = supporterRules.calculateCommission(msg.sender, amount);
+    _burnTokensInternal(msg.sender, amount);
 
-    transfer(inviter, comission);
-    _burnTokensInternal(msg.sender, amountToBurn);
-
-    supporterRules.publish(msg.sender, amountToBurn, description, content);
+    supporterRules.publish(msg.sender, amount, description, content);
   }
 
   /**
