@@ -28,6 +28,9 @@ contract Poolable {
   /// @dev Tracks the tokens claimed by each user per era. Mapping: eraId => userAddress => eraTokens.
   mapping(uint256 => mapping(address => uint256)) public eraTokens;
 
+  /// @notice Tracks withdrawals to ensure a user can only claim rewards once per era.
+  mapping(uint256 => mapping(address => bool)) public hasWithdrawn;
+
   // --- Constructor ---
 
   /**
@@ -154,6 +157,11 @@ contract Poolable {
     eraLevels[_era][_user] -= amountToRemove;
 
     emit PoolLevelRemoved(_user, _era, amountToRemove, eras[_era].levels, eraLevels[_era][_user]);
+  }
+
+  modifier hasWithdrawnEraModifier(uint256 era, address delegate) {
+    require(!hasWithdrawn[era][delegate], "Already withdrawn for this era");
+    _;
   }
 
   // --- Events ---

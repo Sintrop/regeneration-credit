@@ -72,8 +72,17 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
   function withdraw(
     address delegate,
     uint256 era
-  ) external mustBeAllowedCaller mustBeContractCall(activistRulesAddress) canWithdrawModifier(era) nonReentrant {
+  )
+    external
+    mustBeAllowedCaller
+    mustBeContractCall(activistRulesAddress)
+    canWithdrawModifier(era)
+    hasWithdrawnEraModifier(era, delegate)
+    nonReentrant
+  {
     require(era <= currentContractEra(), "Era in the future");
+
+    hasWithdrawn[era][delegate] = true;
 
     // Calculate the number of tokens the user is eligible to receive for the given era.
     uint256 numTokens = _calculateUserEraTokens(era, delegate, tokensPerEra(getEpochForEra(era), halving));
