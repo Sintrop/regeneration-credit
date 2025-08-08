@@ -277,16 +277,14 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
       regenerators[addr].regenerationScore.score = 0;
       _decrementArea(addr);
     } else {
-      
       if (levelsToRemove > regenerator.regenerationScore.score) {
-          levelsToRemove = regenerator.regenerationScore.score;
-      }      
+        levelsToRemove = regenerator.regenerationScore.score;
+      }
       regenerators[addr].regenerationScore.score -= levelsToRemove;
     }
 
     regeneratorPool.removePoolLevels(addr, levelsToRemove);
   }
-
 
   /**
    * @dev Allows an authorized caller to decrement a regenerator's total completed inspections count.
