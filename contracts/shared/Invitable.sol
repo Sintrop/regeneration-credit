@@ -33,11 +33,12 @@ contract Invitable {
       return true;
     }
 
-    // Calculate the average levels per user and add 1 to set the threshold.
-    // This means a user needs slightly more than the strict average to invite.
-    uint256 avg = totalLevels / totalUsers + 1;
+    // If there are no users, no one can invite. This also prevents totalUsers from being zero in the calculation.
+    if (totalUsers == 0) {
+      return false;
+    }
 
-    // Rule 2: User must meet or exceed the calculated average level threshold.
-    return userLevels >= avg;
+    // Rule 2: Check if the user's level is strictly greater than the average.
+    return userLevels * totalUsers > totalLevels;
   }
 }

@@ -115,7 +115,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
     // Character limit validation for name and proofPhoto.
     require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     // Max limit for activist users in the system.
-    require(communityRules.userTypesCount(USER_TYPE) <= MAX_USER_COUNT, "Max user limit");
+    require(communityRules.userTypesCount(USER_TYPE) < MAX_USER_COUNT, "Max user limit");
 
     // Generate a unique ID for the new activist.
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;

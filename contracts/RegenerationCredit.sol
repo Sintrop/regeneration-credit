@@ -94,6 +94,8 @@ contract RegenerationCredit is ERC20, ERC20Permit, Ownable, ReentrancyGuard {
    * - The caller (`msg.sender`) must have `amount` tokens.
    * - `amount` must be greater than 0.
    *
+   * Note: This functions uses the token 18 decimals, to burn 1 RC user must write 1000000000000000000.
+   *
    * @param amount The amount of tokens to burn from the caller's balance.
    */
   function burnTokens(uint256 amount) external {
@@ -147,16 +149,13 @@ contract RegenerationCredit is ERC20, ERC20Permit, Ownable, ReentrancyGuard {
   /**
    * @dev Allows a designated "contract pool" to register a new decreaseLocked.
    * @notice Called only by a system pool contract, this function remove the transfered tokens from totalLocked.
-   * @param tokenOwner The address of the contract pool initiating the transfer.
    * @param numTokens The amount of tokens to transfer.
    */
-  function decreaseLocked(address tokenOwner, uint256 numTokens) external mustBeContractPool {
-    require(numTokens <= balanceOf(tokenOwner), "Pool out of balance");
+  function decreaseLocked(uint256 numTokens) external mustBeContractPool {
+    require(numTokens <= balanceOf(msg.sender), "Pool out of balance");
+    require(numTokens <= totalLocked_, "Cannot decrease more than total locked");
 
-    // Update total locked tokens.
-    unchecked {
-      if (contractsPools[tokenOwner]) totalLocked_ -= numTokens;
-    }
+    if (contractsPools[msg.sender]) totalLocked_ -= numTokens;
   }
 
   // --- Private functions ---
