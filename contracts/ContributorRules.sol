@@ -228,7 +228,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     contributionsIds[msg.sender].push(id);
 
     // Increase the contributor's pool level.
-    _addPoolLevel(msg.sender);
+    _addPoolLevel(msg.sender, id);
 
     // Emit an event.
     emit ContributionAdded(id, msg.sender, description, block.number);
@@ -369,7 +369,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * This function also updates the `lastPublishedAt` timestamp for the contributor.
    * @param addr The wallet address of the contributor whose level is to be increased.
    */
-  function _addPoolLevel(address addr) private {
+  function _addPoolLevel(address addr, uint64 contributionId) private {
     Contributor storage contributor = contributors[addr];
     // If contributor does not exist, return.
     if (contributor.id == 0) return;
@@ -377,7 +377,9 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     contributor.lastPublishedAt = block.number; // Update last published block for this contributor.
     contributor.pool.level++; // Increase the contributor's local pool level.
 
-    contributorPool.addLevel(addr, 1);
+    bytes32 eventId = keccak256(abi.encodePacked("contribution_level", contributionId));
+
+    contributorPool.addLevel(addr, 1, eventId);
 
     // Emit an event for off-chain monitoring.
     emit ContributorLevelIncreased(addr, contributor.pool.level, block.number);
