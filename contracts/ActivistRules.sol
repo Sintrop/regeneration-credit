@@ -234,7 +234,9 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
       activistWonLevel[activistAddress][regeneratorAddress] = true;
       approvedInvites++;
 
-      _setActivistLevel(activistAddress);
+      bytes32 eventId = keccak256(abi.encodePacked("activist_reward_regenerator", activistAddress, regeneratorAddress));
+
+      _setActivistLevel(activistAddress, eventId);
     }
   }
 
@@ -254,7 +256,9 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
       activistWonLevel[activistAddress][inspectorAddress] = true;
       approvedInvites++;
 
-      _setActivistLevel(activistAddress);
+      bytes32 eventId = keccak256(abi.encodePacked("activist_reward_inspector", activistAddress, inspectorAddress));
+
+      _setActivistLevel(activistAddress, eventId);
     }
   }
 
@@ -263,7 +267,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * to reflect this level increase for token withdrawal purposes.
    * @param activistAddress The wallet address of the activist whose level is to be increased.
    */
-  function _setActivistLevel(address activistAddress) private {
+  function _setActivistLevel(address activistAddress, bytes32 eventId) private {
     // Retrieve the activist's data.
     Activist storage activist = activists[activistAddress];
 
@@ -274,7 +278,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
     activist.pool.level++;
 
     // Add pool level to activist be able to withdraw tokens
-    activistPool.addLevel(activistAddress, 1);
+    activistPool.addLevel(activistAddress, 1, eventId);
 
     // Emit an event for off-chain monitoring.
     emit ActivistLevelIncreased(activistAddress, activist.pool.level, block.number);

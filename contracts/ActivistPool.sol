@@ -32,6 +32,9 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
   /// @notice Maximum possible level from a single invite.
   uint256 public constant MAX_NEW_LEVELS = 1;
 
+  /// @notice Tracks unique event IDs to ensure levels for an event are added only once.
+  mapping(bytes32 => bool) public hasProcessedEvent;
+
   // --- Constructor ---
 
   /**
@@ -112,9 +115,12 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
    */
   function addLevel(
     address addr,
-    uint256 levels
+    uint256 levels,
+    bytes32 eventId
   ) external mustBeAllowedCaller mustBeContractCall(activistRulesAddress) nonReentrant {
     require(levels <= MAX_NEW_LEVELS, "Exceeds max levels");
+    require(!hasProcessedEvent[eventId], "Event already processed");
+    hasProcessedEvent[eventId] = true;
 
     // Calls the _addPoolLevel function from Poolable.sol.
     _addPoolLevel(addr, levels, currentContractEra());

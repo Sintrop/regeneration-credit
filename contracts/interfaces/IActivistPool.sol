@@ -33,7 +33,7 @@ interface IActivistPool {
    * @param user The address of the activist.
    * @param levels The levels to be added.
    */
-  function addLevel(address user, uint256 levels) external;
+  function addLevel(address user, uint256 levels, bytes32 eventId) external;
 
   /**
    * @notice Returns the current era of the contract.

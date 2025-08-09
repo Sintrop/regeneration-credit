@@ -25,7 +25,6 @@ describe("InspectorPool", (accounts) => {
   const eventId10 = ethers.toBeHex(10, 32);
   const eventId11 = ethers.toBeHex(11, 32);
   const eventId12 = ethers.toBeHex(12, 32);
-  const eventId13 = ethers.toBeHex(13, 32);
 
   beforeEach(async () => {
     [owner, inspector1Address, inspector2Address] = await ethers.getSigners();
