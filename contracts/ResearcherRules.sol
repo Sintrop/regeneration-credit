@@ -385,9 +385,12 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     address addr,
     uint64 researchId
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
+    uint256 currentPenalties = totalPenalties(addr);
+    require(currentPenalties <= maxPenalties, "User has already reached max penalties");
+
     penalties[addr].push(Penalty(researchId));
 
-    return totalPenalties(addr);
+    return currentPenalties + 1;
   }
 
   // --- Private  functions ---

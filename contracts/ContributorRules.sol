@@ -360,9 +360,12 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     address addr,
     uint64 contributionId
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
+    uint256 currentPenalties = totalPenalties(addr);
+    require(currentPenalties <= maxPenalties, "User has already reached max penalties");
+
     penalties[addr].push(Penalty(contributionId));
 
-    return totalPenalties(addr);
+    return currentPenalties + 1;
   }
 
   // --- Private functions ---

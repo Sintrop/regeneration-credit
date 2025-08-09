@@ -221,9 +221,12 @@ contract InspectorRules is Callable, ReentrancyGuard {
     address addr,
     uint64 inspectionId
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
+    uint256 currentPenalties = totalPenalties(addr);
+    require(currentPenalties <= maxPenalties, "User has already reached max penalties");
+
     penalties[addr].push(Penalty(inspectionId));
 
-    return totalPenalties(addr);
+    return currentPenalties + 1;
   }
 
   /**

@@ -340,13 +340,16 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     address addr,
     uint64 reportId
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
+    uint256 currentPenalties = totalPenalties(addr);
+    require(currentPenalties <= maxPenalties, "User has already reached max penalties");
+
     // Add the penalty record to the penalties array.
     penalties[addr].push(Penalty(reportId));
 
     // Emit an event.
     emit PenaltyAdded(addr, reportId, block.number);
 
-    return totalPenalties(addr);
+    return currentPenalties + 1;
   }
 
   // --- Private functions ---
