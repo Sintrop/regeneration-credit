@@ -322,7 +322,10 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
     inspection.validationsCount += 1;
 
-    bool mustInvalidateInspection = inspection.validationsCount >= validationRules.votesToInvalidate();
+    uint256 votesNeeded = validationRules.votesToInvalidate();
+    require(votesNeeded > 1, "Validation threshold cannot be less than 2");
+
+    bool mustInvalidateInspection = inspection.validationsCount >= votesNeeded;
 
     if (mustInvalidateInspection) _invalidateInspection(inspection);
 
