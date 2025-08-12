@@ -33,7 +33,7 @@ interface IContributorPool {
    * @param user The address of the contributor.
    * @param levels The levels to be added.
    */
-  function addLevel(address user, uint256 levels, bytes32 eventId) external;
+  function addLevel(address user, uint256 levels, uint64 eventId) external;
 
   /**
    * @notice Returns the current era of the contract.

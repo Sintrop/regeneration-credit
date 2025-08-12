@@ -231,8 +231,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     // Update pool level
     researcher.pool.level++;
 
-    bytes32 eventId = keccak256(abi.encodePacked("researcg_level", id));
-    researcherPool.addLevel(msg.sender, 1, eventId);
+    researcherPool.addLevel(msg.sender, 1, id);
 
     // --- Event Emission ---
     emit ResearchPublished(id, msg.sender, block.number);

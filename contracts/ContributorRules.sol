@@ -377,9 +377,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     contributor.lastPublishedAt = block.number; // Update last published block for this contributor.
     contributor.pool.level++; // Increase the contributor's local pool level.
 
-    bytes32 eventId = keccak256(abi.encodePacked("contribution_level", contributionId));
-
-    contributorPool.addLevel(addr, 1, eventId);
+    contributorPool.addLevel(addr, 1, contributionId);
 
     // Emit an event for off-chain monitoring.
     emit ContributorLevelIncreased(addr, contributor.pool.level, block.number);

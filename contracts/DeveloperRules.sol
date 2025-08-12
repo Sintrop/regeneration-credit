@@ -373,10 +373,8 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     developer.lastPublishedAt = block.number;
     developer.pool.level++;
 
-    bytes32 eventId = keccak256(abi.encodePacked("report_level", reportId));
-
     // Call the DeveloperPool contract about the level increase, enabling token withdrawal.
-    developerPool.addLevel(addr, 1, eventId);
+    developerPool.addLevel(addr, 1, reportId);
 
     // Emit an event.
     emit DeveloperLevelIncreased(addr, developer.pool.level, block.number);

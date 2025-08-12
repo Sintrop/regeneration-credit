@@ -34,7 +34,7 @@ contract DeveloperPool is Poolable, Blockable, Callable, ReentrancyGuard {
   uint256 public constant MAX_NEW_LEVELS = 1;
 
   /// @notice Tracks unique event IDs to ensure levels for an event are added only once.
-  mapping(bytes32 => bool) public hasProcessedEvent;
+  mapping(uint64 => bool) public hasProcessedEvent;
 
   // --- Constructor ---
 
@@ -117,7 +117,7 @@ contract DeveloperPool is Poolable, Blockable, Callable, ReentrancyGuard {
   function addLevel(
     address addr,
     uint256 levels,
-    bytes32 eventId
+    uint64 eventId
   ) external mustBeAllowedCaller mustBeContractCall(developerRulesAddress) nonReentrant {
     require(levels <= MAX_NEW_LEVELS, "Exceeds max levels");
     require(!hasProcessedEvent[eventId], "Event already processed");

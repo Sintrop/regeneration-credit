@@ -296,9 +296,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   function _addLevel(Inspector storage inspector, uint64 inspectionId) private {
     if (!_minimumInspections(inspector.totalInspections)) return;
 
-    bytes32 eventId = keccak256(abi.encodePacked("inspection_completed", inspectionId));
-
-    inspectorPool.addLevel(inspector.inspectorWallet, 1, eventId);
+    inspectorPool.addLevel(inspector.inspectorWallet, 1, inspectionId);
 
     emit InspectorLevelIncreased(inspector.inspectorWallet, inspector.pool.level, block.number);
   }

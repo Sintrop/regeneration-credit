@@ -184,8 +184,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
       RegenerationScore(0),
       Pool(false, regeneratorPool.currentContractEra()),
       block.number,
-      _coordinates.length,
-      0
+      _coordinates.length
     );
 
     regeneratorsAddress[id] = msg.sender;
@@ -346,7 +345,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
     uint256 totalInspections = _incrementInspections(addr);
 
-    _setRegenerationScore(addr, score);
+    _setRegenerationScore(addr, score, inspectionId);
 
     return totalInspections;
   }
@@ -378,7 +377,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param addr The regenerator's wallet address.
    * @param regenerationScore The score to add to the regenerator's total regeneration score.
    */
-  function _setRegenerationScore(address addr, uint32 regenerationScore) private {
+  function _setRegenerationScore(address addr, uint32 regenerationScore, uint64 inspectionId) private {
     Regenerator storage regenerator = regenerators[addr];
     require(regenerator.id != 0, "Regenerator does not exist");
 
@@ -397,12 +396,8 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
       emit RegeneratorEnteredPool(addr, block.number); // Emit event for entering pool
     }
 
-    regenerator.levelPayoutCount++;
-
-    bytes32 eventId = keccak256(abi.encodePacked("regenerator_payout", addr, regenerator.levelPayoutCount));
-
     // Add level(s) to the regenerator pool.
-    regeneratorPool.addLevel(addr, levels, eventId);
+    regeneratorPool.addLevel(addr, levels, inspectionId);
   }
 
   /**
