@@ -264,9 +264,12 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     research.validationsCount += 1;
     researches[id] = research;
 
-    bool invalidate = research.validationsCount >= validationRules.votesToInvalidate();
+    uint256 votesNeeded = validationRules.votesToInvalidate();
+    require(votesNeeded > 1, "Validation threshold cannot be less than 2");
 
-    if (invalidate) {
+    bool mustInvalidateResearch = research.validationsCount >= votesNeeded;
+
+    if (mustInvalidateResearch) {
       research = _invalidateResearch(research);
       // --- Event Emission ---
       emit ResearchInvalidated(id, msg.sender, justification);

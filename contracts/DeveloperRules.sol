@@ -257,8 +257,11 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     report.validationsCount += 1;
     reports[id] = report;
 
+    uint256 votesNeeded = validationRules.votesToInvalidate();
+    require(votesNeeded > 1, "Validation threshold cannot be less than 2");
+
     // Check if the report has reached the threshold for invalidation.
-    bool mustInvalidateReport = report.validationsCount >= validationRules.votesToInvalidate();
+    bool mustInvalidateReport = report.validationsCount >= votesNeeded;
 
     if (mustInvalidateReport) {
       // If threshold reached, invalidate the report.

@@ -270,8 +270,11 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     contribution.validationsCount += 1;
     contributions[id] = contribution;
 
+    uint256 votesNeeded = validationRules.votesToInvalidate();
+    require(votesNeeded > 1, "Validation threshold cannot be less than 2");
+
     // Check if the contribution has reached the threshold for invalidation.
-    bool mustInvalidateContribution = contribution.validationsCount >= validationRules.votesToInvalidate();
+    bool mustInvalidateContribution = contribution.validationsCount >= votesNeeded;
 
     if (mustInvalidateContribution) {
       // If threshold reached, invalidate the contribution.
