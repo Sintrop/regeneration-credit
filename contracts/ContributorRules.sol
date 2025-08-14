@@ -37,6 +37,9 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   /// @notice Max character length for text.
   uint16 private constant MAX_TEXT_LENGTH = 300;
 
+  /// @notice Max level to remove from resource
+  uint8 private constant RESOURCE_LEVEL = 1;
+
   // --- State variables ---
 
   /// @notice The maximum number of penalties a contributor can accumulate before being denied.
@@ -332,21 +335,21 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * This function updates the contributor's local level and notifies the `ContributorPool` contract.
    * @notice Can only be called by ContributorRules address.
    * @param addr The wallet address of the contributor from whom levels are to be removed.
-   * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
+   * @param denied status
    * this function sets the contributor's pool level to 0. Otherwise, it subtracts the specified amount.
    */
   function removePoolLevels(
     address addr,
-    uint256 levelsToRemove
+    bool denied
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     Contributor memory contributor = contributors[addr];
 
-    contributors[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : contributor.pool.level;
+    contributors[addr].pool.level -= denied ? contributor.pool.level : RESOURCE_LEVEL;
 
-    contributorPool.removePoolLevels(addr, levelsToRemove);
+    contributorPool.removePoolLevels(addr, denied);
 
     // Emit an event.
-    emit ContributorLevelRemoved(addr, levelsToRemove, contributor.pool.level, block.number);
+    // emit ContributorLevelRemoved(addr, amountToRemovePool, contributor.pool.level, block.number);
   }
 
   /**
@@ -397,6 +400,8 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     contribution.valid = false;
     contribution.invalidatedAt = block.number;
     contributions[contribution.id] = contribution;
+
+    contributorPool.removePoolLevels(contribution.user, false);
 
     return contribution;
   }

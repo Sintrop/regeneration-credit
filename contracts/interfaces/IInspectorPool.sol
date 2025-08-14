@@ -24,9 +24,9 @@ interface IInspectorPool {
   /**
    * @notice Removes specified levels from a user's pool configuration.
    * @param user The address of the inspector.
-   * @param levelsToRemove Levels to be removed.
+   * @param denied remove level user status
    */
-  function removePoolLevels(address user, uint256 levelsToRemove) external;
+  function removePoolLevels(address user, bool denied) external;
 
   /**
    * @notice Adds a new level to a user's pool configuration.

@@ -17,6 +17,7 @@ contract Callable is Ownable {
   /// @dev Mapping storing the addresses authorized to call protected functions.
   /// `true` if the address is allowed, `false` otherwise.
   mapping(address => bool) public allowedCallers;
+  mapping(address => bool) public allowedContractCallers;
 
   // --- Constructor ---
 

@@ -63,9 +63,9 @@ interface IRegeneratorRules {
    * @dev The use of 'return' in the calling contract suggests this function
    * returns a status, likely a boolean indicating success.
    * @param user The address of the regenerator.
-   * @param levelsToRemove Levels/score to be removed.
+   * @param denied status
    */
-  function removePoolLevels(address user, uint256 levelsToRemove) external;
+  function removePoolLevels(address user, bool denied) external;
 
   /**
    * @notice Returns the total number of impact regenerators, users that completed 3 inspections.
@@ -78,4 +78,11 @@ interface IRegeneratorRules {
    * @return The total regeneration area, in square meters.
    */
   function regenerationArea() external view returns (uint256);
+
+  /**
+   * @notice Returns the total area under regeneration across all regenerators.
+   * @param addr The address of the regenerator.
+   * @param amountToRemove Levels/score to be removed.
+   */
+  function removeInspectionLevels(address addr, uint256 amountToRemove) external;
 }

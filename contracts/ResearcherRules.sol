@@ -46,6 +46,9 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   /// @notice Max character length for calculator item unit.
   uint16 private constant MAX_UNIT_LENGTH = 20;
 
+  /// @notice Max level to remove from resource
+  uint8 private constant RESOURCE_LEVEL = 1;
+
   // --- State variables ---
 
   /// @notice The maximum number of penalties a researcher can accumulate before facing invalidation.
@@ -361,17 +364,17 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @notice Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
    * this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
    * @param addr The wallet address of the researcher from whom levels are to be removed.
-   * @param levelsToRemove The number of levels/score points to decrease. If `0`, the researcher's level is reset to `0`.
+   * @param denied remove level user status
    */
   function removePoolLevels(
     address addr,
-    uint256 levelsToRemove
+    bool denied
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     Researcher memory researcher = researchers[addr];
 
-    researchers[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : researcher.pool.level;
+    researchers[addr].pool.level -= denied ? researcher.pool.level : RESOURCE_LEVEL;
 
-    researcherPool.removePoolLevels(addr, levelsToRemove);
+    researcherPool.removePoolLevels(addr, denied);
   }
 
   /**
@@ -402,6 +405,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     research.valid = false;
     research.invalidatedAt = block.number;
     researches[research.id] = research;
+
+    researcherPool.removePoolLevels(research.createdBy, false);
 
     return research;
   }

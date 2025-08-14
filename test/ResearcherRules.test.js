@@ -1149,20 +1149,42 @@ describe("ResearcherRules", () => {
 
       await addResearch(resea1Address);
       await instance.setContractCall(owner);
-
-      await instance.removePoolLevels(resea1Address, 1);
     });
 
-    it("remove user levels from pool", async () => {
-      const levelsEra1 = await researcherPool.eraLevels(1, resea1Address);
+    context("when user is not to denied", () => {
+      beforeEach(async () => {
+        await instance.removePoolLevels(resea1Address, false);
+      });
 
-      expect(levelsEra1).to.equal(1);
+      it("remove user levels from pool", async () => {
+        const levelsEra1 = await researcherPool.eraLevels(1, resea1Address);
+
+        expect(levelsEra1).to.equal(1);
+      });
+
+      it("remove user levels from researcher", async () => {
+        const reseacher = await instance.getResearcher(resea1Address);
+
+        expect(reseacher.pool.level).to.equal(1);
+      });
     });
 
-    it("remove user levels from researcher", async () => {
-      const reseacher = await instance.getResearcher(resea1Address);
+    context("when user is to denied", () => {
+      beforeEach(async () => {
+        await instance.removePoolLevels(resea1Address, true);
+      });
 
-      expect(reseacher.pool.level).to.equal(1);
+      it("remove user levels from pool", async () => {
+        const levelsEra1 = await researcherPool.eraLevels(1, resea1Address);
+
+        expect(levelsEra1).to.equal(0);
+      });
+
+      it("remove user levels from researcher", async () => {
+        const reseacher = await instance.getResearcher(resea1Address);
+
+        expect(reseacher.pool.level).to.equal(0);
+      });
     });
   });
 

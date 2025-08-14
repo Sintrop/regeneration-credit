@@ -27,7 +27,7 @@ describe("DeveloperRules", (accounts) => {
   let developerPoolParams = {
     totalTokens: "40000000000000000000000000",
     halving: 12,
-    blocksPerEra: 155,
+    blocksPerEra: 160,
   };
 
   const addDeveloper = async (name, from) => {
@@ -1370,19 +1370,42 @@ describe("DeveloperRules", (accounts) => {
       await instance.connect(dev1Address).addReport("description", "report");
 
       await instance.setContractCall(owner);
-      await instance.removePoolLevels(dev1Address, 1);
     });
 
-    it("remove user levels from pool", async () => {
-      const levelsEra1 = await developerPool.eraLevels(1, dev1Address);
+    context("when user is not to denied", () => {
+      beforeEach(async () => {
+        await instance.removePoolLevels(dev1Address, false);
+      });
 
-      expect(levelsEra1).to.equal(1);
+      it("remove user levels from pool", async () => {
+        const levelsEra1 = await developerPool.eraLevels(2, dev1Address);
+
+        expect(levelsEra1).to.equal(0);
+      });
+
+      it("remove user levels from developer", async () => {
+        const developer = await instance.getDeveloper(dev1Address);
+
+        expect(developer.pool.level).to.equal(1);
+      });
     });
 
-    it("remove user levels from researcher", async () => {
-      const developer = await instance.getDeveloper(dev1Address);
+    context("when user is to denied", () => {
+      beforeEach(async () => {
+        await instance.removePoolLevels(dev1Address, true);
+      });
 
-      expect(developer.pool.level).to.equal(1);
+      it("remove user levels from pool", async () => {
+        const levelsEra1 = await developerPool.eraLevels(2, dev1Address);
+
+        expect(levelsEra1).to.equal(0);
+      });
+
+      it("remove user levels from developer", async () => {
+        const developer = await instance.getDeveloper(dev1Address);
+
+        expect(developer.pool.level).to.equal(0);
+      });
     });
   });
 });

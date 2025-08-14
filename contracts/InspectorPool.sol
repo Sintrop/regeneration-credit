@@ -26,6 +26,9 @@ contract InspectorPool is Poolable, Blockable, Callable, ReentrancyGuard {
   /// This value represents the maximum tokens available for distribution through this contract.
   uint256 private constant TOTAL_POOL_TOKENS = 180000000e18;
 
+  /// @notice Max level to remove from resource
+  uint8 private constant RESOURCE_LEVEL = 1;
+
   /// @notice The address of the `InspectorRules` contract.
   address private inspectorRulesAddress;
 
@@ -120,14 +123,17 @@ contract InspectorPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * This function adjusts the inspector's level downwards within the system's pooling mechanism.
    * @notice Can only be called by inspectorRules address.
    * @param addr The wallet address of the inspector.
-   * @param levelsToRemove The number of levels to decrease the inspector's pool level by.
+   * @param denied remove level user status
    */
   function removePoolLevels(
     address addr,
-    uint256 levelsToRemove
+    bool denied
   ) external mustBeAllowedCaller mustBeContractCall(inspectorRulesAddress) nonReentrant {
+    uint256 era = currentContractEra();
+
+    uint256 amountToRemovePool = denied ? eraLevels[era][addr] : RESOURCE_LEVEL;
     // Calls the _removePoolLevel function from Poolable.sol.
-    _removePoolLevel(addr, currentContractEra(), levelsToRemove);
+    _removePoolLevel(addr, era, amountToRemovePool);
   }
 
   // --- View functions ---

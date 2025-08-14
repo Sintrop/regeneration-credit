@@ -261,29 +261,42 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @notice Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
    * this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
    * @param addr The wallet address of the regenerator from whom levels are to be removed.
-   * @param levelsToRemove The number of levels/score points to decrease. If `0`, the regenerator's
+   * @param denied remove level user status
    * regeneration score is reset to `0`, and their area is decremented from the total `regenerationArea`.
    */
   function removePoolLevels(
     address addr,
-    uint256 levelsToRemove
+    bool denied
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
     Regenerator storage regenerator = regenerators[addr];
 
-    if (levelsToRemove == 0) {
-      require(!regenerator.isFullyInvalidated, "Regenerator already fully invalidated");
-      regenerator.isFullyInvalidated = true;
+    require(!regenerator.isFullyInvalidated, "Regenerator already fully invalidated");
 
-      regenerators[addr].regenerationScore.score = 0;
-      _decrementArea(addr);
-    } else {
-      if (levelsToRemove > regenerator.regenerationScore.score) {
-        levelsToRemove = regenerator.regenerationScore.score;
-      }
-      regenerators[addr].regenerationScore.score -= levelsToRemove;
-    }
+    regenerator.isFullyInvalidated = true;
 
-    regeneratorPool.removePoolLevels(addr, levelsToRemove);
+    regenerators[addr].regenerationScore.score = 0;
+
+    _decrementArea(addr);
+
+    regeneratorPool.removePoolLevels(addr, 0, denied);
+  }
+
+  /**
+   * @dev Allows an authorized caller to remove levels from a regenerator's pool.
+   * This function updates the regenerator's local regeneration score and notifies the `RegeneratorPool` contract.
+   * @notice Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
+   * this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
+   * @param addr The wallet address of the regenerator from whom levels are to be removed.
+   * @param amountToRemove The number of levels/score points to decrease. If `0`, the regenerator's
+   * regeneration score is reset to `0`, and their area is decremented from the total `regenerationArea`.
+   */
+  function removeInspectionLevels(
+    address addr,
+    uint256 amountToRemove
+  ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant {
+    regenerators[addr].regenerationScore.score -= amountToRemove;
+
+    regeneratorPool.removePoolLevels(addr, amountToRemove, false);
   }
 
   /**

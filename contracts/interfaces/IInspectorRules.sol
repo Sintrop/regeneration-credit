@@ -77,7 +77,7 @@ interface IInspectorRules {
    * @notice Removes a specified level from an inspector's pool configuration.
    * @dev As specified, this function does not return a value.
    * @param inspector The address of the inspector.
-   * @param levelToRemove The ID of the level to be removed.
+   * @param denied status
    */
-  function removePoolLevels(address inspector, uint256 levelToRemove) external;
+  function removePoolLevels(address inspector, bool denied) external;
 }

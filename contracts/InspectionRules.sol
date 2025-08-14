@@ -429,7 +429,10 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     inspection.invalidatedAt = block.number;
 
     regeneratorRules.decrementInspections(inspection.regenerator);
+    regeneratorRules.removeInspectionLevels(inspection.regenerator, inspection.regenerationScore);
+
     inspectorRules.decrementInspections(inspection.inspector);
+    inspectorRules.removePoolLevels(inspection.inspector, false);
 
     emit InspectionInvalidated(inspection.id, inspection.inspector, inspection.regenerator, block.number);
   }

@@ -35,6 +35,9 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   /// @notice Max character length for hash or URL.
   uint16 private constant MAX_HASH_LENGTH = 150;
 
+  /// @notice Max level to remove from resource
+  uint8 private constant RESOURCE_LEVEL = 1;
+
   // --- State variables ---
 
   /// @notice The total count of all invitations that have been successfully approved across the entire system.
@@ -201,19 +204,20 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * This function updates the activist's local level and notifies the `ActivistPool` contract.
    * @notice Can only be called by the ValidationRules contract.
    * @param addr The wallet address of the activist from whom levels are to be removed.
-   * @param levelsToRemove The number of levels to decrease.
+   * @param denied remove level user status
    */
   function removePoolLevels(
     address addr,
-    uint256 levelsToRemove
+    bool denied
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
     Activist storage activist = activists[addr];
 
-    activist.pool.level -= levelsToRemove > 0 ? levelsToRemove : activist.pool.level;
-    activistPool.removePoolLevels(addr, levelsToRemove);
+    activist.pool.level -= denied ? activist.pool.level : RESOURCE_LEVEL;
+
+    activistPool.removePoolLevels(addr, denied);
 
     // Emit an event
-    emit ActivistLevelRemoved(addr, levelsToRemove, activist.pool.level, block.number);
+    // emit ActivistLevelRemoved(addr, denied, activist.pool.level, block.number);
   }
 
   // --- Private functions ---
