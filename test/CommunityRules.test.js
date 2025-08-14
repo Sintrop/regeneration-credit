@@ -170,12 +170,6 @@ describe("CommunityRules", function () {
             expect(user).to.equal(userTypes.Supporter);
           });
         });
-
-        context("to denied", () => {
-          it("should add correct enum to denied", async () => {
-            await expect(addUser(user1Address, userTypes.Denied, owner)).to.be.revertedWith("Invalid user type");
-          });
-        });
       });
 
       context("with proportionality invalid", () => {
@@ -688,12 +682,16 @@ describe("CommunityRules", function () {
         await communityRules.setDeniedType(user1Address);
       });
 
-      it("", async () => {
-        await communityRules.setDeniedType(user1Address);
+      it("set denied to true", async () => {
+        const isDenied = await communityRules.isDenied(user1Address);
 
+        await expect(isDenied).to.eq(true);
+      });
+
+      it("user type must be the same", async () => {
         const userType = await communityRules.getUser(user1Address);
 
-        await expect(userType).to.eq(userTypes.Denied);
+        await expect(userType).to.eq(userTypes.Regenerator);
       });
     });
 

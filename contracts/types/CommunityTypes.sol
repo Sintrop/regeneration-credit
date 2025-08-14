@@ -37,8 +37,7 @@ library CommunityTypes {
     DEVELOPER,
     CONTRIBUTOR,
     ACTIVIST,
-    SUPPORTER,
-    DENIED
+    SUPPORTER
   }
 
   /**
