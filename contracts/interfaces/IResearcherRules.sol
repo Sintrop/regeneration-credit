@@ -54,7 +54,7 @@ interface IResearcherRules {
    * @notice Removes a specified level from a researcher's pool configuration.
    * @dev As specified, this function does not return a value and takes a single uint256 for the level.
    * @param researcher The address of the researcher.
-   * @param denied status
+   * @param denied Remove level user status. If true, user is being denied.
    */
   function removePoolLevels(address researcher, bool denied) external;
 

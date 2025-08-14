@@ -63,7 +63,7 @@ interface IRegeneratorRules {
    * @dev The use of 'return' in the calling contract suggests this function
    * returns a status, likely a boolean indicating success.
    * @param user The address of the regenerator.
-   * @param denied status
+   * @param denied Remove level user status. If true, user is being denied.
    */
   function removePoolLevels(address user, bool denied) external;
 

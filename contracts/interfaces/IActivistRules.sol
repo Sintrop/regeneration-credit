@@ -43,7 +43,7 @@ interface IActivistRules {
    * @notice Removes a specified level from a activist's pool configuration.
    * @dev As specified, this function does not return a value.
    * @param activist The address of the activist.
-   * @param denied status
+   * @param denied Remove level user status. If true, user is being denied.
    */
   function removePoolLevels(address activist, bool denied) external;
 
