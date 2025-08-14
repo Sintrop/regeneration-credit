@@ -1203,12 +1203,6 @@ describe("ValidationRules", () => {
                 expect(inspector.pool.level).to.equal(0);
               });
 
-              it("remove inspection regeneration score level from regenerator regenerationScore", async () => {
-                const regenerator = await regeneratorRules.getRegenerator(regenerator1Address);
-
-                expect(regenerator.regenerationScore.score).to.equal(30);
-              });
-
               it("remove inspection regeneration score level from regenerator pool", async () => {
                 const levels = await regeneratorPool.eraLevels(3, regenerator1Address);
 
@@ -1264,18 +1258,6 @@ describe("ValidationRules", () => {
                 const newInspectorType = await communityRules.getUser(inspectionMock.inspector);
 
                 expect(newInspectorType).to.equal(2);
-              });
-
-              it("inspector contract levels is removed", async () => {
-                const inspector = await inspectorRules.getInspector(inspector1Address);
-
-                expect(inspector.pool.level).to.equal(1);
-              });
-
-              it("remove inspection regeneration score level from regenerator regenerationScore", async () => {
-                const regenerator = await regeneratorRules.getRegenerator(regenerator1Address);
-
-                expect(regenerator.regenerationScore.score).to.equal(30);
               });
 
               it("remove inspection regeneration score level from regenerator pool", async () => {
@@ -1643,13 +1625,6 @@ describe("ValidationRules", () => {
                 expect(userType).to.equal(3);
               });
 
-              it("remove report regeneration score level from researcher pool", async () => {
-                let research = await researcherRules.researches(1);
-                const levels = await researcherPool.eraLevels(research.era, resea1Address);
-
-                expect(levels).to.equal(0);
-              });
-
               it("inviter must not get penalty", async () => {
                 const inviterPenalties = await communityRules.inviterPenalties(owner);
 
@@ -1781,13 +1756,6 @@ describe("ValidationRules", () => {
                 const userType = await communityRules.getUser(contributor1Address);
 
                 expect(userType).to.equal(5);
-              });
-
-              it("remove contribution level from contributor pool", async () => {
-                let contribution = await contributorRules.contributions(1);
-                const levels = await contributorPool.eraLevels(contribution.era, contributor1Address);
-
-                expect(levels).to.equal(0);
               });
 
               it("inviter must not get penalty", async () => {

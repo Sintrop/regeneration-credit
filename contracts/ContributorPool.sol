@@ -26,6 +26,9 @@ contract ContributorPool is Poolable, Blockable, Callable, ReentrancyGuard {
   /// This value represents the maximum tokens available for distribution through this contract.
   uint256 private constant TOTAL_POOL_TOKENS = 40000000e18;
 
+  /// @notice Max level to remove from resource.
+  uint8 private constant RESOURCE_LEVEL = 1;
+
   /// @notice The address of the `ContributorRules` contract.
   address private contributorRulesAddress;
 
@@ -120,14 +123,18 @@ contract ContributorPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * This function adjusts the contributor's level downwards within the system's pooling mechanism.
    * @notice Can only be called by contributorRules address.
    * @param addr The wallet address of the contributor.
-   * @param levelsToRemove The number of levels to decrease the contributor's pool level by.
+   * @param denied Remove level user status. If true, user is being denied.
    */
   function removePoolLevels(
     address addr,
-    uint256 levelsToRemove
+    bool denied
   ) external mustBeAllowedCaller mustBeContractCall(contributorRulesAddress) nonReentrant {
+    uint256 era = currentContractEra();
+
+    uint256 amountToRemovePool = denied ? eraLevels[era][addr] : RESOURCE_LEVEL;
+
     // Calls the _removePoolLevel function from Poolable.sol.
-    _removePoolLevel(addr, currentContractEra(), levelsToRemove);
+    _removePoolLevel(addr, era, amountToRemovePool);
   }
 
   // --- View functions ---

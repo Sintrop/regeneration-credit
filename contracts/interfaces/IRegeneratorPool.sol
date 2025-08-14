@@ -25,8 +25,9 @@ interface IRegeneratorPool {
    * @notice Removes specified levels from a user's pool configuration.
    * @param user The address of the regenerator.
    * @param levelsToRemove Levels to be removed.
+   * @param denied denied
    */
-  function removePoolLevels(address user, uint256 levelsToRemove) external;
+  function removePoolLevels(address user, uint256 levelsToRemove, bool denied) external;
 
   /**
    * @notice Adds a new level to a user's pool configuration.

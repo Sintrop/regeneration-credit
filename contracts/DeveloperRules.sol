@@ -37,6 +37,9 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   /// @notice Max character length for text.
   uint16 private constant MAX_TEXT_LENGTH = 300;
 
+  /// @notice Max level to remove from resource.
+  uint8 private constant RESOURCE_LEVEL = 1;
+
   // --- State variables ---
 
   /// @notice The maximum number of penalties a developer can accumulate before facing invalidation.
@@ -311,22 +314,18 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * This function updates the developer's local level and notifies the `DeveloperPool` contract.
    * @notice Can only be called by whitelisted addresses, the ValidatorRules contract.
    * @param addr The wallet address of the developer from whom levels are to be removed.
-   * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
-   * this function sets the developer's pool level to 0. Otherwise, it subtracts the specified amount.
+   * @param denied Remove level user status. If true, user is being denied.
    */
   function removePoolLevels(
     address addr,
-    uint256 levelsToRemove
+    bool denied
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     Developer memory developer = developers[addr];
 
-    developers[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : developer.pool.level;
+    developers[addr].pool.level -= denied ? developer.pool.level : RESOURCE_LEVEL;
 
     // Notify the DeveloperPool contract to adjust the developer's pool levels there as well.
-    developerPool.removePoolLevels(addr, levelsToRemove);
-
-    // Emit an event.
-    emit DeveloperLevelRemoved(addr, levelsToRemove, developer.pool.level, block.number);
+    developerPool.removePoolLevels(addr, denied);
   }
 
   /**
@@ -362,6 +361,8 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     report.valid = false;
     report.invalidatedAt = block.number;
     reports[report.id] = report;
+
+    developerPool.removePoolLevels(report.developer, false);
 
     return report;
   }

@@ -258,7 +258,6 @@ contract ValidationRules is Callable, ReentrancyGuard {
     inspectionAlreadyInvalidated[inspection.id] = true;
 
     uint256 inspectorTotalPenalties = inspectorRules.addPenalty(inspection.inspector, inspection.id);
-    _removeUserInspection(inspection);
 
     emit ResourceInvalidated("Inspection", inspection.id, inspection.inspector, inspectorTotalPenalties); // Emit event
 
@@ -298,8 +297,6 @@ contract ValidationRules is Callable, ReentrancyGuard {
 
     uint256 developerTotalPenalties = developerRules.addPenalty(report.developer, report.id);
 
-    _removeReport(report);
-
     emit ResourceInvalidated("Report", report.id, report.developer, developerTotalPenalties); // Emit event
 
     if (developerTotalPenalties >= developerRules.maxPenalties()) _denyUser(report.developer);
@@ -337,8 +334,6 @@ contract ValidationRules is Callable, ReentrancyGuard {
     contributionAlreadyInvalidated[contribution.id] = true;
 
     uint256 contributorTotalPenalties = contributorRules.addPenalty(contribution.user, contribution.id);
-
-    _removeContribution(contribution);
 
     emit ResourceInvalidated("Contribution", contribution.id, contribution.user, contributorTotalPenalties); // Emit event
 
@@ -378,8 +373,6 @@ contract ValidationRules is Callable, ReentrancyGuard {
 
     uint256 totalPenalties = researcherRules.addPenalty(research.createdBy, research.id);
 
-    _removeResearch(research);
-
     emit ResourceInvalidated("Research", research.id, research.createdBy, totalPenalties); // Emit event
 
     if (totalPenalties >= researcherRules.maxPenalties()) _denyUser(research.createdBy);
@@ -404,44 +397,15 @@ contract ValidationRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Calls the fuction that removes the resource level from pool.
-   * @param report Invalidated report.
-   */
-  function _removeReport(Report memory report) private {
-    _removeUserLevels(report.developer, RESOURCE_INVALIDATION_LEVEL_PENALTY);
-  }
-
-  /**
-   * @dev Calls the fuction that removes the resource level from pool.
-   * @param contribution Invalidated contribution.
-   */
-  function _removeContribution(Contribution memory contribution) private {
-    _removeUserLevels(contribution.user, RESOURCE_INVALIDATION_LEVEL_PENALTY);
-  }
-
-  /**
-   * @dev Calls the fuction that removes the resource level from pool.
-   * @param research Invalidated research.
-   */
-  function _removeResearch(Research memory research) private {
-    _removeUserLevels(research.createdBy, RESOURCE_INVALIDATION_LEVEL_PENALTY);
-  }
-
-  /**
-   * @dev Calls the fuction that removes the resource level from pool.
-   * @param inspection Invalidated inspection.
-   */
-  function _removeUserInspection(Inspection memory inspection) private {
-    _removeUserLevels(inspection.inspector, RESOURCE_INVALIDATION_LEVEL_PENALTY);
-    _removeUserLevels(inspection.regenerator, inspection.regenerationScore);
-  }
-
-  /**
    * @dev Sets a user's type to DENIED in CommunityRules and removes their levels from pools.
    * @param userAddress The address of the user to deny.
    */
   function _denyUser(address userAddress) private {
-    _removeUserLevels(userAddress, 0); // Remove all levels (0 means all for denied users)
+    CommunityTypes.UserType userType = communityRules.getUser(userAddress);
+
+    if (userType == CommunityTypes.UserType.DENIED) return; // Already denied, nothing to do
+
+    communityRules.setDeniedType(userAddress);
 
     // Inviter slashing mechanism.
     CommunityTypes.Invitation memory invitation = communityRules.getInvitation(userAddress);
@@ -450,25 +414,13 @@ contract ValidationRules is Callable, ReentrancyGuard {
       communityRules.addInviterPenalty(invitation.inviter);
     }
 
-    communityRules.setDeniedType(userAddress);
-  }
-
-  /**
-   * @dev Function that removes levels from pool of a denied user.
-   * @param userAddress Invalidated userAddress.
-   * @param levels Levels to remove.
-   */
-  function _removeUserLevels(address userAddress, uint256 levels) private {
-    CommunityTypes.UserType userType = communityRules.getUser(userAddress);
-
-    if (userType == CommunityTypes.UserType.DENIED) return; // Already denied, nothing to do
     // Check for each user type and call their respective removePoolLevels function.
-    if (userType == CommunityTypes.UserType.INSPECTOR) return inspectorRules.removePoolLevels(userAddress, levels);
-    if (userType == CommunityTypes.UserType.REGENERATOR) return regeneratorRules.removePoolLevels(userAddress, levels);
-    if (userType == CommunityTypes.UserType.DEVELOPER) return developerRules.removePoolLevels(userAddress, levels);
-    if (userType == CommunityTypes.UserType.RESEARCHER) return researcherRules.removePoolLevels(userAddress, levels);
-    if (userType == CommunityTypes.UserType.CONTRIBUTOR) return contributorRules.removePoolLevels(userAddress, levels);
-    if (userType == CommunityTypes.UserType.ACTIVIST) return activistRules.removePoolLevels(userAddress, levels);
+    if (userType == CommunityTypes.UserType.REGENERATOR) return regeneratorRules.removePoolLevels(userAddress, true);
+    if (userType == CommunityTypes.UserType.INSPECTOR) return inspectorRules.removePoolLevels(userAddress, true);
+    if (userType == CommunityTypes.UserType.DEVELOPER) return developerRules.removePoolLevels(userAddress, true);
+    if (userType == CommunityTypes.UserType.RESEARCHER) return researcherRules.removePoolLevels(userAddress, true);
+    if (userType == CommunityTypes.UserType.CONTRIBUTOR) return contributorRules.removePoolLevels(userAddress, true);
+    if (userType == CommunityTypes.UserType.ACTIVIST) return activistRules.removePoolLevels(userAddress, true);
   }
 
   function _checkRegeneratorImmunity(address addr) private view returns (bool) {

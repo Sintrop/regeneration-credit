@@ -373,20 +373,42 @@ describe("ActivistRules", () => {
 
       await instance.addRegeneratorLevel(regenerator1Address, 3);
       await instance.addInspectorLevel(inspector2Address, 3);
-
-      await instance.removePoolLevels(activ1Address, 1);
     });
 
-    it("remove user levels from pool", async () => {
-      const levelsEra1 = await activistPool.eraLevels(1, activ1Address);
+    context("when user is not to denied", () => {
+      beforeEach(async () => {
+        await instance.removePoolLevels(activ1Address, false);
+      });
 
-      expect(levelsEra1).to.equal(1);
+      it("remove user levels from pool", async () => {
+        const levelsEra1 = await activistPool.eraLevels(1, activ1Address);
+
+        expect(levelsEra1).to.equal(1);
+      });
+
+      it("remove user levels from activist", async () => {
+        const activist = await instance.getActivist(activ1Address);
+
+        expect(activist.pool.level).to.equal(1);
+      });
     });
 
-    it("remove user levels from activist", async () => {
-      const activist = await instance.getActivist(activ1Address);
+    context("when user is not to denied", () => {
+      beforeEach(async () => {
+        await instance.removePoolLevels(activ1Address, true);
+      });
 
-      expect(activist.pool.level).to.equal(1);
+      it("remove user levels from pool", async () => {
+        const levelsEra1 = await activistPool.eraLevels(1, activ1Address);
+
+        expect(levelsEra1).to.equal(0);
+      });
+
+      it("remove user levels from activist", async () => {
+        const activist = await instance.getActivist(activ1Address);
+
+        expect(activist.pool.level).to.equal(0);
+      });
     });
   });
 });

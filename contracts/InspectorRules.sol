@@ -37,6 +37,9 @@ contract InspectorRules is Callable, ReentrancyGuard {
   /// @notice Max character length for hash or url.
   uint16 private constant MAX_HASH_LENGTH = 150;
 
+  /// @notice Max level to remove from resource.
+  uint8 private constant RESOURCE_LEVEL = 1;
+
   // --- State variables ---
 
   /// @notice The maximum number of penalties an inspector can accumulate before facing invalidation.
@@ -231,20 +234,14 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * This function updates the inspector's local level and notifies the `InspectorPool` contract.
    * @notice Should only be called by the ValidatorRules address.
    * @param addr The wallet address of the inspector from whom levels are to be removed.
-   * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
-   * this function sets the inspector's pool level to 0. Otherwise, it subtracts the specified amount.   */
-  function removePoolLevels(
-    address addr,
-    uint256 levelsToRemove
-  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
+   * @param denied Remove level user status. If true, user is being denied.
+   */
+  function removePoolLevels(address addr, bool denied) external mustBeAllowedCaller nonReentrant {
     Inspector storage inspector = inspectors[addr];
 
-    inspector.pool.level -= levelsToRemove > 0 ? levelsToRemove : inspector.pool.level;
+    inspector.pool.level -= denied ? inspector.pool.level : RESOURCE_LEVEL;
 
-    inspectorPool.removePoolLevels(addr, levelsToRemove);
-
-    // Emit an event.
-    emit InspectorLevelRemoved(addr, levelsToRemove, inspector.pool.level, block.number);
+    inspectorPool.removePoolLevels(addr, denied);
   }
 
   /**
