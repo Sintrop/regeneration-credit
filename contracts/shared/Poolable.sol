@@ -147,14 +147,12 @@ contract Poolable {
 
     if (userCurrentEraLevels == 0) return;
 
-    uint256 amountToRemove = _amountToRemove;
+    if (_amountToRemove > userCurrentEraLevels) _amountToRemove = userCurrentEraLevels;
 
-    if (amountToRemove > userCurrentEraLevels) amountToRemove = userCurrentEraLevels;
+    eras[_era].levels -= _amountToRemove;
+    eraLevels[_era][_user] -= _amountToRemove;
 
-    eras[_era].levels -= amountToRemove;
-    eraLevels[_era][_user] -= amountToRemove;
-
-    emit PoolLevelRemoved(_user, _era, amountToRemove, eras[_era].levels, eraLevels[_era][_user]);
+    emit PoolLevelRemoved(_user, _era, _amountToRemove, eras[_era].levels, eraLevels[_era][_user]);
   }
 
   modifier hasWithdrawnEraModifier(uint256 era, address delegate) {
