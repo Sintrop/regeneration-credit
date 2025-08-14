@@ -27,7 +27,7 @@ contract DeveloperPool is Poolable, Blockable, Callable, ReentrancyGuard {
   /// This value represents the maximum tokens available for distribution through this contract.
   uint256 private constant TOTAL_POOL_TOKENS = 40000000e18;
 
-  /// @notice Max level to remove from resource
+  /// @notice Max level to remove from resource.
   uint8 private constant RESOURCE_LEVEL = 1;
 
   /// @notice The address of the `DeveloperRules` contract.
@@ -124,7 +124,7 @@ contract DeveloperPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * This function adjusts the developer's level downwards within the system's pooling mechanism.
    * @notice Can only be called by developerRules address.
    * @param addr The wallet address of the developer.
-   * @param denied remove level user status
+   * @param denied Remove level user status. If true, user is being denied.
    */
   function removePoolLevels(
     address addr,

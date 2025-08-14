@@ -37,7 +37,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   /// @notice Max character length for text.
   uint16 private constant MAX_TEXT_LENGTH = 300;
 
-  /// @notice Max level to remove from resource
+  /// @notice Max level to remove from resource.
   uint8 private constant RESOURCE_LEVEL = 1;
 
   // --- State variables ---
@@ -314,8 +314,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * This function updates the developer's local level and notifies the `DeveloperPool` contract.
    * @notice Can only be called by whitelisted addresses, the ValidatorRules contract.
    * @param addr The wallet address of the developer from whom levels are to be removed.
-   * @param denied remove level user status
-   * this function sets the developer's pool level to 0. Otherwise, it subtracts the specified amount.
+   * @param denied Remove level user status. If true, user is being denied.
    */
   function removePoolLevels(
     address addr,
@@ -327,9 +326,6 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
 
     // Notify the DeveloperPool contract to adjust the developer's pool levels there as well.
     developerPool.removePoolLevels(addr, denied);
-
-    // Emit an event.
-    // emit DeveloperLevelRemoved(addr, levelsToRemove, developer.pool.level, block.number);
   }
 
   /**

@@ -261,8 +261,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @notice Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
    * this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
    * @param addr The wallet address of the regenerator from whom levels are to be removed.
-   * @param denied remove level user status
-   * regeneration score is reset to `0`, and their area is decremented from the total `regenerationArea`.
+   * @param denied Remove level user status. If true, user is being denied.
    */
   function removePoolLevels(
     address addr,

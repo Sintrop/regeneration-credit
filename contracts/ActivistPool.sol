@@ -26,7 +26,7 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
   /// This value represents the maximum tokens available for distribution through this contract.
   uint256 private constant TOTAL_POOL_TOKENS = 40000000e18;
 
-  /// @notice Max level to remove from resource
+  /// @notice Max level to remove from resource..
   uint8 private constant RESOURCE_LEVEL = 1;
 
   /// @notice The address of the `ActivistRules` contract.
@@ -123,7 +123,7 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * This function adjusts the activist's level downwards within the system's pooling mechanism.
    * @notice Can only be called by activistRules address.
    * @param addr The wallet address of the activist.
-   * @param denied check if user is denied
+   * @param denied Check if user is being denied. If true, user is being denied and all era levels should be removed.
    */
   function removePoolLevels(
     address addr,

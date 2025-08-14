@@ -46,7 +46,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   /// @notice Max character length for calculator item unit.
   uint16 private constant MAX_UNIT_LENGTH = 20;
 
-  /// @notice Max level to remove from resource
+  /// @notice Max level to remove from resource.
   uint8 private constant RESOURCE_LEVEL = 1;
 
   // --- State variables ---
@@ -364,7 +364,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @notice Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
    * this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
    * @param addr The wallet address of the researcher from whom levels are to be removed.
-   * @param denied remove level user status
+   * @param denied Remove level user status. If true, user is being denied.
    */
   function removePoolLevels(
     address addr,

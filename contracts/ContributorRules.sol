@@ -37,7 +37,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   /// @notice Max character length for text.
   uint16 private constant MAX_TEXT_LENGTH = 300;
 
-  /// @notice Max level to remove from resource
+  /// @notice Max level to remove from resource.
   uint8 private constant RESOURCE_LEVEL = 1;
 
   // --- State variables ---
@@ -335,8 +335,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * This function updates the contributor's local level and notifies the `ContributorPool` contract.
    * @notice Can only be called by ContributorRules address.
    * @param addr The wallet address of the contributor from whom levels are to be removed.
-   * @param denied status
-   * this function sets the contributor's pool level to 0. Otherwise, it subtracts the specified amount.
+   * @param denied Remove level user status. If true, user is being denied.
    */
   function removePoolLevels(
     address addr,
@@ -347,9 +346,6 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     contributors[addr].pool.level -= denied ? contributor.pool.level : RESOURCE_LEVEL;
 
     contributorPool.removePoolLevels(addr, denied);
-
-    // Emit an event.
-    // emit ContributorLevelRemoved(addr, amountToRemovePool, contributor.pool.level, block.number);
   }
 
   /**
