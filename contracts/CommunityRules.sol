@@ -38,6 +38,9 @@ contract CommunityRules is Callable {
   /// @notice A mapping from a user's wallet address to their assigned `UserType`.
   mapping(address => CommunityTypes.UserType) private users;
 
+  /// @notice A mapping from a user's wallet address denieds.
+  mapping(address => bool) private denieds;
+
   /// @notice A mapping from a reported user's address to an array of `Delation` structs they have received.
   /// Stores a historical record of all delations against a user.
   mapping(address => CommunityTypes.Delation[]) private delations;
@@ -183,10 +186,7 @@ contract CommunityRules is Callable {
   function addUser(address addr, CommunityTypes.UserType userType) external mustBeAllowedCaller {
     require(addr != address(0), "User address cannot be zero");
     require(users[addr] == CommunityTypes.UserType.UNDEFINED, "User already exists"); // Only one registration per address
-    require(
-      userType != CommunityTypes.UserType.UNDEFINED && userType != CommunityTypes.UserType.DENIED,
-      "Invalid user type"
-    ); // Must selected the appropriate userType
+    require(userType != CommunityTypes.UserType.UNDEFINED, "Invalid user type"); // Must selected the appropriate userType
     require(_registrationProportionalityAllowed(userType), "Proportionality invalid"); // Vacancies according to the number of regenerators
     require(_invitedTypeOnRegister(addr, userType), "Invalid invitation"); // Only with valid invitation
 
@@ -229,11 +229,11 @@ contract CommunityRules is Callable {
    * @param userAddress The address of the user to be denied.
    */
   function setDeniedType(address userAddress) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
-    if (users[userAddress] == CommunityTypes.UserType.DENIED) return;
+    if (denieds[userAddress]) return;
 
     userTypesCount[users[userAddress]]--; // Decrement count of the old user type
 
-    users[userAddress] = CommunityTypes.UserType.DENIED;
+    denieds[userAddress] = true;
 
     emit DeniedUserEvent(userAddress);
   }
@@ -337,10 +337,19 @@ contract CommunityRules is Callable {
   /**
    * @notice Function to check if an userAddress type is equal passed userType.
    * @param userAddress Denied user address.
-   * @return true If userAddress is equal userType.
+   * @return bool If userAddress is equal userType.
    */
   function userTypeIs(CommunityTypes.UserType userType, address userAddress) public view returns (bool) {
-    return users[userAddress] == userType;
+    return users[userAddress] == userType && !denieds[userAddress];
+  }
+
+  /**
+   * @notice Function to check if an userAddress type is equal passed userType.
+   * @param userAddress Denied user address.
+   * @return bool If userAddress is equal userType.
+   */
+  function isDenied(address userAddress) public view returns (bool) {
+    return denieds[userAddress];
   }
 
   /**

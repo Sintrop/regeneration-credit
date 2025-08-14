@@ -202,7 +202,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     require(bytes(justification).length <= MAX_JUSTIFICATION_LENGTH, "Max characters");
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(!communityRules.userTypeIs(CommunityTypes.UserType.UNDEFINED, userAddress), "User not registered");
-    require(!communityRules.userTypeIs(CommunityTypes.UserType.DENIED, userAddress), "User already denied");
+    require(!communityRules.isDenied(userAddress), "User already denied");
     require(_checkRegeneratorImmunity(userAddress), "Regenerator has reached validation immunity");
 
     uint256 currentEra = _userCurrentEra(userAddress);
@@ -403,7 +403,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
   function _denyUser(address userAddress) private {
     CommunityTypes.UserType userType = communityRules.getUser(userAddress);
 
-    if (userType == CommunityTypes.UserType.DENIED) return; // Already denied, nothing to do
+    if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
 
     communityRules.setDeniedType(userAddress);
 

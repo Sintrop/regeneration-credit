@@ -35,9 +35,16 @@ interface ICommunityRules {
    * @notice Checks if a user is of a specific type.
    * @param userType The user type to check against.
    * @param user The address of the user to check.
-   * @return true if the user is of the specified type, false otherwise.
+   * @return bool true if the user is of the specified type, false otherwise.
    */
   function userTypeIs(CommunityTypes.UserType userType, address user) external view returns (bool);
+
+  /**
+   * @notice Checks if a user is denied.
+   * @param user The address of the user to check.
+   * @return bool if the user is denied, so true, false otherwise.
+   */
+  function isDenied(address user) external view returns (bool);
 
   /**
    * @notice Gets the invitation data for a specific address.
