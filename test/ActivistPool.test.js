@@ -5,7 +5,7 @@ const { ethers } = require("hardhat");
 
 describe("ActivistPool", () => {
   let instance, regenerationCredit;
-  let owner, activist1Address, activist2Address;
+  let owner, activist1Address, activist2Address, regenerator1Address;
 
   const args = {
     totalActivistPoolTokens: "40000000000000000000000000",
@@ -13,8 +13,21 @@ describe("ActivistPool", () => {
     blocksPerEra: 12,
   };
 
+  const eventId1 = ethers.toBeHex(1, 32);
+  const eventId2 = ethers.toBeHex(2, 32);
+  const eventId3 = ethers.toBeHex(3, 32);
+  const eventId4 = ethers.toBeHex(4, 32);
+  const eventId5 = ethers.toBeHex(5, 32);
+  const eventId6 = ethers.toBeHex(6, 32);
+  const eventId7 = ethers.toBeHex(7, 32);
+  const eventId8 = ethers.toBeHex(8, 32);
+  const eventId9 = ethers.toBeHex(9, 32);
+  const eventId10 = ethers.toBeHex(10, 32);
+  const eventId11 = ethers.toBeHex(11, 32);
+  const eventId12 = ethers.toBeHex(12, 32);
+
   beforeEach(async () => {
-    [owner, activist1Address, activist2Address] = await ethers.getSigners();
+    [owner, activist1Address, activist2Address, regenerator1Address] = await ethers.getSigners();
 
     regenerationCredit = await regenerationCreditDeployed();
 
@@ -74,8 +87,8 @@ describe("ActivistPool", () => {
         context("when activist have 0 levels in era 1", () => {
           context("when add level", () => {
             beforeEach(async () => {
-              await instance.addLevel(activist1Address, 1);
-              await instance.addLevel(activist2Address, 1);
+              await instance.addLevel(activist1Address, 1, eventId1);
+              await instance.addLevel(activist2Address, 1, eventId2);
             });
 
             it("era 1 must have 2 level", async () => {
@@ -106,24 +119,24 @@ describe("ActivistPool", () => {
 
         context("when activists have levels in era 1", () => {
           beforeEach(async () => {
-            await instance.addLevel(activist1Address, 1);
-            await instance.addLevel(activist1Address, 5);
+            await instance.addLevel(activist1Address, 1, eventId1);
+            await instance.addLevel(activist1Address, 1, eventId2);
 
-            await instance.addLevel(activist2Address, 1);
-            await instance.addLevel(activist2Address, 1);
-            await instance.addLevel(activist2Address, 1);
+            await instance.addLevel(activist2Address, 1, eventId3);
+            await instance.addLevel(activist2Address, 1, eventId4);
+            await instance.addLevel(activist2Address, 1, eventId5);
           });
 
           context("when add level", () => {
             beforeEach(async () => {
-              await instance.addLevel(activist1Address, 1);
-              await instance.addLevel(activist2Address, 1);
+              await instance.addLevel(activist1Address, 1, eventId6);
+              await instance.addLevel(activist2Address, 1, eventId7);
             });
 
-            it("era 1 must have 11 level", async () => {
+            it("era 1 must have 7 level", async () => {
               const era1 = await instance.getEra(1);
 
-              expect(era1.levels).to.equal(11);
+              expect(era1.levels).to.equal(7);
             });
 
             it("era 2 must have 0 level", async () => {
@@ -132,10 +145,10 @@ describe("ActivistPool", () => {
               expect(era2.levels).to.equal(0);
             });
 
-            it("eraLevels must have 7 level to activist1", async () => {
+            it("eraLevels must have 3 level to activist1", async () => {
               const eraLevels = await instance.eraLevels(1, activist1Address);
 
-              expect(eraLevels).to.equal(7);
+              expect(eraLevels).to.equal(3);
             });
 
             it("eraLevels must have 4 level to activist2", async () => {
@@ -146,11 +159,45 @@ describe("ActivistPool", () => {
           });
         });
       });
+
+      context("when the same eventId is processed twice", () => {
+        // We'll create a single, deterministic eventId to attempt a replay attack.
+        let eventId;
+
+        beforeEach(async () => {
+          // We generate a unique eventId based on the inviter (activist1Address) and
+          // an invitee that just got qualified (e.g., regenerator1Address).
+          eventId = ethers.solidityPackedKeccak256(
+            ["string", "address", "address"],
+            ["activist_reward", activist1Address.address, regenerator1Address.address]
+          );
+
+          // First, we make the successful call with this eventId.
+          await instance.connect(owner).addLevel(activist1Address, 1, eventId);
+        });
+
+        it("should revert the second transaction with the same eventId", async () => {
+          // Now, we attempt to call `addLevel` again with the EXACT same eventId.
+          // We expect this transaction to be reverted by our security check.
+          await expect(instance.connect(owner).addLevel(activist1Address, 1, eventId)).to.be.revertedWith(
+            "Event already processed"
+          );
+        });
+
+        it("should have added the level only once", async () => {
+          // This sanity check ensures the first call worked and the second was blocked.
+          const era1 = await instance.getEra(1);
+          expect(era1.levels).to.equal(1);
+
+          const activist1Levels = await instance.eraLevels(1, activist1Address);
+          expect(activist1Levels).to.equal(1);
+        });
+      });
     });
 
     context("without allowed caller", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(activist1Address).addLevel(activist1Address, 1)).to.be.revertedWith(
+        await expect(instance.connect(activist1Address).addLevel(activist1Address, 1, eventId1)).to.be.revertedWith(
           "Not allowed caller"
         );
       });
@@ -370,13 +417,13 @@ describe("ActivistPool", () => {
             context("when total of levels in era is 6", () => {
               context("when activist1 have 3 levels in era 1", () => {
                 beforeEach(async () => {
-                  await instance.addLevel(activist1Address, 1);
-                  await instance.addLevel(activist1Address, 1);
-                  await instance.addLevel(activist1Address, 1);
+                  await instance.addLevel(activist1Address, 1, eventId1);
+                  await instance.addLevel(activist1Address, 1, eventId2);
+                  await instance.addLevel(activist1Address, 1, eventId3);
 
-                  await instance.addLevel(activist2Address, 1);
-                  await instance.addLevel(activist2Address, 1);
-                  await instance.addLevel(activist2Address, 1);
+                  await instance.addLevel(activist2Address, 1, eventId4);
+                  await instance.addLevel(activist2Address, 1, eventId5);
+                  await instance.addLevel(activist2Address, 1, eventId6);
 
                   await advanceBlock(args.blocksPerEra);
                 });
@@ -391,12 +438,12 @@ describe("ActivistPool", () => {
 
               context("when activist1 have 6 levels in era 1", () => {
                 beforeEach(async () => {
-                  await instance.addLevel(activist1Address, 1);
-                  await instance.addLevel(activist1Address, 1);
-                  await instance.addLevel(activist1Address, 1);
-                  await instance.addLevel(activist1Address, 1);
-                  await instance.addLevel(activist1Address, 1);
-                  await instance.addLevel(activist1Address, 1);
+                  await instance.addLevel(activist1Address, 1, eventId1);
+                  await instance.addLevel(activist1Address, 1, eventId2);
+                  await instance.addLevel(activist1Address, 1, eventId3);
+                  await instance.addLevel(activist1Address, 1, eventId4);
+                  await instance.addLevel(activist1Address, 1, eventId5);
+                  await instance.addLevel(activist1Address, 1, eventId6);
 
                   await advanceBlock(args.blocksPerEra);
                 });
@@ -418,13 +465,13 @@ describe("ActivistPool", () => {
 
               context("when activist2 have 3 levels in era 1", () => {
                 beforeEach(async () => {
-                  await instance.addLevel(activist1Address, 1);
-                  await instance.addLevel(activist1Address, 1);
-                  await instance.addLevel(activist1Address, 1);
+                  await instance.addLevel(activist1Address, 1, eventId1);
+                  await instance.addLevel(activist1Address, 1, eventId2);
+                  await instance.addLevel(activist1Address, 1, eventId3);
 
-                  await instance.addLevel(activist2Address, 1);
-                  await instance.addLevel(activist2Address, 1);
-                  await instance.addLevel(activist2Address, 1);
+                  await instance.addLevel(activist2Address, 1, eventId4);
+                  await instance.addLevel(activist2Address, 1, eventId5);
+                  await instance.addLevel(activist2Address, 1, eventId6);
 
                   await advanceBlock(args.blocksPerEra);
                 });
@@ -442,23 +489,23 @@ describe("ActivistPool", () => {
           context("when is era 2", () => {
             context("when dont have withdraw from era 1", () => {
               beforeEach(async () => {
-                await instance.addLevel(activist1Address, 1);
-                await instance.addLevel(activist1Address, 1);
-                await instance.addLevel(activist1Address, 1);
+                await instance.addLevel(activist1Address, 1, eventId1);
+                await instance.addLevel(activist1Address, 1, eventId2);
+                await instance.addLevel(activist1Address, 1, eventId3);
 
-                await instance.addLevel(activist2Address, 1);
-                await instance.addLevel(activist2Address, 1);
-                await instance.addLevel(activist2Address, 1);
+                await instance.addLevel(activist2Address, 1, eventId4);
+                await instance.addLevel(activist2Address, 1, eventId5);
+                await instance.addLevel(activist2Address, 1, eventId6);
 
                 await advanceBlock(8);
 
-                await instance.addLevel(activist1Address, 1);
-                await instance.addLevel(activist1Address, 1);
-                await instance.addLevel(activist1Address, 1);
+                await instance.addLevel(activist1Address, 1, eventId7);
+                await instance.addLevel(activist1Address, 1, eventId8);
+                await instance.addLevel(activist1Address, 1, eventId9);
 
-                await instance.addLevel(activist2Address, 1);
-                await instance.addLevel(activist2Address, 1);
-                await instance.addLevel(activist2Address, 1);
+                await instance.addLevel(activist2Address, 1, eventId10);
+                await instance.addLevel(activist2Address, 1, eventId11);
+                await instance.addLevel(activist2Address, 1, eventId12);
               });
 
               context("when activist1 withdraw from era 1 and era 2", () => {
@@ -539,13 +586,13 @@ describe("ActivistPool", () => {
             context("when total of levels in era is 6", () => {
               context("when activist1 have 3 levels in era 1", () => {
                 beforeEach(async () => {
-                  await instance.addLevel(activist1Address, 1);
-                  await instance.addLevel(activist1Address, 1);
-                  await instance.addLevel(activist1Address, 1);
+                  await instance.addLevel(activist1Address, 1, eventId1);
+                  await instance.addLevel(activist1Address, 1, eventId2);
+                  await instance.addLevel(activist1Address, 1, eventId3);
 
-                  await instance.addLevel(activist2Address, 1);
-                  await instance.addLevel(activist2Address, 1);
-                  await instance.addLevel(activist2Address, 1);
+                  await instance.addLevel(activist2Address, 1, eventId4);
+                  await instance.addLevel(activist2Address, 1, eventId5);
+                  await instance.addLevel(activist2Address, 1, eventId6);
 
                   await advanceBlock(args.blocksPerEra * args.halving);
                 });
@@ -560,12 +607,12 @@ describe("ActivistPool", () => {
 
               context("when activist1 have 6 levels in era 1", () => {
                 beforeEach(async () => {
-                  await instance.addLevel(activist1Address, 1);
-                  await instance.addLevel(activist1Address, 1);
-                  await instance.addLevel(activist1Address, 1);
-                  await instance.addLevel(activist1Address, 1);
-                  await instance.addLevel(activist1Address, 1);
-                  await instance.addLevel(activist1Address, 1);
+                  await instance.addLevel(activist1Address, 1, eventId1);
+                  await instance.addLevel(activist1Address, 1, eventId2);
+                  await instance.addLevel(activist1Address, 1, eventId3);
+                  await instance.addLevel(activist1Address, 1, eventId4);
+                  await instance.addLevel(activist1Address, 1, eventId5);
+                  await instance.addLevel(activist1Address, 1, eventId6);
 
                   await advanceBlock(args.blocksPerEra * args.halving);
                 });
@@ -587,13 +634,13 @@ describe("ActivistPool", () => {
 
               context("when activist2 have 3 levels in era 1", () => {
                 beforeEach(async () => {
-                  await instance.addLevel(activist1Address, 1);
-                  await instance.addLevel(activist1Address, 1);
-                  await instance.addLevel(activist1Address, 1);
+                  await instance.addLevel(activist1Address, 1, eventId1);
+                  await instance.addLevel(activist1Address, 1, eventId2);
+                  await instance.addLevel(activist1Address, 1, eventId3);
 
-                  await instance.addLevel(activist2Address, 1);
-                  await instance.addLevel(activist2Address, 1);
-                  await instance.addLevel(activist2Address, 1);
+                  await instance.addLevel(activist2Address, 1, eventId4);
+                  await instance.addLevel(activist2Address, 1, eventId5);
+                  await instance.addLevel(activist2Address, 1, eventId6);
 
                   await advanceBlock(args.blocksPerEra * args.halving);
                 });
@@ -611,23 +658,23 @@ describe("ActivistPool", () => {
           context("when is era 2", () => {
             context("when dont have withdraw from era 1", () => {
               beforeEach(async () => {
-                await instance.addLevel(activist1Address, 1);
-                await instance.addLevel(activist1Address, 1);
-                await instance.addLevel(activist1Address, 1);
+                await instance.addLevel(activist1Address, 1, eventId1);
+                await instance.addLevel(activist1Address, 1, eventId2);
+                await instance.addLevel(activist1Address, 1, eventId3);
 
-                await instance.addLevel(activist2Address, 1);
-                await instance.addLevel(activist2Address, 1);
-                await instance.addLevel(activist2Address, 1);
+                await instance.addLevel(activist2Address, 1, eventId4);
+                await instance.addLevel(activist2Address, 1, eventId5);
+                await instance.addLevel(activist2Address, 1, eventId6);
 
                 await advanceBlock(8);
 
-                await instance.addLevel(activist1Address, 1);
-                await instance.addLevel(activist1Address, 1);
-                await instance.addLevel(activist1Address, 1);
+                await instance.addLevel(activist1Address, 1, eventId7);
+                await instance.addLevel(activist1Address, 1, eventId8);
+                await instance.addLevel(activist1Address, 1, eventId9);
 
-                await instance.addLevel(activist2Address, 1);
-                await instance.addLevel(activist2Address, 1);
-                await instance.addLevel(activist2Address, 1);
+                await instance.addLevel(activist2Address, 1, eventId10);
+                await instance.addLevel(activist2Address, 1, eventId11);
+                await instance.addLevel(activist2Address, 1, eventId12);
 
                 await advanceBlock(args.blocksPerEra * args.halving);
               });

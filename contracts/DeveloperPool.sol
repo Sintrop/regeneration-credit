@@ -33,6 +33,12 @@ contract DeveloperPool is Poolable, Blockable, Callable, ReentrancyGuard {
   /// @notice The address of the `DeveloperRules` contract.
   address private developerRulesAddress;
 
+  /// @notice Maximum possible level from a single resource.
+  uint256 public constant MAX_NEW_LEVELS = 1;
+
+  /// @notice Tracks unique resource IDs to ensure levels for a resource are added only once.
+  mapping(uint64 => bool) public hasProcessedLevel;
+
   // --- Constructor ---
 
   /**
@@ -113,8 +119,13 @@ contract DeveloperPool is Poolable, Blockable, Callable, ReentrancyGuard {
    */
   function addLevel(
     address addr,
-    uint256 levels
+    uint256 levels,
+    uint64 eventId
   ) external mustBeAllowedCaller mustBeContractCall(developerRulesAddress) nonReentrant {
+    require(levels <= MAX_NEW_LEVELS, "Exceeds max levels");
+    require(!hasProcessedLevel[eventId], "Event already processed");
+    hasProcessedLevel[eventId] = true;
+
     // Calls the _addPoolLevel function from Poolable.sol.
     _addPoolLevel(addr, levels, currentContractEra());
   }

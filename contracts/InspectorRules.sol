@@ -204,11 +204,12 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @return uint256 The updated total number of inspections completed by the inspector.
    */
   function afterRealizeInspection(
-    address addr
+    address addr,
+    uint64 inspectionId
   ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant returns (uint256) {
     _decreaseGiveUps(addr);
 
-    return _incrementInspections(addr);
+    return _incrementInspections(addr, inspectionId);
   }
 
   /**
@@ -269,7 +270,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param addr The inspector's wallet address.
    * @return uint256 The updated total number of inspections for the inspector.
    */
-  function _incrementInspections(address addr) private returns (uint256) {
+  function _incrementInspections(address addr, uint64 inspectionId) private returns (uint256) {
     Inspector storage inspector = inspectors[addr];
 
     require(inspector.id != 0, "Inspector does not exist");
@@ -278,7 +279,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
     inspector.lastRealizedAt = block.number;
     inspector.pool.level++;
 
-    _addLevel(inspector);
+    _addLevel(inspector, inspectionId);
 
     return inspector.totalInspections;
   }
@@ -289,10 +290,10 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * but only if the inspector has reached the `MINIMUM_INSPECTIONS_TO_POOL` threshold.
    * @param inspector The inspector's wallet address.
    */
-  function _addLevel(Inspector storage inspector) private {
+  function _addLevel(Inspector storage inspector, uint64 inspectionId) private {
     if (!_minimumInspections(inspector.totalInspections)) return;
 
-    inspectorPool.addLevel(inspector.inspectorWallet, 1);
+    inspectorPool.addLevel(inspector.inspectorWallet, 1, inspectionId);
 
     emit InspectorLevelIncreased(inspector.inspectorWallet, inspector.pool.level, block.number);
   }

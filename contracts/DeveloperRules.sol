@@ -221,7 +221,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     reportsIds[msg.sender].push(id);
 
     // Increase the developer's pool level for this successful report.
-    _updateLevel(msg.sender);
+    _updateLevel(msg.sender, id);
 
     // Emit an event for off-chain monitoring.
     emit ReportAdded(id, msg.sender, description, block.number);
@@ -372,13 +372,13 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * This function also updates the `lastPublishedAt` timestamp for the developer.
    * @param addr The wallet address of the developer whose level is to be increased.
    */
-  function _updateLevel(address addr) private {
+  function _updateLevel(address addr, uint64 reportId) private {
     Developer storage developer = developers[addr];
     developer.lastPublishedAt = block.number;
     developer.pool.level++;
 
     // Call the DeveloperPool contract about the level increase, enabling token withdrawal.
-    developerPool.addLevel(addr, 1);
+    developerPool.addLevel(addr, 1, reportId);
 
     // Emit an event.
     emit DeveloperLevelIncreased(addr, developer.pool.level, block.number);

@@ -852,8 +852,8 @@ describe("InspectionRules", () => {
                       await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 1);
                       await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 1);
 
-                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
-                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
+                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress, 1);
+                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress, 1);
 
                       await inspectorRules.setContractCall(instance.target, validationRules.target);
 
@@ -884,8 +884,8 @@ describe("InspectionRules", () => {
                       await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 3);
                       await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 4);
 
-                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
-                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
+                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress, 3);
+                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress, 4);
 
                       await regeneratorRules.setContractCall(instance.target, validationRules.target);
                       await inspectorRules.setContractCall(instance.target, validationRules.target);

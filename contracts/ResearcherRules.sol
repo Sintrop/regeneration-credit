@@ -233,7 +233,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
     // Update pool level
     researcher.pool.level++;
-    researcherPool.addLevel(msg.sender, 1);
+
+    researcherPool.addLevel(msg.sender, 1, id);
 
     // --- Event Emission ---
     emit ResearchPublished(id, msg.sender, block.number);
