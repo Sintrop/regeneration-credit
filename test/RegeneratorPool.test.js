@@ -489,6 +489,34 @@ describe("RegeneratorPool", () => {
           });
         });
       });
+
+      context("when the same inspection ID is processed twice", () => {
+        // We'll use a specific inspection ID for the replay attempt.
+        const duplicateInspectionId = 123;
+        const levelsToAdd = 64; // A valid amount of levels.
+
+        beforeEach(async () => {
+          // First, we make the successful call with the inspection ID.
+          await instance.connect(owner).addLevel(regenerator1Address, levelsToAdd, duplicateInspectionId);
+        });
+
+        it("should revert the second transaction with the same inspection ID", async () => {
+          // Now, we attempt to call `addLevel` again with the EXACT same inspection ID.
+          // We expect this transaction to be reverted by our security check.
+          await expect(
+            instance.connect(owner).addLevel(regenerator1Address, levelsToAdd, duplicateInspectionId)
+          ).to.be.revertedWith("Event already processed");
+        });
+
+        it("should have added the levels only once", async () => {
+          // This is a sanity check to ensure the first call worked and the second was blocked.
+          const era1 = await instance.getEra(1);
+          expect(era1.levels).to.equal(levelsToAdd);
+
+          const regenerator1Levels = await instance.eraLevels(1, regenerator1Address);
+          expect(regenerator1Levels).to.equal(levelsToAdd);
+        });
+      });
     });
 
     context("without allowed caller", () => {

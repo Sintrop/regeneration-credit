@@ -159,6 +159,33 @@ describe("ResearcherPool", () => {
           });
         });
       });
+
+      context("when the same resource ID is processed twice", () => {
+        // For this test, we'll use a simple number for the event/resource ID.
+        const duplicateResourceId = 1;
+
+        beforeEach(async () => {
+          // First, we make the successful call with the resource ID.
+          await instance.connect(owner).addLevel(researcher1Address, 1, duplicateResourceId);
+        });
+
+        it("should revert the second transaction with the same resource ID", async () => {
+          // Now, we attempt to call `addLevel` again with the EXACT same resource ID.
+          // We expect this transaction to be reverted by our security check.
+          await expect(instance.connect(owner).addLevel(researcher1Address, 1, duplicateResourceId)).to.be.revertedWith(
+            "Event already processed"
+          );
+        });
+
+        it("should have added the level only once", async () => {
+          // This sanity check ensures the first call worked and the second did not.
+          const era1 = await instance.getEra(1);
+          expect(era1.levels).to.equal(1);
+
+          const contr1Levels = await instance.eraLevels(1, researcher1Address);
+          expect(contr1Levels).to.equal(1);
+        });
+      });
     });
 
     context("without allowed caller", () => {

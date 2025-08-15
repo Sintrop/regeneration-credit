@@ -5,7 +5,7 @@ const { ethers } = require("hardhat");
 
 describe("ActivistPool", () => {
   let instance, regenerationCredit;
-  let owner, activist1Address, activist2Address;
+  let owner, activist1Address, activist2Address, regenerator1Address;
 
   const args = {
     totalActivistPoolTokens: "40000000000000000000000000",
@@ -27,7 +27,7 @@ describe("ActivistPool", () => {
   const eventId12 = ethers.toBeHex(12, 32);
 
   beforeEach(async () => {
-    [owner, activist1Address, activist2Address] = await ethers.getSigners();
+    [owner, activist1Address, activist2Address, regenerator1Address] = await ethers.getSigners();
 
     regenerationCredit = await regenerationCreditDeployed();
 
@@ -157,6 +157,40 @@ describe("ActivistPool", () => {
               expect(eraLevels).to.equal(4);
             });
           });
+        });
+      });
+
+      context("when the same eventId is processed twice", () => {
+        // We'll create a single, deterministic eventId to attempt a replay attack.
+        let eventId;
+
+        beforeEach(async () => {
+          // We generate a unique eventId based on the inviter (activist1Address) and
+          // an invitee that just got qualified (e.g., regenerator1Address).
+          eventId = ethers.solidityPackedKeccak256(
+            ["string", "address", "address"],
+            ["activist_reward", activist1Address.address, regenerator1Address.address]
+          );
+
+          // First, we make the successful call with this eventId.
+          await instance.connect(owner).addLevel(activist1Address, 1, eventId);
+        });
+
+        it("should revert the second transaction with the same eventId", async () => {
+          // Now, we attempt to call `addLevel` again with the EXACT same eventId.
+          // We expect this transaction to be reverted by our security check.
+          await expect(instance.connect(owner).addLevel(activist1Address, 1, eventId)).to.be.revertedWith(
+            "Event already processed"
+          );
+        });
+
+        it("should have added the level only once", async () => {
+          // This sanity check ensures the first call worked and the second was blocked.
+          const era1 = await instance.getEra(1);
+          expect(era1.levels).to.equal(1);
+
+          const activist1Levels = await instance.eraLevels(1, activist1Address);
+          expect(activist1Levels).to.equal(1);
         });
       });
     });
