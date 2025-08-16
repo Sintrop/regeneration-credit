@@ -37,7 +37,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   /// @notice Max character length for text.
   uint16 private constant MAX_TEXT_LENGTH = 300;
 
-  /// @notice Max level to remove from resource.
+  /// @notice Maximum possible level from a single resource.
   uint8 private constant RESOURCE_LEVEL = 1;
 
   // --- State variables ---
