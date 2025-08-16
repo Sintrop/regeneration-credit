@@ -77,6 +77,9 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// @notice Tracks which inspection IDs have already been processed to prevent replay attacks.
   mapping(uint64 => bool) private processedInspections;
 
+  /// @notice Tracks if a coordinate point have already been processed..
+  mapping(bytes32 => bool) seenCoordinates;
+
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules and user types.
   ICommunityRules private communityRules;
@@ -153,7 +156,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     string memory name,
     string memory proofPhoto,
     string memory projectDescription,
-    Coordinates[] memory _coordinates
+    Coordinates[] calldata _coordinates
   ) external {
     require(
       bytes(name).length <= MAX_NAME_LENGTH &&
@@ -169,6 +172,8 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
       totalArea >= MIN_REGENERATION_AREA && totalArea <= MAX_REGENERATION_AREA,
       "Minimum 500 and maximum 500.000 square meters"
     );
+
+    _validateCoordinates(_coordinates);
 
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
@@ -372,6 +377,94 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   }
 
   // --- Private functions ---
+
+  /**
+   * @dev Validates an array of coordinates for uniqueness and valid geographic ranges.
+   * @param _coords The array of coordinate structs to validate.
+   */
+  function _validateCoordinates(Coordinates[] calldata _coords) private pure {
+    // Loop through each coordinate
+    for (uint256 i = 0; i < _coords.length; i++) {
+      // --- 1. Check for Duplicates ---
+      // Compare the current coordinate with all subsequent coordinates
+      for (uint256 j = i + 1; j < _coords.length; j++) {
+        // We use keccak256 to compare the structs efficiently
+        require(
+          keccak256(abi.encode(_coords[i])) != keccak256(abi.encode(_coords[j])),
+          "Duplicate coordinates are not allowed"
+        );
+      }
+
+      // --- 2. Check for Valid Values ---
+      int256 lat = _stringCoordToInt(_coords[i].latitude);
+      int256 lon = _stringCoordToInt(_coords[i].longitude);
+      int256 precision = 10 ** 6;
+
+      require(lat >= -90 * precision && lat <= 90 * precision, "Invalid latitude");
+      require(lon >= -180 * precision && lon <= 180 * precision, "Invalid longitude");
+    }
+  }
+
+  /**
+   * @dev Converts a coordinate string part (e.g., "-23.547319") into a scaled integer (e.g., -23547319).
+   * @notice This is a utility function to handle coordinate strings. It validates characters and
+   * handles positive/negative numbers with up to 6 decimal places.
+   * @param coordStr The coordinate string part (latitude or longitude).
+   * @return A scaled integer representation of the coordinate.
+   */
+  function _stringCoordToInt(string memory coordStr) private pure returns (int256) {
+    bytes memory b = bytes(coordStr);
+    require(b.length > 0 && b.length < 30, "Invalid coordinate string length");
+
+    int256 result = 0;
+    int256 dotPosition = -1;
+
+    uint256 startIndex = 0;
+    bool isNegative = false;
+    if (b[0] == "-") {
+      isNegative = true;
+      startIndex = 1;
+    }
+
+    for (uint256 i = startIndex; i < b.length; i++) {
+      bytes1 char = b[i];
+
+      bool isDigit = (char >= "0" && char <= "9");
+      bool isDot = (char == ".");
+
+      require(isDigit || isDot, "Invalid character in coordinate");
+
+      if (isDot) {
+        require(dotPosition == -1, "Multiple dots in coordinate");
+        dotPosition = int256(i);
+      } else if (dotPosition == -1) {
+        // --- CORREÇÃO APLICADA AQUI ---
+        // First cast uint8 to uint256, then to int256 to ensure safe conversion.
+        result = result * 10 + (int256(uint256(uint8(char))) - 48);
+      }
+    }
+
+    if (dotPosition != -1) {
+      uint256 decimalValue = 0;
+      uint256 decimalPlaces = 0;
+      for (uint256 i = uint256(dotPosition) + 1; i < b.length && decimalPlaces < 6; i++) {
+        bytes1 char = b[i];
+        require(char >= "0" && char <= "9", "Invalid character in decimal part");
+        decimalValue = decimalValue * 10 + (uint8(char) - 48);
+        decimalPlaces++;
+      }
+
+      result = result * (int256(10 ** decimalPlaces)) + int256(decimalValue);
+
+      if (decimalPlaces < 6) {
+        result = result * (int256(10 ** (6 - decimalPlaces)));
+      }
+    } else {
+      result = result * (10 ** 6);
+    }
+
+    return isNegative ? -result : result;
+  }
 
   /**
    * @dev Checks if a regenerator has reached the MINIMUM_INSPECTIONS_TO_POOL threshold.

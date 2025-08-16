@@ -249,6 +249,71 @@ describe("RegeneratorRules", () => {
     });
   });
 
+  context("when coordinate values are invalid", () => {
+    it("should revert if coordinates contain duplicates", async () => {
+      // Here, the first and last coordinates are identical.
+      const duplicateCoordinates = [
+        { latitude: "-22.1", longitude: "-44.1" },
+        { latitude: "-22.2", longitude: "-44.2" },
+        { latitude: "-22.3", longitude: "-44.3" },
+        { latitude: "-22.1", longitude: "-44.1" }, // Duplicate
+      ];
+
+      // We expect the transaction to revert with the specific error message.
+      await expect(addRegenerator("Regenerator A", prod1Address, duplicateCoordinates)).to.be.revertedWith(
+        "Duplicate coordinates are not allowed"
+      );
+    });
+
+    it("should revert if latitude is out of range (> 90)", async () => {
+      const invalidLatitudeCoords = [
+        { latitude: "-22.1", longitude: "-44.1" },
+        { latitude: "91.0", longitude: "-44.2" }, // Invalid Latitude
+        { latitude: "-22.3", longitude: "-44.3" },
+      ];
+
+      await expect(addRegenerator("Regenerator A", prod1Address, invalidLatitudeCoords)).to.be.revertedWith(
+        "Invalid latitude"
+      );
+    });
+
+    it("should revert if longitude is out of range (> 180)", async () => {
+      const invalidLongitudeCoords = [
+        { latitude: "-22.1", longitude: "-44.1" },
+        { latitude: "-22.2", longitude: "-181.0" }, // Invalid Longitude
+        { latitude: "-22.3", longitude: "-44.3" },
+      ];
+
+      await expect(addRegenerator("Regenerator A", prod1Address, invalidLongitudeCoords)).to.be.revertedWith(
+        "Invalid longitude"
+      );
+    });
+
+    it("should revert if a coordinate string contains invalid characters", async () => {
+      const malformedCoords = [
+        { latitude: "-22.1", longitude: "-44.1" },
+        { latitude: "abc_invalid", longitude: "-44.2" }, // Malformed string
+        { latitude: "-22.3", longitude: "-44.3" },
+      ];
+
+      await expect(addRegenerator("Regenerator A", prod1Address, malformedCoords)).to.be.revertedWith(
+        "Invalid character in coordinate"
+      );
+    });
+
+    it("should revert if a coordinate string contains multiple dots", async () => {
+      const multiDotCoords = [
+        { latitude: "-22.1", longitude: "-44.1" },
+        { latitude: "-22.2", longitude: "-44.2.2" }, // Multiple dots
+        { latitude: "-22.3", longitude: "-44.3" },
+      ];
+
+      await expect(addRegenerator("Regenerator A", prod1Address, multiDotCoords)).to.be.revertedWith(
+        "Multiple dots in coordinate"
+      );
+    });
+  });
+
   context("when totalArea is below 500", () => {
     it("should return error", async () => {
       await expect(addRegenerator2("Regenerator A", prod1Address)).to.be.revertedWith(
