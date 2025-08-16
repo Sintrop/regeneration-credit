@@ -37,7 +37,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   /// @notice Max character length for hash or url.
   uint16 private constant MAX_HASH_LENGTH = 150;
 
-  /// @notice Max level to remove from resource.
+  /// @notice Maximum possible level from a single resource.
   uint8 private constant RESOURCE_LEVEL = 1;
 
   // --- State variables ---

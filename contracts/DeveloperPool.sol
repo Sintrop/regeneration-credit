@@ -27,14 +27,11 @@ contract DeveloperPool is Poolable, Blockable, Callable, ReentrancyGuard {
   /// This value represents the maximum tokens available for distribution through this contract.
   uint256 private constant TOTAL_POOL_TOKENS = 40000000e18;
 
-  /// @notice Max level to remove from resource.
+  /// @notice Maximum possible level from a single resource.
   uint8 private constant RESOURCE_LEVEL = 1;
 
   /// @notice The address of the `DeveloperRules` contract.
   address private developerRulesAddress;
-
-  /// @notice Maximum possible level from a single resource.
-  uint256 public constant MAX_NEW_LEVELS = 1;
 
   /// @notice Tracks unique resource IDs to ensure levels for a resource are added only once.
   mapping(uint64 => bool) public hasProcessedLevel;
@@ -122,7 +119,7 @@ contract DeveloperPool is Poolable, Blockable, Callable, ReentrancyGuard {
     uint256 levels,
     uint64 eventId
   ) external mustBeAllowedCaller mustBeContractCall(developerRulesAddress) nonReentrant {
-    require(levels <= MAX_NEW_LEVELS, "Exceeds max levels");
+    require(levels <= RESOURCE_LEVEL, "Exceeds max levels");
     require(!hasProcessedLevel[eventId], "Event already processed");
     hasProcessedLevel[eventId] = true;
 
