@@ -5,7 +5,6 @@ const verifyContract = require("../scripts/shared/verifyContract");
 async function supporterRulesDeploy() {
   const communityRules = await getDeployedContract("CommunityRules");
   const researcherRules = await getDeployedContract("ResearcherRules");
-  const regenerationCredit = await getDeployedContract("RegenerationCredit");
 
   const SupporterRules = await ethers.getContractFactory("SupporterRules");
 
@@ -16,7 +15,6 @@ async function supporterRulesDeploy() {
   saveContractAddress("SupporterRules", supporterRules.target);
 
   await communityRules.newAllowedCaller(supporterRules.target);
-  await supporterRules.newAllowedCaller(regenerationCredit.target);
 
   console.log(`SupporterRules address ${supporterRules.target}`);
 
