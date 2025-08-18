@@ -39,7 +39,7 @@ contract CommunityRules is Callable {
   mapping(address => CommunityTypes.UserType) private users;
 
   /// @notice A mapping from a user's wallet address to denied status.
-  mapping(address => bool) private denied;
+  mapping(address => bool) private deniedUsers;
 
   /// @notice A mapping from a reported user's address to an array of `Delation` structs they have received.
   /// Stores a historical record of all delations against a user.
@@ -229,11 +229,11 @@ contract CommunityRules is Callable {
    * @param userAddress The address of the user to be denied.
    */
   function setDeniedType(address userAddress) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
-    if (denied[userAddress]) return;
+    if (deniedUsers[userAddress]) return;
 
     userTypesCount[users[userAddress]]--; // Decrement count of the old user type
 
-    denied[userAddress] = true;
+    deniedUsers[userAddress] = true;
 
     emit DeniedUserEvent(userAddress);
   }
@@ -340,7 +340,7 @@ contract CommunityRules is Callable {
    * @return bool If userAddress is equal userType.
    */
   function userTypeIs(CommunityTypes.UserType userType, address userAddress) public view returns (bool) {
-    return users[userAddress] == userType && !denied[userAddress];
+    return users[userAddress] == userType && !deniedUsers[userAddress];
   }
 
   /**
@@ -349,7 +349,7 @@ contract CommunityRules is Callable {
    * @return bool If userAddress is equal userType.
    */
   function isDenied(address userAddress) public view returns (bool) {
-    return denied[userAddress];
+    return deniedUsers[userAddress];
   }
 
   /**
