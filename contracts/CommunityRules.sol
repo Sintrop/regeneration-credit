@@ -18,6 +18,9 @@ contract CommunityRules is Callable {
   /// @notice Minimum number of users allowed for a specific type before proportionality rules apply.
   uint16 private constant MINIMUM_REGISTERED_USERS_QUANTITY = 5;
 
+  /// @notice The number of blocks an invitation is delayed for Supporters.
+  uint32 public constant SUPPORTER_INVITATION_DELAY_BLOCKS = 150;
+
   /// @notice The number of blocks an invitation is delayed for voter-type users.
   uint32 public constant VOTER_INVITATION_DELAY_BLOCKS = 100000;
 
@@ -85,6 +88,13 @@ contract CommunityRules is Callable {
     uint8 contributorProportionality
   ) {
     // Initialize settings for all relevant UserTypes
+    userTypeSettings[CommunityTypes.UserType.SUPPORTER] = CommunityTypes.UserTypeSetting(
+      0,
+      false,
+      false,
+      SUPPORTER_INVITATION_DELAY_BLOCKS,
+      false
+    );
     userTypeSettings[CommunityTypes.UserType.REGENERATOR] = CommunityTypes.UserTypeSetting(0, false, true, 0, false);
     userTypeSettings[CommunityTypes.UserType.INSPECTOR] = CommunityTypes.UserTypeSetting(
       inspectorProportionality,

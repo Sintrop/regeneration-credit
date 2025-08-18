@@ -86,6 +86,7 @@ contract InvitationRules is Ownable, ReentrancyGuard {
     canBeInviteds[CommunityTypes.UserType.DEVELOPER] = CommunityTypes.UserType.DEVELOPER;
     canBeInviteds[CommunityTypes.UserType.RESEARCHER] = CommunityTypes.UserType.RESEARCHER;
     canBeInviteds[CommunityTypes.UserType.CONTRIBUTOR] = CommunityTypes.UserType.CONTRIBUTOR;
+    canBeInviteds[CommunityTypes.UserType.SUPPORTER] = CommunityTypes.UserType.SUPPORTER;
   }
 
   // --- Public functions ---
@@ -161,6 +162,8 @@ contract InvitationRules is Ownable, ReentrancyGuard {
       return developerRules.canSendInvite(msg.sender);
     } else if (userType == CommunityTypes.UserType.RESEARCHER) {
       return researcherRules.canSendInvite(msg.sender);
+    } else if (userType == CommunityTypes.UserType.SUPPORTER) {
+      return true;
     } else {
       return false;
     }
