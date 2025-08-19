@@ -177,6 +177,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
       name,
       proofPhoto,
       Pool(0, poolCurrentEra()),
+      0,
       block.number,
       0
     );
@@ -224,6 +225,9 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     contributionsCount++;
     contributionsTotalCount++;
     uint64 id = contributionsTotalCount;
+
+    // Increment contributor's total contributions count within their struct.
+    contributors[msg.sender].totalContributions++;
 
     contributions[id] = Contribution(id, poolCurrentEra(), msg.sender, description, report, 0, true, 0, block.number);
 
