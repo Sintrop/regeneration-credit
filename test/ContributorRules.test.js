@@ -125,6 +125,7 @@ describe("ContributorRules", (accounts) => {
       expect(contributor.contributorWallet).to.equal(contr1Address.address);
       expect(contributor.name).to.equal("Contributor A");
       expect(contributor.proofPhoto).to.equal("photoURL");
+      expect(contributor.totalContributions).to.equal(0);
 
       expect(contributor.pool.level).to.equal(0);
       expect(contributor.pool.currentEra).to.equal(1);
@@ -269,6 +270,12 @@ describe("ContributorRules", (accounts) => {
             const contributor = await instance.getContributor(contr1Address);
 
             expect(contributor.pool.level).to.equal(1);
+          });
+
+          it("should increment contributions count", async () => {
+            const contributor = await instance.getContributor(contr1Address);
+
+            expect(contributor.totalContributions).to.equal(1);
           });
 
           it("add level to era", async () => {

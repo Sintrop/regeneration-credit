@@ -27,6 +27,7 @@ describe("VoteRules", () => {
       proofPhoto: "AAAA",
       createdAt: 123,
       pool: { level: levels, currentEra: 1 },
+      totalContributions: 1,
       lastPublishedAt: 123,
     };
   };
