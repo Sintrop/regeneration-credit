@@ -101,6 +101,13 @@ contract InvitationRules is Ownable, ReentrancyGuard {
 
     CommunityTypes.UserType msgSenderUserType = communityRules.getUser(msg.sender);
 
+    if (msgSenderUserType == CommunityTypes.UserType.ACTIVIST) {
+      require(
+        userType != CommunityTypes.UserType.REGENERATOR && userType != CommunityTypes.UserType.INSPECTOR,
+        "Activists must use inviteRegeneratorInspector() for this type"
+      );
+    }
+
     // Checks if the inviter has general permission to send invitations.
     require(_canSendInvite(msgSenderUserType), "Only most active users allowed to invite");
     // Checks if the invitation delay for the inviter's type has been reached.
