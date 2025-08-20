@@ -307,7 +307,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
     uint64 id = calculatorItemsCount + 1;
 
-    calculatorItems[id] = CalculatorItem(id, msg.sender, item, thesis, unit, carbonImpact);
+    calculatorItems[id] = CalculatorItem(id, msg.sender, item, thesis, unit, carbonImpact, block.number);
     calculatorItemsCount++;
     researchers[msg.sender].lastCalculatorItemAt = block.number;
     researchers[msg.sender].publishedItems++;
@@ -333,7 +333,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
     uint64 id = evaluationMethodsCount + 1;
 
-    evaluationMethods[id] = EvaluationMethod(id, msg.sender, title, research, projectURL);
+    evaluationMethods[id] = EvaluationMethod(id, msg.sender, title, research, projectURL, block.number);
     evaluationMethodsCount++;
     researchers[msg.sender].canPublishMethod = false;
   }
