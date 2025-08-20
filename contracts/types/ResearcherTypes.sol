@@ -80,6 +80,7 @@ struct CalculatorItem {
   string thesis;
   string unit;
   uint256 carbonImpact;
+  uint256 createdAtBlock;
 }
 
 /**
@@ -96,6 +97,7 @@ struct EvaluationMethod {
   string title;
   string research;
   string projectURL;
+  uint256 createdAtBlock;
 }
 
 /**

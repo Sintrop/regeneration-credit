@@ -165,7 +165,7 @@ contract CommunityRules is Callable {
     require(users[addr] != CommunityTypes.UserType.UNDEFINED, "User must be registered");
     require(addr != address(0), "Cannot delate zero address");
 
-    delations[addr].push(CommunityTypes.Delation(delationsCount + 1, msg.sender, addr, title, testimony));
+    delations[addr].push(CommunityTypes.Delation(delationsCount + 1, msg.sender, addr, title, testimony, block.number));
     delationsCount++;
 
     emit DelationAdded(msg.sender, addr);
