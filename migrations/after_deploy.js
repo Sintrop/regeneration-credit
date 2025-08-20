@@ -150,14 +150,6 @@ async function configureRegeneratorRules() {
   console.log("After RegeneratorRules deploy is OK");
 }
 
-// async function configureSupporterRules() {
-
-//   const regenerationCredit = await getDeployedContract("RegenerationCredit");
-//   const supporterRules = await getDeployedContract("SupporterRules");
-
-//   console.log("After SupporterRules deploy is OK");
-// }
-
 async function configureCommunityRules() {
 
   const invitationRules = await getDeployedContract("InvitationRules");

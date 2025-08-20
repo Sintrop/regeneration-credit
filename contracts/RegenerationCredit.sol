@@ -111,43 +111,6 @@ contract RegenerationCredit is ERC20, ERC20Burnable, Ownable, ReentrancyGuard {
     _burnTokensInternal(account, amount);
   }
 
-  // /**
-  //  * @notice Allows a supporter to burn tokens to compensate for a specific item's degradation.
-  //  * @dev Burns tokens. If a valid calculatorItemId is provided, calls the SupporterRules contract
-  //  * that records the burned amount as a certificate for that item.
-  //  * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
-  //  * @param calculatorItemId The ID of the CalculatorItem.
-  //  */
-  // function offset(uint256 amount, uint64 calculatorItemId) external nonReentrant {
-  //   require(supporterRules.isSupporter(msg.sender), "Only supporters");
-  //   require(amount >= MINIMUM_TOKENS_TO_OFFSET, "Amount must be at least 1 RC");
-
-  //   _burnTokensInternal(msg.sender, amount);
-
-  //   supporterRules.offset(msg.sender, amount, calculatorItemId);
-  // }
-
-  // /**
-  //  * @notice Allows a supporter to burn tokens to post content.
-  //  * @dev Burns tokens and creates a new publication record.
-  //  * Enforces character limits for description and content.
-  //  * @param amount Tokens to be burned (minimum 10 tokens in wei, i.e., 10e18).
-  //  * @param description The description of the post (max 600 characters).
-  //  * @param content The content of the post (max 600 characters).
-  //  */
-  // function publish(uint256 amount, string memory description, string memory content) external nonReentrant {
-  //   require(supporterRules.isSupporter(msg.sender), "Only supporters");
-  //   require(amount >= MINIMUM_TOKENS_TO_PUBLISH, "Amount must be at least 10 RC");
-  //   require(
-  //     bytes(description).length <= MAX_PUBLICATION_LENGTH && bytes(content).length <= MAX_PUBLICATION_LENGTH,
-  //     "Max 600 characters"
-  //   );
-
-  //   _burnTokensInternal(msg.sender, amount);
-
-  //   supporterRules.publish(msg.sender, amount, description, content);
-  // }
-
   /**
    * @dev Allows a designated "contract pool" to register a new decreaseLocked.
    * @notice Called only by a system pool contract, this function remove the transfered tokens from totalLocked.
