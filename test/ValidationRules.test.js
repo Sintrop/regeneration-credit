@@ -658,10 +658,9 @@ describe("ValidationRules", () => {
               });
 
               it("user type must be denied", async () => {
-                const user = await communityRules.getUser(regenerator1Address);
-                const DENIED = 8;
+                const isDenied = await communityRules.isDenied(regenerator1Address);
 
-                expect(user).to.equal(DENIED);
+                expect(isDenied).to.equal(true);
               });
 
               it("inviter must get 1 penalty", async () => {
@@ -724,10 +723,9 @@ describe("ValidationRules", () => {
               });
 
               it("user type must be denied", async () => {
-                const user = await communityRules.getUser(inspector1Address);
-                const DENIED = 8;
+                const isDenied = await communityRules.isDenied(inspector1Address);
 
-                expect(user).to.equal(DENIED);
+                expect(isDenied).to.equal(true);
               });
 
               it("remove user levels from pool", async () => {
@@ -771,10 +769,9 @@ describe("ValidationRules", () => {
               });
 
               it("user type must be denied", async () => {
-                const user = await communityRules.getUser(contributor1Address);
-                const DENIED = 8;
+                const isDenied = await communityRules.isDenied(contributor1Address);
 
-                expect(user).to.equal(DENIED);
+                expect(isDenied).to.equal(true);
               });
 
               it("remove user levels from pool", async () => {
@@ -818,10 +815,9 @@ describe("ValidationRules", () => {
               });
 
               it("user type must be denied", async () => {
-                const user = await communityRules.getUser(dev1Address);
-                const DENIED = 8;
+                const isDenied = await communityRules.isDenied(dev1Address);
 
-                expect(user).to.equal(DENIED);
+                expect(isDenied).to.equal(true);
               });
 
               it("remove user levels from pool", async () => {
@@ -865,10 +861,9 @@ describe("ValidationRules", () => {
               });
 
               it("user type must be denied", async () => {
-                const user = await communityRules.getUser(resea1Address);
-                const DENIED = 8;
+                const isDenied = await communityRules.isDenied(resea1Address);
 
-                expect(user).to.equal(DENIED);
+                expect(isDenied).to.equal(true);
               });
 
               it("remove user levels from pool", async () => {
@@ -915,10 +910,9 @@ describe("ValidationRules", () => {
               });
 
               it("user type must be denied", async () => {
-                const user = await communityRules.getUser(activist1Address);
-                const DENIED = 8;
+                const isDenied = await communityRules.isDenied(activist1Address);
 
-                expect(user).to.equal(DENIED);
+                expect(isDenied).to.equal(true);
               });
 
               it("remove user levels from pool", async () => {
@@ -967,9 +961,9 @@ describe("ValidationRules", () => {
               });
 
               it("user type must be denied", async () => {
-                const user = await communityRules.getUser(regenerator1Address);
+                const isDenied = await communityRules.isDenied(regenerator1Address);
 
-                expect(user).to.equal(userTypes.Denied);
+                expect(isDenied).to.equal(true);
               });
             });
           });
@@ -1192,9 +1186,9 @@ describe("ValidationRules", () => {
               });
 
               it("deny inspector", async () => {
-                const newInspectorType = await communityRules.getUser(inspectionMock.inspector);
+                const isDenied = await communityRules.isDenied(inspectionMock.inspector);
 
-                expect(newInspectorType).to.equal(8);
+                expect(isDenied).to.equal(true);
               });
 
               it("all inspector contract levels is removed", async () => {
@@ -1410,9 +1404,9 @@ describe("ValidationRules", () => {
                 });
 
                 it("deny developer", async () => {
-                  const newDeveloperType = await communityRules.getUser(dev1Address);
+                  const isDenied = await communityRules.isDenied(dev1Address);
 
-                  expect(newDeveloperType).to.equal(userTypes.Denied);
+                  expect(isDenied).to.equal(true);
                 });
 
                 it("remove report regeneration score level from developer pool", async () => {
@@ -1585,9 +1579,9 @@ describe("ValidationRules", () => {
               });
 
               it("deny researcher", async () => {
-                const newResearcherType = await communityRules.getUser(resea1Address);
+                const isDenied = await communityRules.isDenied(resea1Address);
 
-                expect(newResearcherType).to.equal(8);
+                expect(isDenied).to.equal(true);
               });
 
               it("remove research regeneration score level from researcher pool", async () => {
@@ -1718,9 +1712,9 @@ describe("ValidationRules", () => {
               });
 
               it("deny contributor", async () => {
-                const newContributorType = await communityRules.getUser(contributor1Address);
+                const isDenied = await communityRules.isDenied(contributor1Address);
 
-                expect(newContributorType).to.equal(8);
+                expect(isDenied).to.equal(true);
               });
 
               it("remove contribution regeneration score level from contributor pool", async () => {

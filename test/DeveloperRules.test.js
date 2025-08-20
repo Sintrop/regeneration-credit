@@ -504,9 +504,9 @@ describe("DeveloperRules", (accounts) => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await communityRules.getUser(user1Address);
+          const isDenied = await communityRules.isDenied(user1Address);
 
-          expect(userType).to.eq(userTypes.Denied);
+          expect(isDenied).to.eq(true);
         });
       });
 
@@ -647,6 +647,12 @@ describe("DeveloperRules", (accounts) => {
             expect(userType).to.eq(userTypes.Developer);
           });
 
+          it("user type must be DEVELOPER yet", async () => {
+            const isDenied = await communityRules.isDenied(anyAddress);
+
+            expect(isDenied).to.eq(false);
+          });
+
           it("must remove one pool level from current era", async () => {
             const contribution = await instance.reports(1);
             const eraLevels = await developerPool.eraLevels(contribution.era, anyAddress);
@@ -721,9 +727,9 @@ describe("DeveloperRules", (accounts) => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await communityRules.getUser(anyAddress);
+          const isDenied = await communityRules.isDenied(anyAddress);
 
-          expect(userType).to.eq(userTypes.Denied);
+          expect(isDenied).to.eq(true);
         });
       });
 
@@ -941,9 +947,9 @@ describe("DeveloperRules", (accounts) => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await communityRules.getUser(dev1Address);
+          const isDenied = await communityRules.isDenied(dev1Address);
 
-          expect(userType).to.eq(userTypes.Denied);
+          expect(isDenied).to.eq(true);
         });
       });
 
@@ -1156,9 +1162,9 @@ describe("DeveloperRules", (accounts) => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await communityRules.getUser(dev1Address);
+          const isDenied = await communityRules.isDenied(dev1Address);
 
-          expect(userType).to.eq(userTypes.Denied);
+          expect(isDenied).to.eq(isDenied);
         });
       });
 

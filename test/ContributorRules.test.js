@@ -637,9 +637,9 @@ describe("ContributorRules", (accounts) => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await communityRules.getUser(contr1Address);
+          const isDenied = await communityRules.isDenied(contr1Address);
 
-          expect(userType).to.eq(userTypes.Denied);
+          expect(isDenied).to.eq(true);
         });
       });
 
@@ -856,9 +856,9 @@ describe("ContributorRules", (accounts) => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await communityRules.getUser(contr1Address);
+          const isDenied = await communityRules.isDenied(contr1Address);
 
-          expect(userType).to.eq(userTypes.Denied);
+          expect(isDenied).to.eq(true);
         });
       });
 
@@ -1076,9 +1076,9 @@ describe("ContributorRules", (accounts) => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await communityRules.getUser(contr1Address);
+          const isDenied = await communityRules.isDenied(contr1Address);
 
-          expect(userType).to.eq(userTypes.Denied);
+          expect(isDenied).to.eq(true);
         });
       });
 
@@ -1252,9 +1252,9 @@ describe("ContributorRules", (accounts) => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await communityRules.getUser(contr1Address);
+          const isDenied = await communityRules.isDenied(contr1Address);
 
-          expect(userType).to.eq(userTypes.Denied);
+          expect(isDenied).to.eq(true);
         });
       });
 

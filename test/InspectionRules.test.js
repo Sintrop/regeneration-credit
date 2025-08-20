@@ -1266,9 +1266,9 @@ describe("InspectionRules", () => {
           });
 
           it("inspector type to DENIED", async () => {
-            const userType = await communityRules.getUser(inspectorAddress);
+            const isDenied = await communityRules.isDenied(inspectorAddress);
 
-            expect(userType).to.equal(USER_TYPES.denied);
+            expect(isDenied).to.equal(true);
           });
         });
 
@@ -1429,9 +1429,9 @@ describe("InspectionRules", () => {
           });
 
           it("inspector type to DENIED", async () => {
-            const userType = await communityRules.getUser(inspectorAddress);
+            const isDenied = await communityRules.isDenied(inspectorAddress);
 
-            expect(userType).to.equal(USER_TYPES.denied);
+            expect(isDenied).to.equal(true);
           });
         });
 
@@ -1592,9 +1592,9 @@ describe("InspectionRules", () => {
           });
 
           it("inspector type to DENIED", async () => {
-            const userType = await communityRules.getUser(inspectorAddress);
+            const isDenied = await communityRules.isDenied(inspectorAddress);
 
-            expect(userType).to.equal(USER_TYPES.denied);
+            expect(isDenied).to.equal(true);
           });
         });
 
@@ -1755,9 +1755,9 @@ describe("InspectionRules", () => {
           });
 
           it("inspector type to DENIED", async () => {
-            const userType = await communityRules.getUser(inspectorAddress);
+            const isDenied = await communityRules.isDenied(inspectorAddress);
 
-            expect(userType).to.equal(USER_TYPES.denied);
+            expect(isDenied).to.equal(true);
           });
         });
 
