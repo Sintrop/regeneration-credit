@@ -438,7 +438,6 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
         require(dotPosition == -1, "Multiple dots in coordinate");
         dotPosition = int256(i);
       } else if (dotPosition == -1) {
-        // --- CORREÇÃO APLICADA AQUI ---
         // First cast uint8 to uint256, then to int256 to ensure safe conversion.
         result = result * 10 + (int256(uint256(uint8(char))) - 48);
       }
