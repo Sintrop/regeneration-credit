@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { Callable } from "./shared/Callable.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IResearcherRules } from "./interfaces/IResearcherRules.sol";
+import { IRegenerationCredit } from "./interfaces/IRegenerationCredit.sol";
 import { CalculatorItem } from "./types/ResearcherTypes.sol";
 import { Supporter, Publication, Offset } from "./types/SupporterTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title SupporterRules
@@ -15,7 +16,7 @@ import { CommunityTypes } from "./types/CommunityTypes.sol";
  * @dev This contract handles supporter registration, profile updates, token burning
  * for environmental offsets and content publications, and management of reduction commitments.
  */
-contract SupporterRules is Callable {
+contract SupporterRules is ReentrancyGuard {
   // --- Constants ---
 
   /// @notice Commission percentage paid to the inviter when an invited supporter burns tokens.
@@ -27,8 +28,17 @@ contract SupporterRules is Callable {
   /// @notice Max character length for hash or url.
   uint16 private constant MAX_HASH_LENGTH = 150;
 
-  /// @notice Max character length for text.
+  /// @notice Max character length for description text.
   uint16 private constant MAX_TEXT_LENGTH = 200;
+
+  /// @notice Maximum character length for the publication.
+  uint16 private constant MAX_PUBLICATION_LENGTH = 600;
+
+  /// @notice The minimum number of tokens a user must burn to offset.
+  uint256 private constant MINIMUM_TOKENS_TO_OFFSET = 1e18;
+
+  /// @notice The minimum number of tokens a user must burn to pulish offset.
+  uint256 private constant MINIMUM_TOKENS_TO_PUBLISH = 10e18;
 
   // --- State variables ---
 
@@ -65,8 +75,7 @@ contract SupporterRules is Callable {
   /// @notice ResearcherRules contract interface.
   IResearcherRules private researcherRules;
 
-  /// @notice The address of the `RegenerationCredit` contract.
-  address private regenerationCreditAddress;
+  IRegenerationCredit public regenerationCredit;
 
   /// @notice Supporter UserType.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.SUPPORTER;
@@ -79,20 +88,14 @@ contract SupporterRules is Callable {
    * @param researcherRulesAddress Address of the ResearcherRules contract, used for CalculatorItem data.
    */
 
-  constructor(address communityRulesAddress, address researcherRulesAddress) {
+  constructor(
+    address communityRulesAddress,
+    address researcherRulesAddress,
+    address regenerationCreditAddress
+  ) ReentrancyGuard() {
     communityRules = ICommunityRules(communityRulesAddress);
     researcherRules = IResearcherRules(researcherRulesAddress);
-  }
-
-  // --- Deploy functions ---
-
-  /**
-   * @dev onlyOwner function to set contract call addresses.
-   * This function must be called only once after the contract deploy and ownership must be renounced.
-   * @param _regenerationCreditAddress Address of RegenerationCredit.
-   */
-  function setContractCall(address _regenerationCreditAddress) external onlyOwner {
-    regenerationCreditAddress = _regenerationCreditAddress;
+    regenerationCredit = IRegenerationCredit(regenerationCreditAddress);
   }
 
   // --- Public functions (State Modifying) ---
@@ -137,51 +140,78 @@ contract SupporterRules is Callable {
   }
 
   /**
-   * @dev Called by the RC offset function. If a valid calculatorItemId is provided,
+   *
+   * @notice Allows a supporter to burn tokens to compensate for a specific item's degradation.
+   * Before calling this function, supporters must approve the SupporterRules contract to burn the tokens.
+   * @dev This function calls the token transfer function to pay comissions and burnFrom to trade tokens
+   * for the compensation certificate. If a valid calculatorItemId is provided,
    * records the burned amount as a certificate for that item.
-   * @param supporterAddress address of supporter.
-   * @param amountToBurn Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
+   * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
+   * @param minAmountToBurn Slippage protection: the minimum amount the user expects to burn after commission.
    * @param calculatorItemId The ID of the CalculatorItem, or 0 if not applicable.
    */
-  function offset(
-    address supporterAddress,
-    uint256 amountToBurn,
-    uint64 calculatorItemId
-  ) external mustBeAllowedCaller mustBeContractCall(address(regenerationCreditAddress)) {
+  function offset(uint256 amount, uint256 minAmountToBurn, uint64 calculatorItemId) external nonReentrant {
     require(researcherRules.getCalculatorItem(calculatorItemId).id > 0, "Calculator item does not exist");
+    require(communityRules.userTypeIs(CommunityTypes.UserType.SUPPORTER, msg.sender), "Only supporters");
+    require(amount >= MINIMUM_TOKENS_TO_OFFSET, "Amount must be at least 1 RC");
+
+    (uint256 amountToBurn, uint256 commission, address inviter) = calculateCommission(msg.sender, amount);
+    require(amountToBurn >= minAmountToBurn, "Slippage: amount to burn is less than minimum");
+
+    if (commission > 0 && inviter != address(0)) {
+      regenerationCredit.transferFrom(msg.sender, inviter, commission);
+    }
+
+    regenerationCredit.burnFrom(msg.sender, amountToBurn);
 
     offsetsCount++;
     uint64 id = offsetsCount;
 
-    calculatorItemCertificates[supporterAddress][calculatorItemId] += amountToBurn;
+    calculatorItemCertificates[msg.sender][calculatorItemId] += amountToBurn;
 
-    offsets[id] = Offset(supporterAddress, block.number, amountToBurn, calculatorItemId);
-    supporters[supporterAddress].offsetsCount++;
+    offsets[id] = Offset(msg.sender, block.number, amountToBurn, calculatorItemId);
+    supporters[msg.sender].offsetsCount++;
 
-    emit OffsetMade(supporterAddress, id, amountToBurn, calculatorItemId, block.number);
+    emit OffsetMade(msg.sender, id, amountToBurn, calculatorItemId, block.number);
   }
 
   /**
    * @dev Called by the RC offset function to create a new publication record.
-   * @param supporterAddress address of supporter.
-   * @param amountToBurn Tokens to be burned (minimum 10 tokens in wei, i.e., 10e18).
+   * @param amount Tokens to be burned (minimum 10 tokens in wei, i.e., 10e18).
+   * @param minAmountToBurn Slippage protection: the minimum amount the user expects to burn after commission.
    * @param description The description of the post.
    * @param content The content of the post.
    */
   function publish(
-    address supporterAddress,
-    uint256 amountToBurn,
+    uint256 amount,
+    uint256 minAmountToBurn,
     string memory description,
     string memory content
-  ) external mustBeAllowedCaller mustBeContractCall(address(regenerationCreditAddress)) {
+  ) external nonReentrant {
+    require(communityRules.userTypeIs(CommunityTypes.UserType.SUPPORTER, msg.sender), "Only supporters");
+    require(amount >= MINIMUM_TOKENS_TO_PUBLISH, "Amount must be at least 10 RC");
+    require(
+      bytes(description).length <= MAX_PUBLICATION_LENGTH && bytes(content).length <= MAX_PUBLICATION_LENGTH,
+      "Max 600 characters"
+    );
+
+    (uint256 amountToBurn, uint256 commission, address inviter) = calculateCommission(msg.sender, amount);
+    require(amountToBurn >= minAmountToBurn, "Slippage: amount to burn is less than minimum");
+
+    if (commission > 0 && inviter != address(0)) {
+      regenerationCredit.transferFrom(msg.sender, inviter, commission);
+    }
+
+    regenerationCredit.burnFrom(msg.sender, amountToBurn);
+
     publicationsCount++;
     uint64 id = publicationsCount;
 
-    publications[id] = Publication(supporterAddress, block.number, amountToBurn, description, content);
+    publications[id] = Publication(msg.sender, block.number, amountToBurn, description, content);
 
-    supporters[supporterAddress].publicationsCount++;
+    supporters[msg.sender].publicationsCount++;
 
-    emit PublicationPosted(supporterAddress, id, amountToBurn, description, block.number);
+    emit PublicationPosted(msg.sender, id, amountToBurn, description, block.number);
   }
 
   /**
@@ -208,6 +238,28 @@ contract SupporterRules is Callable {
   // --- View Functions ---
 
   /**
+   * @notice This functions calculates the comission to be sent to the supporter inviter.
+   * @dev Public function to handle tokens to be burned and inviter commission.
+   * It retrieves invitation data from CommunityRules to perform the burn.
+   * @param amount The total amount of tokens to consider for burning (before commission).
+   * @return amountToBurn The net amount of tokens burned by the supporter (after commission).
+   * @return commission The commission for the invitation service provided.
+   * @return inviter The supporter inviter.
+   */
+  function calculateCommission(
+    address supporterAddress,
+    uint256 amount
+  ) internal view returns (uint256 amountToBurn, uint256 commission, address inviter) {
+    CommunityTypes.Invitation memory invitation = communityRules.getInvitation(supporterAddress);
+    bool isInvited = invitation.createdAtBlock != 0; // Check if invitation exists
+
+    inviter = invitation.inviter;
+
+    commission = isInvited ? (amount * INVITER_PERCENTAGE) / 100 : 0;
+    amountToBurn = amount - commission;
+  }
+
+  /**
    * @notice Retrieves the list of reduction commitment item IDs for a specific address.
    * @param addr The address of the supporter.
    * @return uint256[] An array of calculator item IDs representing the commitments.
@@ -224,16 +276,6 @@ contract SupporterRules is Callable {
    */
   function getSupporter(address addr) public view returns (Supporter memory) {
     return supporters[addr];
-  }
-
-  /**
-   * @notice Checks if a user is a supporter or not.
-   * @dev Used by the RegenerationCredit contract to check if user is supporter.
-   * @param addr The address to check if is supporter.
-   * @return bool True if is supporter, false otherwise.
-   */
-  function isSupporter(address addr) external view returns (bool) {
-    return communityRules.userTypeIs(CommunityTypes.UserType.SUPPORTER, addr);
   }
 
   // --- Events ---

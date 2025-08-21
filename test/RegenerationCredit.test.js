@@ -46,7 +46,7 @@ describe("RegenerationCredit", (accounts) => {
     researcherRules = await researcherRulesFactory.deploy(3, 10, 10);
 
     const supporterRulesFactory = await ethers.getContractFactory("SupporterRules");
-    supporterRules = await supporterRulesFactory.deploy(communityRules.target, researcherRules.target);
+    supporterRules = await supporterRulesFactory.deploy(communityRules.target, researcherRules.target, instance.target);
 
     const regeneratorPoolFactory = await ethers.getContractFactory("RegeneratorPool");
     regeneratorPool = await regeneratorPoolFactory.deploy(
@@ -64,9 +64,6 @@ describe("RegenerationCredit", (accounts) => {
 
     await researcherRules.setContractInterfaces(researcherRulesContractDependencies);
 
-    await supporterRules.setContractCall(instance.target);
-    await instance.setContractInterfaces(supporterRules.target);
-    await supporterRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(researcherRules.target);
     await communityRules.newAllowedCaller(supporterRules.target);
     await communityRules.newAllowedCaller(ownerAddress);
@@ -270,101 +267,6 @@ describe("RegenerationCredit", (accounts) => {
       it("it should set totalLocked to 750000000000000000000000000", async () => {
         const totalLocked = await instance.totalLocked();
         expect(totalLocked).to.equal(750000000000000000000000000n);
-      });
-    });
-  });
-
-  describe("#offset", () => {
-    context("when is supporter", () => {
-      beforeEach(async () => {
-        await communityRules.setContractCall(ownerAddress, ownerAddress);
-        await addInvitation(ownerAddress, researcher1Address, userTypes.Researcher, ownerAddress);
-        await addInvitation(ownerAddress, supporter1Address, userTypes.Supporter, ownerAddress);
-
-        await addResearcher("Researcher A", researcher1Address);
-        await addSupporter("Supporter A", "description", "profilePhoto", supporter1Address);
-
-        await instance.transfer(supporter1Address, 10000000000000000000n);
-      });
-
-      context("when amount is valid", () => {
-        beforeEach(async () => {
-          await researcherRules.connect(researcher1Address).addCalculatorItem("item", "thesis", "uni", 100);
-
-          await instance.connect(supporter1Address).offset(1000000000000000000n, 1);
-        });
-
-        it("supporter balance must be 9000000000000000000", async () => {
-          const balanceOf = await instance.balanceOf(supporter1Address);
-
-          expect(balanceOf).to.eq(9000000000000000000n);
-        });
-      });
-
-      context("when amount is invalid", () => {
-        it("must return error message", async () => {
-          await expect(instance.connect(supporter1Address).offset(100000000000000000n, 1)).to.be.revertedWith(
-            "Amount must be at least 1 RC"
-          );
-        });
-      });
-    });
-
-    context("when is not supporter", () => {
-      it("must return error message", async () => {
-        await expect(instance.connect(anyContractAddress).offset("100000000000000000000", 1)).to.be.revertedWith(
-          "Only supporters"
-        );
-      });
-    });
-  });
-
-  describe("#publish", () => {
-    context("when is supporter", () => {
-      beforeEach(async () => {
-        await communityRules.setContractCall(ownerAddress, ownerAddress);
-        await addInvitation(ownerAddress, supporter1Address, userTypes.Supporter, ownerAddress);
-        await addSupporter("Supporter A", "description", "profilePhoto", supporter1Address);
-
-        await instance.transfer(supporter1Address, 10000000000000000000n);
-      });
-
-      context("when amount is valid", () => {
-        beforeEach(async () => {
-          await instance.connect(supporter1Address).publish(10000000000000000000n, "description", "content");
-        });
-
-        it("supporter balance must be 0", async () => {
-          const balanceOf = await instance.balanceOf(supporter1Address);
-
-          expect(balanceOf).to.eq(0);
-        });
-
-        context("when content and description are invalids", () => {
-          it("must return error message", async () => {
-            const longString = "x".repeat(650);
-
-            await expect(
-              instance.connect(supporter1Address).publish(10000000000000000000n, longString, longString)
-            ).to.be.revertedWith("Max 600 characters");
-          });
-        });
-      });
-
-      context("when amount is invalid", () => {
-        it("must return error message", async () => {
-          await expect(
-            instance.connect(supporter1Address).publish(100000000000000000n, "description", "content")
-          ).to.be.revertedWith("Amount must be at least 10 RC");
-        });
-      });
-    });
-
-    context("when is not supporter", () => {
-      it("must return error message", async () => {
-        await expect(
-          instance.connect(anyContractAddress).publish(100000000000000000000n, "description", "content")
-        ).to.be.revertedWith("Only supporters");
       });
     });
   });

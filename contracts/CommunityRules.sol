@@ -18,6 +18,9 @@ contract CommunityRules is Callable {
   /// @notice Minimum number of users allowed for a specific type before proportionality rules apply.
   uint16 private constant MINIMUM_REGISTERED_USERS_QUANTITY = 5;
 
+  /// @notice The number of blocks an invitation is delayed for Supporters.
+  uint32 public constant SUPPORTER_INVITATION_DELAY_BLOCKS = 150;
+
   /// @notice The number of blocks an invitation is delayed for voter-type users.
   uint32 public constant VOTER_INVITATION_DELAY_BLOCKS = 100000;
 
@@ -44,6 +47,9 @@ contract CommunityRules is Callable {
   /// @notice A mapping from a reported user's address to an array of `Delation` structs they have received.
   /// Stores a historical record of all delations against a user.
   mapping(address => CommunityTypes.Delation[]) private delations;
+
+  /// @notice A mapping from a delation id to the `Delation` struct.
+  mapping(uint256 => CommunityTypes.Delation) public delationsById;
 
   /// @notice A mapping from an invited user's address to their `Invitation` details.
   mapping(address => CommunityTypes.Invitation) public invitations;
@@ -93,6 +99,13 @@ contract CommunityRules is Callable {
     uint8 contributorProportionality
   ) {
     // Initialize settings for all relevant UserTypes
+    userTypeSettings[CommunityTypes.UserType.SUPPORTER] = CommunityTypes.UserTypeSetting(
+      0,
+      false,
+      false,
+      SUPPORTER_INVITATION_DELAY_BLOCKS,
+      false
+    );
     userTypeSettings[CommunityTypes.UserType.REGENERATOR] = CommunityTypes.UserTypeSetting(0, false, true, 0, false);
     userTypeSettings[CommunityTypes.UserType.INSPECTOR] = CommunityTypes.UserTypeSetting(
       inspectorProportionality,
@@ -173,10 +186,22 @@ contract CommunityRules is Callable {
     require(users[addr] != CommunityTypes.UserType.UNDEFINED, "User must be registered");
     require(addr != address(0), "Cannot delate zero address");
 
-    delations[addr].push(CommunityTypes.Delation(delationsCount + 1, msg.sender, addr, title, testimony, block.number));
     delationsCount++;
+    uint64 newDelationId = delationsCount;
 
-    emit DelationAdded(msg.sender, addr);
+    CommunityTypes.Delation memory newDelation = CommunityTypes.Delation(
+      newDelationId,
+      msg.sender,
+      addr,
+      title,
+      testimony,
+      block.number
+    );
+
+    delations[addr].push(newDelation);
+    delationsById[newDelationId] = newDelation;
+
+    emit DelationAdded(msg.sender, addr, newDelationId);
   }
 
   // --- MustBeAllowedCaller functions (State modifying) ---
@@ -398,7 +423,7 @@ contract CommunityRules is Callable {
    * @param informer The address of the user who submitted the delation.
    * @param reported The address of the user being reported.
    */
-  event DelationAdded(address indexed informer, address indexed reported);
+  event DelationAdded(address indexed informer, address indexed reported, uint64 newDelationId);
 
   /**
    * @notice Emitted when an invitation is successfully added to the system.
