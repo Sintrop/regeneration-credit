@@ -62,11 +62,16 @@ contract CommunityRules is Callable {
   /// @notice Tracks the number of times an inviter has had their invitees denied.
   mapping(address => uint16) public inviterPenalties;
 
+  /// @notice Tracks the number of times an inviter has had their invitees denied.
+  mapping(address => bool) public voters;
+
   /// @notice The address of the `InvitationRules` contract.
   address private invitationRulesAddress;
 
   /// @notice The address of the `InvitationRules` contract.
   address private validationRulesAddress;
+
+  uint256 public votersCount;
 
   // --- Constructor ---
 
@@ -233,6 +238,8 @@ contract CommunityRules is Callable {
 
     userTypesCount[users[userAddress]]--; // Decrement count of the old user type
 
+    if (voters[userAddress]) votersCount--;
+
     deniedUsers[userAddress] = true;
 
     emit DeniedUserEvent(userAddress);
@@ -294,15 +301,15 @@ contract CommunityRules is Callable {
 
   /**
    * @notice Returns the total count of users currently classified as voters.
+   * @param addr The address of the user to check.
    * @dev Sums the active counts of Activist, Contributor, Developer, and Researcher user types.
-   * @return uint256 The total number of voters.
    */
-  function votersCount() public view returns (uint256) {
-    return
-      userTypesCount[CommunityTypes.UserType.ACTIVIST] +
-      userTypesCount[CommunityTypes.UserType.CONTRIBUTOR] +
-      userTypesCount[CommunityTypes.UserType.DEVELOPER] +
-      userTypesCount[CommunityTypes.UserType.RESEARCHER];
+  function newVoter(address addr) external mustBeAllowedCaller {
+    if (voters[addr]) return;
+
+    voters[addr] = true;
+
+    votersCount++;
   }
 
   /**

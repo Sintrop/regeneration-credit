@@ -111,4 +111,10 @@ interface ICommunityRules {
    * @return The total count of penlaties for that user.
    */
   function inviterPenalties(address addr) external view returns (uint16);
+
+  /**
+   * @notice Function to add inviter penalties when invited user is denied.
+   * @param addr The address of the account the inviter to receive penalty.
+   */
+  function newVoter(address addr) external;
 }

@@ -237,6 +237,8 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
 
       bytes32 eventId = keccak256(abi.encodePacked("activist_reward_regenerator", activistAddress, regeneratorAddress));
 
+      communityRules.newVoter(msg.sender);
+
       _setActivistLevel(activistAddress, eventId);
     }
   }

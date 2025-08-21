@@ -234,6 +234,8 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     // Record the contribution ID for the specific contributor.
     contributionsIds[msg.sender].push(id);
 
+    communityRules.newVoter(msg.sender);
+
     // Increase the contributor's pool level.
     _addPoolLevel(msg.sender, id);
 

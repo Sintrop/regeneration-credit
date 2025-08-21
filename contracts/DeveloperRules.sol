@@ -220,6 +220,8 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     // Record the report ID for the specific developer.
     reportsIds[msg.sender].push(id);
 
+    communityRules.newVoter(msg.sender);
+
     // Increase the developer's pool level for this successful report.
     _updateLevel(msg.sender, id);
 
