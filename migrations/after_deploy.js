@@ -8,7 +8,6 @@ async function afterDeploy() {
   await configureResearcherRules();
   await configureActivistRules();
   await configureRegeneratorRules();
-  await configureSupporterRules();
   await configureInspectorRules();
   await configureCommunityRules();
   await configurePools();
@@ -227,7 +226,6 @@ async function renounceOwnership() {
   const developerRules = await getDeployedContract("DeveloperRules");
   const researcherRules = await getDeployedContract("ResearcherRules");
   const contributorRules = await getDeployedContract("ContributorRules");
-  const supporterRules = await getDeployedContract("SupporterRules");
   const regeneratorPool = await getDeployedContract("RegeneratorPool");
   const inspectorPool = await getDeployedContract("InspectorPool");
   const researcherPool = await getDeployedContract("ResearcherPool");
@@ -245,7 +243,6 @@ async function renounceOwnership() {
   await developerRules.renounceOwnership();
   await researcherRules.renounceOwnership();
   await contributorRules.renounceOwnership();
-  await supporterRules.renounceOwnership();
   await regeneratorPool.renounceOwnership();
   await inspectorPool.renounceOwnership();
   await researcherPool.renounceOwnership();
