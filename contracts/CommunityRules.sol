@@ -189,7 +189,8 @@ contract CommunityRules is Callable {
       msg.sender,
       addr,
       title,
-      testimony
+      testimony,
+      block.number
     );
 
     delations[addr].push(newDelation);

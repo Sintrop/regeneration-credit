@@ -55,6 +55,7 @@ library CommunityTypes {
     address reported;
     string title;
     string testimony;
+    uint256 createdAtBlock;
   }
 
   /**
