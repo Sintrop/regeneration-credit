@@ -346,8 +346,6 @@ async function inviteUsers() {
   await invitationRules.onlyOwnerInvite("0x1FE8BFE5E3E9EBB79F1BBF1B0BAE975BB9A4AA48", 1);
   await invitationRules.onlyOwnerInvite("0x7D038D175AF86B379EC3909F9E86739AE119B93D", 1);
   await invitationRules.onlyOwnerInvite("0x3E8292D7664B14C3C628E2315A834CAE609FD65C", 3);
-  await invitationRules.onlyOwnerInvite("0xA6926DC9AF4E639741CED9ABA23FD6879364787B", 8);
-  await invitationRules.onlyOwnerInvite("0x44730EE06B2C7A56378F57A93D35136FA610BB91", 8);
   await invitationRules.onlyOwnerInvite("0x900BD2ED98BE55299928AD1DA36B50021EC1856D", 4);
 
   await invitationRules.onlyOwnerInvite("0x6582110F1b7928e70fdd0e5E6A4b87FC1EF43aA0", 1);
