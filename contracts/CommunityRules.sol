@@ -68,7 +68,7 @@ contract CommunityRules is Callable {
   /// @notice Tracks the number of times an inviter has had their invitees denied.
   mapping(address => uint16) public inviterPenalties;
 
-  /// @notice Tracks the number of times an inviter has had their invitees denied.
+  /// @notice Tracks if a user is a voter or not.
   mapping(address => bool) public voters;
 
   /// @notice The address of the `InvitationRules` contract.
@@ -77,6 +77,7 @@ contract CommunityRules is Callable {
   /// @notice The address of the `InvitationRules` contract.
   address private validationRulesAddress;
 
+  /// @notice The actual number of valid voters, incremented after receiving level.
   uint256 public votersCount;
 
   // --- Constructor ---
