@@ -238,9 +238,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param denied Remove level user status. If true, user is being denied.
    */
   function removePoolLevels(address addr, bool denied) external mustBeAllowedCaller nonReentrant {
-    Inspector storage inspector = inspectors[addr];
-
-    inspector.pool.level -= denied ? inspector.pool.level : RESOURCE_LEVEL;
+    if (!denied) inspectors[addr].pool.level -= RESOURCE_LEVEL;
 
     inspectorPool.removePoolLevels(addr, denied);
   }

@@ -345,9 +345,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     address addr,
     bool denied
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
-    Contributor memory contributor = contributors[addr];
-
-    contributors[addr].pool.level -= denied ? contributor.pool.level : RESOURCE_LEVEL;
+    if (!denied) contributors[addr].pool.level -= RESOURCE_LEVEL;
 
     contributorPool.removePoolLevels(addr, denied);
   }

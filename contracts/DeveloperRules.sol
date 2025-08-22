@@ -320,9 +320,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     address addr,
     bool denied
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
-    Developer memory developer = developers[addr];
-
-    developers[addr].pool.level -= denied ? developer.pool.level : RESOURCE_LEVEL;
+    if (!denied) developers[addr].pool.level -= RESOURCE_LEVEL;
 
     // Notify the DeveloperPool contract to adjust the developer's pool levels there as well.
     developerPool.removePoolLevels(addr, denied);

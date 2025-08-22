@@ -1183,7 +1183,7 @@ describe("ResearcherRules", () => {
       it("remove user levels from researcher", async () => {
         const reseacher = await instance.getResearcher(resea1Address);
 
-        expect(reseacher.pool.level).to.equal(0);
+        expect(reseacher.pool.level).to.equal(2);
       });
     });
   });

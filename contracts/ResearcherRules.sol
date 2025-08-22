@@ -371,9 +371,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     address addr,
     bool denied
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
-    Researcher memory researcher = researchers[addr];
-
-    researchers[addr].pool.level -= denied ? researcher.pool.level : RESOURCE_LEVEL;
+    if (!denied) researchers[addr].pool.level -= RESOURCE_LEVEL;
 
     researcherPool.removePoolLevels(addr, denied);
   }

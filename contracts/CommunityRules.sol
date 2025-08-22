@@ -68,6 +68,8 @@ contract CommunityRules is Callable {
   /// @notice Tracks the number of times an inviter has had their invitees denied.
   mapping(address => uint16) public inviterPenalties;
 
+  mapping(address => uint16) public userPenalties;
+
   /// @notice The address of the `InvitationRules` contract.
   address private invitationRulesAddress;
 

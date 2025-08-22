@@ -106,7 +106,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   IRegenerationIndexRules private regenerationIndexRules;
 
   /// @notice Tracks which validator has voted on which inspection to prevent duplicate votes.
-  mapping(uint64 => mapping(address => bool)) private hasVotedOnInspection;
+  mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
 
   // --- Constructor ---
 
@@ -310,9 +310,9 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     // Check if the caller has waited the required time between votes.
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
     // Check if the caller has already voted for this resource.
-    require(!hasVotedOnInspection[id][msg.sender], "Already voted");
+    require(!validatorInspectionsValidations[msg.sender][id], "Already voted");
 
-    hasVotedOnInspection[id][msg.sender] = true;
+    validatorInspectionsValidations[msg.sender][id] = true;
 
     Inspection storage inspection = inspections[id];
 
@@ -322,10 +322,10 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
     inspection.validationsCount += 1;
 
-    uint256 votesNeeded = validationRules.votesToInvalidate();
-    require(votesNeeded > 1, "Validation threshold cannot be less than 2");
+    uint256 _votesToInvalidate = validationRules.votesToInvalidate();
+    require(_votesToInvalidate >= 2, "Validation threshold cannot be less than 2");
 
-    bool mustInvalidateInspection = inspection.validationsCount >= votesNeeded;
+    bool mustInvalidateInspection = inspection.validationsCount >= _votesToInvalidate;
 
     if (mustInvalidateInspection) _invalidateInspection(inspection);
 

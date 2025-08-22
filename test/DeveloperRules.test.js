@@ -410,6 +410,12 @@ describe("DeveloperRules", (accounts) => {
             expect(eraLevels).to.eq(0);
           });
 
+          it("remove developer level report from developerRules", async () => {
+            const developer = await instance.getDeveloper(dev1Address);
+
+            expect(developer.pool.level).to.equal(1);
+          });
+
           it("must decrement reportsCount in one", async () => {
             const reportsCount = await instance.reportsCount();
 
@@ -1410,7 +1416,7 @@ describe("DeveloperRules", (accounts) => {
       it("remove user levels from developer", async () => {
         const developer = await instance.getDeveloper(dev1Address);
 
-        expect(developer.pool.level).to.equal(0);
+        expect(developer.pool.level).to.equal(2);
       });
     });
   });
