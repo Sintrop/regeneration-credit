@@ -1914,10 +1914,10 @@ describe("ValidationRules", () => {
         await mockContract.mock.votersCount.returns(35000);
       });
 
-      it("returns 500", async () => {
+      it("returns 640", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(500);
+        expect(votesToInvalidate).to.equal(640);
       });
     });
   });

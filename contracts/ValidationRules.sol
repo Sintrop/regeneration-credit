@@ -56,7 +56,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
   uint32 private constant VOTES_TO_INVALIDATE_LEVEL_6 = 80;
   uint32 private constant VOTES_TO_INVALIDATE_LEVEL_7 = 160;
   uint32 private constant VOTES_TO_INVALIDATE_LEVEL_8 = 320;
-  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_MAX = 500;
+  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_MAX = 640;
 
   // --- State variables ---
 

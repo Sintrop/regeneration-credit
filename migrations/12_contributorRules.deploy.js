@@ -20,7 +20,6 @@ async function contributorRulesDeploy() {
 
   await communityRules.newAllowedCaller(contributorRules.target);
   await contributorPool.newAllowedCaller(contributorRules.target);
-  // await contributorRules.newAllowedCaller(validationRules.target);
 
   console.log(`ContributorRules address ${contributorRules.target}`);
 
