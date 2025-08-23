@@ -278,8 +278,6 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
     regenerator.isFullyInvalidated = true;
 
-    regenerators[addr].regenerationScore.score = 0;
-
     _decrementArea(addr);
 
     regeneratorPool.removePoolLevels(addr, 0, denied);

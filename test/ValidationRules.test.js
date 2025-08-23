@@ -722,7 +722,7 @@ describe("ValidationRules", () => {
                 expect(validations).to.equal(2);
               });
 
-              it("user type must be denied", async () => {
+              it("user must be denied", async () => {
                 const isDenied = await communityRules.isDenied(inspector1Address);
 
                 expect(isDenied).to.equal(true);
@@ -736,10 +736,10 @@ describe("ValidationRules", () => {
                 expect(levelsEra2).to.equal(0);
               });
 
-              it("remove user levels from inspector", async () => {
+              it("do not remove user levels from inspector", async () => {
                 const inspector = await inspectorRules.getInspector(inspector1Address);
 
-                expect(inspector.pool.level).to.equal(0);
+                expect(inspector.pool.level).to.equal(3);
               });
 
               it("userTypesCount must be decremented", async () => {
@@ -768,7 +768,7 @@ describe("ValidationRules", () => {
                 expect(validations).to.equal(2);
               });
 
-              it("user type must be denied", async () => {
+              it("user must be denied", async () => {
                 const isDenied = await communityRules.isDenied(contributor1Address);
 
                 expect(isDenied).to.equal(true);
@@ -782,10 +782,10 @@ describe("ValidationRules", () => {
                 expect(levelsEra2).to.equal(0);
               });
 
-              it("should remove user levels from contributor", async () => {
+              it("do not remove user levels from contributor", async () => {
                 const contributor = await contributorRules.getContributor(contributor1Address);
 
-                expect(contributor.pool.level).to.equal(0);
+                expect(contributor.pool.level).to.equal(1);
               });
 
               it("userTypesCount must be decremented", async () => {
@@ -814,7 +814,7 @@ describe("ValidationRules", () => {
                 expect(validations).to.equal(2);
               });
 
-              it("user type must be denied", async () => {
+              it("user must be denied", async () => {
                 const isDenied = await communityRules.isDenied(dev1Address);
 
                 expect(isDenied).to.equal(true);
@@ -828,10 +828,10 @@ describe("ValidationRules", () => {
                 expect(levelsEra2).to.equal(0);
               });
 
-              it("remove user levels from developer", async () => {
+              it("do not remove user levels from developer", async () => {
                 const developer = await developerRules.getDeveloper(dev1Address);
 
-                expect(developer.pool.level).to.equal(0);
+                expect(developer.pool.level).to.equal(1);
               });
 
               it("userTypesCount must be decremented", async () => {
@@ -860,7 +860,7 @@ describe("ValidationRules", () => {
                 expect(validations).to.equal(2);
               });
 
-              it("user type must be denied", async () => {
+              it("user must be denied", async () => {
                 const isDenied = await communityRules.isDenied(resea1Address);
 
                 expect(isDenied).to.equal(true);
@@ -874,10 +874,10 @@ describe("ValidationRules", () => {
                 expect(levelsEra2).to.equal(0);
               });
 
-              it("remove user levels from researcher", async () => {
+              it("do not remove user levels from researcher", async () => {
                 const reseacher = await researcherRules.getResearcher(resea1Address);
 
-                expect(reseacher.pool.level).to.equal(0);
+                expect(reseacher.pool.level).to.equal(1);
               });
 
               it("userTypesCount must be decremented", async () => {
@@ -909,7 +909,7 @@ describe("ValidationRules", () => {
                 expect(validations).to.equal(2);
               });
 
-              it("user type must be denied", async () => {
+              it("user must be denied", async () => {
                 const isDenied = await communityRules.isDenied(activist1Address);
 
                 expect(isDenied).to.equal(true);
@@ -923,10 +923,10 @@ describe("ValidationRules", () => {
                 expect(levelsEra2).to.equal(0);
               });
 
-              it("remove user levels from activist", async () => {
+              it("do not remove user levels from activist", async () => {
                 const activist = await activistRules.getActivist(activist1Address);
 
-                expect(activist.pool.level).to.equal(0);
+                expect(activist.pool.level).to.equal(1);
               });
 
               it("userTypesCount must be decremented", async () => {
@@ -1191,10 +1191,10 @@ describe("ValidationRules", () => {
                 expect(isDenied).to.equal(true);
               });
 
-              it("all inspector contract levels is removed", async () => {
+              it("do not remove user levels from inspector", async () => {
                 const inspector = await inspectorRules.getInspector(inspector1Address);
 
-                expect(inspector.pool.level).to.equal(0);
+                expect(inspector.pool.level).to.equal(2);
               });
 
               it("remove inspection regeneration score level from regenerator pool", async () => {

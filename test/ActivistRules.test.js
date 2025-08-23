@@ -407,7 +407,7 @@ describe("ActivistRules", () => {
       it("remove user levels from activist", async () => {
         const activist = await instance.getActivist(activ1Address);
 
-        expect(activist.pool.level).to.equal(0);
+        expect(activist.pool.level).to.equal(2);
       });
     });
   });

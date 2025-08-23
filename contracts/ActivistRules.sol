@@ -210,9 +210,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
     address addr,
     bool denied
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
-    Activist storage activist = activists[addr];
-
-    activist.pool.level -= denied ? activist.pool.level : RESOURCE_LEVEL;
+    if (!denied) activists[addr].pool.level -= RESOURCE_LEVEL;
 
     activistPool.removePoolLevels(addr, denied);
   }
