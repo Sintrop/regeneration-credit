@@ -84,9 +84,6 @@ contract ValidationRules is Callable, ReentrancyGuard {
   /// @notice Tracks inspection IDs that have already been processed.
   mapping(uint256 => bool) public inspectionAlreadyInvalidated;
 
-  /// @notice Tracks report IDs that have already been processed.
-  mapping(uint256 => bool) public reportAlreadyInvalidated;
-
   /// @notice Tracks research IDs that have already been processed.
   mapping(uint256 => bool) public researchAlreadyInvalidated;
 
@@ -264,43 +261,43 @@ contract ValidationRules is Callable, ReentrancyGuard {
     if (inspectorTotalPenalties >= inspectorRules.maxPenalties()) _denyUser(inspection.inspector);
   }
 
-  /**
-   * @notice Allows allowed callers (e.g., DeveloperRules) to record a validation vote against a report.
-   * @dev This function is intended to be called by the `DeveloperRules` contract.
-   * It records a validation vote for a report and applies penalties if enough votes accumulate.
-   *
-   * Requirements:
-   * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
-   * - The validator address must not have already voted for this specific report.
-   *
-   * @param report Report data.
-   * @param justification Invalidation justification.
-   * @param validatorAddress Address of the voter.
-   */
-  function addReportValidation(
-    Report memory report,
-    string memory justification,
-    address validatorAddress
-  ) external mustBeAllowedCaller mustBeContractCall(developerRulesAddress) nonReentrant {
-    require(!validatorReportsValidations[validatorAddress][report.id], "Already voted");
+  // /**
+  //  * @notice Allows allowed callers (e.g., DeveloperRules) to record a validation vote against a report.
+  //  * @dev This function is intended to be called by the `DeveloperRules` contract.
+  //  * It records a validation vote for a report and applies penalties if enough votes accumulate.
+  //  *
+  //  * Requirements:
+  //  * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
+  //  * - The validator address must not have already voted for this specific report.
+  //  *
+  //  * @param report Report data.
+  //  * @param justification Invalidation justification.
+  //  * @param validatorAddress Address of the voter.
+  //  */
+  // function addReportValidation(
+  //   Report memory report,
+  //   string memory justification,
+  //   address validatorAddress
+  // ) external mustBeAllowedCaller mustBeContractCall(developerRulesAddress) nonReentrant {
+  //   require(!validatorReportsValidations[validatorAddress][report.id], "Already voted");
 
-    validatorReportsValidations[validatorAddress][report.id] = true;
-    validatorLastVoteAt[validatorAddress] = block.number;
+  //   validatorReportsValidations[validatorAddress][report.id] = true;
+  //   validatorLastVoteAt[validatorAddress] = block.number;
 
-    emit ReportValidation(validatorAddress, report.id, justification);
+  //   emit ReportValidation(validatorAddress, report.id, justification);
 
-    if (report.valid) return;
+  //   if (report.valid) return;
 
-    require(!reportAlreadyInvalidated[report.id], "Penalties already applied");
+  //   require(!reportAlreadyInvalidated[report.id], "Penalties already applied");
 
-    reportAlreadyInvalidated[report.id] = true;
+  //   reportAlreadyInvalidated[report.id] = true;
 
-    uint256 developerTotalPenalties = developerRules.addPenalty(report.developer, report.id);
+  //   uint256 developerTotalPenalties = developerRules.addPenalty(report.developer, report.id);
 
-    emit ResourceInvalidated("Report", report.id, report.developer, developerTotalPenalties); // Emit event
+  //   emit ResourceInvalidated("Report", report.id, report.developer, developerTotalPenalties); // Emit event
 
-    if (developerTotalPenalties >= developerRules.maxPenalties()) _denyUser(report.developer);
-  }
+  //   if (developerTotalPenalties >= developerRules.maxPenalties()) _denyUser(report.developer);
+  // }
 
   /**
    * @notice Allows allowed callers (e.g., ContributorRules) to record a validation vote against a contribution.
@@ -376,6 +373,15 @@ contract ValidationRules is Callable, ReentrancyGuard {
     emit ResourceInvalidated("Research", research.id, research.createdBy, totalPenalties); // Emit event
 
     if (totalPenalties >= researcherRules.maxPenalties()) _denyUser(research.createdBy);
+  }
+
+  /**
+   * @notice Called only by authorized callers.
+   * @dev Update last validator vote block.number.
+   * @param validatorAddress The validator wallet address.
+   */
+  function updateValidatorLastVoteBlock(address validatorAddress) external mustBeAllowedCaller {
+    validatorLastVoteAt[validatorAddress] = block.number;
   }
 
   // --- Private Functions ---
@@ -496,13 +502,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
    */
   event InspectionValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
 
-  /**
-   * @notice Emitted
-   * @param _validatorAddress The address of the validator.
-   * @param _resourceId The id of the resource receiving the vote.
-   * @param _justification The justification provided for the vote.
-   */
-  event ReportValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
+
 
   /**
    * @notice Emitted

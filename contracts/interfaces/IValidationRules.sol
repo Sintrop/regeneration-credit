@@ -26,6 +26,8 @@ interface IValidationRules {
    */
   function votesToInvalidate() external view returns (uint256);
 
+  function updateValidatorLastVoteBlock(address validatorAddress) external;
+
   /**
    * @notice Adds a validation vote to a specific contribution.
    * @param contribution The full Contribution struct being validated.
@@ -38,13 +40,13 @@ interface IValidationRules {
     address validator
   ) external;
 
-  /**
-   * @notice Adds a validation vote to a specific report.
-   * @param report The full Report struct being validated.
-   * @param justification A string explaining the reason for the vote.
-   * @param validator The address of the user who is voting.
-   */
-  function addReportValidation(Report memory report, string memory justification, address validator) external;
+  // /**
+  //  * @notice Adds a validation vote to a specific report.
+  //  * @param report The full Report struct being validated.
+  //  * @param justification A string explaining the reason for the vote.
+  //  * @param validator The address of the user who is voting.
+  //  */
+  // function addReportValidation(Report memory report, string memory justification, address validator) external;
 
   /**
    * @notice Adds a validation vote to a specific inspection item.
