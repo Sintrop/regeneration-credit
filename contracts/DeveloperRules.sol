@@ -285,9 +285,6 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     }
 
     emit ReportValidation(msg.sender, report.id, justification);
-
-    // Call the ValidationRules contract.
-    // validationRules.addReportValidation(report, justification, msg.sender);
   }
 
   /**

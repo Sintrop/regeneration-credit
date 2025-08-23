@@ -253,7 +253,7 @@ contract CommunityRules is Callable {
    * Prevents re-denying an already denied user.
    * @param userAddress The address of the user to be denied.
    */
-  function setDeniedType(address userAddress) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+  function setDeniedType(address userAddress) external mustBeAllowedCaller {
     if (deniedUsers[userAddress]) return;
 
     userTypesCount[users[userAddress]]--; // Decrement count of the old user type
@@ -269,7 +269,7 @@ contract CommunityRules is Callable {
    * It decrements the count of penalties for the inviter.
    * @param inviter The address of the inviter receiving the penalty.
    */
-  function addInviterPenalty(address inviter) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+  function addInviterPenalty(address inviter) external mustBeAllowedCaller {
     inviterPenalties[inviter]++;
   }
 

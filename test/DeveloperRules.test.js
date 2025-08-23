@@ -350,6 +350,34 @@ describe("DeveloperRules", (accounts) => {
   });
 
   describe("addReportValidation", () => {
+    context("when trying to vote on an already invalidated report", () => {
+      beforeEach(async () => {
+        // Setup: creates a dev, a report, and enough validators to invalidate it.
+        await addDeveloper("Developer A", dev1Address);
+        await instance.connect(dev1Address).addReport("description", "report");
+
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
+        await addInvitation(owner, user3Address, userTypes.Developer, owner);
+        await addDeveloper("User A", user1Address);
+        await addDeveloper("User B", user2Address);
+        await addDeveloper("User C", user3Address);
+
+        // Invalidate the report
+        await instance.connect(user1Address).addReportValidation(1, "justification");
+        await instance.connect(user2Address).addReportValidation(1, "justification");
+      });
+
+      it("should revert because the report is no longer valid", async () => {
+        // A third validator tries to vote
+        await expect(instance.connect(user3Address).addReportValidation(1, "justification")).to.be.revertedWith(
+          "This report is not VALID"
+        );
+        // NOTE: The transaction reverts on `require(report.valid)`, which comes before `require(!reportPenalized)`.
+        // This is the expected and correct behavior. The test confirms that additional votes are blocked.
+      });
+    });
+
     context("with developer", () => {
       beforeEach(async () => {
         await addInvitation(owner, user1Address, userTypes.Developer, owner);
@@ -391,10 +419,14 @@ describe("DeveloperRules", (accounts) => {
             expect(contribution.invalidatedAt).to.above(0);
           });
 
-          it("set maxPenalties to developer", async () => {
+          it("set one penalty to developer", async () => {
             const totalPenalties = await instance.totalPenalties(dev1Address);
 
             expect(totalPenalties).to.eq(1);
+          });
+
+          it("should set reportPenalized to true to prevent double penalties", async () => {
+            expect(await instance.reportPenalized(1)).to.be.true;
           });
 
           it("user type must be DEVELOPER yet", async () => {
@@ -513,6 +545,18 @@ describe("DeveloperRules", (accounts) => {
           const isDenied = await communityRules.isDenied(user1Address);
 
           expect(isDenied).to.eq(true);
+        });
+
+        it("should apply a penalty to the developer's inviter", async () => {
+          // Check if the inviter's penalty count has been incremented
+          const inviterPenalties = await communityRules.inviterPenalties(owner);
+          expect(inviterPenalties).to.eq(1);
+        });
+
+        it("should remove all pool levels for the denied developer", async () => {
+          // The `removePoolLevels(user, true)` function should zero out the levels
+          const developer = await instance.getDeveloper(dev1Address);
+          expect(developer.pool.level).to.equal(0);
         });
       });
 

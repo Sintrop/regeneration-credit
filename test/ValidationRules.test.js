@@ -1348,180 +1348,180 @@ describe("ValidationRules", () => {
     });
   });
 
-  describe("#addReportValidation", () => {
-    context("with allowed caller", () => {
-      beforeEach(async () => {
-        await addInvitation(owner, dev1Address, userTypes.Developer, owner);
-        await addInvitation(owner, user1Address, userTypes.Developer, owner);
-        await addInvitation(owner, user2Address, userTypes.Developer, owner);
+  // describe("#addReportValidation", () => {
+  //   context("with allowed caller", () => {
+  //     beforeEach(async () => {
+  //       await addInvitation(owner, dev1Address, userTypes.Developer, owner);
+  //       await addInvitation(owner, user1Address, userTypes.Developer, owner);
+  //       await addInvitation(owner, user2Address, userTypes.Developer, owner);
 
-        await addDeveloper("User  A", user1Address);
-        await addDeveloper("User  B", user2Address);
-        await addDeveloper("User C", dev1Address);
+  //       await addDeveloper("User  A", user1Address);
+  //       await addDeveloper("User  B", user2Address);
+  //       await addDeveloper("User C", dev1Address);
 
-        await developerRules.connect(dev1Address).addReport("description", "report");
-      });
+  //       await developerRules.connect(dev1Address).addReport("description", "report");
+  //     });
 
-      context("when validator already voted to report", () => {
-        beforeEach(async () => {
-          let report = await developerRules.getReport(1);
-          report = generateReportObject(report);
+  //     context("when validator already voted to report", () => {
+  //       beforeEach(async () => {
+  //         let report = await developerRules.getReport(1);
+  //         report = generateReportObject(report);
 
-          await instance.connect(owner).addReportValidation(report, "justification", user1Address);
-        });
+  //         await instance.connect(owner).addReportValidation(report, "justification", user1Address);
+  //       });
 
-        it("should return error", async () => {
-          let report = await developerRules.getReport(1);
-          report = generateReportObject(report);
+  //       it("should return error", async () => {
+  //         let report = await developerRules.getReport(1);
+  //         report = generateReportObject(report);
 
-          await expect(
-            instance.connect(owner).addReportValidation(report, "justification", user1Address)
-          ).to.be.revertedWith("Already voted");
-        });
-      });
+  //         await expect(
+  //           instance.connect(owner).addReportValidation(report, "justification", user1Address)
+  //         ).to.be.revertedWith("Already voted");
+  //       });
+  //     });
 
-      context("when validator did not voted to report", () => {
-        context("when current era is 1", () => {
-          context("when report validations is => votesToInvalidate (addPenalty == true)", () => {
-            context("when developer total penalties is >= developerRules.maxPenalties", () => {
-              context("when user is not denied", () => {
-                beforeEach(async () => {
-                  let report = await developerRules.getReport(1);
-                  report = generateReportObject(report);
-                  report.validationsCount = 1;
+  //     context("when validator did not voted to report", () => {
+  //       context("when current era is 1", () => {
+  //         context("when report validations is => votesToInvalidate (addPenalty == true)", () => {
+  //           context("when developer total penalties is >= developerRules.maxPenalties", () => {
+  //             context("when user is not denied", () => {
+  //               beforeEach(async () => {
+  //                 let report = await developerRules.getReport(1);
+  //                 report = generateReportObject(report);
+  //                 report.validationsCount = 1;
 
-                  await developerRules.setContractCall(owner);
-                  await developerRules.addPenalty(dev1Address, report.id);
-                  await developerRules.addPenalty(dev1Address, report.id);
+  //                 await developerRules.setContractCall(owner);
+  //                 await developerRules.addPenalty(dev1Address, report.id);
+  //                 await developerRules.addPenalty(dev1Address, report.id);
 
-                  report.validationsCount = 2;
-                  report.valid = false;
+  //                 report.validationsCount = 2;
+  //                 report.valid = false;
 
-                  await developerRules.setContractCall(instance);
-                  await instance.connect(owner).addReportValidation(report, "justification", user1Address);
+  //                 await developerRules.setContractCall(instance);
+  //                 await instance.connect(owner).addReportValidation(report, "justification", user1Address);
 
-                  const era = await developerRules.poolCurrentEra();
-                });
+  //                 const era = await developerRules.poolCurrentEra();
+  //               });
 
-                it("deny developer", async () => {
-                  const isDenied = await communityRules.isDenied(dev1Address);
+  //               it("deny developer", async () => {
+  //                 const isDenied = await communityRules.isDenied(dev1Address);
 
-                  expect(isDenied).to.equal(true);
-                });
+  //                 expect(isDenied).to.equal(true);
+  //               });
 
-                it("remove report regeneration score level from developer pool", async () => {
-                  const levels = await developerPool.eraLevels(1, dev1Address);
+  //               it("remove report regeneration score level from developer pool", async () => {
+  //                 const levels = await developerPool.eraLevels(1, dev1Address);
 
-                  expect(levels).to.equal(0);
-                });
+  //                 expect(levels).to.equal(0);
+  //               });
 
-                it("inviter must get 1 penalty", async () => {
-                  const inviterPenalties = await communityRules.inviterPenalties(owner);
+  //               it("inviter must get 1 penalty", async () => {
+  //                 const inviterPenalties = await communityRules.inviterPenalties(owner);
 
-                  expect(inviterPenalties).to.equal(1);
-                });
-              });
+  //                 expect(inviterPenalties).to.equal(1);
+  //               });
+  //             });
 
-              context("when user is already denied", () => {
-                beforeEach(async () => {
-                  let report = await developerRules.getReport(1);
-                  report = generateReportObject(report);
-                  report.validationsCount = 1;
+  //             context("when user is already denied", () => {
+  //               beforeEach(async () => {
+  //                 let report = await developerRules.getReport(1);
+  //                 report = generateReportObject(report);
+  //                 report.validationsCount = 1;
 
-                  await developerRules.setContractCall(owner);
-                  await developerRules.addPenalty(dev1Address, report.id);
-                  await developerRules.addPenalty(dev1Address, report.id);
+  //                 await developerRules.setContractCall(owner);
+  //                 await developerRules.addPenalty(dev1Address, report.id);
+  //                 await developerRules.addPenalty(dev1Address, report.id);
 
-                  await communityRules.setContractCall(owner, owner);
-                  await communityRules.setDeniedType(dev1Address);
+  //                 await communityRules.setContractCall(owner, owner);
+  //                 await communityRules.setDeniedType(dev1Address);
 
-                  report.validationsCount = 2;
-                  report.valid = false;
+  //                 report.validationsCount = 2;
+  //                 report.valid = false;
 
-                  await developerRules.setContractCall(instance);
-                  await communityRules.setContractCall(owner, instance);
-                  await instance.connect(owner).addReportValidation(report, "justification", user1Address);
-                });
+  //                 await developerRules.setContractCall(instance);
+  //                 await communityRules.setContractCall(owner, instance);
+  //                 await instance.connect(owner).addReportValidation(report, "justification", user1Address);
+  //               });
 
-                it("do not remove any developer.pool.levels", async () => {
-                  const developer = await developerRules.getDeveloper(dev1Address);
+  //               it("do not remove any developer.pool.levels", async () => {
+  //                 const developer = await developerRules.getDeveloper(dev1Address);
 
-                  expect(developer.pool.level).to.equal(1);
-                });
+  //                 expect(developer.pool.level).to.equal(1);
+  //               });
 
-                it("do not remove any era levels", async () => {
-                  const levels = await developerPool.eraLevels(1, dev1Address);
+  //               it("do not remove any era levels", async () => {
+  //                 const levels = await developerPool.eraLevels(1, dev1Address);
 
-                  expect(levels).to.equal(1);
-                });
-              });
-            });
+  //                 expect(levels).to.equal(1);
+  //               });
+  //             });
+  //           });
 
-            context("when developer total penalties is < developerRules.maxPenalties", () => {
-              beforeEach(async () => {
-                let report = await developerRules.getReport(1);
-                report = generateReportObject(report);
-                report.validationsCount = 1;
+  //           context("when developer total penalties is < developerRules.maxPenalties", () => {
+  //             beforeEach(async () => {
+  //               let report = await developerRules.getReport(1);
+  //               report = generateReportObject(report);
+  //               report.validationsCount = 1;
 
-                await instance.connect(owner).addReportValidation(report, "justification", user1Address);
+  //               await instance.connect(owner).addReportValidation(report, "justification", user1Address);
 
-                report = await developerRules.getReport(1);
-                report = generateReportObject(report);
-                report.validationsCount = 2;
+  //               report = await developerRules.getReport(1);
+  //               report = generateReportObject(report);
+  //               report.validationsCount = 2;
 
-                await instance.connect(owner).addReportValidation(report, "justification", user2Address);
-              });
+  //               await instance.connect(owner).addReportValidation(report, "justification", user2Address);
+  //             });
 
-              it("developer is the same", async () => {
-                const newDeveloperType = await communityRules.getUser(dev1Address);
+  //             it("developer is the same", async () => {
+  //               const newDeveloperType = await communityRules.getUser(dev1Address);
 
-                expect(newDeveloperType).to.equal(4);
-              });
+  //               expect(newDeveloperType).to.equal(4);
+  //             });
 
-              it("remove report regeneration score level from developer pool", async () => {
-                const levels = await developerPool.eraLevels(2, dev1Address);
+  //             it("remove report regeneration score level from developer pool", async () => {
+  //               const levels = await developerPool.eraLevels(2, dev1Address);
 
-                expect(levels).to.equal(0);
-              });
+  //               expect(levels).to.equal(0);
+  //             });
 
-              it("inviter must not get penalty", async () => {
-                const inviterPenalties = await communityRules.inviterPenalties(owner);
+  //             it("inviter must not get penalty", async () => {
+  //               const inviterPenalties = await communityRules.inviterPenalties(owner);
 
-                expect(inviterPenalties).to.equal(0);
-              });
-            });
-          });
+  //               expect(inviterPenalties).to.equal(0);
+  //             });
+  //           });
+  //         });
 
-          context("when report validations is < votesToInvalidate (addPenalty == false)", () => {
-            beforeEach(async () => {
-              let report = await developerRules.getReport(1);
-              report = generateReportObject(report);
-              report.validationsCount = 1;
+  //         context("when report validations is < votesToInvalidate (addPenalty == false)", () => {
+  //           beforeEach(async () => {
+  //             let report = await developerRules.getReport(1);
+  //             report = generateReportObject(report);
+  //             report.validationsCount = 1;
 
-              await instance.connect(owner).addReportValidation(report, "justification", user1Address);
-            });
+  //             await instance.connect(owner).addReportValidation(report, "justification", user1Address);
+  //           });
 
-            it("total penalties is zero", async () => {
-              const totalPenalties = await developerRules.totalPenalties(dev1Address);
+  //           it("total penalties is zero", async () => {
+  //             const totalPenalties = await developerRules.totalPenalties(dev1Address);
 
-              expect(totalPenalties).to.equal(0);
-            });
-          });
-        });
-      });
-    });
+  //             expect(totalPenalties).to.equal(0);
+  //           });
+  //         });
+  //       });
+  //     });
+  //   });
 
-    context("without allowed caller", () => {
-      it("should return error", async () => {
-        let report = await developerRules.getReport(1);
-        report = generateReportObject(report);
+  //   context("without allowed caller", () => {
+  //     it("should return error", async () => {
+  //       let report = await developerRules.getReport(1);
+  //       report = generateReportObject(report);
 
-        await expect(
-          instance.connect(user1Address).addReportValidation(report, "justification", user2Address)
-        ).to.be.revertedWith("Not allowed caller");
-      });
-    });
-  });
+  //       await expect(
+  //         instance.connect(user1Address).addReportValidation(report, "justification", user2Address)
+  //       ).to.be.revertedWith("Not allowed caller");
+  //     });
+  //   });
+  // });
 
   describe("#addResearchValidation", () => {
     context("with allowed caller", () => {
