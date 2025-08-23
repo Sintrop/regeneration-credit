@@ -299,81 +299,81 @@ contract ValidationRules is Callable, ReentrancyGuard {
   //   if (developerTotalPenalties >= developerRules.maxPenalties()) _denyUser(report.developer);
   // }
 
-  /**
-   * @notice Allows allowed callers (e.g., ContributorRules) to record a validation vote against a contribution.
-   * @dev This function is intended to be called by the `ContributorRules` contract.
-   * It records a validation vote for a contribution and applies penalties if enough votes accumulate.
-   *
-   * Requirements:
-   * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
-   * - The validator address must not have already voted for this specific contribution.
-   *
-   * @param contribution Contribution data.
-   * @param justification Invalidation justification.
-   * @param validatorAddress Address of the voter.
-   */
-  function addContributionValidation(
-    Contribution memory contribution,
-    string memory justification,
-    address validatorAddress
-  ) external mustBeAllowedCaller mustBeContractCall(contributorRulesAddress) nonReentrant {
-    require(!validatorContributionsValidations[validatorAddress][contribution.id], "Already voted");
+  // /**
+  //  * @notice Allows allowed callers (e.g., ContributorRules) to record a validation vote against a contribution.
+  //  * @dev This function is intended to be called by the `ContributorRules` contract.
+  //  * It records a validation vote for a contribution and applies penalties if enough votes accumulate.
+  //  *
+  //  * Requirements:
+  //  * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
+  //  * - The validator address must not have already voted for this specific contribution.
+  //  *
+  //  * @param contribution Contribution data.
+  //  * @param justification Invalidation justification.
+  //  * @param validatorAddress Address of the voter.
+  //  */
+  // function addContributionValidation(
+  //   Contribution memory contribution,
+  //   string memory justification,
+  //   address validatorAddress
+  // ) external mustBeAllowedCaller mustBeContractCall(contributorRulesAddress) nonReentrant {
+  //   require(!validatorContributionsValidations[validatorAddress][contribution.id], "Already voted");
 
-    validatorContributionsValidations[validatorAddress][contribution.id] = true;
-    validatorLastVoteAt[validatorAddress] = block.number;
+  //   validatorContributionsValidations[validatorAddress][contribution.id] = true;
+  //   validatorLastVoteAt[validatorAddress] = block.number;
 
-    emit ContributionValidation(validatorAddress, contribution.id, justification);
+  //   emit ContributionValidation(validatorAddress, contribution.id, justification);
 
-    if (contribution.valid) return;
+  //   if (contribution.valid) return;
 
-    require(!contributionAlreadyInvalidated[contribution.id], "Penalties already applied");
+  //   require(!contributionAlreadyInvalidated[contribution.id], "Penalties already applied");
 
-    contributionAlreadyInvalidated[contribution.id] = true;
+  //   contributionAlreadyInvalidated[contribution.id] = true;
 
-    uint256 contributorTotalPenalties = contributorRules.addPenalty(contribution.user, contribution.id);
+  //   uint256 contributorTotalPenalties = contributorRules.addPenalty(contribution.user, contribution.id);
 
-    emit ResourceInvalidated("Contribution", contribution.id, contribution.user, contributorTotalPenalties); // Emit event
+  //   emit ResourceInvalidated("Contribution", contribution.id, contribution.user, contributorTotalPenalties); // Emit event
 
-    if (contributorTotalPenalties >= contributorRules.maxPenalties()) _denyUser(contribution.user);
-  }
+  //   if (contributorTotalPenalties >= contributorRules.maxPenalties()) _denyUser(contribution.user);
+  // }
 
-  /**
-   * @notice Allows allowed callers (e.g., ResearcherRules) to record a validation vote against a research.
-   * @dev This function is intended to be called by the `ResearcherRules` contract.
-   * It records a validation vote for a research and applies penalties if enough votes accumulate.
-   *
-   * Requirements:
-   * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
-   * - The validator address must not have already voted for this specific research.
-   *
-   * @param research Research data.
-   * @param justification Invalidation justification.
-   * @param validatorAddress Address of the voter.
-   */
-  function addResearchValidation(
-    Research memory research,
-    string memory justification,
-    address validatorAddress
-  ) external mustBeAllowedCaller mustBeContractCall(researcherRulesAddress) nonReentrant {
-    require(!validatorResearchesValidations[validatorAddress][research.id], "Already voted");
+  // /**
+  //  * @notice Allows allowed callers (e.g., ResearcherRules) to record a validation vote against a research.
+  //  * @dev This function is intended to be called by the `ResearcherRules` contract.
+  //  * It records a validation vote for a research and applies penalties if enough votes accumulate.
+  //  *
+  //  * Requirements:
+  //  * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
+  //  * - The validator address must not have already voted for this specific research.
+  //  *
+  //  * @param research Research data.
+  //  * @param justification Invalidation justification.
+  //  * @param validatorAddress Address of the voter.
+  //  */
+  // function addResearchValidation(
+  //   Research memory research,
+  //   string memory justification,
+  //   address validatorAddress
+  // ) external mustBeAllowedCaller mustBeContractCall(researcherRulesAddress) nonReentrant {
+  //   require(!validatorResearchesValidations[validatorAddress][research.id], "Already voted");
 
-    validatorResearchesValidations[validatorAddress][research.id] = true;
-    validatorLastVoteAt[validatorAddress] = block.number;
+  //   validatorResearchesValidations[validatorAddress][research.id] = true;
+  //   validatorLastVoteAt[validatorAddress] = block.number;
 
-    emit ResearchValidation(validatorAddress, research.id, justification);
+  //   emit ResearchValidation(validatorAddress, research.id, justification);
 
-    if (research.valid) return;
+  //   if (research.valid) return;
 
-    require(!researchAlreadyInvalidated[research.id], "Penalties already applied");
+  //   require(!researchAlreadyInvalidated[research.id], "Penalties already applied");
 
-    researchAlreadyInvalidated[research.id] = true;
+  //   researchAlreadyInvalidated[research.id] = true;
 
-    uint256 totalPenalties = researcherRules.addPenalty(research.createdBy, research.id);
+  //   uint256 totalPenalties = researcherRules.addPenalty(research.createdBy, research.id);
 
-    emit ResourceInvalidated("Research", research.id, research.createdBy, totalPenalties); // Emit event
+  //   emit ResourceInvalidated("Research", research.id, research.createdBy, totalPenalties); // Emit event
 
-    if (totalPenalties >= researcherRules.maxPenalties()) _denyUser(research.createdBy);
-  }
+  //   if (totalPenalties >= researcherRules.maxPenalties()) _denyUser(research.createdBy);
+  // }
 
   /**
    * @notice Called only by authorized callers.

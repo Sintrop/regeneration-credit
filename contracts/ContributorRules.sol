@@ -73,8 +73,10 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   mapping(uint256 => address) public contributorsAddress;
 
   /// @notice A mapping from a contributor's wallet address to an array of IDs of contributions they have made.
-  /// @dev This array can grow indefinitely per contributor.
   mapping(address => uint256[]) public contributionsIds;
+
+  /// @notice Tracks contribution IDs that have already been invalidated.
+  mapping(uint64 => bool) public contributionPenalized;
 
   /// @notice The interface of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
@@ -265,6 +267,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     require(!hasVotedOnContribution[id][msg.sender], "Already voted");
 
     hasVotedOnContribution[id][msg.sender] = true;
+    validationRules.updateValidatorLastVoteBlock(msg.sender);
 
     // Retrieve the contribution using a storage reference to modify it directly.
     Contribution memory contribution = contributions[id];
@@ -280,12 +283,14 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     uint256 votesNeeded = validationRules.votesToInvalidate();
     require(votesNeeded > 1, "Validation threshold cannot be less than 2");
 
-    // Check if the contribution has reached the threshold for invalidation.
-    bool mustInvalidateContribution = contribution.validationsCount >= votesNeeded;
+    if (contribution.validationsCount >= votesNeeded) {
+      require(!contributionPenalized[id], "Penalties already applied");
+      contributionPenalized[id] = true;
 
-    if (mustInvalidateContribution) {
       // If threshold reached, invalidate the contribution.
-      contribution = _invalidateContribution(contribution);
+      _invalidateContribution(contribution);
+
+      uint256 contributorTotalPenalties = addPenalty(contribution.user, id);
 
       // Emit event for invalidation.
       emit ContributionInvalidated(
@@ -295,10 +300,13 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
         totalPenalties(contribution.user),
         block.number
       );
+
+      if (contributorTotalPenalties >= maxPenalties) {
+        _denyContributor(contribution.user);
+      }
     }
 
-    // Record the validation in the ValidationRules contract.
-    validationRules.addContributionValidation(contribution, justification, msg.sender);
+    emit ContributionValidation(msg.sender, contribution.id, justification);
   }
 
   /**
@@ -350,23 +358,38 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     contributorPool.removePoolLevels(addr, denied);
   }
 
+  // --- Private functions ---
+
   /**
    * @dev Adds a penalty to a contributor's record when one of their contributions is invalidated.
-   * @notice This function must be called by the ValidationRules contract.
    * @param addr The wallet address of the contributor receiving the penalty.
    * @param contributionId The ID of the contribution associated with this penalty.
    * @return uint256 The total number of penalties the contributor has accumulated.
    */
-  function addPenalty(
-    address addr,
-    uint64 contributionId
-  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
+  function addPenalty(address addr, uint64 contributionId) private returns (uint256) {
     penalties[addr].push(Penalty(contributionId));
 
     return totalPenalties(addr);
   }
 
-  // --- Private functions ---
+  /**
+   * @dev Sets a user's to DENIED in CommunityRules and removes their levels from pools.
+   * @param userAddress The address of the user to deny.
+   */
+  function _denyContributor(address userAddress) private {
+    if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
+
+    communityRules.setDeniedType(userAddress);
+
+    // Inviter slashing mechanism.
+    CommunityTypes.Invitation memory invitation = communityRules.getInvitation(userAddress);
+    // If invited, add invitation penalty.
+    if (invitation.inviter != address(0)) {
+      communityRules.addInviterPenalty(invitation.inviter);
+    }
+
+    contributorPool.removePoolLevels(userAddress, true);
+  }
 
   /**
    * @dev Private function to add a level to a contributor's pool.
@@ -533,6 +556,14 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     uint256 newPenaltyCount,
     uint256 blockNumber
   );
+
+  /**
+   * @notice Emitted
+   * @param _validatorAddress The address of the validator.
+   * @param _resourceId The id of the resource receiving the vote.
+   * @param _justification The justification provided for the vote.
+   */
+  event ContributionValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
 
   /// @dev Emitted when a contributor successfully initiates a withdrawal of tokens.
   /// @param contributorAddress The address of the contributor initiating the withdrawal.

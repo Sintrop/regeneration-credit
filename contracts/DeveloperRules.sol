@@ -340,7 +340,6 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
 
   /**
    * @dev Adds a penalty to a developer's record when one of their reports is invalidated.
-   * @notice This function should be called by authorized contracts.
    * @param addr The wallet address of the developer receiving the penalty.
    * @param reportId The ID of the report associated with this penalty.
    * @return uint256 The total number of penalties the developer has accumulated.
@@ -373,7 +372,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   }
 
   /**
-   * @dev Sets a user's type to DENIED in CommunityRules and removes their levels from pools.
+   * @dev Sets a user's to DENIED in CommunityRules and removes their levels from pools.
    * @param userAddress The address of the user to deny.
    */
   function _denyDeveloper(address userAddress) private {
