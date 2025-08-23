@@ -502,8 +502,6 @@ contract ValidationRules is Callable, ReentrancyGuard {
    */
   event InspectionValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
 
-
-
   /**
    * @notice Emitted
    * @param _validatorAddress The address of the validator.

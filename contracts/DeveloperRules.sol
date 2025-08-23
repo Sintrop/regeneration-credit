@@ -270,20 +270,20 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     if (report.validationsCount >= votesNeeded) {
       // If threshold reached, invalidate the report.
       require(!reportPenalized[id], "Penalties already applied");
-      reportPenalized[id] = true;      
-      
+      reportPenalized[id] = true;
+
       _invalidateReport(report);
 
       uint256 developerTotalPenalties = addPenalty(report.developer, id);
-      
+
       // Emit event for invalidation.
       emit ReportInvalidated(id, report.developer, justification, totalPenalties(report.developer), block.number);
 
       if (developerTotalPenalties >= maxPenalties) {
-          _denyDeveloper(report.developer);
+        _denyDeveloper(report.developer);
       }
     }
-  
+
     emit ReportValidation(msg.sender, report.id, justification);
 
     // Call the ValidationRules contract.
@@ -348,10 +348,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * @param reportId The ID of the report associated with this penalty.
    * @return uint256 The total number of penalties the developer has accumulated.
    */
-  function addPenalty(
-    address addr,
-    uint64 reportId
-  ) private returns (uint256) {
+  function addPenalty(address addr, uint64 reportId) private returns (uint256) {
     // Add the penalty record to the penalties array.
     penalties[addr].push(Penalty(reportId));
 
