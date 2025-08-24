@@ -219,47 +219,47 @@ contract ValidationRules is Callable, ReentrancyGuard {
     if (validationsCount >= _votesToInvalidate) _denyUser(userAddress);
   }
 
-  /**
-   * @notice Allows allowed callers (e.g., InspectorRules) to record a validation vote against an inspection.
-   * @dev This function is intended to be called by the `InspectionRules` contract.
-   * It records a validation vote for an inspection and applies penalties if enough votes accumulate.
-   *
-   * Requirements:
-   * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
-   * - The validator address must not have already voted for this specific inspection.
-   *
-   * @param inspection Inspection data.
-   * @param justification Invalidation justification.
-   * @param validatorAddress Address of the voter.
-   */
-  function addInspectionValidation(
-    Inspection memory inspection,
-    string memory justification,
-    address validatorAddress
-  ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant {
-    require(!validatorInspectionsValidations[validatorAddress][inspection.id], "Already voted");
+  // /**
+  //  * @notice Allows allowed callers (e.g., InspectorRules) to record a validation vote against an inspection.
+  //  * @dev This function is intended to be called by the `InspectionRules` contract.
+  //  * It records a validation vote for an inspection and applies penalties if enough votes accumulate.
+  //  *
+  //  * Requirements:
+  //  * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
+  //  * - The validator address must not have already voted for this specific inspection.
+  //  *
+  //  * @param inspection Inspection data.
+  //  * @param justification Invalidation justification.
+  //  * @param validatorAddress Address of the voter.
+  //  */
+  // function addInspectionValidation(
+  //   Inspection memory inspection,
+  //   string memory justification,
+  //   address validatorAddress
+  // ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant {
+  //   require(!validatorInspectionsValidations[validatorAddress][inspection.id], "Already voted");
 
-    validatorInspectionsValidations[validatorAddress][inspection.id] = true;
-    validatorLastVoteAt[validatorAddress] = block.number;
+  //   validatorInspectionsValidations[validatorAddress][inspection.id] = true;
+  //   validatorLastVoteAt[validatorAddress] = block.number;
 
-    uint256 _votesToInvalidate = votesToInvalidate();
+  //   uint256 _votesToInvalidate = votesToInvalidate();
 
-    bool addPenalty = inspection.validationsCount >= _votesToInvalidate;
+  //   bool addPenalty = inspection.validationsCount >= _votesToInvalidate;
 
-    emit InspectionValidation(validatorAddress, inspection.id, justification);
+  //   emit InspectionValidation(validatorAddress, inspection.id, justification);
 
-    if (!addPenalty) return;
+  //   if (!addPenalty) return;
 
-    require(!inspectionAlreadyInvalidated[inspection.id], "Penalties already applied");
+  //   require(!inspectionAlreadyInvalidated[inspection.id], "Penalties already applied");
 
-    inspectionAlreadyInvalidated[inspection.id] = true;
+  //   inspectionAlreadyInvalidated[inspection.id] = true;
 
-    uint256 inspectorTotalPenalties = inspectorRules.addPenalty(inspection.inspector, inspection.id);
+  //   uint256 inspectorTotalPenalties = inspectorRules.addPenalty(inspection.inspector, inspection.id);
 
-    emit ResourceInvalidated("Inspection", inspection.id, inspection.inspector, inspectorTotalPenalties); // Emit event
+  //   emit ResourceInvalidated("Inspection", inspection.id, inspection.inspector, inspectorTotalPenalties); // Emit event
 
-    if (inspectorTotalPenalties >= inspectorRules.maxPenalties()) _denyUser(inspection.inspector);
-  }
+  //   if (inspectorTotalPenalties >= inspectorRules.maxPenalties()) _denyUser(inspection.inspector);
+  // }
 
   // /**
   //  * @notice Allows allowed callers (e.g., DeveloperRules) to record a validation vote against a report.

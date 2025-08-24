@@ -224,7 +224,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   function addPenalty(
     address addr,
     uint64 inspectionId
-  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
+  ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant returns (uint256) {
     penalties[addr].push(Penalty(inspectionId));
 
     return totalPenalties(addr);
@@ -258,6 +258,25 @@ contract InspectorRules is Callable, ReentrancyGuard {
     require(inspector.totalInspections > 0, "totalInspections invalid");
 
     inspector.totalInspections--;
+  }
+
+  /**
+   * @dev Sets a user's to DENIED in CommunityRules and removes their levels from pools.
+   * @param userAddress The address of the user to deny.
+   */
+  function denyInspector(address userAddress) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
+    if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
+
+    communityRules.setDeniedType(userAddress);
+
+    // Inviter slashing mechanism.
+    CommunityTypes.Invitation memory invitation = communityRules.getInvitation(userAddress);
+    // If invited, add invitation penalty.
+    if (invitation.inviter != address(0)) {
+      communityRules.addInviterPenalty(invitation.inviter);
+    }
+
+    inspectorPool.removePoolLevels(userAddress, true);
   }
 
   // --- Private functions (State modifying) ---

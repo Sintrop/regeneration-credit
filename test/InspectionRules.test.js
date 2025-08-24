@@ -1254,7 +1254,7 @@ describe("InspectionRules", () => {
 
         context("when inspector receive max penalties alloweds", () => {
           beforeEach(async () => {
-            await inspectorRules.setContractCall(instance.target, owner);
+            await inspectorRules.setContractCall(owner, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
             await communityRules.setContractCall(user1Address, validationRules.target);
@@ -1417,7 +1417,7 @@ describe("InspectionRules", () => {
 
         context("when inspector receive max penalties alloweds", () => {
           beforeEach(async () => {
-            await inspectorRules.setContractCall(instance.target, owner);
+            await inspectorRules.setContractCall(owner, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
             await communityRules.setContractCall(user1Address, validationRules.target);
@@ -1580,7 +1580,7 @@ describe("InspectionRules", () => {
 
         context("when inspector receive max penalties alloweds", () => {
           beforeEach(async () => {
-            await inspectorRules.setContractCall(instance.target, owner);
+            await inspectorRules.setContractCall(owner, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
             await communityRules.setContractCall(user1Address, validationRules.target);
@@ -1743,7 +1743,7 @@ describe("InspectionRules", () => {
 
         context("when inspector receive max penalties alloweds", () => {
           beforeEach(async () => {
-            await inspectorRules.setContractCall(instance.target, owner);
+            await inspectorRules.setContractCall(owner, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
             await communityRules.setContractCall(user1Address, validationRules.target);

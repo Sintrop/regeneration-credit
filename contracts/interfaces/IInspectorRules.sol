@@ -39,6 +39,8 @@ interface IInspectorRules {
    */
   function afterRealizeInspection(address inspector, uint64 inspectionId) external returns (uint256);
 
+  function denyInspector(address inspector) external;
+
   /**
    * @notice Retrieves the full Inspector struct for a given account.
    * @param account The address of the inspector.
