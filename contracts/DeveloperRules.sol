@@ -254,7 +254,6 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     require(!hasVotedOnReport[id][msg.sender], "Already voted");
 
     hasVotedOnReport[id][msg.sender] = true;
-    validationRules.updateValidatorLastVoteBlock(msg.sender);
 
     Report memory report = reports[id];
 
@@ -283,6 +282,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
         _denyDeveloper(report.developer);
       }
     }
+    validationRules.updateValidatorLastVoteBlock(msg.sender);
 
     emit ReportValidation(msg.sender, report.id, justification);
   }

@@ -555,8 +555,10 @@ describe("DeveloperRules", (accounts) => {
 
         it("should remove all pool levels for the denied developer", async () => {
           // The `removePoolLevels(user, true)` function should zero out the levels
-          const developer = await instance.getDeveloper(dev1Address);
-          expect(developer.pool.level).to.equal(0);
+          const report = await instance.reports(1);
+          const eraLevels = await developerPool.eraLevels(report.era, dev1Address);
+
+          expect(eraLevels).to.eq(0);
         });
       });
 

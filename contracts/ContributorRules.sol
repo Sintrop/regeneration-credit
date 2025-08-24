@@ -267,7 +267,6 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     require(!hasVotedOnContribution[id][msg.sender], "Already voted");
 
     hasVotedOnContribution[id][msg.sender] = true;
-    validationRules.updateValidatorLastVoteBlock(msg.sender);
 
     // Retrieve the contribution using a storage reference to modify it directly.
     Contribution memory contribution = contributions[id];
@@ -305,6 +304,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
         _denyContributor(contribution.user);
       }
     }
+    validationRules.updateValidatorLastVoteBlock(msg.sender);
 
     emit ContributionValidation(msg.sender, contribution.id, justification);
   }

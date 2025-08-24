@@ -391,6 +391,37 @@ describe("ResearcherRules", () => {
   });
 
   describe("addResearchValidation", () => {
+    context("when trying to vote on an already invalidated research", () => {
+      beforeEach(async () => {
+        // Setup: create a researcher, a research, and enough validators to invalidate it.
+
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
+        await addInvitation(owner, user3Address, userTypes.Developer, owner);
+
+        await addResearcher("Researcher A", resea1Address);
+        await addResearch(resea1Address);
+
+        await addDeveloper("User A", user1Address);
+        await addDeveloper("User B", user2Address);
+        await addDeveloper("User C", user3Address);
+
+        // Invalidate the research
+        await instance.connect(user1Address).addResearchValidation(1, "justification");
+        await instance.connect(user2Address).addResearchValidation(1, "justification");
+      });
+
+      it("should revert because the research is no longer valid", async () => {
+        // A third validator attempts to vote on the already invalid research
+        await expect(instance.connect(user3Address).addResearchValidation(1, "justification")).to.be.revertedWith(
+          "Research not VALID"
+        );
+
+        // NOTE: The transaction reverts on `require(research.valid)`, which is checked
+        // before `require(!researchPenalized)`. This is the correct and expected behavior.
+      });
+    });
+
     context("with researcher", () => {
       beforeEach(async () => {
         await addInvitation(owner, user1Address, userTypes.Researcher, owner);
@@ -662,6 +693,10 @@ describe("ResearcherRules", () => {
 
             expect(researchesCount).to.eq(0);
           });
+
+          it("should set researchPenalized to true to prevent double penalties", async () => {
+            expect(await instance.researchPenalized(1)).to.be.true;
+          });
         });
 
         context("when research must not be invalidated", () => {
@@ -700,6 +735,10 @@ describe("ResearcherRules", () => {
 
             expect(eraLevels).to.eq(1);
           });
+
+          it("should keep researchPenalized to false to prevent double penalties", async () => {
+            expect(await instance.researchPenalized(1)).to.be.false;
+          });
         });
       });
 
@@ -730,10 +769,24 @@ describe("ResearcherRules", () => {
 
           expect(isDenied).to.eq(true);
         });
+
+        it("should apply a penalty to the researcher's inviter", async () => {
+          // Check if the inviter's penalty count has been incremented
+          const inviterPenalties = await communityRules.inviterPenalties(owner);
+          expect(inviterPenalties).to.eq(1);
+        });
+
+        it("should remove all pool levels for the denied researcher", async () => {
+          // The `removePoolLevels(user, true)` function should zero out the researcher's levels
+          const research = await instance.researches(3);
+
+          const poolLevels = await researcherPool.eraLevels(research.era, resea1Address);
+          expect(poolLevels).to.equal(0);
+        });
       });
 
       context("with invalid research", () => {
-        context("when current era is different from contribution created era", () => {
+        context("when current era is different from research created era", () => {
           beforeEach(async () => {
             await addResearch(resea1Address);
 
@@ -747,7 +800,7 @@ describe("ResearcherRules", () => {
           });
         });
 
-        context("when contribution is invalidated", () => {
+        context("when research is invalidated", () => {
           beforeEach(async () => {
             await addDeveloper("User B", user2Address);
             await addDeveloper("User C", user3Address);
@@ -765,7 +818,7 @@ describe("ResearcherRules", () => {
           });
         });
 
-        context("when contribution do not exists", () => {
+        context("when research do not exists", () => {
           it("should return error message", async () => {
             await expect(instance.connect(user1Address).addResearchValidation(0, "justification")).to.be.revertedWith(
               "Research not VALID"

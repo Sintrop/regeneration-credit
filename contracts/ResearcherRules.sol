@@ -262,7 +262,6 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     require(!hasVotedOnResearch[id][msg.sender], "Already voted");
 
     hasVotedOnResearch[id][msg.sender] = true;
-    validationRules.updateValidatorLastVoteBlock(msg.sender);
 
     Research memory research = researches[id];
 
@@ -288,6 +287,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
         _denyResearcher(research.createdBy);
       }
     }
+    validationRules.updateValidatorLastVoteBlock(msg.sender);
 
     emit ResearchValidation(msg.sender, research.id, justification);
   }
