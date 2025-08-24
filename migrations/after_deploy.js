@@ -28,7 +28,6 @@ async function configureValidationRules() {
   const activistRules = await getDeployedContract("ActivistRules");
   const contributorRules = await getDeployedContract("ContributorRules");
   const voteRules = await getDeployedContract("VoteRules");
-  const inspectionRules = await getDeployedContract("InspectionRules");
 
   const contractDependencies = {
     communityRulesAddress: communityRules.target,
@@ -41,7 +40,6 @@ async function configureValidationRules() {
     voteRulesAddress: voteRules.target,
   };
 
-  await validationRules.setContractCall(inspectionRules.target, contributorRules.target, developerRules.target, researcherRules.target);
   await validationRules.setContractInterfaces(contractDependencies);
   await regeneratorRules.newAllowedCaller(validationRules.target);
   await inspectorRules.newAllowedCaller(validationRules.target);

@@ -39,6 +39,9 @@ interface IInspectorRules {
    */
   function afterRealizeInspection(address inspector, uint64 inspectionId) external returns (uint256);
 
+  /**
+   * @dev Function to deny inspectors.
+   */
   function denyInspector(address inspector) external;
 
   /**

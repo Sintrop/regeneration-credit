@@ -340,6 +340,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     }
 
     validationRules.updateValidatorLastVoteBlock(msg.sender);
+    emit InspectionValidation(msg.sender, inspection.id, justification);    
   }
 
   // --- Private functions ---
@@ -558,6 +559,14 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     uint32 regenerationScore,
     uint256 inspectedAt
   );
+
+  /**
+   * @notice Emitted
+   * @param _validatorAddress The address of the validator.
+   * @param _resourceId The id of the resource receiving the vote.
+   * @param _justification The justification provided for the vote.
+   */
+  event InspectionValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
 
   /**
    * @notice Emitted when an inspection is successfully invalidated due to validator votes.

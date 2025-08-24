@@ -85,8 +85,6 @@ describe("DeveloperRules", (accounts) => {
     activistPool = validatorRulesDeployed.activistPool;
     researcherPool = validatorRulesDeployed.researcherPool;
 
-    await validationRules.setContractCall(owner, owner, instance.target, owner);
-
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(owner);
     await communityRules.newAllowedCaller(validationRules.target);

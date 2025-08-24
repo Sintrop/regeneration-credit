@@ -242,8 +242,6 @@ describe("ValidationRules", () => {
 
     await regenerationCredit.addContractPool(regeneratorRules.target, regeneratorPoolArgs.totalTokens);
 
-    await instance.setContractCall(owner, owner, owner, owner);
-
     await communityRules.setContractCall(owner, instance);
     await activistRules.setContractCall(owner, instance);
     await regeneratorRules.setContractCall(owner, instance);
