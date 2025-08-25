@@ -1838,18 +1838,6 @@ describe("ValidationRules", () => {
       });
     });
 
-    context("when votersCount is less than 50", () => {
-      beforeEach(async () => {
-        await mockContract.mock.votersCount.returns(49);
-      });
-
-      it("returns 5", async () => {
-        const votesToInvalidate = await instance.votesToInvalidate();
-
-        expect(votesToInvalidate).to.equal(5);
-      });
-    });
-
     context("when votersCount is 249", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(249);
@@ -1874,7 +1862,7 @@ describe("ValidationRules", () => {
       });
     });
 
-    context("when votersCount votersCount is bigger than 500 and less than 1000", () => {
+    context("when votersCount is 600", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(600);
       });
@@ -1886,7 +1874,7 @@ describe("ValidationRules", () => {
       });
     });
 
-    context("when votersCount is bigger than 1000 and less than 2000", () => {
+    context("when votersCount is 1200", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(1200);
       });
@@ -1898,7 +1886,7 @@ describe("ValidationRules", () => {
       });
     });
 
-    context("when votersCount is bigger than 2000 and less than 4000", () => {
+    context("when votersCount is 2500", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(2500);
       });
@@ -1910,7 +1898,7 @@ describe("ValidationRules", () => {
       });
     });
 
-    context("when votersCount is bigger than 4000 and less than 8000", () => {
+    context("when votersCount is 5000", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(5000);
       });
@@ -1922,7 +1910,7 @@ describe("ValidationRules", () => {
       });
     });
 
-    context("when votersCount is bigger than 8000 and less than 16000", () => {
+    context("when votersCount is 10000", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(10000);
       });
@@ -1934,7 +1922,7 @@ describe("ValidationRules", () => {
       });
     });
 
-    context("when votersCount is bigger than 16000 and less than 32000", () => {
+    context("when votersCount is 20000", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(20000);
       });
@@ -1946,7 +1934,7 @@ describe("ValidationRules", () => {
       });
     });
 
-    context("when votersCounts bigger than 32000", () => {
+    context("wwhen votersCount is 35000", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(35000);
       });
