@@ -180,6 +180,7 @@ contract CommunityRules is Callable {
     require(users[msg.sender] != CommunityTypes.UserType.SUPPORTER, "Not allowed to supporters");
     require(users[addr] != CommunityTypes.UserType.UNDEFINED, "User must be registered");
     require(addr != address(0), "Cannot delate zero address");
+    require(addr != msg.sender, "Self-denunciation not allowed");
 
     delationsCount++;
     uint64 newDelationId = delationsCount;

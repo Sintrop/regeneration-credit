@@ -139,6 +139,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
    * @param justification Invalidation justification (Max characters).
    */
   function addUserValidation(address userAddress, string memory justification) external nonReentrant {
+    require(userAddress != msg.sender, "Self validation not allowed");
     require(bytes(justification).length <= MAX_JUSTIFICATION_LENGTH, "Max characters");
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(!communityRules.userTypeIs(CommunityTypes.UserType.UNDEFINED, userAddress), "User not registered");
