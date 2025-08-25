@@ -314,6 +314,8 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
     // Check if the caller has already voted for this resource.
     require(!validatorInspectionsValidations[msg.sender][id], "Already voted");
+    // Check if the resource has already been penalized.
+    require(!inspectionPenalized[id], "Penalties already applied");
 
     validatorInspectionsValidations[msg.sender][id] = true;
 
@@ -329,7 +331,6 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     require(_votesToInvalidate >= 2, "Validation threshold cannot be less than 2");
 
     if (inspection.validationsCount >= _votesToInvalidate) {
-      require(!inspectionPenalized[id], "Penalties already applied");
       inspectionPenalized[id] = true;
 
       _invalidateInspection(inspection);

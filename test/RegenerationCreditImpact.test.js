@@ -101,7 +101,7 @@ describe("RegenerationCreditImpact", () => {
     await communityRules.setContractCall(invitationRules.target, validationRules.target);
     await activistRules.setContractCall(inspectionRules.target, validationRules.target);
     await regeneratorRules.setContractCall(inspectionRules.target, validationRules.target);
-    await inspectorRules.setContractCall(inspectionRules.target, validationRules.target);
+    await inspectorRules.setContractCall(inspectionRules.target);
     await regeneratorPool.setContractCall(regeneratorRules.target);
   });
 

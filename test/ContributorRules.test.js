@@ -511,8 +511,6 @@ describe("ContributorRules", (accounts) => {
   describe("addContributionValidation", () => {
     context("when trying to vote on an already invalidated contribution", () => {
       beforeEach(async () => {
-        // Setup: create a contributor, a contribution, and enough validators to invalidate it.
-
         await addInvitation(owner, user1Address, userTypes.Developer, owner);
         await addInvitation(owner, user2Address, userTypes.Developer, owner);
         await addInvitation(owner, user3Address, userTypes.Developer, owner);
@@ -524,19 +522,14 @@ describe("ContributorRules", (accounts) => {
         await addDeveloper("User B", user2Address);
         await addDeveloper("User C", user3Address);
 
-        // Invalidate the contribution
         await instance.connect(user1Address).addContributionValidation(1, "justification");
         await instance.connect(user2Address).addContributionValidation(1, "justification");
       });
 
       it("should revert because the contribution is no longer valid", async () => {
-        // A third validator attempts to vote on the already invalid contribution
         await expect(instance.connect(user3Address).addContributionValidation(1, "justification")).to.be.revertedWith(
-          "This contribution is not VALID"
+          "Penalties already applied"
         );
-
-        // NOTE: The transaction reverts on `require(contribution.valid)`, which is checked
-        // before `require(!contributionPenalized)`. This is the correct and expected behavior.
       });
     });
 
@@ -644,7 +637,7 @@ describe("ContributorRules", (accounts) => {
             expect(eraLevels).to.eq(1);
           });
 
-          it("should set contributionPenalized to false to prevent double penalties", async () => {
+          it("should keep contributionPenalized to false", async () => {
             expect(await instance.contributionPenalized(1)).to.be.false;
           });
         });
@@ -723,7 +716,7 @@ describe("ContributorRules", (accounts) => {
           it("should return error message", async () => {
             await expect(
               instance.connect(user3Address).addContributionValidation(1, "justification")
-            ).to.be.revertedWith("This contribution is not VALID");
+            ).to.be.revertedWith("Penalties already applied");
           });
         });
 
@@ -943,7 +936,7 @@ describe("ContributorRules", (accounts) => {
           it("should return error message", async () => {
             await expect(
               instance.connect(user3Address).addContributionValidation(1, "justification")
-            ).to.be.revertedWith("This contribution is not VALID");
+            ).to.be.revertedWith("Penalties already applied");
           });
         });
 
@@ -1163,7 +1156,7 @@ describe("ContributorRules", (accounts) => {
           it("should return error message", async () => {
             await expect(
               instance.connect(user3Address).addContributionValidation(1, "justification")
-            ).to.be.revertedWith("This contribution is not VALID");
+            ).to.be.revertedWith("Penalties already applied");
           });
         });
 
@@ -1338,7 +1331,7 @@ describe("ContributorRules", (accounts) => {
           it("should return error message", async () => {
             await expect(
               instance.connect(user3Address).addContributionValidation(1, "justification")
-            ).to.be.revertedWith("This contribution is not VALID");
+            ).to.be.revertedWith("Penalties already applied");
           });
         });
 

@@ -260,6 +260,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
     // Check if the caller has already voted for this resource.
     require(!hasVotedOnResearch[id][msg.sender], "Already voted");
+    // Check if the resource has already been penalized.
+    require(!researchPenalized[id], "Penalties already applied");
 
     hasVotedOnResearch[id][msg.sender] = true;
 
@@ -274,7 +276,6 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     require(votesNeeded > 1, "Validation threshold cannot be less than 2");
 
     if (research.validationsCount >= votesNeeded) {
-      require(!researchPenalized[id], "Penalties already applied");
       researchPenalized[id] = true;
 
       _invalidateResearch(research);

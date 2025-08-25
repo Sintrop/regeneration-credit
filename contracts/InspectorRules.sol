@@ -66,9 +66,6 @@ contract InspectorRules is Callable, ReentrancyGuard {
   /// @notice The address of the `InspectionRules` contract.
   address private inspectionRulesAddress;
 
-  /// @notice The address of the `InspectionRules` contract.
-  address private validationRulesAddress;
-
   /// @notice The specific `UserType` enumeration value for an Inspector user.
   /// This is a constant for gas efficiency and clarity.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.INSPECTOR;
@@ -93,11 +90,9 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @dev onlyOwner function to set contract call addresses.
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _inspectionRulesAddress Address of InspectionRules.
-   * @param _validationRulesAddress Address of ValidationRules.
    */
-  function setContractCall(address _inspectionRulesAddress, address _validationRulesAddress) public onlyOwner {
+  function setContractCall(address _inspectionRulesAddress) public onlyOwner {
     inspectionRulesAddress = _inspectionRulesAddress;
-    validationRulesAddress = _validationRulesAddress;
   }
 
   // --- Public functions (State modifying) ---

@@ -350,7 +350,6 @@ describe("DeveloperRules", (accounts) => {
   describe("addReportValidation", () => {
     context("when trying to vote on an already invalidated report", () => {
       beforeEach(async () => {
-        // Setup: creates a dev, a report, and enough validators to invalidate it.
         await addDeveloper("Developer A", dev1Address);
         await instance.connect(dev1Address).addReport("description", "report");
 
@@ -361,18 +360,14 @@ describe("DeveloperRules", (accounts) => {
         await addDeveloper("User B", user2Address);
         await addDeveloper("User C", user3Address);
 
-        // Invalidate the report
         await instance.connect(user1Address).addReportValidation(1, "justification");
         await instance.connect(user2Address).addReportValidation(1, "justification");
       });
 
       it("should revert because the report is no longer valid", async () => {
-        // A third validator tries to vote
         await expect(instance.connect(user3Address).addReportValidation(1, "justification")).to.be.revertedWith(
-          "This report is not VALID"
+          "Penalties already applied"
         );
-        // NOTE: The transaction reverts on `require(report.valid)`, which comes before `require(!reportPenalized)`.
-        // This is the expected and correct behavior. The test confirms that additional votes are blocked.
       });
     });
 
@@ -589,7 +584,7 @@ describe("DeveloperRules", (accounts) => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user3Address).addReportValidation(1, "justification")).to.be.revertedWith(
-              "This report is not VALID"
+              "Penalties already applied"
             );
           });
         });
@@ -812,7 +807,7 @@ describe("DeveloperRules", (accounts) => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user3Address).addReportValidation(1, "justification")).to.be.revertedWith(
-              "This report is not VALID"
+              "Penalties already applied"
             );
           });
         });
@@ -1032,7 +1027,7 @@ describe("DeveloperRules", (accounts) => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user3Address).addReportValidation(1, "justification")).to.be.revertedWith(
-              "This report is not VALID"
+              "Penalties already applied"
             );
           });
         });
@@ -1250,7 +1245,7 @@ describe("DeveloperRules", (accounts) => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user3Address).addReportValidation(1, "justification")).to.be.revertedWith(
-              "This report is not VALID"
+              "Penalties already applied"
             );
           });
         });

@@ -252,6 +252,8 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
     // Check if the caller has already voted for this resource.
     require(!hasVotedOnReport[id][msg.sender], "Already voted");
+    // Check if the resource has already been penalized.
+    require(!reportPenalized[id], "Penalties already applied");
 
     hasVotedOnReport[id][msg.sender] = true;
 
@@ -268,7 +270,6 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
 
     if (report.validationsCount >= votesNeeded) {
       // If threshold reached, invalidate the report.
-      require(!reportPenalized[id], "Penalties already applied");
       reportPenalized[id] = true;
 
       _invalidateReport(report);

@@ -265,6 +265,8 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
     // Check if the caller has already voted for this resource.
     require(!hasVotedOnContribution[id][msg.sender], "Already voted");
+    // Check if the resource has already been penalized.
+    require(!contributionPenalized[id], "Penalties already applied");
 
     hasVotedOnContribution[id][msg.sender] = true;
 
@@ -283,7 +285,6 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     require(votesNeeded > 1, "Validation threshold cannot be less than 2");
 
     if (contribution.validationsCount >= votesNeeded) {
-      require(!contributionPenalized[id], "Penalties already applied");
       contributionPenalized[id] = true;
 
       // If threshold reached, invalidate the contribution.
