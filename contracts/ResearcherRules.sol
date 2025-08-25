@@ -94,6 +94,9 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   /// @notice A mapping from a researcher's wallet address to an array of `Penalty` structs they have received.
   mapping(address => Penalty[]) public penalties;
 
+  /// @notice Tracks research IDs that have already been invalidated.
+  mapping(uint64 => bool) public researchPenalized;
+
   /// @notice A mapping from a unique reseracher ID to their corresponding wallet address.
   /// Facilitates lookup of a reseracher's address by their ID.
   mapping(uint256 => address) public researchersAddress;
@@ -257,6 +260,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
     // Check if the caller has already voted for this resource.
     require(!hasVotedOnResearch[id][msg.sender], "Already voted");
+    // Check if the resource has already been penalized.
+    require(!researchPenalized[id], "Penalties already applied");
 
     hasVotedOnResearch[id][msg.sender] = true;
 
@@ -270,15 +275,22 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     uint256 votesNeeded = validationRules.votesToInvalidate();
     require(votesNeeded > 1, "Validation threshold cannot be less than 2");
 
-    bool mustInvalidateResearch = research.validationsCount >= votesNeeded;
+    if (research.validationsCount >= votesNeeded) {
+      researchPenalized[id] = true;
 
-    if (mustInvalidateResearch) {
-      research = _invalidateResearch(research);
+      _invalidateResearch(research);
       // --- Event Emission ---
       emit ResearchInvalidated(id, msg.sender, justification);
-    }
 
-    validationRules.addResearchValidation(research, justification, msg.sender);
+      uint256 researcherTotalPenalties = addPenalty(research.createdBy, id);
+
+      if (researcherTotalPenalties >= maxPenalties) {
+        _denyResearcher(research.createdBy);
+      }
+    }
+    validationRules.updateValidatorLastVoteBlock(msg.sender);
+
+    emit ResearchValidation(msg.sender, research.id, justification);
   }
 
   /**
@@ -376,6 +388,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     researcherPool.removePoolLevels(addr, denied);
   }
 
+  // --- Private  functions ---
+
   /**
    * @dev Adds a penalty to a researcher's record when one of their researches is invalidated.
    * @notice This function must be called by the ValidationRules contract.
@@ -383,16 +397,30 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param researchId The ID of the research associated with this penalty.
    * @return uint256 The total number of penalties the researcher has accumulated.
    */
-  function addPenalty(
-    address addr,
-    uint64 researchId
-  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
+  function addPenalty(address addr, uint64 researchId) private returns (uint256) {
     penalties[addr].push(Penalty(researchId));
 
     return totalPenalties(addr);
   }
 
-  // --- Private  functions ---
+  /**
+   * @dev Sets a user's to DENIED in CommunityRules and removes their levels from pools.
+   * @param userAddress The address of the user to deny.
+   */
+  function _denyResearcher(address userAddress) private {
+    if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
+
+    communityRules.setDeniedType(userAddress);
+
+    // Inviter slashing mechanism.
+    CommunityTypes.Invitation memory invitation = communityRules.getInvitation(userAddress);
+    // If invited, add invitation penalty.
+    if (invitation.inviter != address(0)) {
+      communityRules.addInviterPenalty(invitation.inviter);
+    }
+
+    researcherPool.removePoolLevels(userAddress, true);
+  }
 
   /**
    * @dev Private helper function that invalidates a research by updating its status.
@@ -527,6 +555,14 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param publishedAt The block number when the research was published.
    */
   event ResearchPublished(uint256 indexed researchId, address indexed researcher, uint256 publishedAt);
+
+  /**
+   * @notice Emitted
+   * @param _validatorAddress The address of the validator.
+   * @param _resourceId The id of the resource receiving the vote.
+   * @param _justification The justification provided for the vote.
+   */
+  event ResearchValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
 
   /**
    * @dev Emitted when a research is successfully invalidated by validators.

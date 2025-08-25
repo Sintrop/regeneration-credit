@@ -180,6 +180,7 @@ contract CommunityRules is Callable {
     require(users[msg.sender] != CommunityTypes.UserType.SUPPORTER, "Not allowed to supporters");
     require(users[addr] != CommunityTypes.UserType.UNDEFINED, "User must be registered");
     require(addr != address(0), "Cannot delate zero address");
+    require(addr != msg.sender, "Self-denunciation not allowed");
 
     delationsCount++;
     uint64 newDelationId = delationsCount;
@@ -253,7 +254,7 @@ contract CommunityRules is Callable {
    * Prevents re-denying an already denied user.
    * @param userAddress The address of the user to be denied.
    */
-  function setDeniedType(address userAddress) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+  function setDeniedType(address userAddress) external mustBeAllowedCaller {
     if (deniedUsers[userAddress]) return;
 
     userTypesCount[users[userAddress]]--; // Decrement count of the old user type
@@ -269,7 +270,7 @@ contract CommunityRules is Callable {
    * It decrements the count of penalties for the inviter.
    * @param inviter The address of the inviter receiving the penalty.
    */
-  function addInviterPenalty(address inviter) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+  function addInviterPenalty(address inviter) external mustBeAllowedCaller {
     inviterPenalties[inviter]++;
   }
 

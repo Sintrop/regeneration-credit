@@ -40,6 +40,11 @@ interface IInspectorRules {
   function afterRealizeInspection(address inspector, uint64 inspectionId) external returns (uint256);
 
   /**
+   * @dev Function to deny inspectors.
+   */
+  function denyInspector(address inspector) external;
+
+  /**
    * @notice Retrieves the full Inspector struct for a given account.
    * @param account The address of the inspector.
    * @return The Inspector struct containing the user's data.

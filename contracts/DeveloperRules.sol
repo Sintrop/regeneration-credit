@@ -78,6 +78,9 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   /// Facilitates lookup of a developer's address by their ID.
   mapping(uint256 => address) public developersAddress;
 
+  /// @notice Tracks report IDs that have already been invalidated.
+  mapping(uint64 => bool) public reportPenalized;
+
   /// @notice The interface of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
   ICommunityRules private communityRules;
@@ -249,6 +252,8 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
     // Check if the caller has already voted for this resource.
     require(!hasVotedOnReport[id][msg.sender], "Already voted");
+    // Check if the resource has already been penalized.
+    require(!reportPenalized[id], "Penalties already applied");
 
     hasVotedOnReport[id][msg.sender] = true;
 
@@ -263,18 +268,24 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     uint256 votesNeeded = validationRules.votesToInvalidate();
     require(votesNeeded > 1, "Validation threshold cannot be less than 2");
 
-    // Check if the report has reached the threshold for invalidation.
-    bool mustInvalidateReport = report.validationsCount >= votesNeeded;
-
-    if (mustInvalidateReport) {
+    if (report.validationsCount >= votesNeeded) {
       // If threshold reached, invalidate the report.
-      report = _invalidateReport(report);
+      reportPenalized[id] = true;
+
+      _invalidateReport(report);
+
+      uint256 developerTotalPenalties = addPenalty(report.developer, id);
+
       // Emit event for invalidation.
       emit ReportInvalidated(id, report.developer, justification, totalPenalties(report.developer), block.number);
-    }
 
-    // Call the ValidationRules contract.
-    validationRules.addReportValidation(report, justification, msg.sender);
+      if (developerTotalPenalties >= maxPenalties) {
+        _denyDeveloper(report.developer);
+      }
+    }
+    validationRules.updateValidatorLastVoteBlock(msg.sender);
+
+    emit ReportValidation(msg.sender, report.id, justification);
   }
 
   /**
@@ -326,17 +337,15 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     developerPool.removePoolLevels(addr, denied);
   }
 
+  // --- Private functions ---
+
   /**
    * @dev Adds a penalty to a developer's record when one of their reports is invalidated.
-   * @notice This function should be called by authorized contracts.
    * @param addr The wallet address of the developer receiving the penalty.
    * @param reportId The ID of the report associated with this penalty.
    * @return uint256 The total number of penalties the developer has accumulated.
    */
-  function addPenalty(
-    address addr,
-    uint64 reportId
-  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
+  function addPenalty(address addr, uint64 reportId) private returns (uint256) {
     // Add the penalty record to the penalties array.
     penalties[addr].push(Penalty(reportId));
 
@@ -345,8 +354,6 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
 
     return totalPenalties(addr);
   }
-
-  // --- Private functions ---
 
   /**
    * @dev Private function to execute the invalidation process for a development report.
@@ -363,6 +370,25 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     developerPool.removePoolLevels(report.developer, false);
 
     return report;
+  }
+
+  /**
+   * @dev Sets a user's to DENIED in CommunityRules and removes their levels from pools.
+   * @param userAddress The address of the user to deny.
+   */
+  function _denyDeveloper(address userAddress) private {
+    if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
+
+    communityRules.setDeniedType(userAddress);
+
+    // Inviter slashing mechanism.
+    CommunityTypes.Invitation memory invitation = communityRules.getInvitation(userAddress);
+    // If invited, add invitation penalty.
+    if (invitation.inviter != address(0)) {
+      communityRules.addInviterPenalty(invitation.inviter);
+    }
+
+    developerPool.removePoolLevels(userAddress, true);
   }
 
   /**
@@ -508,6 +534,14 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     uint256 newPenaltyCount,
     uint256 blockNumber
   );
+
+  /**
+   * @notice Emitted
+   * @param _validatorAddress The address of the validator.
+   * @param _resourceId The id of the resource receiving the vote.
+   * @param _justification The justification provided for the vote.
+   */
+  event ReportValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
 
   /// @dev Emitted when a penalty is added to a developer's record.
   /// @param developerAddress The address of the developer who received the penalty.

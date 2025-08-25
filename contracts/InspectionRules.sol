@@ -75,6 +75,9 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   /// @notice Sum of all valid inspections' biodiversity impact.
   uint256 public inspectionsBiodiversityImpact;
 
+  /// @notice Tracks inspection IDs that have already been invalidated.
+  mapping(uint64 => bool) public inspectionPenalized;
+
   /// @notice Stores inspection data by its unique ID.
   mapping(uint64 => Inspection) private inspections;
 
@@ -311,6 +314,8 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
     // Check if the caller has already voted for this resource.
     require(!validatorInspectionsValidations[msg.sender][id], "Already voted");
+    // Check if the resource has already been penalized.
+    require(!inspectionPenalized[id], "Penalties already applied");
 
     validatorInspectionsValidations[msg.sender][id] = true;
 
@@ -325,11 +330,18 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     uint256 _votesToInvalidate = validationRules.votesToInvalidate();
     require(_votesToInvalidate >= 2, "Validation threshold cannot be less than 2");
 
-    bool mustInvalidateInspection = inspection.validationsCount >= _votesToInvalidate;
+    if (inspection.validationsCount >= _votesToInvalidate) {
+      inspectionPenalized[id] = true;
 
-    if (mustInvalidateInspection) _invalidateInspection(inspection);
+      _invalidateInspection(inspection);
 
-    validationRules.addInspectionValidation(inspection, justification, msg.sender);
+      uint256 inspectorTotalPenalties = inspectorRules.addPenalty(inspection.inspector, inspection.id);
+
+      if (inspectorTotalPenalties >= inspectorRules.maxPenalties()) inspectorRules.denyInspector(inspection.inspector);
+    }
+
+    validationRules.updateValidatorLastVoteBlock(msg.sender);
+    emit InspectionValidation(msg.sender, inspection.id, justification);
   }
 
   // --- Private functions ---
@@ -548,6 +560,14 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     uint32 regenerationScore,
     uint256 inspectedAt
   );
+
+  /**
+   * @notice Emitted
+   * @param _validatorAddress The address of the validator.
+   * @param _resourceId The id of the resource receiving the vote.
+   * @param _justification The justification provided for the vote.
+   */
+  event InspectionValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
 
   /**
    * @notice Emitted when an inspection is successfully invalidated due to validator votes.

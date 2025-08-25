@@ -9,11 +9,7 @@ import { IResearcherRules } from "./interfaces/IResearcherRules.sol";
 import { IContributorRules } from "./interfaces/IContributorRules.sol";
 import { IActivistRules } from "./interfaces/IActivistRules.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
-import { Inspection } from "./types/InspectionTypes.sol";
 import { Regenerator } from "./types/RegeneratorTypes.sol";
-import { Report } from "./types/DeveloperTypes.sol";
-import { Research } from "./types/ResearcherTypes.sol";
-import { Contribution } from "./types/ContributorTypes.sol";
 import { ContractsDependency } from "./types/ValidationTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
@@ -49,35 +45,11 @@ contract ValidationRules is Callable, ReentrancyGuard {
   /// @notice The relationship between address and validations received by era.
   mapping(address => mapping(uint256 => uint256)) public userValidations;
 
-  /// @notice Relationship between validator and report validation. Only one validation per resource allowed.
-  mapping(address => mapping(uint256 => bool)) private validatorReportsValidations;
-
-  /// @notice Relationship between validator and contribution validation. Only one validation per resource allowed.
-  mapping(address => mapping(uint256 => bool)) private validatorContributionsValidations;
-
-  /// @notice Relationship between validator and inspection validation. Only one validation per resource allowed.
-  mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
-
-  /// @notice Relationship between validator and research validation. Only one validation per resource allowed.
-  mapping(address => mapping(uint256 => bool)) private validatorResearchesValidations;
-
   /// @notice Relationship between validator and user validation. Only one validation per user per era allowed.
   mapping(address => mapping(address => mapping(uint256 => bool))) private validatorUsersValidations;
 
   /// @notice Relationship between validator and last vote block.number.
   mapping(address => uint256) public validatorLastVoteAt;
-
-  /// @notice Tracks inspection IDs that have already been processed.
-  mapping(uint256 => bool) public inspectionAlreadyInvalidated;
-
-  /// @notice Tracks report IDs that have already been processed.
-  mapping(uint256 => bool) public reportAlreadyInvalidated;
-
-  /// @notice Tracks research IDs that have already been processed.
-  mapping(uint256 => bool) public researchAlreadyInvalidated;
-
-  /// @notice Tracks contribution IDs that have already been processed.
-  mapping(uint256 => bool) public contributionAlreadyInvalidated;
 
   /// @notice CommunityRules contract interface.
   ICommunityRules private communityRules;
@@ -102,18 +74,6 @@ contract ValidationRules is Callable, ReentrancyGuard {
 
   /// @notice VoteRules contract interface.
   IVoteRules private voteRules;
-
-  /// @notice The address of the `InspectionRules` contract.
-  address private inspectionRulesAddress;
-
-  /// @notice The address of the `ContributorRules` contract.
-  address private contributorRulesAddress;
-
-  /// @notice The address of the `DeveloperRules` contract.
-  address private developerRulesAddress;
-
-  /// @notice The address of the `ResearcherRules` contract.
-  address private researcherRulesAddress;
 
   /// @notice Amount of blocks between votes.
   uint256 public immutable timeBetweenVotes;
@@ -145,26 +105,6 @@ contract ValidationRules is Callable, ReentrancyGuard {
     contributorRules = IContributorRules(contractDependency.contributorRulesAddress);
     activistRules = IActivistRules(contractDependency.activistRulesAddress);
     voteRules = IVoteRules(contractDependency.voteRulesAddress);
-  }
-
-  /**
-   * @dev onlyOwner function to set contract call addresses.
-   * This function must be called only once after the contract deploy and ownership must be renounced.
-   * @param _inspectionRulesAddress Address of InspectionRules.
-   * @param _contributorRulesAddress Address of ContributorRules.
-   * @param _developerRulesAddress Address of DeveloperRules.
-   * @param _researcherRulesAddress Address of ResearcherRules.
-   */
-  function setContractCall(
-    address _inspectionRulesAddress,
-    address _contributorRulesAddress,
-    address _developerRulesAddress,
-    address _researcherRulesAddress
-  ) external onlyOwner {
-    inspectionRulesAddress = _inspectionRulesAddress;
-    contributorRulesAddress = _contributorRulesAddress;
-    developerRulesAddress = _developerRulesAddress;
-    researcherRulesAddress = _researcherRulesAddress;
   }
 
   // --- External Functions (State Modifying) ---
@@ -209,159 +149,12 @@ contract ValidationRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @notice Allows allowed callers (e.g., InspectorRules) to record a validation vote against an inspection.
-   * @dev This function is intended to be called by the `InspectionRules` contract.
-   * It records a validation vote for an inspection and applies penalties if enough votes accumulate.
-   *
-   * Requirements:
-   * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
-   * - The validator address must not have already voted for this specific inspection.
-   *
-   * @param inspection Inspection data.
-   * @param justification Invalidation justification.
-   * @param validatorAddress Address of the voter.
+   * @notice Called only by authorized callers.
+   * @dev Update last validator vote block.number.
+   * @param validatorAddress The validator wallet address.
    */
-  function addInspectionValidation(
-    Inspection memory inspection,
-    string memory justification,
-    address validatorAddress
-  ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant {
-    require(!validatorInspectionsValidations[validatorAddress][inspection.id], "Already voted");
-
-    validatorInspectionsValidations[validatorAddress][inspection.id] = true;
+  function updateValidatorLastVoteBlock(address validatorAddress) external mustBeAllowedCaller {
     validatorLastVoteAt[validatorAddress] = block.number;
-
-    uint256 _votesToInvalidate = votesToInvalidate();
-
-    bool addPenalty = inspection.validationsCount >= _votesToInvalidate;
-
-    emit InspectionValidation(validatorAddress, inspection.id, justification);
-
-    if (!addPenalty) return;
-
-    require(!inspectionAlreadyInvalidated[inspection.id], "Penalties already applied");
-
-    inspectionAlreadyInvalidated[inspection.id] = true;
-
-    uint256 inspectorTotalPenalties = inspectorRules.addPenalty(inspection.inspector, inspection.id);
-
-    emit ResourceInvalidated("Inspection", inspection.id, inspection.inspector, inspectorTotalPenalties); // Emit event
-
-    if (inspectorTotalPenalties >= inspectorRules.maxPenalties()) _denyUser(inspection.inspector);
-  }
-
-  /**
-   * @notice Allows allowed callers (e.g., DeveloperRules) to record a validation vote against a report.
-   * @dev This function is intended to be called by the `DeveloperRules` contract.
-   * It records a validation vote for a report and applies penalties if enough votes accumulate.
-   *
-   * Requirements:
-   * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
-   * - The validator address must not have already voted for this specific report.
-   *
-   * @param report Report data.
-   * @param justification Invalidation justification.
-   * @param validatorAddress Address of the voter.
-   */
-  function addReportValidation(
-    Report memory report,
-    string memory justification,
-    address validatorAddress
-  ) external mustBeAllowedCaller mustBeContractCall(developerRulesAddress) nonReentrant {
-    require(!validatorReportsValidations[validatorAddress][report.id], "Already voted");
-
-    validatorReportsValidations[validatorAddress][report.id] = true;
-    validatorLastVoteAt[validatorAddress] = block.number;
-
-    emit ReportValidation(validatorAddress, report.id, justification);
-
-    if (report.valid) return;
-
-    require(!reportAlreadyInvalidated[report.id], "Penalties already applied");
-
-    reportAlreadyInvalidated[report.id] = true;
-
-    uint256 developerTotalPenalties = developerRules.addPenalty(report.developer, report.id);
-
-    emit ResourceInvalidated("Report", report.id, report.developer, developerTotalPenalties); // Emit event
-
-    if (developerTotalPenalties >= developerRules.maxPenalties()) _denyUser(report.developer);
-  }
-
-  /**
-   * @notice Allows allowed callers (e.g., ContributorRules) to record a validation vote against a contribution.
-   * @dev This function is intended to be called by the `ContributorRules` contract.
-   * It records a validation vote for a contribution and applies penalties if enough votes accumulate.
-   *
-   * Requirements:
-   * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
-   * - The validator address must not have already voted for this specific contribution.
-   *
-   * @param contribution Contribution data.
-   * @param justification Invalidation justification.
-   * @param validatorAddress Address of the voter.
-   */
-  function addContributionValidation(
-    Contribution memory contribution,
-    string memory justification,
-    address validatorAddress
-  ) external mustBeAllowedCaller mustBeContractCall(contributorRulesAddress) nonReentrant {
-    require(!validatorContributionsValidations[validatorAddress][contribution.id], "Already voted");
-
-    validatorContributionsValidations[validatorAddress][contribution.id] = true;
-    validatorLastVoteAt[validatorAddress] = block.number;
-
-    emit ContributionValidation(validatorAddress, contribution.id, justification);
-
-    if (contribution.valid) return;
-
-    require(!contributionAlreadyInvalidated[contribution.id], "Penalties already applied");
-
-    contributionAlreadyInvalidated[contribution.id] = true;
-
-    uint256 contributorTotalPenalties = contributorRules.addPenalty(contribution.user, contribution.id);
-
-    emit ResourceInvalidated("Contribution", contribution.id, contribution.user, contributorTotalPenalties); // Emit event
-
-    if (contributorTotalPenalties >= contributorRules.maxPenalties()) _denyUser(contribution.user);
-  }
-
-  /**
-   * @notice Allows allowed callers (e.g., ResearcherRules) to record a validation vote against a research.
-   * @dev This function is intended to be called by the `ResearcherRules` contract.
-   * It records a validation vote for a research and applies penalties if enough votes accumulate.
-   *
-   * Requirements:
-   * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
-   * - The validator address must not have already voted for this specific research.
-   *
-   * @param research Research data.
-   * @param justification Invalidation justification.
-   * @param validatorAddress Address of the voter.
-   */
-  function addResearchValidation(
-    Research memory research,
-    string memory justification,
-    address validatorAddress
-  ) external mustBeAllowedCaller mustBeContractCall(researcherRulesAddress) nonReentrant {
-    require(!validatorResearchesValidations[validatorAddress][research.id], "Already voted");
-
-    validatorResearchesValidations[validatorAddress][research.id] = true;
-    validatorLastVoteAt[validatorAddress] = block.number;
-
-    emit ResearchValidation(validatorAddress, research.id, justification);
-
-    if (research.valid) return;
-
-    require(!researchAlreadyInvalidated[research.id], "Penalties already applied");
-
-    researchAlreadyInvalidated[research.id] = true;
-
-    uint256 totalPenalties = researcherRules.addPenalty(research.createdBy, research.id);
-
-    emit ResourceInvalidated("Research", research.id, research.createdBy, totalPenalties); // Emit event
-
-    if (totalPenalties >= researcherRules.maxPenalties()) _denyUser(research.createdBy);
   }
 
   // --- Private Functions ---
@@ -487,54 +280,8 @@ contract ValidationRules is Callable, ReentrancyGuard {
   event UserValidation(address indexed _validatorAddress, address indexed _userAddress, string _justification);
 
   /**
-   * @notice Emitted
-   * @param _validatorAddress The address of the validator.
-   * @param _resourceId The id of the resource receiving the vote.
-   * @param _justification The justification provided for the vote.
-   */
-  event InspectionValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
-
-  /**
-   * @notice Emitted
-   * @param _validatorAddress The address of the validator.
-   * @param _resourceId The id of the resource receiving the vote.
-   * @param _justification The justification provided for the vote.
-   */
-  event ReportValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
-
-  /**
-   * @notice Emitted
-   * @param _validatorAddress The address of the validator.
-   * @param _resourceId The id of the resource receiving the vote.
-   * @param _justification The justification provided for the vote.
-   */
-  event ContributionValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
-
-  /**
-   * @notice Emitted
-   * @param _validatorAddress The address of the validator.
-   * @param _resourceId The id of the resource receiving the vote.
-   * @param _justification The justification provided for the vote.
-   */
-  event ResearchValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
-
-  /**
    * @notice Emitted when a user is successfully invalidated and denied.
    * @param _userAddress The address of the user who was denied.
    */
   event UserDenied(address indexed _userAddress);
-
-  /**
-   * @notice Emitted when a resource (Inspection, Report, Contribution, Research) is processed after accumulating enough invalidation votes.
-   * @param _resourceType The type of resource being processed (e.g., "Inspection", "Report").
-   * @param _resourceId The ID of the resource.
-   * @param _ownerAddress The address of the user who created the invalidated resource.
-   * @param _penaltiesAdded The number of penalties added to the owner.
-   */
-  event ResourceInvalidated(
-    string _resourceType,
-    uint256 _resourceId,
-    address indexed _ownerAddress,
-    uint256 _penaltiesAdded
-  );
 }

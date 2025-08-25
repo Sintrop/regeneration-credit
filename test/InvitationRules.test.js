@@ -116,7 +116,7 @@ describe("InvitationRules", () => {
 
     await activistRules.setContractCall(owner, validationRules.target);
     await regeneratorRules.setContractCall(owner, validationRules.target);
-    await inspectorRules.setContractCall(owner, validationRules.target);
+    await inspectorRules.setContractCall(owner);
     await activistPool.setContractCall(activistRules.target);
     await contributorPool.setContractCall(contributorRules.target);
     await developerPool.setContractCall(developerRules.target);

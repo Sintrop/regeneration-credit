@@ -206,9 +206,8 @@ describe("InspectionRules", () => {
     await communityRules.setContractCall(owner, validationRules.target);
     await activistRules.setContractCall(instance.target, validationRules.target);
     await regeneratorRules.setContractCall(instance.target, validationRules.target);
-    await inspectorRules.setContractCall(instance.target, validationRules.target);
+    await inspectorRules.setContractCall(instance.target);
     await activistPool.setContractCall(activistRules.target);
-    await validationRules.setContractCall(instance.target, owner, owner, owner);
     await inspectorPool.setContractCall(inspectorRules.target);
     await regeneratorPool.setContractCall(regeneratorRules.target);
 
@@ -855,7 +854,7 @@ describe("InspectionRules", () => {
                       await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress, 1);
                       await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress, 1);
 
-                      await inspectorRules.setContractCall(instance.target, validationRules.target);
+                      await inspectorRules.setContractCall(instance.target);
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
@@ -888,7 +887,7 @@ describe("InspectionRules", () => {
                       await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress, 4);
 
                       await regeneratorRules.setContractCall(instance.target, validationRules.target);
-                      await inspectorRules.setContractCall(instance.target, validationRules.target);
+                      await inspectorRules.setContractCall(instance.target);
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
@@ -1150,6 +1149,31 @@ describe("InspectionRules", () => {
       await addInspector("Inspector A", inspectorAddress);
     });
 
+    context("when trying to vote on an already invalidated inspection", () => {
+      beforeEach(async () => {
+        await requestInspection(regeneratorAddress);
+        await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+        await acceptInspection(1, inspectorAddress);
+        await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
+
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
+        await addInvitation(owner, user3Address, userTypes.Developer, owner);
+        await addDeveloper("User 1", user1Address);
+        await addDeveloper("User 2", user2Address);
+        await addDeveloper("User 3", user3Address);
+
+        await instance.connect(user1Address).addInspectionValidation(1, "justification");
+        await instance.connect(user2Address).addInspectionValidation(1, "justification");
+      });
+
+      it("should revert because the inspection status is no longer INSPECTED", async () => {
+        await expect(instance.connect(user3Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
+          "Penalties already applied"
+        );
+      });
+    });
+
     context("with developer", () => {
       beforeEach(async () => {
         await addInvitation(owner, user1Address, userTypes.Developer, owner);
@@ -1180,6 +1204,10 @@ describe("InspectionRules", () => {
             const inspection = await instance.getInspection(1);
 
             expect(inspection.validationsCount).to.equal(1);
+          });
+
+          it("should keep inspectionPenalized to false", async () => {
+            expect(await instance.inspectionPenalized(1)).to.be.false;
           });
         });
 
@@ -1220,6 +1248,11 @@ describe("InspectionRules", () => {
               expect(totalPenalties).to.equal(1);
             });
 
+            it("should set inspectionPenalized to true to prevent double penalties", async () => {
+              // Verifies that the new flag is set correctly after the first invalidation.
+              expect(await instance.inspectionPenalized(1)).to.be.true;
+            });
+
             it("remove regenerator regenerationScore", async () => {
               const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
 
@@ -1254,14 +1287,14 @@ describe("InspectionRules", () => {
 
         context("when inspector receive max penalties alloweds", () => {
           beforeEach(async () => {
-            await inspectorRules.setContractCall(instance.target, owner);
+            await inspectorRules.setContractCall(owner, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
             await communityRules.setContractCall(user1Address, validationRules.target);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
             await communityRules.setContractCall(user2Address, validationRules.target);
-            await inspectorRules.setContractCall(instance.target, validationRules.target);
+            await inspectorRules.setContractCall(instance.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
 
@@ -1417,14 +1450,14 @@ describe("InspectionRules", () => {
 
         context("when inspector receive max penalties alloweds", () => {
           beforeEach(async () => {
-            await inspectorRules.setContractCall(instance.target, owner);
+            await inspectorRules.setContractCall(owner, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
             await communityRules.setContractCall(user1Address, validationRules.target);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
             await communityRules.setContractCall(user2Address, validationRules.target);
-            await inspectorRules.setContractCall(instance.target, validationRules.target);
+            await inspectorRules.setContractCall(instance.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
 
@@ -1432,6 +1465,22 @@ describe("InspectionRules", () => {
             const isDenied = await communityRules.isDenied(inspectorAddress);
 
             expect(isDenied).to.equal(true);
+          });
+
+          it("should apply a penalty to the inspector's inviter", async () => {
+            // Checks if the inviter who brought the denied inspector is penalized.
+            const inviterPenalties = await communityRules.inviterPenalties(owner);
+            expect(inviterPenalties).to.equal(1);
+          });
+
+          it("should remove all pool levels for the denied inspector", async () => {
+            // Checks if the `removePoolLevels` function was successful.
+            // We need to know the era of the inspection to check the correct mapping slot.
+            const inspection = await instance.getInspection(1);
+            const inspectedAtEra = inspection.inspectedAtEra;
+
+            const poolLevels = await inspectorPool.eraLevels(inspectedAtEra, inspectorAddress);
+            expect(poolLevels).to.equal(0);
           });
         });
 
@@ -1580,14 +1629,14 @@ describe("InspectionRules", () => {
 
         context("when inspector receive max penalties alloweds", () => {
           beforeEach(async () => {
-            await inspectorRules.setContractCall(instance.target, owner);
+            await inspectorRules.setContractCall(owner, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
             await communityRules.setContractCall(user1Address, validationRules.target);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
             await communityRules.setContractCall(user2Address, validationRules.target);
-            await inspectorRules.setContractCall(instance.target, validationRules.target);
+            await inspectorRules.setContractCall(instance.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
 
@@ -1743,14 +1792,14 @@ describe("InspectionRules", () => {
 
         context("when inspector receive max penalties alloweds", () => {
           beforeEach(async () => {
-            await inspectorRules.setContractCall(instance.target, owner);
+            await inspectorRules.setContractCall(owner, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
             await communityRules.setContractCall(user1Address, validationRules.target);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
             await communityRules.setContractCall(user2Address, validationRules.target);
-            await inspectorRules.setContractCall(instance.target, validationRules.target);
+            await inspectorRules.setContractCall(instance.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
 
