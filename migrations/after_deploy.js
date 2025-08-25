@@ -128,7 +128,6 @@ async function configureActivistRules() {
 async function configureInspectorRules() {
 
   const inspectionRules = await getDeployedContract("InspectionRules");
-  const validationRules = await getDeployedContract("ValidationRules");
   const inspectorRules = await getDeployedContract("InspectorRules");
 
   await inspectorRules.setContractCall(inspectionRules.target);
