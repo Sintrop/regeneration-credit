@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npx hardhat test --bail",
+    "deploy:mainnet": "npx hardhat run --network mainnet scripts/deploy.js",
     "deploy:localhost": "npx hardhat run --network localhost scripts/deploy.js",
     "deploy:sepolia": "npx hardhat run --network sepolia scripts/deploy.js",
     "deploy:zkevm": "npx hardhat run --network zkevm scripts/deploy.js",
