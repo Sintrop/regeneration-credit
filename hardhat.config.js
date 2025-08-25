@@ -32,20 +32,8 @@ module.exports = {
       allowUnlimitedContractSize: true,
     },
     // mainnet: {
-    //   url: `https://infura.io/v3/${infuraKey}`,
-    //   accounts: [privateKey],
-    // },
-    // sepolia: {
-    //   url: `https://sepolia.infura.io/v3/${infuraKey}`,
-    //   accounts: [privateKey],
-    // },
-    // zkevm: {
-    //   url: `https://rpc.public.zkevm-test.net`,
-    //   accounts: [privateKey],
-    // },
-    // holesky: {
-    //   url: `https://rpc.holesky.ethpandaops.io`,
-    //   accounts: [privateKey],
+    //   url: `https://rpc.sintrop.com`,
+    //   accounts: [privateKey]
     // },
     // sequoiaTestnet: {
     //   url: "https://sequoiarpc.sintrop.com",
