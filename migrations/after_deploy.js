@@ -131,7 +131,7 @@ async function configureInspectorRules() {
   const validationRules = await getDeployedContract("ValidationRules");
   const inspectorRules = await getDeployedContract("InspectorRules");
 
-  await inspectorRules.setContractCall(inspectionRules.target, validationRules.target);
+  await inspectorRules.setContractCall(inspectionRules.target);
 
   console.log("After InspectorRules deploy is OK");
 }
