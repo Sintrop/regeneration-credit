@@ -3,8 +3,8 @@ pragma solidity ^0.8.27;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import { ISupporterRules } from "./interfaces/ISupporterRules.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import { ERC20Burnable } from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 /**
  * @title RegenerationCredit
@@ -15,7 +15,7 @@ import { ISupporterRules } from "./interfaces/ISupporterRules.sol";
  * and for burning tokens to certify environmental offset.
  * @dev Inherits from OpenZeppelin's `ERC20` for standard token functionalities and `Ownable` for deploy setup.
  */
-contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
+contract RegenerationCredit is ERC20, ERC20Burnable, Ownable, ReentrancyGuard {
   // --- Constants (Standard ERC-20 Metadata) ---
 
   /// @notice The official name of the token.
@@ -26,17 +26,6 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
 
   /// @notice The number of decimal places used by the token.
   uint8 public constant DECIMALS = 18;
-
-  // --- Custom constants ---
-
-  /// @notice Maximum character length for the project description.
-  uint16 private constant MAX_PUBLICATION_LENGTH = 600;
-
-  /// @notice The minimum number of tokens a user must burn to offset.
-  uint256 private constant MINIMUM_TOKENS_TO_OFFSET = 1e18;
-
-  /// @notice The minimum number of tokens a user must burn to pulish offset.
-  uint256 private constant MINIMUM_TOKENS_TO_PUBLISH = 10e18;
 
   // --- Custom State Variables ---
 
@@ -54,9 +43,6 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
   /// Represents their individual contribution to environmental offset.
   mapping(address => uint256) public certificate;
 
-  /// @notice SupporterRules contract interface.
-  ISupporterRules private supporterRules;
-
   // --- Constructor ---
 
   /**
@@ -64,20 +50,9 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * Also sets the token's name, symbol, and decimals via the `ERC20` base constructor.
    * @param totalSupply The total amount of tokens to be minted.
    */
-  constructor(uint256 totalSupply) ERC20(NAME, SYMBOL) {
+  constructor(uint256 totalSupply) ERC20(NAME, SYMBOL) Ownable(msg.sender) {
     // Mint the initial supply directly to the deployer using OpenZeppelin's internal _mint function.
     _mint(msg.sender, totalSupply);
-  }
-
-  // --- Deploy functions ---
-
-  /**
-   * @dev onlyOwner function to set contract interface dependency.
-   * This function must be called only once after the contract deploy and ownership must be renounced.
-   * @param supporterRulesAddress Addresses of the SupporterRules contract.
-   */
-  function setContractInterfaces(address supporterRulesAddress) external onlyOwner {
-    supporterRules = ISupporterRules(supporterRulesAddress);
   }
 
   /**
@@ -115,6 +90,8 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
    * - The caller (`msg.sender`) must have `amount` tokens.
    * - `amount` must be greater than 0.
    *
+   * Note: This functions uses the token 18 decimals, to burn 1 RC user must write 1000000000000000000.
+   *
    * @param amount The amount of tokens to burn from the caller's balance.
    */
   function burnTokens(uint256 amount) external {
@@ -123,61 +100,27 @@ contract RegenerationCredit is ERC20, Ownable, ReentrancyGuard {
   }
 
   /**
-   * @notice Allows a supporter to burn tokens to compensate for a specific item's degradation.
-   * @dev Burns tokens. If a valid calculatorItemId is provided, calls the SupporterRules contract
-   * that records the burned amount as a certificate for that item.
-   * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
-   * @param calculatorItemId The ID of the CalculatorItem.
+   * @notice Destroys a specific amount of tokens from a target account and updates certification records.
+   * @dev Overrides the standard ERC20Burnable `burnFrom` to include custom certification logic
+   * by calling the internal `_burnTokensInternal` function.
+   * @param account The address of the token holder whose tokens will be burned.
+   * @param amount The amount of tokens to burn.
    */
-  function offset(uint256 amount, uint64 calculatorItemId) external nonReentrant {
-    require(supporterRules.isSupporter(msg.sender), "Only supporters");
-    require(amount >= MINIMUM_TOKENS_TO_OFFSET, "Amount must be at least 1 RC");
-
-    (uint256 amountToBurn, uint256 comission, address inviter) = supporterRules.calculateCommission(msg.sender, amount);
-
-    transfer(inviter, comission);
-    _burnTokensInternal(msg.sender, amountToBurn);
-
-    supporterRules.offset(msg.sender, amountToBurn, calculatorItemId);
-  }
-
-  /**
-   * @notice Allows a supporter to burn tokens to post content.
-   * @dev Burns tokens and creates a new publication record.
-   * Enforces character limits for description and content.
-   * @param amount Tokens to be burned (minimum 10 tokens in wei, i.e., 10e18).
-   * @param description The description of the post (max 600 characters).
-   * @param content The content of the post (max 600 characters).
-   */
-  function publish(uint256 amount, string memory description, string memory content) external nonReentrant {
-    require(supporterRules.isSupporter(msg.sender), "Only supporters");
-    require(amount >= MINIMUM_TOKENS_TO_PUBLISH, "Amount must be at least 10 RC");
-    require(
-      bytes(description).length <= MAX_PUBLICATION_LENGTH && bytes(content).length <= MAX_PUBLICATION_LENGTH,
-      "Max 600 characters"
-    );
-
-    (uint256 amountToBurn, uint256 comission, address inviter) = supporterRules.calculateCommission(msg.sender, amount);
-
-    transfer(inviter, comission);
-    _burnTokensInternal(msg.sender, amountToBurn);
-
-    supporterRules.publish(msg.sender, amountToBurn, description, content);
+  function burnFrom(address account, uint256 amount) public override {
+    _spendAllowance(account, msg.sender, amount);
+    _burnTokensInternal(account, amount);
   }
 
   /**
    * @dev Allows a designated "contract pool" to register a new decreaseLocked.
    * @notice Called only by a system pool contract, this function remove the transfered tokens from totalLocked.
-   * @param tokenOwner The address of the contract pool initiating the transfer.
    * @param numTokens The amount of tokens to transfer.
    */
-  function decreaseLocked(address tokenOwner, uint256 numTokens) external mustBeContractPool {
-    require(numTokens <= balanceOf(tokenOwner), "Pool out of balance");
+  function decreaseLocked(uint256 numTokens) external mustBeContractPool {
+    require(numTokens <= balanceOf(msg.sender), "Pool out of balance");
+    require(numTokens <= totalLocked_, "Cannot decrease more than total locked");
 
-    // Update total locked tokens.
-    unchecked {
-      if (contractsPools[tokenOwner]) totalLocked_ -= numTokens;
-    }
+    if (contractsPools[msg.sender]) totalLocked_ -= numTokens;
   }
 
   // --- Private functions ---

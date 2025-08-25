@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
 import { IContributorPool } from "./interfaces/IContributorPool.sol";
@@ -37,6 +37,9 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   /// @notice Max character length for text.
   uint16 private constant MAX_TEXT_LENGTH = 300;
 
+  /// @notice Maximum possible level from a single resource.
+  uint8 private constant RESOURCE_LEVEL = 1;
+
   // --- State variables ---
 
   /// @notice The maximum number of penalties a contributor can accumulate before being denied.
@@ -70,8 +73,10 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   mapping(uint256 => address) public contributorsAddress;
 
   /// @notice A mapping from a contributor's wallet address to an array of IDs of contributions they have made.
-  /// @dev This array can grow indefinitely per contributor.
   mapping(address => uint256[]) public contributionsIds;
+
+  /// @notice Tracks contribution IDs that have already been invalidated.
+  mapping(uint64 => bool) public contributionPenalized;
 
   /// @notice The interface of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
@@ -97,6 +102,9 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice A mapping from a contributor's wallet address to an array of `Penalty` structs they have received.
   mapping(address => Penalty[]) public penalties;
+
+  /// @notice Tracks which validator has voted on which contribution to prevent duplicate votes.
+  mapping(uint64 => mapping(address => bool)) private hasVotedOnContribution;
 
   // --- Constructor ---
 
@@ -157,7 +165,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     // Character limit validation for name and proofPhoto.
     require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     // Max limit for contributor users in the system.
-    require(communityRules.userTypesCount(USER_TYPE) <= MAX_USER_COUNT, "Max user limit");
+    require(communityRules.userTypesCount(USER_TYPE) < MAX_USER_COUNT, "Max user limit");
 
     // Generate a unique ID for the new contributor. Assumes userTypesTotalCount provides a globally unique counter.
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
@@ -171,6 +179,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
       name,
       proofPhoto,
       Pool(0, poolCurrentEra()),
+      0,
       block.number,
       0
     );
@@ -219,13 +228,16 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     contributionsTotalCount++;
     uint64 id = contributionsTotalCount;
 
+    // Increment contributor's total contributions count within their struct.
+    contributors[msg.sender].totalContributions++;
+
     contributions[id] = Contribution(id, poolCurrentEra(), msg.sender, description, report, 0, true, 0, block.number);
 
     // Record the contribution ID for the specific contributor.
     contributionsIds[msg.sender].push(id);
 
     // Increase the contributor's pool level.
-    _addPoolLevel(msg.sender);
+    _addPoolLevel(msg.sender, id);
 
     // Emit an event.
     emit ContributionAdded(id, msg.sender, description, block.number);
@@ -251,6 +263,12 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     require(voteRules.canVote(msg.sender), "Not a voter");
     // Check if the caller has waited the required time between votes.
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
+    // Check if the caller has already voted for this resource.
+    require(!hasVotedOnContribution[id][msg.sender], "Already voted");
+    // Check if the resource has already been penalized.
+    require(!contributionPenalized[id], "Penalties already applied");
+
+    hasVotedOnContribution[id][msg.sender] = true;
 
     // Retrieve the contribution using a storage reference to modify it directly.
     Contribution memory contribution = contributions[id];
@@ -263,12 +281,16 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     contribution.validationsCount += 1;
     contributions[id] = contribution;
 
-    // Check if the contribution has reached the threshold for invalidation.
-    bool mustInvalidateContribution = contribution.validationsCount >= validationRules.votesToInvalidate();
+    uint256 votesNeeded = validationRules.votesToInvalidate();
+    require(votesNeeded > 1, "Validation threshold cannot be less than 2");
 
-    if (mustInvalidateContribution) {
+    if (contribution.validationsCount >= votesNeeded) {
+      contributionPenalized[id] = true;
+
       // If threshold reached, invalidate the contribution.
-      contribution = _invalidateContribution(contribution);
+      _invalidateContribution(contribution);
+
+      uint256 contributorTotalPenalties = addPenalty(contribution.user, id);
 
       // Emit event for invalidation.
       emit ContributionInvalidated(
@@ -278,10 +300,14 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
         totalPenalties(contribution.user),
         block.number
       );
-    }
 
-    // Record the validation in the ValidationRules contract.
-    validationRules.addContributionValidation(contribution, justification, msg.sender);
+      if (contributorTotalPenalties >= maxPenalties) {
+        _denyContributor(contribution.user);
+      }
+    }
+    validationRules.updateValidatorLastVoteBlock(msg.sender);
+
+    emit ContributionValidation(msg.sender, contribution.id, justification);
   }
 
   /**
@@ -322,47 +348,56 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * This function updates the contributor's local level and notifies the `ContributorPool` contract.
    * @notice Can only be called by ContributorRules address.
    * @param addr The wallet address of the contributor from whom levels are to be removed.
-   * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
-   * this function sets the contributor's pool level to 0. Otherwise, it subtracts the specified amount.
+   * @param denied Remove level user status. If true, user is being denied.
    */
   function removePoolLevels(
     address addr,
-    uint256 levelsToRemove
+    bool denied
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
-    Contributor memory contributor = contributors[addr];
+    if (!denied) contributors[addr].pool.level -= RESOURCE_LEVEL;
 
-    contributors[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : contributor.pool.level;
-
-    contributorPool.removePoolLevels(addr, levelsToRemove);
-
-    // Emit an event.
-    emit ContributorLevelRemoved(addr, levelsToRemove, contributor.pool.level, block.number);
+    contributorPool.removePoolLevels(addr, denied);
   }
+
+  // --- Private functions ---
 
   /**
    * @dev Adds a penalty to a contributor's record when one of their contributions is invalidated.
-   * @notice This function must be called by the ValidationRules contract.
    * @param addr The wallet address of the contributor receiving the penalty.
    * @param contributionId The ID of the contribution associated with this penalty.
    * @return uint256 The total number of penalties the contributor has accumulated.
    */
-  function addPenalty(
-    address addr,
-    uint64 contributionId
-  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
+  function addPenalty(address addr, uint64 contributionId) private returns (uint256) {
     penalties[addr].push(Penalty(contributionId));
 
     return totalPenalties(addr);
   }
 
-  // --- Private functions ---
+  /**
+   * @dev Sets a user's to DENIED in CommunityRules and removes their levels from pools.
+   * @param userAddress The address of the user to deny.
+   */
+  function _denyContributor(address userAddress) private {
+    if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
+
+    communityRules.setDeniedType(userAddress);
+
+    // Inviter slashing mechanism.
+    CommunityTypes.Invitation memory invitation = communityRules.getInvitation(userAddress);
+    // If invited, add invitation penalty.
+    if (invitation.inviter != address(0)) {
+      communityRules.addInviterPenalty(invitation.inviter);
+    }
+
+    contributorPool.removePoolLevels(userAddress, true);
+  }
 
   /**
    * @dev Private function to add a level to a contributor's pool.
    * This function also updates the `lastPublishedAt` timestamp for the contributor.
    * @param addr The wallet address of the contributor whose level is to be increased.
    */
-  function _addPoolLevel(address addr) private {
+  function _addPoolLevel(address addr, uint64 contributionId) private {
     Contributor storage contributor = contributors[addr];
     // If contributor does not exist, return.
     if (contributor.id == 0) return;
@@ -370,7 +405,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     contributor.lastPublishedAt = block.number; // Update last published block for this contributor.
     contributor.pool.level++; // Increase the contributor's local pool level.
 
-    contributorPool.addLevel(addr, 1);
+    contributorPool.addLevel(addr, 1, contributionId);
 
     // Emit an event for off-chain monitoring.
     emit ContributorLevelIncreased(addr, contributor.pool.level, block.number);
@@ -387,6 +422,8 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     contribution.valid = false;
     contribution.invalidatedAt = block.number;
     contributions[contribution.id] = contribution;
+
+    contributorPool.removePoolLevels(contribution.user, false);
 
     return contribution;
   }
@@ -520,6 +557,14 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     uint256 newPenaltyCount,
     uint256 blockNumber
   );
+
+  /**
+   * @notice Emitted
+   * @param _validatorAddress The address of the validator.
+   * @param _resourceId The id of the resource receiving the vote.
+   * @param _justification The justification provided for the vote.
+   */
+  event ContributionValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
 
   /// @dev Emitted when a contributor successfully initiates a withdrawal of tokens.
   /// @param contributorAddress The address of the contributor initiating the withdrawal.

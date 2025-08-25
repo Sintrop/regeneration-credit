@@ -8,7 +8,6 @@ async function afterDeploy() {
   await configureResearcherRules();
   await configureActivistRules();
   await configureRegeneratorRules();
-  await configureSupporterRules();
   await configureInspectorRules();
   await configureCommunityRules();
   await configurePools();
@@ -29,7 +28,6 @@ async function configureValidationRules() {
   const activistRules = await getDeployedContract("ActivistRules");
   const contributorRules = await getDeployedContract("ContributorRules");
   const voteRules = await getDeployedContract("VoteRules");
-  const inspectionRules = await getDeployedContract("InspectionRules");
 
   const contractDependencies = {
     communityRulesAddress: communityRules.target,
@@ -42,7 +40,6 @@ async function configureValidationRules() {
     voteRulesAddress: voteRules.target,
   };
 
-  await validationRules.setContractCall(inspectionRules.target, contributorRules.target, developerRules.target, researcherRules.target);
   await validationRules.setContractInterfaces(contractDependencies);
   await regeneratorRules.newAllowedCaller(validationRules.target);
   await inspectorRules.newAllowedCaller(validationRules.target);
@@ -131,10 +128,9 @@ async function configureActivistRules() {
 async function configureInspectorRules() {
 
   const inspectionRules = await getDeployedContract("InspectionRules");
-  const validationRules = await getDeployedContract("ValidationRules");
   const inspectorRules = await getDeployedContract("InspectorRules");
 
-  await inspectorRules.setContractCall(inspectionRules.target, validationRules.target);
+  await inspectorRules.setContractCall(inspectionRules.target);
 
   console.log("After InspectorRules deploy is OK");
 }
@@ -148,16 +144,6 @@ async function configureRegeneratorRules() {
   await regeneratorRules.setContractCall(inspectionRules.target, validationRules.target);
 
   console.log("After RegeneratorRules deploy is OK");
-}
-
-async function configureSupporterRules() {
-
-  const regenerationCredit = await getDeployedContract("RegenerationCredit");
-  const supporterRules = await getDeployedContract("SupporterRules");
-
-  await supporterRules.setContractCall(regenerationCredit.target);
-
-  console.log("After SupporterRules deploy is OK");
 }
 
 async function configureCommunityRules() {
@@ -237,7 +223,6 @@ async function renounceOwnership() {
   const developerRules = await getDeployedContract("DeveloperRules");
   const researcherRules = await getDeployedContract("ResearcherRules");
   const contributorRules = await getDeployedContract("ContributorRules");
-  const supporterRules = await getDeployedContract("SupporterRules");
   const regeneratorPool = await getDeployedContract("RegeneratorPool");
   const inspectorPool = await getDeployedContract("InspectorPool");
   const researcherPool = await getDeployedContract("ResearcherPool");
@@ -255,7 +240,6 @@ async function renounceOwnership() {
   await developerRules.renounceOwnership();
   await researcherRules.renounceOwnership();
   await contributorRules.renounceOwnership();
-  await supporterRules.renounceOwnership();
   await regeneratorPool.renounceOwnership();
   await inspectorPool.renounceOwnership();
   await researcherPool.renounceOwnership();
@@ -359,8 +343,6 @@ async function inviteUsers() {
   await invitationRules.onlyOwnerInvite("0x1FE8BFE5E3E9EBB79F1BBF1B0BAE975BB9A4AA48", 1);
   await invitationRules.onlyOwnerInvite("0x7D038D175AF86B379EC3909F9E86739AE119B93D", 1);
   await invitationRules.onlyOwnerInvite("0x3E8292D7664B14C3C628E2315A834CAE609FD65C", 3);
-  await invitationRules.onlyOwnerInvite("0xA6926DC9AF4E639741CED9ABA23FD6879364787B", 8);
-  await invitationRules.onlyOwnerInvite("0x44730EE06B2C7A56378F57A93D35136FA610BB91", 8);
   await invitationRules.onlyOwnerInvite("0x900BD2ED98BE55299928AD1DA36B50021EC1856D", 4);
 
   await invitationRules.onlyOwnerInvite("0x6582110F1b7928e70fdd0e5E6A4b87FC1EF43aA0", 1);

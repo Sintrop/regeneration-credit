@@ -39,7 +39,11 @@ interface IRegeneratorRules {
    * @param regenerator The address of the regenerator that was inspected.
    * @param regenerationScore The score calculated from the inspection.
    */
-  function afterRealizeInspection(address regenerator, uint32 regenerationScore) external returns (uint256);
+  function afterRealizeInspection(
+    address regenerator,
+    uint32 regenerationScore,
+    uint64 inspectionId
+  ) external returns (uint256);
 
   /**
    * @notice Calculates the time or blocks remaining until the next era begins.
@@ -59,9 +63,9 @@ interface IRegeneratorRules {
    * @dev The use of 'return' in the calling contract suggests this function
    * returns a status, likely a boolean indicating success.
    * @param user The address of the regenerator.
-   * @param levelsToRemove Levels/score to be removed.
+   * @param denied Remove level user status. If true, user is being denied.
    */
-  function removePoolLevels(address user, uint256 levelsToRemove) external;
+  function removePoolLevels(address user, bool denied) external;
 
   /**
    * @notice Returns the total number of impact regenerators, users that completed 3 inspections.
@@ -74,4 +78,11 @@ interface IRegeneratorRules {
    * @return The total regeneration area, in square meters.
    */
   function regenerationArea() external view returns (uint256);
+
+  /**
+   * @notice Returns the total area under regeneration across all regenerators.
+   * @param addr The address of the regenerator.
+   * @param amountToRemove Levels/score to be removed.
+   */
+  function removeInspectionLevels(address addr, uint256 amountToRemove) external;
 }

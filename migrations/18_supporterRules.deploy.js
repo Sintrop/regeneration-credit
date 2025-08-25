@@ -9,14 +9,13 @@ async function supporterRulesDeploy() {
 
   const SupporterRules = await ethers.getContractFactory("SupporterRules");
 
-  const args = [communityRules.target, researcherRules.target];
+  const args = [communityRules.target, researcherRules.target, regenerationCredit.target];
 
   const supporterRules = await SupporterRules.deploy(...args);
 
   saveContractAddress("SupporterRules", supporterRules.target);
 
   await communityRules.newAllowedCaller(supporterRules.target);
-  await supporterRules.newAllowedCaller(regenerationCredit.target);
 
   console.log(`SupporterRules address ${supporterRules.target}`);
 

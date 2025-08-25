@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IActivistPool } from "./interfaces/IActivistPool.sol";
 import { Activist, Pool } from "./types/ActivistTypes.sol";
@@ -34,6 +34,9 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice Max character length for hash or URL.
   uint16 private constant MAX_HASH_LENGTH = 150;
+
+  /// @notice Maximum possible level from a single invited.
+  uint8 private constant RESOURCE_LEVEL = 1;
 
   // --- State variables ---
 
@@ -115,7 +118,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
     // Character limit validation for name and proofPhoto.
     require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
     // Max limit for activist users in the system.
-    require(communityRules.userTypesCount(USER_TYPE) <= MAX_USER_COUNT, "Max user limit");
+    require(communityRules.userTypesCount(USER_TYPE) < MAX_USER_COUNT, "Max user limit");
 
     // Generate a unique ID for the new activist.
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
@@ -201,19 +204,15 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * This function updates the activist's local level and notifies the `ActivistPool` contract.
    * @notice Can only be called by the ValidationRules contract.
    * @param addr The wallet address of the activist from whom levels are to be removed.
-   * @param levelsToRemove The number of levels to decrease.
+   * @param denied Remove level user status. If true, user is being denied.
    */
   function removePoolLevels(
     address addr,
-    uint256 levelsToRemove
+    bool denied
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
-    Activist storage activist = activists[addr];
+    if (!denied) activists[addr].pool.level -= RESOURCE_LEVEL;
 
-    activist.pool.level -= levelsToRemove > 0 ? levelsToRemove : activist.pool.level;
-    activistPool.removePoolLevels(addr, levelsToRemove);
-
-    // Emit an event
-    emit ActivistLevelRemoved(addr, levelsToRemove, activist.pool.level, block.number);
+    activistPool.removePoolLevels(addr, denied);
   }
 
   // --- Private functions ---
@@ -234,7 +233,9 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
       activistWonLevel[activistAddress][regeneratorAddress] = true;
       approvedInvites++;
 
-      _setActivistLevel(activistAddress);
+      bytes32 eventId = keccak256(abi.encodePacked("activist_reward_regenerator", activistAddress, regeneratorAddress));
+
+      _setActivistLevel(activistAddress, eventId);
     }
   }
 
@@ -254,7 +255,9 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
       activistWonLevel[activistAddress][inspectorAddress] = true;
       approvedInvites++;
 
-      _setActivistLevel(activistAddress);
+      bytes32 eventId = keccak256(abi.encodePacked("activist_reward_inspector", activistAddress, inspectorAddress));
+
+      _setActivistLevel(activistAddress, eventId);
     }
   }
 
@@ -263,7 +266,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * to reflect this level increase for token withdrawal purposes.
    * @param activistAddress The wallet address of the activist whose level is to be increased.
    */
-  function _setActivistLevel(address activistAddress) private {
+  function _setActivistLevel(address activistAddress, bytes32 eventId) private {
     // Retrieve the activist's data.
     Activist storage activist = activists[activistAddress];
 
@@ -274,7 +277,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
     activist.pool.level++;
 
     // Add pool level to activist be able to withdraw tokens
-    activistPool.addLevel(activistAddress, 1);
+    activistPool.addLevel(activistAddress, 1, eventId);
 
     // Emit an event for off-chain monitoring.
     emit ActivistLevelIncreased(activistAddress, activist.pool.level, block.number);

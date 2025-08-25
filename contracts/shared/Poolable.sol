@@ -28,6 +28,9 @@ contract Poolable {
   /// @dev Tracks the tokens claimed by each user per era. Mapping: eraId => userAddress => eraTokens.
   mapping(uint256 => mapping(address => uint256)) public eraTokens;
 
+  /// @notice Tracks withdrawals to ensure a user can only claim rewards once per era.
+  mapping(uint256 => mapping(address => bool)) public hasWithdrawn;
+
   // --- Constructor ---
 
   /**
@@ -136,20 +139,25 @@ contract Poolable {
   /**
    * @dev Removes pool levels users.
    * @param _user The address of the user.
-   * @param _levelsToRemove The amount of levels to remove.
    * @param _era The number of the era.
+   * @param _amountToRemove The amount of levels to remove.
    */
-  function _removePoolLevel(address _user, uint256 _era, uint256 _levelsToRemove) internal {
-    uint256 currentLevels = eraLevels[_era][_user];
+  function _removePoolLevel(address _user, uint256 _era, uint256 _amountToRemove) internal {
+    uint256 userCurrentEraLevels = eraLevels[_era][_user];
 
-    if (currentLevels == 0) return;
+    if (userCurrentEraLevels == 0) return;
 
-    uint256 levels = _levelsToRemove > 0 ? _levelsToRemove : eraLevels[_era][_user];
+    if (_amountToRemove > userCurrentEraLevels) _amountToRemove = userCurrentEraLevels;
 
-    eras[_era].levels -= levels;
-    eraLevels[_era][_user] -= levels;
+    eras[_era].levels -= _amountToRemove;
+    eraLevels[_era][_user] -= _amountToRemove;
 
-    emit PoolLevelRemoved(_user, _era, levels, eras[_era].levels, eraLevels[_era][_user]);
+    emit PoolLevelRemoved(_user, _era, _amountToRemove, eras[_era].levels, eraLevels[_era][_user]);
+  }
+
+  modifier hasWithdrawnEraModifier(uint256 era, address delegate) {
+    require(!hasWithdrawn[era][delegate], "Already withdrawn for this era");
+    _;
   }
 
   // --- Events ---

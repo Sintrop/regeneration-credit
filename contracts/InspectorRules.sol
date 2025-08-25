@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IInspectorPool } from "./interfaces/IInspectorPool.sol";
 import { Inspector, Penalty, Pool } from "./types/InspectorTypes.sol";
@@ -37,6 +37,9 @@ contract InspectorRules is Callable, ReentrancyGuard {
   /// @notice Max character length for hash or url.
   uint16 private constant MAX_HASH_LENGTH = 150;
 
+  /// @notice Maximum possible level from a single resource.
+  uint8 private constant RESOURCE_LEVEL = 1;
+
   // --- State variables ---
 
   /// @notice The maximum number of penalties an inspector can accumulate before facing invalidation.
@@ -63,9 +66,6 @@ contract InspectorRules is Callable, ReentrancyGuard {
   /// @notice The address of the `InspectionRules` contract.
   address private inspectionRulesAddress;
 
-  /// @notice The address of the `InspectionRules` contract.
-  address private validationRulesAddress;
-
   /// @notice The specific `UserType` enumeration value for an Inspector user.
   /// This is a constant for gas efficiency and clarity.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.INSPECTOR;
@@ -90,11 +90,9 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @dev onlyOwner function to set contract call addresses.
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _inspectionRulesAddress Address of InspectionRules.
-   * @param _validationRulesAddress Address of ValidationRules.
    */
-  function setContractCall(address _inspectionRulesAddress, address _validationRulesAddress) public onlyOwner {
+  function setContractCall(address _inspectionRulesAddress) public onlyOwner {
     inspectionRulesAddress = _inspectionRulesAddress;
-    validationRulesAddress = _validationRulesAddress;
   }
 
   // --- Public functions (State modifying) ---
@@ -201,11 +199,12 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @return uint256 The updated total number of inspections completed by the inspector.
    */
   function afterRealizeInspection(
-    address addr
+    address addr,
+    uint64 inspectionId
   ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant returns (uint256) {
     _decreaseGiveUps(addr);
 
-    return _incrementInspections(addr);
+    return _incrementInspections(addr, inspectionId);
   }
 
   /**
@@ -220,7 +219,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   function addPenalty(
     address addr,
     uint64 inspectionId
-  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
+  ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant returns (uint256) {
     penalties[addr].push(Penalty(inspectionId));
 
     return totalPenalties(addr);
@@ -231,20 +230,12 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * This function updates the inspector's local level and notifies the `InspectorPool` contract.
    * @notice Should only be called by the ValidatorRules address.
    * @param addr The wallet address of the inspector from whom levels are to be removed.
-   * @param levelsToRemove The number of levels to decrease. If `levelsToRemove` is 0,
-   * this function sets the inspector's pool level to 0. Otherwise, it subtracts the specified amount.   */
-  function removePoolLevels(
-    address addr,
-    uint256 levelsToRemove
-  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
-    Inspector storage inspector = inspectors[addr];
+   * @param denied Remove level user status. If true, user is being denied.
+   */
+  function removePoolLevels(address addr, bool denied) external mustBeAllowedCaller nonReentrant {
+    if (!denied) inspectors[addr].pool.level -= RESOURCE_LEVEL;
 
-    inspector.pool.level -= levelsToRemove > 0 ? levelsToRemove : inspector.pool.level;
-
-    inspectorPool.removePoolLevels(addr, levelsToRemove);
-
-    // Emit an event.
-    emit InspectorLevelRemoved(addr, levelsToRemove, inspector.pool.level, block.number);
+    inspectorPool.removePoolLevels(addr, denied);
   }
 
   /**
@@ -256,12 +247,31 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * Requirements:
    * - The inspector's `totalInspections` count must be greater than 0.
    */
-  function decrementInspections(address addr) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+  function decrementInspections(address addr) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
     Inspector storage inspector = inspectors[addr];
 
     require(inspector.totalInspections > 0, "totalInspections invalid");
 
     inspector.totalInspections--;
+  }
+
+  /**
+   * @dev Sets a user's to DENIED in CommunityRules and removes their levels from pools.
+   * @param userAddress The address of the user to deny.
+   */
+  function denyInspector(address userAddress) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
+    if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
+
+    communityRules.setDeniedType(userAddress);
+
+    // Inviter slashing mechanism.
+    CommunityTypes.Invitation memory invitation = communityRules.getInvitation(userAddress);
+    // If invited, add invitation penalty.
+    if (invitation.inviter != address(0)) {
+      communityRules.addInviterPenalty(invitation.inviter);
+    }
+
+    inspectorPool.removePoolLevels(userAddress, true);
   }
 
   // --- Private functions (State modifying) ---
@@ -272,7 +282,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @param addr The inspector's wallet address.
    * @return uint256 The updated total number of inspections for the inspector.
    */
-  function _incrementInspections(address addr) private returns (uint256) {
+  function _incrementInspections(address addr, uint64 inspectionId) private returns (uint256) {
     Inspector storage inspector = inspectors[addr];
 
     require(inspector.id != 0, "Inspector does not exist");
@@ -281,7 +291,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
     inspector.lastRealizedAt = block.number;
     inspector.pool.level++;
 
-    _addLevel(inspector);
+    _addLevel(inspector, inspectionId);
 
     return inspector.totalInspections;
   }
@@ -292,10 +302,10 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * but only if the inspector has reached the `MINIMUM_INSPECTIONS_TO_POOL` threshold.
    * @param inspector The inspector's wallet address.
    */
-  function _addLevel(Inspector storage inspector) private {
+  function _addLevel(Inspector storage inspector, uint64 inspectionId) private {
     if (!_minimumInspections(inspector.totalInspections)) return;
 
-    inspectorPool.addLevel(inspector.inspectorWallet, 1);
+    inspectorPool.addLevel(inspector.inspectorWallet, 1, inspectionId);
 
     emit InspectorLevelIncreased(inspector.inspectorWallet, inspector.pool.level, block.number);
   }

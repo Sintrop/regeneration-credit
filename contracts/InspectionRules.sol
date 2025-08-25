@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { IRegeneratorRules } from "./interfaces/IRegeneratorRules.sol";
 import { IInspectorRules } from "./interfaces/IInspectorRules.sol";
 import { IRegenerationIndexRules } from "./interfaces/IRegenerationIndexRules.sol";
@@ -37,8 +37,8 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   /// @notice Max character length for text.
   uint16 private constant MAX_TEXT_LENGTH = 300;
 
-  /// @notice The maximum result value for the number of trees in an inspection.
-  uint32 public constant MAX_TREES_RESULT = 200000;
+  /// @notice Maximum plausible density of trees per square meter.
+  uint8 private constant MAX_TREES_PER_SQM = 4;
 
   /// @notice The maximum result value for the biodiversity score in an inspection.
   uint32 public constant MAX_BIODIVERSITY_RESULT = 300;
@@ -75,6 +75,9 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   /// @notice Sum of all valid inspections' biodiversity impact.
   uint256 public inspectionsBiodiversityImpact;
 
+  /// @notice Tracks inspection IDs that have already been invalidated.
+  mapping(uint64 => bool) public inspectionPenalized;
+
   /// @notice Stores inspection data by its unique ID.
   mapping(uint64 => Inspection) private inspections;
 
@@ -105,6 +108,9 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   /// @notice RegenerationIndexRules contract interface for calculating regeneration scores.
   IRegenerationIndexRules private regenerationIndexRules;
 
+  /// @notice Tracks which validator has voted on which inspection to prevent duplicate votes.
+  mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
+
   // --- Constructor ---
 
   /**
@@ -122,7 +128,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     uint8 allowedInitialRequests_,
     uint32 acceptInspectionDelayBlocks_,
     uint32 securityBlocksToValidation_
-  ) {
+  ) Ownable(msg.sender) {
     timeBetweenInspections = timeBetweenInspections_;
     blocksToExpireAcceptedInspection = blocksToExpireAcceptedInspection_;
     allowedInitialRequests = allowedInitialRequests_;
@@ -256,7 +262,13 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     require(inspection.status == InspectionStatus.ACCEPTED, "Accept before");
     require(inspection.inspector == msg.sender, "Not your inspection");
     require(!(block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection), "Inspection Expired");
-    require(treesResult <= MAX_TREES_RESULT && biodiversityResult <= MAX_BIODIVERSITY_RESULT, "Max result limit");
+
+    Regenerator memory regenerator = regeneratorRules.getRegenerator(inspection.regenerator);
+    uint256 maxTreesForThisArea = uint256(regenerator.totalArea) * MAX_TREES_PER_SQM;
+
+    require(treesResult <= maxTreesForThisArea, "Tree count exceeds density limit for this area");
+
+    require(biodiversityResult <= MAX_BIODIVERSITY_RESULT, "Max result limit");
 
     _markAsRealized(inspection, proofPhotos, justificationReport, treesResult, biodiversityResult);
 
@@ -294,9 +306,18 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * @param justification A string explaining why the inspection is being invalidated.
    */
   function addInspectionValidation(uint64 id, string memory justification) external nonReentrant {
+    // Character limit validation for justification.
     require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters reached");
+    // Check if the caller is eligible to vote.
     require(voteRules.canVote(msg.sender), "Not a voter");
+    // Check if the caller has waited the required time between votes.
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
+    // Check if the caller has already voted for this resource.
+    require(!validatorInspectionsValidations[msg.sender][id], "Already voted");
+    // Check if the resource has already been penalized.
+    require(!inspectionPenalized[id], "Penalties already applied");
+
+    validatorInspectionsValidations[msg.sender][id] = true;
 
     Inspection storage inspection = inspections[id];
 
@@ -306,11 +327,21 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
     inspection.validationsCount += 1;
 
-    bool mustInvalidateInspection = inspection.validationsCount >= validationRules.votesToInvalidate();
+    uint256 _votesToInvalidate = validationRules.votesToInvalidate();
+    require(_votesToInvalidate >= 2, "Validation threshold cannot be less than 2");
 
-    if (mustInvalidateInspection) _invalidateInspection(inspection);
+    if (inspection.validationsCount >= _votesToInvalidate) {
+      inspectionPenalized[id] = true;
 
-    validationRules.addInspectionValidation(inspection, justification, msg.sender);
+      _invalidateInspection(inspection);
+
+      uint256 inspectorTotalPenalties = inspectorRules.addPenalty(inspection.inspector, inspection.id);
+
+      if (inspectorTotalPenalties >= inspectorRules.maxPenalties()) inspectorRules.denyInspector(inspection.inspector);
+    }
+
+    validationRules.updateValidatorLastVoteBlock(msg.sender);
+    emit InspectionValidation(msg.sender, inspection.id, justification);
   }
 
   // --- Private functions ---
@@ -382,10 +413,13 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
     activistRules.addRegeneratorLevel(
       regeneratorAddress,
-      regeneratorRules.afterRealizeInspection(regeneratorAddress, inspection.regenerationScore)
+      regeneratorRules.afterRealizeInspection(regeneratorAddress, inspection.regenerationScore, inspection.id)
     );
 
-    activistRules.addInspectorLevel(inspectorAddress, inspectorRules.afterRealizeInspection(inspectorAddress));
+    activistRules.addInspectorLevel(
+      inspectorAddress,
+      inspectorRules.afterRealizeInspection(inspectorAddress, inspection.id)
+    );
 
     regeneratorInspections[regeneratorAddress].push(inspection.id);
   }
@@ -408,6 +442,12 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     // Update inspection status
     inspection.status = InspectionStatus.INVALIDATED;
     inspection.invalidatedAt = block.number;
+
+    regeneratorRules.decrementInspections(inspection.regenerator);
+    regeneratorRules.removeInspectionLevels(inspection.regenerator, inspection.regenerationScore);
+
+    inspectorRules.decrementInspections(inspection.inspector);
+    inspectorRules.removePoolLevels(inspection.inspector, false);
 
     emit InspectionInvalidated(inspection.id, inspection.inspector, inspection.regenerator, block.number);
   }
@@ -520,6 +560,14 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     uint32 regenerationScore,
     uint256 inspectedAt
   );
+
+  /**
+   * @notice Emitted
+   * @param _validatorAddress The address of the validator.
+   * @param _resourceId The id of the resource receiving the vote.
+   * @param _justification The justification provided for the vote.
+   */
+  event InspectionValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
 
   /**
    * @notice Emitted when an inspection is successfully invalidated due to validator votes.

@@ -24,16 +24,16 @@ interface IContributorPool {
   /**
    * @notice Removes specified levels from a user's pool configuration.
    * @param user The address of the contributor.
-   * @param levelsToRemove Levels to be removed.
+   * @param denied Remove level user status. If true, user is being denied.
    */
-  function removePoolLevels(address user, uint256 levelsToRemove) external;
+  function removePoolLevels(address user, bool denied) external;
 
   /**
    * @notice Adds a new level to a user's pool configuration.
    * @param user The address of the contributor.
    * @param levels The levels to be added.
    */
-  function addLevel(address user, uint256 levels) external;
+  function addLevel(address user, uint256 levels, uint64 eventId) external;
 
   /**
    * @notice Returns the current era of the contract.

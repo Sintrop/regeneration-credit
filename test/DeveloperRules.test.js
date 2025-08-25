@@ -27,7 +27,7 @@ describe("DeveloperRules", (accounts) => {
   let developerPoolParams = {
     totalTokens: "40000000000000000000000000",
     halving: 12,
-    blocksPerEra: 155,
+    blocksPerEra: 160,
   };
 
   const addDeveloper = async (name, from) => {
@@ -84,8 +84,6 @@ describe("DeveloperRules", (accounts) => {
     activistRules = validatorRulesDeployed.activistRules;
     activistPool = validatorRulesDeployed.activistPool;
     researcherPool = validatorRulesDeployed.researcherPool;
-
-    await validationRules.setContractCall(owner, owner, instance.target, owner);
 
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(owner);
@@ -350,6 +348,29 @@ describe("DeveloperRules", (accounts) => {
   });
 
   describe("addReportValidation", () => {
+    context("when trying to vote on an already invalidated report", () => {
+      beforeEach(async () => {
+        await addDeveloper("Developer A", dev1Address);
+        await instance.connect(dev1Address).addReport("description", "report");
+
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
+        await addInvitation(owner, user3Address, userTypes.Developer, owner);
+        await addDeveloper("User A", user1Address);
+        await addDeveloper("User B", user2Address);
+        await addDeveloper("User C", user3Address);
+
+        await instance.connect(user1Address).addReportValidation(1, "justification");
+        await instance.connect(user2Address).addReportValidation(1, "justification");
+      });
+
+      it("should revert because the report is no longer valid", async () => {
+        await expect(instance.connect(user3Address).addReportValidation(1, "justification")).to.be.revertedWith(
+          "Penalties already applied"
+        );
+      });
+    });
+
     context("with developer", () => {
       beforeEach(async () => {
         await addInvitation(owner, user1Address, userTypes.Developer, owner);
@@ -391,10 +412,14 @@ describe("DeveloperRules", (accounts) => {
             expect(contribution.invalidatedAt).to.above(0);
           });
 
-          it("set maxPenalties to developer", async () => {
+          it("set one penalty to developer", async () => {
             const totalPenalties = await instance.totalPenalties(dev1Address);
 
             expect(totalPenalties).to.eq(1);
+          });
+
+          it("should set reportPenalized to true to prevent double penalties", async () => {
+            expect(await instance.reportPenalized(1)).to.be.true;
           });
 
           it("user type must be DEVELOPER yet", async () => {
@@ -408,6 +433,12 @@ describe("DeveloperRules", (accounts) => {
             const eraLevels = await developerPool.eraLevels(contribution.era, dev1Address);
 
             expect(eraLevels).to.eq(0);
+          });
+
+          it("remove developer level report from developerRules", async () => {
+            const developer = await instance.getDeveloper(dev1Address);
+
+            expect(developer.pool.level).to.equal(1);
           });
 
           it("must decrement reportsCount in one", async () => {
@@ -504,9 +535,23 @@ describe("DeveloperRules", (accounts) => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await communityRules.getUser(user1Address);
+          const isDenied = await communityRules.isDenied(user1Address);
 
-          expect(userType).to.eq(userTypes.Denied);
+          expect(isDenied).to.eq(true);
+        });
+
+        it("should apply a penalty to the developer's inviter", async () => {
+          // Check if the inviter's penalty count has been incremented
+          const inviterPenalties = await communityRules.inviterPenalties(owner);
+          expect(inviterPenalties).to.eq(1);
+        });
+
+        it("should remove all pool levels for the denied developer", async () => {
+          // The `removePoolLevels(user, true)` function should zero out the levels
+          const report = await instance.reports(1);
+          const eraLevels = await developerPool.eraLevels(report.era, dev1Address);
+
+          expect(eraLevels).to.eq(0);
         });
       });
 
@@ -539,7 +584,7 @@ describe("DeveloperRules", (accounts) => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user3Address).addReportValidation(1, "justification")).to.be.revertedWith(
-              "This report is not VALID"
+              "Penalties already applied"
             );
           });
         });
@@ -647,6 +692,12 @@ describe("DeveloperRules", (accounts) => {
             expect(userType).to.eq(userTypes.Developer);
           });
 
+          it("user type must be DEVELOPER yet", async () => {
+            const isDenied = await communityRules.isDenied(anyAddress);
+
+            expect(isDenied).to.eq(false);
+          });
+
           it("must remove one pool level from current era", async () => {
             const contribution = await instance.reports(1);
             const eraLevels = await developerPool.eraLevels(contribution.era, anyAddress);
@@ -721,9 +772,9 @@ describe("DeveloperRules", (accounts) => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await communityRules.getUser(anyAddress);
+          const isDenied = await communityRules.isDenied(anyAddress);
 
-          expect(userType).to.eq(userTypes.Denied);
+          expect(isDenied).to.eq(true);
         });
       });
 
@@ -756,7 +807,7 @@ describe("DeveloperRules", (accounts) => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user3Address).addReportValidation(1, "justification")).to.be.revertedWith(
-              "This report is not VALID"
+              "Penalties already applied"
             );
           });
         });
@@ -941,9 +992,9 @@ describe("DeveloperRules", (accounts) => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await communityRules.getUser(dev1Address);
+          const isDenied = await communityRules.isDenied(dev1Address);
 
-          expect(userType).to.eq(userTypes.Denied);
+          expect(isDenied).to.eq(true);
         });
       });
 
@@ -976,7 +1027,7 @@ describe("DeveloperRules", (accounts) => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user3Address).addReportValidation(1, "justification")).to.be.revertedWith(
-              "This report is not VALID"
+              "Penalties already applied"
             );
           });
         });
@@ -1156,9 +1207,9 @@ describe("DeveloperRules", (accounts) => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await communityRules.getUser(dev1Address);
+          const isDenied = await communityRules.isDenied(dev1Address);
 
-          expect(userType).to.eq(userTypes.Denied);
+          expect(isDenied).to.eq(isDenied);
         });
       });
 
@@ -1194,7 +1245,7 @@ describe("DeveloperRules", (accounts) => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user3Address).addReportValidation(1, "justification")).to.be.revertedWith(
-              "This report is not VALID"
+              "Penalties already applied"
             );
           });
         });
@@ -1370,19 +1421,42 @@ describe("DeveloperRules", (accounts) => {
       await instance.connect(dev1Address).addReport("description", "report");
 
       await instance.setContractCall(owner);
-      await instance.removePoolLevels(dev1Address, 1);
     });
 
-    it("remove user levels from pool", async () => {
-      const levelsEra1 = await developerPool.eraLevels(1, dev1Address);
+    context("when user is not to denied", () => {
+      beforeEach(async () => {
+        await instance.removePoolLevels(dev1Address, false);
+      });
 
-      expect(levelsEra1).to.equal(1);
+      it("remove user levels from pool", async () => {
+        const levelsEra1 = await developerPool.eraLevels(2, dev1Address);
+
+        expect(levelsEra1).to.equal(0);
+      });
+
+      it("remove user levels from developer", async () => {
+        const developer = await instance.getDeveloper(dev1Address);
+
+        expect(developer.pool.level).to.equal(1);
+      });
     });
 
-    it("remove user levels from researcher", async () => {
-      const developer = await instance.getDeveloper(dev1Address);
+    context("when user is to denied", () => {
+      beforeEach(async () => {
+        await instance.removePoolLevels(dev1Address, true);
+      });
 
-      expect(developer.pool.level).to.equal(1);
+      it("remove user levels from pool", async () => {
+        const levelsEra1 = await developerPool.eraLevels(2, dev1Address);
+
+        expect(levelsEra1).to.equal(0);
+      });
+
+      it("remove user levels from developer", async () => {
+        const developer = await instance.getDeveloper(dev1Address);
+
+        expect(developer.pool.level).to.equal(2);
+      });
     });
   });
 });

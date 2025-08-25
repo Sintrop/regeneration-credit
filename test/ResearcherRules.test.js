@@ -72,8 +72,6 @@ describe("ResearcherRules", () => {
     contributorRules = validatorRulesDeployed.contributorRules;
     activistRules = validatorRulesDeployed.activistRules;
 
-    await validationRules.setContractCall(owner, owner, owner, instance.target);
-
     await communityRules.newAllowedCaller(validationRules.target);
     await communityRules.newAllowedCaller(developerRules.target);
     await communityRules.newAllowedCaller(contributorRules.target);
@@ -391,6 +389,30 @@ describe("ResearcherRules", () => {
   });
 
   describe("addResearchValidation", () => {
+    context("when trying to vote on an already invalidated research", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
+        await addInvitation(owner, user3Address, userTypes.Developer, owner);
+
+        await addResearcher("Researcher A", resea1Address);
+        await addResearch(resea1Address);
+
+        await addDeveloper("User A", user1Address);
+        await addDeveloper("User B", user2Address);
+        await addDeveloper("User C", user3Address);
+
+        await instance.connect(user1Address).addResearchValidation(1, "justification");
+        await instance.connect(user2Address).addResearchValidation(1, "justification");
+      });
+
+      it("should revert because the research is no longer valid", async () => {
+        await expect(instance.connect(user3Address).addResearchValidation(1, "justification")).to.be.revertedWith(
+          "Penalties already applied"
+        );
+      });
+    });
+
     context("with researcher", () => {
       beforeEach(async () => {
         await addInvitation(owner, user1Address, userTypes.Researcher, owner);
@@ -516,9 +538,9 @@ describe("ResearcherRules", () => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await communityRules.getUser(resea1Address);
+          const isDenied = await communityRules.isDenied(resea1Address);
 
-          expect(userType).to.eq(userTypes.Denied);
+          expect(isDenied).to.eq(true);
         });
       });
 
@@ -550,7 +572,7 @@ describe("ResearcherRules", () => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user3Address).addResearchValidation(1, "justification")).to.be.revertedWith(
-              "Research not VALID"
+              "Penalties already applied"
             );
           });
         });
@@ -662,6 +684,10 @@ describe("ResearcherRules", () => {
 
             expect(researchesCount).to.eq(0);
           });
+
+          it("should set researchPenalized to true to prevent double penalties", async () => {
+            expect(await instance.researchPenalized(1)).to.be.true;
+          });
         });
 
         context("when research must not be invalidated", () => {
@@ -700,6 +726,10 @@ describe("ResearcherRules", () => {
 
             expect(eraLevels).to.eq(1);
           });
+
+          it("should keep researchPenalized to false", async () => {
+            expect(await instance.researchPenalized(1)).to.be.false;
+          });
         });
       });
 
@@ -726,14 +756,28 @@ describe("ResearcherRules", () => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await communityRules.getUser(resea1Address);
+          const isDenied = await communityRules.isDenied(resea1Address);
 
-          expect(userType).to.eq(userTypes.Denied);
+          expect(isDenied).to.eq(true);
+        });
+
+        it("should apply a penalty to the researcher's inviter", async () => {
+          // Check if the inviter's penalty count has been incremented
+          const inviterPenalties = await communityRules.inviterPenalties(owner);
+          expect(inviterPenalties).to.eq(1);
+        });
+
+        it("should remove all pool levels for the denied researcher", async () => {
+          // The `removePoolLevels(user, true)` function should zero out the researcher's levels
+          const research = await instance.researches(3);
+
+          const poolLevels = await researcherPool.eraLevels(research.era, resea1Address);
+          expect(poolLevels).to.equal(0);
         });
       });
 
       context("with invalid research", () => {
-        context("when current era is different from contribution created era", () => {
+        context("when current era is different from research created era", () => {
           beforeEach(async () => {
             await addResearch(resea1Address);
 
@@ -747,7 +791,7 @@ describe("ResearcherRules", () => {
           });
         });
 
-        context("when contribution is invalidated", () => {
+        context("when research is invalidated", () => {
           beforeEach(async () => {
             await addDeveloper("User B", user2Address);
             await addDeveloper("User C", user3Address);
@@ -760,12 +804,12 @@ describe("ResearcherRules", () => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user3Address).addResearchValidation(1, "justification")).to.be.revertedWith(
-              "Research not VALID"
+              "Penalties already applied"
             );
           });
         });
 
-        context("when contribution do not exists", () => {
+        context("when research do not exists", () => {
           it("should return error message", async () => {
             await expect(instance.connect(user1Address).addResearchValidation(0, "justification")).to.be.revertedWith(
               "Research not VALID"
@@ -900,9 +944,9 @@ describe("ResearcherRules", () => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await communityRules.getUser(resea1Address);
+          const isDenied = await communityRules.isDenied(resea1Address);
 
-          expect(userType).to.eq(userTypes.Denied);
+          expect(isDenied).to.eq(true);
         });
       });
 
@@ -934,7 +978,7 @@ describe("ResearcherRules", () => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user3Address).addResearchValidation(1, "justification")).to.be.revertedWith(
-              "Research not VALID"
+              "Penalties already applied"
             );
           });
         });
@@ -1074,9 +1118,9 @@ describe("ResearcherRules", () => {
         });
 
         it("user type must be DENIED", async () => {
-          const userType = await communityRules.getUser(resea1Address);
+          const isDenied = await communityRules.isDenied(resea1Address);
 
-          expect(userType).to.eq(userTypes.Denied);
+          expect(isDenied).to.eq(isDenied);
         });
       });
 
@@ -1108,7 +1152,7 @@ describe("ResearcherRules", () => {
 
           it("should return error message", async () => {
             await expect(instance.connect(user3Address).addResearchValidation(1, "justification")).to.be.revertedWith(
-              "Research not VALID"
+              "Penalties already applied"
             );
           });
         });
@@ -1149,20 +1193,42 @@ describe("ResearcherRules", () => {
 
       await addResearch(resea1Address);
       await instance.setContractCall(owner);
-
-      await instance.removePoolLevels(resea1Address, 1);
     });
 
-    it("remove user levels from pool", async () => {
-      const levelsEra1 = await researcherPool.eraLevels(1, resea1Address);
+    context("when user is not to denied", () => {
+      beforeEach(async () => {
+        await instance.removePoolLevels(resea1Address, false);
+      });
 
-      expect(levelsEra1).to.equal(1);
+      it("remove user levels from pool", async () => {
+        const levelsEra1 = await researcherPool.eraLevels(1, resea1Address);
+
+        expect(levelsEra1).to.equal(1);
+      });
+
+      it("remove user levels from researcher", async () => {
+        const reseacher = await instance.getResearcher(resea1Address);
+
+        expect(reseacher.pool.level).to.equal(1);
+      });
     });
 
-    it("remove user levels from researcher", async () => {
-      const reseacher = await instance.getResearcher(resea1Address);
+    context("when user is to denied", () => {
+      beforeEach(async () => {
+        await instance.removePoolLevels(resea1Address, true);
+      });
 
-      expect(reseacher.pool.level).to.equal(1);
+      it("remove user levels from pool", async () => {
+        const levelsEra1 = await researcherPool.eraLevels(1, resea1Address);
+
+        expect(levelsEra1).to.equal(0);
+      });
+
+      it("remove user levels from researcher", async () => {
+        const reseacher = await instance.getResearcher(resea1Address);
+
+        expect(reseacher.pool.level).to.equal(2);
+      });
     });
   });
 

@@ -9,15 +9,11 @@ import { IResearcherRules } from "./interfaces/IResearcherRules.sol";
 import { IContributorRules } from "./interfaces/IContributorRules.sol";
 import { IActivistRules } from "./interfaces/IActivistRules.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
-import { Inspection } from "./types/InspectionTypes.sol";
 import { Regenerator } from "./types/RegeneratorTypes.sol";
-import { Report } from "./types/DeveloperTypes.sol";
-import { Research } from "./types/ResearcherTypes.sol";
-import { Contribution } from "./types/ContributorTypes.sol";
 import { ContractsDependency } from "./types/ValidationTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title ValidationRules
@@ -29,51 +25,25 @@ contract ValidationRules is Callable, ReentrancyGuard {
   // --- Constants ---
 
   /// @notice Number of inspections required for a Regenerator to achieve validation immunity.
-  uint8 private constant REGENERATOR_VALIDATION_IMMUNITY_THRESHOLD = 5;
+  uint8 private constant REGENERATOR_VALIDATION_IMMUNITY_THRESHOLD = 6;
 
   /// @notice Max character length for the justification provided in a validation vote.
   uint16 private constant MAX_JUSTIFICATION_LENGTH = 300;
 
-  /// @notice The number of levels to remove from a user when their resource is invalidated.
-  uint256 private constant RESOURCE_INVALIDATION_LEVEL_PENALTY = 1;
-
   /// @notice Voter thresholds to invalidate a resource/user.
-  uint32 private constant VOTERS_THRESHOLD_LEVEL_1 = 50;
-  uint32 private constant VOTERS_THRESHOLD_LEVEL_2 = 500;
-  uint32 private constant VOTERS_THRESHOLD_LEVEL_3 = 1000;
-  uint32 private constant VOTERS_THRESHOLD_LEVEL_4 = 2000;
-  uint32 private constant VOTERS_THRESHOLD_LEVEL_5 = 4000;
-  uint32 private constant VOTERS_THRESHOLD_LEVEL_6 = 8000;
-  uint32 private constant VOTERS_THRESHOLD_LEVEL_7 = 16000;
-  uint32 private constant VOTERS_THRESHOLD_LEVEL_MAX = 32000;
+  uint32 private constant VOTERS_THRESHOLD_LEVEL_1 = 25;
+  uint32 private constant VOTERS_THRESHOLD_LEVEL_2 = 250;
 
   /// @notice Votes thresholds to invalidate a resource/user.
   uint32 private constant VOTES_TO_INVALIDATE_LEVEL_1 = 2;
   uint32 private constant VOTES_TO_INVALIDATE_LEVEL_2 = 5;
-  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_3 = 10;
-  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_4 = 20;
-  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_5 = 40;
-  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_6 = 80;
-  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_7 = 160;
-  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_8 = 320;
-  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_MAX = 500;
+
+  uint256 private constant DYNAMIC_INVALIDATION_PERCENTAGE = 2;
 
   // --- State variables ---
 
   /// @notice The relationship between address and validations received by era.
   mapping(address => mapping(uint256 => uint256)) public userValidations;
-
-  /// @notice Relationship between validator and report validation. Only one validation per resource allowed.
-  mapping(address => mapping(uint256 => bool)) private validatorReportsValidations;
-
-  /// @notice Relationship between validator and contribution validation. Only one validation per resource allowed.
-  mapping(address => mapping(uint256 => bool)) private validatorContributionsValidations;
-
-  /// @notice Relationship between validator and inspection validation. Only one validation per resource allowed.
-  mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
-
-  /// @notice Relationship between validator and research validation. Only one validation per resource allowed.
-  mapping(address => mapping(uint256 => bool)) private validatorResearchesValidations;
 
   /// @notice Relationship between validator and user validation. Only one validation per user per era allowed.
   mapping(address => mapping(address => mapping(uint256 => bool))) private validatorUsersValidations;
@@ -104,18 +74,6 @@ contract ValidationRules is Callable, ReentrancyGuard {
 
   /// @notice VoteRules contract interface.
   IVoteRules private voteRules;
-
-  /// @notice The address of the `InspectionRules` contract.
-  address private inspectionRulesAddress;
-
-  /// @notice The address of the `ContributorRules` contract.
-  address private contributorRulesAddress;
-
-  /// @notice The address of the `DeveloperRules` contract.
-  address private developerRulesAddress;
-
-  /// @notice The address of the `ResearcherRules` contract.
-  address private researcherRulesAddress;
 
   /// @notice Amount of blocks between votes.
   uint256 public immutable timeBetweenVotes;
@@ -149,26 +107,6 @@ contract ValidationRules is Callable, ReentrancyGuard {
     voteRules = IVoteRules(contractDependency.voteRulesAddress);
   }
 
-  /**
-   * @dev onlyOwner function to set contract call addresses.
-   * This function must be called only once after the contract deploy and ownership must be renounced.
-   * @param _inspectionRulesAddress Address of InspectionRules.
-   * @param _contributorRulesAddress Address of ContributorRules.
-   * @param _developerRulesAddress Address of DeveloperRules.
-   * @param _researcherRulesAddress Address of ResearcherRules.
-   */
-  function setContractCall(
-    address _inspectionRulesAddress,
-    address _contributorRulesAddress,
-    address _developerRulesAddress,
-    address _researcherRulesAddress
-  ) external onlyOwner {
-    inspectionRulesAddress = _inspectionRulesAddress;
-    contributorRulesAddress = _contributorRulesAddress;
-    developerRulesAddress = _developerRulesAddress;
-    researcherRulesAddress = _researcherRulesAddress;
-  }
-
   // --- External Functions (State Modifying) ---
 
   /**
@@ -190,7 +128,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     require(bytes(justification).length <= MAX_JUSTIFICATION_LENGTH, "Max characters");
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(!communityRules.userTypeIs(CommunityTypes.UserType.UNDEFINED, userAddress), "User not registered");
-    require(!communityRules.userTypeIs(CommunityTypes.UserType.DENIED, userAddress), "User already denied");
+    require(!communityRules.isDenied(userAddress), "User already denied");
     require(_checkRegeneratorImmunity(userAddress), "Regenerator has reached validation immunity");
 
     uint256 currentEra = _userCurrentEra(userAddress);
@@ -211,149 +149,12 @@ contract ValidationRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @notice Allows allowed callers (e.g., InspectorRules) to record a validation vote against an inspection.
-   * @dev This function is intended to be called by the `InspectionRules` contract.
-   * It records a validation vote for an inspection and applies penalties if enough votes accumulate.
-   *
-   * Requirements:
-   * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
-   * - The validator address must not have already voted for this specific inspection.
-   *
-   * @param inspection Inspection data.
-   * @param justification Invalidation justification.
-   * @param validatorAddress Address of the voter.
+   * @notice Called only by authorized callers.
+   * @dev Update last validator vote block.number.
+   * @param validatorAddress The validator wallet address.
    */
-  function addInspectionValidation(
-    Inspection memory inspection,
-    string memory justification,
-    address validatorAddress
-  ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant {
-    require(!validatorInspectionsValidations[validatorAddress][inspection.id], "Already voted");
-
-    validatorInspectionsValidations[validatorAddress][inspection.id] = true;
+  function updateValidatorLastVoteBlock(address validatorAddress) external mustBeAllowedCaller {
     validatorLastVoteAt[validatorAddress] = block.number;
-
-    uint256 _votesToInvalidate = votesToInvalidate();
-
-    bool addPenalty = inspection.validationsCount >= _votesToInvalidate;
-
-    emit InspectionValidation(validatorAddress, inspection.id, justification);
-
-    if (!addPenalty) return;
-
-    uint256 inspectorTotalPenalties = inspectorRules.addPenalty(inspection.inspector, inspection.id);
-    _removeUserInspection(inspection);
-
-    emit ResourceInvalidated("Inspection", inspection.id, inspection.inspector, inspectorTotalPenalties); // Emit event
-
-    if (inspectorTotalPenalties >= inspectorRules.maxPenalties()) _denyUser(inspection.inspector);
-  }
-
-  /**
-   * @notice Allows allowed callers (e.g., DeveloperRules) to record a validation vote against a report.
-   * @dev This function is intended to be called by the `DeveloperRules` contract.
-   * It records a validation vote for a report and applies penalties if enough votes accumulate.
-   *
-   * Requirements:
-   * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
-   * - The validator address must not have already voted for this specific report.
-   *
-   * @param report Report data.
-   * @param justification Invalidation justification.
-   * @param validatorAddress Address of the voter.
-   */
-  function addReportValidation(
-    Report memory report,
-    string memory justification,
-    address validatorAddress
-  ) external mustBeAllowedCaller mustBeContractCall(developerRulesAddress) nonReentrant {
-    require(!validatorReportsValidations[validatorAddress][report.id], "Already voted");
-
-    validatorReportsValidations[validatorAddress][report.id] = true;
-    validatorLastVoteAt[validatorAddress] = block.number;
-
-    emit ReportValidation(validatorAddress, report.id, justification);
-
-    if (report.valid) return;
-
-    uint256 developerTotalPenalties = developerRules.addPenalty(report.developer, report.id);
-
-    _removeReport(report);
-
-    emit ResourceInvalidated("Report", report.id, report.developer, developerTotalPenalties); // Emit event
-
-    if (developerTotalPenalties >= developerRules.maxPenalties()) _denyUser(report.developer);
-  }
-
-  /**
-   * @notice Allows allowed callers (e.g., ContributorRules) to record a validation vote against a contribution.
-   * @dev This function is intended to be called by the `ContributorRules` contract.
-   * It records a validation vote for a contribution and applies penalties if enough votes accumulate.
-   *
-   * Requirements:
-   * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
-   * - The validator address must not have already voted for this specific contribution.
-   *
-   * @param contribution Contribution data.
-   * @param justification Invalidation justification.
-   * @param validatorAddress Address of the voter.
-   */
-  function addContributionValidation(
-    Contribution memory contribution,
-    string memory justification,
-    address validatorAddress
-  ) external mustBeAllowedCaller mustBeContractCall(contributorRulesAddress) nonReentrant {
-    require(!validatorContributionsValidations[validatorAddress][contribution.id], "Already voted");
-
-    validatorContributionsValidations[validatorAddress][contribution.id] = true;
-    validatorLastVoteAt[validatorAddress] = block.number;
-
-    emit ContributionValidation(validatorAddress, contribution.id, justification);
-
-    if (contribution.valid) return;
-
-    uint256 contributorTotalPenalties = contributorRules.addPenalty(contribution.user, contribution.id);
-
-    _removeContribution(contribution);
-
-    emit ResourceInvalidated("Contribution", contribution.id, contribution.user, contributorTotalPenalties); // Emit event
-
-    if (contributorTotalPenalties >= contributorRules.maxPenalties()) _denyUser(contribution.user);
-  }
-
-  /**
-   * @notice Allows allowed callers (e.g., ResearcherRules) to record a validation vote against a research.
-   * @dev This function is intended to be called by the `ResearcherRules` contract.
-   * It records a validation vote for a research and applies penalties if enough votes accumulate.
-   *
-   * Requirements:
-   * - Caller must be an allowed contract (via `mustBeAllowedCaller`).
-   * - The validator address must not have already voted for this specific research.
-   *
-   * @param research Research data.
-   * @param justification Invalidation justification.
-   * @param validatorAddress Address of the voter.
-   */
-  function addResearchValidation(
-    Research memory research,
-    string memory justification,
-    address validatorAddress
-  ) external mustBeAllowedCaller mustBeContractCall(researcherRulesAddress) nonReentrant {
-    require(!validatorResearchesValidations[validatorAddress][research.id], "Already voted");
-
-    validatorResearchesValidations[validatorAddress][research.id] = true;
-    validatorLastVoteAt[validatorAddress] = block.number;
-
-    emit ResearchValidation(validatorAddress, research.id, justification);
-
-    if (research.valid) return;
-
-    uint256 totalPenalties = researcherRules.addPenalty(research.createdBy, research.id);
-    _removeResearch(research);
-
-    emit ResourceInvalidated("Research", research.id, research.createdBy, totalPenalties); // Emit event
-
-    if (totalPenalties >= researcherRules.maxPenalties()) _denyUser(research.createdBy);
   }
 
   // --- Private Functions ---
@@ -375,47 +176,15 @@ contract ValidationRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Calls the fuction that removes the resource level from pool.
-   * @param report Invalidated report.
-   */
-  function _removeReport(Report memory report) private {
-    _removeUserLevels(report.developer, RESOURCE_INVALIDATION_LEVEL_PENALTY);
-  }
-
-  /**
-   * @dev Calls the fuction that removes the resource level from pool.
-   * @param contribution Invalidated contribution.
-   */
-  function _removeContribution(Contribution memory contribution) private {
-    _removeUserLevels(contribution.user, RESOURCE_INVALIDATION_LEVEL_PENALTY);
-  }
-
-  /**
-   * @dev Calls the fuction that removes the resource level from pool.
-   * @param research Invalidated research.
-   */
-  function _removeResearch(Research memory research) private {
-    _removeUserLevels(research.createdBy, RESOURCE_INVALIDATION_LEVEL_PENALTY);
-  }
-
-  /**
-   * @dev Calls the fuction that removes the resource level from pool.
-   * @param inspection Invalidated inspection.
-   */
-  function _removeUserInspection(Inspection memory inspection) private {
-    inspectorRules.decrementInspections(inspection.inspector);
-    regeneratorRules.decrementInspections(inspection.regenerator);
-
-    _removeUserLevels(inspection.inspector, RESOURCE_INVALIDATION_LEVEL_PENALTY);
-    _removeUserLevels(inspection.regenerator, inspection.regenerationScore);
-  }
-
-  /**
    * @dev Sets a user's type to DENIED in CommunityRules and removes their levels from pools.
    * @param userAddress The address of the user to deny.
    */
   function _denyUser(address userAddress) private {
-    _removeUserLevels(userAddress, 0); // Remove all levels (0 means all for denied users)
+    CommunityTypes.UserType userType = communityRules.getUser(userAddress);
+
+    if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
+
+    communityRules.setDeniedType(userAddress);
 
     // Inviter slashing mechanism.
     CommunityTypes.Invitation memory invitation = communityRules.getInvitation(userAddress);
@@ -424,27 +193,22 @@ contract ValidationRules is Callable, ReentrancyGuard {
       communityRules.addInviterPenalty(invitation.inviter);
     }
 
-    communityRules.setDeniedType(userAddress);
+    // Check for each user type and call their respective removePoolLevels function.
+    if (userType == CommunityTypes.UserType.REGENERATOR) return regeneratorRules.removePoolLevels(userAddress, true);
+    if (userType == CommunityTypes.UserType.INSPECTOR) return inspectorRules.removePoolLevels(userAddress, true);
+    if (userType == CommunityTypes.UserType.DEVELOPER) return developerRules.removePoolLevels(userAddress, true);
+    if (userType == CommunityTypes.UserType.RESEARCHER) return researcherRules.removePoolLevels(userAddress, true);
+    if (userType == CommunityTypes.UserType.CONTRIBUTOR) return contributorRules.removePoolLevels(userAddress, true);
+    if (userType == CommunityTypes.UserType.ACTIVIST) return activistRules.removePoolLevels(userAddress, true);
   }
 
   /**
-   * @dev Function that removes levels from pool of a denied user.
-   * @param userAddress Invalidated userAddress.
-   * @param levels Levels to remove.
+   * @dev Checks if a regenerator has reached validation imunity.
+   * @dev The process to achieve immunity will take at least four eras, enough time to review
+   * and ensure the user is in compliance. After this time, the user is granted immunity.
+   * @param addr The address of the regenerator.
+   * @return bool True if user has reached validation imunity, false otherwise.
    */
-  function _removeUserLevels(address userAddress, uint256 levels) private {
-    CommunityTypes.UserType userType = communityRules.getUser(userAddress);
-
-    if (userType == CommunityTypes.UserType.DENIED) return; // Already denied, nothing to do
-    // Check for each user type and call their respective removePoolLevels function.
-    if (userType == CommunityTypes.UserType.INSPECTOR) return inspectorRules.removePoolLevels(userAddress, levels);
-    if (userType == CommunityTypes.UserType.REGENERATOR) return regeneratorRules.removePoolLevels(userAddress, levels);
-    if (userType == CommunityTypes.UserType.DEVELOPER) return developerRules.removePoolLevels(userAddress, levels);
-    if (userType == CommunityTypes.UserType.RESEARCHER) return researcherRules.removePoolLevels(userAddress, levels);
-    if (userType == CommunityTypes.UserType.CONTRIBUTOR) return contributorRules.removePoolLevels(userAddress, levels);
-    if (userType == CommunityTypes.UserType.ACTIVIST) return activistRules.removePoolLevels(userAddress, levels);
-  }
-
   function _checkRegeneratorImmunity(address addr) private view returns (bool) {
     if (!communityRules.userTypeIs(CommunityTypes.UserType.REGENERATOR, addr)) return true;
 
@@ -472,18 +236,23 @@ contract ValidationRules is Callable, ReentrancyGuard {
    * Calculation is based on the `votersCount` which includes activists, researchers, developers, and contributors.
    * @return count Number of votes required for invalidation.
    */
-  function votesToInvalidate() public view returns (uint256 count) {
+  function votesToInvalidate() public view returns (uint256) {
     uint256 voters = communityRules.votersCount();
 
-    if (voters <= VOTERS_THRESHOLD_LEVEL_1) return VOTES_TO_INVALIDATE_LEVEL_1;
-    if (voters <= VOTERS_THRESHOLD_LEVEL_2) return VOTES_TO_INVALIDATE_LEVEL_2;
-    if (voters <= VOTERS_THRESHOLD_LEVEL_3) return VOTES_TO_INVALIDATE_LEVEL_3;
-    if (voters <= VOTERS_THRESHOLD_LEVEL_4) return VOTES_TO_INVALIDATE_LEVEL_4;
-    if (voters <= VOTERS_THRESHOLD_LEVEL_5) return VOTES_TO_INVALIDATE_LEVEL_5;
-    if (voters <= VOTERS_THRESHOLD_LEVEL_6) return VOTES_TO_INVALIDATE_LEVEL_6;
-    if (voters <= VOTERS_THRESHOLD_LEVEL_7) return VOTES_TO_INVALIDATE_LEVEL_7;
-    if (voters <= VOTERS_THRESHOLD_LEVEL_MAX) return VOTES_TO_INVALIDATE_LEVEL_8;
-    if (voters > VOTERS_THRESHOLD_LEVEL_MAX) return VOTES_TO_INVALIDATE_LEVEL_MAX;
+    // Threshold 1: Very early stage, requires a fixed number of 2 votes.
+    if (voters < VOTERS_THRESHOLD_LEVEL_1) {
+      return VOTES_TO_INVALIDATE_LEVEL_1;
+    }
+
+    // Threshold 2: Early stage, requires a fixed number of 5 votes.
+    if (voters < VOTERS_THRESHOLD_LEVEL_2) {
+      return VOTES_TO_INVALIDATE_LEVEL_2;
+    }
+
+    // Threshold 3: Mature stage, calculates votes based on a percentage of active voters.
+    uint256 invalidationVotes = (voters * DYNAMIC_INVALIDATION_PERCENTAGE) / 100;
+
+    return invalidationVotes + 1;
   }
 
   /**
@@ -511,54 +280,8 @@ contract ValidationRules is Callable, ReentrancyGuard {
   event UserValidation(address indexed _validatorAddress, address indexed _userAddress, string _justification);
 
   /**
-   * @notice Emitted
-   * @param _validatorAddress The address of the validator.
-   * @param _resourceId The id of the resource receiving the vote.
-   * @param _justification The justification provided for the vote.
-   */
-  event InspectionValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
-
-  /**
-   * @notice Emitted
-   * @param _validatorAddress The address of the validator.
-   * @param _resourceId The id of the resource receiving the vote.
-   * @param _justification The justification provided for the vote.
-   */
-  event ReportValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
-
-  /**
-   * @notice Emitted
-   * @param _validatorAddress The address of the validator.
-   * @param _resourceId The id of the resource receiving the vote.
-   * @param _justification The justification provided for the vote.
-   */
-  event ContributionValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
-
-  /**
-   * @notice Emitted
-   * @param _validatorAddress The address of the validator.
-   * @param _resourceId The id of the resource receiving the vote.
-   * @param _justification The justification provided for the vote.
-   */
-  event ResearchValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
-
-  /**
    * @notice Emitted when a user is successfully invalidated and denied.
    * @param _userAddress The address of the user who was denied.
    */
   event UserDenied(address indexed _userAddress);
-
-  /**
-   * @notice Emitted when a resource (Inspection, Report, Contribution, Research) is processed after accumulating enough invalidation votes.
-   * @param _resourceType The type of resource being processed (e.g., "Inspection", "Report").
-   * @param _resourceId The ID of the resource.
-   * @param _ownerAddress The address of the user who created the invalidated resource.
-   * @param _penaltiesAdded The number of penalties added to the owner.
-   */
-  event ResourceInvalidated(
-    string _resourceType,
-    uint256 _resourceId,
-    address indexed _ownerAddress,
-    uint256 _penaltiesAdded
-  );
 }

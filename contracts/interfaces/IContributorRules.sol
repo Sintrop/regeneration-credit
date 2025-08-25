@@ -54,7 +54,7 @@ interface IContributorRules {
    * @notice Removes a specified level from a contributor's pool configuration.
    * @dev As specified, this function does not return a value.
    * @param contributor The address of the contributor.
-   * @param levelToRemove The levels to be removed.
+   * @param denied Remove level user status. If true, user is being denied.
    */
-  function removePoolLevels(address contributor, uint256 levelToRemove) external;
+  function removePoolLevels(address contributor, bool denied) external;
 }

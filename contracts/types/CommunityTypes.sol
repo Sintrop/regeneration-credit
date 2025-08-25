@@ -37,8 +37,7 @@ library CommunityTypes {
     DEVELOPER,
     CONTRIBUTOR,
     ACTIVIST,
-    SUPPORTER,
-    DENIED
+    SUPPORTER
   }
 
   /**
@@ -56,6 +55,7 @@ library CommunityTypes {
     address reported;
     string title;
     string testimony;
+    uint256 createdAtBlock;
   }
 
   /**

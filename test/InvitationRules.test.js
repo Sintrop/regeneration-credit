@@ -116,7 +116,7 @@ describe("InvitationRules", () => {
 
     await activistRules.setContractCall(owner, validationRules.target);
     await regeneratorRules.setContractCall(owner, validationRules.target);
-    await inspectorRules.setContractCall(owner, validationRules.target);
+    await inspectorRules.setContractCall(owner);
     await activistPool.setContractCall(activistRules.target);
     await contributorPool.setContractCall(contributorRules.target);
     await developerPool.setContractCall(developerRules.target);
@@ -205,6 +205,38 @@ describe("InvitationRules", () => {
             });
           });
 
+          context("when activist uses the generic invite function for restricted types", () => {
+            let activistInviter;
+            let newUser;
+
+            beforeEach(async () => {
+              // We use user2Address as the activist inviter, which is already set up
+              // in the parent beforeEach block to be a valid, high-level activist.
+              activistInviter = user2Address;
+              newUser = user5Address; // A fresh address for the invitee
+            });
+
+            it("should REVERT when trying to invite a Regenerator", async () => {
+              // This test verifies that the new security rule is working for the Regenerator type.
+              await expect(instance.connect(activistInviter).invite(newUser, userTypes.Regenerator)).to.be.revertedWith(
+                "Activists must use inviteRegeneratorInspector() for this type"
+              );
+            });
+
+            it("should REVERT when trying to invite an Inspector", async () => {
+              // This test verifies that the new security rule is working for the Inspector type.
+              await expect(instance.connect(activistInviter).invite(newUser, userTypes.Inspector)).to.be.revertedWith(
+                "Activists must use inviteRegeneratorInspector() for this type"
+              );
+            });
+
+            it("should PASS when trying to invite another Activist", async () => {
+              // This is a sanity check to ensure we didn't accidentally block valid invitations.
+              // An activist is still allowed to invite another activist via this function.
+              await expect(instance.connect(activistInviter).invite(newUser, userTypes.Activist)).to.not.be.reverted;
+            });
+          });
+
           context("when send to inspector", () => {
             context("when have a previous invitation", () => {
               context("when is not recent", () => {
@@ -213,24 +245,16 @@ describe("InvitationRules", () => {
 
                   await advanceBlock(blocks);
                 });
-
-                it("invite with success", async () => {
-                  await instance.connect(user2Address).invite(user4Address, userTypes.Inspector);
-
-                  const invitation = await communityRules.invitations(user4Address);
-
-                  expect(invitation.invited).to.equal(user4Address.address);
-                });
               });
 
               context("when is recent", () => {
                 beforeEach(async () => {
-                  await instance.connect(user2Address).invite(user4Address, userTypes.Inspector);
+                  await instance.connect(user2Address).invite(user4Address, userTypes.Activist);
                 });
 
                 it("revert", async () => {
                   await expect(
-                    instance.connect(user2Address).invite(user4Address, userTypes.Inspector)
+                    instance.connect(user2Address).invite(user4Address, userTypes.Activist)
                   ).to.be.revertedWith("Invite delay not reached");
                 });
               });
@@ -253,24 +277,16 @@ describe("InvitationRules", () => {
 
                   await advanceBlock(blocks);
                 });
-
-                it("invite with success", async () => {
-                  await instance.connect(user2Address).invite(user4Address, userTypes.Regenerator);
-
-                  const invitation = await communityRules.invitations(user4Address);
-
-                  expect(invitation.invited).to.equal(user4Address.address);
-                });
               });
 
               context("when is recent", () => {
                 beforeEach(async () => {
-                  await instance.connect(user2Address).invite(user4Address, userTypes.Regenerator);
+                  await instance.connect(user2Address).invite(user4Address, userTypes.Activist);
                 });
 
                 it("revert", async () => {
                   await expect(
-                    instance.connect(user2Address).invite(user4Address, userTypes.Regenerator)
+                    instance.connect(user2Address).invite(user4Address, userTypes.Activist)
                   ).to.be.revertedWith("Invite delay not reached");
                 });
               });
@@ -298,7 +314,7 @@ describe("InvitationRules", () => {
             await addActivist("Activist E", user7Address);
             await addActivist("Activist E", user8Address);
 
-            await expect(instance.connect(user2Address).invite(user4Address, userTypes.Regenerator)).to.be.revertedWith(
+            await expect(instance.connect(user2Address).invite(user4Address, userTypes.Activist)).to.be.revertedWith(
               "Only most active users allowed to invite"
             );
           });
@@ -658,7 +674,7 @@ describe("InvitationRules", () => {
         it("revert", async () => {
           await expect(
             instance.connect(user1Address).onlyOwnerInvite(user2Address, userTypes.Activist)
-          ).to.be.revertedWith("Ownable: caller is not the owner");
+          ).to.be.revertedWithCustomError(instance, "OwnableUnauthorizedAccount");
         });
       });
     });

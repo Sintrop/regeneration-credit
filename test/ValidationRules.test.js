@@ -242,8 +242,6 @@ describe("ValidationRules", () => {
 
     await regenerationCredit.addContractPool(regeneratorRules.target, regeneratorPoolArgs.totalTokens);
 
-    await instance.setContractCall(owner, owner, owner, owner);
-
     await communityRules.setContractCall(owner, instance);
     await activistRules.setContractCall(owner, instance);
     await regeneratorRules.setContractCall(owner, instance);
@@ -658,10 +656,9 @@ describe("ValidationRules", () => {
               });
 
               it("user type must be denied", async () => {
-                const user = await communityRules.getUser(regenerator1Address);
-                const DENIED = 8;
+                const isDenied = await communityRules.isDenied(regenerator1Address);
 
-                expect(user).to.equal(DENIED);
+                expect(isDenied).to.equal(true);
               });
 
               it("inviter must get 1 penalty", async () => {
@@ -709,9 +706,9 @@ describe("ValidationRules", () => {
                 await inspectorRules.afterAcceptInspection(inspector1Address, 1);
                 await inspectorRules.afterAcceptInspection(inspector1Address, 1);
 
-                await inspectorRules.afterRealizeInspection(inspector1Address);
-                await inspectorRules.afterRealizeInspection(inspector1Address);
-                await inspectorRules.afterRealizeInspection(inspector1Address);
+                await inspectorRules.afterRealizeInspection(inspector1Address, 1);
+                await inspectorRules.afterRealizeInspection(inspector1Address, 1);
+                await inspectorRules.afterRealizeInspection(inspector1Address, 1);
 
                 await instance.connect(user1Address).addUserValidation(inspector1Address, "my justification");
                 await instance.connect(user2Address).addUserValidation(inspector1Address, "my justification");
@@ -723,11 +720,10 @@ describe("ValidationRules", () => {
                 expect(validations).to.equal(2);
               });
 
-              it("user type must be denied", async () => {
-                const user = await communityRules.getUser(inspector1Address);
-                const DENIED = 8;
+              it("user must be denied", async () => {
+                const isDenied = await communityRules.isDenied(inspector1Address);
 
-                expect(user).to.equal(DENIED);
+                expect(isDenied).to.equal(true);
               });
 
               it("remove user levels from pool", async () => {
@@ -738,10 +734,10 @@ describe("ValidationRules", () => {
                 expect(levelsEra2).to.equal(0);
               });
 
-              it("remove user levels from inspector", async () => {
+              it("do not remove user levels from inspector", async () => {
                 const inspector = await inspectorRules.getInspector(inspector1Address);
 
-                expect(inspector.pool.level).to.equal(0);
+                expect(inspector.pool.level).to.equal(3);
               });
 
               it("userTypesCount must be decremented", async () => {
@@ -770,11 +766,10 @@ describe("ValidationRules", () => {
                 expect(validations).to.equal(2);
               });
 
-              it("user type must be denied", async () => {
-                const user = await communityRules.getUser(contributor1Address);
-                const DENIED = 8;
+              it("user must be denied", async () => {
+                const isDenied = await communityRules.isDenied(contributor1Address);
 
-                expect(user).to.equal(DENIED);
+                expect(isDenied).to.equal(true);
               });
 
               it("remove user levels from pool", async () => {
@@ -785,10 +780,10 @@ describe("ValidationRules", () => {
                 expect(levelsEra2).to.equal(0);
               });
 
-              it("should remove user levels from contributor", async () => {
+              it("do not remove user levels from contributor", async () => {
                 const contributor = await contributorRules.getContributor(contributor1Address);
 
-                expect(contributor.pool.level).to.equal(0);
+                expect(contributor.pool.level).to.equal(1);
               });
 
               it("userTypesCount must be decremented", async () => {
@@ -817,11 +812,10 @@ describe("ValidationRules", () => {
                 expect(validations).to.equal(2);
               });
 
-              it("user type must be denied", async () => {
-                const user = await communityRules.getUser(dev1Address);
-                const DENIED = 8;
+              it("user must be denied", async () => {
+                const isDenied = await communityRules.isDenied(dev1Address);
 
-                expect(user).to.equal(DENIED);
+                expect(isDenied).to.equal(true);
               });
 
               it("remove user levels from pool", async () => {
@@ -832,10 +826,10 @@ describe("ValidationRules", () => {
                 expect(levelsEra2).to.equal(0);
               });
 
-              it("remove user levels from developer", async () => {
+              it("do not remove user levels from developer", async () => {
                 const developer = await developerRules.getDeveloper(dev1Address);
 
-                expect(developer.pool.level).to.equal(0);
+                expect(developer.pool.level).to.equal(1);
               });
 
               it("userTypesCount must be decremented", async () => {
@@ -864,11 +858,10 @@ describe("ValidationRules", () => {
                 expect(validations).to.equal(2);
               });
 
-              it("user type must be denied", async () => {
-                const user = await communityRules.getUser(resea1Address);
-                const DENIED = 8;
+              it("user must be denied", async () => {
+                const isDenied = await communityRules.isDenied(resea1Address);
 
-                expect(user).to.equal(DENIED);
+                expect(isDenied).to.equal(true);
               });
 
               it("remove user levels from pool", async () => {
@@ -879,10 +872,10 @@ describe("ValidationRules", () => {
                 expect(levelsEra2).to.equal(0);
               });
 
-              it("remove user levels from researcher", async () => {
+              it("do not remove user levels from researcher", async () => {
                 const reseacher = await researcherRules.getResearcher(resea1Address);
 
-                expect(reseacher.pool.level).to.equal(0);
+                expect(reseacher.pool.level).to.equal(1);
               });
 
               it("userTypesCount must be decremented", async () => {
@@ -914,11 +907,10 @@ describe("ValidationRules", () => {
                 expect(validations).to.equal(2);
               });
 
-              it("user type must be denied", async () => {
-                const user = await communityRules.getUser(activist1Address);
-                const DENIED = 8;
+              it("user must be denied", async () => {
+                const isDenied = await communityRules.isDenied(activist1Address);
 
-                expect(user).to.equal(DENIED);
+                expect(isDenied).to.equal(true);
               });
 
               it("remove user levels from pool", async () => {
@@ -929,10 +921,10 @@ describe("ValidationRules", () => {
                 expect(levelsEra2).to.equal(0);
               });
 
-              it("remove user levels from activist", async () => {
+              it("do not remove user levels from activist", async () => {
                 const activist = await activistRules.getActivist(activist1Address);
 
-                expect(activist.pool.level).to.equal(0);
+                expect(activist.pool.level).to.equal(1);
               });
 
               it("userTypesCount must be decremented", async () => {
@@ -967,9 +959,9 @@ describe("ValidationRules", () => {
               });
 
               it("user type must be denied", async () => {
-                const user = await communityRules.getUser(regenerator1Address);
+                const isDenied = await communityRules.isDenied(regenerator1Address);
 
-                expect(user).to.equal(userTypes.Denied);
+                expect(isDenied).to.equal(true);
               });
             });
           });
@@ -1064,11 +1056,12 @@ describe("ValidationRules", () => {
           await addInvitation(owner, user2Address, userTypes.Regenerator, owner);
           await addRegenerator("Regenerator", user2Address);
 
-          await regeneratorRules.afterRealizeInspection(user2Address, 1);
-          await regeneratorRules.afterRealizeInspection(user2Address, 1);
-          await regeneratorRules.afterRealizeInspection(user2Address, 1);
-          await regeneratorRules.afterRealizeInspection(user2Address, 1);
-          await regeneratorRules.afterRealizeInspection(user2Address, 1);
+          await regeneratorRules.afterRealizeInspection(user2Address, 1, 1);
+          await regeneratorRules.afterRealizeInspection(user2Address, 1, 2);
+          await regeneratorRules.afterRealizeInspection(user2Address, 1, 3);
+          await regeneratorRules.afterRealizeInspection(user2Address, 1, 4);
+          await regeneratorRules.afterRealizeInspection(user2Address, 1, 5);
+          await regeneratorRules.afterRealizeInspection(user2Address, 1, 6);
         });
 
         it("must returns error message", async () => {
@@ -1086,8 +1079,8 @@ describe("ValidationRules", () => {
           await addInvitation(owner, user2Address, userTypes.Regenerator, owner);
           await addRegenerator("Regenerator", user2Address);
 
-          await regeneratorRules.afterRealizeInspection(user2Address, 1);
-          await regeneratorRules.afterRealizeInspection(user2Address, 1);
+          await regeneratorRules.afterRealizeInspection(user2Address, 1, 1);
+          await regeneratorRules.afterRealizeInspection(user2Address, 1, 2);
 
           await instance.connect(user1Address).addUserValidation(user2Address.address, "justification");
         });
@@ -1103,752 +1096,6 @@ describe("ValidationRules", () => {
 
           expect(user).to.equal(userTypes.Regenerator);
         });
-      });
-    });
-  });
-
-  describe("#addInspectionValidation", () => {
-    context("with allowed caller", () => {
-      beforeEach(async () => {
-        await addInvitation(owner, user1Address, userTypes.Developer, owner);
-        await addInvitation(owner, user2Address, userTypes.Developer, owner);
-
-        await addDeveloper("User  A", user1Address);
-        await addDeveloper("User  B", user2Address);
-      });
-
-      context("when validator already voted to inspection", () => {
-        beforeEach(async () => {
-          inspectionMock = {
-            id: 1,
-            status: 3,
-            regenerator: regenerator1Address,
-            inspector: inspector1Address,
-            treesResult: 10,
-            biodiversityResult: 10,
-            regenerationScore: 10,
-            proofPhotos: "",
-            justificationReport: "",
-            validationsCount: 0,
-            createdAt: 100,
-            acceptedAt: 100,
-            inspectedAt: 100,
-            inspectedAtEra: 10,
-            invalidatedAt: 0,
-          };
-
-          await instance.connect(owner).addInspectionValidation(inspectionMock, "justification", user1Address);
-        });
-
-        it("should return error", async () => {
-          await expect(
-            instance.connect(owner).addInspectionValidation(inspectionMock, "justification", user1Address)
-          ).to.be.revertedWith("Already voted");
-        });
-      });
-
-      context("when validator did not voted to inspection", () => {
-        context("when current era is 1", () => {
-          context("when inspection validations is => votesToInvalidate (addPenalty == true)", () => {
-            context("when inspector total penalties is >= inspectorRules.maxPenalties", () => {
-              beforeEach(async () => {
-                inspectionMock = {
-                  id: 1,
-                  status: 3,
-                  regenerator: regenerator1Address,
-                  inspector: inspector1Address,
-                  treesResult: 10,
-                  biodiversityResult: 10,
-                  regenerationScore: 20,
-                  proofPhotos: "",
-                  justificationReport: "",
-                  validationsCount: 2,
-                  createdAt: 100,
-                  acceptedAt: 100,
-                  inspectedAt: 100,
-                  inspectedAtEra: 10,
-                  invalidatedAt: 0,
-                };
-
-                await addInvitation(owner, regenerator1Address, userTypes.Regenerator, owner);
-
-                await addRegenerator("Regenerator A", regenerator1Address);
-                await addInspector("Inspector A", inspector1Address);
-
-                await inspectorRules.afterAcceptInspection(inspectionMock.inspector, 1);
-                await inspectorRules.afterAcceptInspection(inspectionMock.inspector, 1);
-
-                await inspectorRules.afterRealizeInspection(inspectionMock.inspector);
-                await inspectorRules.afterRealizeInspection(inspectionMock.inspector);
-
-                await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 10);
-                await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 10);
-                await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 30);
-
-                await inspectorRules.setContractCall(instance.target, owner);
-                await inspectorRules.addPenalty(inspectionMock.inspector, 2);
-                await inspectorRules.setContractCall(instance.target, instance);
-                await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", user1Address);
-              });
-
-              it("deny inspector", async () => {
-                const newInspectorType = await communityRules.getUser(inspectionMock.inspector);
-
-                expect(newInspectorType).to.equal(8);
-              });
-
-              it("all inspector contract levels is removed", async () => {
-                const inspector = await inspectorRules.getInspector(inspector1Address);
-
-                expect(inspector.pool.level).to.equal(0);
-              });
-
-              it("decrement total inspections of inspector", async () => {
-                const inspector = await inspectorRules.getInspector(inspector1Address);
-
-                expect(inspector.totalInspections).to.equal(1);
-              });
-
-              it("decrement total inspections of regenerator", async () => {
-                const regenerator = await regeneratorRules.getRegenerator(regenerator1Address);
-
-                expect(regenerator.totalInspections).to.equal(2);
-              });
-
-              it("remove inspection regeneration score level from regenerator regenerationScore", async () => {
-                const regenerator = await regeneratorRules.getRegenerator(regenerator1Address);
-
-                expect(regenerator.regenerationScore.score).to.equal(30);
-              });
-
-              it("remove inspection regeneration score level from regenerator pool", async () => {
-                const levels = await regeneratorPool.eraLevels(3, regenerator1Address);
-
-                expect(levels).to.equal(0);
-              });
-
-              it("inviter must get 1 penalty", async () => {
-                const inviterPenalties = await communityRules.inviterPenalties(owner);
-
-                expect(inviterPenalties).to.equal(1);
-              });
-            });
-
-            context("when inspectorTotal penalties is < inspectorRules.maxPenalties", () => {
-              beforeEach(async () => {
-                inspectionMock = {
-                  id: 1,
-                  status: 3,
-                  regenerator: regenerator1Address,
-                  inspector: inspector1Address,
-                  treesResult: 10,
-                  biodiversityResult: 10,
-                  regenerationScore: 20,
-                  proofPhotos: "",
-                  justificationReport: "",
-                  validationsCount: 2,
-                  createdAt: 100,
-                  acceptedAt: 100,
-                  inspectedAt: 100,
-                  inspectedAtEra: 10,
-                  invalidatedAt: 0,
-                };
-
-                await addInvitation(owner, regenerator1Address, userTypes.Regenerator, owner);
-
-                await addRegenerator("Regenerator A", regenerator1Address);
-                await addInspector("Inspector A", inspector1Address);
-
-                await inspectorRules.afterAcceptInspection(inspectionMock.inspector, 1);
-                await inspectorRules.afterAcceptInspection(inspectionMock.inspector, 1);
-
-                await inspectorRules.afterRealizeInspection(inspectionMock.inspector);
-                await inspectorRules.afterRealizeInspection(inspectionMock.inspector);
-
-                await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 10);
-                await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 10);
-                await regeneratorRules.afterRealizeInspection(inspectionMock.regenerator, 30);
-
-                await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", user1Address);
-              });
-
-              it("inspector is the same", async () => {
-                const newInspectorType = await communityRules.getUser(inspectionMock.inspector);
-
-                expect(newInspectorType).to.equal(2);
-              });
-
-              it("inspector contract levels is removed", async () => {
-                const inspector = await inspectorRules.getInspector(inspector1Address);
-
-                expect(inspector.pool.level).to.equal(1);
-              });
-
-              it("decrement total inspections of inspector", async () => {
-                const inspector = await inspectorRules.getInspector(inspector1Address);
-
-                expect(inspector.totalInspections).to.equal(1);
-              });
-
-              it("decrement total inspections of regenerator", async () => {
-                const regenerator = await regeneratorRules.getRegenerator(regenerator1Address);
-
-                expect(regenerator.totalInspections).to.equal(2);
-              });
-
-              it("remove inspection regeneration score level from regenerator regenerationScore", async () => {
-                const regenerator = await regeneratorRules.getRegenerator(regenerator1Address);
-
-                expect(regenerator.regenerationScore.score).to.equal(30);
-              });
-
-              it("remove inspection regeneration score level from regenerator pool", async () => {
-                const levels = await regeneratorPool.eraLevels(3, regenerator1Address);
-
-                expect(levels).to.equal(0);
-              });
-
-              it("inviter must not get penalty", async () => {
-                const inviterPenalties = await communityRules.inviterPenalties(owner);
-
-                expect(inviterPenalties).to.equal(0);
-              });
-            });
-          });
-
-          context("when inspection validations is < votesToInvalidate (addPenalty == false)", () => {
-            beforeEach(async () => {
-              inspectionMock = {
-                id: 1,
-                status: 3,
-                regenerator: regenerator1Address,
-                inspector: inspector1Address,
-                treesResult: 10,
-                biodiversityResult: 10,
-                regenerationScore: 20,
-                proofPhotos: "",
-                justificationReport: "",
-                validationsCount: 1,
-                createdAt: 100,
-                acceptedAt: 100,
-                inspectedAt: 100,
-                inspectedAtEra: 10,
-                invalidatedAt: 0,
-              };
-
-              await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", user1Address);
-            });
-          });
-        });
-
-        context("when current era is 2", () => {
-          context("when validators have contributed to last era", () => {
-            beforeEach(async () => {
-              inspectionMock = {
-                id: 1,
-                status: 3,
-                regenerator: regenerator1Address,
-                inspector: inspector1Address,
-                treesResult: 10,
-                biodiversityResult: 10,
-                regenerationScore: 20,
-                proofPhotos: "",
-                justificationReport: "",
-                validationsCount: 1,
-                createdAt: 100,
-                acceptedAt: 100,
-                inspectedAt: 100,
-                inspectedAtEra: 10,
-                invalidatedAt: 0,
-              };
-
-              await instance.connect(owner).addInspectionValidation(inspectionMock, "foo", user1Address);
-            });
-          });
-        });
-      });
-    });
-
-    context("without allowed caller", () => {
-      it("should return error", async () => {
-        inspectionMock = {
-          id: 1,
-          status: 3,
-          regenerator: regenerator1Address,
-          inspector: inspector1Address,
-          treesResult: 10,
-          biodiversityResult: 10,
-          regenerationScore: 20,
-          proofPhotos: "",
-          justificationReport: "",
-          validationsCount: 0,
-          createdAt: 100,
-          acceptedAt: 100,
-          inspectedAt: 100,
-          inspectedAtEra: 10,
-          invalidatedAt: 0,
-        };
-
-        await expect(
-          instance.connect(dev1Address).addInspectionValidation(inspectionMock, "justification", user1Address)
-        ).to.be.revertedWith("Not allowed caller");
-      });
-    });
-  });
-
-  describe("#addReportValidation", () => {
-    context("with allowed caller", () => {
-      beforeEach(async () => {
-        await addInvitation(owner, dev1Address, userTypes.Developer, owner);
-        await addInvitation(owner, user1Address, userTypes.Developer, owner);
-        await addInvitation(owner, user2Address, userTypes.Developer, owner);
-
-        await addDeveloper("User  A", user1Address);
-        await addDeveloper("User  B", user2Address);
-        await addDeveloper("User C", dev1Address);
-
-        await developerRules.connect(dev1Address).addReport("description", "report");
-      });
-
-      context("when validator already voted to report", () => {
-        beforeEach(async () => {
-          let report = await developerRules.getReport(1);
-          report = generateReportObject(report);
-
-          await instance.connect(owner).addReportValidation(report, "justification", user1Address);
-        });
-
-        it("should return error", async () => {
-          let report = await developerRules.getReport(1);
-          report = generateReportObject(report);
-
-          await expect(
-            instance.connect(owner).addReportValidation(report, "justification", user1Address)
-          ).to.be.revertedWith("Already voted");
-        });
-      });
-
-      context("when validator did not voted to report", () => {
-        context("when current era is 1", () => {
-          context("when report validations is => votesToInvalidate (addPenalty == true)", () => {
-            context("when developer total penalties is >= developerRules.maxPenalties", () => {
-              context("when user is not denied", () => {
-                beforeEach(async () => {
-                  let report = await developerRules.getReport(1);
-                  report = generateReportObject(report);
-                  report.validationsCount = 1;
-
-                  await developerRules.setContractCall(owner);
-                  await developerRules.addPenalty(dev1Address, report.id);
-                  await developerRules.addPenalty(dev1Address, report.id);
-
-                  report.validationsCount = 2;
-                  report.valid = false;
-
-                  await developerRules.setContractCall(instance);
-                  await instance.connect(owner).addReportValidation(report, "justification", user1Address);
-
-                  const era = await developerRules.poolCurrentEra();
-                });
-
-                it("deny developer", async () => {
-                  const newDeveloperType = await communityRules.getUser(dev1Address);
-
-                  expect(newDeveloperType).to.equal(userTypes.Denied);
-                });
-
-                it("remove report regeneration score level from developer pool", async () => {
-                  const levels = await developerPool.eraLevels(1, dev1Address);
-
-                  expect(levels).to.equal(0);
-                });
-
-                it("inviter must get 1 penalty", async () => {
-                  const inviterPenalties = await communityRules.inviterPenalties(owner);
-
-                  expect(inviterPenalties).to.equal(1);
-                });
-              });
-
-              context("when user is already denied", () => {
-                beforeEach(async () => {
-                  let report = await developerRules.getReport(1);
-                  report = generateReportObject(report);
-                  report.validationsCount = 1;
-
-                  await developerRules.setContractCall(owner);
-                  await developerRules.addPenalty(dev1Address, report.id);
-                  await developerRules.addPenalty(dev1Address, report.id);
-
-                  await communityRules.setContractCall(owner, owner);
-                  await communityRules.setDeniedType(dev1Address);
-
-                  report.validationsCount = 2;
-                  report.valid = false;
-
-                  await developerRules.setContractCall(instance);
-                  await communityRules.setContractCall(owner, instance);
-                  await instance.connect(owner).addReportValidation(report, "justification", user1Address);
-                });
-
-                it("do not remove any developer.pool.levels", async () => {
-                  const developer = await developerRules.getDeveloper(dev1Address);
-
-                  expect(developer.pool.level).to.equal(1);
-                });
-
-                it("do not remove any era levels", async () => {
-                  const levels = await developerPool.eraLevels(1, dev1Address);
-
-                  expect(levels).to.equal(1);
-                });
-              });
-            });
-
-            context("when developer total penalties is < developerRules.maxPenalties", () => {
-              beforeEach(async () => {
-                let report = await developerRules.getReport(1);
-                report = generateReportObject(report);
-                report.validationsCount = 1;
-
-                await instance.connect(owner).addReportValidation(report, "justification", user1Address);
-
-                report = await developerRules.getReport(1);
-                report = generateReportObject(report);
-                report.validationsCount = 2;
-
-                await instance.connect(owner).addReportValidation(report, "justification", user2Address);
-              });
-
-              it("developer is the same", async () => {
-                const newDeveloperType = await communityRules.getUser(dev1Address);
-
-                expect(newDeveloperType).to.equal(4);
-              });
-
-              it("remove report regeneration score level from developer pool", async () => {
-                const levels = await developerPool.eraLevels(2, dev1Address);
-
-                expect(levels).to.equal(0);
-              });
-
-              it("inviter must not get penalty", async () => {
-                const inviterPenalties = await communityRules.inviterPenalties(owner);
-
-                expect(inviterPenalties).to.equal(0);
-              });
-            });
-          });
-
-          context("when report validations is < votesToInvalidate (addPenalty == false)", () => {
-            beforeEach(async () => {
-              let report = await developerRules.getReport(1);
-              report = generateReportObject(report);
-              report.validationsCount = 1;
-
-              await instance.connect(owner).addReportValidation(report, "justification", user1Address);
-            });
-
-            it("total penalties is zero", async () => {
-              const totalPenalties = await developerRules.totalPenalties(dev1Address);
-
-              expect(totalPenalties).to.equal(0);
-            });
-          });
-        });
-      });
-    });
-
-    context("without allowed caller", () => {
-      it("should return error", async () => {
-        let report = await developerRules.getReport(1);
-        report = generateReportObject(report);
-
-        await expect(
-          instance.connect(user1Address).addReportValidation(report, "justification", user2Address)
-        ).to.be.revertedWith("Not allowed caller");
-      });
-    });
-  });
-
-  describe("#addResearchValidation", () => {
-    context("with allowed caller", () => {
-      beforeEach(async () => {
-        await addInvitation(owner, resea1Address, userTypes.Researcher, owner);
-        await addResearcher("Researcher A", resea1Address);
-
-        await addInvitation(owner, user1Address, userTypes.Developer, owner);
-        await addInvitation(owner, user2Address, userTypes.Developer, owner);
-
-        await addDeveloper("User  A", user1Address);
-        await addDeveloper("User  B", user2Address);
-
-        await addResearch(resea1Address);
-      });
-
-      context("when validator already voted to research", () => {
-        beforeEach(async () => {
-          let research = await researcherRules.researches(1);
-          research = generateResearchObject(research);
-
-          await instance.connect(owner).addResearchValidation(research, "justification", user1Address);
-        });
-
-        it("should return error", async () => {
-          let research = await researcherRules.researches(1);
-          research = generateResearchObject(research);
-
-          await expect(
-            instance.connect(owner).addResearchValidation(research, "justification", user1Address)
-          ).to.be.revertedWith("Already voted");
-        });
-      });
-
-      context("when validator did not voted to research", () => {
-        context("when current era is 1", () => {
-          context("when research validations is => votesToInvalidate (addPenalty == true)", () => {
-            context("when researcher total penalties is >= researcherRules.maxPenalties", () => {
-              beforeEach(async () => {
-                let research = await researcherRules.researches(1);
-                research = generateResearchObject(research);
-                research.validationsCount = 1;
-                await researcherRules.setContractCall(owner);
-
-                await researcherRules.addPenalty(research.createdBy, research.id);
-                await researcherRules.addPenalty(research.createdBy, research.id);
-
-                await instance.connect(owner).addResearchValidation(research, "justification", user1Address);
-
-                research.validationsCount = 2;
-                research.valid = false;
-
-                await researcherRules.setContractCall(instance);
-                await instance.connect(owner).addResearchValidation(research, "justification", user2Address);
-              });
-
-              it("deny researcher", async () => {
-                const newResearcherType = await communityRules.getUser(resea1Address);
-
-                expect(newResearcherType).to.equal(8);
-              });
-
-              it("remove research regeneration score level from researcher pool", async () => {
-                const levels = await researcherPool.eraLevels(4, resea1Address);
-
-                expect(levels).to.equal(0);
-              });
-
-              it("inviter must get 1 penalty", async () => {
-                const inviterPenalties = await communityRules.inviterPenalties(owner);
-
-                expect(inviterPenalties).to.equal(1);
-              });
-            });
-
-            context("when researcher total penalties is < researcherRules.maxPenalties", () => {
-              beforeEach(async () => {
-                let research = await researcherRules.researches(1);
-                research = generateResearchObject(research);
-                research.validationsCount = 1;
-
-                await instance.connect(owner).addResearchValidation(research, "justification", user1Address);
-
-                research = await researcherRules.researches(1);
-                research = generateResearchObject(research);
-                research.validationsCount = 2;
-                research.valid = false;
-
-                await instance.connect(owner).addResearchValidation(research, "justification", user2Address);
-              });
-
-              it("researcher is the same", async () => {
-                const userType = await communityRules.getUser(resea1Address);
-
-                expect(userType).to.equal(3);
-              });
-
-              it("remove report regeneration score level from researcher pool", async () => {
-                let research = await researcherRules.researches(1);
-                const levels = await researcherPool.eraLevels(research.era, resea1Address);
-
-                expect(levels).to.equal(0);
-              });
-
-              it("inviter must not get penalty", async () => {
-                const inviterPenalties = await communityRules.inviterPenalties(owner);
-
-                expect(inviterPenalties).to.equal(0);
-              });
-            });
-          });
-
-          context("when research validations is < votesToInvalidate (addPenalty == false)", () => {
-            beforeEach(async () => {
-              let research = await researcherRules.researches(1);
-              research = generateResearchObject(research);
-              research.validationsCount = 1;
-
-              await instance.connect(owner).addResearchValidation(research, "justification", user1Address);
-            });
-
-            it("total penalties is zero", async () => {
-              const totalPenalties = await researcherRules.totalPenalties(resea1Address);
-
-              expect(totalPenalties).to.equal(0);
-            });
-          });
-        });
-      });
-    });
-
-    context("without allowed caller", () => {
-      it("should return error", async () => {
-        let research = await researcherRules.researches(1);
-        research = generateResearchObject(research);
-
-        await expect(
-          instance.connect(user1Address).addResearchValidation(research, "justification", user2Address)
-        ).to.be.revertedWith("Not allowed caller");
-      });
-    });
-  });
-
-  describe("#addContributionValidation", () => {
-    context("with allowed caller", () => {
-      beforeEach(async () => {
-        await addInvitation(owner, contributor1Address, userTypes.Contributor, owner);
-        await addContributor("Contributor A", contributor1Address);
-
-        await addInvitation(owner, user1Address, userTypes.Developer, owner);
-        await addInvitation(owner, user2Address, userTypes.Developer, owner);
-
-        await addDeveloper("User  A", user1Address);
-        await addDeveloper("User  B", user2Address);
-
-        await addContribution(contributor1Address);
-      });
-
-      context("when validator already voted to contribution", () => {
-        beforeEach(async () => {
-          let contribution = await contributorRules.contributions(1);
-          contribution = generateContributionObject(contribution);
-
-          await instance.connect(owner).addContributionValidation(contribution, "justification", user1Address);
-        });
-
-        it("should return error", async () => {
-          let contribution = await contributorRules.contributions(1);
-          contribution = generateContributionObject(contribution);
-
-          await expect(
-            instance.connect(owner).addContributionValidation(contribution, "justification", user1Address)
-          ).to.be.revertedWith("Already voted");
-        });
-      });
-
-      context("when validator did not voted to contribution", () => {
-        context("when current era is 1", () => {
-          context("when contribution validations is => votesToInvalidate (addPenalty == true)", () => {
-            context("when contributor total penalties is >= contributorRules.maxPenalties", () => {
-              beforeEach(async () => {
-                let contribution = await contributorRules.contributions(1);
-                contribution = generateContributionObject(contribution);
-                contribution.validationsCount = 1;
-
-                await contributorRules.setContractCall(owner);
-                await contributorRules.addPenalty(contribution.user, contribution.id);
-                await contributorRules.addPenalty(contribution.user, contribution.id);
-
-                contribution.validationsCount = 2;
-                contribution.valid = false;
-
-                await contributorRules.setContractCall(instance);
-                await instance.connect(owner).addContributionValidation(contribution, "justification", user2Address);
-              });
-
-              it("deny contributor", async () => {
-                const newContributorType = await communityRules.getUser(contributor1Address);
-
-                expect(newContributorType).to.equal(8);
-              });
-
-              it("remove contribution regeneration score level from contributor pool", async () => {
-                const levels = await contributorPool.eraLevels(4, contributor1Address);
-
-                expect(levels).to.equal(0);
-              });
-
-              it("inviter must get 1 penalty", async () => {
-                const inviterPenalties = await communityRules.inviterPenalties(owner);
-
-                expect(inviterPenalties).to.equal(1);
-              });
-            });
-
-            context("when contributor total penalties is < contributorRules.maxPenalties", () => {
-              beforeEach(async () => {
-                let contribution = await contributorRules.contributions(1);
-                contribution = generateContributionObject(contribution);
-                contribution.validationsCount = 1;
-
-                await instance.connect(owner).addContributionValidation(contribution, "justification", user1Address);
-
-                contribution = await contributorRules.contributions(1);
-                contribution = generateContributionObject(contribution);
-                contribution.validationsCount = 2;
-                contribution.valid = false;
-
-                await instance.connect(owner).addContributionValidation(contribution, "justification", user2Address);
-              });
-
-              it("contributor is the same", async () => {
-                const userType = await communityRules.getUser(contributor1Address);
-
-                expect(userType).to.equal(5);
-              });
-
-              it("remove contribution level from contributor pool", async () => {
-                let contribution = await contributorRules.contributions(1);
-                const levels = await contributorPool.eraLevels(contribution.era, contributor1Address);
-
-                expect(levels).to.equal(0);
-              });
-
-              it("inviter must not get penalty", async () => {
-                const inviterPenalties = await communityRules.inviterPenalties(owner);
-
-                expect(inviterPenalties).to.equal(0);
-              });
-            });
-          });
-
-          context("when contribution validations is < votesToInvalidate (addPenalty == false)", () => {
-            beforeEach(async () => {
-              let contribution = await contributorRules.contributions(1);
-              contribution = generateContributionObject(contribution);
-              contribution.validationsCount = 1;
-
-              await instance.connect(owner).addContributionValidation(contribution, "justification", user1Address);
-            });
-
-            it("total penalties is zero", async () => {
-              const totalPenalties = await contributorRules.totalPenalties(contributor1Address);
-
-              expect(totalPenalties).to.equal(0);
-            });
-          });
-        });
-      });
-    });
-
-    context("without allowed caller", () => {
-      it("should return error", async () => {
-        let contribution = await contributorRules.contributions(1);
-        contribution = generateContributionObject(contribution);
-
-        await expect(
-          instance.connect(user1Address).addContributionValidation(contribution, "justification", user2Address)
-        ).to.be.revertedWith("Not allowed caller");
       });
     });
   });
@@ -1875,9 +1122,9 @@ describe("ValidationRules", () => {
       await instance.setContractInterfaces(validationRulesDependencies);
     });
 
-    context("when votersCount is less than 50", () => {
+    context("when votersCount is less 25", () => {
       beforeEach(async () => {
-        await mockContract.mock.votersCount.returns(49);
+        await mockContract.mock.votersCount.returns(20);
       });
 
       it("returns 2", async () => {
@@ -1887,9 +1134,9 @@ describe("ValidationRules", () => {
       });
     });
 
-    context("when votersCount is bigger than 50 and less than 500", () => {
+    context("when votersCount is less than 50", () => {
       beforeEach(async () => {
-        await mockContract.mock.votersCount.returns(400);
+        await mockContract.mock.votersCount.returns(49);
       });
 
       it("returns 5", async () => {
@@ -1899,87 +1146,123 @@ describe("ValidationRules", () => {
       });
     });
 
-    context("when votersCount votersCount is bigger than 500 and less than 1000", () => {
+    context("when votersCount is 249", () => {
+      beforeEach(async () => {
+        await mockContract.mock.votersCount.returns(249);
+      });
+
+      it("returns 5", async () => {
+        const votesToInvalidate = await instance.votesToInvalidate();
+
+        expect(votesToInvalidate).to.equal(5);
+      });
+    });
+
+    context("when votersCount is 255", () => {
+      beforeEach(async () => {
+        await mockContract.mock.votersCount.returns(255);
+      });
+
+      it("returns 6", async () => {
+        const votesToInvalidate = await instance.votesToInvalidate();
+
+        expect(votesToInvalidate).to.equal(6);
+      });
+    });
+
+    context("when votersCount is 600", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(600);
       });
 
-      it("returns 10", async () => {
+      it("returns 13", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(10);
+        expect(votesToInvalidate).to.equal(13);
       });
     });
 
-    context("when votersCount is bigger than 1000 and less than 2000", () => {
+    context("when votersCount is 1200", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(1200);
       });
 
-      it("returns 20", async () => {
+      it("returns 25", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(20);
+        expect(votesToInvalidate).to.equal(25);
       });
     });
 
-    context("when votersCount is bigger than 2000 and less than 4000", () => {
+    context("when votersCount is 2500", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(2500);
       });
 
-      it("returns 40", async () => {
+      it("returns 51", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(40);
+        expect(votesToInvalidate).to.equal(51);
       });
     });
 
-    context("when votersCount is bigger than 4000 and less than 8000", () => {
+    context("when votersCount is 5000", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(5000);
       });
 
-      it("returns 80", async () => {
+      it("returns 101", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(80);
+        expect(votesToInvalidate).to.equal(101);
       });
     });
 
-    context("when votersCount is bigger than 8000 and less than 16000", () => {
+    context("when votersCount is 10000", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(10000);
       });
 
-      it("returns 160", async () => {
+      it("returns 201", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(160);
+        expect(votesToInvalidate).to.equal(201);
       });
     });
 
-    context("when votersCount is bigger than 16000 and less than 32000", () => {
+    context("when votersCount is 20000", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(20000);
       });
 
-      it("returns 320", async () => {
+      it("returns 401", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(320);
+        expect(votesToInvalidate).to.equal(401);
       });
     });
 
-    context("when votersCounts bigger than 32000", () => {
+    context("wwhen votersCount is 35000", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(35000);
       });
 
-      it("returns 500", async () => {
+      it("returns 701", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(500);
+        expect(votesToInvalidate).to.equal(701);
+      });
+    });
+
+    context("when votersCounts is 64000", () => {
+      beforeEach(async () => {
+        await mockContract.mock.votersCount.returns(64000);
+      });
+
+      it("returns 1281", async () => {
+        const votesToInvalidate = await instance.votesToInvalidate();
+
+        expect(votesToInvalidate).to.equal(1281);
       });
     });
   });

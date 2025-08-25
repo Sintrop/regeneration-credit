@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import "contracts/types/ResearcherTypes.sol";
+import "../types/ResearcherTypes.sol";
 
 /**
  * @title IResearcherRules
@@ -54,9 +54,9 @@ interface IResearcherRules {
    * @notice Removes a specified level from a researcher's pool configuration.
    * @dev As specified, this function does not return a value and takes a single uint256 for the level.
    * @param researcher The address of the researcher.
-   * @param levelToRemove The levels to be removed.
+   * @param denied Remove level user status. If true, user is being denied.
    */
-  function removePoolLevels(address researcher, uint256 levelToRemove) external;
+  function removePoolLevels(address researcher, bool denied) external;
 
   /**
    * @notice Checks if a researcher is currently eligible to send an invitation.

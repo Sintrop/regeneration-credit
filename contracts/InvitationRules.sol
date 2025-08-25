@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IResearcherRules } from "./interfaces/IResearcherRules.sol";
@@ -72,7 +72,7 @@ contract InvitationRules is Ownable, ReentrancyGuard {
     address developerRulesAddress,
     address activistRulesAddress,
     address contributorRulesAddress
-  ) {
+  ) Ownable(msg.sender) {
     communityRules = ICommunityRules(communityRulesAddress);
     researcherRules = IResearcherRules(researcherRulesAddress);
     developerRules = IDeveloperRules(developerRulesAddress);
@@ -85,8 +85,8 @@ contract InvitationRules is Ownable, ReentrancyGuard {
     canBeInviteds[CommunityTypes.UserType.REGENERATOR] = CommunityTypes.UserType.ACTIVIST;
     canBeInviteds[CommunityTypes.UserType.DEVELOPER] = CommunityTypes.UserType.DEVELOPER;
     canBeInviteds[CommunityTypes.UserType.RESEARCHER] = CommunityTypes.UserType.RESEARCHER;
-    canBeInviteds[CommunityTypes.UserType.SUPPORTER] = CommunityTypes.UserType.SUPPORTER;
     canBeInviteds[CommunityTypes.UserType.CONTRIBUTOR] = CommunityTypes.UserType.CONTRIBUTOR;
+    canBeInviteds[CommunityTypes.UserType.SUPPORTER] = CommunityTypes.UserType.SUPPORTER;
   }
 
   // --- Public functions ---
@@ -101,6 +101,13 @@ contract InvitationRules is Ownable, ReentrancyGuard {
     require(communityRules.inviterPenalties(msg.sender) < MAX_INVITER_PENALTIES, "Too many penalties");
 
     CommunityTypes.UserType msgSenderUserType = communityRules.getUser(msg.sender);
+
+    if (msgSenderUserType == CommunityTypes.UserType.ACTIVIST) {
+      require(
+        userType != CommunityTypes.UserType.REGENERATOR && userType != CommunityTypes.UserType.INSPECTOR,
+        "Activists must use inviteRegeneratorInspector() for this type"
+      );
+    }
 
     // Checks if the inviter has general permission to send invitations.
     require(_canSendInvite(msgSenderUserType), "Only most active users allowed to invite");

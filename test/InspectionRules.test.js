@@ -66,8 +66,15 @@ describe("InspectionRules", () => {
     BLOCKS_TO_ACCEPT: 6000,
   };
 
-  const addRegenerator = async (name, from) => {
-    await regeneratorRules.connect(from).addRegenerator(1000, name, "projectDescription", "photoURL", coordinates());
+  // const addRegenerator = async (name, from) => {
+  //   await regeneratorRules.connect(from).addRegenerator(1000, name, "projectDescription", "photoURL", coordinates());
+  // };
+
+  // This helper function now accepts a totalArea parameter for flexible test setup.
+  const addRegenerator = async (name, totalArea, from) => {
+    await regeneratorRules
+      .connect(from)
+      .addRegenerator(totalArea, name, "projectDescription", "photoURL", coordinates());
   };
 
   const coordinates = () => {
@@ -199,9 +206,8 @@ describe("InspectionRules", () => {
     await communityRules.setContractCall(owner, validationRules.target);
     await activistRules.setContractCall(instance.target, validationRules.target);
     await regeneratorRules.setContractCall(instance.target, validationRules.target);
-    await inspectorRules.setContractCall(instance.target, validationRules.target);
+    await inspectorRules.setContractCall(instance.target);
     await activistPool.setContractCall(activistRules.target);
-    await validationRules.setContractCall(instance.target, owner, owner, owner);
     await inspectorPool.setContractCall(inspectorRules.target);
     await regeneratorPool.setContractCall(regeneratorRules.target);
 
@@ -257,7 +263,7 @@ describe("InspectionRules", () => {
       await addInvitation(owner, regeneratorAddress, userTypes.Regenerator, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
-      await addRegenerator("Regenerator A", regeneratorAddress);
+      await addRegenerator("Regenerator A", 25000, regeneratorAddress);
       await addInspector("Inspector A", inspectorAddress);
     });
 
@@ -291,7 +297,7 @@ describe("InspectionRules", () => {
       await addInvitation(owner, inspector11Address, userTypes.Inspector, owner);
       await addInvitation(owner, inspector12Address, userTypes.Inspector, owner);
 
-      await addRegenerator("Regenerator A", regeneratorAddress);
+      await addRegenerator("Regenerator A", 25000, regeneratorAddress);
       await addInspector("Inspector A", inspectorAddress);
       await addInspector("Inspector B", inspector2Address);
       await addInspector("Inspector C", inspector3Address);
@@ -491,7 +497,7 @@ describe("InspectionRules", () => {
       await addInvitation(owner, regeneratorAddress, userTypes.Regenerator, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
-      await addRegenerator("Regenerator A", regeneratorAddress);
+      await addRegenerator("Regenerator A", 25000, regeneratorAddress);
       await addInspector("Inspector A", inspectorAddress);
     });
 
@@ -559,9 +565,9 @@ describe("InspectionRules", () => {
             await addInvitation(owner, regenerator3Address, userTypes.Regenerator, owner);
             await addInvitation(owner, regenerator4Address, userTypes.Regenerator, owner);
 
-            await addRegenerator("Regenerator B", regenerator2Address);
-            await addRegenerator("Regenerator C", regenerator3Address);
-            await addRegenerator("Regenerator D", regenerator4Address);
+            await addRegenerator("Regenerator B", 25000, regenerator2Address);
+            await addRegenerator("Regenerator C", 25000, regenerator3Address);
+            await addRegenerator("Regenerator D", 25000, regenerator4Address);
 
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
             await acceptInspection(1, inspectorAddress);
@@ -634,7 +640,7 @@ describe("InspectionRules", () => {
           context("when have accepted other inspection", () => {
             beforeEach(async () => {
               await addInvitation(owner, regenerator2Address, userTypes.Regenerator, owner);
-              await addRegenerator("Regenerator B", regenerator2Address);
+              await addRegenerator("Regenerator B", 25000, regenerator2Address);
               await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
               await acceptInspection(1, inspectorAddress);
               await requestInspection(regenerator2Address);
@@ -740,9 +746,12 @@ describe("InspectionRules", () => {
 
       await communityRules.setContractCall(activist1Address, validationRules.target);
       await addInvitation(activist1Address, regeneratorAddress, userTypes.Regenerator, activist1Address);
+      await addInvitation(activist1Address, regenerator2Address, userTypes.Regenerator, activist1Address);
       await addInvitation(activist1Address, inspectorAddress, userTypes.Inspector, activist1Address);
+      await addInvitation(activist1Address, inspector3Address, userTypes.Inspector, activist1Address);
 
-      await addRegenerator("Regenerator A", regeneratorAddress);
+      // We now provide a specific area when creating the regenerator.
+      await addRegenerator("Regenerator A", 25000, regeneratorAddress); // e.g., 25,000 sqm
       await addInspector("Inspector A", inspectorAddress);
     });
 
@@ -765,9 +774,9 @@ describe("InspectionRules", () => {
               });
 
               it("should return error message", async () => {
-                await expect(
-                  realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress)
-                ).to.be.revertedWith("Inspection Expired");
+                await expect(realizeInspection(1, report, 10, 10, inspectorAddress)).to.be.revertedWith(
+                  "Inspection Expired"
+                );
               });
             });
 
@@ -814,8 +823,8 @@ describe("InspectionRules", () => {
                     beforeEach(async () => {
                       await regeneratorRules.setContractCall(owner, owner);
 
-                      await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
-                      await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
+                      await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0, 2);
+                      await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0, 3);
 
                       await regeneratorRules.setContractCall(instance.target, validationRules.target);
 
@@ -842,10 +851,10 @@ describe("InspectionRules", () => {
                       await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 1);
                       await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 1);
 
-                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
-                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
+                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress, 1);
+                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress, 1);
 
-                      await inspectorRules.setContractCall(instance.target, validationRules.target);
+                      await inspectorRules.setContractCall(instance.target);
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
@@ -868,17 +877,17 @@ describe("InspectionRules", () => {
                       await regeneratorRules.setContractCall(owner, owner);
                       await inspectorRules.setContractCall(owner, owner);
 
-                      await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
-                      await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0);
+                      await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0, 5);
+                      await regeneratorRules.connect(owner).afterRealizeInspection(regeneratorAddress, 0, 2);
 
-                      await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 1);
-                      await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 1);
+                      await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 3);
+                      await inspectorRules.connect(owner).afterAcceptInspection(inspectorAddress, 4);
 
-                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
-                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress);
+                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress, 3);
+                      await inspectorRules.connect(owner).afterRealizeInspection(inspectorAddress, 4);
 
                       await regeneratorRules.setContractCall(instance.target, validationRules.target);
-                      await inspectorRules.setContractCall(instance.target, validationRules.target);
+                      await inspectorRules.setContractCall(instance.target);
 
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
@@ -965,10 +974,24 @@ describe("InspectionRules", () => {
                 });
 
                 context("when check inspection regenerationIndex", () => {
-                  context("when select result over the max limit", () => {
+                  context("when tree result exceeds the dynamic density limit", () => {
                     it("should return error message", async () => {
-                      const treesResultValue = 10001;
-                      const biodiversityResultValue = 1071;
+                      // The regenerator was created with an area of 25,000 sqm.
+                      // With a density of 4 trees/sqm, the max is 100,000 trees.
+                      const treesResultValue = 100001; // This value now exceeds the dynamic limit.
+                      const biodiversityResultValue = 10;
+
+                      await expect(
+                        realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress)
+                      ).to.be.revertedWith("Tree count exceeds density limit for this area");
+                    });
+                  });
+
+                  context("when biodiversity result exceeds the max limit", () => {
+                    it("should return error message", async () => {
+                      const treesResultValue = 10;
+                      // Max biodiversity is a fixed constant, so this test remains valid.
+                      const biodiversityResultValue = 301;
 
                       await expect(
                         realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress)
@@ -978,105 +1001,90 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_6", () => {
                     beforeEach(async () => {
-                      const treesResultValue = 80001;
-                      const biodiversityResultValue = 271;
+                      // This test requires a large number of trees, so we need a larger area.
+                      // Let's create a new regenerator specifically for this test.
+                      await addRegenerator("Regenerator for L6", 25000, regenerator2Address);
+                      await addInspector("Inspector C", inspector3Address);
 
-                      await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
+                      await requestInspection(regenerator2Address);
+                      await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+                      await acceptInspection(2, inspector3Address);
+
+                      const treesResultValue = 50001; // e.g., >= 50000
+                      const biodiversityResultValue = 161; // e.g., >= 160
+
+                      await realizeInspection(2, report, treesResultValue, biodiversityResultValue, inspector3Address);
                     });
 
                     it("should add 64 regenerationScore to inspection", async () => {
-                      const inspection = await instance.getInspection(1);
-
+                      const inspection = await instance.getInspection(2);
                       expect(inspection.regenerationScore).to.equal(64);
                     });
                   });
 
                   context("when select REGENERATIVE_5", () => {
                     beforeEach(async () => {
-                      const treesResultValue = 30001;
-                      const biodiversityResultValue = 130;
-
+                      const treesResultValue = 25001; // e.g., >= 25000
+                      const biodiversityResultValue = 81; // e.g., >= 80
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
                     it("should add 32 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
-
                       expect(inspection.regenerationScore).to.equal(32);
                     });
                   });
 
+                  // The pattern repeats for other REGENERATIVE levels... ensure the treesResult
+                  // is plausible for the area size set in the top-level beforeEach (25,000 sqm).
+                  // All values below are valid for an area of this size.
+
                   context("when select REGENERATIVE_4", () => {
                     beforeEach(async () => {
-                      const treesResultValue = 15001;
-                      const biodiversityResultValue = 79;
-
-                      await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
+                      await realizeInspection(1, report, 12501, 41, inspectorAddress);
                     });
-
                     it("should add 16 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
-
                       expect(inspection.regenerationScore).to.equal(16);
                     });
                   });
 
                   context("when select REGENERATIVE_3", () => {
                     beforeEach(async () => {
-                      const treesResultValue = 8001;
-                      const biodiversityResultValue = 35;
-
-                      await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
+                      await realizeInspection(1, report, 6251, 21, inspectorAddress);
                     });
-
-                    it("should add 4 regenerationScore to inspection", async () => {
+                    it("should add 8 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
-
                       expect(inspection.regenerationScore).to.equal(8);
                     });
                   });
 
                   context("when select REGENERATIVE_2", () => {
                     beforeEach(async () => {
-                      const treesResultValue = 3500;
-                      const biodiversityResultValue = 18;
-
-                      await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
+                      await realizeInspection(1, report, 3126, 11, inspectorAddress);
                     });
-
-                    it("should add 2 regenerationScore to inspection", async () => {
+                    it("should add 4 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
-
                       expect(inspection.regenerationScore).to.equal(4);
                     });
                   });
 
                   context("when select REGENERATIVE_1", () => {
                     beforeEach(async () => {
-                      const treesResultValue = 50;
-                      const biodiversityResultValue = 8;
-
-                      await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
+                      await realizeInspection(1, report, 21, 6, inspectorAddress);
                     });
-
-                    it("should add 1 regenerationScore to inspection", async () => {
+                    it("should add 2 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
-
                       expect(inspection.regenerationScore).to.equal(2);
                     });
                   });
 
                   context("when select NEUTRO", () => {
                     beforeEach(async () => {
-                      const treesResultValue = 0;
-                      const biodiversityResultValue = 0;
-
-                      await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
+                      await realizeInspection(1, report, 19, 4, inspectorAddress);
                     });
-
                     it("should add 0 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
-
                       expect(inspection.regenerationScore).to.equal(0);
                     });
                   });
@@ -1137,8 +1145,33 @@ describe("InspectionRules", () => {
       await addInvitation(owner, regeneratorAddress, userTypes.Regenerator, owner);
       await addInvitation(owner, inspectorAddress, userTypes.Inspector, owner);
 
-      await addRegenerator("Regenerator A", regeneratorAddress);
+      await addRegenerator("Regenerator A", 25000, regeneratorAddress);
       await addInspector("Inspector A", inspectorAddress);
+    });
+
+    context("when trying to vote on an already invalidated inspection", () => {
+      beforeEach(async () => {
+        await requestInspection(regeneratorAddress);
+        await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+        await acceptInspection(1, inspectorAddress);
+        await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
+
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
+        await addInvitation(owner, user3Address, userTypes.Developer, owner);
+        await addDeveloper("User 1", user1Address);
+        await addDeveloper("User 2", user2Address);
+        await addDeveloper("User 3", user3Address);
+
+        await instance.connect(user1Address).addInspectionValidation(1, "justification");
+        await instance.connect(user2Address).addInspectionValidation(1, "justification");
+      });
+
+      it("should revert because the inspection status is no longer INSPECTED", async () => {
+        await expect(instance.connect(user3Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
+          "Penalties already applied"
+        );
+      });
     });
 
     context("with developer", () => {
@@ -1171,6 +1204,10 @@ describe("InspectionRules", () => {
             const inspection = await instance.getInspection(1);
 
             expect(inspection.validationsCount).to.equal(1);
+          });
+
+          it("should keep inspectionPenalized to false", async () => {
+            expect(await instance.inspectionPenalized(1)).to.be.false;
           });
         });
 
@@ -1211,6 +1248,11 @@ describe("InspectionRules", () => {
               expect(totalPenalties).to.equal(1);
             });
 
+            it("should set inspectionPenalized to true to prevent double penalties", async () => {
+              // Verifies that the new flag is set correctly after the first invalidation.
+              expect(await instance.inspectionPenalized(1)).to.be.true;
+            });
+
             it("remove regenerator regenerationScore", async () => {
               const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
 
@@ -1245,21 +1287,21 @@ describe("InspectionRules", () => {
 
         context("when inspector receive max penalties alloweds", () => {
           beforeEach(async () => {
-            await inspectorRules.setContractCall(instance.target, owner);
+            await inspectorRules.setContractCall(owner, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
             await communityRules.setContractCall(user1Address, validationRules.target);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
             await communityRules.setContractCall(user2Address, validationRules.target);
-            await inspectorRules.setContractCall(instance.target, validationRules.target);
+            await inspectorRules.setContractCall(instance.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
 
           it("inspector type to DENIED", async () => {
-            const userType = await communityRules.getUser(inspectorAddress);
+            const isDenied = await communityRules.isDenied(inspectorAddress);
 
-            expect(userType).to.equal(USER_TYPES.denied);
+            expect(isDenied).to.equal(true);
           });
         });
 
@@ -1408,21 +1450,37 @@ describe("InspectionRules", () => {
 
         context("when inspector receive max penalties alloweds", () => {
           beforeEach(async () => {
-            await inspectorRules.setContractCall(instance.target, owner);
+            await inspectorRules.setContractCall(owner, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
             await communityRules.setContractCall(user1Address, validationRules.target);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
             await communityRules.setContractCall(user2Address, validationRules.target);
-            await inspectorRules.setContractCall(instance.target, validationRules.target);
+            await inspectorRules.setContractCall(instance.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
 
           it("inspector type to DENIED", async () => {
-            const userType = await communityRules.getUser(inspectorAddress);
+            const isDenied = await communityRules.isDenied(inspectorAddress);
 
-            expect(userType).to.equal(USER_TYPES.denied);
+            expect(isDenied).to.equal(true);
+          });
+
+          it("should apply a penalty to the inspector's inviter", async () => {
+            // Checks if the inviter who brought the denied inspector is penalized.
+            const inviterPenalties = await communityRules.inviterPenalties(owner);
+            expect(inviterPenalties).to.equal(1);
+          });
+
+          it("should remove all pool levels for the denied inspector", async () => {
+            // Checks if the `removePoolLevels` function was successful.
+            // We need to know the era of the inspection to check the correct mapping slot.
+            const inspection = await instance.getInspection(1);
+            const inspectedAtEra = inspection.inspectedAtEra;
+
+            const poolLevels = await inspectorPool.eraLevels(inspectedAtEra, inspectorAddress);
+            expect(poolLevels).to.equal(0);
           });
         });
 
@@ -1571,21 +1629,21 @@ describe("InspectionRules", () => {
 
         context("when inspector receive max penalties alloweds", () => {
           beforeEach(async () => {
-            await inspectorRules.setContractCall(instance.target, owner);
+            await inspectorRules.setContractCall(owner, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
             await communityRules.setContractCall(user1Address, validationRules.target);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
             await communityRules.setContractCall(user2Address, validationRules.target);
-            await inspectorRules.setContractCall(instance.target, validationRules.target);
+            await inspectorRules.setContractCall(instance.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
 
           it("inspector type to DENIED", async () => {
-            const userType = await communityRules.getUser(inspectorAddress);
+            const isDenied = await communityRules.isDenied(inspectorAddress);
 
-            expect(userType).to.equal(USER_TYPES.denied);
+            expect(isDenied).to.equal(true);
           });
         });
 
@@ -1734,21 +1792,21 @@ describe("InspectionRules", () => {
 
         context("when inspector receive max penalties alloweds", () => {
           beforeEach(async () => {
-            await inspectorRules.setContractCall(instance.target, owner);
+            await inspectorRules.setContractCall(owner, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
             await communityRules.setContractCall(user1Address, validationRules.target);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
             await communityRules.setContractCall(user2Address, validationRules.target);
-            await inspectorRules.setContractCall(instance.target, validationRules.target);
+            await inspectorRules.setContractCall(instance.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
 
           it("inspector type to DENIED", async () => {
-            const userType = await communityRules.getUser(inspectorAddress);
+            const isDenied = await communityRules.isDenied(inspectorAddress);
 
-            expect(userType).to.equal(USER_TYPES.denied);
+            expect(isDenied).to.equal(true);
           });
         });
 

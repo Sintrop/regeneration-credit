@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IRegeneratorPool } from "./interfaces/IRegeneratorPool.sol";
 import { Regenerator, Pool, Coordinates, RegenerationScore } from "./types/RegeneratorTypes.sol";
@@ -31,6 +31,9 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /// @notice Maximum number of coordinate points to define a regeneration area.
   uint8 private constant MAX_COORDINATES_COUNT = 10;
+
+  /// @notice Maximum inspection score.
+  uint8 private constant MAX_SCORE = 64;
 
   /// @notice Maximum character length for the regenerator's name.
   uint16 private constant MAX_NAME_LENGTH = 50;
@@ -70,6 +73,12 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /// @notice A mapping from a regenerator's wallet address to a hash or identifier of their area photo.
   mapping(address => string) public areaPhoto;
+
+  /// @notice Tracks which inspection IDs have already been processed to prevent replay attacks.
+  mapping(uint64 => bool) private processedInspections;
+
+  /// @notice Tracks if a coordinate point have already been processed..
+  mapping(bytes32 => bool) seenCoordinates;
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules and user types.
@@ -147,7 +156,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     string memory name,
     string memory proofPhoto,
     string memory projectDescription,
-    Coordinates[] memory _coordinates
+    Coordinates[] calldata _coordinates
   ) external {
     require(
       bytes(name).length <= MAX_NAME_LENGTH &&
@@ -164,6 +173,8 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
       "Minimum 500 and maximum 500.000 square meters"
     );
 
+    _validateCoordinates(_coordinates);
+
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
     regenerators[msg.sender] = Regenerator(
@@ -178,7 +189,8 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
       RegenerationScore(0),
       Pool(false, regeneratorPool.currentContractEra()),
       block.number,
-      _coordinates.length
+      _coordinates.length,
+      false
     );
 
     regeneratorsAddress[id] = msg.sender;
@@ -254,21 +266,39 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @notice Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
    * this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
    * @param addr The wallet address of the regenerator from whom levels are to be removed.
-   * @param levelsToRemove The number of levels/score points to decrease. If `0`, the regenerator's
-   * regeneration score is reset to `0`, and their area is decremented from the total `regenerationArea`.
+   * @param denied Remove level user status. If true, user is being denied.
    */
   function removePoolLevels(
     address addr,
-    uint256 levelsToRemove
+    bool denied
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
-    if (levelsToRemove == 0) {
-      regenerators[addr].regenerationScore.score = 0;
-      _decrementArea(addr);
-    } else {
-      regenerators[addr].regenerationScore.score -= levelsToRemove;
-    }
+    Regenerator storage regenerator = regenerators[addr];
 
-    regeneratorPool.removePoolLevels(addr, levelsToRemove);
+    require(!regenerator.isFullyInvalidated, "Regenerator already fully invalidated");
+
+    regenerator.isFullyInvalidated = true;
+
+    _decrementArea(addr);
+
+    regeneratorPool.removePoolLevels(addr, 0, denied);
+  }
+
+  /**
+   * @dev Allows an authorized caller to remove levels from a regenerator's pool.
+   * This function updates the regenerator's local regeneration score and notifies the `RegeneratorPool` contract.
+   * @notice Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
+   * this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
+   * @param addr The wallet address of the regenerator from whom levels are to be removed.
+   * @param amountToRemove The number of levels/score points to decrease. If `0`, the regenerator's
+   * regeneration score is reset to `0`, and their area is decremented from the total `regenerationArea`.
+   */
+  function removeInspectionLevels(
+    address addr,
+    uint256 amountToRemove
+  ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant {
+    regenerators[addr].regenerationScore.score -= amountToRemove;
+
+    regeneratorPool.removePoolLevels(addr, amountToRemove, false);
   }
 
   /**
@@ -281,7 +311,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * - If `totalInspections` becomes 0 after decrement, the regenerator is removed from `impactRegenerators`.
    * @param addr The regenerator's wallet address.
    */
-  function decrementInspections(address addr) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+  function decrementInspections(address addr) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
     uint256 totalInspections = regenerators[addr].totalInspections;
 
     require(totalInspections > 0, "totalInspections invalid");
@@ -324,20 +354,114 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * after an inspection is completed.
    * @param addr The regenerator's wallet address.
    * @param score The score obtained from the realized inspection, to be added to the regenerator's total score.
+   * @param inspectionId The id of the realized inspection.
    * @return uint256 The updated total number of inspections for the regenerator.
    */
   function afterRealizeInspection(
     address addr,
-    uint32 score
+    uint32 score,
+    uint64 inspectionId
   ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant returns (uint256) {
+    require(score <= MAX_SCORE, "Maximum score");
+    require(!processedInspections[inspectionId], "Inspection results already submitted");
+
+    processedInspections[inspectionId] = true;
+
     uint256 totalInspections = _incrementInspections(addr);
 
-    _setRegenerationScore(addr, score);
+    _setRegenerationScore(addr, score, inspectionId);
 
     return totalInspections;
   }
 
   // --- Private functions ---
+
+  /**
+   * @dev Validates an array of coordinates for uniqueness and valid geographic ranges.
+   * @param _coords The array of coordinate structs to validate.
+   */
+  function _validateCoordinates(Coordinates[] calldata _coords) private pure {
+    // Loop through each coordinate
+    for (uint256 i = 0; i < _coords.length; i++) {
+      // --- 1. Check for Duplicates ---
+      // Compare the current coordinate with all subsequent coordinates
+      for (uint256 j = i + 1; j < _coords.length; j++) {
+        // We use keccak256 to compare the structs efficiently
+        require(
+          keccak256(abi.encode(_coords[i])) != keccak256(abi.encode(_coords[j])),
+          "Duplicate coordinates are not allowed"
+        );
+      }
+
+      // --- 2. Check for Valid Values ---
+      int256 lat = _stringCoordToInt(_coords[i].latitude);
+      int256 lon = _stringCoordToInt(_coords[i].longitude);
+      int256 precision = 10 ** 6;
+
+      require(lat >= -90 * precision && lat <= 90 * precision, "Invalid latitude");
+      require(lon >= -180 * precision && lon <= 180 * precision, "Invalid longitude");
+    }
+  }
+
+  /**
+   * @dev Converts a coordinate string part (e.g., "-23.547319") into a scaled integer (e.g., -23547319).
+   * @notice This is a utility function to handle coordinate strings. It validates characters and
+   * handles positive/negative numbers with up to 6 decimal places.
+   * @param coordStr The coordinate string part (latitude or longitude).
+   * @return A scaled integer representation of the coordinate.
+   */
+  function _stringCoordToInt(string memory coordStr) private pure returns (int256) {
+    bytes memory b = bytes(coordStr);
+    require(b.length > 0 && b.length < 30, "Invalid coordinate string length");
+
+    int256 result = 0;
+    int256 dotPosition = -1;
+
+    uint256 startIndex = 0;
+    bool isNegative = false;
+    if (b[0] == "-") {
+      isNegative = true;
+      startIndex = 1;
+    }
+
+    for (uint256 i = startIndex; i < b.length; i++) {
+      bytes1 char = b[i];
+
+      bool isDigit = (char >= "0" && char <= "9");
+      bool isDot = (char == ".");
+
+      require(isDigit || isDot, "Invalid character in coordinate");
+
+      if (isDot) {
+        require(dotPosition == -1, "Multiple dots in coordinate");
+        dotPosition = int256(i);
+      } else if (dotPosition == -1) {
+        // First cast uint8 to uint256, then to int256 to ensure safe conversion.
+        result = result * 10 + (int256(uint256(uint8(char))) - 48);
+      }
+    }
+
+    if (dotPosition != -1) {
+      uint256 decimalValue = 0;
+      uint256 decimalPlaces = 0;
+      for (uint256 i = uint256(dotPosition) + 1; i < b.length && decimalPlaces < 6; i++) {
+        bytes1 char = b[i];
+        require(char >= "0" && char <= "9", "Invalid character in decimal part");
+        decimalValue = decimalValue * 10 + (uint8(char) - 48);
+        decimalPlaces++;
+      }
+
+      result = result * (int256(10 ** decimalPlaces)) + int256(decimalValue);
+
+      if (decimalPlaces < 6) {
+        result = result * (int256(10 ** (6 - decimalPlaces)));
+      }
+    } else {
+      result = result * (10 ** 6);
+    }
+
+    return isNegative ? -result : result;
+  }
 
   /**
    * @dev Checks if a regenerator has reached the MINIMUM_INSPECTIONS_TO_POOL threshold.
@@ -364,7 +488,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param addr The regenerator's wallet address.
    * @param regenerationScore The score to add to the regenerator's total regeneration score.
    */
-  function _setRegenerationScore(address addr, uint32 regenerationScore) private {
+  function _setRegenerationScore(address addr, uint32 regenerationScore, uint64 inspectionId) private {
     Regenerator storage regenerator = regenerators[addr];
     require(regenerator.id != 0, "Regenerator does not exist");
 
@@ -384,7 +508,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     }
 
     // Add level(s) to the regenerator pool.
-    regeneratorPool.addLevel(addr, levels);
+    regeneratorPool.addLevel(addr, levels, inspectionId);
   }
 
   /**

@@ -17,6 +17,7 @@ struct Contributor {
   string name;
   string proofPhoto;
   Pool pool;
+  uint256 totalContributions;
   uint256 createdAt;
   uint256 lastPublishedAt;
 }

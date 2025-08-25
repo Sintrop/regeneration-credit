@@ -142,7 +142,7 @@ describe("InspectorRules", () => {
 
           await instance.afterAcceptInspection(inspe1Address, 1);
           await instance.afterAcceptInspection(inspe1Address, 1);
-          await instance.afterRealizeInspection(inspe1Address);
+          await instance.afterRealizeInspection(inspe1Address, 1);
         });
 
         context("must decreaseGiveUps", () => {
@@ -159,7 +159,7 @@ describe("InspectorRules", () => {
           await addInspector("Inspector A", inspe1Address);
           await instance.setContractCall(owner, owner);
           await instance.afterAcceptInspection(inspe1Address, 1);
-          await instance.afterRealizeInspection(inspe1Address);
+          await instance.afterRealizeInspection(inspe1Address, 1);
         });
 
         context("when do not reached minimum inspections", () => {
@@ -180,8 +180,8 @@ describe("InspectorRules", () => {
               await instance.afterAcceptInspection(inspe1Address, 1);
               await instance.afterAcceptInspection(inspe1Address, 1);
 
-              await instance.afterRealizeInspection(inspe1Address);
-              await instance.afterRealizeInspection(inspe1Address);
+              await instance.afterRealizeInspection(inspe1Address, 1);
+              await instance.afterRealizeInspection(inspe1Address, 1);
             });
 
             it("should add 1 level to pool", async () => {
@@ -203,7 +203,7 @@ describe("InspectorRules", () => {
     context("without allowed caller", async () => {
       it("should return error when", async () => {
         await addInspector("Inspector A", inspe1Address);
-        await expect(instance.connect(inspe1Address).afterRealizeInspection(inspe1Address)).to.be.revertedWith(
+        await expect(instance.connect(inspe1Address).afterRealizeInspection(inspe1Address, 1)).to.be.revertedWith(
           "Not allowed caller"
         );
       });
@@ -268,8 +268,8 @@ describe("InspectorRules", () => {
         await instance.afterAcceptInspection(inspe1Address, 1);
         await instance.afterAcceptInspection(inspe1Address, 1);
 
-        await instance.afterRealizeInspection(inspe1Address);
-        await instance.afterRealizeInspection(inspe1Address);
+        await instance.afterRealizeInspection(inspe1Address, 1);
+        await instance.afterRealizeInspection(inspe1Address, 1);
       });
 
       context("when have less then 3 inspections", () => {
@@ -281,7 +281,7 @@ describe("InspectorRules", () => {
       context("when inspector is in era 1 and current era is 1", () => {
         it("should return error", async () => {
           await instance.afterAcceptInspection(inspe1Address, 1);
-          await instance.afterRealizeInspection(inspe1Address);
+          await instance.afterRealizeInspection(inspe1Address, 1);
 
           await expect(instance.connect(inspe1Address).withdraw()).to.be.revertedWith(
             "Not eligible to withdraw for this era"
@@ -293,7 +293,7 @@ describe("InspectorRules", () => {
         context("with one inspection", () => {
           beforeEach(async () => {
             await instance.afterAcceptInspection(inspe1Address, 1);
-            await instance.afterRealizeInspection(inspe1Address);
+            await instance.afterRealizeInspection(inspe1Address, 1);
 
             await advanceBlock(args.blocksPerEra);
 
@@ -312,15 +312,15 @@ describe("InspectorRules", () => {
           beforeEach(async () => {
             await addInspector("Inspector B", inspe2Address);
             await instance.afterAcceptInspection(inspe1Address, 1);
-            await instance.afterRealizeInspection(inspe1Address);
+            await instance.afterRealizeInspection(inspe1Address, 1);
 
             await instance.afterAcceptInspection(inspe2Address, 1);
             await instance.afterAcceptInspection(inspe2Address, 1);
             await instance.afterAcceptInspection(inspe2Address, 1);
 
-            await instance.afterRealizeInspection(inspe2Address);
-            await instance.afterRealizeInspection(inspe2Address);
-            await instance.afterRealizeInspection(inspe2Address);
+            await instance.afterRealizeInspection(inspe2Address, 1);
+            await instance.afterRealizeInspection(inspe2Address, 1);
+            await instance.afterRealizeInspection(inspe2Address, 2);
 
             await advanceBlock(args.blocksPerEra);
 

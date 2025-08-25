@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { IRegenerationCredit } from "./interfaces/IRegenerationCredit.sol";
 import { Blockable } from "./shared/Blockable.sol";
 import { Callable } from "./shared/Callable.sol";
@@ -28,6 +28,12 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
 
   /// @notice The address of the `RegeneratorRules` contract.
   address private regeneratorRulesAddress;
+
+  /// @notice Maximum possible score from a single resource.
+  uint256 public constant MAX_NEW_LEVELS = 192;
+
+  /// @notice Tracks unique resource IDs to ensure levels for a resource are added only once.
+  mapping(uint64 => bool) public hasProcessedLevel;
 
   // --- Constructor ---
 
@@ -72,8 +78,17 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
   function withdraw(
     address delegate,
     uint256 era
-  ) external mustBeAllowedCaller mustBeContractCall(regeneratorRulesAddress) canWithdrawModifier(era) nonReentrant {
+  )
+    external
+    mustBeAllowedCaller
+    mustBeContractCall(regeneratorRulesAddress)
+    canWithdrawModifier(era)
+    hasWithdrawnEraModifier(era, delegate)
+    nonReentrant
+  {
     require(era <= currentContractEra(), "Era in the future");
+
+    hasWithdrawn[era][delegate] = true;
 
     // Calculate the number of tokens the user is eligible to receive for the given era.
     uint256 numTokens = _calculateUserEraTokens(era, delegate, tokensPerEra(getEpochForEra(era), halving));
@@ -84,11 +99,11 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
     // If no tokens are to be transferred, return.
     if (numTokens == 0) return;
 
+    regenerationCredit.decreaseLocked(numTokens);
+
     // Transfer the calculated tokens from this contract to the delegate.
     bool success = regenerationCredit.transfer(delegate, numTokens);
     require(success, "ERC20: transfer failed");
-
-    regenerationCredit.decreaseLocked(address(this), numTokens);
   }
 
   /**
@@ -100,8 +115,13 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
    */
   function addLevel(
     address regenerator,
-    uint256 levels
+    uint256 levels,
+    uint64 inspectionId
   ) external mustBeAllowedCaller mustBeContractCall(regeneratorRulesAddress) nonReentrant {
+    require(levels <= MAX_NEW_LEVELS, "Exceeds max levels");
+    require(!hasProcessedLevel[inspectionId], "Event already processed");
+    hasProcessedLevel[inspectionId] = true;
+
     // Calls the _addPoolLevel function from Poolable.sol.
     _addPoolLevel(regenerator, levels, currentContractEra());
   }
@@ -111,14 +131,19 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * This function adjusts the regenerator's level downwards within the system's pooling mechanism.
    * @notice Can only be called by regeneratorRules address.
    * @param addr The wallet address of the regenerator.
-   * @param levelsToRemove The number of levels to decrease the regenerator's pool level by.
+   * @param denied Remove level user status. If true, user is being denied.
    */
   function removePoolLevels(
     address addr,
-    uint256 levelsToRemove
+    uint256 amountToRemove,
+    bool denied
   ) external mustBeAllowedCaller mustBeContractCall(regeneratorRulesAddress) nonReentrant {
+    uint256 era = currentContractEra();
+
+    uint256 amountToRemovePool = denied ? eraLevels[era][addr] : amountToRemove;
+
     // Calls the _removePoolLevel function from Poolable.sol.
-    _removePoolLevel(addr, currentContractEra(), levelsToRemove);
+    _removePoolLevel(addr, era, amountToRemovePool);
   }
 
   // --- View functions ---

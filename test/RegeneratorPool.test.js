@@ -14,6 +14,14 @@ describe("RegeneratorPool", () => {
     blocksPerEra: 12,
   };
 
+  const eventId1 = ethers.toBeHex(1, 32);
+  const eventId2 = ethers.toBeHex(2, 32);
+  const eventId3 = ethers.toBeHex(3, 32);
+  const eventId4 = ethers.toBeHex(4, 32);
+  const eventId5 = ethers.toBeHex(5, 32);
+  const eventId6 = ethers.toBeHex(6, 32);
+  const eventId7 = ethers.toBeHex(7, 32);
+
   beforeEach(async () => {
     [owner, regenerator1Address, regenerator2Address] = await ethers.getSigners();
 
@@ -229,10 +237,10 @@ describe("RegeneratorPool", () => {
             });
           });
 
-          context("when totalScores is 80", () => {
-            context("when regenerator1 have 80 regenerationScore", () => {
+          context("when totalScores is 64", () => {
+            context("when regenerator1 have 64 regenerationScore", () => {
               beforeEach(async () => {
-                await instance.addLevel(regenerator1Address, 80);
+                await instance.addLevel(regenerator1Address, 64, eventId1);
                 await advanceBlock(args.blocksPerEra);
               });
 
@@ -254,17 +262,17 @@ describe("RegeneratorPool", () => {
 
           context("when totalScores is 125", () => {
             beforeEach(async () => {
-              await instance.addLevel(regenerator1Address, 80);
-              await instance.addLevel(regenerator2Address, 45);
+              await instance.addLevel(regenerator1Address, 64, eventId1);
+              await instance.addLevel(regenerator2Address, 45, eventId2);
               await advanceBlock(args.blocksPerEra);
             });
 
-            context("when regenerator1 have 80 isaScore", () => {
+            context("when regenerator1 have 64 isaScore", () => {
               it("must withdraw 20000000000000000000000000 of tokens", async () => {
                 await instance.withdraw(regenerator1Address, 1);
                 const balanceOf = await regenerationCredit.balanceOf(regenerator1Address);
 
-                expect(balanceOf).to.equal(20000000000000000000000000n);
+                expect(balanceOf).to.equal(18348623853211009174311926n);
               });
             });
 
@@ -273,7 +281,7 @@ describe("RegeneratorPool", () => {
                 await instance.withdraw(regenerator2Address, 1);
                 const balanceOf = await regenerationCredit.balanceOf(regenerator2Address);
 
-                expect(balanceOf).to.equal(11250000000000000000000000n);
+                expect(balanceOf).to.equal(12901376146788990825688073n);
               });
             });
           });
@@ -294,10 +302,10 @@ describe("RegeneratorPool", () => {
               });
             });
 
-            context("when totalScores is 80", () => {
-              context("when regenerator1 have 80 regenerationScore", () => {
+            context("when totalScores is 64", () => {
+              context("when regenerator1 have 64 regenerationScore", () => {
                 beforeEach(async () => {
-                  await instance.addLevel(regenerator1Address, 80);
+                  await instance.addLevel(regenerator1Address, 64, eventId1);
                   await advanceBlock(args.blocksPerEra * args.halving);
                 });
 
@@ -319,17 +327,17 @@ describe("RegeneratorPool", () => {
 
             context("when totalScores is 125", () => {
               beforeEach(async () => {
-                await instance.addLevel(regenerator1Address, 80);
-                await instance.addLevel(regenerator2Address, 45);
+                await instance.addLevel(regenerator1Address, 64, eventId1);
+                await instance.addLevel(regenerator2Address, 45, eventId2);
                 await advanceBlock(args.blocksPerEra * args.halving);
               });
 
-              context("when regenerator1 have 80 isaScore", () => {
+              context("when regenerator1 have 64 isaScore", () => {
                 it("must withdraw 20000000000000000000000000 of tokens", async () => {
                   await instance.withdraw(regenerator1Address, 1);
                   const balanceOf = await regenerationCredit.balanceOf(regenerator1Address);
 
-                  expect(balanceOf).to.equal(20000000000000000000000000n);
+                  expect(balanceOf).to.equal(18348623853211009174311926n);
                 });
               });
 
@@ -338,7 +346,7 @@ describe("RegeneratorPool", () => {
                   await instance.withdraw(regenerator2Address, 1);
                   const balanceOf = await regenerationCredit.balanceOf(regenerator2Address);
 
-                  expect(balanceOf).to.equal(11250000000000000000000000n);
+                  expect(balanceOf).to.equal(12901376146788990825688073n);
                 });
               });
             });
@@ -368,8 +376,8 @@ describe("RegeneratorPool", () => {
         context("when regenerator have 0 levels in era 1", () => {
           context("when add level", () => {
             beforeEach(async () => {
-              await instance.addLevel(regenerator1Address, 1);
-              await instance.addLevel(regenerator2Address, 1);
+              await instance.addLevel(regenerator1Address, 1, eventId1);
+              await instance.addLevel(regenerator2Address, 1, eventId2);
             });
 
             it("era 1 must have 2 level", async () => {
@@ -400,24 +408,24 @@ describe("RegeneratorPool", () => {
 
         context("when regenerators have levels in era 1", () => {
           beforeEach(async () => {
-            await instance.addLevel(regenerator1Address, 1);
-            await instance.addLevel(regenerator1Address, 80);
+            await instance.addLevel(regenerator1Address, 1, eventId1);
+            await instance.addLevel(regenerator1Address, 64, eventId2);
 
-            await instance.addLevel(regenerator2Address, 1);
-            await instance.addLevel(regenerator2Address, 1);
-            await instance.addLevel(regenerator2Address, 1);
+            await instance.addLevel(regenerator2Address, 1, eventId3);
+            await instance.addLevel(regenerator2Address, 1, eventId4);
+            await instance.addLevel(regenerator2Address, 1, eventId5);
           });
 
           context("when add level", () => {
             beforeEach(async () => {
-              await instance.addLevel(regenerator1Address, 1);
-              await instance.addLevel(regenerator2Address, 1);
+              await instance.addLevel(regenerator1Address, 1, eventId6);
+              await instance.addLevel(regenerator2Address, 1, eventId7);
             });
 
             it("era 1 must have 7 level", async () => {
               const era1 = await instance.getEra(1);
 
-              expect(era1.levels).to.equal(86);
+              expect(era1.levels).to.equal(70);
             });
 
             it("era 2 must have 0 level", async () => {
@@ -429,7 +437,7 @@ describe("RegeneratorPool", () => {
             it("eraLevels must have 82 level to regenerator1", async () => {
               const eraLevels = await instance.eraLevels(1, regenerator1Address);
 
-              expect(eraLevels).to.equal(82);
+              expect(eraLevels).to.equal(66);
             });
 
             it("eraLevels must have 4 level to regenerator2", async () => {
@@ -444,21 +452,21 @@ describe("RegeneratorPool", () => {
       context("when add level in era 2", () => {
         context("when regenerators have levels in era 1", () => {
           beforeEach(async () => {
-            await instance.addLevel(regenerator1Address, 80);
+            await instance.addLevel(regenerator1Address, 64, eventId1);
           });
 
           context("when add level", () => {
             beforeEach(async () => {
               await advanceBlock(args.blocksPerEra);
 
-              await instance.addLevel(regenerator1Address, 20);
-              await instance.addLevel(regenerator1Address, 20);
+              await instance.addLevel(regenerator1Address, 20, eventId2);
+              await instance.addLevel(regenerator1Address, 20, eventId3);
             });
 
             it("era 1 must have 80 level", async () => {
               const era1 = await instance.getEra(1);
 
-              expect(era1.levels).to.equal(80);
+              expect(era1.levels).to.equal(64);
             });
 
             it("era 2 must have 40 level", async () => {
@@ -470,7 +478,7 @@ describe("RegeneratorPool", () => {
             it("eraLevels must have 80 level to regenerator1", async () => {
               const eraLevels = await instance.eraLevels(1, regenerator1Address);
 
-              expect(eraLevels).to.equal(80);
+              expect(eraLevels).to.equal(64);
             });
 
             it("eraLevels must have 4 level to regenerator2", async () => {
@@ -481,13 +489,41 @@ describe("RegeneratorPool", () => {
           });
         });
       });
+
+      context("when the same inspection ID is processed twice", () => {
+        // We'll use a specific inspection ID for the replay attempt.
+        const duplicateInspectionId = 123;
+        const levelsToAdd = 64; // A valid amount of levels.
+
+        beforeEach(async () => {
+          // First, we make the successful call with the inspection ID.
+          await instance.connect(owner).addLevel(regenerator1Address, levelsToAdd, duplicateInspectionId);
+        });
+
+        it("should revert the second transaction with the same inspection ID", async () => {
+          // Now, we attempt to call `addLevel` again with the EXACT same inspection ID.
+          // We expect this transaction to be reverted by our security check.
+          await expect(
+            instance.connect(owner).addLevel(regenerator1Address, levelsToAdd, duplicateInspectionId)
+          ).to.be.revertedWith("Event already processed");
+        });
+
+        it("should have added the levels only once", async () => {
+          // This is a sanity check to ensure the first call worked and the second was blocked.
+          const era1 = await instance.getEra(1);
+          expect(era1.levels).to.equal(levelsToAdd);
+
+          const regenerator1Levels = await instance.eraLevels(1, regenerator1Address);
+          expect(regenerator1Levels).to.equal(levelsToAdd);
+        });
+      });
     });
 
     context("without allowed caller", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(regenerator1Address).addLevel(regenerator1Address, 1)).to.be.revertedWith(
-          "Not allowed caller"
-        );
+        await expect(
+          instance.connect(regenerator1Address).addLevel(regenerator1Address, 1, eventId1)
+        ).to.be.revertedWith("Not allowed caller");
       });
     });
   });

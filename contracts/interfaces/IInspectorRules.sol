@@ -37,7 +37,12 @@ interface IInspectorRules {
    * @param inspector The address of the inspector who completed the inspection.
    * @return The new calculated level for the inspector.
    */
-  function afterRealizeInspection(address inspector) external returns (uint256);
+  function afterRealizeInspection(address inspector, uint64 inspectionId) external returns (uint256);
+
+  /**
+   * @dev Function to deny inspectors.
+   */
+  function denyInspector(address inspector) external;
 
   /**
    * @notice Retrieves the full Inspector struct for a given account.
@@ -77,7 +82,7 @@ interface IInspectorRules {
    * @notice Removes a specified level from an inspector's pool configuration.
    * @dev As specified, this function does not return a value.
    * @param inspector The address of the inspector.
-   * @param levelToRemove The ID of the level to be removed.
+   * @param denied Remove level user status. If true, user is being denied.
    */
-  function removePoolLevels(address inspector, uint256 levelToRemove) external;
+  function removePoolLevels(address inspector, bool denied) external;
 }

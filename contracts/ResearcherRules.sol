@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.27;
 
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { Invitable } from "./shared/Invitable.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
@@ -45,6 +45,9 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice Max character length for calculator item unit.
   uint16 private constant MAX_UNIT_LENGTH = 20;
+
+  /// @notice Maximum possible level from a single resource.
+  uint8 private constant RESOURCE_LEVEL = 1;
 
   // --- State variables ---
 
@@ -91,6 +94,9 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   /// @notice A mapping from a researcher's wallet address to an array of `Penalty` structs they have received.
   mapping(address => Penalty[]) public penalties;
 
+  /// @notice Tracks research IDs that have already been invalidated.
+  mapping(uint64 => bool) public researchPenalized;
+
   /// @notice A mapping from a unique reseracher ID to their corresponding wallet address.
   /// Facilitates lookup of a reseracher's address by their ID.
   mapping(uint256 => address) public researchersAddress;
@@ -116,6 +122,9 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `InspectionRules` contract.
   address private validationRulesAddress;
+
+  /// @notice Tracks which validator has voted on which research to prevent duplicate votes.
+  mapping(uint64 => mapping(address => bool)) private hasVotedOnResearch;
 
   // --- Constructor ---
 
@@ -167,7 +176,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    */
   function addResearcher(string memory name, string memory proofPhoto) external {
     require(bytes(name).length <= MAX_NAME_LENGTH && bytes(proofPhoto).length <= MAX_HASH_LENGTH, "Max characters");
-    require(communityRules.userTypesCount(USER_TYPE) <= MAX_USER_COUNT, "Max user limit");
+    require(communityRules.userTypesCount(USER_TYPE) < MAX_USER_COUNT, "Max user limit");
 
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
@@ -227,7 +236,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
     // Update pool level
     researcher.pool.level++;
-    researcherPool.addLevel(msg.sender, 1);
+
+    researcherPool.addLevel(msg.sender, 1, id);
 
     // --- Event Emission ---
     emit ResearchPublished(id, msg.sender, block.number);
@@ -242,9 +252,18 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param justification A brief justification for invalidating the research (Max characters).
    */
   function addResearchValidation(uint64 id, string memory justification) external nonReentrant {
+    // Character limit validation for justification.
     require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters");
+    // Check if the caller is eligible to vote.
     require(voteRules.canVote(msg.sender), "Not a voter");
+    // Check if the caller has waited the required time between votes.
     require(validationRules.waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
+    // Check if the caller has already voted for this resource.
+    require(!hasVotedOnResearch[id][msg.sender], "Already voted");
+    // Check if the resource has already been penalized.
+    require(!researchPenalized[id], "Penalties already applied");
+
+    hasVotedOnResearch[id][msg.sender] = true;
 
     Research memory research = researches[id];
 
@@ -253,15 +272,25 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     research.validationsCount += 1;
     researches[id] = research;
 
-    bool invalidate = research.validationsCount >= validationRules.votesToInvalidate();
+    uint256 votesNeeded = validationRules.votesToInvalidate();
+    require(votesNeeded > 1, "Validation threshold cannot be less than 2");
 
-    if (invalidate) {
-      research = _invalidateResearch(research);
+    if (research.validationsCount >= votesNeeded) {
+      researchPenalized[id] = true;
+
+      _invalidateResearch(research);
       // --- Event Emission ---
       emit ResearchInvalidated(id, msg.sender, justification);
-    }
 
-    validationRules.addResearchValidation(research, justification, msg.sender);
+      uint256 researcherTotalPenalties = addPenalty(research.createdBy, id);
+
+      if (researcherTotalPenalties >= maxPenalties) {
+        _denyResearcher(research.createdBy);
+      }
+    }
+    validationRules.updateValidatorLastVoteBlock(msg.sender);
+
+    emit ResearchValidation(msg.sender, research.id, justification);
   }
 
   /**
@@ -290,7 +319,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
     uint64 id = calculatorItemsCount + 1;
 
-    calculatorItems[id] = CalculatorItem(id, msg.sender, item, thesis, unit, carbonImpact);
+    calculatorItems[id] = CalculatorItem(id, msg.sender, item, thesis, unit, carbonImpact, block.number);
     calculatorItemsCount++;
     researchers[msg.sender].lastCalculatorItemAt = block.number;
     researchers[msg.sender].publishedItems++;
@@ -316,7 +345,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
     uint64 id = evaluationMethodsCount + 1;
 
-    evaluationMethods[id] = EvaluationMethod(id, msg.sender, title, research, projectURL);
+    evaluationMethods[id] = EvaluationMethod(id, msg.sender, title, research, projectURL, block.number);
     evaluationMethodsCount++;
     researchers[msg.sender].canPublishMethod = false;
   }
@@ -348,18 +377,18 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @notice Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
    * this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
    * @param addr The wallet address of the researcher from whom levels are to be removed.
-   * @param levelsToRemove The number of levels/score points to decrease. If `0`, the researcher's level is reset to `0`.
+   * @param denied Remove level user status. If true, user is being denied.
    */
   function removePoolLevels(
     address addr,
-    uint256 levelsToRemove
+    bool denied
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
-    Researcher memory researcher = researchers[addr];
+    if (!denied) researchers[addr].pool.level -= RESOURCE_LEVEL;
 
-    researchers[addr].pool.level -= levelsToRemove > 0 ? levelsToRemove : researcher.pool.level;
-
-    researcherPool.removePoolLevels(addr, levelsToRemove);
+    researcherPool.removePoolLevels(addr, denied);
   }
+
+  // --- Private  functions ---
 
   /**
    * @dev Adds a penalty to a researcher's record when one of their researches is invalidated.
@@ -368,16 +397,30 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param researchId The ID of the research associated with this penalty.
    * @return uint256 The total number of penalties the researcher has accumulated.
    */
-  function addPenalty(
-    address addr,
-    uint64 researchId
-  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) returns (uint256) {
+  function addPenalty(address addr, uint64 researchId) private returns (uint256) {
     penalties[addr].push(Penalty(researchId));
 
     return totalPenalties(addr);
   }
 
-  // --- Private  functions ---
+  /**
+   * @dev Sets a user's to DENIED in CommunityRules and removes their levels from pools.
+   * @param userAddress The address of the user to deny.
+   */
+  function _denyResearcher(address userAddress) private {
+    if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
+
+    communityRules.setDeniedType(userAddress);
+
+    // Inviter slashing mechanism.
+    CommunityTypes.Invitation memory invitation = communityRules.getInvitation(userAddress);
+    // If invited, add invitation penalty.
+    if (invitation.inviter != address(0)) {
+      communityRules.addInviterPenalty(invitation.inviter);
+    }
+
+    researcherPool.removePoolLevels(userAddress, true);
+  }
 
   /**
    * @dev Private helper function that invalidates a research by updating its status.
@@ -389,6 +432,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     research.valid = false;
     research.invalidatedAt = block.number;
     researches[research.id] = research;
+
+    researcherPool.removePoolLevels(research.createdBy, false);
 
     return research;
   }
@@ -510,6 +555,14 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param publishedAt The block number when the research was published.
    */
   event ResearchPublished(uint256 indexed researchId, address indexed researcher, uint256 publishedAt);
+
+  /**
+   * @notice Emitted
+   * @param _validatorAddress The address of the validator.
+   * @param _resourceId The id of the resource receiving the vote.
+   * @param _justification The justification provided for the vote.
+   */
+  event ResearchValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
 
   /**
    * @dev Emitted when a research is successfully invalidated by validators.
