@@ -29,34 +29,20 @@ contract ValidationRules is Callable, ReentrancyGuard {
   // --- Constants ---
 
   /// @notice Number of inspections required for a Regenerator to achieve validation immunity.
-  uint8 private constant REGENERATOR_VALIDATION_IMMUNITY_THRESHOLD = 5;
+  uint8 private constant REGENERATOR_VALIDATION_IMMUNITY_THRESHOLD = 6;
 
   /// @notice Max character length for the justification provided in a validation vote.
   uint16 private constant MAX_JUSTIFICATION_LENGTH = 300;
 
-  /// @notice The number of levels to remove from a user when their resource is invalidated.
-  uint256 private constant RESOURCE_INVALIDATION_LEVEL_PENALTY = 1;
-
   /// @notice Voter thresholds to invalidate a resource/user.
-  uint32 private constant VOTERS_THRESHOLD_LEVEL_1 = 50;
-  uint32 private constant VOTERS_THRESHOLD_LEVEL_2 = 500;
-  uint32 private constant VOTERS_THRESHOLD_LEVEL_3 = 1000;
-  uint32 private constant VOTERS_THRESHOLD_LEVEL_4 = 2000;
-  uint32 private constant VOTERS_THRESHOLD_LEVEL_5 = 4000;
-  uint32 private constant VOTERS_THRESHOLD_LEVEL_6 = 8000;
-  uint32 private constant VOTERS_THRESHOLD_LEVEL_7 = 16000;
-  uint32 private constant VOTERS_THRESHOLD_LEVEL_MAX = 32000;
+  uint32 private constant VOTERS_THRESHOLD_LEVEL_1 = 25;
+  uint32 private constant VOTERS_THRESHOLD_LEVEL_2 = 250;
 
   /// @notice Votes thresholds to invalidate a resource/user.
   uint32 private constant VOTES_TO_INVALIDATE_LEVEL_1 = 2;
   uint32 private constant VOTES_TO_INVALIDATE_LEVEL_2 = 5;
-  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_3 = 10;
-  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_4 = 20;
-  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_5 = 40;
-  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_6 = 80;
-  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_7 = 160;
-  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_8 = 320;
-  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_MAX = 640;
+
+  uint256 private constant DYNAMIC_INVALIDATION_PERCENTAGE = 2;
 
   // --- State variables ---
 
@@ -423,6 +409,13 @@ contract ValidationRules is Callable, ReentrancyGuard {
     if (userType == CommunityTypes.UserType.ACTIVIST) return activistRules.removePoolLevels(userAddress, true);
   }
 
+  /**
+   * @dev Checks if a regenerator has reached validation imunity.
+   * @dev The process to achieve immunity will take at least four eras, enough time to review
+   * and ensure the user is in compliance. After this time, the user is granted immunity.
+   * @param addr The address of the regenerator.
+   * @return bool True if user has reached validation imunity, false otherwise.
+   */
   function _checkRegeneratorImmunity(address addr) private view returns (bool) {
     if (!communityRules.userTypeIs(CommunityTypes.UserType.REGENERATOR, addr)) return true;
 
@@ -450,18 +443,23 @@ contract ValidationRules is Callable, ReentrancyGuard {
    * Calculation is based on the `votersCount` which includes activists, researchers, developers, and contributors.
    * @return count Number of votes required for invalidation.
    */
-  function votesToInvalidate() public view returns (uint256 count) {
+  function votesToInvalidate() public view returns (uint256) {
     uint256 voters = communityRules.votersCount();
 
-    if (voters <= VOTERS_THRESHOLD_LEVEL_1) return VOTES_TO_INVALIDATE_LEVEL_1;
-    if (voters <= VOTERS_THRESHOLD_LEVEL_2) return VOTES_TO_INVALIDATE_LEVEL_2;
-    if (voters <= VOTERS_THRESHOLD_LEVEL_3) return VOTES_TO_INVALIDATE_LEVEL_3;
-    if (voters <= VOTERS_THRESHOLD_LEVEL_4) return VOTES_TO_INVALIDATE_LEVEL_4;
-    if (voters <= VOTERS_THRESHOLD_LEVEL_5) return VOTES_TO_INVALIDATE_LEVEL_5;
-    if (voters <= VOTERS_THRESHOLD_LEVEL_6) return VOTES_TO_INVALIDATE_LEVEL_6;
-    if (voters <= VOTERS_THRESHOLD_LEVEL_7) return VOTES_TO_INVALIDATE_LEVEL_7;
-    if (voters <= VOTERS_THRESHOLD_LEVEL_MAX) return VOTES_TO_INVALIDATE_LEVEL_8;
-    if (voters > VOTERS_THRESHOLD_LEVEL_MAX) return VOTES_TO_INVALIDATE_LEVEL_MAX;
+    // Threshold 1: Very early stage, requires a fixed number of 2 votes.
+    if (voters < VOTERS_THRESHOLD_LEVEL_1) {
+      return VOTES_TO_INVALIDATE_LEVEL_1;
+    }
+
+    // Threshold 2: Early stage, requires a fixed number of 5 votes.
+    if (voters < VOTERS_THRESHOLD_LEVEL_2) {
+      return VOTES_TO_INVALIDATE_LEVEL_2;
+    }
+
+    // Threshold 3: Mature stage, calculates votes based on a percentage of active voters.
+    uint256 invalidationVotes = (voters * DYNAMIC_INVALIDATION_PERCENTAGE) / 100;
+
+    return invalidationVotes + 1;
   }
 
   /**

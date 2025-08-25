@@ -1063,6 +1063,7 @@ describe("ValidationRules", () => {
           await regeneratorRules.afterRealizeInspection(user2Address, 1, 3);
           await regeneratorRules.afterRealizeInspection(user2Address, 1, 4);
           await regeneratorRules.afterRealizeInspection(user2Address, 1, 5);
+          await regeneratorRules.afterRealizeInspection(user2Address, 1, 6);
         });
 
         it("must returns error message", async () => {
@@ -1813,9 +1814,9 @@ describe("ValidationRules", () => {
       await instance.setContractInterfaces(validationRulesDependencies);
     });
 
-    context("when votersCount is less than 50", () => {
+    context("when votersCount is less 25", () => {
       beforeEach(async () => {
-        await mockContract.mock.votersCount.returns(49);
+        await mockContract.mock.votersCount.returns(20);
       });
 
       it("returns 2", async () => {
@@ -1825,9 +1826,9 @@ describe("ValidationRules", () => {
       });
     });
 
-    context("when votersCount is bigger than 50 and less than 500", () => {
+    context("when votersCount is less than 50", () => {
       beforeEach(async () => {
-        await mockContract.mock.votersCount.returns(400);
+        await mockContract.mock.votersCount.returns(49);
       });
 
       it("returns 5", async () => {
@@ -1837,87 +1838,123 @@ describe("ValidationRules", () => {
       });
     });
 
-    context("when votersCount votersCount is bigger than 500 and less than 1000", () => {
+    context("when votersCount is 249", () => {
+      beforeEach(async () => {
+        await mockContract.mock.votersCount.returns(249);
+      });
+
+      it("returns 5", async () => {
+        const votesToInvalidate = await instance.votesToInvalidate();
+
+        expect(votesToInvalidate).to.equal(5);
+      });
+    });
+
+    context("when votersCount is 255", () => {
+      beforeEach(async () => {
+        await mockContract.mock.votersCount.returns(255);
+      });
+
+      it("returns 6", async () => {
+        const votesToInvalidate = await instance.votesToInvalidate();
+
+        expect(votesToInvalidate).to.equal(6);
+      });
+    });
+
+    context("when votersCount is 600", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(600);
       });
 
-      it("returns 10", async () => {
+      it("returns 13", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(10);
+        expect(votesToInvalidate).to.equal(13);
       });
     });
 
-    context("when votersCount is bigger than 1000 and less than 2000", () => {
+    context("when votersCount is 1200", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(1200);
       });
 
-      it("returns 20", async () => {
+      it("returns 25", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(20);
+        expect(votesToInvalidate).to.equal(25);
       });
     });
 
-    context("when votersCount is bigger than 2000 and less than 4000", () => {
+    context("when votersCount is 2500", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(2500);
       });
 
-      it("returns 40", async () => {
+      it("returns 51", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(40);
+        expect(votesToInvalidate).to.equal(51);
       });
     });
 
-    context("when votersCount is bigger than 4000 and less than 8000", () => {
+    context("when votersCount is 5000", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(5000);
       });
 
-      it("returns 80", async () => {
+      it("returns 101", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(80);
+        expect(votesToInvalidate).to.equal(101);
       });
     });
 
-    context("when votersCount is bigger than 8000 and less than 16000", () => {
+    context("when votersCount is 10000", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(10000);
       });
 
-      it("returns 160", async () => {
+      it("returns 201", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(160);
+        expect(votesToInvalidate).to.equal(201);
       });
     });
 
-    context("when votersCount is bigger than 16000 and less than 32000", () => {
+    context("when votersCount is 20000", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(20000);
       });
 
-      it("returns 320", async () => {
+      it("returns 401", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(320);
+        expect(votesToInvalidate).to.equal(401);
       });
     });
 
-    context("when votersCounts bigger than 32000", () => {
+    context("wwhen votersCount is 35000", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(35000);
       });
 
-      it("returns 640", async () => {
+      it("returns 701", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(640);
+        expect(votesToInvalidate).to.equal(701);
+      });
+    });
+
+    context("when votersCounts is 64000", () => {
+      beforeEach(async () => {
+        await mockContract.mock.votersCount.returns(64000);
+      });
+
+      it("returns 1281", async () => {
+        const votesToInvalidate = await instance.votesToInvalidate();
+
+        expect(votesToInvalidate).to.equal(1281);
       });
     });
   });
