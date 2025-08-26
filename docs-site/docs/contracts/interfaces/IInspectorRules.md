@@ -65,7 +65,7 @@ _Updates the inspector's state accordingly._
 ### afterRealizeInspection
 
 ```solidity
-function afterRealizeInspection(address inspector) external returns (uint256)
+function afterRealizeInspection(address inspector, uint64 inspectionId) external returns (uint256)
 ```
 
 A hook to be called after an inspector successfully completes an inspection.
@@ -77,12 +77,21 @@ _This function likely updates the inspector's counters and returns their new lev
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | inspector | address | The address of the inspector who completed the inspection. |
+| inspectionId | uint64 |  |
 
 #### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | [0] | uint256 | The new calculated level for the inspector. |
+
+### denyInspector
+
+```solidity
+function denyInspector(address inspector) external
+```
+
+_Function to deny inspectors._
 
 ### getInspector
 
@@ -172,7 +181,7 @@ _Likely called when an inspection is cancelled or invalidated._
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address inspector, uint256 levelToRemove) external
+function removePoolLevels(address inspector, bool denied) external
 ```
 
 Removes a specified level from an inspector's pool configuration.
@@ -184,5 +193,5 @@ _As specified, this function does not return a value._
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | inspector | address | The address of the inspector. |
-| levelToRemove | uint256 | The ID of the level to be removed. |
+| denied | bool | Remove level user status. If true, user is being denied. |
 

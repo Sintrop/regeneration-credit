@@ -184,7 +184,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
 
     if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
 
-    communityRules.setDeniedType(userAddress);
+    communityRules.setToDenied(userAddress);
 
     // Inviter slashing mechanism.
     CommunityTypes.Invitation memory invitation = communityRules.getInvitation(userAddress);

@@ -79,6 +79,14 @@ mapping(address => string) areaPhoto
 
 A mapping from a regenerator's wallet address to a hash or identifier of their area photo.
 
+### seenCoordinates
+
+```solidity
+mapping(bytes32 => bool) seenCoordinates
+```
+
+Tracks if a coordinate point have already been processed.
+
 ### totalImpactRegenerators
 
 ```solidity
@@ -194,7 +202,7 @@ Allows a regenerator to update their area photo for their regeneration area.
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, uint256 levelsToRemove) external
+function removePoolLevels(address addr, bool denied) external
 ```
 
 Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
@@ -208,7 +216,26 @@ This function updates the regenerator's local regeneration score and notifies th
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The wallet address of the regenerator from whom levels are to be removed. |
-| levelsToRemove | uint256 | The number of levels/score points to decrease. If `0`, the regenerator's regeneration score is reset to `0`, and their area is decremented from the total `regenerationArea`. |
+| denied | bool | Remove level user status. If true, user is being denied. |
+
+### removeInspectionLevels
+
+```solidity
+function removeInspectionLevels(address addr, uint256 amountToRemove) external
+```
+
+Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
+this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
+
+_Allows an authorized caller to remove levels from a regenerator's pool.
+This function updates the regenerator's local regeneration score and notifies the `RegeneratorPool` contract._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| addr | address | The wallet address of the regenerator from whom levels are to be removed. |
+| amountToRemove | uint256 | The number of levels/score points to decrease. |
 
 ### decrementInspections
 
@@ -268,7 +295,7 @@ _This function is intended to be called by a whitelisted external contract, the 
 ### afterRealizeInspection
 
 ```solidity
-function afterRealizeInspection(address addr, uint32 score) external returns (uint256)
+function afterRealizeInspection(address addr, uint32 score, uint64 inspectionId) external returns (uint256)
 ```
 
 Processes actions after an inspection is successfully realized for a regenerator's area.
@@ -283,6 +310,7 @@ after an inspection is completed._
 | ---- | ---- | ----------- |
 | addr | address | The regenerator's wallet address. |
 | score | uint32 | The score obtained from the realized inspection, to be added to the regenerator's total score. |
+| inspectionId | uint64 | The id of the realized inspection. |
 
 #### Return Values
 

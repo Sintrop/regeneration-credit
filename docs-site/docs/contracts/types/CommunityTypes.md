@@ -27,9 +27,7 @@ translations, design, and any other general functions that benefit the project.
 Supporter: Any individual or organization, who can finance regeneration by
 purchasing tokens from users and then burning them to receive an offset certificate.
 
-Denied: Represents a user whose access or participation has been explicitly denied.
-
-_UserTypes of the system_
+_UserTypes of the system._
 
 ```solidity
 enum UserType {
@@ -40,8 +38,7 @@ enum UserType {
   DEVELOPER,
   CONTRIBUTOR,
   ACTIVIST,
-  SUPPORTER,
-  DENIED
+  SUPPORTER
 }
 ```
 
@@ -62,6 +59,7 @@ struct Delation {
   address reported;
   string title;
   string testimony;
+  uint256 createdAtBlock;
 }
 ```
 

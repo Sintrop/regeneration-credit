@@ -45,7 +45,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   /// @notice The maximum number of penalties a contributor can accumulate before being denied.
   uint8 public immutable maxPenalties;
 
-  /// @notice The minimum number of blocks that must elapse between a contributor's successful contribution publications.
+  /// @notice The minimum number of blocks that must elapse between contribution publications.
   /// This prevents spamming or rapid consecutive contributions.
   uint32 public immutable timeBetweenWorks;
 
@@ -257,6 +257,8 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * @param justification A string explaining why the contribution is being invalidated.
    */
   function addContributionValidation(uint64 id, string memory justification) external nonReentrant {
+    // Check if user is valid.
+    require(!communityRules.isDenied(msg.sender), "User denied");
     // Character limit validation for justification.
     require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters");
     // Check if the caller is eligible to vote.
@@ -345,8 +347,9 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
 
   /**
    * @dev Allows an authorized caller to remove levels from a contributor's pool.
-   * This function updates the contributor's local level and notifies the `ContributorPool` contract.
-   * @notice Can only be called by ContributorRules address.
+   * This function updates the contributor's local level if user is not being denied and
+   * notifies the `ContributorPool` contract to remove the pool level.
+   * @notice Can only be called by ValidationRules address.
    * @param addr The wallet address of the contributor from whom levels are to be removed.
    * @param denied Remove level user status. If true, user is being denied.
    */
@@ -380,7 +383,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   function _denyContributor(address userAddress) private {
     if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
 
-    communityRules.setDeniedType(userAddress);
+    communityRules.setToDenied(userAddress);
 
     // Inviter slashing mechanism.
     CommunityTypes.Invitation memory invitation = communityRules.getInvitation(userAddress);
@@ -577,16 +580,4 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   /// @param newLevel The new total level of the contributor.
   /// @param blockNumber The block number at which the level increase occurred.
   event ContributorLevelIncreased(address indexed contributorAddress, uint256 newLevel, uint256 blockNumber);
-
-  /// @dev Emitted when a contributor's pool levels are removed.
-  /// @param contributorAddress The address of the contributor whose levels were removed.
-  /// @param levelsRemoved The number of levels that were removed.
-  /// @param newLevel The new total level of the contributor after removal.
-  /// @param blockNumber The block number at which the level removal occurred.
-  event ContributorLevelRemoved(
-    address indexed contributorAddress,
-    uint256 levelsRemoved,
-    uint256 newLevel,
-    uint256 blockNumber
-  );
 }

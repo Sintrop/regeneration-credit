@@ -82,7 +82,7 @@ interface ICommunityRules {
    * @notice Sets a user's type to a 'denied' or 'invalid' state.
    * @param account The address of the user to be denied.
    */
-  function setDeniedType(address account) external;
+  function setToDenied(address account) external;
 
   /**
    * @notice Returns the total number of users eligible to vote.

@@ -2,7 +2,7 @@
 
 ## Supporter
 
-_Supporter user type data structure_
+_Supporter user type data structure._
 
 ### Parameters
 
@@ -24,7 +24,7 @@ struct Supporter {
 ```
 ## Publication
 
-_Publication data structure_
+_Publication data structure._
 
 ### Parameters
 
@@ -42,7 +42,7 @@ struct Publication {
 ```
 ## Offset
 
-_Offset data structure_
+_Offset data structure._
 
 ### Parameters
 

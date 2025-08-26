@@ -118,6 +118,14 @@ mapping(address => struct Penalty[]) penalties
 
 A mapping from a researcher's wallet address to an array of `Penalty` structs they have received.
 
+### researchPenalized
+
+```solidity
+mapping(uint64 => bool) researchPenalized
+```
+
+Tracks research IDs that have already been invalidated.
+
 ### researchersAddress
 
 ```solidity
@@ -286,7 +294,7 @@ Increments the researcher's `pool.currentEra` upon successful withdrawal attempt
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, uint256 levelsToRemove) external
+function removePoolLevels(address addr, bool denied) external
 ```
 
 Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
@@ -300,30 +308,7 @@ This function updates the researcher's local score and notifies the `ResearcherP
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The wallet address of the researcher from whom levels are to be removed. |
-| levelsToRemove | uint256 | The number of levels/score points to decrease. If `0`, the researcher's level is reset to `0`. |
-
-### addPenalty
-
-```solidity
-function addPenalty(address addr, uint64 researchId) external returns (uint256)
-```
-
-This function must be called by the ValidationRules contract.
-
-_Adds a penalty to a researcher's record when one of their researches is invalidated._
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| addr | address | The wallet address of the researcher receiving the penalty. |
-| researchId | uint64 | The ID of the research associated with this penalty. |
-
-#### Return Values
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | uint256 The total number of penalties the researcher has accumulated. |
+| denied | bool | Remove level user status. If true, user is being denied. |
 
 ### canSendInvite
 
@@ -527,6 +512,22 @@ _Emitted when a new research report is published._
 | researchId | uint256 | The unique ID of the published research. |
 | researcher | address | The address of the researcher who published the research. |
 | publishedAt | uint256 | The block number when the research was published. |
+
+### ResearchValidation
+
+```solidity
+event ResearchValidation(address _validatorAddress, uint256 _resourceId, string _justification)
+```
+
+Emitted
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _validatorAddress | address | The address of the validator. |
+| _resourceId | uint256 | The id of the resource receiving the vote. |
+| _justification | string | The justification provided for the vote. |
 
 ### ResearchInvalidated
 

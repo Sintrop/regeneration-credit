@@ -4,15 +4,15 @@ pragma solidity ^0.8.27;
 import { CommunityTypes } from "./CommunityTypes.sol";
 
 /**
- * @dev Developer user type data structure
- * @param id User id
- * @param developerWallet Developer wallet address
- * @param name User name
- * @param proofPhoto Hash of the identity photo
- * @param pool Pool data
- * @param totalReports Number of published reports
- * @param createdAt Block of user creation
- * @param lastPublishedAt Block of last report publication
+ * @dev Developer user type data structure.
+ * @param id User id.
+ * @param developerWallet Developer wallet address.
+ * @param name User name.
+ * @param proofPhoto Hash of the identity photo.
+ * @param pool Pool data.
+ * @param totalReports Number of published reports.
+ * @param createdAt Block of user creation.
+ * @param lastPublishedAt Block of last report publication.
  */
 struct Developer {
   uint64 id;
@@ -26,9 +26,9 @@ struct Developer {
 }
 
 /**
- * @dev Developer pool data
- * @param level User pool level
- * @param currentEra User currentEra, updated after each withdraw
+ * @dev Developer pool data.
+ * @param level User pool level.
+ * @param currentEra User currentEra, updated after each withdraw.
  */
 struct Pool {
   uint256 level;
@@ -36,7 +36,7 @@ struct Pool {
 }
 
 /**
- * @dev Report resource data structure
+ * @dev Report resource data structure.
  */
 struct Report {
   uint64 id;
@@ -51,14 +51,14 @@ struct Report {
 }
 
 /**
- * @dev Report penalty
+ * @dev Report penalty.
  */
 struct Penalty {
   uint64 reportId;
 }
 
 /**
- * @dev System used contracts address
+ * @dev System used contracts address.
  */
 struct ContractsDependency {
   address communityRulesAddress;

@@ -99,6 +99,7 @@ contract InvitationRules is Ownable, ReentrancyGuard {
    */
   function invite(address invited, CommunityTypes.UserType userType) external nonReentrant {
     require(communityRules.inviterPenalties(msg.sender) < MAX_INVITER_PENALTIES, "Too many penalties");
+    require(!communityRules.isDenied(msg.sender), "User denied");
 
     CommunityTypes.UserType msgSenderUserType = communityRules.getUser(msg.sender);
 

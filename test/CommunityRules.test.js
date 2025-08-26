@@ -603,7 +603,7 @@ describe("CommunityRules", function () {
 
       context("when some voters is  denied", () => {
         beforeEach(async () => {
-          await instance.setDeniedType(user2Address);
+          await instance.setToDenied(user2Address);
         });
 
         it("must return only valid voters", async () => {
@@ -671,7 +671,7 @@ describe("CommunityRules", function () {
     });
   });
 
-  describe("#setDeniedType", () => {
+  describe("#setToDenied", () => {
     context("with allowed user", () => {
       beforeEach(async () => {
         await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
@@ -679,7 +679,7 @@ describe("CommunityRules", function () {
       });
 
       beforeEach(async () => {
-        await communityRules.setDeniedType(user1Address);
+        await communityRules.setToDenied(user1Address);
       });
 
       it("set denied to true", async () => {
@@ -702,7 +702,7 @@ describe("CommunityRules", function () {
       });
 
       it("", async () => {
-        await expect(communityRules.connect(user1Address).setDeniedType(user1Address)).to.be.revertedWith(
+        await expect(communityRules.connect(user1Address).setToDenied(user1Address)).to.be.revertedWith(
           "Not allowed caller"
         );
       });

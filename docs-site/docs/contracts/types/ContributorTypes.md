@@ -2,7 +2,7 @@
 
 ## Contributor
 
-_Contributor user type data structure_
+_Contributor user type data structure._
 
 ### Parameters
 
@@ -16,13 +16,14 @@ struct Contributor {
   string name;
   string proofPhoto;
   struct Pool pool;
+  uint256 totalContributions;
   uint256 createdAt;
   uint256 lastPublishedAt;
 }
 ```
 ## Pool
 
-_Contributor pool data_
+_Contributor pool data._
 
 ### Parameters
 
@@ -37,7 +38,7 @@ struct Pool {
 ```
 ## Contribution
 
-_Contribution data structure_
+_Contribution data structure._
 
 ### Parameters
 
@@ -59,7 +60,7 @@ struct Contribution {
 ```
 ## Penalty
 
-_Contribution penalty_
+_Contribution penalty._
 
 ```solidity
 struct Penalty {
@@ -68,7 +69,7 @@ struct Penalty {
 ```
 ## ContractsDependency
 
-_System used contracts address_
+_System used contracts address._
 
 ```solidity
 struct ContractsDependency {

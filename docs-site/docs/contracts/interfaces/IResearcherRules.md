@@ -113,7 +113,7 @@ Returns the current era of the related pool.
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address researcher, uint256 levelToRemove) external
+function removePoolLevels(address researcher, bool denied) external
 ```
 
 Removes a specified level from a researcher's pool configuration.
@@ -125,7 +125,7 @@ _As specified, this function does not return a value and takes a single uint256 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | researcher | address | The address of the researcher. |
-| levelToRemove | uint256 | The levels to be removed. |
+| denied | bool | Remove level user status. If true, user is being denied. |
 
 ### canSendInvite
 

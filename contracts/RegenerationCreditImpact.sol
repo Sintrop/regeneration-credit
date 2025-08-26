@@ -58,7 +58,7 @@ contract RegenerationCreditImpact {
   // --- Public functions ---
 
   /**
-   * @notice Calculates the total trees impact of the system.
+   * @notice Calculates the total trees of the system.
    * @dev This function uses data from inspections and regenerator impact to estimate total trees.
    * @return uint256 Amount of trees.
    */
@@ -164,7 +164,7 @@ contract RegenerationCreditImpact {
   // --- Private Functions ---
 
   /**
-   * @dev Private helper function to calculate the effective token supply used in impact calculations.
+   * @dev Private function to calculate the effective token supply used in impact calculations.
    * @return The total supply plus certified tokens minus locked tokens.
    */
   function _getEffectiveSupply() private view returns (uint256) {

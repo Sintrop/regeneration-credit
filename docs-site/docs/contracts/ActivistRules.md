@@ -157,20 +157,21 @@ when an invited Inspector reaches the minimum inspection threshold._
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, uint256 levelsToRemove) external
+function removePoolLevels(address addr, bool denied) external
 ```
 
 Can only be called by the ValidationRules contract.
 
 _Allows an authorized caller to remove levels from an activist's pool.
-This function updates the activist's local level and notifies the `ActivistPool` contract._
+This function updates the activist's local level if user is not being denied
+ and notifies the `ActivistPool` contract to remove the pool level._
 
 #### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The wallet address of the activist from whom levels are to be removed. |
-| levelsToRemove | uint256 | The number of levels to decrease. |
+| denied | bool | Remove level user status. If true, user is being denied. |
 
 ### canSendInvite
 
@@ -249,24 +250,6 @@ _Emitted when a new activist successfully registers._
 | name | string | The name provided by the activist. |
 | blockNumber | uint256 | The block number at which the registration occurred. |
 
-### LevelWonFromInvitedUser
-
-```solidity
-event LevelWonFromInvitedUser(address activistAddress, address invitedUserAddress, uint256 invitedUserTotalInspections, uint256 blockNumber)
-```
-
-_Emitted when an activist earns a level from an invited Regenerator or Inspector
-successfully completing their minimum inspections._
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| activistAddress | address | The address of the activist who gained the level. |
-| invitedUserAddress | address | The address of the invited user (Regenerator/Inspector) who triggered the level gain. |
-| invitedUserTotalInspections | uint256 | The total inspections of the invited user at the time of level gain. |
-| blockNumber | uint256 | The block number at which the level was gained. |
-
 ### ActivistLevelIncreased
 
 ```solidity
@@ -298,21 +281,4 @@ _Emitted when an activist successfully initiates a withdrawal of tokens._
 | activistAddress | address | The address of the activist initiating the withdrawal. |
 | era | uint256 | The era for which the withdrawal was initiated. |
 | blockNumber | uint256 | The block number at which the withdrawal was initiated. |
-
-### ActivistLevelRemoved
-
-```solidity
-event ActivistLevelRemoved(address activistAddress, uint256 levelsRemoved, uint256 newLevel, uint256 blockNumber)
-```
-
-_Emitted when an activist's pool levels are removed._
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| activistAddress | address | The address of the activist whose levels were removed. |
-| levelsRemoved | uint256 | The number of levels that were removed. |
-| newLevel | uint256 | The new total level of the activist after removal. |
-| blockNumber | uint256 | The block number at which the level removal occurred. |
 

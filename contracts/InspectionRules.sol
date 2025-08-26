@@ -306,6 +306,8 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * @param justification A string explaining why the inspection is being invalidated.
    */
   function addInspectionValidation(uint64 id, string memory justification) external nonReentrant {
+    // Check if user is valid.
+    require(!communityRules.isDenied(msg.sender), "User denied");
     // Character limit validation for justification.
     require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters reached");
     // Check if the caller is eligible to vote.

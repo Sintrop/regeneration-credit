@@ -82,7 +82,27 @@ Checks if a user is of a specific type.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | bool | true if the user is of the specified type, false otherwise. |
+| [0] | bool | bool true if the user is of the specified type, false otherwise. |
+
+### isDenied
+
+```solidity
+function isDenied(address user) external view returns (bool)
+```
+
+Checks if a user is denied.
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| user | address | The address of the user to check. |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | bool | bool if the user is denied, so true, false otherwise. |
 
 ### getInvitation
 
@@ -162,10 +182,10 @@ _Returns a struct from which specific settings can be accessed._
 | ---- | ---- | ----------- |
 | [0] | struct CommunityTypes.UserTypeSetting | The UserTypeSettings struct containing configuration data. |
 
-### setDeniedType
+### setToDenied
 
 ```solidity
-function setDeniedType(address account) external
+function setToDenied(address account) external
 ```
 
 Sets a user's type to a 'denied' or 'invalid' state.

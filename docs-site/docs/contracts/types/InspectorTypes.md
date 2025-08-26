@@ -2,7 +2,7 @@
 
 ## Inspector
 
-_Inspector user type data structure_
+_Inspector user type data structure._
 
 ### Parameters
 
@@ -26,7 +26,7 @@ struct Inspector {
 ```
 ## Penalty
 
-_Invalidated inspection penalty_
+_Invalidated inspection penalty._
 
 ```solidity
 struct Penalty {
@@ -35,7 +35,7 @@ struct Penalty {
 ```
 ## Pool
 
-_Inspector pool data_
+_Inspector pool data._
 
 ### Parameters
 

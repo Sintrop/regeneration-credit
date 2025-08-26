@@ -112,6 +112,7 @@ contract InspectorPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * @notice Can only be called by the inspectorRules address.
    * @param addr The wallet address of the inspector.
    * @param levels The number of levels to increase the inspector's pool level by.
+   * @param eventId The ID of the inspection being processed.
    */
   function addLevel(
     address addr,

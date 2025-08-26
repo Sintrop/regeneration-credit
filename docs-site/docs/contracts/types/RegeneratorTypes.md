@@ -2,7 +2,7 @@
 
 ## Regenerator
 
-_Regenerator user type data structure_
+_Regenerator user type data structure._
 
 ### Parameters
 
@@ -23,11 +23,12 @@ struct Regenerator {
   struct Pool pool;
   uint256 createdAt;
   uint256 coordinatesCount;
+  bool isFullyInvalidated;
 }
 ```
 ## Pool
 
-_Regenerator pool data_
+_Regenerator pool data._
 
 ### Parameters
 
@@ -42,7 +43,7 @@ struct Pool {
 ```
 ## RegenerationScore
 
-_Regenerator inspection score_
+_Regenerator inspection score._
 
 ### Parameters
 
@@ -56,7 +57,7 @@ struct RegenerationScore {
 ```
 ## Coordinates
 
-_Regenerator coordinate points_
+_Regenerator coordinate points._
 
 ### Parameters
 

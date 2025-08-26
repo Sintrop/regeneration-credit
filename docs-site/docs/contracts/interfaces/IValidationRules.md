@@ -41,67 +41,11 @@ _An explicit function that calculates and retrieves the invalidation threshold._
 | ---- | ---- | ----------- |
 | [0] | uint256 | The required number of votes. |
 
-### addContributionValidation
+### updateValidatorLastVoteBlock
 
 ```solidity
-function addContributionValidation(struct Contribution contribution, string justification, address validator) external
+function updateValidatorLastVoteBlock(address validatorAddress) external
 ```
 
-Adds a validation vote to a specific contribution.
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| contribution | struct Contribution | The full Contribution struct being validated. |
-| justification | string | A string explaining the reason for the vote. |
-| validator | address | The address of the user who is voting. |
-
-### addReportValidation
-
-```solidity
-function addReportValidation(struct Report report, string justification, address validator) external
-```
-
-Adds a validation vote to a specific report.
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| report | struct Report | The full Report struct being validated. |
-| justification | string | A string explaining the reason for the vote. |
-| validator | address | The address of the user who is voting. |
-
-### addInspectionValidation
-
-```solidity
-function addInspectionValidation(struct Inspection inspection, string justification, address validator) external
-```
-
-Adds a validation vote to a specific inspection item.
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| inspection | struct Inspection | The full Inspection struct being validated. |
-| justification | string | A string explaining the reason for the vote. |
-| validator | address | The address of the user who is voting. |
-
-### addResearchValidation
-
-```solidity
-function addResearchValidation(struct Research research, string justification, address validator) external
-```
-
-Adds a validation vote to a specific research item.
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| research | struct Research | The full Research struct being validated. |
-| justification | string | A string explaining the reason for the vote. |
-| validator | address | The address of the user who is voting. |
+_Function to updade validator last vote block.number._
 

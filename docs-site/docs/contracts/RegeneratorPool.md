@@ -9,6 +9,22 @@ The reward is distributed related to the RegenerationScore, the result of each i
 _Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for deploy setup only),
 `Blockable` (for era/epoch tracking), and `Callable` (for whitelisted caller control)._
 
+### MAX_NEW_LEVELS
+
+```solidity
+uint256 MAX_NEW_LEVELS
+```
+
+Maximum possible score from a single resource.
+
+### hasProcessedLevel
+
+```solidity
+mapping(uint64 => bool) hasProcessedLevel
+```
+
+Tracks unique resource IDs to ensure levels for a resource are added only once.
+
 ### constructor
 
 ```solidity
@@ -63,7 +79,7 @@ This function calculates the eligible tokens for the user's era and transfers th
 ### addLevel
 
 ```solidity
-function addLevel(address regenerator, uint256 levels) external
+function addLevel(address regenerator, uint256 levels, uint64 inspectionId) external
 ```
 
 Can only be called by the regeneratorRules address.
@@ -77,11 +93,12 @@ This function updates the regenerator level within the system's pooling mechanis
 | ---- | ---- | ----------- |
 | regenerator | address | The wallet address of the regenerator. |
 | levels | uint256 | The number of levels to increase the regenerator's pool level by. |
+| inspectionId | uint64 | The id of the inspection being processed. |
 
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, uint256 levelsToRemove) external
+function removePoolLevels(address addr, uint256 amountToRemove, bool denied) external
 ```
 
 Can only be called by regeneratorRules address.
@@ -94,7 +111,8 @@ This function adjusts the regenerator's level downwards within the system's pool
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The wallet address of the regenerator. |
-| levelsToRemove | uint256 | The number of levels to decrease the regenerator's pool level by. |
+| amountToRemove | uint256 | The number of levels/score points to decrease. |
+| denied | bool | Remove level user status. If true, user is being denied. |
 
 ### haveTokensToWithdraw
 

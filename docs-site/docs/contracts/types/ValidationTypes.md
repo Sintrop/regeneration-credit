@@ -2,7 +2,7 @@
 
 ## ContractsDependency
 
-_System used contracts address_
+_System used contracts address._
 
 ```solidity
 struct ContractsDependency {

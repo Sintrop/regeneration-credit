@@ -35,7 +35,7 @@ contract CommunityRules is Callable {
   /// @notice Total count of delations received across all users.
   uint64 public delationsCount;
 
-  /// @notice The global total count of all active (non-`UNDEFINED`, non-`DENIED`) users in the system..
+  /// @notice The global total count of all active (non-`UNDEFINED`) users in the system..
   uint64 public usersCount;
 
   /// @notice A mapping from a user's wallet address to their assigned `UserType`.
@@ -248,13 +248,13 @@ contract CommunityRules is Callable {
   }
 
   /**
-   * @notice Sets a user's type to `DENIED`.
+   * @notice Sets a user's to `DENIED`.
    * @dev This function is intended to be called by an allowed caller (`ValidationRules`).
    * It decrements the count of the user's previous type and sets their `UserType` to `DENIED`.
    * Prevents re-denying an already denied user.
    * @param userAddress The address of the user to be denied.
    */
-  function setDeniedType(address userAddress) external mustBeAllowedCaller {
+  function setToDenied(address userAddress) external mustBeAllowedCaller {
     if (deniedUsers[userAddress]) return;
 
     userTypesCount[users[userAddress]]--; // Decrement count of the old user type
@@ -362,17 +362,19 @@ contract CommunityRules is Callable {
 
   /**
    * @notice Function to check if an userAddress type is equal passed userType.
+   * @dev This function also checks if a user is denied, returning false if denied.
+   * @param userType The `UserType` to check for.
    * @param userAddress Denied user address.
-   * @return bool If userAddress is equal userType.
+   * @return bool True if userAddress is equal userType.
    */
   function userTypeIs(CommunityTypes.UserType userType, address userAddress) public view returns (bool) {
     return users[userAddress] == userType && !deniedUsers[userAddress];
   }
 
   /**
-   * @notice Function to check if an userAddress type is equal passed userType.
-   * @param userAddress Denied user address.
-   * @return bool If userAddress is equal userType.
+   * @notice Function to check if an userAddress is denied.
+   * @param userAddress The user address to check.
+   * @return bool True if userAddress is denied.
    */
   function isDenied(address userAddress) public view returns (bool) {
     return deniedUsers[userAddress];

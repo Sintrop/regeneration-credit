@@ -262,7 +262,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
   function denyInspector(address userAddress) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
     if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
 
-    communityRules.setDeniedType(userAddress);
+    communityRules.setToDenied(userAddress);
 
     // Inviter slashing mechanism.
     CommunityTypes.Invitation memory invitation = communityRules.getInvitation(userAddress);
@@ -428,16 +428,4 @@ contract InspectorRules is Callable, ReentrancyGuard {
   /// @param newLevel The new total level of the inspector.
   /// @param blockNumber The block number at which the level increase occurred.
   event InspectorLevelIncreased(address indexed inspectorAddress, uint256 newLevel, uint256 blockNumber);
-
-  /// @dev Emitted when an inspector's pool levels are removed.
-  /// @param inspectorAddress The address of the inspector whose levels were removed.
-  /// @param levelsRemoved The number of levels that were removed.
-  /// @param newLevel The new total level of the inspector after removal.
-  /// @param blockNumber The block number at which the level removal occurred.
-  event InspectorLevelRemoved(
-    address indexed inspectorAddress,
-    uint256 levelsRemoved,
-    uint256 newLevel,
-    uint256 blockNumber
-  );
 }

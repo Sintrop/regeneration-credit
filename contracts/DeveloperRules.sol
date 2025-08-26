@@ -244,6 +244,8 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * @param justification A string explaining why the report is being invalidated.
    */
   function addReportValidation(uint64 id, string memory justification) external nonReentrant {
+    // Check if user is valid.
+    require(!communityRules.isDenied(msg.sender), "User denied");
     // Character limit validation for justification.
     require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters");
     // Check if the caller is eligible to vote. User.level must be greater than average levels.
@@ -379,7 +381,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   function _denyDeveloper(address userAddress) private {
     if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
 
-    communityRules.setDeniedType(userAddress);
+    communityRules.setToDenied(userAddress);
 
     // Inviter slashing mechanism.
     CommunityTypes.Invitation memory invitation = communityRules.getInvitation(userAddress);
@@ -560,16 +562,4 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   /// @param newLevel The new total level of the developer.
   /// @param blockNumber The block number at which the level increase occurred.
   event DeveloperLevelIncreased(address indexed developerAddress, uint256 newLevel, uint256 blockNumber);
-
-  /// @dev Emitted when a developer's pool levels are removed.
-  /// @param developerAddress The address of the developer whose levels were removed.
-  /// @param levelsRemoved The number of levels that were removed.
-  /// @param newLevel The new total level of the developer after removal.
-  /// @param blockNumber The block number at which the level removal occurred.
-  event DeveloperLevelRemoved(
-    address indexed developerAddress,
-    uint256 levelsRemoved,
-    uint256 newLevel,
-    uint256 blockNumber
-  );
 }

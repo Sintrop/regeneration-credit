@@ -112,6 +112,7 @@ contract ContributorPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * @notice Can only be called by the contributorRules address.
    * @param addr The wallet address of the contributor.
    * @param levels The number of levels to increase the contributor's pool level by.
+   * @param eventId The ID of the contribution being processed.
    */
   function addLevel(
     address addr,
