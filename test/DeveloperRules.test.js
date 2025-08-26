@@ -529,7 +529,7 @@ describe("DeveloperRules", (accounts) => {
 
           await advanceBlock(10);
           await communityRules.setContractCall(owner, validationRules.target);
-          
+
           await instance.connect(user1Address).addReport("description", "report");
 
           await instance.connect(user5Address).addReportValidation(15, "justification");
