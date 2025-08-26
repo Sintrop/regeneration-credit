@@ -77,7 +77,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// @notice Tracks which inspection IDs have already been processed to prevent replay attacks.
   mapping(uint64 => bool) private processedInspections;
 
-  /// @notice Tracks if a coordinate point have already been processed. 
+  /// @notice Tracks if a coordinate point have already been processed.
   mapping(bytes32 => bool) seenCoordinates;
 
   /// @notice The address of the `CommunityRules` contract, used to interact with

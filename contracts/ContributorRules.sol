@@ -347,7 +347,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
 
   /**
    * @dev Allows an authorized caller to remove levels from a contributor's pool.
-   * This function updates the contributor's local level if user is not being denied and 
+   * This function updates the contributor's local level if user is not being denied and
    * notifies the `ContributorPool` contract to remove the pool level.
    * @notice Can only be called by ValidationRules address.
    * @param addr The wallet address of the contributor from whom levels are to be removed.

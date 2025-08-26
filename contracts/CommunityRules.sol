@@ -362,7 +362,7 @@ contract CommunityRules is Callable {
 
   /**
    * @notice Function to check if an userAddress type is equal passed userType.
-   * @dev This function also checks if a user is denied, returning false if denied. 
+   * @dev This function also checks if a user is denied, returning false if denied.
    * @param userType The `UserType` to check for.
    * @param userAddress Denied user address.
    * @return bool True if userAddress is equal userType.

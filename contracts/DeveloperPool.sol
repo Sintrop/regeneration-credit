@@ -113,7 +113,7 @@ contract DeveloperPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * @notice Can only be called by the developerRules address.
    * @param addr The wallet address of the developer.
    * @param levels The number of levels to increase the developer's pool level by.
-   * @param eventId The ID of the report being processed. 
+   * @param eventId The ID of the report being processed.
    */
   function addLevel(
     address addr,

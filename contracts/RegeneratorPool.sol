@@ -132,7 +132,7 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * This function adjusts the regenerator's level downwards within the system's pooling mechanism.
    * @notice Can only be called by regeneratorRules address.
    * @param addr The wallet address of the regenerator.
-   * @param amountToRemove The number of levels/score points to decrease. 
+   * @param amountToRemove The number of levels/score points to decrease.
    * @param denied Remove level user status. If true, user is being denied.
    */
   function removePoolLevels(
