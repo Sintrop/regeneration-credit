@@ -529,6 +529,8 @@ describe("DeveloperRules", (accounts) => {
 
           await advanceBlock(10);
           await communityRules.setContractCall(owner, validationRules.target);
+          
+          await instance.connect(user1Address).addReport("description", "report");
 
           await instance.connect(user5Address).addReportValidation(15, "justification");
           await instance.connect(user2Address).addReportValidation(15, "justification");
@@ -549,9 +551,15 @@ describe("DeveloperRules", (accounts) => {
         it("should remove all pool levels for the denied developer", async () => {
           // The `removePoolLevels(user, true)` function should zero out the levels
           const report = await instance.reports(1);
-          const eraLevels = await developerPool.eraLevels(report.era, dev1Address);
+          const eraLevels = await developerPool.eraLevels(report.era, user1Address);
 
           expect(eraLevels).to.eq(0);
+        });
+
+        it("Remove invalidated report level from developer", async () => {
+          const developer = await instance.getDeveloper(user1Address);
+
+          expect(developer.pool.level).to.eq(1);
         });
       });
 

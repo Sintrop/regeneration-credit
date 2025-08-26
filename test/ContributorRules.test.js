@@ -662,6 +662,10 @@ describe("ContributorRules", (accounts) => {
           await communityRules.setContractCall(owner, validationRules.target);
 
           await addContribution(contr1Address);
+
+          await advanceBlock(10);
+
+          await addContribution(contr1Address);
           await instance.connect(user1Address).addContributionValidation(3, "justification");
           await instance.connect(user2Address).addContributionValidation(3, "justification");
         });
@@ -684,6 +688,12 @@ describe("ContributorRules", (accounts) => {
 
           const poolLevels = await contributorPool.eraLevels(contribution.era, contr1Address);
           expect(poolLevels).to.equal(0);
+        });
+
+        it("Remove invalidated contribution level from contributor", async () => {
+          const contributor = await instance.getContributor(contr1Address);
+
+          expect(contributor.pool.level).to.eq(1);
         });
       });
 
