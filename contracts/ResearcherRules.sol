@@ -252,6 +252,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param justification A brief justification for invalidating the research (Max characters).
    */
   function addResearchValidation(uint64 id, string memory justification) external nonReentrant {
+    // Check if user is valid.
+    require(!communityRules.isDenied(msg.sender), "User denied");
     // Character limit validation for justification.
     require(bytes(justification).length <= MAX_TEXT_LENGTH, "Max characters");
     // Check if the caller is eligible to vote.
@@ -410,7 +412,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   function _denyResearcher(address userAddress) private {
     if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
 
-    communityRules.setDeniedType(userAddress);
+    communityRules.setToDenied(userAddress);
 
     // Inviter slashing mechanism.
     CommunityTypes.Invitation memory invitation = communityRules.getInvitation(userAddress);

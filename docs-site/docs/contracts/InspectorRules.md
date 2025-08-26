@@ -78,7 +78,7 @@ _Initializes the InspectorRules contract with key parameters._
 ### setContractCall
 
 ```solidity
-function setContractCall(address _inspectionRulesAddress, address _validationRulesAddress) public
+function setContractCall(address _inspectionRulesAddress) public
 ```
 
 _onlyOwner function to set contract call addresses.
@@ -89,7 +89,6 @@ This function must be called only once after the contract deploy and ownership m
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | _inspectionRulesAddress | address | Address of InspectionRules. |
-| _validationRulesAddress | address | Address of ValidationRules. |
 
 ### addInspector
 
@@ -156,7 +155,7 @@ This marks the time of acceptance and increments the inspector's "give-up" count
 ### afterRealizeInspection
 
 ```solidity
-function afterRealizeInspection(address addr) external returns (uint256)
+function afterRealizeInspection(address addr, uint64 inspectionId) external returns (uint256)
 ```
 
 This function is called by the InspectionRules contract after an inspection is realized.
@@ -169,6 +168,7 @@ This decrements give-ups and increments total inspections._
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The inspector's wallet address. |
+| inspectionId | uint64 |  |
 
 #### Return Values
 
@@ -204,7 +204,7 @@ without justification or proofPhoto._
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, uint256 levelsToRemove) external
+function removePoolLevels(address addr, bool denied) external
 ```
 
 Should only be called by the ValidatorRules address.
@@ -217,7 +217,7 @@ This function updates the inspector's local level and notifies the `InspectorPoo
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The wallet address of the inspector from whom levels are to be removed. |
-| levelsToRemove | uint256 | The number of levels to decrease. If `levelsToRemove` is 0, this function sets the inspector's pool level to 0. Otherwise, it subtracts the specified amount. |
+| denied | bool | Remove level user status. If true, user is being denied. |
 
 ### decrementInspections
 
@@ -235,6 +235,20 @@ This function is called when an inspection previously counted as valid is invali
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The inspector's wallet address. Requirements: - The inspector's `totalInspections` count must be greater than 0. |
+
+### denyInspector
+
+```solidity
+function denyInspector(address userAddress) external
+```
+
+_Sets a user's to DENIED in CommunityRules and removes their levels from pools._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| userAddress | address | The address of the user to deny. |
 
 ### totalPenalties
 
@@ -380,21 +394,4 @@ _Emitted when an inspector's level is increased._
 | inspectorAddress | address | The address of the inspector whose level was increased. |
 | newLevel | uint256 | The new total level of the inspector. |
 | blockNumber | uint256 | The block number at which the level increase occurred. |
-
-### InspectorLevelRemoved
-
-```solidity
-event InspectorLevelRemoved(address inspectorAddress, uint256 levelsRemoved, uint256 newLevel, uint256 blockNumber)
-```
-
-_Emitted when an inspector's pool levels are removed._
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| inspectorAddress | address | The address of the inspector whose levels were removed. |
-| levelsRemoved | uint256 | The number of levels that were removed. |
-| newLevel | uint256 | The new total level of the inspector after removal. |
-| blockNumber | uint256 | The block number at which the level removal occurred. |
 

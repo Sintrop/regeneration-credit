@@ -2,14 +2,14 @@
 pragma solidity ^0.8.27;
 
 /**
- * @dev Contributor user type data structure
- * @param id User id
- * @param contributorWallet Contributor wallet address
- * @param name User name
- * @param proofPhoto Hash of the identity photo
- * @param pool Pool data
- * @param createdAt Block of user creation
- * @param lastPublishedAt Block of last contribution publication
+ * @dev Contributor user type data structure.
+ * @param id User id.
+ * @param contributorWallet Contributor wallet address.
+ * @param name User name.
+ * @param proofPhoto Hash of the identity photo.
+ * @param pool Pool data.
+ * @param createdAt Block of user creation.
+ * @param lastPublishedAt Block of last contribution publication.
  */
 struct Contributor {
   uint64 id;
@@ -23,9 +23,9 @@ struct Contributor {
 }
 
 /**
- * @dev Contributor pool data
- * @param level User pool level
- * @param currentEra User currentEra, updated after each withdraw
+ * @dev Contributor pool data.
+ * @param level User pool level.
+ * @param currentEra User currentEra, updated after each withdraw.
  */
 struct Pool {
   uint256 level;
@@ -33,13 +33,13 @@ struct Pool {
 }
 
 /**
- * @dev Contribution data structure
- * @param id Contribution id
- * @param era Contribution era
- * @param user Contributor wallet address
- * @param description Contribution description
- * @param report Hash of the justification report file
- * @param createdAtBlockNumber Block of contribution creation
+ * @dev Contribution data structure.
+ * @param id Contribution id.
+ * @param era Contribution era.
+ * @param user Contributor wallet address.
+ * @param description Contribution description.
+ * @param report Hash of the justification report file.
+ * @param createdAtBlockNumber Block of contribution creation.
  */
 struct Contribution {
   uint64 id;
@@ -54,14 +54,14 @@ struct Contribution {
 }
 
 /**
- * @dev Contribution penalty
+ * @dev Contribution penalty.
  */
 struct Penalty {
   uint64 contributionId;
 }
 
 /**
- * @dev System used contracts address
+ * @dev System used contracts address.
  */
 struct ContractsDependency {
   address communityRulesAddress;

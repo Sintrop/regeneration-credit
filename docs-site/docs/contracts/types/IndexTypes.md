@@ -2,7 +2,7 @@
 
 ## Category
 
-_RegenerationIndex category data structure_
+_RegenerationIndex category data structure._
 
 ### Parameters
 
@@ -18,7 +18,7 @@ struct Category {
 ```
 ## RegenerationIndexDescription
 
-_Description and id of each index_
+_Description and id of each index._
 
 ```solidity
 struct RegenerationIndexDescription {
@@ -28,7 +28,7 @@ struct RegenerationIndexDescription {
 ```
 ## RegenerationIndex
 
-_RegenerationIndex name and value_
+_RegenerationIndex name and value._
 
 ```solidity
 struct RegenerationIndex {

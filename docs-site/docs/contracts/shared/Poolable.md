@@ -44,6 +44,14 @@ mapping(uint256 => mapping(address => uint256)) eraTokens
 
 _Tracks the tokens claimed by each user per era. Mapping: eraId => userAddress => eraTokens._
 
+### hasWithdrawn
+
+```solidity
+mapping(uint256 => mapping(address => bool)) hasWithdrawn
+```
+
+Tracks withdrawals to ensure a user can only claim rewards once per era.
+
 ### constructor
 
 ```solidity
@@ -203,7 +211,7 @@ _Adds pool levels to a user for a specific era._
 ### _removePoolLevel
 
 ```solidity
-function _removePoolLevel(address _user, uint256 _era, uint256 _levelsToRemove) internal
+function _removePoolLevel(address _user, uint256 _era, uint256 _amountToRemove) internal
 ```
 
 _Removes pool levels users._
@@ -214,7 +222,13 @@ _Removes pool levels users._
 | ---- | ---- | ----------- |
 | _user | address | The address of the user. |
 | _era | uint256 | The number of the era. |
-| _levelsToRemove | uint256 | The amount of levels to remove. |
+| _amountToRemove | uint256 | The amount of levels to remove. |
+
+### hasWithdrawnEraModifier
+
+```solidity
+modifier hasWithdrawnEraModifier(uint256 era, address delegate)
+```
 
 ### PoolLevelAdded
 

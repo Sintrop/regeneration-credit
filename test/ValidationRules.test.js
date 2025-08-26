@@ -109,7 +109,7 @@ describe("ValidationRules", () => {
   };
 
   const denyUser = async (userAddress) => {
-    await communityRules.setDeniedType(userAddress);
+    await communityRules.setToDenied(userAddress);
   };
 
   const generateReportObject = (report) => {

@@ -15,14 +15,6 @@ uint8 MAX_REGENERATOR_INSPECTIONS
 
 The maximum number of inspections a Regenerator can receive.
 
-### MAX_TREES_RESULT
-
-```solidity
-uint32 MAX_TREES_RESULT
-```
-
-The maximum result value for the number of trees in an inspection.
-
 ### MAX_BIODIVERSITY_RESULT
 
 ```solidity
@@ -110,6 +102,14 @@ uint256 inspectionsBiodiversityImpact
 ```
 
 Sum of all valid inspections' biodiversity impact.
+
+### inspectionPenalized
+
+```solidity
+mapping(uint64 => bool) inspectionPenalized
+```
+
+Tracks inspection IDs that have already been invalidated.
 
 ### constructor
 
@@ -383,6 +383,22 @@ Emitted when an accepted inspection is successfully realized and submitted by an
 | biodiversityResult | uint32 | The reported number of species. |
 | regenerationScore | uint32 | The calculated regeneration score. |
 | inspectedAt | uint256 | The block number when the inspection was realized. |
+
+### InspectionValidation
+
+```solidity
+event InspectionValidation(address _validatorAddress, uint256 _resourceId, string _justification)
+```
+
+Emitted
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _validatorAddress | address | The address of the validator. |
+| _resourceId | uint256 | The id of the resource receiving the vote. |
+| _justification | string | The justification provided for the vote. |
 
 ### InspectionInvalidated
 

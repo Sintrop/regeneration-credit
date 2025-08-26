@@ -96,6 +96,14 @@ mapping(uint256 => address) developersAddress
 A mapping from a unique developer ID to their corresponding wallet address.
 Facilitates lookup of a developer's address by their ID.
 
+### reportPenalized
+
+```solidity
+mapping(uint64 => bool) reportPenalized
+```
+
+Tracks report IDs that have already been invalidated.
+
 ### constructor
 
 ```solidity
@@ -237,7 +245,7 @@ based on their published reports and current era._
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, uint256 levelsToRemove) external
+function removePoolLevels(address addr, bool denied) external
 ```
 
 Can only be called by whitelisted addresses, the ValidatorRules contract.
@@ -250,30 +258,7 @@ This function updates the developer's local level and notifies the `DeveloperPoo
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The wallet address of the developer from whom levels are to be removed. |
-| levelsToRemove | uint256 | The number of levels to decrease. If `levelsToRemove` is 0, this function sets the developer's pool level to 0. Otherwise, it subtracts the specified amount. |
-
-### addPenalty
-
-```solidity
-function addPenalty(address addr, uint64 reportId) external returns (uint256)
-```
-
-This function should be called by authorized contracts.
-
-_Adds a penalty to a developer's record when one of their reports is invalidated._
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| addr | address | The wallet address of the developer receiving the penalty. |
-| reportId | uint64 | The ID of the report associated with this penalty. |
-
-#### Return Values
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | uint256 The total number of penalties the developer has accumulated. |
+| denied | bool | Remove level user status. If true, user is being denied. |
 
 ### canSendInvite
 
@@ -494,6 +479,22 @@ This event signifies a final state change for the report._
 | newPenaltyCount | uint256 | The total number of penalties the developer now has. |
 | blockNumber | uint256 | The block number at which the report was invalidated. |
 
+### ReportValidation
+
+```solidity
+event ReportValidation(address _validatorAddress, uint256 _resourceId, string _justification)
+```
+
+Emitted
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _validatorAddress | address | The address of the validator. |
+| _resourceId | uint256 | The id of the resource receiving the vote. |
+| _justification | string | The justification provided for the vote. |
+
 ### PenaltyAdded
 
 ```solidity
@@ -541,21 +542,4 @@ _Emitted when a developer's level is increased._
 | developerAddress | address | The address of the developer whose level was increased. |
 | newLevel | uint256 | The new total level of the developer. |
 | blockNumber | uint256 | The block number at which the level increase occurred. |
-
-### DeveloperLevelRemoved
-
-```solidity
-event DeveloperLevelRemoved(address developerAddress, uint256 levelsRemoved, uint256 newLevel, uint256 blockNumber)
-```
-
-_Emitted when a developer's pool levels are removed._
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| developerAddress | address | The address of the developer whose levels were removed. |
-| levelsRemoved | uint256 | The number of levels that were removed. |
-| newLevel | uint256 | The new total level of the developer after removal. |
-| blockNumber | uint256 | The block number at which the level removal occurred. |
 

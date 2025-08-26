@@ -77,7 +77,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// @notice Tracks which inspection IDs have already been processed to prevent replay attacks.
   mapping(uint64 => bool) private processedInspections;
 
-  /// @notice Tracks if a coordinate point have already been processed..
+  /// @notice Tracks if a coordinate point have already been processed. 
   mapping(bytes32 => bool) seenCoordinates;
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
@@ -289,8 +289,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @notice Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
    * this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
    * @param addr The wallet address of the regenerator from whom levels are to be removed.
-   * @param amountToRemove The number of levels/score points to decrease. If `0`, the regenerator's
-   * regeneration score is reset to `0`, and their area is decremented from the total `regenerationArea`.
+   * @param amountToRemove The number of levels/score points to decrease.
    */
   function removeInspectionLevels(
     address addr,

@@ -17,6 +17,14 @@ mapping(address => bool) allowedCallers
 _Mapping storing the addresses authorized to call protected functions.
 `true` if the address is allowed, `false` otherwise._
 
+### constructor
+
+```solidity
+constructor() public
+```
+
+_Initializes the contract, setting the deployer as the initial owner._
+
 ### newAllowedCaller
 
 ```solidity

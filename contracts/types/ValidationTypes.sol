@@ -2,7 +2,7 @@
 pragma solidity ^0.8.27;
 
 /**
- * @dev System used contracts address
+ * @dev System used contracts address.
  */
 struct ContractsDependency {
   address communityRulesAddress;

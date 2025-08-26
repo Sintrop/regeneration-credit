@@ -201,7 +201,8 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
 
   /**
    * @dev Allows an authorized caller to remove levels from an activist's pool.
-   * This function updates the activist's local level and notifies the `ActivistPool` contract.
+   * This function updates the activist's local level if user is not being denied
+   *  and notifies the `ActivistPool` contract to remove the pool level.
    * @notice Can only be called by the ValidationRules contract.
    * @param addr The wallet address of the activist from whom levels are to be removed.
    * @param denied Remove level user status. If true, user is being denied.
@@ -330,19 +331,6 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   /// @param blockNumber The block number at which the registration occurred.
   event ActivistRegistered(uint256 indexed id, address indexed activistAddress, string name, uint256 blockNumber);
 
-  /// @dev Emitted when an activist earns a level from an invited Regenerator or Inspector
-  /// successfully completing their minimum inspections.
-  /// @param activistAddress The address of the activist who gained the level.
-  /// @param invitedUserAddress The address of the invited user (Regenerator/Inspector) who triggered the level gain.
-  /// @param invitedUserTotalInspections The total inspections of the invited user at the time of level gain.
-  /// @param blockNumber The block number at which the level was gained.
-  event LevelWonFromInvitedUser(
-    address indexed activistAddress,
-    address indexed invitedUserAddress,
-    uint256 invitedUserTotalInspections,
-    uint256 blockNumber
-  );
-
   /// @dev Emitted when an activist's level is increased.
   /// @param activistAddress The address of the activist whose level was increased.
   /// @param newLevel The new total level of the activist.
@@ -354,16 +342,4 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   /// @param era The era for which the withdrawal was initiated.
   /// @param blockNumber The block number at which the withdrawal was initiated.
   event ActivistWithdrawalInitiated(address indexed activistAddress, uint256 indexed era, uint256 blockNumber);
-
-  /// @dev Emitted when an activist's pool levels are removed.
-  /// @param activistAddress The address of the activist whose levels were removed.
-  /// @param levelsRemoved The number of levels that were removed.
-  /// @param newLevel The new total level of the activist after removal.
-  /// @param blockNumber The block number at which the level removal occurred.
-  event ActivistLevelRemoved(
-    address indexed activistAddress,
-    uint256 levelsRemoved,
-    uint256 newLevel,
-    uint256 blockNumber
-  );
 }

@@ -43,7 +43,7 @@ Allows a user to withdraw their tokens for a specific era.
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address user, uint256 levelsToRemove) external
+function removePoolLevels(address user, bool denied) external
 ```
 
 Removes specified levels from a user's pool configuration.
@@ -53,12 +53,12 @@ Removes specified levels from a user's pool configuration.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | user | address | The address of the contributor. |
-| levelsToRemove | uint256 | Levels to be removed. |
+| denied | bool | Remove level user status. If true, user is being denied. |
 
 ### addLevel
 
 ```solidity
-function addLevel(address user, uint256 levels) external
+function addLevel(address user, uint256 levels, uint64 eventId) external
 ```
 
 Adds a new level to a user's pool configuration.
@@ -69,6 +69,7 @@ Adds a new level to a user's pool configuration.
 | ---- | ---- | ----------- |
 | user | address | The address of the contributor. |
 | levels | uint256 | The levels to be added. |
+| eventId | uint64 |  |
 
 ### currentContractEra
 

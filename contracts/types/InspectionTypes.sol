@@ -2,7 +2,7 @@
 pragma solidity ^0.8.27;
 
 /**
- * @dev Inspection posible status
+ * @dev Inspection posible status.
  */
 enum InspectionStatus {
   OPEN,
@@ -12,20 +12,20 @@ enum InspectionStatus {
 }
 
 /**
- * @dev Inspection data structure
- * @param id Inspection id
- * @param status Inspection status
- * @param regenerator Address of the regenerator
- * @param inspector Address of the inspection inspector
- * @param regenerationScore Inspection regeneration score
- * @param proofPhoto Hash of the inspection proofPhoto
- * @param justificationReport Report data and justification of the result
- * @param validationsCount Number of invalidation votes received
- * @param createdAt Creation block.number
- * @param acceptedAt Accepted block.number
- * @param inspectedAt Realize inspection block.number
- * @param inspectedAtEra Era that inspection was realized
- * @param invalidateAt Block of inspection invalidation
+ * @dev Inspection data structure.
+ * @param id Inspection id.
+ * @param status Inspection status.
+ * @param regenerator Address of the regenerator.
+ * @param inspector Address of the inspection inspector.
+ * @param regenerationScore Inspection regeneration score.
+ * @param proofPhoto Hash of the inspection proofPhoto.
+ * @param justificationReport Report data and justification of the result.
+ * @param validationsCount Number of invalidation votes received.
+ * @param createdAt Creation block.number.
+ * @param acceptedAt Accepted block.number.
+ * @param inspectedAt Realize inspection block.number.
+ * @param inspectedAtEra Era that inspection was realized.
+ * @param invalidateAt Block of inspection invalidation.
  */
 struct Inspection {
   uint64 id;
@@ -46,7 +46,7 @@ struct Inspection {
 }
 
 /**
- * @dev System used contracts address
+ * @dev System used contracts address.
  */
 struct ContractsDependency {
   address communityRulesAddress;

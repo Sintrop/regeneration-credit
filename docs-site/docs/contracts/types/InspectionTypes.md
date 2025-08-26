@@ -2,7 +2,7 @@
 
 ## InspectionStatus
 
-_Inspection posible status_
+_Inspection posible status._
 
 ```solidity
 enum InspectionStatus {
@@ -14,7 +14,7 @@ enum InspectionStatus {
 ```
 ## Inspection
 
-_Inspection data structure_
+_Inspection data structure._
 
 ### Parameters
 
@@ -42,7 +42,7 @@ struct Inspection {
 ```
 ## ContractsDependency
 
-_System used contracts address_
+_System used contracts address._
 
 ```solidity
 struct ContractsDependency {

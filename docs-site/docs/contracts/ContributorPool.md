@@ -9,6 +9,14 @@ Each valid published contribution is equivalent to one level in the pool.
 _Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for deploy setup only),
 `Blockable` (for era/epoch tracking), and `Callable` (for whitelisted caller control)._
 
+### hasProcessedLevel
+
+```solidity
+mapping(uint64 => bool) hasProcessedLevel
+```
+
+Tracks unique resource IDs to ensure levels for a resource are added only once.
+
 ### constructor
 
 ```solidity
@@ -63,7 +71,7 @@ This function calculates the eligible tokens for the user's era and transfers th
 ### addLevel
 
 ```solidity
-function addLevel(address addr, uint256 levels) external
+function addLevel(address addr, uint256 levels, uint64 eventId) external
 ```
 
 Can only be called by the contributorRules address.
@@ -77,11 +85,12 @@ This function updates the contributor level within the system's pooling mechanis
 | ---- | ---- | ----------- |
 | addr | address | The wallet address of the contributor. |
 | levels | uint256 | The number of levels to increase the contributor's pool level by. |
+| eventId | uint64 | The ID of the contribution being processed. |
 
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, uint256 levelsToRemove) external
+function removePoolLevels(address addr, bool denied) external
 ```
 
 Can only be called by contributorRules address.
@@ -94,7 +103,7 @@ This function adjusts the contributor's level downwards within the system's pool
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The wallet address of the contributor. |
-| levelsToRemove | uint256 | The number of levels to decrease the contributor's pool level by. |
+| denied | bool | Remove level user status. If true, user is being denied. |
 
 ### haveTokensToWithdraw
 

@@ -3,7 +3,7 @@ pragma solidity ^0.8.27;
 
 library CommunityTypes {
   /**
-   * @dev UserTypes of the system
+   * @dev UserTypes of the system.
    * @notice Summary of User Roles:
    *
    * Regenerator: Core users providing terrestrial ecosystem regeneration services by
@@ -26,8 +26,6 @@ library CommunityTypes {
    *
    * Supporter: Any individual or organization, who can finance regeneration by
    * purchasing tokens from users and then burning them to receive an offset certificate.
-   *
-   * Denied: Represents a user whose access or participation has been explicitly denied.
    */
   enum UserType {
     UNDEFINED,
@@ -48,6 +46,7 @@ library CommunityTypes {
    * @param reported The address of the user or resource being reported against.
    * @param title A brief title or summary of the delation.
    * @param testimony Detailed justification and evidence for the delation.
+   * @param createdAtBlock The block number at which the delation was issued.
    */
   struct Delation {
     uint64 id;

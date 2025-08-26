@@ -28,10 +28,16 @@ function transfer(address to, uint256 amount) external returns (bool)
 function transferFrom(address owner, address to, uint256 numTokens) external returns (bool)
 ```
 
+### burnFrom
+
+```solidity
+function burnFrom(address account, uint256 amount) external
+```
+
 ### decreaseLocked
 
 ```solidity
-function decreaseLocked(address tokenOwner, uint256 numTokens) external
+function decreaseLocked(uint256 numTokens) external
 ```
 
 ### totalSupply

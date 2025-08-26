@@ -2,7 +2,7 @@
 
 ## Researcher
 
-_Researcher user type data structure_
+_Researcher user type data structure._
 
 ### Parameters
 
@@ -26,7 +26,7 @@ struct Researcher {
 ```
 ## Pool
 
-_Researcher pool data_
+_Researcher pool data._
 
 ### Parameters
 
@@ -41,7 +41,7 @@ struct Pool {
 ```
 ## Research
 
-_Research data structure_
+_Research data structure._
 
 ### Parameters
 
@@ -64,7 +64,7 @@ struct Research {
 ```
 ## CalculatorItem
 
-_Calculator item data structure_
+_Calculator item data structure._
 
 ### Parameters
 
@@ -79,11 +79,12 @@ struct CalculatorItem {
   string thesis;
   string unit;
   uint256 carbonImpact;
+  uint256 createdAtBlock;
 }
 ```
 ## EvaluationMethod
 
-_Evaluation method data structure_
+_Evaluation method data structure._
 
 ### Parameters
 
@@ -97,11 +98,12 @@ struct EvaluationMethod {
   string title;
   string research;
   string projectURL;
+  uint256 createdAtBlock;
 }
 ```
 ## Penalty
 
-_Research penalty_
+_Research penalty._
 
 ### Parameters
 
@@ -115,7 +117,7 @@ struct Penalty {
 ```
 ## ContractsDependency
 
-_System used contracts address_
+_System used contracts address._
 
 ### Parameters
 

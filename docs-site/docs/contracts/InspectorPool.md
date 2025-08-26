@@ -9,6 +9,14 @@ Each valid realized inspection is equivalent to one level in the pool.
 _Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for deploy setup only),
 `Blockable` (for era/epoch tracking), and `Callable` (for whitelisted caller control)._
 
+### hasProcessedLevel
+
+```solidity
+mapping(uint64 => bool) hasProcessedLevel
+```
+
+Tracks unique resource IDs to ensure levels for a resource are added only once.
+
 ### constructor
 
 ```solidity
@@ -63,7 +71,7 @@ This function calculates the eligible tokens for the user's era and transfers th
 ### addLevel
 
 ```solidity
-function addLevel(address addr, uint256 levels) external
+function addLevel(address addr, uint256 levels, uint64 eventId) external
 ```
 
 Can only be called by the inspectorRules address.
@@ -77,11 +85,12 @@ This function updates the inspector level within the system's pooling mechanism.
 | ---- | ---- | ----------- |
 | addr | address | The wallet address of the inspector. |
 | levels | uint256 | The number of levels to increase the inspector's pool level by. |
+| eventId | uint64 | The ID of the inspection being processed. |
 
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, uint256 levelsToRemove) external
+function removePoolLevels(address addr, bool denied) external
 ```
 
 Can only be called by inspectorRules address.
@@ -94,7 +103,7 @@ This function adjusts the inspector's level downwards within the system's poolin
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The wallet address of the inspector. |
-| levelsToRemove | uint256 | The number of levels to decrease the inspector's pool level by. |
+| denied | bool | Remove level user status. If true, user is being denied. |
 
 ### haveTokensToWithdraw
 

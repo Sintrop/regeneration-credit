@@ -70,7 +70,7 @@ A hook to be called after a regenerator requests an inspection.
 ### afterRealizeInspection
 
 ```solidity
-function afterRealizeInspection(address regenerator, uint32 regenerationScore) external returns (uint256)
+function afterRealizeInspection(address regenerator, uint32 regenerationScore, uint64 inspectionId) external returns (uint256)
 ```
 
 A hook to be called after an inspection is completed.
@@ -81,6 +81,7 @@ A hook to be called after an inspection is completed.
 | ---- | ---- | ----------- |
 | regenerator | address | The address of the regenerator that was inspected. |
 | regenerationScore | uint32 | The score calculated from the inspection. |
+| inspectionId | uint64 |  |
 
 ### nextEraIn
 
@@ -115,7 +116,7 @@ _Called when an inspection is invalidated._
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address user, uint256 levelsToRemove) external
+function removePoolLevels(address user, bool denied) external
 ```
 
 Removes specified levels from a user's pool configuration.
@@ -128,7 +129,7 @@ returns a status, likely a boolean indicating success._
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | user | address | The address of the regenerator. |
-| levelsToRemove | uint256 | Levels/score to be removed. |
+| denied | bool | Remove level user status. If true, user is being denied. |
 
 ### totalImpactRegenerators
 
@@ -157,4 +158,19 @@ Returns the total area under regeneration across all regenerators.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | [0] | uint256 | The total regeneration area, in square meters. |
+
+### removeInspectionLevels
+
+```solidity
+function removeInspectionLevels(address addr, uint256 amountToRemove) external
+```
+
+Returns the total area under regeneration across all regenerators.
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| addr | address | The address of the regenerator. |
+| amountToRemove | uint256 | Levels/score to be removed. |
 

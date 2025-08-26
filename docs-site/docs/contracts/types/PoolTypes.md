@@ -2,7 +2,7 @@
 
 ## Era
 
-_Data structuer of users and levels per Era_
+_Data structuer of users and levels per Era._
 
 ### Parameters
 

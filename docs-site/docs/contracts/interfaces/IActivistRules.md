@@ -77,7 +77,7 @@ Returns the current era of the related pool.
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address activist, uint256 levelToRemove) external
+function removePoolLevels(address activist, bool denied) external
 ```
 
 Removes a specified level from a activist's pool configuration.
@@ -89,7 +89,7 @@ _As specified, this function does not return a value._
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | activist | address | The address of the activist. |
-| levelToRemove | uint256 | The levels to be removed. |
+| denied | bool | Remove level user status. If true, user is being denied. |
 
 ### getActivist
 

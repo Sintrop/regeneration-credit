@@ -9,6 +9,14 @@ Each invited who completes 3 inspections is equivalent to one level in the pool.
 _Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for deploy setup only),
 `Blockable` (for era/epoch tracking), and `Callable` (for whitelisted caller control)._
 
+### hasProcessedLevel
+
+```solidity
+mapping(bytes32 => bool) hasProcessedLevel
+```
+
+Tracks unique resource IDs to ensure levels for a resource are added only once.
+
 ### constructor
 
 ```solidity
@@ -63,7 +71,7 @@ This function calculates the eligible tokens for the user's era and transfers th
 ### addLevel
 
 ```solidity
-function addLevel(address addr, uint256 levels) external
+function addLevel(address addr, uint256 levels, bytes32 eventId) external
 ```
 
 Can only be called by the ActivistRules address.
@@ -77,11 +85,12 @@ This function updates the activist level within the system's pooling mechanism._
 | ---- | ---- | ----------- |
 | addr | address | The wallet address of the activist. |
 | levels | uint256 | The number of levels to increase the activist's pool level by. |
+| eventId | bytes32 | A bytes32 representing a unique event for level processing mechanism. |
 
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, uint256 levelsToRemove) external
+function removePoolLevels(address addr, bool denied) external
 ```
 
 Can only be called by activistRules address.
@@ -94,7 +103,7 @@ This function adjusts the activist's level downwards within the system's pooling
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The wallet address of the activist. |
-| levelsToRemove | uint256 | The number of levels to decrease the activist's pool level by. |
+| denied | bool | Check if user is being denied. If true, user is being denied and all era levels should be removed. |
 
 ### haveTokensToWithdraw
 

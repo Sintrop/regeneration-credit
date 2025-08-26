@@ -2,7 +2,7 @@
 
 ## Activist
 
-_Activist user type data structure_
+_Activist user type data structure._
 
 ### Parameters
 
@@ -21,7 +21,7 @@ struct Activist {
 ```
 ## Pool
 
-_Activist pool data_
+_Activist pool data._
 
 ### Parameters
 

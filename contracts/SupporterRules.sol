@@ -42,7 +42,7 @@ contract SupporterRules is ReentrancyGuard {
 
   // --- State variables ---
 
-  /// @notice The relationship between address and supporter data
+  /// @notice The relationship between address and supporter data.
   mapping(address => Supporter) internal supporters;
 
   /// @notice The relationship between address and burned tokens per calculator item.

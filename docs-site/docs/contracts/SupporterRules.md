@@ -21,7 +21,7 @@ Commission percentage paid to the inviter when an invited supporter burns tokens
 mapping(address => struct Supporter) supporters
 ```
 
-The relationship between address and supporter data
+The relationship between address and supporter data.
 
 ### calculatorItemCertificates
 
@@ -87,10 +87,16 @@ mapping(uint64 => struct Offset) offsets
 
 The relationship between offset id and its data.
 
+### regenerationCredit
+
+```solidity
+contract IRegenerationCredit regenerationCredit
+```
+
 ### constructor
 
 ```solidity
-constructor(address communityRulesAddress, address researcherRulesAddress) public
+constructor(address communityRulesAddress, address researcherRulesAddress, address regenerationCreditAddress) public
 ```
 
 _Initializes the SupporterRules contract with addresses of crucial external contracts._
@@ -101,21 +107,7 @@ _Initializes the SupporterRules contract with addresses of crucial external cont
 | ---- | ---- | ----------- |
 | communityRulesAddress | address | Address of the CommunityRules contract. |
 | researcherRulesAddress | address | Address of the ResearcherRules contract, used for CalculatorItem data. |
-
-### setContractCall
-
-```solidity
-function setContractCall(address _regenerationCreditAddress) external
-```
-
-_onlyOwner function to set contract call addresses.
-This function must be called only once after the contract deploy and ownership must be renounced._
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| _regenerationCreditAddress | address | Address of RegenerationCredit. |
+| regenerationCreditAddress | address |  |
 
 ### addSupporter
 
@@ -156,24 +148,28 @@ Only accessible by registered supporters, and enforces a max character limit._
 ### offset
 
 ```solidity
-function offset(address supporterAddress, uint256 amountToBurn, uint64 calculatorItemId) external
+function offset(uint256 amount, uint256 minAmountToBurn, uint64 calculatorItemId) external
 ```
 
-_Called by the RC offset function. If a valid calculatorItemId is provided,
+Allows a supporter to burn tokens to compensate for a specific item's degradation.
+Before calling this function, supporters must approve the SupporterRules contract to burn the tokens.
+
+_This function calls the token transfer function to pay comissions and burnFrom to trade tokens
+for the compensation certificate. If a valid calculatorItemId is provided,
 records the burned amount as a certificate for that item._
 
 #### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| supporterAddress | address | address of supporter. |
-| amountToBurn | uint256 | Tokens to be burned (minimum 1 token in wei, i.e., 1e18). |
+| amount | uint256 | Tokens to be burned (minimum 1 token in wei, i.e., 1e18). |
+| minAmountToBurn | uint256 | Slippage protection: the minimum amount the user expects to burn after commission. |
 | calculatorItemId | uint64 | The ID of the CalculatorItem, or 0 if not applicable. |
 
 ### publish
 
 ```solidity
-function publish(address supporterAddress, uint256 amountToBurn, string description, string content) external
+function publish(uint256 amount, uint256 minAmountToBurn, string description, string content) external
 ```
 
 _Called by the RC offset function to create a new publication record._
@@ -182,8 +178,8 @@ _Called by the RC offset function to create a new publication record._
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| supporterAddress | address | address of supporter. |
-| amountToBurn | uint256 | Tokens to be burned (minimum 10 tokens in wei, i.e., 10e18). |
+| amount | uint256 | Tokens to be burned (minimum 10 tokens in wei, i.e., 10e18). |
+| minAmountToBurn | uint256 | Slippage protection: the minimum amount the user expects to burn after commission. |
 | description | string | The description of the post. |
 | content | string | The content of the post. |
 
@@ -207,7 +203,7 @@ Requires the calculator item to exist and the sender to be a registered supporte
 ### calculateCommission
 
 ```solidity
-function calculateCommission(address supporterAddress, uint256 amount) public view returns (uint256 amountToBurn, uint256 commission, address inviter)
+function calculateCommission(address supporterAddress, uint256 amount) internal view returns (uint256 amountToBurn, uint256 commission, address inviter)
 ```
 
 This functions calculates the comission to be sent to the supporter inviter.
@@ -271,28 +267,6 @@ _Retrieves the full Supporter struct data for a specific address._
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | [0] | struct Supporter | Supporter The `Supporter` struct containing their data. |
-
-### isSupporter
-
-```solidity
-function isSupporter(address addr) external view returns (bool)
-```
-
-Checks if a user is a supporter or not.
-
-_Used by the RegenerationCredit contract to check if user is supporter._
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| addr | address | The address to check if is supporter. |
-
-#### Return Values
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | bool | bool True if is supporter, false otherwise. |
 
 ### SupporterRegistered
 

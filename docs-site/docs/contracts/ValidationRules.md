@@ -61,24 +61,6 @@ This function must be called only once after the contract deploy and ownership m
 | ---- | ---- | ----------- |
 | contractDependency | struct ContractsDependency | Addresses of system contracts used. |
 
-### setContractCall
-
-```solidity
-function setContractCall(address _inspectionRulesAddress, address _contributorRulesAddress, address _developerRulesAddress, address _researcherRulesAddress) external
-```
-
-_onlyOwner function to set contract call addresses.
-This function must be called only once after the contract deploy and ownership must be renounced._
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| _inspectionRulesAddress | address | Address of InspectionRules. |
-| _contributorRulesAddress | address | Address of ContributorRules. |
-| _developerRulesAddress | address | Address of DeveloperRules. |
-| _researcherRulesAddress | address | Address of ResearcherRules. |
-
 ### addUserValidation
 
 ```solidity
@@ -104,97 +86,21 @@ Requirements:
 | userAddress | address | Invalidation user address. |
 | justification | string | Invalidation justification (Max characters). |
 
-### addInspectionValidation
+### updateValidatorLastVoteBlock
 
 ```solidity
-function addInspectionValidation(struct Inspection inspection, string justification, address validatorAddress) external
+function updateValidatorLastVoteBlock(address validatorAddress) external
 ```
 
-Allows allowed callers (e.g., InspectorRules) to record a validation vote against an inspection.
+Called only by authorized callers.
 
-_This function is intended to be called by the `InspectionRules` contract.
-It records a validation vote for an inspection and applies penalties if enough votes accumulate.
-
-Requirements:
-- Caller must be an allowed contract (via `mustBeAllowedCaller`).
-- The validator address must not have already voted for this specific inspection._
+_Update last validator vote block.number._
 
 #### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| inspection | struct Inspection | Inspection data. |
-| justification | string | Invalidation justification. |
-| validatorAddress | address | Address of the voter. |
-
-### addReportValidation
-
-```solidity
-function addReportValidation(struct Report report, string justification, address validatorAddress) external
-```
-
-Allows allowed callers (e.g., DeveloperRules) to record a validation vote against a report.
-
-_This function is intended to be called by the `DeveloperRules` contract.
-It records a validation vote for a report and applies penalties if enough votes accumulate.
-
-Requirements:
-- Caller must be an allowed contract (via `mustBeAllowedCaller`).
-- The validator address must not have already voted for this specific report._
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| report | struct Report | Report data. |
-| justification | string | Invalidation justification. |
-| validatorAddress | address | Address of the voter. |
-
-### addContributionValidation
-
-```solidity
-function addContributionValidation(struct Contribution contribution, string justification, address validatorAddress) external
-```
-
-Allows allowed callers (e.g., ContributorRules) to record a validation vote against a contribution.
-
-_This function is intended to be called by the `ContributorRules` contract.
-It records a validation vote for a contribution and applies penalties if enough votes accumulate.
-
-Requirements:
-- Caller must be an allowed contract (via `mustBeAllowedCaller`).
-- The validator address must not have already voted for this specific contribution._
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| contribution | struct Contribution | Contribution data. |
-| justification | string | Invalidation justification. |
-| validatorAddress | address | Address of the voter. |
-
-### addResearchValidation
-
-```solidity
-function addResearchValidation(struct Research research, string justification, address validatorAddress) external
-```
-
-Allows allowed callers (e.g., ResearcherRules) to record a validation vote against a research.
-
-_This function is intended to be called by the `ResearcherRules` contract.
-It records a validation vote for a research and applies penalties if enough votes accumulate.
-
-Requirements:
-- Caller must be an allowed contract (via `mustBeAllowedCaller`).
-- The validator address must not have already voted for this specific research._
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| research | struct Research | Research data. |
-| justification | string | Invalidation justification. |
-| validatorAddress | address | Address of the voter. |
+| validatorAddress | address | The validator wallet address. |
 
 ### getUserValidations
 
@@ -222,7 +128,7 @@ _Retrieves an array of `UserValidation` structs for a specified user and era._
 ### votesToInvalidate
 
 ```solidity
-function votesToInvalidate() public view returns (uint256 count)
+function votesToInvalidate() public view returns (uint256)
 ```
 
 Get how many validations is necessary to invalidate a user or resource.
@@ -234,7 +140,7 @@ Calculation is based on the `votersCount` which includes activists, researchers,
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| count | uint256 | Number of votes required for invalidation. |
+| [0] | uint256 | count Number of votes required for invalidation. |
 
 ### waitedTimeBetweenVotes
 
@@ -275,70 +181,6 @@ Emitted
 | _userAddress | address | The wallet of the user receiving the vote. |
 | _justification | string | The justification provided for the vote. |
 
-### InspectionValidation
-
-```solidity
-event InspectionValidation(address _validatorAddress, uint256 _resourceId, string _justification)
-```
-
-Emitted
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| _validatorAddress | address | The address of the validator. |
-| _resourceId | uint256 | The id of the resource receiving the vote. |
-| _justification | string | The justification provided for the vote. |
-
-### ReportValidation
-
-```solidity
-event ReportValidation(address _validatorAddress, uint256 _resourceId, string _justification)
-```
-
-Emitted
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| _validatorAddress | address | The address of the validator. |
-| _resourceId | uint256 | The id of the resource receiving the vote. |
-| _justification | string | The justification provided for the vote. |
-
-### ContributionValidation
-
-```solidity
-event ContributionValidation(address _validatorAddress, uint256 _resourceId, string _justification)
-```
-
-Emitted
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| _validatorAddress | address | The address of the validator. |
-| _resourceId | uint256 | The id of the resource receiving the vote. |
-| _justification | string | The justification provided for the vote. |
-
-### ResearchValidation
-
-```solidity
-event ResearchValidation(address _validatorAddress, uint256 _resourceId, string _justification)
-```
-
-Emitted
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| _validatorAddress | address | The address of the validator. |
-| _resourceId | uint256 | The id of the resource receiving the vote. |
-| _justification | string | The justification provided for the vote. |
-
 ### UserDenied
 
 ```solidity
@@ -352,21 +194,4 @@ Emitted when a user is successfully invalidated and denied.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | _userAddress | address | The address of the user who was denied. |
-
-### ResourceInvalidated
-
-```solidity
-event ResourceInvalidated(string _resourceType, uint256 _resourceId, address _ownerAddress, uint256 _penaltiesAdded)
-```
-
-Emitted when a resource (Inspection, Report, Contribution, Research) is processed after accumulating enough invalidation votes.
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| _resourceType | string | The type of resource being processed (e.g., "Inspection", "Report"). |
-| _resourceId | uint256 | The ID of the resource. |
-| _ownerAddress | address | The address of the user who created the invalidated resource. |
-| _penaltiesAdded | uint256 | The number of penalties added to the owner. |
 

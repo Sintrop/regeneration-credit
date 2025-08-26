@@ -2,7 +2,7 @@
 
 ## Developer
 
-_Developer user type data structure_
+_Developer user type data structure._
 
 ### Parameters
 
@@ -23,7 +23,7 @@ struct Developer {
 ```
 ## Pool
 
-_Developer pool data_
+_Developer pool data._
 
 ### Parameters
 
@@ -38,7 +38,7 @@ struct Pool {
 ```
 ## Report
 
-_Report resource data structure_
+_Report resource data structure._
 
 ```solidity
 struct Report {
@@ -55,7 +55,7 @@ struct Report {
 ```
 ## Penalty
 
-_Report penalty_
+_Report penalty._
 
 ```solidity
 struct Penalty {
@@ -64,7 +64,7 @@ struct Penalty {
 ```
 ## ContractsDependency
 
-_System used contracts address_
+_System used contracts address._
 
 ```solidity
 struct ContractsDependency {

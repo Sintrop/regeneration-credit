@@ -21,7 +21,7 @@ contract RegenerationCredit is ERC20, ERC20Burnable, Ownable, ReentrancyGuard {
   /// @notice The official name of the token.
   string public constant NAME = "REGENERATION CREDIT";
 
-  /// @notice Token symbol
+  /// @notice Token symbol.
   string public constant SYMBOL = "RC";
 
   /// @notice The number of decimal places used by the token.
@@ -183,12 +183,6 @@ contract RegenerationCredit is ERC20, ERC20Burnable, Ownable, ReentrancyGuard {
   }
 
   // --- Events ---
-
-  /// @dev Emitted when tokens are transferred from a designated contract pool to a user.
-  /// @param from The address of the contract pool.
-  /// @param to The address of the recipient.
-  /// @param amount The amount of tokens transferred.
-  event PoolTransfer(address indexed from, address indexed to, uint256 amount);
 
   /// @dev Emitted when tokens are burned (certified) by a user or on behalf of a pool.
   /// @param account The address from which tokens were burned.

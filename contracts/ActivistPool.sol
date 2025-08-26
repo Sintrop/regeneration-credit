@@ -112,6 +112,7 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * @notice Can only be called by the ActivistRules address.
    * @param addr The wallet address of the activist.
    * @param levels The number of levels to increase the activist's pool level by.
+   * @param eventId A bytes32 representing a unique event for level processing mechanism.
    */
   function addLevel(
     address addr,

@@ -112,6 +112,7 @@ contract ResearcherPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * @notice Can only be called by the researcherRules address.
    * @param addr The wallet address of the researcher.
    * @param levels The number of levels to increase the researcher's pool level by.
+   * @param eventId The ID of the research being processed.
    */
   function addLevel(
     address addr,

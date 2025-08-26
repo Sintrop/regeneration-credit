@@ -33,7 +33,7 @@ The maximum number of penalties a contributor can accumulate before being denied
 uint32 timeBetweenWorks
 ```
 
-The minimum number of blocks that must elapse between a contributor's successful contribution publications.
+The minimum number of blocks that must elapse between contribution publications.
 This prevents spamming or rapid consecutive contributions.
 
 ### securityBlocksToValidation
@@ -88,7 +88,13 @@ mapping(address => uint256[]) contributionsIds
 
 A mapping from a contributor's wallet address to an array of IDs of contributions they have made.
 
-_This array can grow indefinitely per contributor._
+### contributionPenalized
+
+```solidity
+mapping(uint64 => bool) contributionPenalized
+```
+
+Tracks contribution IDs that have already been invalidated.
 
 ### penalties
 
@@ -239,43 +245,21 @@ based on their published contributions and current era._
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, uint256 levelsToRemove) external
+function removePoolLevels(address addr, bool denied) external
 ```
 
-Can only be called by ContributorRules address.
+Can only be called by ValidationRules address.
 
 _Allows an authorized caller to remove levels from a contributor's pool.
-This function updates the contributor's local level and notifies the `ContributorPool` contract._
+This function updates the contributor's local level if user is not being denied and 
+notifies the `ContributorPool` contract to remove the pool level._
 
 #### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The wallet address of the contributor from whom levels are to be removed. |
-| levelsToRemove | uint256 | The number of levels to decrease. If `levelsToRemove` is 0, this function sets the contributor's pool level to 0. Otherwise, it subtracts the specified amount. |
-
-### addPenalty
-
-```solidity
-function addPenalty(address addr, uint64 contributionId) external returns (uint256)
-```
-
-This function must be called by the ValidationRules contract.
-
-_Adds a penalty to a contributor's record when one of their contributions is invalidated._
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| addr | address | The wallet address of the contributor receiving the penalty. |
-| contributionId | uint64 | The ID of the contribution associated with this penalty. |
-
-#### Return Values
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | uint256 The total number of penalties the contributor has accumulated. |
+| denied | bool | Remove level user status. If true, user is being denied. |
 
 ### getContributor
 
@@ -495,6 +479,22 @@ This event signifies a final state change for the contribution._
 | newPenaltyCount | uint256 | The total number of penalties the contributor now has. |
 | blockNumber | uint256 | The block number at which the contribution was invalidated. |
 
+### ContributionValidation
+
+```solidity
+event ContributionValidation(address _validatorAddress, uint256 _resourceId, string _justification)
+```
+
+Emitted
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _validatorAddress | address | The address of the validator. |
+| _resourceId | uint256 | The id of the resource receiving the vote. |
+| _justification | string | The justification provided for the vote. |
+
 ### ContributorWithdrawalInitiated
 
 ```solidity
@@ -526,21 +526,4 @@ _Emitted when a contributor's level is increased._
 | contributorAddress | address | The address of the contributor whose level was increased. |
 | newLevel | uint256 | The new total level of the contributor. |
 | blockNumber | uint256 | The block number at which the level increase occurred. |
-
-### ContributorLevelRemoved
-
-```solidity
-event ContributorLevelRemoved(address contributorAddress, uint256 levelsRemoved, uint256 newLevel, uint256 blockNumber)
-```
-
-_Emitted when a contributor's pool levels are removed._
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| contributorAddress | address | The address of the contributor whose levels were removed. |
-| levelsRemoved | uint256 | The number of levels that were removed. |
-| newLevel | uint256 | The new total level of the contributor after removal. |
-| blockNumber | uint256 | The block number at which the level removal occurred. |
 

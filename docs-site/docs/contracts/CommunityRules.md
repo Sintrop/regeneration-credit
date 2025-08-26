@@ -38,7 +38,15 @@ Total count of delations received across all users.
 uint64 usersCount
 ```
 
-The global total count of all active (non-`UNDEFINED`, non-`DENIED`) users in the system..
+The global total count of all active (non-`UNDEFINED`) users in the system..
+
+### delationsById
+
+```solidity
+mapping(uint256 => struct CommunityTypes.Delation) delationsById
+```
+
+A mapping from a delation id to the `Delation` struct.
 
 ### invitations
 
@@ -183,13 +191,13 @@ Prevents re-inviting an already invited or registered address._
 | invited | address | The address of the user who received the invitation. |
 | userType | enum CommunityTypes.UserType | The `UserType` the `invited` user is intended to register as. |
 
-### setDeniedType
+### setToDenied
 
 ```solidity
-function setDeniedType(address userAddress) external
+function setToDenied(address userAddress) external
 ```
 
-Sets a user's type to `DENIED`.
+Sets a user's to `DENIED`.
 
 _This function is intended to be called by an allowed caller (`ValidationRules`).
 It decrements the count of the user's previous type and sets their `UserType` to `DENIED`.
@@ -302,18 +310,40 @@ function userTypeIs(enum CommunityTypes.UserType userType, address userAddress) 
 
 Function to check if an userAddress type is equal passed userType.
 
+_This function also checks if a user is denied, returning false if denied._
+
 #### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| userType | enum CommunityTypes.UserType |  |
+| userType | enum CommunityTypes.UserType | The `UserType` to check for. |
 | userAddress | address | Denied user address. |
 
 #### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | bool | true If userAddress is equal userType. |
+| [0] | bool | bool True if userAddress is equal userType. |
+
+### isDenied
+
+```solidity
+function isDenied(address userAddress) public view returns (bool)
+```
+
+Function to check if an userAddress is denied.
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| userAddress | address | The user address to check. |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | bool | bool True if userAddress is denied. |
 
 ### getUserDelations
 
@@ -389,7 +419,7 @@ Emitted when a user's type is changed to `DENIED`.
 ### DelationAdded
 
 ```solidity
-event DelationAdded(address informer, address reported)
+event DelationAdded(address informer, address reported, uint64 newDelationId)
 ```
 
 Emitted when a delation is successfully added.
@@ -400,6 +430,7 @@ Emitted when a delation is successfully added.
 | ---- | ---- | ----------- |
 | informer | address | The address of the user who submitted the delation. |
 | reported | address | The address of the user being reported. |
+| newDelationId | uint64 |  |
 
 ### InvitationAdded
 

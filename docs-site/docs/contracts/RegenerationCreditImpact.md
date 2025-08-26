@@ -44,7 +44,7 @@ _This constructor links to core system contracts required for impact calculation
 function totalTreesImpact() public view returns (uint256)
 ```
 
-Calculates the total trees impact of the system.
+Calculates the total trees of the system.
 
 _This function uses data from inspections and regenerator impact to estimate total trees._
 
