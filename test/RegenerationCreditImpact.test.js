@@ -734,7 +734,7 @@ describe("RegenerationCreditImpact", () => {
       context("when only one regenerator is valid", async () => {
         beforeEach(async () => {
           await regeneratorRules.setContractCall(inspectionRules.target, owner);
-          await regeneratorRules.removePoolLevels(regenerator2Address, 0);
+          await regeneratorRules.removePoolLevels(regenerator2Address);
         });
 
         it("totalAreaImpact must be 1000", async () => {
@@ -1455,7 +1455,7 @@ describe("RegenerationCreditImpact", () => {
       context("when only one regenerator is valid", async () => {
         beforeEach(async () => {
           await regeneratorRules.setContractCall(inspectionRules.target, owner);
-          await regeneratorRules.removePoolLevels(regenerator2Address, 0);
+          await regeneratorRules.removePoolLevels(regenerator2Address);
         });
 
         it("areaPerToken must be 666666666666", async () => {

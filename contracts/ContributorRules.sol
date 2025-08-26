@@ -351,15 +351,11 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * notifies the `ContributorPool` contract to remove the pool level.
    * @notice Can only be called by ValidationRules address.
    * @param addr The wallet address of the contributor from whom levels are to be removed.
-   * @param denied Remove level user status. If true, user is being denied.
    */
-  function removePoolLevels(
-    address addr,
-    bool denied
-  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
-    if (!denied) contributors[addr].pool.level -= RESOURCE_LEVEL;
+  function removePoolLevels(address addr) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+    // if (!denied) contributors[addr].pool.level -= RESOURCE_LEVEL;
 
-    contributorPool.removePoolLevels(addr, denied);
+    contributorPool.removePoolLevels(addr, true);
   }
 
   // --- Private functions ---
@@ -420,15 +416,16 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * and records the invalidation time.
    * @param contribution A `Contribution` storage reference to the contribution being invalidated.
    */
-  function _invalidateContribution(Contribution memory contribution) private returns (Contribution memory) {
+  function _invalidateContribution(Contribution memory contribution) private {
     contributionsCount--;
     contribution.valid = false;
     contribution.invalidatedAt = block.number;
     contributions[contribution.id] = contribution;
+    contributors[contribution.user].pool.level -= RESOURCE_LEVEL;
 
     contributorPool.removePoolLevels(contribution.user, false);
 
-    return contribution;
+    // return contribution;
   }
 
   // --- View functions ---

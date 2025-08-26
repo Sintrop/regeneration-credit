@@ -194,12 +194,12 @@ contract ValidationRules is Callable, ReentrancyGuard {
     }
 
     // Check for each user type and call their respective removePoolLevels function.
-    if (userType == CommunityTypes.UserType.REGENERATOR) return regeneratorRules.removePoolLevels(userAddress, true);
+    if (userType == CommunityTypes.UserType.REGENERATOR) return regeneratorRules.removePoolLevels(userAddress);
     if (userType == CommunityTypes.UserType.INSPECTOR) return inspectorRules.removePoolLevels(userAddress, true);
-    if (userType == CommunityTypes.UserType.DEVELOPER) return developerRules.removePoolLevels(userAddress, true);
-    if (userType == CommunityTypes.UserType.RESEARCHER) return researcherRules.removePoolLevels(userAddress, true);
-    if (userType == CommunityTypes.UserType.CONTRIBUTOR) return contributorRules.removePoolLevels(userAddress, true);
-    if (userType == CommunityTypes.UserType.ACTIVIST) return activistRules.removePoolLevels(userAddress, true);
+    if (userType == CommunityTypes.UserType.DEVELOPER) return developerRules.removePoolLevels(userAddress);
+    if (userType == CommunityTypes.UserType.RESEARCHER) return researcherRules.removePoolLevels(userAddress);
+    if (userType == CommunityTypes.UserType.CONTRIBUTOR) return contributorRules.removePoolLevels(userAddress);
+    if (userType == CommunityTypes.UserType.ACTIVIST) return activistRules.removePoolLevels(userAddress);
   }
 
   /**
