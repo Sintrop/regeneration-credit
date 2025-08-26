@@ -157,7 +157,7 @@ when an invited Inspector reaches the minimum inspection threshold._
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, bool denied) external
+function removePoolLevels(address addr) external
 ```
 
 Can only be called by the ValidationRules contract.
@@ -171,7 +171,6 @@ This function updates the activist's local level if user is not being denied
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The wallet address of the activist from whom levels are to be removed. |
-| denied | bool | Remove level user status. If true, user is being denied. |
 
 ### canSendInvite
 

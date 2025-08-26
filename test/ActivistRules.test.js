@@ -375,24 +375,6 @@ describe("ActivistRules", () => {
       await instance.addInspectorLevel(inspector2Address, 3);
     });
 
-    // context("when user is not to denied", () => {
-    //   beforeEach(async () => {
-    //     await instance.removePoolLevels(activ1Address, false);
-    //   });
-
-    //   it("remove user levels from pool", async () => {
-    //     const levelsEra1 = await activistPool.eraLevels(1, activ1Address);
-
-    //     expect(levelsEra1).to.equal(1);
-    //   });
-
-    //   it("remove user levels from activist", async () => {
-    //     const activist = await instance.getActivist(activ1Address);
-
-    //     expect(activist.pool.level).to.equal(1);
-    //   });
-    // });
-
     context("when user is denied", () => {
       beforeEach(async () => {
         await instance.removePoolLevels(activ1Address);

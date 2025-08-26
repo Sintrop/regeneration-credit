@@ -329,8 +329,6 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * @param addr The wallet address of the developer from whom levels are to be removed.
    */
   function removePoolLevels(address addr) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
-    // if (!denied) developers[addr].pool.level -= RESOURCE_LEVEL;
-
     // Notify the DeveloperPool contract to adjust the developer's pool levels there as well.
     developerPool.removePoolLevels(addr, true);
   }

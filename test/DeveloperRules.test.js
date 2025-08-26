@@ -1423,24 +1423,6 @@ describe("DeveloperRules", (accounts) => {
       await instance.setContractCall(owner);
     });
 
-    // context("when user is not to denied", () => {
-    //   beforeEach(async () => {
-    //     await instance.removePoolLevels(dev1Address);
-    //   });
-
-    //   it("remove user levels from pool", async () => {
-    //     const levelsEra1 = await developerPool.eraLevels(2, dev1Address);
-
-    //     expect(levelsEra1).to.equal(0);
-    //   });
-
-    //   it("remove user levels from developer", async () => {
-    //     const developer = await instance.getDeveloper(dev1Address);
-
-    //     expect(developer.pool.level).to.equal(0);
-    //   });
-    // });
-
     context("when user is denied", () => {
       beforeEach(async () => {
         await instance.removePoolLevels(dev1Address);

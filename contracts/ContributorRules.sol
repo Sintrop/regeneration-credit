@@ -353,8 +353,6 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * @param addr The wallet address of the contributor from whom levels are to be removed.
    */
   function removePoolLevels(address addr) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
-    // if (!denied) contributors[addr].pool.level -= RESOURCE_LEVEL;
-
     contributorPool.removePoolLevels(addr, true);
   }
 
@@ -424,8 +422,6 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     contributors[contribution.user].pool.level -= RESOURCE_LEVEL;
 
     contributorPool.removePoolLevels(contribution.user, false);
-
-    // return contribution;
   }
 
   // --- View functions ---

@@ -116,7 +116,7 @@ _Called when an inspection is invalidated._
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address user, bool denied) external
+function removePoolLevels(address user) external
 ```
 
 Removes specified levels from a user's pool configuration.
@@ -129,7 +129,6 @@ returns a status, likely a boolean indicating success._
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | user | address | The address of the regenerator. |
-| denied | bool | Remove level user status. If true, user is being denied. |
 
 ### totalImpactRegenerators
 

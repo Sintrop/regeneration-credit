@@ -209,8 +209,6 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   function removePoolLevels(
     address addr
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
-    // if (!denied) activists[addr].pool.level -= RESOURCE_LEVEL;
-
     activistPool.removePoolLevels(addr, true);
   }
 
