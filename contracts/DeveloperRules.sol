@@ -365,8 +365,6 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     developers[report.developer].pool.level -= RESOURCE_LEVEL;
 
     developerPool.removePoolLevels(report.developer, false);
-
-    // return report;
   }
 
   /**
