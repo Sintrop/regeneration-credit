@@ -113,7 +113,7 @@ Returns the current era of the related pool.
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address contributor, bool denied) external
+function removePoolLevels(address contributor) external
 ```
 
 Removes a specified level from a contributor's pool configuration.
@@ -125,5 +125,4 @@ _As specified, this function does not return a value._
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | contributor | address | The address of the contributor. |
-| denied | bool | Remove level user status. If true, user is being denied. |
 

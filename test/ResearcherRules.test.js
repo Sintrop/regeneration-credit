@@ -533,6 +533,10 @@ describe("ResearcherRules", () => {
           await advanceBlock(args.blocksPerEra);
 
           await addResearch(resea1Address);
+
+          await advanceBlock(10);
+
+          await addResearch(resea1Address);
           await instance.connect(user1Address).addResearchValidation(3, "justification");
           await instance.connect(user2Address).addResearchValidation(3, "justification");
         });
@@ -541,6 +545,12 @@ describe("ResearcherRules", () => {
           const isDenied = await communityRules.isDenied(resea1Address);
 
           expect(isDenied).to.eq(true);
+        });
+
+        it("Remove invalidated research level from researcher", async () => {
+          const researcher = await instance.getResearcher(resea1Address);
+
+          expect(researcher.pool.level).to.eq(1);
         });
       });
 
@@ -751,6 +761,10 @@ describe("ResearcherRules", () => {
           await advanceBlock(args.blocksPerEra);
 
           await addResearch(resea1Address);
+
+          await advanceBlock(10);
+
+          await addResearch(resea1Address);
           await instance.connect(user1Address).addResearchValidation(3, "justification");
           await instance.connect(user2Address).addResearchValidation(3, "justification");
         });
@@ -773,6 +787,12 @@ describe("ResearcherRules", () => {
 
           const poolLevels = await researcherPool.eraLevels(research.era, resea1Address);
           expect(poolLevels).to.equal(0);
+        });
+
+        it("Remove invalidated research level from researcher", async () => {
+          const researcher = await instance.getResearcher(resea1Address);
+
+          expect(researcher.pool.level).to.eq(1);
         });
       });
 
@@ -939,6 +959,10 @@ describe("ResearcherRules", () => {
           await advanceBlock(args.blocksPerEra);
 
           await addResearch(resea1Address);
+
+          await advanceBlock(10);
+
+          await addResearch(resea1Address);
           await instance.connect(user1Address).addResearchValidation(3, "justification");
           await instance.connect(user2Address).addResearchValidation(3, "justification");
         });
@@ -947,6 +971,12 @@ describe("ResearcherRules", () => {
           const isDenied = await communityRules.isDenied(resea1Address);
 
           expect(isDenied).to.eq(true);
+        });
+
+        it("Remove invalidated research level from researcher", async () => {
+          const researcher = await instance.getResearcher(resea1Address);
+
+          expect(researcher.pool.level).to.eq(1);
         });
       });
 
@@ -1113,6 +1143,10 @@ describe("ResearcherRules", () => {
           await advanceBlock(args.blocksPerEra);
 
           await addResearch(resea1Address);
+
+          await advanceBlock(10);
+
+          await addResearch(resea1Address);
           await instance.connect(user1Address).addResearchValidation(3, "justification");
           await instance.connect(user2Address).addResearchValidation(3, "justification");
         });
@@ -1121,6 +1155,12 @@ describe("ResearcherRules", () => {
           const isDenied = await communityRules.isDenied(resea1Address);
 
           expect(isDenied).to.eq(isDenied);
+        });
+
+        it("Remove invalidated research level from researcher", async () => {
+          const researcher = await instance.getResearcher(resea1Address);
+
+          expect(researcher.pool.level).to.eq(1);
         });
       });
 
@@ -1195,27 +1235,9 @@ describe("ResearcherRules", () => {
       await instance.setContractCall(owner);
     });
 
-    context("when user is not to denied", () => {
-      beforeEach(async () => {
-        await instance.removePoolLevels(resea1Address, false);
-      });
-
-      it("remove user levels from pool", async () => {
-        const levelsEra1 = await researcherPool.eraLevels(1, resea1Address);
-
-        expect(levelsEra1).to.equal(1);
-      });
-
-      it("remove user levels from researcher", async () => {
-        const reseacher = await instance.getResearcher(resea1Address);
-
-        expect(reseacher.pool.level).to.equal(1);
-      });
-    });
-
     context("when user is to denied", () => {
       beforeEach(async () => {
-        await instance.removePoolLevels(resea1Address, true);
+        await instance.removePoolLevels(resea1Address);
       });
 
       it("remove user levels from pool", async () => {

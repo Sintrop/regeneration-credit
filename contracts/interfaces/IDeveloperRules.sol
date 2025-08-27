@@ -54,7 +54,6 @@ interface IDeveloperRules {
    * @notice Removes a specified level from a developer's pool configuration.
    * @dev As specified, this function does not return a value.
    * @param developer The address of the developer.
-   * @param denied Remove level user status. If true, user is being denied.
    */
-  function removePoolLevels(address developer, bool denied) external;
+  function removePoolLevels(address developer) external;
 }

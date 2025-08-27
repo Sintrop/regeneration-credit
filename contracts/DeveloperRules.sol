@@ -327,16 +327,10 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * This function updates the developer's local level and notifies the `DeveloperPool` contract.
    * @notice Can only be called by whitelisted addresses, the ValidatorRules contract.
    * @param addr The wallet address of the developer from whom levels are to be removed.
-   * @param denied Remove level user status. If true, user is being denied.
    */
-  function removePoolLevels(
-    address addr,
-    bool denied
-  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
-    if (!denied) developers[addr].pool.level -= RESOURCE_LEVEL;
-
+  function removePoolLevels(address addr) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
     // Notify the DeveloperPool contract to adjust the developer's pool levels there as well.
-    developerPool.removePoolLevels(addr, denied);
+    developerPool.removePoolLevels(addr, true);
   }
 
   // --- Private functions ---
@@ -363,15 +357,14 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * and records the invalidation time.
    * @param report A `Report` storage reference to the report being invalidated.
    */
-  function _invalidateReport(Report memory report) private returns (Report memory) {
+  function _invalidateReport(Report memory report) private {
     reportsCount--;
     report.valid = false;
     report.invalidatedAt = block.number;
     reports[report.id] = report;
+    developers[report.developer].pool.level -= RESOURCE_LEVEL;
 
     developerPool.removePoolLevels(report.developer, false);
-
-    return report;
   }
 
   /**

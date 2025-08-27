@@ -202,7 +202,7 @@ Allows a regenerator to update their area photo for their regeneration area.
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, bool denied) external
+function removePoolLevels(address addr) external
 ```
 
 Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
@@ -216,7 +216,6 @@ This function updates the regenerator's local regeneration score and notifies th
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The wallet address of the regenerator from whom levels are to be removed. |
-| denied | bool | Remove level user status. If true, user is being denied. |
 
 ### removeInspectionLevels
 

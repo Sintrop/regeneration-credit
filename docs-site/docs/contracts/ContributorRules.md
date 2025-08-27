@@ -245,13 +245,13 @@ based on their published contributions and current era._
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, bool denied) external
+function removePoolLevels(address addr) external
 ```
 
 Can only be called by ValidationRules address.
 
 _Allows an authorized caller to remove levels from a contributor's pool.
-This function updates the contributor's local level if user is not being denied and 
+This function updates the contributor's local level if user is not being denied and
 notifies the `ContributorPool` contract to remove the pool level._
 
 #### Parameters
@@ -259,7 +259,6 @@ notifies the `ContributorPool` contract to remove the pool level._
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The wallet address of the contributor from whom levels are to be removed. |
-| denied | bool | Remove level user status. If true, user is being denied. |
 
 ### getContributor
 

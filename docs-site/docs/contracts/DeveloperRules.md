@@ -245,7 +245,7 @@ based on their published reports and current era._
 ### removePoolLevels
 
 ```solidity
-function removePoolLevels(address addr, bool denied) external
+function removePoolLevels(address addr) external
 ```
 
 Can only be called by whitelisted addresses, the ValidatorRules contract.
@@ -258,7 +258,6 @@ This function updates the developer's local level and notifies the `DeveloperPoo
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The wallet address of the developer from whom levels are to be removed. |
-| denied | bool | Remove level user status. If true, user is being denied. |
 
 ### canSendInvite
 

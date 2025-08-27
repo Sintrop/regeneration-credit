@@ -205,15 +205,11 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    *  and notifies the `ActivistPool` contract to remove the pool level.
    * @notice Can only be called by the ValidationRules contract.
    * @param addr The wallet address of the activist from whom levels are to be removed.
-   * @param denied Remove level user status. If true, user is being denied.
    */
   function removePoolLevels(
-    address addr,
-    bool denied
+    address addr
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
-    if (!denied) activists[addr].pool.level -= RESOURCE_LEVEL;
-
-    activistPool.removePoolLevels(addr, denied);
+    activistPool.removePoolLevels(addr, true);
   }
 
   // --- Private functions ---

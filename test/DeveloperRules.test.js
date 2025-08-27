@@ -438,7 +438,7 @@ describe("DeveloperRules", (accounts) => {
           it("remove developer level report from developerRules", async () => {
             const developer = await instance.getDeveloper(dev1Address);
 
-            expect(developer.pool.level).to.equal(1);
+            expect(developer.pool.level).to.equal(0);
           });
 
           it("must decrement reportsCount in one", async () => {
@@ -530,6 +530,8 @@ describe("DeveloperRules", (accounts) => {
           await advanceBlock(10);
           await communityRules.setContractCall(owner, validationRules.target);
 
+          await instance.connect(user1Address).addReport("description", "report");
+
           await instance.connect(user5Address).addReportValidation(15, "justification");
           await instance.connect(user2Address).addReportValidation(15, "justification");
         });
@@ -549,9 +551,15 @@ describe("DeveloperRules", (accounts) => {
         it("should remove all pool levels for the denied developer", async () => {
           // The `removePoolLevels(user, true)` function should zero out the levels
           const report = await instance.reports(1);
-          const eraLevels = await developerPool.eraLevels(report.era, dev1Address);
+          const eraLevels = await developerPool.eraLevels(report.era, user1Address);
 
           expect(eraLevels).to.eq(0);
+        });
+
+        it("Remove invalidated report level from developer", async () => {
+          const developer = await instance.getDeveloper(user1Address);
+
+          expect(developer.pool.level).to.eq(1);
         });
       });
 
@@ -1423,9 +1431,9 @@ describe("DeveloperRules", (accounts) => {
       await instance.setContractCall(owner);
     });
 
-    context("when user is not to denied", () => {
+    context("when user is denied", () => {
       beforeEach(async () => {
-        await instance.removePoolLevels(dev1Address, false);
+        await instance.removePoolLevels(dev1Address);
       });
 
       it("remove user levels from pool", async () => {
@@ -1434,25 +1442,7 @@ describe("DeveloperRules", (accounts) => {
         expect(levelsEra1).to.equal(0);
       });
 
-      it("remove user levels from developer", async () => {
-        const developer = await instance.getDeveloper(dev1Address);
-
-        expect(developer.pool.level).to.equal(1);
-      });
-    });
-
-    context("when user is to denied", () => {
-      beforeEach(async () => {
-        await instance.removePoolLevels(dev1Address, true);
-      });
-
-      it("remove user levels from pool", async () => {
-        const levelsEra1 = await developerPool.eraLevels(2, dev1Address);
-
-        expect(levelsEra1).to.equal(0);
-      });
-
-      it("remove user levels from developer", async () => {
+      it("should not remove user levels from developer local level", async () => {
         const developer = await instance.getDeveloper(dev1Address);
 
         expect(developer.pool.level).to.equal(2);

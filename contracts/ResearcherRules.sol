@@ -379,15 +379,9 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @notice Can only be called by the ValidationRules address. If `levelsToRemove` is 0,
    * this implies a full invalidation or blocking, resetting the score to 0 and decrementing the total area.
    * @param addr The wallet address of the researcher from whom levels are to be removed.
-   * @param denied Remove level user status. If true, user is being denied.
    */
-  function removePoolLevels(
-    address addr,
-    bool denied
-  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
-    if (!denied) researchers[addr].pool.level -= RESOURCE_LEVEL;
-
-    researcherPool.removePoolLevels(addr, denied);
+  function removePoolLevels(address addr) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+    researcherPool.removePoolLevels(addr, true);
   }
 
   // --- Private  functions ---
@@ -429,15 +423,14 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * Decrements the total count of valid researches.
    * @param research The `Research` struct to be invalidated.
    */
-  function _invalidateResearch(Research memory research) private returns (Research memory) {
+  function _invalidateResearch(Research memory research) private {
     researchesCount--;
     research.valid = false;
     research.invalidatedAt = block.number;
     researches[research.id] = research;
+    researchers[research.createdBy].pool.level -= RESOURCE_LEVEL;
 
     researcherPool.removePoolLevels(research.createdBy, false);
-
-    return research;
   }
 
   /**
