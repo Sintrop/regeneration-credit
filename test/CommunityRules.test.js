@@ -1,6 +1,7 @@
 const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
+const { advanceBlock } = require("./shared/advance_block");
 
 describe("CommunityRules", function () {
   let instance;
@@ -496,6 +497,36 @@ describe("CommunityRules", function () {
         await expect(addDelation(user1Address, user2Address)).to.be.revertedWith("Not allowed to supporters");
       });
     });
+
+    context("when a user tries to make multiple delations in a short period", () => {
+      context("when a user tries to make multiple delations in a short period", () => {
+        const BLOCKS_BETWEEN_DELATIONS = 5000;
+
+        beforeEach(async () => {
+          await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+          await addInvitation(owner, user2Address, userTypes.Developer, owner);
+          await addUser(user1Address, userTypes.Regenerator, owner);
+          await addUser(user2Address, userTypes.Developer, owner);
+
+          await addDelation(user1Address, user2Address);
+        });
+
+        it("should revert if the cooldown period has not passed", async () => {
+          await expect(addDelation(user1Address, user2Address)).to.be.revertedWith(
+            "Wait delay blocks"
+          );
+        });
+
+        it("should succeed if the cooldown period has passed", async () => {
+          await advanceBlock(BLOCKS_BETWEEN_DELATIONS);
+
+          await addDelation(user1Address, user2Address);
+
+          const delations = await instance.getUserDelations(user1Address);
+          expect(delations.length).to.equal(2);
+        });
+      });
+    });
   });
 
   describe("#getUserDelations", () => {
@@ -508,6 +539,7 @@ describe("CommunityRules", function () {
         await addUser(user2Address, userTypes.Regenerator, owner);
 
         await addDelation(user1Address, user2Address);
+        await advanceBlock(5000);
         await addDelation(user1Address, user2Address);
       });
 
@@ -667,6 +699,16 @@ describe("CommunityRules", function () {
         const isVoter = await instance.isVoter(user5Address);
 
         expect(isVoter).to.equal(true);
+      });
+    });
+
+    context("when is denied", () => {
+      it("must returns false", async () => {
+        await communityRules.setToDenied(user5Address);
+
+        const isVoter = await instance.isVoter(user5Address);
+
+        expect(isVoter).to.equal(false);
       });
     });
   });
