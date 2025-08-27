@@ -1047,7 +1047,7 @@ describe("ValidationRules", () => {
       });
     });
 
-    context("when regenerator _checkRegeneratorImmunity", () => {
+    context("when regenerator _canBeValidated", () => {
       context("when reached REGENERATOR_VALIDATION_IMMUNITY_THRESHOLD", () => {
         beforeEach(async () => {
           await addInvitation(owner, user1Address, userTypes.Developer, owner);

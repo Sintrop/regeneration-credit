@@ -129,7 +129,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(!communityRules.userTypeIs(CommunityTypes.UserType.UNDEFINED, userAddress), "User not registered");
     require(!communityRules.isDenied(userAddress), "User already denied");
-    require(_checkRegeneratorImmunity(userAddress), "Regenerator has reached validation immunity");
+    require(_canBeValidated(userAddress), "Regenerator has reached validation immunity");
 
     uint256 currentEra = _userCurrentEra(userAddress);
 
@@ -200,6 +200,8 @@ contract ValidationRules is Callable, ReentrancyGuard {
     if (userType == CommunityTypes.UserType.RESEARCHER) return researcherRules.removePoolLevels(userAddress);
     if (userType == CommunityTypes.UserType.CONTRIBUTOR) return contributorRules.removePoolLevels(userAddress);
     if (userType == CommunityTypes.UserType.ACTIVIST) return activistRules.removePoolLevels(userAddress);
+
+    emit UserDenied(userAddress);    
   }
 
   /**
@@ -209,7 +211,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
    * @param addr The address of the regenerator.
    * @return bool True if user has reached validation imunity, false otherwise.
    */
-  function _checkRegeneratorImmunity(address addr) private view returns (bool) {
+  function _canBeValidated(address addr) private view returns (bool) {
     if (!communityRules.userTypeIs(CommunityTypes.UserType.REGENERATOR, addr)) return true;
 
     Regenerator memory regenerator = regeneratorRules.getRegenerator(addr);
