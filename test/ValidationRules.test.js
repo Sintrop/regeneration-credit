@@ -1122,7 +1122,19 @@ describe("ValidationRules", () => {
       await instance.setContractInterfaces(validationRulesDependencies);
     });
 
-    context("when votersCount is less 25", () => {
+    context("when voters is less then 10", () => {
+      beforeEach(async () => {
+        await mockContract.mock.votersCount.returns(8);
+      });
+
+      it("returns 2", async () => {
+        const votesToInvalidate = await instance.votesToInvalidate();
+
+        expect(votesToInvalidate).to.equal(2);
+      });
+    });
+
+    context("when voters is 20", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(20);
       });
@@ -1130,7 +1142,7 @@ describe("ValidationRules", () => {
       it("returns 2", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(2);
+        expect(votesToInvalidate).to.equal(5);
       });
     });
 

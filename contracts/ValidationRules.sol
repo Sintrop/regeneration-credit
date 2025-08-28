@@ -31,7 +31,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
   uint16 private constant MAX_JUSTIFICATION_LENGTH = 300;
 
   /// @notice Voter thresholds to invalidate a resource/user.
-  uint32 private constant VOTERS_THRESHOLD_LEVEL_1 = 25;
+  uint32 private constant VOTERS_THRESHOLD_LEVEL_1 = 12;
   uint32 private constant VOTERS_THRESHOLD_LEVEL_2 = 250;
 
   /// @notice Votes thresholds to invalidate a resource/user.
