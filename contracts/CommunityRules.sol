@@ -174,8 +174,8 @@ contract CommunityRules is Callable {
    * - Inactive users
    *
    * @param addr The address of the user being reported.
-   * @param title Title of the delation (max 100 characters).
-   * @param testimony Justification/details of the delation (Max characters).
+   * @param title Title of the delation (Max 100 characters).
+   * @param testimony Justification/details of the delation (Max 300 characters).
    */
   function addDelation(address addr, string memory title, string memory testimony) external {
     require(

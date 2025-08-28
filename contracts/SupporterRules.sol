@@ -32,7 +32,7 @@ contract SupporterRules is ReentrancyGuard {
   uint16 private constant MAX_TEXT_LENGTH = 200;
 
   /// @notice Maximum character length for the publication.
-  uint16 private constant MAX_PUBLICATION_LENGTH = 600;
+  uint16 private constant MAX_PUBLICATION_LENGTH = 300;
 
   /// @notice The minimum number of tokens a user must burn to offset.
   uint256 private constant MINIMUM_TOKENS_TO_OFFSET = 1e18;
@@ -178,7 +178,11 @@ contract SupporterRules is ReentrancyGuard {
   }
 
   /**
-   * @dev Called by the RC offset function to create a new publication record.
+   * @notice Allows a supporter to burn tokens and publish a message to the community.
+   * Before calling this function, supporters must approve the SupporterRules contract to burn the tokens.
+   * @dev This function calls the token transfer function to pay comissions and burnFrom to trade tokens
+   * for the compensation certificate. If a valid input is provided,
+   * records the burned amount as a certificate for that item.
    * @param amount Tokens to be burned (minimum 10 tokens in wei, i.e., 10e18).
    * @param minAmountToBurn Slippage protection: the minimum amount the user expects to burn after commission.
    * @param description The description of the post.
@@ -194,7 +198,7 @@ contract SupporterRules is ReentrancyGuard {
     require(amount >= MINIMUM_TOKENS_TO_PUBLISH, "Amount must be at least 10 RC");
     require(
       bytes(description).length <= MAX_PUBLICATION_LENGTH && bytes(content).length <= MAX_PUBLICATION_LENGTH,
-      "Max 600 characters"
+      "Max characters"
     );
 
     (uint256 amountToBurn, uint256 commission, address inviter) = calculateCommission(msg.sender, amount);
