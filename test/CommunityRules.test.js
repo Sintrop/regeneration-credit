@@ -512,9 +512,7 @@ describe("CommunityRules", function () {
         });
 
         it("should revert if the cooldown period has not passed", async () => {
-          await expect(addDelation(user1Address, user2Address)).to.be.revertedWith(
-            "Wait delay blocks"
-          );
+          await expect(addDelation(user1Address, user2Address)).to.be.revertedWith("Wait delay blocks");
         });
 
         it("should succeed if the cooldown period has passed", async () => {
