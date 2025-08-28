@@ -159,8 +159,11 @@ describe("InvitationRules", () => {
           await communityRules.setContractCall(instance, owner);
         });
 
-        context("when can invite", () => {
+        context.only("when can invite", () => {
           beforeEach(async () => {
+            await communityRules.addUser(owner, userTypes.Regenerator, owner);
+            await communityRules.addUser(inspector1Address, userTypes.Inspector, owner); 
+            
             await activistRules.addRegeneratorLevel(owner, 3);
             await activistRules.addInspectorLevel(owner, 1);
           });

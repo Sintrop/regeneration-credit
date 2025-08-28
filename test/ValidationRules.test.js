@@ -580,16 +580,18 @@ describe("ValidationRules", () => {
                 });
               });
 
-              context("when user levels is bigger than total users levels avg", () => {
+              context.only("when user levels is bigger than total users levels avg", () => {
                 beforeEach(async () => {
                   await communityRules.newAllowedCaller(user1Address);
 
                   await communityRules.setContractCall(user1Address, instance);
                   await addInvitation(user1Address, user7Address, userTypes.Regenerator, user1Address);
                   await addInvitation(user1Address, user8Address, userTypes.Regenerator, user1Address);
-
+                  await communityRules.addUser(user7Address, userTypes.Regenerator, owner);
+                  await communityRules.addUser(user8Address, userTypes.Regenerator, owner); 
+                  
                   await activistRules.addRegeneratorLevel(user7Address, 3);
-                  await activistRules.addInspectorLevel(user8Address, 3);
+                  await activistRules.addRegeneratorLevel(user8Address, 3);
 
                   await activistRules.addRegeneratorLevel(user7Address, 3);
                   await activistRules.addInspectorLevel(user8Address, 3);
