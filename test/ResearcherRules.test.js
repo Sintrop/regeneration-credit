@@ -53,6 +53,14 @@ describe("ResearcherRules", () => {
     await instance.connect(from).addCalculatorItem("item", "thesis", "kg", 1);
   };
 
+  const addCalculatorItemZero = async (from) => {
+    await instance.connect(from).addCalculatorItem("item", "thesis", "kg", 0);
+  };
+
+  const addCalculatorItemMax = async (from) => {
+    await instance.connect(from).addCalculatorItem("item", "thesis", "kg", 1000001);
+  };
+
   const addEvaluationMethod = async (from) => {
     await instance.connect(from).addEvaluationMethod("title", "research", "projectURL");
   };
@@ -1285,6 +1293,18 @@ describe("ResearcherRules", () => {
       context("when have not waited time between calculatorItems", () => {
         it("should return error message", async () => {
           await expect(addCalculatorItem(resea1Address)).to.be.revertedWith("Can't publish yet");
+        });
+      });
+
+      context("when carbon is out of range", () => {
+        it("should return error message when set to zero", async () => {
+          await advanceBlock(15);
+          await expect(addCalculatorItemZero(resea1Address)).to.be.revertedWith("Invalid carbon impact");
+        });
+
+        it("should return error message when set over 1 ton", async () => {
+          await advanceBlock(15);
+          await expect(addCalculatorItemMax(resea1Address)).to.be.revertedWith("Invalid carbon impact");
         });
       });
     });
