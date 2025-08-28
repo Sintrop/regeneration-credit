@@ -172,7 +172,12 @@ records the burned amount as a certificate for that item._
 function publish(uint256 amount, uint256 minAmountToBurn, string description, string content) external
 ```
 
-_Called by the RC offset function to create a new publication record._
+Allows a supporter to burn tokens and publish a message to the community.
+Before calling this function, supporters must approve the SupporterRules contract to burn the tokens.
+
+_This function calls the token transfer function to pay comissions and burnFrom to trade tokens
+for the compensation certificate. If a valid input is provided,
+records the burned amount as a certificate for that item._
 
 #### Parameters
 
