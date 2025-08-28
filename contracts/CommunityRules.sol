@@ -25,7 +25,7 @@ contract CommunityRules is Callable {
   uint32 public constant VOTER_INVITATION_DELAY_BLOCKS = 100000;
 
   /// @notice The number of blocks a user must wait between submitting delations.
-  uint256 private constant BLOCKS_BETWEEN_DELATIONS = 5000;  
+  uint256 private constant BLOCKS_BETWEEN_DELATIONS = 5000;
 
   /// @notice Max character length for delation titles.
   uint16 private constant MAX_TITLE_LENGTH = 100;
@@ -72,7 +72,7 @@ contract CommunityRules is Callable {
   mapping(address => uint16) public inviterPenalties;
 
   /// @notice Tracks the block number of each user's last submitted delation.
-  mapping(address => uint256) public lastDelationBlock;  
+  mapping(address => uint256) public lastDelationBlock;
 
   /// @notice The address of the `InvitationRules` contract.
   address private invitationRulesAddress;

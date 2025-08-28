@@ -201,7 +201,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     if (userType == CommunityTypes.UserType.CONTRIBUTOR) return contributorRules.removePoolLevels(userAddress);
     if (userType == CommunityTypes.UserType.ACTIVIST) return activistRules.removePoolLevels(userAddress);
 
-    emit UserDenied(userAddress);    
+    emit UserDenied(userAddress);
   }
 
   /**

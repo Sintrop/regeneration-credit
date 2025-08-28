@@ -210,7 +210,7 @@ contract SupporterRules is ReentrancyGuard {
     if (commission > 0 && inviter != address(0)) {
       regenerationCredit.transferFrom(msg.sender, inviter, commission);
     }
-    regenerationCredit.burnFrom(msg.sender, amountToBurn);    
+    regenerationCredit.burnFrom(msg.sender, amountToBurn);
 
     emit PublicationPosted(msg.sender, id, amountToBurn, description, block.number);
   }

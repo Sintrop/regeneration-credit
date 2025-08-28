@@ -90,6 +90,14 @@ mapping(address => uint16) inviterPenalties
 
 Tracks the number of times an inviter has had their invitees denied.
 
+### lastDelationBlock
+
+```solidity
+mapping(address => uint256) lastDelationBlock
+```
+
+Tracks the block number of each user's last submitted delation.
+
 ### constructor
 
 ```solidity
