@@ -15,13 +15,13 @@ uint8 INVITER_PERCENTAGE
 
 Commission percentage paid to the inviter when an invited supporter burns tokens.
 
-### supporters
+### MAX_COMMITMENTS
 
 ```solidity
-mapping(address => struct Supporter) supporters
+uint256 MAX_COMMITMENTS
 ```
 
-The relationship between address and supporter data.
+The maximum number of commitments for supporters.
 
 ### calculatorItemCertificates
 
@@ -45,7 +45,7 @@ The relationship between address and reduction commitment statements (stored as 
 mapping(address => mapping(uint256 => bool)) declaredReduction
 ```
 
-The
+The relationship between an address and a mapping of items ids and booleans if declared commitment or not.
 
 ### supportersAddress
 
@@ -172,7 +172,12 @@ records the burned amount as a certificate for that item._
 function publish(uint256 amount, uint256 minAmountToBurn, string description, string content) external
 ```
 
-_Called by the RC offset function to create a new publication record._
+Allows a supporter to burn tokens and publish a message to the community.
+Before calling this function, supporters must approve the SupporterRules contract to burn the tokens.
+
+_This function calls the token transfer function to pay comissions and burnFrom to trade tokens
+for the compensation certificate. If a valid input is provided,
+records the burned amount as a certificate for that item._
 
 #### Parameters
 
@@ -199,32 +204,6 @@ Requires the calculator item to exist and the sender to be a registered supporte
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | calculatorItemId | uint64 | The ID of the CalculatorItem for which the commitment is being declared. |
-
-### calculateCommission
-
-```solidity
-function calculateCommission(address supporterAddress, uint256 amount) internal view returns (uint256 amountToBurn, uint256 commission, address inviter)
-```
-
-This functions calculates the comission to be sent to the supporter inviter.
-
-_Public function to handle tokens to be burned and inviter commission.
-It retrieves invitation data from CommunityRules to perform the burn._
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| supporterAddress | address |  |
-| amount | uint256 | The total amount of tokens to consider for burning (before commission). |
-
-#### Return Values
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| amountToBurn | uint256 | The net amount of tokens burned by the supporter (after commission). |
-| commission | uint256 | The commission for the invitation service provided. |
-| inviter | address | The supporter inviter. |
 
 ### getReductionCommitments
 

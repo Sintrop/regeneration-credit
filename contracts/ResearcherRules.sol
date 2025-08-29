@@ -49,6 +49,12 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   /// @notice Maximum possible level from a single resource.
   uint8 private constant RESOURCE_LEVEL = 1;
 
+  /// Minimum 1g CO2e per unit
+  uint256 constant MIN_CARBON_IMPACT = 1;
+
+  /// Maximum 1 ton CO2e per unit
+  uint256 constant MAX_CARBON_IMPACT = 1000000;
+
   // --- State variables ---
 
   /// @notice The maximum number of penalties a researcher can accumulate before facing invalidation.
@@ -318,6 +324,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     );
     require(communityRules.userTypeIs(CommunityTypes.UserType.RESEARCHER, msg.sender), "Only researchers");
     require(canPublishCalculatorItem(msg.sender), "Can't publish yet");
+    require(carbonImpact >= MIN_CARBON_IMPACT && carbonImpact <= MAX_CARBON_IMPACT, "Invalid carbon impact");
 
     uint64 id = calculatorItemsCount + 1;
 

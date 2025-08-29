@@ -19,6 +19,22 @@ uint16 MAX_USER_COUNT
 
 Maximum users count allowed for this UserType.
 
+### MIN_CARBON_IMPACT
+
+```solidity
+uint256 MIN_CARBON_IMPACT
+```
+
+Minimum 1g CO2e per unit
+
+### MAX_CARBON_IMPACT
+
+```solidity
+uint256 MAX_CARBON_IMPACT
+```
+
+Maximum 1 ton CO2e per unit
+
 ### maxPenalties
 
 ```solidity

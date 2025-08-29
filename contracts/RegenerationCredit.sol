@@ -30,7 +30,7 @@ contract RegenerationCredit is ERC20, ERC20Burnable, Ownable, ReentrancyGuard {
   // --- Custom State Variables ---
 
   /// @notice A mapping to track whether an address is a designated "contract pool" for token distribution.
-  mapping(address => bool) internal contractsPools;
+  mapping(address => bool) private contractsPools;
 
   /// @notice The total amount of tokens that have been permanently burned/retired (certified) across the system.
   /// These tokens are out from circulation and represent environmental offset.

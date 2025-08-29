@@ -32,7 +32,7 @@ contract SupporterRules is ReentrancyGuard {
   uint16 private constant MAX_TEXT_LENGTH = 200;
 
   /// @notice Maximum character length for the publication.
-  uint16 private constant MAX_PUBLICATION_LENGTH = 600;
+  uint16 private constant MAX_PUBLICATION_LENGTH = 300;
 
   /// @notice The minimum number of tokens a user must burn to offset.
   uint256 private constant MINIMUM_TOKENS_TO_OFFSET = 1e18;
@@ -40,10 +40,13 @@ contract SupporterRules is ReentrancyGuard {
   /// @notice The minimum number of tokens a user must burn to pulish offset.
   uint256 private constant MINIMUM_TOKENS_TO_PUBLISH = 10e18;
 
+  /// @notice The maximum number of commitments for supporters.
+  uint256 public constant MAX_COMMITMENTS = 1000;
+
   // --- State variables ---
 
   /// @notice The relationship between address and supporter data.
-  mapping(address => Supporter) internal supporters;
+  mapping(address => Supporter) private supporters;
 
   /// @notice The relationship between address and burned tokens per calculator item.
   mapping(address => mapping(uint64 => uint256)) public calculatorItemCertificates;
@@ -51,7 +54,7 @@ contract SupporterRules is ReentrancyGuard {
   /// @notice The relationship between address and reduction commitment statements (stored as calculator item IDs).
   mapping(address => uint64[]) public reductionCommitments;
 
-  /// @notice The
+  /// @notice The relationship between an address and a mapping of items ids and booleans if declared commitment or not.
   mapping(address => mapping(uint256 => bool)) public declaredReduction;
 
   /// @notice The relationship between ID and supporter address.
@@ -158,12 +161,6 @@ contract SupporterRules is ReentrancyGuard {
     (uint256 amountToBurn, uint256 commission, address inviter) = calculateCommission(msg.sender, amount);
     require(amountToBurn >= minAmountToBurn, "Slippage: amount to burn is less than minimum");
 
-    if (commission > 0 && inviter != address(0)) {
-      regenerationCredit.transferFrom(msg.sender, inviter, commission);
-    }
-
-    regenerationCredit.burnFrom(msg.sender, amountToBurn);
-
     offsetsCount++;
     uint64 id = offsetsCount;
 
@@ -172,11 +169,20 @@ contract SupporterRules is ReentrancyGuard {
     offsets[id] = Offset(msg.sender, block.number, amountToBurn, calculatorItemId);
     supporters[msg.sender].offsetsCount++;
 
+    if (commission > 0 && inviter != address(0)) {
+      regenerationCredit.transferFrom(msg.sender, inviter, commission);
+    }
+    regenerationCredit.burnFrom(msg.sender, amountToBurn);
+
     emit OffsetMade(msg.sender, id, amountToBurn, calculatorItemId, block.number);
   }
 
   /**
-   * @dev Called by the RC offset function to create a new publication record.
+   * @notice Allows a supporter to burn tokens and publish a message to the community.
+   * Before calling this function, supporters must approve the SupporterRules contract to burn the tokens.
+   * @dev This function calls the token transfer function to pay comissions and burnFrom to trade tokens
+   * for the compensation certificate. If a valid input is provided,
+   * records the burned amount as a certificate for that item.
    * @param amount Tokens to be burned (minimum 10 tokens in wei, i.e., 10e18).
    * @param minAmountToBurn Slippage protection: the minimum amount the user expects to burn after commission.
    * @param description The description of the post.
@@ -192,17 +198,11 @@ contract SupporterRules is ReentrancyGuard {
     require(amount >= MINIMUM_TOKENS_TO_PUBLISH, "Amount must be at least 10 RC");
     require(
       bytes(description).length <= MAX_PUBLICATION_LENGTH && bytes(content).length <= MAX_PUBLICATION_LENGTH,
-      "Max 600 characters"
+      "Max characters"
     );
 
     (uint256 amountToBurn, uint256 commission, address inviter) = calculateCommission(msg.sender, amount);
     require(amountToBurn >= minAmountToBurn, "Slippage: amount to burn is less than minimum");
-
-    if (commission > 0 && inviter != address(0)) {
-      regenerationCredit.transferFrom(msg.sender, inviter, commission);
-    }
-
-    regenerationCredit.burnFrom(msg.sender, amountToBurn);
 
     publicationsCount++;
     uint64 id = publicationsCount;
@@ -210,6 +210,11 @@ contract SupporterRules is ReentrancyGuard {
     publications[id] = Publication(msg.sender, block.number, amountToBurn, description, content);
 
     supporters[msg.sender].publicationsCount++;
+
+    if (commission > 0 && inviter != address(0)) {
+      regenerationCredit.transferFrom(msg.sender, inviter, commission);
+    }
+    regenerationCredit.burnFrom(msg.sender, amountToBurn);
 
     emit PublicationPosted(msg.sender, id, amountToBurn, description, block.number);
   }
@@ -223,6 +228,7 @@ contract SupporterRules is ReentrancyGuard {
   function declareReductionCommitment(uint64 calculatorItemId) external {
     require(communityRules.userTypeIs(CommunityTypes.UserType.SUPPORTER, msg.sender), "Only supporters");
     require(!declaredReduction[msg.sender][calculatorItemId], "Commitment already declared");
+    require(supporters[msg.sender].reductionItemsCount < MAX_COMMITMENTS, "Max commitments reached");
 
     CalculatorItem memory calculatorItem = researcherRules.getCalculatorItem(calculatorItemId);
 
@@ -249,7 +255,7 @@ contract SupporterRules is ReentrancyGuard {
   function calculateCommission(
     address supporterAddress,
     uint256 amount
-  ) internal view returns (uint256 amountToBurn, uint256 commission, address inviter) {
+  ) private view returns (uint256 amountToBurn, uint256 commission, address inviter) {
     CommunityTypes.Invitation memory invitation = communityRules.getInvitation(supporterAddress);
     bool isInvited = invitation.createdAtBlock != 0; // Check if invitation exists
 

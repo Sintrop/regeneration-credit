@@ -33,14 +33,6 @@ uint8 DECIMALS
 
 The number of decimal places used by the token.
 
-### contractsPools
-
-```solidity
-mapping(address => bool) contractsPools
-```
-
-A mapping to track whether an address is a designated "contract pool" for token distribution.
-
 ### totalCertified_
 
 ```solidity

@@ -90,6 +90,14 @@ mapping(address => uint16) inviterPenalties
 
 Tracks the number of times an inviter has had their invitees denied.
 
+### lastDelationBlock
+
+```solidity
+mapping(address => uint256) lastDelationBlock
+```
+
+Tracks the block number of each user's last submitted delation.
+
 ### constructor
 
 ```solidity
@@ -150,8 +158,8 @@ _Adds a new delation to the system. Enforces character limits for title and test
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The address of the user being reported. |
-| title | string | Title of the delation (max 100 characters). |
-| testimony | string | Justification/details of the delation (Max characters). |
+| title | string | Title of the delation (Max 100 characters). |
+| testimony | string | Justification/details of the delation (Max 300 characters). |
 
 ### addUser
 

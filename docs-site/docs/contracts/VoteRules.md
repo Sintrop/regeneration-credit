@@ -6,6 +6,15 @@ Defines the rules and logic for determining if a user is eligible to vote for in
 
 _This contract calculates voting eligibility based on a user's levels relative to their user type's average levels._
 
+### INITIAL_USER_COUNT_THRESHOLD
+
+```solidity
+uint256 INITIAL_USER_COUNT_THRESHOLD
+```
+
+_The threshold of total users below (or equal to) which any user can invite.
+This allows for easier invitations in the early stages of the system._
+
 ### constructor
 
 ```solidity

@@ -19,6 +19,14 @@ import { Researcher } from "./types/ResearcherTypes.sol";
  * @dev This contract calculates voting eligibility based on a user's levels relative to their user type's average levels.
  */
 contract VoteRules {
+  // --- Constant ---
+
+  /**
+   * @dev The threshold of total users below (or equal to) which any user can invite.
+   * This allows for easier invitations in the early stages of the system.
+   */
+  uint256 public constant INITIAL_USER_COUNT_THRESHOLD = 5;
+
   // --- State variables ---
 
   /// @notice CommunityRules contract interface.
@@ -90,11 +98,16 @@ contract VoteRules {
    * @return bool True if the user meets the voting criteria, false otherwise.
    */
   function _canVoteRules(uint256 totalTypeLevels, uint256 totalUsers, uint256 userLevels) private pure returns (bool) {
-    if (totalUsers <= 5) return true;
+    // Rule 1: Allow anyone to vote if the user type has few members.
+    if (totalUsers <= INITIAL_USER_COUNT_THRESHOLD) return true;
 
-    uint256 avg = totalTypeLevels / totalUsers + 1;
+    // Edge case: If there are no users, no one can vote.
+    if (totalUsers == 0) {
+      return false;
+    }
 
-    return userLevels >= avg;
+    // Rule 2: Check if the user's level is strictly greater than the average
+    return userLevels * totalUsers > totalTypeLevels;
   }
 
   /**

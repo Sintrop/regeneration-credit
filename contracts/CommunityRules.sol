@@ -24,6 +24,9 @@ contract CommunityRules is Callable {
   /// @notice The number of blocks an invitation is delayed for voter-type users.
   uint32 public constant VOTER_INVITATION_DELAY_BLOCKS = 100000;
 
+  /// @notice The number of blocks a user must wait between submitting delations.
+  uint256 private constant BLOCKS_BETWEEN_DELATIONS = 5000;
+
   /// @notice Max character length for delation titles.
   uint16 private constant MAX_TITLE_LENGTH = 100;
 
@@ -67,6 +70,9 @@ contract CommunityRules is Callable {
 
   /// @notice Tracks the number of times an inviter has had their invitees denied.
   mapping(address => uint16) public inviterPenalties;
+
+  /// @notice Tracks the block number of each user's last submitted delation.
+  mapping(address => uint256) public lastDelationBlock;
 
   /// @notice The address of the `InvitationRules` contract.
   address private invitationRulesAddress;
@@ -168,19 +174,22 @@ contract CommunityRules is Callable {
    * - Inactive users
    *
    * @param addr The address of the user being reported.
-   * @param title Title of the delation (max 100 characters).
-   * @param testimony Justification/details of the delation (Max characters).
+   * @param title Title of the delation (Max 100 characters).
+   * @param testimony Justification/details of the delation (Max 300 characters).
    */
   function addDelation(address addr, string memory title, string memory testimony) external {
     require(
       bytes(title).length <= MAX_TITLE_LENGTH && bytes(testimony).length <= MAX_TESTIMONY_LENGTH,
       "Max characters reached"
     );
+    require(hasWaitedRequiredTime(msg.sender), "Wait delay blocks");
     require(users[msg.sender] != CommunityTypes.UserType.UNDEFINED, "Caller must be registered");
     require(users[msg.sender] != CommunityTypes.UserType.SUPPORTER, "Not allowed to supporters");
     require(users[addr] != CommunityTypes.UserType.UNDEFINED, "User must be registered");
     require(addr != address(0), "Cannot delate zero address");
     require(addr != msg.sender, "Self-denunciation not allowed");
+
+    lastDelationBlock[msg.sender] = block.number;
 
     delationsCount++;
     uint64 newDelationId = delationsCount;
@@ -241,6 +250,7 @@ contract CommunityRules is Callable {
     require(invited != address(0), "Invited address cannot be zero");
     require(invitations[invited].invited == address(0), "Already invited");
     require(users[invited] == CommunityTypes.UserType.UNDEFINED, "Already registered");
+    require(userType != CommunityTypes.UserType.UNDEFINED, "Invalid user type for invitation");
 
     invitations[invited] = CommunityTypes.Invitation(invited, inviter, userType, block.number);
 
@@ -312,7 +322,7 @@ contract CommunityRules is Callable {
 
     // Apply direct multiplication proportionality.
     if (setting.directProportionalityRegistration) return registeredUserTypeCount < regeneratorsCount * proportionality;
-    // Apply inverse division proportionality.
+
     return registeredUserTypeCount <= regeneratorsCount / proportionality;
   }
 
@@ -337,6 +347,8 @@ contract CommunityRules is Callable {
    * @return bool True if the user is a voter, false otherwise.
    */
   function isVoter(address addr) public view returns (bool) {
+    if (deniedUsers[addr]) return false;
+
     return getUserTypeSettings(users[addr]).isVoter;
   }
 
@@ -397,6 +409,16 @@ contract CommunityRules is Callable {
    */
   function getInvitation(address addr) external view returns (CommunityTypes.Invitation memory) {
     return invitations[addr];
+  }
+
+  /**
+   * @dev Calculates if a user is eligible to publish a delation.
+   * Eligibility based on the `lastDelationBlock` and `BLOCKS_BETWEEN_DELATIONS`.
+   * @param addr The address to check.
+   * @return `true` if the user can publish, `false` otherwise.
+   */
+  function hasWaitedRequiredTime(address addr) public view returns (bool) {
+    return lastDelationBlock[addr] == 0 || block.number > lastDelationBlock[addr] + BLOCKS_BETWEEN_DELATIONS;
   }
 
   // --- Events ---
