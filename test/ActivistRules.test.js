@@ -7,7 +7,14 @@ const { deployMockContract } = require("@clrfund/waffle-mock-contract");
 
 describe("ActivistRules", () => {
   let instance, communityRules, activistPool, regenerationCredit, instanceContractFactory;
-  let owner, activ1Address, activ2Address, activ3Address, regenerator1Address, inspector1Address, inspector2Address;
+  let owner,
+    activ1Address,
+    activ2Address,
+    activ3Address,
+    regenerator1Address,
+    inspector1Address,
+    inspector2Address,
+    user1Address;
 
   const activistPoolArgs = {
     totalTokens: "40000000000000000000000000",
@@ -154,6 +161,20 @@ describe("ActivistRules", () => {
 
           await instance.addRegeneratorLevel(regenerator1Address, 3);
           await instance.addInspectorLevel(inspector1Address, 3);
+        });
+
+        context("when is not a valid user", () => {
+          it("should return error when addRegeneratorLevel from other types", async () => {
+            await expect(instance.connect(owner).addRegeneratorLevel(activ1Address, 1)).to.be.revertedWith(
+              "Address is not a Regenerator"
+            );
+          });
+
+          it("should return error when addInspectorLevel from other types", async () => {
+            await expect(instance.connect(owner).addInspectorLevel(activ1Address, 1)).to.be.revertedWith(
+              "Address is not a Inspector"
+            );
+          });
         });
 
         context("when current era of pool is 1", () => {
