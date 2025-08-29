@@ -221,8 +221,8 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    */
   function _addLevelFromRegenerator(address regeneratorAddress, uint256 regeneratorTotalInspections) private {
     require(
-        communityRules.userTypeIs(CommunityTypes.UserType.REGENERATOR, regeneratorAddress),
-        "Address is not a Regenerator"
+      communityRules.userTypeIs(CommunityTypes.UserType.REGENERATOR, regeneratorAddress),
+      "Address is not a Regenerator"
     );
 
     CommunityTypes.Invitation memory regeneratorInvitation = communityRules.getInvitation(regeneratorAddress);
@@ -248,8 +248,8 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    */
   function _addLevelFromInspector(address inspectorAddress, uint256 inspectorTotalInspections) private {
     require(
-        communityRules.userTypeIs(CommunityTypes.UserType.INSPECTOR, inspectorAddress),
-        "Address is not a Inspector"
+      communityRules.userTypeIs(CommunityTypes.UserType.INSPECTOR, inspectorAddress),
+      "Address is not a Inspector"
     );
 
     CommunityTypes.Invitation memory inspectorInvitation = communityRules.getInvitation(inspectorAddress);

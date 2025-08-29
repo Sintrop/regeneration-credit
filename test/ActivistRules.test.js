@@ -182,7 +182,7 @@ describe("ActivistRules", () => {
 
             await addInvitation(activ1Address, inspector2Address, userTypes.Inspector, activ1Address);
 
-            await communityRules.addUser(inspector2Address, userTypes.Inspector, owner);            
+            await communityRules.addUser(inspector2Address, userTypes.Inspector, owner);
             await instance.addRegeneratorLevel(regenerator1Address, 3);
             await instance.addInspectorLevel(inspector2Address, 3);
           });
@@ -277,7 +277,7 @@ describe("ActivistRules", () => {
             await addInvitation(activ1Address, regenerator1Address, userTypes.Regenerator, activ1Address);
 
             await communityRules.addUser(regenerator1Address, userTypes.Regenerator, owner);
-            await communityRules.addUser(inspector1Address, userTypes.Inspector, owner);            
+            await communityRules.addUser(inspector1Address, userTypes.Inspector, owner);
             await instance.addRegeneratorLevel(regenerator1Address, 0);
             await instance.addInspectorLevel(inspector1Address, 3);
           });
@@ -309,7 +309,7 @@ describe("ActivistRules", () => {
               await communityRules.newAllowedCaller(activ3Address);
               await communityRules.setContractCall(activ3Address, owner);
               await addInvitation(activ3Address, inspector2Address, userTypes.Inspector, activ3Address);
-              await communityRules.addUser(inspector2Address, userTypes.Inspector, owner);            
+              await communityRules.addUser(inspector2Address, userTypes.Inspector, owner);
 
               await instance.addRegeneratorLevel(regenerator1Address, 0);
               await instance.addInspectorLevel(inspector2Address, 3);
@@ -385,7 +385,7 @@ describe("ActivistRules", () => {
       await addInvitation(activ1Address, inspector2Address, userTypes.Inspector, owner);
 
       await communityRules.addUser(regenerator1Address, userTypes.Regenerator, owner);
-      await communityRules.addUser(inspector2Address, userTypes.Inspector, owner);      
+      await communityRules.addUser(inspector2Address, userTypes.Inspector, owner);
       await instance.addRegeneratorLevel(regenerator1Address, 3);
       await instance.addInspectorLevel(inspector2Address, 3);
     });

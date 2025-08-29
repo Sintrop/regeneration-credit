@@ -74,6 +74,7 @@ describe("InvitationRules", () => {
       user6Address,
       user7Address,
       user8Address,
+      inspector1Address,
     ] = await ethers.getSigners();
 
     const validatorRulesDeployed = await voteRulesDeployed();
@@ -159,13 +160,13 @@ describe("InvitationRules", () => {
           await communityRules.setContractCall(instance, owner);
         });
 
-        context.only("when can invite", () => {
+        context("when can invite", () => {
           beforeEach(async () => {
-            await communityRules.addUser(owner, userTypes.Regenerator, owner);
-            await communityRules.addUser(inspector1Address, userTypes.Inspector, owner); 
-            
-            await activistRules.addRegeneratorLevel(owner, 3);
-            await activistRules.addInspectorLevel(owner, 1);
+            await addInvitation(user2Address, inspector1Address, userTypes.Inspector, owner);
+            await communityRules.addUser(inspector1Address, userTypes.Inspector, owner);
+
+            await activistRules.addRegeneratorLevel(user1Address, 3);
+            await activistRules.addInspectorLevel(inspector1Address, 1);
           });
 
           context("when send to activist", () => {
