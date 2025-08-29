@@ -182,7 +182,7 @@ contract CommunityRules is Callable {
       bytes(title).length <= MAX_TITLE_LENGTH && bytes(testimony).length <= MAX_TESTIMONY_LENGTH,
       "Max characters reached"
     );
-    require(_hasWaitedRequiredTime(msg.sender), "Wait delay blocks");
+    require(hasWaitedRequiredTime(msg.sender), "Wait delay blocks");
     require(users[msg.sender] != CommunityTypes.UserType.UNDEFINED, "Caller must be registered");
     require(users[msg.sender] != CommunityTypes.UserType.SUPPORTER, "Not allowed to supporters");
     require(users[addr] != CommunityTypes.UserType.UNDEFINED, "User must be registered");
@@ -326,19 +326,6 @@ contract CommunityRules is Callable {
     return registeredUserTypeCount <= regeneratorsCount / proportionality;
   }
 
-  /**
-   * @dev Calculates if a user is eligible to publish a delation.
-   * Eligibility based on the `lastDelationBlock` and `BLOCKS_BETWEEN_DELATIONS`.
-   * @param addr The address to check.
-   * @return `true` if the user can publish, `false` otherwise.
-   */
-  function _hasWaitedRequiredTime(address addr) private view returns (bool) {
-    if (lastDelationBlock[addr] == 0) {
-      return true;
-    }
-    return block.number > lastDelationBlock[addr] + BLOCKS_BETWEEN_DELATIONS;
-  }
-
   // --- View functions ---
 
   /**
@@ -422,6 +409,16 @@ contract CommunityRules is Callable {
    */
   function getInvitation(address addr) external view returns (CommunityTypes.Invitation memory) {
     return invitations[addr];
+  }
+
+  /**
+   * @dev Calculates if a user is eligible to publish a delation.
+   * Eligibility based on the `lastDelationBlock` and `BLOCKS_BETWEEN_DELATIONS`.
+   * @param addr The address to check.
+   * @return `true` if the user can publish, `false` otherwise.
+   */
+  function hasWaitedRequiredTime(address addr) public view returns (bool) {
+    return lastDelationBlock[addr] == 0 || block.number > lastDelationBlock[addr] + BLOCKS_BETWEEN_DELATIONS;
   }
 
   // --- Events ---
