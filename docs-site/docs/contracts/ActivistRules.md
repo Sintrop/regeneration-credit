@@ -29,7 +29,7 @@ Minimum inspections an inviter must complete to add activist level.
 ### approvedInvites
 
 ```solidity
-uint32 approvedInvites
+uint64 approvedInvites
 ```
 
 The total count of all invitations that have been successfully approved across the entire system.
