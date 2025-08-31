@@ -16,28 +16,9 @@ struct Supporter {
   string name;
   string description;
   string profilePhoto;
-  uint32 publicationsCount;
   uint32 offsetsCount;
   uint16 reductionItemsCount;
   uint256 createdAt;
-}
-```
-## Publication
-
-_Publication data structure._
-
-### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-
-```solidity
-struct Publication {
-  address supporterAddress;
-  uint256 createdAt;
-  uint256 amount;
-  string description;
-  string content;
 }
 ```
 ## Offset
@@ -55,5 +36,6 @@ struct Offset {
   uint256 createdAt;
   uint256 amountBurn;
   uint256 calculatorItemId;
+  string message;
 }
 ```

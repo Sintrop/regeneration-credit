@@ -59,7 +59,6 @@ describe("SupporterRules", () => {
         expect(supporter.supporterWallet).to.equal(inv1Address.address);
         expect(supporter.description).to.equal("description");
         expect(supporter.profilePhoto).to.equal("profilePhoto");
-        expect(supporter.publicationsCount).to.equal(0);
         expect(supporter.offsetsCount).to.equal(0);
         expect(supporter.reductionItemsCount).to.equal(0);
       });
@@ -140,7 +139,7 @@ describe("SupporterRules", () => {
             context("when burn 1000000000000000000 tokens", () => {
               beforeEach(async () => {
                 await regenerationCredit.connect(inv2Address).approve(instance.target, 1000000000000000000n);
-                await instance.connect(inv2Address).offset(1000000000000000000n, 950000000000000000n, 1);
+                await instance.connect(inv2Address).offset(1000000000000000000n, 950000000000000000n, 1, "message");
               });
 
               it("calculatorItemCertificates to item 1 must be 950000000000000000", async () => {
@@ -154,6 +153,7 @@ describe("SupporterRules", () => {
                 expect(offset.supporterAddress).to.equal(inv2Address);
                 expect(offset.amountBurn).to.equal("950000000000000000");
                 expect(offset.calculatorItemId).to.equal(1);
+                expect(offset.message).to.equal("message");
               });
 
               it("must add offset total count", async () => {
@@ -183,7 +183,7 @@ describe("SupporterRules", () => {
             context("when burn 1000000000000000000 tokens", () => {
               beforeEach(async () => {
                 await regenerationCredit.connect(inv1Address).approve(instance.target, 1000000000000000000n);
-                await instance.connect(inv1Address).offset(1000000000000000000n, 950000000000000000n, 1);
+                await instance.connect(inv1Address).offset(1000000000000000000n, 950000000000000000n, 1, "message");
               });
 
               it("calculatorItemCertificates to item 1 must be 1000000000000000000n", async () => {
@@ -196,7 +196,7 @@ describe("SupporterRules", () => {
             context("when burn 5000000000000000000 tokens", () => {
               beforeEach(async () => {
                 await regenerationCredit.connect(inv1Address).approve(instance.target, 5000000000000000000n);
-                await instance.connect(inv1Address).offset(5000000000000000000n, 4750000000000000000n, 1);
+                await instance.connect(inv1Address).offset(5000000000000000000n, 4750000000000000000n, 1, "message");
               });
 
               it("calculatorItemCertificates to item 1 must be 5000000000000000000n", async () => {
@@ -209,9 +209,9 @@ describe("SupporterRules", () => {
             context("when burn multiple times", () => {
               beforeEach(async () => {
                 await regenerationCredit.connect(inv1Address).approve(instance.target, 3500000000000000000n);
-                await instance.connect(inv1Address).offset(1000000000000000000n, 950000000000000000n, 1);
-                await instance.connect(inv1Address).offset(1000000000000000000n, 950000000000000000n, 1);
-                await instance.connect(inv1Address).offset(1500000000000000000n, 100000000000000000n, 1);
+                await instance.connect(inv1Address).offset(1000000000000000000n, 950000000000000000n, 1, "message");
+                await instance.connect(inv1Address).offset(1000000000000000000n, 950000000000000000n, 1, "message");
+                await instance.connect(inv1Address).offset(1500000000000000000n, 100000000000000000n, 1, "message");
               });
 
               it("calculatorItemCertificates must sum all offsets", async () => {
@@ -234,7 +234,7 @@ describe("SupporterRules", () => {
           context("when burn 1000000000000000000 tokens", () => {
             it("calculatorItemCertificates to item 10 must be 0", async () => {
               await expect(
-                instance.connect(inv2Address).offset(1000000000000000000n, 950000000000000000n, 10)
+                instance.connect(inv2Address).offset(1000000000000000000n, 950000000000000000n, 10, "message")
               ).to.be.revertedWith("Calculator item does not exist");
             });
           });
@@ -253,7 +253,7 @@ describe("SupporterRules", () => {
         context("without allowance", () => {
           it("should return error", async () => {
             await expect(
-              instance.connect(inv1Address).offset(1000000000000000000n, 950000000000000000n, 1)
+              instance.connect(inv1Address).offset(1000000000000000000n, 950000000000000000n, 1, "message")
             ).to.be.revertedWithCustomError(regenerationCredit, "ERC20InsufficientAllowance");
           });
         });
@@ -261,7 +261,7 @@ describe("SupporterRules", () => {
         context("without minimum amount", () => {
           it("should return error", async () => {
             await expect(
-              instance.connect(inv1Address).offset(100000000000000000n, 95000000000000000n, 1)
+              instance.connect(inv1Address).offset(100000000000000000n, 95000000000000000n, 1, "message")
             ).to.be.revertedWith("Amount must be at least 1 RC");
           });
         });
@@ -269,151 +269,151 @@ describe("SupporterRules", () => {
     });
   });
 
-  describe("#publish", () => {
-    context("when msg.sender is SUPPORTER", () => {
-      beforeEach(async () => {
-        await addSupporter("Supporter A", "description", "profilePhoto", inv1Address);
-      });
+  // describe("#publish", () => {
+  //   context("when msg.sender is SUPPORTER", () => {
+  //     beforeEach(async () => {
+  //       await addSupporter("Supporter A", "description", "profilePhoto", inv1Address);
+  //     });
 
-      context("when amount is valid", () => {
-        context("when text is valid", () => {
-          beforeEach(async () => {
-            await communityRules.setContractCall(ownerAddress, ownerAddress);
-          });
+  //     context("when amount is valid", () => {
+  //       context("when text is valid", () => {
+  //         beforeEach(async () => {
+  //           await communityRules.setContractCall(ownerAddress, ownerAddress);
+  //         });
 
-          context("when SUPPORTER was invited", () => {
-            beforeEach(async () => {
-              await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
-              await addSupporter("Supporter B", "description", "profilePhoto", inv2Address);
-              await transferTokensTo(inv2Address, 10000000000000000000n);
-            });
+  //         context("when SUPPORTER was invited", () => {
+  //           beforeEach(async () => {
+  //             await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
+  //             await addSupporter("Supporter B", "description", "profilePhoto", inv2Address);
+  //             await transferTokensTo(inv2Address, 10000000000000000000n);
+  //           });
 
-            context("when burn 1000000000000000000 tokens", () => {
-              beforeEach(async () => {
-                await regenerationCredit.connect(inv2Address).approve(instance.target, 10000000000000000000n);
-                await instance
-                  .connect(inv2Address)
-                  .publish(10000000000000000000n, 9500000000000000000n, "text", "description");
-              });
+  //           context("when burn 1000000000000000000 tokens", () => {
+  //             beforeEach(async () => {
+  //               await regenerationCredit.connect(inv2Address).approve(instance.target, 10000000000000000000n);
+  //               await instance
+  //                 .connect(inv2Address)
+  //                 .publish(10000000000000000000n, 9500000000000000000n, "text", "description");
+  //             });
 
-              it("must add publication amount", async () => {
-                const publication = await instance.publications(1);
-                expect(publication.amount).to.equal("9500000000000000000");
-                expect(publication.description).to.equal("text");
-                expect(publication.content).to.equal("description");
-              });
+  //             it("must add publication amount", async () => {
+  //               const publication = await instance.publications(1);
+  //               expect(publication.amount).to.equal("9500000000000000000");
+  //               expect(publication.description).to.equal("text");
+  //               expect(publication.content).to.equal("description");
+  //             });
 
-              it("must add publication total count", async () => {
-                const publicationsCount = await instance.publicationsCount();
-                expect(publicationsCount).to.equal(1);
-              });
+  //             it("must add publication total count", async () => {
+  //               const publicationsCount = await instance.publicationsCount();
+  //               expect(publicationsCount).to.equal(1);
+  //             });
 
-              it("must add publication supporter count", async () => {
-                const supporter = await instance.getSupporter(inv2Address);
-                expect(supporter.publicationsCount).to.equal(1);
-              });
+  //             it("must add publication supporter count", async () => {
+  //               const supporter = await instance.getSupporter(inv2Address);
+  //               expect(supporter.publicationsCount).to.equal(1);
+  //             });
 
-              it("must pay comission", async () => {
-                const balanceOf = await regenerationCredit.balanceOf(inv1Address);
-                const expectedBalance = 500000000000000000n;
+  //             it("must pay comission", async () => {
+  //               const balanceOf = await regenerationCredit.balanceOf(inv1Address);
+  //               const expectedBalance = 500000000000000000n;
 
-                expect(balanceOf).to.equal(expectedBalance);
-              });
-            });
-          });
+  //               expect(balanceOf).to.equal(expectedBalance);
+  //             });
+  //           });
+  //         });
 
-          context("when SUPPORTER wasn't invited", () => {
-            beforeEach(async () => {
-              await transferTokensTo(inv1Address, 100000000000000000000n);
-            });
+  //         context("when SUPPORTER wasn't invited", () => {
+  //           beforeEach(async () => {
+  //             await transferTokensTo(inv1Address, 100000000000000000000n);
+  //           });
 
-            context("when burn 1000000000000000000 tokens", () => {
-              beforeEach(async () => {
-                await regenerationCredit.connect(inv1Address).approve(instance.target, 10000000000000000000n);
-                await instance
-                  .connect(inv1Address)
-                  .publish(10000000000000000000n, 9500000000000000000n, "text", "description");
-              });
+  //           context("when burn 1000000000000000000 tokens", () => {
+  //             beforeEach(async () => {
+  //               await regenerationCredit.connect(inv1Address).approve(instance.target, 10000000000000000000n);
+  //               await instance
+  //                 .connect(inv1Address)
+  //                 .publish(10000000000000000000n, 9500000000000000000n, "text", "description");
+  //             });
 
-              it("certificate must be 10000000000000000000n", async () => {
-                const certificate = await regenerationCredit.certificate(inv1Address);
+  //             it("certificate must be 10000000000000000000n", async () => {
+  //               const certificate = await regenerationCredit.certificate(inv1Address);
 
-                expect(certificate).to.equal(10000000000000000000n);
-              });
-            });
+  //               expect(certificate).to.equal(10000000000000000000n);
+  //             });
+  //           });
 
-            context("when burn multiple times", () => {
-              beforeEach(async () => {
-                await regenerationCredit.connect(inv1Address).approve(instance.target, 35000000000000000000n);
-                await instance
-                  .connect(inv1Address)
-                  .publish(10000000000000000000n, 9500000000000000000n, "text", "description");
-                await instance
-                  .connect(inv1Address)
-                  .publish(10000000000000000000n, 9500000000000000000n, "text", "description");
-                await instance
-                  .connect(inv1Address)
-                  .publish(15000000000000000000n, 1000000000000000000n, "text", "description");
-              });
+  //           context("when burn multiple times", () => {
+  //             beforeEach(async () => {
+  //               await regenerationCredit.connect(inv1Address).approve(instance.target, 35000000000000000000n);
+  //               await instance
+  //                 .connect(inv1Address)
+  //                 .publish(10000000000000000000n, 9500000000000000000n, "text", "description");
+  //               await instance
+  //                 .connect(inv1Address)
+  //                 .publish(10000000000000000000n, 9500000000000000000n, "text", "description");
+  //               await instance
+  //                 .connect(inv1Address)
+  //                 .publish(15000000000000000000n, 1000000000000000000n, "text", "description");
+  //             });
 
-              it("user certificate must sum all offsets", async () => {
-                const certificate = await regenerationCredit.certificate(inv1Address);
+  //             it("user certificate must sum all offsets", async () => {
+  //               const certificate = await regenerationCredit.certificate(inv1Address);
 
-                expect(certificate).to.equal(35000000000000000000n);
-              });
-            });
-          });
-        });
+  //               expect(certificate).to.equal(35000000000000000000n);
+  //             });
+  //           });
+  //         });
+  //       });
 
-        context("when text is invalid", () => {
-          beforeEach(async () => {
-            await communityRules.setContractCall(ownerAddress, ownerAddress);
-            await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
-            await addSupporter("Supporter B", "description", "profilePhoto", inv2Address);
-            await transferTokensTo(inv2Address, 100000000000000000000n);
-            await regenerationCredit.connect(inv1Address).approve(instance.target, 100000000000000000000n);
-          });
+  //       context("when text is invalid", () => {
+  //         beforeEach(async () => {
+  //           await communityRules.setContractCall(ownerAddress, ownerAddress);
+  //           await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
+  //           await addSupporter("Supporter B", "description", "profilePhoto", inv2Address);
+  //           await transferTokensTo(inv2Address, 100000000000000000000n);
+  //           await regenerationCredit.connect(inv1Address).approve(instance.target, 100000000000000000000n);
+  //         });
 
-          context("when burn 1000000000000000000 tokens", () => {
-            it("should rever", async () => {
-              await expect(
-                instance
-                  .connect(inv2Address)
-                  .publish(
-                    10000000000000000000n,
-                    9500000000000000000n,
-                    "text",
-                    "lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum"
-                  )
-              ).to.be.revertedWith("Max characters");
-            });
-          });
-        });
-      });
+  //         context("when burn 1000000000000000000 tokens", () => {
+  //           it("should rever", async () => {
+  //             await expect(
+  //               instance
+  //                 .connect(inv2Address)
+  //                 .publish(
+  //                   10000000000000000000n,
+  //                   9500000000000000000n,
+  //                   "text",
+  //                   "lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum lorem ipsum ipsum"
+  //                 )
+  //             ).to.be.revertedWith("Max characters");
+  //           });
+  //         });
+  //       });
+  //     });
 
-      context("when amount is invalid", () => {
-        beforeEach(async () => {
-          await communityRules.setContractCall(ownerAddress, ownerAddress);
-        });
+  //     context("when amount is invalid", () => {
+  //       beforeEach(async () => {
+  //         await communityRules.setContractCall(ownerAddress, ownerAddress);
+  //       });
 
-        context("without allowance", () => {
-          it("should return error", async () => {
-            await expect(
-              instance.connect(inv1Address).publish(10000000000000000000n, 9500000000000000000n, "text", "text")
-            ).to.be.revertedWithCustomError(regenerationCredit, "ERC20InsufficientAllowance");
-          });
-        });
+  //       context("without allowance", () => {
+  //         it("should return error", async () => {
+  //           await expect(
+  //             instance.connect(inv1Address).publish(10000000000000000000n, 9500000000000000000n, "text", "text")
+  //           ).to.be.revertedWithCustomError(regenerationCredit, "ERC20InsufficientAllowance");
+  //         });
+  //       });
 
-        context("without minimum amount", () => {
-          it("should return error", async () => {
-            await expect(
-              instance.connect(inv1Address).publish(100000000000000000n, 95000000000000000n, "text", "text")
-            ).to.be.revertedWith("Amount must be at least 10 RC");
-          });
-        });
-      });
-    });
-  });
+  //       context("without minimum amount", () => {
+  //         it("should return error", async () => {
+  //           await expect(
+  //             instance.connect(inv1Address).publish(100000000000000000n, 95000000000000000n, "text", "text")
+  //           ).to.be.revertedWith("Amount must be at least 10 RC");
+  //         });
+  //       });
+  //     });
+  //   });
+  // });
 
   describe("#declareReductionCommitment", () => {
     beforeEach(async () => {

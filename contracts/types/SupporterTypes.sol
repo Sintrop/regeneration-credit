@@ -19,26 +19,9 @@ struct Supporter {
   string name;
   string description;
   string profilePhoto;
-  uint32 publicationsCount;
   uint32 offsetsCount;
   uint16 reductionItemsCount;
   uint256 createdAt;
-}
-
-/**
- * @dev Publication data structure.
- * @param supporterAddress Supporter wallet address.
- * @param createdAt Block of creation.
- * @param amount Tokens burned.
- * @param description Publication description.
- * @param content Publication content.
- */
-struct Publication {
-  address supporterAddress;
-  uint256 createdAt;
-  uint256 amount;
-  string description;
-  string content;
 }
 
 /**
@@ -47,10 +30,12 @@ struct Publication {
  * @param createdAt Block of creation.
  * @param amountBrun Tokens burned.
  * @param calculatorItemId Calculator item to offset.
+ * @param message A message to the community.
  */
 struct Offset {
   address supporterAddress;
   uint256 createdAt;
   uint256 amountBurn;
   uint256 calculatorItemId;
+  string message;
 }

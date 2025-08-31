@@ -5,7 +5,7 @@
 Manages the rules and data specific to Supporter users within the community.
 
 _This contract handles supporter registration, profile updates, token burning
-for environmental offsets and content publications, and management of reduction commitments._
+for environmental offsets and management of reduction commitments._
 
 ### INVITER_PERCENTAGE
 
@@ -62,22 +62,6 @@ uint64 offsetsCount
 ```
 
 Total number of offsets made across all supporters.
-
-### publicationsCount
-
-```solidity
-uint64 publicationsCount
-```
-
-Total number of publications made across all supporters.
-
-### publications
-
-```solidity
-mapping(uint64 => struct Publication) publications
-```
-
-The relationship between id and publication data.
 
 ### offsets
 
@@ -148,10 +132,10 @@ Only accessible by registered supporters, and enforces a max character limit._
 ### offset
 
 ```solidity
-function offset(uint256 amount, uint256 minAmountToBurn, uint64 calculatorItemId) external
+function offset(uint256 amount, uint256 minAmountToBurn, uint64 calculatorItemId, string message) external
 ```
 
-Allows a supporter to burn tokens to compensate for a specific item's degradation.
+Allows a supporter to burn tokens to compensate for a specific item's degradation, with a message to the community.
 Before calling this function, supporters must approve the SupporterRules contract to burn the tokens.
 
 _This function calls the token transfer function to pay comissions and burnFrom to trade tokens
@@ -165,28 +149,7 @@ records the burned amount as a certificate for that item._
 | amount | uint256 | Tokens to be burned (minimum 1 token in wei, i.e., 1e18). |
 | minAmountToBurn | uint256 | Slippage protection: the minimum amount the user expects to burn after commission. |
 | calculatorItemId | uint64 | The ID of the CalculatorItem, or 0 if not applicable. |
-
-### publish
-
-```solidity
-function publish(uint256 amount, uint256 minAmountToBurn, string description, string content) external
-```
-
-Allows a supporter to burn tokens and publish a message to the community.
-Before calling this function, supporters must approve the SupporterRules contract to burn the tokens.
-
-_This function calls the token transfer function to pay comissions and burnFrom to trade tokens
-for the compensation certificate. If a valid input is provided,
-records the burned amount as a certificate for that item._
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| amount | uint256 | Tokens to be burned (minimum 10 tokens in wei, i.e., 10e18). |
-| minAmountToBurn | uint256 | Slippage protection: the minimum amount the user expects to burn after commission. |
-| description | string | The description of the post. |
-| content | string | The content of the post. |
+| message | string | A message to the community. |
 
 ### declareReductionCommitment
 
@@ -268,7 +231,7 @@ Emitted when a new supporter is registered.
 ### OffsetMade
 
 ```solidity
-event OffsetMade(address supporterAddress, uint256 offsetId, uint256 amountBurned, uint256 calculatorItemId, uint256 blockNumber)
+event OffsetMade(address supporterAddress, uint256 offsetId, uint256 amountBurned, uint256 calculatorItemId, uint256 blockNumber, string message)
 ```
 
 Emitted when a supporter burns tokens to offset degradation.
@@ -282,24 +245,7 @@ Emitted when a supporter burns tokens to offset degradation.
 | amountBurned | uint256 | The amount of tokens burned by the supporter for the offset. |
 | calculatorItemId | uint256 | The ID of the calculator item, if associated. |
 | blockNumber | uint256 | The block number at which the offset occurred. |
-
-### PublicationPosted
-
-```solidity
-event PublicationPosted(address publisherAddress, uint256 publicationId, uint256 amountBurned, string description, uint256 blockNumber)
-```
-
-Emitted when a supporter burns tokens to publish content.
-
-#### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| publisherAddress | address | The address of the supporter. |
-| publicationId | uint256 | The unique ID of the publication record. |
-| amountBurned | uint256 | The amount of tokens burned by the supporter for the publication. |
-| description | string | The description of the publication. |
-| blockNumber | uint256 | The block number at which the publication occurred. |
+| message | string |  |
 
 ### ReductionCommitmentDeclared
 
