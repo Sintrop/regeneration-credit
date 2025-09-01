@@ -69,7 +69,7 @@ mapping(address => bool) impactRegenerators
 ```
 
 A mapping to track if a regenerator is an "impact regenerator" (has successfully
-completed at least treee inspections).
+completed at least one inspections).
 
 ### areaPhoto
 

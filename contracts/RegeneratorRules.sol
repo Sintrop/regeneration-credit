@@ -68,7 +68,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   mapping(address => string) public projectDescriptions;
 
   /// @notice A mapping to track if a regenerator is an "impact regenerator" (has successfully
-  /// completed at least treee inspections).
+  /// completed at least one inspections).
   mapping(address => bool) public impactRegenerators;
 
   /// @notice A mapping from a regenerator's wallet address to a hash or identifier of their area photo.
