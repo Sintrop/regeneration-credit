@@ -395,6 +395,27 @@ _Returns the invitation._
 | ---- | ---- | ----------- |
 | [0] | struct CommunityTypes.Invitation | the Invitation data struct. |
 
+### hasWaitedRequiredTime
+
+```solidity
+function hasWaitedRequiredTime(address addr) public view returns (bool)
+```
+
+_Calculates if a user is eligible to publish a delation.
+Eligibility based on the `lastDelationBlock` and `BLOCKS_BETWEEN_DELATIONS`._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| addr | address | The address to check. |
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | bool | `true` if the user can publish, `false` otherwise. |
+
 ### UserRegistered
 
 ```solidity

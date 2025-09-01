@@ -5,7 +5,7 @@ import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IResearcherRules } from "./interfaces/IResearcherRules.sol";
 import { IRegenerationCredit } from "./interfaces/IRegenerationCredit.sol";
 import { CalculatorItem } from "./types/ResearcherTypes.sol";
-import { Supporter, Publication, Offset } from "./types/SupporterTypes.sol";
+import { Supporter, Offset } from "./types/SupporterTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
@@ -14,7 +14,7 @@ import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.s
  * @author Sintrop
  * @notice Manages the rules and data specific to Supporter users within the community.
  * @dev This contract handles supporter registration, profile updates, token burning
- * for environmental offsets and content publications, and management of reduction commitments.
+ * for environmental offsets and management of reduction commitments.
  */
 contract SupporterRules is ReentrancyGuard {
   // --- Constants ---
@@ -31,14 +31,11 @@ contract SupporterRules is ReentrancyGuard {
   /// @notice Max character length for description text.
   uint16 private constant MAX_TEXT_LENGTH = 200;
 
-  /// @notice Maximum character length for the publication.
-  uint16 private constant MAX_PUBLICATION_LENGTH = 300;
+  /// @notice Maximum character length for the message.
+  uint16 private constant MAX_MESSAGE_LENGTH = 300;
 
   /// @notice The minimum number of tokens a user must burn to offset.
   uint256 private constant MINIMUM_TOKENS_TO_OFFSET = 1e18;
-
-  /// @notice The minimum number of tokens a user must burn to pulish offset.
-  uint256 private constant MINIMUM_TOKENS_TO_PUBLISH = 10e18;
 
   /// @notice The maximum number of commitments for supporters.
   uint256 public constant MAX_COMMITMENTS = 1000;
@@ -62,12 +59,6 @@ contract SupporterRules is ReentrancyGuard {
 
   /// @notice Total number of offsets made across all supporters.
   uint64 public offsetsCount;
-
-  /// @notice Total number of publications made across all supporters.
-  uint64 public publicationsCount;
-
-  /// @notice The relationship between id and publication data.
-  mapping(uint64 => Publication) public publications;
 
   /// @notice The relationship between offset id and its data.
   mapping(uint64 => Offset) public offsets;
@@ -121,7 +112,7 @@ contract SupporterRules is ReentrancyGuard {
 
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
-    supporters[msg.sender] = Supporter(id, msg.sender, name, description, profilePhoto, 0, 0, 0, block.number);
+    supporters[msg.sender] = Supporter(id, msg.sender, name, description, profilePhoto, 0, 0, block.number);
     supportersAddress[id] = msg.sender;
 
     communityRules.addUser(msg.sender, USER_TYPE);
@@ -144,7 +135,7 @@ contract SupporterRules is ReentrancyGuard {
 
   /**
    *
-   * @notice Allows a supporter to burn tokens to compensate for a specific item's degradation.
+   * @notice Allows a supporter to burn tokens to compensate for a specific item's degradation, with a message to the community.
    * Before calling this function, supporters must approve the SupporterRules contract to burn the tokens.
    * @dev This function calls the token transfer function to pay comissions and burnFrom to trade tokens
    * for the compensation certificate. If a valid calculatorItemId is provided,
@@ -152,11 +143,18 @@ contract SupporterRules is ReentrancyGuard {
    * @param amount Tokens to be burned (minimum 1 token in wei, i.e., 1e18).
    * @param minAmountToBurn Slippage protection: the minimum amount the user expects to burn after commission.
    * @param calculatorItemId The ID of the CalculatorItem, or 0 if not applicable.
+   * @param message A message to the community.
    */
-  function offset(uint256 amount, uint256 minAmountToBurn, uint64 calculatorItemId) external nonReentrant {
+  function offset(
+    uint256 amount,
+    uint256 minAmountToBurn,
+    uint64 calculatorItemId,
+    string memory message
+  ) external nonReentrant {
     require(researcherRules.getCalculatorItem(calculatorItemId).id > 0, "Calculator item does not exist");
     require(communityRules.userTypeIs(CommunityTypes.UserType.SUPPORTER, msg.sender), "Only supporters");
     require(amount >= MINIMUM_TOKENS_TO_OFFSET, "Amount must be at least 1 RC");
+    require(bytes(message).length <= MAX_MESSAGE_LENGTH, "Max characters");
 
     (uint256 amountToBurn, uint256 commission, address inviter) = calculateCommission(msg.sender, amount);
     require(amountToBurn >= minAmountToBurn, "Slippage: amount to burn is less than minimum");
@@ -166,7 +164,7 @@ contract SupporterRules is ReentrancyGuard {
 
     calculatorItemCertificates[msg.sender][calculatorItemId] += amountToBurn;
 
-    offsets[id] = Offset(msg.sender, block.number, amountToBurn, calculatorItemId);
+    offsets[id] = Offset(msg.sender, block.number, amountToBurn, calculatorItemId, message);
     supporters[msg.sender].offsetsCount++;
 
     if (commission > 0 && inviter != address(0)) {
@@ -174,49 +172,7 @@ contract SupporterRules is ReentrancyGuard {
     }
     regenerationCredit.burnFrom(msg.sender, amountToBurn);
 
-    emit OffsetMade(msg.sender, id, amountToBurn, calculatorItemId, block.number);
-  }
-
-  /**
-   * @notice Allows a supporter to burn tokens and publish a message to the community.
-   * Before calling this function, supporters must approve the SupporterRules contract to burn the tokens.
-   * @dev This function calls the token transfer function to pay comissions and burnFrom to trade tokens
-   * for the compensation certificate. If a valid input is provided,
-   * records the burned amount as a certificate for that item.
-   * @param amount Tokens to be burned (minimum 10 tokens in wei, i.e., 10e18).
-   * @param minAmountToBurn Slippage protection: the minimum amount the user expects to burn after commission.
-   * @param description The description of the post.
-   * @param content The content of the post.
-   */
-  function publish(
-    uint256 amount,
-    uint256 minAmountToBurn,
-    string memory description,
-    string memory content
-  ) external nonReentrant {
-    require(communityRules.userTypeIs(CommunityTypes.UserType.SUPPORTER, msg.sender), "Only supporters");
-    require(amount >= MINIMUM_TOKENS_TO_PUBLISH, "Amount must be at least 10 RC");
-    require(
-      bytes(description).length <= MAX_PUBLICATION_LENGTH && bytes(content).length <= MAX_PUBLICATION_LENGTH,
-      "Max characters"
-    );
-
-    (uint256 amountToBurn, uint256 commission, address inviter) = calculateCommission(msg.sender, amount);
-    require(amountToBurn >= minAmountToBurn, "Slippage: amount to burn is less than minimum");
-
-    publicationsCount++;
-    uint64 id = publicationsCount;
-
-    publications[id] = Publication(msg.sender, block.number, amountToBurn, description, content);
-
-    supporters[msg.sender].publicationsCount++;
-
-    if (commission > 0 && inviter != address(0)) {
-      regenerationCredit.transferFrom(msg.sender, inviter, commission);
-    }
-    regenerationCredit.burnFrom(msg.sender, amountToBurn);
-
-    emit PublicationPosted(msg.sender, id, amountToBurn, description, block.number);
+    emit OffsetMade(msg.sender, id, amountToBurn, calculatorItemId, block.number, message);
   }
 
   /**
@@ -315,23 +271,8 @@ contract SupporterRules is ReentrancyGuard {
     uint256 offsetId,
     uint256 amountBurned,
     uint256 calculatorItemId,
-    uint256 blockNumber
-  );
-
-  /**
-   * @notice Emitted when a supporter burns tokens to publish content.
-   * @param publisherAddress The address of the supporter.
-   * @param publicationId The unique ID of the publication record.
-   * @param amountBurned The amount of tokens burned by the supporter for the publication.
-   * @param description The description of the publication.
-   * @param blockNumber The block number at which the publication occurred.
-   */
-  event PublicationPosted(
-    address indexed publisherAddress,
-    uint256 publicationId,
-    uint256 amountBurned,
-    string description,
-    uint256 blockNumber
+    uint256 blockNumber,
+    string message
   );
 
   /**
