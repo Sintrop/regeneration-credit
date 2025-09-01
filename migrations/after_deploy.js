@@ -13,7 +13,7 @@ async function afterDeploy() {
   await configurePools();
   await inviteUsers();
   await transferTokens();
-  await renounceOwnership();
+  // await renounceOwnership();
 
   console.log("After Deploy OK");
 }
@@ -351,6 +351,19 @@ async function inviteUsers() {
   await invitationRules.onlyOwnerInvite("0xfFacb421cB11fb4b572C6ED1e2d6014F3d7FBDb4", 5);
   await invitationRules.onlyOwnerInvite("0xb6D6FFE5FC60eb8d6a01e25480B3e6610880BF86", 4);
   await invitationRules.onlyOwnerInvite("0x77760E118B69703AC52BF40F345053812f832fE5", 6);
+  
+  await invitationRules.onlyOwnerInvite("0x8dDC83B6821761dd43C9c672c460414324511940", 5);
+
+  await invitationRules.onlyOwnerInvite("0x08E77D39cD3a12E326a3769e27DaB92c92d33682", 4);
+  await invitationRules.onlyOwnerInvite("0xF3B5DAe6937d22c9226570D713e0Ee0Db04bca3e", 6);
+  await invitationRules.onlyOwnerInvite("0x3209D6088140d5e35964Cf7e06ABFa6B8BfC1f44", 5);
+  await invitationRules.onlyOwnerInvite("0x6Dd1FFA1b4b13E57Ad419f40123A0ef3c554bfaC", 1);
+  await invitationRules.onlyOwnerInvite("0x4da102c8528CeFFc312FC3E4190c16513C233a1C", 3);
+
+  await invitationRules.onlyOwnerInvite("0x00719c8F9596E46d3B1Fb33Bb1586e9035e672cD", 3);
+  await invitationRules.onlyOwnerInvite("0x7D9355B8D2d820960FAE3a8e1be880A619DcaBC3", 6);
+  await invitationRules.onlyOwnerInvite("0x13AeeFE8b8134A1a0221645dab6Be88405361292", 1);
+  await invitationRules.onlyOwnerInvite("0x7Cd993348b2D782fad5CeCbF12f2451C699f0654", 2);
   
   //mainnet - v6 users
   await invitationRules.onlyOwnerInvite("0xAA863C3B4A0AAF54F42ABE0F627A6F73133003B3", 2);

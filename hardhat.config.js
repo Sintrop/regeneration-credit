@@ -36,24 +36,9 @@ module.exports = {
     //   accounts: [privateKey]
     // },
     // sequoiaTestnet: {
-    //   url: "https://sequoiarpc.sintrop.com",
-    //   accounts: [privateKey],
+    //  url: "https://sequoiarpc.sintrop.com",
+    //  accounts: [privateKey],
     // }
-  },
-  etherscan: {
-    apiKey: {
-      "sequoiaTestnet": "empty"
-    },
-    customChains: [
-      {
-        network: "sequoiaTestnet",
-        chainId: 1600,
-        urls: {
-          apiURL: "https://sequoiaapi.sintrop.com/api",
-          browserURL: "https://sequoiaapi.sintrop.com:5000"
-        }
-      }
-    ]
   },
   sourcify: {
     enabled: false,

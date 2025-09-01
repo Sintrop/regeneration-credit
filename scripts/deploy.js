@@ -90,7 +90,7 @@ async function main() {
 
   await afterDeploy();
 
-  showDeployedAddress();
+  // showDeployedAddress();
 }
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
