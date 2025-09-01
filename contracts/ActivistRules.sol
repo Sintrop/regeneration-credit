@@ -23,6 +23,9 @@ import { Invitable } from "./shared/Invitable.sol";
 contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   // --- Constants ---
 
+  /// @notice Maximum possible level from a single invited.
+  uint8 private constant RESOURCE_LEVEL = 1;
+
   /// @notice Maximum users count allowed for this UserType.
   uint16 public constant MAX_USER_COUNT = 16000;
 
@@ -35,13 +38,10 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   /// @notice Max character length for hash or URL.
   uint16 private constant MAX_HASH_LENGTH = 150;
 
-  /// @notice Maximum possible level from a single invited.
-  uint8 private constant RESOURCE_LEVEL = 1;
-
   // --- State variables ---
 
   /// @notice The total count of all invitations that have been successfully approved across the entire system.
-  uint32 public approvedInvites;
+  uint64 public approvedInvites;
 
   /// @notice A mapping from an activist's wallet address to their detailed `Activist` data structure.
   /// This serves as the primary storage for activist profiles.
@@ -220,6 +220,11 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * @param regeneratorTotalInspections Invited regenerator total inspections.
    */
   function _addLevelFromRegenerator(address regeneratorAddress, uint256 regeneratorTotalInspections) private {
+    require(
+      communityRules.userTypeIs(CommunityTypes.UserType.REGENERATOR, regeneratorAddress),
+      "Address is not a Regenerator"
+    );
+
     CommunityTypes.Invitation memory regeneratorInvitation = communityRules.getInvitation(regeneratorAddress);
     address activistAddress = regeneratorInvitation.inviter;
 
@@ -242,6 +247,11 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
    * @param inspectorTotalInspections Invited inspector total inspections.
    */
   function _addLevelFromInspector(address inspectorAddress, uint256 inspectorTotalInspections) private {
+    require(
+      communityRules.userTypeIs(CommunityTypes.UserType.INSPECTOR, inspectorAddress),
+      "Address is not a Inspector"
+    );
+
     CommunityTypes.Invitation memory inspectorInvitation = communityRules.getInvitation(inspectorAddress);
     address activistAddress = inspectorInvitation.inviter;
 

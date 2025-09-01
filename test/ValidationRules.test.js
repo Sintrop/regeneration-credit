@@ -587,12 +587,17 @@ describe("ValidationRules", () => {
                   await communityRules.setContractCall(user1Address, instance);
                   await addInvitation(user1Address, user7Address, userTypes.Regenerator, user1Address);
                   await addInvitation(user1Address, user8Address, userTypes.Regenerator, user1Address);
+                  await communityRules.addUser(user7Address, userTypes.Regenerator, owner);
+                  await communityRules.addUser(user8Address, userTypes.Regenerator, owner);
 
                   await activistRules.addRegeneratorLevel(user7Address, 3);
-                  await activistRules.addInspectorLevel(user8Address, 3);
+                  await activistRules.addRegeneratorLevel(user8Address, 3);
 
                   await activistRules.addRegeneratorLevel(user7Address, 3);
-                  await activistRules.addInspectorLevel(user8Address, 3);
+
+                  await communityRules.addUser(inspector1Address, userTypes.Inspector, owner);
+
+                  await activistRules.addInspectorLevel(inspector1Address, 3);
                   await instance.connect(user1Address).addUserValidation(user2Address, "my justification");
                 });
 
@@ -893,6 +898,10 @@ describe("ValidationRules", () => {
                 await addActivist("Activist  B", activist2Address);
 
                 await addInvitation(activist1Address, inspector2Address, userTypes.Inspector, owner);
+
+                await addInvitation(activist1Address, regenerator1Address, userTypes.Regenerator, owner);
+                await communityRules.addUser(regenerator1Address, userTypes.Regenerator, owner);
+                await communityRules.addUser(inspector2Address, userTypes.Inspector, owner);
 
                 await activistRules.addRegeneratorLevel(regenerator1Address, 0);
                 await activistRules.addInspectorLevel(inspector2Address, 3);

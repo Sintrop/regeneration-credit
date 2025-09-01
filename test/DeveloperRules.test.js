@@ -1186,16 +1186,28 @@ describe("DeveloperRules", (accounts) => {
 
           await addInvitation(user1Address, user2Address, userTypes.Regenerator, user1Address);
           await addInvitation(user1Address, user3Address, userTypes.Inspector, user1Address);
+
+          await communityRules.addUser(user2Address, userTypes.Regenerator, owner);
+          await communityRules.addUser(user3Address, userTypes.Inspector, owner);
+
           await activistRules.addRegeneratorLevel(user2Address, 3);
           await activistRules.addInspectorLevel(user3Address, 3);
 
           await addInvitation(user4Address, user5Address, userTypes.Regenerator, user4Address);
           await addInvitation(user4Address, user6Address, userTypes.Inspector, user4Address);
+
+          await communityRules.addUser(user5Address, userTypes.Regenerator, owner);
+          await communityRules.addUser(user6Address, userTypes.Inspector, owner);
+
           await activistRules.addRegeneratorLevel(user5Address, 3);
           await activistRules.addInspectorLevel(user6Address, 3);
 
           await addInvitation(user7Address, user8Address, userTypes.Regenerator, user7Address);
           await addInvitation(user7Address, user9Address, userTypes.Inspector, user7Address);
+
+          await communityRules.addUser(user8Address, userTypes.Regenerator, owner);
+          await communityRules.addUser(user9Address, userTypes.Inspector, owner);
+
           await activistRules.addRegeneratorLevel(user8Address, 3);
           await activistRules.addInspectorLevel(user9Address, 3);
 
