@@ -36,8 +36,8 @@ module.exports = {
     //   accounts: [privateKey]
     // },
     // sequoiaTestnet: {
-    //  url: "https://sequoiarpc.sintrop.com",
-    //  accounts: [privateKey],
+    //   url: "https://sequoiarpc.sintrop.com",
+    //   accounts: [privateKey],
     // }
   },
   sourcify: {
