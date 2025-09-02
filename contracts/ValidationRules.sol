@@ -32,13 +32,13 @@ contract ValidationRules is Callable, ReentrancyGuard {
 
   /// @notice Voter thresholds to invalidate a resource/user.
   uint32 private constant VOTERS_THRESHOLD_LEVEL_1 = 12;
-  uint32 private constant VOTERS_THRESHOLD_LEVEL_2 = 250;
+  uint32 private constant VOTERS_THRESHOLD_LEVEL_2 = 167;
 
   /// @notice Votes thresholds to invalidate a resource/user.
   uint32 private constant VOTES_TO_INVALIDATE_LEVEL_1 = 2;
   uint32 private constant VOTES_TO_INVALIDATE_LEVEL_2 = 5;
 
-  uint256 private constant DYNAMIC_INVALIDATION_PERCENTAGE = 2;
+  uint256 private constant DYNAMIC_INVALIDATION_PERCENTAGE = 3;
 
   // --- State variables ---
 
