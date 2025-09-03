@@ -31,6 +31,9 @@ const voteRulesDeploy = require("../migrations/23_voteRules.deploy.js");
 
 const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const deployContracts = process.env.DEPLOY_CONTRACTS;
+const runAfterDeploy = process.env.RUN_AFTER_DEPLOY;
+
 async function startDeployAlert() {
   const etherscanVerificationEnabled = process.env["ETHERSCAN_VERIFICATION_ENABLED"];
   const etherscanVerifyEnabledText = etherscanVerificationEnabled == "true" ? "HABILITADA" : "DESABILITADA";
@@ -64,31 +67,36 @@ function showDeployedAddress() {
 }
 
 async function main() {
-  await startDeployAlert();
+  if (deployContracts == "true") {
+      await startDeployAlert();
 
-  await regenerationCreditDeploy();
-  await communityRulesDeploy();
-  await developerPoolDeploy();
-  await developerRulesDeploy();
-  await inspectorPoolDeploy();
-  await inspectorRulesDeploy();
-  await regeneratorPoolDeploy();
-  await regeneratorRulesDeploy();
-  await researcherPoolDeploy();
-  await researcherRulesDeploy();
-  await contributorPoolDeploy();
-  await contributorRulesDeploy();
-  await activistPoolDeploy();
-  await activistRulesDeploy();
-  await supporterRulesDeploy();
-  await regenerationIndexRulesDeploy();
-  await inspectionRulesDeploy();
-  await regenerationCreditImpactDeploy();
-  await validationRulesDeploy();
-  await voteRulesDeploy();
-  await invitationRulesDeploy();
+      await regenerationCreditDeploy();
+      await communityRulesDeploy();
+      await developerPoolDeploy();
+      await developerRulesDeploy();
+      await inspectorPoolDeploy();
+      await inspectorRulesDeploy();
+      await regeneratorPoolDeploy();
+      await regeneratorRulesDeploy();
+      await researcherPoolDeploy();
+      await researcherRulesDeploy();
+      await contributorPoolDeploy();
+      await contributorRulesDeploy();
+      await activistPoolDeploy();
+      await activistRulesDeploy();
+      await supporterRulesDeploy();
+      await regenerationIndexRulesDeploy();
+      await inspectionRulesDeploy();
+      await regenerationCreditImpactDeploy();
+      await validationRulesDeploy();
+      await voteRulesDeploy();
+      await invitationRulesDeploy();
+  }
 
-  await afterDeploy();
+  if (runAfterDeploy == "true") {
+    await afterDeploy();
+  }
+
 
   // showDeployedAddress();
 }

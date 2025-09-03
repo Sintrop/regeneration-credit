@@ -1,6 +1,7 @@
 const getDeployedContract = require("../scripts/shared/getDeployedContract");
 
 async function afterDeploy() {
+  await createPools();
   await configureValidationRules();
   await configureInspectionRules();
   await configureDeveloperRules();
@@ -16,6 +17,92 @@ async function afterDeploy() {
   // await renounceOwnership();
 
   console.log("After Deploy OK");
+}
+
+async function createPools() {
+
+  const activistPool = await getDeployedContract("ActivistPool");
+  const regeneratorPool = await getDeployedContract("RegeneratorPool");
+  const inspectorPool = await getDeployedContract("InspectorPool");
+  const researcherPool = await getDeployedContract("ResearcherPool");
+  const developerPool = await getDeployedContract("DeveloperPool");
+  const contributorPool = await getDeployedContract("ContributorPool");
+
+  const developerPoolFunds = process.env["DEVELOPER_POOL_FUNDS"];
+  const inspectorPoolFunds = process.env["INSPECTOR_POOL_FUNDS"];
+  const regeneratorPoolFunds = process.env["REGENERATOR_POOL_FUNDS"];
+  const researcherPoolFunds = process.env["RESEARCHER_POOL_FUNDS"];
+  const contributorPoolFunds = process.env["CONTRIBUTOR_POOL_FUNDS"];
+  const activistPoolFunds = process.env["ACTIVIST_POOL_FUNDS"];
+
+  await regenerationCredit.addContractPool(regeneratorPool.target, regeneratorPoolFunds);  
+  await regenerationCredit.addContractPool(inspectorPool.target, inspectorPoolFunds);
+  await regenerationCredit.addContractPool(developerPool.target, developerPoolFunds);
+  await regenerationCredit.addContractPool(researcherPool.target, researcherPoolFunds);
+  await regenerationCredit.addContractPool(contributorPool.target, contributorPoolFunds);
+  await regenerationCredit.addContractPool(activistPool.target, activistPoolFunds);
+
+  console.log("After createPools is OK");
+  };
+
+async function configurePools() {
+
+  const activistPool = await getDeployedContract("ActivistPool");
+  const regeneratorPool = await getDeployedContract("RegeneratorPool");
+  const inspectorPool = await getDeployedContract("InspectorPool");
+  const researcherPool = await getDeployedContract("ResearcherPool");
+  const developerPool = await getDeployedContract("DeveloperPool");
+  const contributorPool = await getDeployedContract("ContributorPool");
+  const activistRules = await getDeployedContract("ActivistRules");
+  const regeneratorRules = await getDeployedContract("RegeneratorRules");
+  const developerRules = await getDeployedContract("DeveloperRules");
+  const researcherRules = await getDeployedContract("ResearcherRules");
+  const contributorRules = await getDeployedContract("ContributorRules");
+  const inspectorRules = await getDeployedContract("InspectorRules");
+
+  await activistPool.newAllowedCaller(activistRules.target);
+  await activistPool.setContractCall(activistRules.target);
+  await contributorPool.newAllowedCaller(contributorRules.target);
+  await contributorPool.setContractCall(contributorRules.target);
+  await developerPool.newAllowedCaller(developerRules.target);
+  await developerPool.setContractCall(developerRules.target);
+  await researcherPool.newAllowedCaller(researcherRules.target);
+  await researcherPool.setContractCall(researcherRules.target);
+  await inspectorPool.newAllowedCaller(inspectorRules.target);
+  await inspectorPool.setContractCall(inspectorRules.target);
+  await regeneratorPool.newAllowedCaller(regeneratorRules.target);
+  await regeneratorPool.setContractCall(regeneratorRules.target);
+
+  console.log("After configPools is OK");
+}
+
+async function configureCommunityRules() {
+
+  const invitationRules = await getDeployedContract("InvitationRules");
+  const validationRules = await getDeployedContract("ValidationRules");
+  const communityRules = await getDeployedContract("CommunityRules");
+  const regeneratorRules = await getDeployedContract("RegeneratorRules");
+  const inspectorRules = await getDeployedContract("InspectorRules");
+  const developerRules = await getDeployedContract("DeveloperRules");
+  const researcherRules = await getDeployedContract("ResearcherRules");
+  const activistRules = await getDeployedContract("ActivistRules");
+  const contributorRules = await getDeployedContract("ContributorRules");
+  const supporterRules = await getDeployedContract("SupporterRules");
+  
+  await communityRules.newAllowedCaller(activistRules.target);
+  await communityRules.newAllowedCaller(developerRules.target);
+  await communityRules.newAllowedCaller(inspectorRules.target);
+  await communityRules.newAllowedCaller(regeneratorRules.target);
+  await communityRules.newAllowedCaller(researcherRules.target);
+  await communityRules.newAllowedCaller(contributorRules.target);
+  await communityRules.newAllowedCaller(supporterRules.target);
+  await communityRules.newAllowedCaller(validationRules.target);
+  await communityRules.newAllowedCaller(invitationRules.target);
+
+
+  await communityRules.setContractCall(invitationRules.target, validationRules.target);
+
+  console.log("After CommunityRules deploy is OK");
 }
 
 async function configureValidationRules() {
@@ -40,13 +127,22 @@ async function configureValidationRules() {
     voteRulesAddress: voteRules.target,
   };
 
+  // const validationDependencies = {
+  //   communityRulesAddress: "0xBd6259240d5481739b36CAD12d97Ce4a06269eD7",
+  //   regeneratorRulesAddress: "0xC988cccE69f7Ff1D1FA2585D31C1188BEd1cB29C",
+  //   inspectorRulesAddress: "0x915262F710bDb0C36CB428865CcD8eda24535048",
+  //   developerRulesAddress: "0x283E4D9bCA71b0F400f0055540D1dbFc79dDF280",
+  //   researcherRulesAddress: "0x683B1Ecef6bD260858729bCC2Adf16bE3079F8c3",
+  //   activistRulesAddress: "0xC990F524bDAb0C746d0Aab37FF6903DDD506f3Ec",
+  //   contributorRulesAddress: "0x1e28b511D2eA3e613700684BB322693EdD708F30",
+  //   voteRulesAddress: "0x5e2E74776fB9f13774d1c7e386050D3438C3D941",
+  // };  
+
   await validationRules.setContractInterfaces(contractDependencies);
-  await regeneratorRules.newAllowedCaller(validationRules.target);
-  await inspectorRules.newAllowedCaller(validationRules.target);
-  await activistRules.newAllowedCaller(validationRules.target);
   await validationRules.newAllowedCaller(researcherRules.target);
   await validationRules.newAllowedCaller(developerRules.target);
   await validationRules.newAllowedCaller(contributorRules.target);  
+  await validationRules.newAllowedCaller(inspectionRules.target);
 
   console.log("After ValidationRules deploy is OK");
 }
@@ -64,6 +160,13 @@ async function configureDeveloperRules() {
     developerPoolAddress: developerPool.target,
     voteRulesAddress: voteRules.target,
   };
+
+  // const developerDependencies = {
+  //   communityRulesAddress: "0xBd6259240d5481739b36CAD12d97Ce4a06269eD7",
+  //   validationRulesAddress: "0xDc23A8A7c2f7B050A3E37337cb06406F2e5A2850",
+  //   developerPoolAddress: "0xA16148eDa0bcC1627B193333d6E06f09d66F08fE",
+  //   voteRulesAddress: "0x5e2E74776fB9f13774d1c7e386050D3438C3D941",
+  // };  
 
   await developerRules.setContractInterfaces(contractDependencies);
   await developerRules.newAllowedCaller(validationRules.target);
@@ -86,6 +189,13 @@ async function configureContributorRules() {
     voteRulesAddress: voteRules.target,
   };
 
+  // const contributorDependencies = {
+  //   communityRulesAddress: "0xBd6259240d5481739b36CAD12d97Ce4a06269eD7",
+  //   validationRulesAddress: "0xDc23A8A7c2f7B050A3E37337cb06406F2e5A2850",
+  //   contributorPoolAddress: "0xBDB2F7796a88F8cF0e4520F6EA8581201cf60d29",
+  //   voteRulesAddress: "0x5e2E74776fB9f13774d1c7e386050D3438C3D941",
+  // };
+
   await contributorRules.setContractInterfaces(contractDependencies);
   await contributorRules.newAllowedCaller(validationRules.target);
   await contributorRules.setContractCall(validationRules.target);
@@ -105,7 +215,14 @@ async function configureResearcherRules() {
     validationRulesAddress: validationRules.target,
     researcherPoolAddress: researcherPool.target,
     voteRulesAddress: voteRules.target,
-  };
+  };  
+
+  // const researcherpendencies = {
+  //   communityRulesAddress: "0xBd6259240d5481739b36CAD12d97Ce4a06269eD7",
+  //   validationRulesAddress: "0xDc23A8A7c2f7B050A3E37337cb06406F2e5A2850",
+  //   researcherPoolAddress: "0xa6CAAD85f30b9e3eACE784F71FC23e3410A4364D",
+  //   voteRulesAddress: "0x5e2E74776fB9f13774d1c7e386050D3438C3D941",
+  // };
 
   await researcherRules.setContractInterfaces(contractDependencies);
   await researcherRules.newAllowedCaller(validationRules.target);
@@ -120,6 +237,8 @@ async function configureActivistRules() {
   const validationRules = await getDeployedContract("ValidationRules");
   const activistRules = await getDeployedContract("ActivistRules");
 
+  await activistRules.newAllowedCaller(validationRules.target);
+  await activistRules.newAllowedCaller(inspectionRules.target);
   await activistRules.setContractCall(inspectionRules.target, validationRules.target);
 
   console.log("After ActivistRules deploy is OK");
@@ -129,7 +248,10 @@ async function configureInspectorRules() {
 
   const inspectionRules = await getDeployedContract("InspectionRules");
   const inspectorRules = await getDeployedContract("InspectorRules");
+  const validationRules = await getDeployedContract("ValidationRules");
 
+  await inspectorRules.newAllowedCaller(validationRules.target);
+  await inspectorRules.newAllowedCaller(inspectionRules.target);
   await inspectorRules.setContractCall(inspectionRules.target);
 
   console.log("After InspectorRules deploy is OK");
@@ -141,20 +263,11 @@ async function configureRegeneratorRules() {
   const validationRules = await getDeployedContract("ValidationRules");
   const regeneratorRules = await getDeployedContract("RegeneratorRules");
 
+  await regeneratorRules.newAllowedCaller(validationRules.target);
+  await regeneratorRules.newAllowedCaller(inspectionRules.target);
   await regeneratorRules.setContractCall(inspectionRules.target, validationRules.target);
 
   console.log("After RegeneratorRules deploy is OK");
-}
-
-async function configureCommunityRules() {
-
-  const invitationRules = await getDeployedContract("InvitationRules");
-  const validationRules = await getDeployedContract("ValidationRules");
-  const communityRules = await getDeployedContract("CommunityRules");
-
-  await communityRules.setContractCall(invitationRules.target, validationRules.target);
-
-  console.log("After CommunityRules deploy is OK");
 }
 
 async function configureInspectionRules() {
@@ -177,39 +290,19 @@ async function configureInspectionRules() {
     voteRulesAddress: voteRules.target,
   };
 
+  const inspectionDependencies = {
+    communityRulesAddress: "0xBd6259240d5481739b36CAD12d97Ce4a06269eD7",
+    regeneratorRulesAddress: "0xC988cccE69f7Ff1D1FA2585D31C1188BEd1cB29C",
+    validationRulesAddress: "0xDc23A8A7c2f7B050A3E37337cb06406F2e5A2850",
+    inspectorRulesAddress: "0x915262F710bDb0C36CB428865CcD8eda24535048",
+    activistRulesAddress: "0xC990F524bDAb0C746d0Aab37FF6903DDD506f3Ec",
+    regenerationIndexRulesAddress: "0xCfD00131a15Fb4eF4C5768aB18DCB0fCdB22cE65",
+    voteRulesAddress: "0x5e2E74776fB9f13774d1c7e386050D3438C3D941",
+  };
+
   await inspectionRules.setContractInterfaces(contractDependencies);
 
-  await activistRules.newAllowedCaller(inspectionRules.target);
-  await inspectorRules.newAllowedCaller(inspectionRules.target);
-  await regeneratorRules.newAllowedCaller(inspectionRules.target);
-  await validationRules.newAllowedCaller(inspectionRules.target);
-
   console.log("After InspectionRules deploy is OK");
-}
-
-async function configurePools() {
-
-  const activistPool = await getDeployedContract("ActivistPool");
-  const regeneratorPool = await getDeployedContract("RegeneratorPool");
-  const inspectorPool = await getDeployedContract("InspectorPool");
-  const researcherPool = await getDeployedContract("ResearcherPool");
-  const developerPool = await getDeployedContract("DeveloperPool");
-  const contributorPool = await getDeployedContract("ContributorPool");
-  const activistRules = await getDeployedContract("ActivistRules");
-  const regeneratorRules = await getDeployedContract("RegeneratorRules");
-  const developerRules = await getDeployedContract("DeveloperRules");
-  const researcherRules = await getDeployedContract("ResearcherRules");
-  const contributorRules = await getDeployedContract("ContributorRules");
-  const inspectorRules = await getDeployedContract("InspectorRules");
-
-  await activistPool.setContractCall(activistRules.target);
-  await contributorPool.setContractCall(contributorRules.target);
-  await developerPool.setContractCall(developerRules.target);
-  await researcherPool.setContractCall(researcherRules.target);
-  await inspectorPool.setContractCall(inspectorRules.target);
-  await regeneratorPool.setContractCall(regeneratorRules.target);
-
-  console.log("After configPools is OK");
 }
 
 async function renounceOwnership() {
@@ -458,6 +551,8 @@ async function inviteUsers() {
   await invitationRules.onlyOwnerInvite("0xE9CB014CEEEDCD55FAB7C42202D393CCDE93E41B", 1);
 
   // await invitationRules.renounceOwnership();
+
+  console.log("After invite is OK");
 }
 
 module.exports = afterDeploy;

@@ -35,10 +35,11 @@ module.exports = {
     //   url: `https://rpc.sintrop.com`,
     //   accounts: [privateKey]
     // },
-    // sequoiaTestnet: {
-    //   url: "https://sequoiarpc.sintrop.com",
-    //   accounts: [privateKey],
-    // }
+    sequoiaTestnet: {
+      url: "https://sequoiarpc.sintrop.com",
+      accounts: [privateKey],
+      timeout: 3000000,
+    }
   },
   sourcify: {
     enabled: false,
