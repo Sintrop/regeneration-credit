@@ -15,7 +15,7 @@ async function supporterRulesDeploy() {
 
   saveContractAddress("SupporterRules", supporterRules.target);
 
-  await communityRules.newAllowedCaller(supporterRules.target);
+  // await communityRules.newAllowedCaller(supporterRules.target);
 
   console.log(`SupporterRules address ${supporterRules.target}`);
 

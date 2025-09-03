@@ -14,8 +14,8 @@ async function regeneratorRulesDeploy() {
 
   saveContractAddress("RegeneratorRules", regeneratorRules.target);
 
-  await communityRules.newAllowedCaller(regeneratorRules.target);
-  await regeneratorPool.newAllowedCaller(regeneratorRules.target);
+  // await communityRules.newAllowedCaller(regeneratorRules.target);
+  // await regeneratorPool.newAllowedCaller(regeneratorRules.target);
 
   console.log(`RegeneratorRules address ${regeneratorRules.target}`);
 

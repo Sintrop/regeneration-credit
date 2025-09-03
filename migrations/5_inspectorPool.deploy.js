@@ -5,7 +5,7 @@ const verifyContract = require("../scripts/shared/verifyContract");
 async function inspectorPoolDeploy() {
   const poolHalving = process.env["POOL_HALVING"];
   const poolBlocksPerEra = process.env["BLOCKS_PER_ERA"];
-  const inspectorPoolFunds = process.env["INSPECTOR_POOL_FUNDS"];
+  // const inspectorPoolFunds = process.env["INSPECTOR_POOL_FUNDS"];
 
   const regenerationCredit = await getDeployedContract("RegenerationCredit");
 
@@ -17,7 +17,7 @@ async function inspectorPoolDeploy() {
 
   saveContractAddress("InspectorPool", inspectorPool.target);
 
-  await regenerationCredit.addContractPool(inspectorPool.target, inspectorPoolFunds);
+  // await regenerationCredit.addContractPool(inspectorPool.target, inspectorPoolFunds);
 
   console.log(`InspectorPool address ${inspectorPool.target}`);
 

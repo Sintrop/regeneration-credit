@@ -14,8 +14,8 @@ async function activistRulesDeploy() {
 
   saveContractAddress("ActivistRules", activistRules.target);
 
-  await communityRules.newAllowedCaller(activistRules.target);
-  await activistPool.newAllowedCaller(activistRules.target);
+  // await communityRules.newAllowedCaller(activistRules.target);
+  // await activistPool.newAllowedCaller(activistRules.target);
 
   console.log(`ActivistRules address ${activistRules.target}`);
 
