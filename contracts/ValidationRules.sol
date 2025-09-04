@@ -128,6 +128,10 @@ contract ValidationRules is Callable, ReentrancyGuard {
     require(bytes(justification).length <= MAX_JUSTIFICATION_LENGTH, "Max characters");
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(!communityRules.userTypeIs(CommunityTypes.UserType.UNDEFINED, userAddress), "User not registered");
+    require(
+      !communityRules.userTypeIs(CommunityTypes.UserType.SUPPORTER, userAddress),
+      "Supporter validation not allowed"
+    );
     require(!communityRules.isDenied(userAddress), "User already denied");
     require(_canBeValidated(userAddress), "Regenerator has reached validation immunity");
 

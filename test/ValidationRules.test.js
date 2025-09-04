@@ -75,6 +75,10 @@ describe("ValidationRules", () => {
     await regeneratorRules.connect(from).addRegenerator(1000, name, "projectDescription", "photoURL", coordinates());
   };
 
+  const addSupporter = async (name, from) => {
+    await supporterRules.connect(from).addSupporter(name, "photoURL", "description");
+  };
+
   const coordinates = () => {
     return [
       {
@@ -210,6 +214,9 @@ describe("ValidationRules", () => {
     inspectionRules = validatorRulesDeployed.inspectionRules;
     instance = validatorRulesDeployed.validationRules;
 
+    const supporterRulesFactory = await ethers.getContractFactory("SupporterRules");
+    supporterRules = await supporterRulesFactory.deploy(communityRules.target, researcherRules.target, instance.target);
+
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(regeneratorRules.target);
     await communityRules.newAllowedCaller(inspectorRules.target);
@@ -217,6 +224,7 @@ describe("ValidationRules", () => {
     await communityRules.newAllowedCaller(researcherRules.target);
     await communityRules.newAllowedCaller(contributorRules.target);
     await communityRules.newAllowedCaller(activistRules.target);
+    await communityRules.newAllowedCaller(supporterRules.target);
     await communityRules.newAllowedCaller(owner);
     await regeneratorRules.newAllowedCaller(instance.target);
     await regeneratorRules.newAllowedCaller(owner);
@@ -1053,6 +1061,19 @@ describe("ValidationRules", () => {
         await expect(
           instance.connect(user1Address).addUserValidation(undefinedAddress, "justification")
         ).to.be.revertedWith("User not registered");
+      });
+    });
+
+    context("when user is a supporter", () => {
+      it("should return error", async () => {
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addDeveloper("User  A", user1Address);
+
+        await addSupporter("User  A", user8Address);
+
+        await expect(
+          instance.connect(user1Address).addUserValidation(user8Address, "justification")
+        ).to.be.revertedWith("Supporter validation not allowed");
       });
     });
 
