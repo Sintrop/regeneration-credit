@@ -35,7 +35,7 @@ interface IDeveloperRules {
    * @return The total count of totalActiveLevels.
    */
   function totalActiveLevels() external view returns (uint256);
-  
+
   /**
    * @notice Adds a penalty to a developer and returns their new total penalty count.
    * @param developer The address of the developer receiving the penalty.
