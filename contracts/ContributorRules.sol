@@ -60,6 +60,9 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   /// This acts as a global unique ID counter for new contributions.
   uint64 public contributionsTotalCount;
 
+  /// @notice The sum of all active levels from valid contributions by non-denied contributors.
+  uint256 public totalActiveLevels;  
+
   /// @notice A mapping from a contributor's wallet address to their detailed `Contributor` data structure.
   /// This serves as the primary storage for contributor profiles.
   mapping(address => Contributor) private contributors;
@@ -226,6 +229,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     // Increment global contribution counters and assign a unique ID.
     contributionsCount++;
     contributionsTotalCount++;
+    totalActiveLevels++;
     uint64 id = contributionsTotalCount;
 
     // Increment contributor's total contributions count within their struct.
@@ -377,6 +381,8 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   function _denyContributor(address userAddress) private {
     if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
 
+    totalActiveLevels -= contributors[userAddress].pool.level;
+
     communityRules.setToDenied(userAddress);
 
     // Inviter slashing mechanism.
@@ -420,6 +426,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     contribution.invalidatedAt = block.number;
     contributions[contribution.id] = contribution;
     contributors[contribution.user].pool.level -= RESOURCE_LEVEL;
+    totalActiveLevels--;
 
     contributorPool.removePoolLevels(contribution.user, false);
   }
@@ -470,7 +477,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
 
     // Calls the inherited `canInvite` function from `Invitable` to calculate eligibility.
     // This depends on total contributions count, total contributor count, and the contributor's pool level.
-    return canInvite(contributionsTotalCount, communityRules.userTypesTotalCount(USER_TYPE), contributor.pool.level);
+    return canInvite(totalActiveLevels, communityRules.userTypesCount(USER_TYPE), contributor.pool.level);
   }
 
   /**

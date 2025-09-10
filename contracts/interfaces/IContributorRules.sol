@@ -31,6 +31,12 @@ interface IContributorRules {
   function contributionsTotalCount() external view returns (uint64);
 
   /**
+   * @notice Returns the total number of activeLevels from non-denied users.
+   * @return The total count of totalActiveLevels.
+   */
+  function totalActiveLevels() external view returns (uint256);
+
+  /**
    * @notice Adds a penalty to a contributor and returns their new total penalty count.
    * @param contributor The address of the contributor receiving the penalty.
    * @param reportId The ID of the report related to the penalty.
