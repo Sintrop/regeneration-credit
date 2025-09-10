@@ -75,7 +75,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   uint64 public researchesTotalCount;
 
   /// @notice The sum of all active levels from valid researches by non-denied researchers.
-  uint256 public totalActiveLevels;  
+  uint256 public totalActiveLevels;
 
   /// @notice Total calculatorItems count.
   uint64 public calculatorItemsCount;

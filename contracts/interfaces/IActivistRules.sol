@@ -64,5 +64,5 @@ interface IActivistRules {
    * @notice Returns the number of approved invites from non-denied users.
    * @return The total count of totalActiveLevels.
    */
-  function totalActiveLevels() external view returns (uint256);  
+  function totalActiveLevels() external view returns (uint256);
 }
