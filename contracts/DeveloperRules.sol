@@ -61,7 +61,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   uint64 public reportsTotalCount;
 
   /// @notice The sum of all active levels from valid reports by non-denied developers.
-  uint256 public totalActiveLevels;  
+  uint256 public totalActiveLevels;
 
   /// @notice A mapping from a developer's wallet address to their detailed `Developer` data structure.
   /// This serves as the primary storage for developer profiles.
