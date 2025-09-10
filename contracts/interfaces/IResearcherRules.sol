@@ -31,6 +31,12 @@ interface IResearcherRules {
   function researchesTotalCount() external view returns (uint64);
 
   /**
+   * @notice Returns the total number of activeLevels from non-denied users.
+   * @return The total count of totalActiveLevels.
+   */
+  function totalActiveLevels() external view returns (uint256);  
+
+  /**
    * @notice Adds a penalty to a researcher and returns their new total penalty count.
    * @param researcher The address of the researcher receiving the penalty.
    * @param researchId The ID of the research item related to the penalty.
