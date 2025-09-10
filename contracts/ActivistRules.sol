@@ -43,6 +43,9 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   /// @notice The total count of all invitations that have been successfully approved across the entire system.
   uint64 public approvedInvites;
 
+  /// @notice The sum of all active levels from non-denied activists. Used for governance calculations.
+  uint256 public totalActiveLevels;
+
   /// @notice A mapping from an activist's wallet address to their detailed `Activist` data structure.
   /// This serves as the primary storage for activist profiles.
   mapping(address => Activist) private activists;
@@ -209,6 +212,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   function removePoolLevels(
     address addr
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
+    totalActiveLevels -= activists[addr].pool.level;
     activistPool.removePoolLevels(addr, true);
   }
 
@@ -280,6 +284,9 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
     // If activist does not exist, return.
     if (activist.id == 0) return;
 
+    // Increase totalActiveLevels.
+    totalActiveLevels++;
+
     // Inscrease the activist pool level
     activist.pool.level++;
 
@@ -306,7 +313,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
 
     // Calls the inherited `canInvite` function from `Invitable` to calculate eligibility.
     // This depends on total approved invites, total activist count, and the activist's pool level.
-    return canInvite(approvedInvites, communityRules.userTypesTotalCount(USER_TYPE), activist.pool.level);
+    return canInvite(totalActiveLevels, communityRules.userTypesCount(USER_TYPE), activist.pool.level);
   }
 
   /**
