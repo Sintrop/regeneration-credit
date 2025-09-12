@@ -69,10 +69,10 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   /// @notice Total inspections count, including open, accepted, realized, and invalidated ones.
   uint64 public inspectionsTotalCount;
 
-  /// @notice Sum of all valid inspections' trees impact.
+  /// @notice Sum of all valid inspections' trees impact from all past eras.
   uint256 public inspectionsTreesImpact;
 
-  /// @notice Sum of all valid inspections' biodiversity impact.
+  /// @notice Sum of all valid inspections' biodiversity impact from all past eras.
   uint256 public inspectionsBiodiversityImpact;
 
   /// @notice Tracks inspection IDs that have already been invalidated.
@@ -111,6 +111,16 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   /// @notice Tracks which validator has voted on which inspection to prevent duplicate votes.
   mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
 
+  /// @notice Tracks the impact generated within each specific era.
+  mapping(uint256 => EraImpact) public impactPerEra;
+
+  /// @notice Tracks which eras have already been settled.
+  mapping(uint256 => bool) public isEraSettled;
+
+  struct EraImpact {
+    uint256 trees;
+    uint256 biodiversity;
+  }
   // --- Constructor ---
 
   /**
@@ -274,8 +284,10 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
     _afterRealizeInspection(inspection);
 
-    inspectionsTreesImpact += treesResult;
-    inspectionsBiodiversityImpact += biodiversityResult;
+    uint256 currentEra = inspection.inspectedAtEra;
+    impactPerEra[currentEra].trees += treesResult;
+    impactPerEra[currentEra].biodiversity += biodiversityResult;
+
     inspectorInspected[msg.sender][inspection.regenerator] = true;
     realizedInspectionsCount++;
 
@@ -344,6 +356,25 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
     validationRules.updateValidatorLastVoteBlock(msg.sender);
     emit InspectionValidation(msg.sender, inspection.id, justification);
+  }
+
+  /**
+   * @notice Settles an era's impact, adding it to the cumulative finalized total.
+   * @dev This can only be called for a past era and only once per era.
+   * This makes the protocol's historical impact data immutable and trustworthy.
+   * @param eraToSettle The number of the era to be settled.
+   */
+  function settleEraImpact(uint256 eraToSettle) external {
+    uint256 currentEra = regeneratorRules.poolCurrentEra();
+
+    require(eraToSettle < currentEra, "Cannot settle the current or a future era");
+    require(!isEraSettled[eraToSettle], "Era already settled");
+
+    isEraSettled[eraToSettle] = true;
+
+    EraImpact memory eraImpact = impactPerEra[eraToSettle];
+    inspectionsTreesImpact += eraImpact.trees;
+    inspectionsBiodiversityImpact += eraImpact.biodiversity;
   }
 
   // --- Private functions ---
@@ -434,9 +465,9 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * @param inspection A reference to the `Inspection` struct being invalidated.
    */
   function _invalidateInspection(Inspection storage inspection) private {
-    // Decrement global impact metrics.
-    inspectionsTreesImpact -= inspection.treesResult;
-    inspectionsBiodiversityImpact -= inspection.biodiversityResult;
+    // Decrement era impact metrics.
+    impactPerEra[inspection.inspectedAtEra].trees -= inspection.treesResult;
+    impactPerEra[inspection.inspectedAtEra].biodiversity -= inspection.biodiversityResult;
 
     inspectionsCount--; // Decrement valid inspections count
     realizedInspectionsCount--; // Decrement realized inspections count
