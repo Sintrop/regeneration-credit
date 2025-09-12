@@ -54,13 +54,6 @@ interface IActivistRules {
   function getActivist(address account) external view returns (Activist memory);
 
   /**
-   * @notice Returns the number of approved invites.
-   * @dev This is likely a getter for a public state variable.
-   * @return The total count of approved invites.
-   */
-  function approvedInvites() external view returns (uint64);
-
-  /**
    * @notice Returns the number of approved invites from non-denied users.
    * @return The total count of totalActiveLevels.
    */
