@@ -260,6 +260,12 @@ describe("DeveloperRules", (accounts) => {
           expect(reportsCount).to.equal(1);
         });
 
+        it("increment totalActiveLevels", async () => {
+          const totalActiveLevels = await instance.totalActiveLevels();
+
+          expect(totalActiveLevels).to.equal(1);
+        });
+
         it("add level to developer", async () => {
           const developer = await instance.getDeveloper(dev1Address);
 
@@ -446,6 +452,12 @@ describe("DeveloperRules", (accounts) => {
 
             expect(reportsCount).to.eq(0);
           });
+
+          it("decrement totalActiveLevels in one", async () => {
+            const totalActiveLevels = await instance.totalActiveLevels();
+
+            expect(totalActiveLevels).to.equal(0);
+          });
         });
 
         context("when report must not be invalidated", () => {
@@ -560,6 +572,12 @@ describe("DeveloperRules", (accounts) => {
           const developer = await instance.getDeveloper(user1Address);
 
           expect(developer.pool.level).to.eq(1);
+        });
+
+        it("remove all develeper levels from totalActiveLevels", async () => {
+          const totalActiveLevels = await instance.totalActiveLevels();
+
+          expect(totalActiveLevels).to.equal(16);
         });
       });
 

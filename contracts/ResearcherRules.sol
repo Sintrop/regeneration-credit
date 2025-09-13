@@ -473,7 +473,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
     if (researcher.id <= 0) return false;
 
-    return canInvite(researchesTotalCount, communityRules.userTypesTotalCount(USER_TYPE), researcher.pool.level);
+    return canInvite(totalActiveLevels, communityRules.userTypesCount(USER_TYPE), researcher.pool.level);
   }
 
   /**
