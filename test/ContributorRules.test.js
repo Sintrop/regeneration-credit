@@ -294,6 +294,12 @@ describe("ContributorRules", (accounts) => {
             expect(contributionsCount).to.equal(1);
           });
 
+          it("increment totalActiveLevels", async () => {
+            const totalActiveLevels = await instance.totalActiveLevels();
+
+            expect(totalActiveLevels).to.equal(1);
+          });
+
           context("when adding contribution to eras", () => {
             beforeEach(async () => {
               await advanceBlock(contributorPoolParams.blocksPerEra);
@@ -595,6 +601,12 @@ describe("ContributorRules", (accounts) => {
             expect(contributionsCount).to.eq(0);
           });
 
+          it("must decrement totalActiveLevels in one", async () => {
+            const totalActiveLevels = await instance.totalActiveLevels();
+
+            expect(totalActiveLevels).to.eq(0);
+          });
+
           it("should set contributionPenalized to true to prevent double penalties", async () => {
             expect(await instance.contributionPenalized(1)).to.be.true;
           });
@@ -648,7 +660,11 @@ describe("ContributorRules", (accounts) => {
           await addDeveloper("User B", user2Address);
           await addDeveloper("User C", user3Address);
 
+          await addInvitation(owner, contr2Address, userTypes.Contributor, owner);
+          await addContributor("Contributor B", contr2Address);
+
           await addContribution(contr1Address);
+
           await instance.connect(user1Address).addContributionValidation(1, "justification");
           await instance.connect(user2Address).addContributionValidation(1, "justification");
 
@@ -666,6 +682,8 @@ describe("ContributorRules", (accounts) => {
           await advanceBlock(10);
 
           await addContribution(contr1Address);
+          await addContribution(contr2Address);
+
           await instance.connect(user1Address).addContributionValidation(3, "justification");
           await instance.connect(user2Address).addContributionValidation(3, "justification");
         });
@@ -694,6 +712,12 @@ describe("ContributorRules", (accounts) => {
           const contributor = await instance.getContributor(contr1Address);
 
           expect(contributor.pool.level).to.eq(1);
+        });
+
+        it("remove all contributor levels from totalActiveLevels", async () => {
+          const totalActiveLevels = await instance.totalActiveLevels();
+
+          expect(totalActiveLevels).to.equal(1);
         });
       });
 
