@@ -224,6 +224,7 @@ contract CommunityRules is Callable {
     require(userType != CommunityTypes.UserType.UNDEFINED, "Invalid user type"); // Must selected the appropriate userType
     require(_registrationProportionalityAllowed(userType), "Proportionality invalid"); // Vacancies according to the number of regenerators
     require(_invitedTypeOnRegister(addr, userType), "Invalid invitation"); // Only with valid invitation
+    require(!isDenied(invitations[addr].inviter), "Inviter denied"); // Inviter cannot be denied
 
     users[addr] = userType;
     usersCount++;

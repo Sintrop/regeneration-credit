@@ -388,7 +388,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @return bool `true` if the inspector is currently valid (has less than max give-ups), `false` otherwise.
    */
   function isInspectorValid(address addr) public view returns (bool) {
-    return inspectors[addr].giveUps < MAX_GIVEUPS;
+    return inspectors[addr].giveUps <= MAX_GIVEUPS;
   }
 
   /**
