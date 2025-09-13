@@ -18,9 +18,6 @@ async function researcherRulesDeploy() {
 
   saveContractAddress("ResearcherRules", researcherRules.target);
 
-  // await communityRules.newAllowedCaller(researcherRules.target);
-  // await researcherPool.newAllowedCaller(researcherRules.target);
-
   console.log(`ReseacherContract address ${researcherRules.target}`);
 
   await verifyContract(researcherRules, "ResearcherRules", args);

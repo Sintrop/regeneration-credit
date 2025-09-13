@@ -18,9 +18,6 @@ async function developerRulesDeploy() {
 
   saveContractAddress("DeveloperRules", developerRules.target);
 
-  // await developerPool.newAllowedCaller(developerRules.target);
-  // await communityRules.newAllowedCaller(developerRules.target);
-
   console.log(`DeveloperRules address ${developerRules.target}`);
 
   await verifyContract(developerRules, "DeveloperRules", args);
