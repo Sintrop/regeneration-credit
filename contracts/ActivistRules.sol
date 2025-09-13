@@ -237,7 +237,6 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
       regeneratorTotalInspections >= MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS
     ) {
       activistWonLevel[activistAddress][regeneratorAddress] = true;
-      approvedInvites++;
 
       bytes32 eventId = keccak256(abi.encodePacked("activist_reward_regenerator", activistAddress, regeneratorAddress));
 
@@ -264,7 +263,6 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
       inspectorTotalInspections >= MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS
     ) {
       activistWonLevel[activistAddress][inspectorAddress] = true;
-      approvedInvites++;
 
       bytes32 eventId = keccak256(abi.encodePacked("activist_reward_inspector", activistAddress, inspectorAddress));
 
@@ -283,6 +281,8 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
 
     // If activist does not exist, return.
     if (activist.id == 0) return;
+
+    approvedInvites++;
 
     // Increase totalActiveLevels.
     totalActiveLevels++;

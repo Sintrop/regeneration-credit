@@ -329,6 +329,12 @@ describe("ResearcherRules", () => {
             expect(eraLevel).to.equal(0);
           });
 
+          it("increment totalActiveLevels", async () => {
+            const totalActiveLevels = await instance.totalActiveLevels();
+
+            expect(totalActiveLevels).to.equal(1);
+          });
+
           context("when is next era", () => {
             beforeEach(async () => {
               await advanceBlock(args.blocksPerEra);
@@ -432,7 +438,7 @@ describe("ResearcherRules", () => {
         await addResearcher("Researcher A", resea1Address);
       });
 
-      context("with valid contribution", () => {
+      context("with valid research", () => {
         context("when research must be invalidated", () => {
           beforeEach(async () => {
             await addResearch(resea1Address);
@@ -481,6 +487,12 @@ describe("ResearcherRules", () => {
             const researchesCount = await instance.researchesCount();
 
             expect(researchesCount).to.eq(0);
+          });
+
+          it("decrement totalActiveLevels in one", async () => {
+            const totalActiveLevels = await instance.totalActiveLevels();
+
+            expect(totalActiveLevels).to.equal(0);
           });
         });
 
@@ -545,6 +557,7 @@ describe("ResearcherRules", () => {
           await advanceBlock(10);
 
           await addResearch(resea1Address);
+          await addResearch(user2Address);
           await instance.connect(user1Address).addResearchValidation(3, "justification");
           await instance.connect(user2Address).addResearchValidation(3, "justification");
         });
@@ -559,6 +572,12 @@ describe("ResearcherRules", () => {
           const researcher = await instance.getResearcher(resea1Address);
 
           expect(researcher.pool.level).to.eq(1);
+        });
+
+        it("remove all develeper levels from totalActiveLevels", async () => {
+          const totalActiveLevels = await instance.totalActiveLevels();
+
+          expect(totalActiveLevels).to.equal(1);
         });
       });
 
