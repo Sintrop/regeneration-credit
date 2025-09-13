@@ -98,13 +98,13 @@ contract VoteRules {
    * @return bool True if the user meets the voting criteria, false otherwise.
    */
   function _canVoteRules(uint256 totalTypeLevels, uint256 totalUsers, uint256 userLevels) private pure returns (bool) {
-    // Rule 1: Allow anyone to vote if the user type has few members.
-    if (totalUsers <= INITIAL_USER_COUNT_THRESHOLD) return true;
-
     // Edge case: If there are no users, no one can vote.
     if (totalUsers == 0) {
       return false;
     }
+
+    // Rule 1: Allow anyone to vote if the user type has few members.
+    if (totalUsers <= INITIAL_USER_COUNT_THRESHOLD) return true;
 
     // Rule 2: Check if the user's level is strictly greater than the average
     return userLevels * totalUsers > totalTypeLevels;
