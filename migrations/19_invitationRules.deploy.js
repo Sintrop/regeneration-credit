@@ -25,8 +25,6 @@ async function invitationRulesDeploy() {
 
   console.log(`InvitationRules address ${invitationRules.target}`);
 
-  // await communityRules.newAllowedCaller(invitationRules.target);
-
   await verifyContract(invitationRules, "InvitationRules", args);
 
   return invitationRules;
