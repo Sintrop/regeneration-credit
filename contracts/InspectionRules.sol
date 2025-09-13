@@ -14,6 +14,7 @@ import { Regenerator } from "./types/RegeneratorTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { EraImpact } from "./types/ImpactTypes.sol";
 
 /**
  * @title InspectionRules
@@ -117,10 +118,6 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   /// @notice Tracks which eras have already been settled.
   mapping(uint256 => bool) public isEraSettled;
 
-  struct EraImpact {
-    uint256 trees;
-    uint256 biodiversity;
-  }
   // --- Constructor ---
 
   /**
