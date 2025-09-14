@@ -1,20 +1,20 @@
 const getDeployedContract = require("../scripts/shared/getDeployedContract");
 
 async function afterDeploy() {
-  // await createPools();
-  // await configureValidationRules();
-  // await configureInspectionRules();
-  // await configureDeveloperRules();
-  // await configureContributorRules();
-  // await configureResearcherRules();
-  // await configureActivistRules();
-  // await configureRegeneratorRules();
-  // await configureInspectorRules();
-  // await configureCommunityRules();
-  // await configurePools();
-  // await inviteUsers();
-  // await transferTokens();
-  // await renounceOwnership();
+  await createPools();
+  await configureValidationRules();
+  await configureInspectionRules();
+  await configureDeveloperRules();
+  await configureContributorRules();
+  await configureResearcherRules();
+  await configureActivistRules();
+  await configureRegeneratorRules();
+  await configureInspectorRules();
+  await configureCommunityRules();
+  await configurePools();
+  await inviteUsers();
+  await transferTokens();
+  await renounceOwnership();
 
   console.log("After Deploy OK");
 }
@@ -256,16 +256,6 @@ async function configureInspectionRules() {
     activistRulesAddress: activistRules.target,
     regenerationIndexRulesAddress: regenerationIndexRules.target,
     voteRulesAddress: voteRules.target,
-  };
-
-  const inspectionDependencies = {
-    communityRulesAddress: "0xBd6259240d5481739b36CAD12d97Ce4a06269eD7",
-    regeneratorRulesAddress: "0xC988cccE69f7Ff1D1FA2585D31C1188BEd1cB29C",
-    validationRulesAddress: "0xDc23A8A7c2f7B050A3E37337cb06406F2e5A2850",
-    inspectorRulesAddress: "0x915262F710bDb0C36CB428865CcD8eda24535048",
-    activistRulesAddress: "0xC990F524bDAb0C746d0Aab37FF6903DDD506f3Ec",
-    regenerationIndexRulesAddress: "0xCfD00131a15Fb4eF4C5768aB18DCB0fCdB22cE65",
-    voteRulesAddress: "0x5e2E74776fB9f13774d1c7e386050D3438C3D941",
   };
 
   await inspectionRules.setContractInterfaces(contractDependencies);
