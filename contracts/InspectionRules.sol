@@ -470,18 +470,17 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * @dev Sets the impact of a pending era to the global counter.
    */
   function _setEraImpact() private {
-    uint256 currentEra = regeneratorRules.poolCurrentEra();
     uint256 nexEraToSet = lastSettledEra + 1;
 
-    if (nexEraToSet < currentEra) {
-      EraImpact storage eraImpact = impactPerEra[nexEraToSet];
+    if (nexEraToSet >= regeneratorRules.poolCurrentEra()) return;
 
-      inspectionsTreesImpact += eraImpact.trees;
-      inspectionsBiodiversityImpact += eraImpact.biodiversity;
+    EraImpact storage eraImpact = impactPerEra[nexEraToSet];
 
-      // Update the lastSetlledEra to the era just settled.
-      lastSettledEra = nexEraToSet;
-    }
+    inspectionsTreesImpact += eraImpact.trees;
+    inspectionsBiodiversityImpact += eraImpact.biodiversity;
+
+    // Update the lastSetlledEra to the era just settled.
+    lastSettledEra = nexEraToSet;
   }
 
   // --- View functions ---
