@@ -266,7 +266,7 @@ contract CommunityRules is Callable {
    * @param userAddress The address of the user to be denied.
    */
   function setToDenied(address userAddress) external mustBeAllowedCaller {
-    if (users[userAddress] == CommunityTypes.UserType.UNDEFINED || deniedUsers[userAddress]) return;
+    if (deniedUsers[userAddress]) return;
 
     userTypesCount[users[userAddress]]--; // Decrement count of the old user type
 
