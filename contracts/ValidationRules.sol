@@ -200,8 +200,6 @@ contract ValidationRules is Callable, ReentrancyGuard {
     if (userType == CommunityTypes.UserType.RESEARCHER) return researcherRules.removePoolLevels(userAddress);
     if (userType == CommunityTypes.UserType.CONTRIBUTOR) return contributorRules.removePoolLevels(userAddress);
     if (userType == CommunityTypes.UserType.ACTIVIST) return activistRules.removePoolLevels(userAddress);
-
-    emit UserDenied(userAddress);
   }
 
   /**
@@ -280,10 +278,4 @@ contract ValidationRules is Callable, ReentrancyGuard {
    * @param _justification The justification provided for the vote.
    */
   event UserValidation(address indexed _validatorAddress, address indexed _userAddress, string _justification);
-
-  /**
-   * @notice Emitted when a user is successfully invalidated and denied.
-   * @param _userAddress The address of the user who was denied.
-   */
-  event UserDenied(address indexed _userAddress);
 }
