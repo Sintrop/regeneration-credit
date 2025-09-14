@@ -38,6 +38,7 @@ module.exports = {
     // sequoiaTestnet: {
     //   url: "https://sequoiarpc.sintrop.com",
     //   accounts: [privateKey],
+    //   timeout: 3000000,
     // }
   },
   sourcify: {

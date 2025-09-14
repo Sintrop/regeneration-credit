@@ -1,6 +1,7 @@
 const getDeployedContract = require("../scripts/shared/getDeployedContract");
 
 async function afterDeploy() {
+  await createPools();
   await configureValidationRules();
   await configureInspectionRules();
   await configureDeveloperRules();
@@ -13,9 +14,95 @@ async function afterDeploy() {
   await configurePools();
   await inviteUsers();
   await transferTokens();
-  // await renounceOwnership();
+  await renounceOwnership();
 
   console.log("After Deploy OK");
+}
+
+async function createPools() {
+
+  const activistPool = await getDeployedContract("ActivistPool");
+  const regeneratorPool = await getDeployedContract("RegeneratorPool");
+  const inspectorPool = await getDeployedContract("InspectorPool");
+  const researcherPool = await getDeployedContract("ResearcherPool");
+  const developerPool = await getDeployedContract("DeveloperPool");
+  const contributorPool = await getDeployedContract("ContributorPool");
+
+  const developerPoolFunds = process.env["DEVELOPER_POOL_FUNDS"];
+  const inspectorPoolFunds = process.env["INSPECTOR_POOL_FUNDS"];
+  const regeneratorPoolFunds = process.env["REGENERATOR_POOL_FUNDS"];
+  const researcherPoolFunds = process.env["RESEARCHER_POOL_FUNDS"];
+  const contributorPoolFunds = process.env["CONTRIBUTOR_POOL_FUNDS"];
+  const activistPoolFunds = process.env["ACTIVIST_POOL_FUNDS"];
+
+  await regenerationCredit.addContractPool(regeneratorPool.target, regeneratorPoolFunds);  
+  await regenerationCredit.addContractPool(inspectorPool.target, inspectorPoolFunds);
+  await regenerationCredit.addContractPool(developerPool.target, developerPoolFunds);
+  await regenerationCredit.addContractPool(researcherPool.target, researcherPoolFunds);
+  await regenerationCredit.addContractPool(contributorPool.target, contributorPoolFunds);
+  await regenerationCredit.addContractPool(activistPool.target, activistPoolFunds);
+
+  console.log("After createPools is OK");
+  };
+
+async function configurePools() {
+
+  const activistPool = await getDeployedContract("ActivistPool");
+  const regeneratorPool = await getDeployedContract("RegeneratorPool");
+  const inspectorPool = await getDeployedContract("InspectorPool");
+  const researcherPool = await getDeployedContract("ResearcherPool");
+  const developerPool = await getDeployedContract("DeveloperPool");
+  const contributorPool = await getDeployedContract("ContributorPool");
+  const activistRules = await getDeployedContract("ActivistRules");
+  const regeneratorRules = await getDeployedContract("RegeneratorRules");
+  const developerRules = await getDeployedContract("DeveloperRules");
+  const researcherRules = await getDeployedContract("ResearcherRules");
+  const contributorRules = await getDeployedContract("ContributorRules");
+  const inspectorRules = await getDeployedContract("InspectorRules");
+
+  await activistPool.newAllowedCaller(activistRules.target);
+  await activistPool.setContractCall(activistRules.target);
+  await contributorPool.newAllowedCaller(contributorRules.target);
+  await contributorPool.setContractCall(contributorRules.target);
+  await developerPool.newAllowedCaller(developerRules.target);
+  await developerPool.setContractCall(developerRules.target);
+  await researcherPool.newAllowedCaller(researcherRules.target);
+  await researcherPool.setContractCall(researcherRules.target);
+  await inspectorPool.newAllowedCaller(inspectorRules.target);
+  await inspectorPool.setContractCall(inspectorRules.target);
+  await regeneratorPool.newAllowedCaller(regeneratorRules.target);
+  await regeneratorPool.setContractCall(regeneratorRules.target);
+
+  console.log("After configPools is OK");
+}
+
+async function configureCommunityRules() {
+
+  const invitationRules = await getDeployedContract("InvitationRules");
+  const validationRules = await getDeployedContract("ValidationRules");
+  const communityRules = await getDeployedContract("CommunityRules");
+  const regeneratorRules = await getDeployedContract("RegeneratorRules");
+  const inspectorRules = await getDeployedContract("InspectorRules");
+  const developerRules = await getDeployedContract("DeveloperRules");
+  const researcherRules = await getDeployedContract("ResearcherRules");
+  const activistRules = await getDeployedContract("ActivistRules");
+  const contributorRules = await getDeployedContract("ContributorRules");
+  const supporterRules = await getDeployedContract("SupporterRules");
+  
+  await communityRules.newAllowedCaller(activistRules.target);
+  await communityRules.newAllowedCaller(developerRules.target);
+  await communityRules.newAllowedCaller(inspectorRules.target);
+  await communityRules.newAllowedCaller(regeneratorRules.target);
+  await communityRules.newAllowedCaller(researcherRules.target);
+  await communityRules.newAllowedCaller(contributorRules.target);
+  await communityRules.newAllowedCaller(supporterRules.target);
+  await communityRules.newAllowedCaller(validationRules.target);
+  await communityRules.newAllowedCaller(invitationRules.target);
+
+
+  await communityRules.setContractCall(invitationRules.target, validationRules.target);
+
+  console.log("After CommunityRules deploy is OK");
 }
 
 async function configureValidationRules() {
@@ -41,12 +128,10 @@ async function configureValidationRules() {
   };
 
   await validationRules.setContractInterfaces(contractDependencies);
-  await regeneratorRules.newAllowedCaller(validationRules.target);
-  await inspectorRules.newAllowedCaller(validationRules.target);
-  await activistRules.newAllowedCaller(validationRules.target);
   await validationRules.newAllowedCaller(researcherRules.target);
   await validationRules.newAllowedCaller(developerRules.target);
   await validationRules.newAllowedCaller(contributorRules.target);  
+  await validationRules.newAllowedCaller(inspectionRules.target);
 
   console.log("After ValidationRules deploy is OK");
 }
@@ -105,7 +190,7 @@ async function configureResearcherRules() {
     validationRulesAddress: validationRules.target,
     researcherPoolAddress: researcherPool.target,
     voteRulesAddress: voteRules.target,
-  };
+  };  
 
   await researcherRules.setContractInterfaces(contractDependencies);
   await researcherRules.newAllowedCaller(validationRules.target);
@@ -120,6 +205,8 @@ async function configureActivistRules() {
   const validationRules = await getDeployedContract("ValidationRules");
   const activistRules = await getDeployedContract("ActivistRules");
 
+  await activistRules.newAllowedCaller(validationRules.target);
+  await activistRules.newAllowedCaller(inspectionRules.target);
   await activistRules.setContractCall(inspectionRules.target, validationRules.target);
 
   console.log("After ActivistRules deploy is OK");
@@ -129,7 +216,10 @@ async function configureInspectorRules() {
 
   const inspectionRules = await getDeployedContract("InspectionRules");
   const inspectorRules = await getDeployedContract("InspectorRules");
+  const validationRules = await getDeployedContract("ValidationRules");
 
+  await inspectorRules.newAllowedCaller(validationRules.target);
+  await inspectorRules.newAllowedCaller(inspectionRules.target);
   await inspectorRules.setContractCall(inspectionRules.target);
 
   console.log("After InspectorRules deploy is OK");
@@ -141,20 +231,11 @@ async function configureRegeneratorRules() {
   const validationRules = await getDeployedContract("ValidationRules");
   const regeneratorRules = await getDeployedContract("RegeneratorRules");
 
+  await regeneratorRules.newAllowedCaller(validationRules.target);
+  await regeneratorRules.newAllowedCaller(inspectionRules.target);
   await regeneratorRules.setContractCall(inspectionRules.target, validationRules.target);
 
   console.log("After RegeneratorRules deploy is OK");
-}
-
-async function configureCommunityRules() {
-
-  const invitationRules = await getDeployedContract("InvitationRules");
-  const validationRules = await getDeployedContract("ValidationRules");
-  const communityRules = await getDeployedContract("CommunityRules");
-
-  await communityRules.setContractCall(invitationRules.target, validationRules.target);
-
-  console.log("After CommunityRules deploy is OK");
 }
 
 async function configureInspectionRules() {
@@ -179,37 +260,7 @@ async function configureInspectionRules() {
 
   await inspectionRules.setContractInterfaces(contractDependencies);
 
-  await activistRules.newAllowedCaller(inspectionRules.target);
-  await inspectorRules.newAllowedCaller(inspectionRules.target);
-  await regeneratorRules.newAllowedCaller(inspectionRules.target);
-  await validationRules.newAllowedCaller(inspectionRules.target);
-
   console.log("After InspectionRules deploy is OK");
-}
-
-async function configurePools() {
-
-  const activistPool = await getDeployedContract("ActivistPool");
-  const regeneratorPool = await getDeployedContract("RegeneratorPool");
-  const inspectorPool = await getDeployedContract("InspectorPool");
-  const researcherPool = await getDeployedContract("ResearcherPool");
-  const developerPool = await getDeployedContract("DeveloperPool");
-  const contributorPool = await getDeployedContract("ContributorPool");
-  const activistRules = await getDeployedContract("ActivistRules");
-  const regeneratorRules = await getDeployedContract("RegeneratorRules");
-  const developerRules = await getDeployedContract("DeveloperRules");
-  const researcherRules = await getDeployedContract("ResearcherRules");
-  const contributorRules = await getDeployedContract("ContributorRules");
-  const inspectorRules = await getDeployedContract("InspectorRules");
-
-  await activistPool.setContractCall(activistRules.target);
-  await contributorPool.setContractCall(contributorRules.target);
-  await developerPool.setContractCall(developerRules.target);
-  await researcherPool.setContractCall(researcherRules.target);
-  await inspectorPool.setContractCall(inspectorRules.target);
-  await regeneratorPool.setContractCall(regeneratorRules.target);
-
-  console.log("After configPools is OK");
 }
 
 async function renounceOwnership() {
@@ -458,6 +509,8 @@ async function inviteUsers() {
   await invitationRules.onlyOwnerInvite("0xE9CB014CEEEDCD55FAB7C42202D393CCDE93E41B", 1);
 
   // await invitationRules.renounceOwnership();
+
+  console.log("After invite is OK");
 }
 
 module.exports = afterDeploy;
