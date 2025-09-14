@@ -284,7 +284,6 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
 
     approvedInvites++;
 
-    // Increase totalActiveLevels.
     totalActiveLevels++;
 
     // Inscrease the activist pool level
