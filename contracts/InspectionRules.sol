@@ -115,8 +115,8 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   /// @notice Tracks the impact generated within each specific era.
   mapping(uint256 => EraImpact) public impactPerEra;
 
-  /// @notice Tracks which eras have already been settled.
-  mapping(uint256 => bool) public isEraSettled;
+  /// @notice Tracks the number of the last era that impact has been set.
+  uint256 public lastSettledEra;
 
   // --- Constructor ---
 
@@ -190,6 +190,9 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
     // Update regenerator's state in RegeneratorRules.
     _afterRequestInspection();
+
+    // Update era impact.
+    _setEraImpact();
   }
 
   /**
@@ -355,25 +358,6 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     emit InspectionValidation(msg.sender, inspection.id, justification);
   }
 
-  /**
-   * @notice Settles an era's impact, adding it to the cumulative finalized total.
-   * @dev This can only be called for a past era and only once per era.
-   * This makes the protocol's historical impact data immutable and trustworthy.
-   * @param eraToSettle The number of the era to be settled.
-   */
-  function settleEraImpact(uint256 eraToSettle) external {
-    uint256 currentEra = regeneratorRules.poolCurrentEra();
-
-    require(eraToSettle < currentEra, "Cannot settle the current or a future era");
-    require(!isEraSettled[eraToSettle], "Era already settled");
-
-    isEraSettled[eraToSettle] = true;
-
-    EraImpact memory eraImpact = impactPerEra[eraToSettle];
-    inspectionsTreesImpact += eraImpact.trees;
-    inspectionsBiodiversityImpact += eraImpact.biodiversity;
-  }
-
   // --- Private functions ---
 
   /**
@@ -480,6 +464,24 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     inspectorRules.removePoolLevels(inspection.inspector, false);
 
     emit InspectionInvalidated(inspection.id, inspection.inspector, inspection.regenerator, block.number);
+  }
+
+  /**
+   * @dev Sets the impact of a pending era to the global counter.
+   */
+  function _setEraImpact() private {
+    uint256 currentEra = regeneratorRules.poolCurrentEra();
+    uint256 nexEraToSet = lastSettledEra + 1;
+
+    if (nexEraToSet < currentEra) {
+      EraImpact storage eraImpact = impactPerEra[nexEraToSet];
+
+      inspectionsTreesImpact += eraImpact.trees;
+      inspectionsBiodiversityImpact += eraImpact.biodiversity;
+
+      // Update the lastSetlledEra to the era just settled.
+      lastSettledEra = nexEraToSet;
+    }
   }
 
   // --- View functions ---
