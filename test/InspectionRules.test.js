@@ -642,7 +642,9 @@ describe("InspectionRules", () => {
             });
 
             it("should return error message", async () => {
-              await expect(acceptInspection(1, inspector2Address)).to.be.revertedWith("Inspection must be OPEN");
+              await expect(acceptInspection(1, inspector2Address)).to.be.revertedWith(
+                "Inspection must be OPEN or EXPIRED"
+              );
             });
           });
 
