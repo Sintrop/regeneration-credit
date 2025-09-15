@@ -9,12 +9,11 @@ import { IValidationRules } from "./interfaces/IValidationRules.sol";
 import { IActivistRules } from "./interfaces/IActivistRules.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
-import { InspectionStatus, Inspection, ContractsDependency } from "./types/InspectionTypes.sol";
+import { InspectionStatus, Inspection, ContractsDependency, EraImpact } from "./types/InspectionTypes.sol";
 import { Regenerator } from "./types/RegeneratorTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { EraImpact } from "./types/ImpactTypes.sol";
 
 /**
  * @title InspectionRules
