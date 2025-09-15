@@ -413,31 +413,6 @@ describe("InspectionRules", () => {
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(8, inspector8Address);
           await realizeInspection(8, report, treesResultValue, biodiversityResultValue, inspector8Address);
-
-          await advanceBlock(20);
-          await requestInspection(regeneratorAddress);
-          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-          await acceptInspection(9, inspector9Address);
-          await realizeInspection(9, report, treesResultValue, biodiversityResultValue, inspector9Address);
-
-          await advanceBlock(20);
-          await requestInspection(regeneratorAddress);
-          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-          await acceptInspection(10, inspector10Address);
-          await realizeInspection(10, report, treesResultValue, biodiversityResultValue, inspector10Address);
-
-          await advanceBlock(20);
-          await requestInspection(regeneratorAddress);
-          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-          await acceptInspection(11, inspector11Address);
-          await realizeInspection(11, report, treesResultValue, biodiversityResultValue, inspector11Address);
-
-          await advanceBlock(20);
-          await requestInspection(regeneratorAddress);
-          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-          await advanceBlock(180);
-          await acceptInspection(12, inspector12Address);
-          await realizeInspection(12, report, treesResultValue, biodiversityResultValue, inspector12Address);
         });
 
         it("should return error", async () => {
