@@ -518,13 +518,15 @@ describe("CommunityRules", function () {
 
     context("when a user tries to make multiple delations in a short period", () => {
       context("when a user tries to make multiple delations in a short period", () => {
-        const BLOCKS_BETWEEN_DELATIONS = 5000;
+        const BLOCKS_BETWEEN_DELATIONS = 500;
 
         beforeEach(async () => {
           await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
           await addInvitation(owner, user2Address, userTypes.Developer, owner);
+          await addInvitation(owner, user3Address, userTypes.Developer, owner);
           await addUser(user1Address, userTypes.Regenerator, owner);
           await addUser(user2Address, userTypes.Developer, owner);
+          await addUser(user3Address, userTypes.Developer, owner);
 
           await addDelation(user1Address, user2Address);
         });
@@ -536,11 +538,36 @@ describe("CommunityRules", function () {
         it("should succeed if the cooldown period has passed", async () => {
           await advanceBlock(BLOCKS_BETWEEN_DELATIONS);
 
-          await addDelation(user1Address, user2Address);
+          await addDelation(user1Address, user3Address);
 
           const delations = await instance.getUserDelations(user1Address);
           expect(delations.length).to.equal(2);
         });
+      });
+    });
+
+    context("when a user tries to delate the same target twice", () => {
+      beforeEach(async () => {
+        const BLOCKS_BETWEEN_DELATIONS = 500;
+
+        await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
+        await addUser(user1Address, userTypes.Regenerator, owner);
+        await addUser(user2Address, userTypes.Developer, owner);
+
+        await addDelation(user1Address, user2Address);
+        await advanceBlock(BLOCKS_BETWEEN_DELATIONS);
+      });
+
+      it("should revert the second delation attempt", async () => {
+        await expect(addDelation(user1Address, user2Address)).to.be.revertedWith("Already submitted");
+      });
+
+      it("should still allow the user to delate a different target", async () => {
+        await addInvitation(owner, user3Address, userTypes.Inspector, owner);
+        await addUser(user3Address, userTypes.Inspector, owner);
+
+        await expect(addDelation(user3Address, user2Address)).to.not.be.reverted;
       });
     });
   });
@@ -550,13 +577,15 @@ describe("CommunityRules", function () {
       beforeEach(async () => {
         await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
         await addInvitation(owner, user2Address, userTypes.Regenerator, owner);
+        await addInvitation(owner, user3Address, userTypes.Regenerator, owner);
 
         await addUser(user1Address, userTypes.Regenerator, owner);
         await addUser(user2Address, userTypes.Regenerator, owner);
+        await addUser(user3Address, userTypes.Regenerator, owner);
 
         await addDelation(user1Address, user2Address);
         await advanceBlock(5000);
-        await addDelation(user1Address, user2Address);
+        await addDelation(user1Address, user3Address);
       });
 
       it("should return 2 delations", async () => {
@@ -759,7 +788,7 @@ describe("CommunityRules", function () {
         await addUser(user1Address, userTypes.Regenerator, owner);
       });
 
-      it("", async () => {
+      it("should return error", async () => {
         await expect(communityRules.connect(user1Address).setToDenied(user1Address)).to.be.revertedWith(
           "Not allowed caller"
         );

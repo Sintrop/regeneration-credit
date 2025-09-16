@@ -25,7 +25,7 @@ contract CommunityRules is Callable {
   uint32 public constant VOTER_INVITATION_DELAY_BLOCKS = 100000;
 
   /// @notice The number of blocks a user must wait between submitting delations.
-  uint256 private constant BLOCKS_BETWEEN_DELATIONS = 5000;
+  uint256 private constant BLOCKS_BETWEEN_DELATIONS = 500;
 
   /// @notice Max character length for delation titles.
   uint16 private constant MAX_TITLE_LENGTH = 100;
@@ -73,6 +73,9 @@ contract CommunityRules is Callable {
 
   /// @notice Tracks the block number of each user's last submitted delation.
   mapping(address => uint256) public lastDelationBlock;
+
+  /// @notice Tracks which user has already submitted a delation against another to prevent spam.
+  mapping(address => mapping(address => bool)) private _hasDelated;
 
   /// @notice The address of the `InvitationRules` contract.
   address private invitationRulesAddress;
@@ -163,6 +166,7 @@ contract CommunityRules is Callable {
   /**
    * @dev Adds a new delation to the system. Enforces character limits for title and testimony, and requires both reporter and reported user to be registered.
    * @notice Allows registered users (excluding Supporters) to report other users or resources that may require invalidation.
+   * Limited to one delation per target.
    *
    * Examples of unwanted behavior:
    *
@@ -188,7 +192,9 @@ contract CommunityRules is Callable {
     require(users[addr] != CommunityTypes.UserType.UNDEFINED, "User must be registered");
     require(addr != address(0), "Cannot delate zero address");
     require(addr != msg.sender, "Self-denunciation not allowed");
+    require(!_hasDelated[msg.sender][addr], "Already submitted");
 
+    _hasDelated[msg.sender][addr] = true;
     lastDelationBlock[msg.sender] = block.number;
 
     delationsCount++;
