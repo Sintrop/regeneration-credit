@@ -283,12 +283,14 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
     _afterRealizeInspection(inspection);
 
-    uint256 currentEra = inspection.inspectedAtEra;
-    impactPerEra[currentEra].trees += treesResult;
-    impactPerEra[currentEra].biodiversity += biodiversityResult;
+    // Only count inspections that have a positive impact towards the global metrics.
+    if (inspection.regenerationScore > 0) {
+      impactPerEra[inspection.inspectedAtEra].trees += treesResult;
+      impactPerEra[inspection.inspectedAtEra].biodiversity += biodiversityResult;
+      realizedInspectionsCount++;
+    }
 
     inspectorInspected[msg.sender][inspection.regenerator] = true;
-    realizedInspectionsCount++;
 
     emit InspectionRealized(
       inspectionId,

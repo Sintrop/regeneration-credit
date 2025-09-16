@@ -1186,6 +1186,34 @@ describe("InspectionRules", () => {
                   });
                 });
               });
+
+              context("when a zero-score inspection is submitted", () => {
+                let initialRealizedInspectionsCount;
+                let initialEraImpact;
+
+                beforeEach(async () => {
+                  initialRealizedInspectionsCount = await instance.realizedInspectionsCount();
+                  initialEraImpact = await instance.impactPerEra(1);
+
+                  await realizeInspection(1, report, 0, 0, inspectorAddress);
+                });
+
+                it("should NOT increment realizedInspectionsCount", async () => {
+                  const finalRealizedInspectionsCount = await instance.realizedInspectionsCount();
+                  expect(finalRealizedInspectionsCount).to.equal(initialRealizedInspectionsCount);
+                });
+
+                it("should NOT add to the era's impact counters", async () => {
+                  const finalEraImpact = await instance.impactPerEra(1);
+                  expect(finalEraImpact.trees).to.equal(initialEraImpact.trees);
+                  expect(finalEraImpact.biodiversity).to.equal(initialEraImpact.biodiversity);
+                });
+
+                it("should still change the inspection status to INSPECTED", async () => {
+                  const inspection = await instance.getInspection(1);
+                  expect(inspection.status).to.equal(STATUS.inspected);
+                });
+              });
             });
           });
 
