@@ -765,7 +765,7 @@ describe("InvitationRules", () => {
     let instance; // The InvitationRules contract instance
     let mockCommunityRules; // The mock for CommunityRules
     let owner, badInviter, goodInviter, invitee;
-    const MAX_ACTIVIST_PENALTIES = 10;
+    const MAX_ACTIVIST_PENALTIES = 5;
 
     // This setup runs only for the tests inside this describe block
     beforeEach(async () => {
