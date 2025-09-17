@@ -88,25 +88,25 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   mapping(address => mapping(address => bool)) private inspectorInspected;
 
   /// @notice InspectorRules contract interface for interacting with inspector-specific logic.
-  IInspectorRules private inspectorRules;
+  IInspectorRules public inspectorRules;
 
   /// @notice RegeneratorRules contract interface for interacting with regenerator-specific logic.
-  IRegeneratorRules private regeneratorRules;
+  IRegeneratorRules public regeneratorRules;
 
   /// @notice CommunityRules contract interface for checking user types and other community-wide rules.
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice ValidationRules contract interface for handling inspection invalidations.
-  IValidationRules private validationRules;
+  IValidationRules public validationRules;
 
   /// @notice ActivistRules contract interface for updating activist levels based on inspection activities.
-  IActivistRules private activistRules;
+  IActivistRules public activistRules;
 
   /// @notice VoteRules contract interface for checking voter eligibility.
-  IVoteRules private voteRules;
+  IVoteRules public voteRules;
 
   /// @notice RegenerationIndexRules contract interface for calculating regeneration scores.
-  IRegenerationIndexRules private regenerationIndexRules;
+  IRegenerationIndexRules public regenerationIndexRules;
 
   /// @notice Tracks which validator has voted on which inspection to prevent duplicate votes.
   mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
