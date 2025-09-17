@@ -81,7 +81,7 @@ contract VoteRules {
     require(communityRules.isVoter(addr), "Not a voter user");
 
     CommunityTypes.UserType userType = communityRules.getUser(addr);
-    uint256 totalUsers = communityRules.userTypesTotalCount(userType);
+    uint256 totalUsers = communityRules.userTypesCount(userType);
 
     return _canVoteRules(_totalLevels(userType), totalUsers, _totalUserLevels(addr, userType));
   }
@@ -149,13 +149,13 @@ contract VoteRules {
    */
   function _totalLevels(CommunityTypes.UserType userType) private view returns (uint256) {
     if (userType == CommunityTypes.UserType.ACTIVIST) {
-      return activistRules.approvedInvites();
+      return activistRules.totalActiveLevels();
     } else if (userType == CommunityTypes.UserType.CONTRIBUTOR) {
-      return contributorRules.contributionsTotalCount();
+      return contributorRules.totalActiveLevels();
     } else if (userType == CommunityTypes.UserType.DEVELOPER) {
-      return developerRules.reportsTotalCount();
+      return developerRules.totalActiveLevels();
     } else if (userType == CommunityTypes.UserType.RESEARCHER) {
-      return researcherRules.researchesTotalCount();
+      return researcherRules.totalActiveLevels();
     } else {
       return 0;
     }
