@@ -473,15 +473,15 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   function _setEraImpact() private {
     uint256 nexEraToSet = lastSettledEra + 1;
 
-    if (nexEraToSet >= regeneratorRules.poolCurrentEra()) return;
+    if (nexEraToSet < regeneratorRules.poolCurrentEra()) {
+      EraImpact storage eraImpact = impactPerEra[nexEraToSet];
 
-    EraImpact storage eraImpact = impactPerEra[nexEraToSet];
+      inspectionsTreesImpact += eraImpact.trees;
+      inspectionsBiodiversityImpact += eraImpact.biodiversity;
 
-    inspectionsTreesImpact += eraImpact.trees;
-    inspectionsBiodiversityImpact += eraImpact.biodiversity;
-
-    // Update the lastSetlledEra to the era just settled.
-    lastSettledEra = nexEraToSet;
+      // Update the lastSetlledEra to the era just settled.
+      lastSettledEra = nexEraToSet;
+    }
   }
 
   // --- View functions ---
