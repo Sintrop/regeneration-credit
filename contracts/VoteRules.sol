@@ -2,7 +2,6 @@
 pragma solidity 0.8.27;
 
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
-import { IActivistRules } from "./interfaces/IActivistRules.sol";
 import { IContributorRules } from "./interfaces/IContributorRules.sol";
 import { IDeveloperRules } from "./interfaces/IDeveloperRules.sol";
 import { IResearcherRules } from "./interfaces/IResearcherRules.sol";
@@ -32,9 +31,6 @@ contract VoteRules {
   /// @notice CommunityRules contract interface.
   ICommunityRules private communityRules;
 
-  /// @notice ActivistRules contract interface.
-  IActivistRules private activistRules;
-
   /// @notice ContributorRules contract interface.
   IContributorRules private contributorRules;
 
@@ -49,20 +45,17 @@ contract VoteRules {
   /**
    * @dev Initializes the contract with the addresses of the various rule contracts.
    * @param communityRulesAddress Address of the CommunityRules contract.
-   * @param activistRulesAddress Address of the ActivistRules contract.
    * @param contributorRulesAddress Address of the ContributorRules contract.
    * @param developerRulesAddress Address of the DeveloperRules contract.
    * @param researcherRulesAddress Address of the ResearcherRules contract.
    */
   constructor(
     address communityRulesAddress,
-    address activistRulesAddress,
     address contributorRulesAddress,
     address developerRulesAddress,
     address researcherRulesAddress
   ) {
     communityRules = ICommunityRules(communityRulesAddress);
-    activistRules = IActivistRules(activistRulesAddress);
     contributorRules = IContributorRules(contributorRulesAddress);
     developerRules = IDeveloperRules(developerRulesAddress);
     researcherRules = IResearcherRules(researcherRulesAddress);
@@ -119,11 +112,7 @@ contract VoteRules {
    * @return levels Total levels for the given address.
    */
   function _totalUserLevels(address addr, CommunityTypes.UserType userType) private view returns (uint256) {
-    if (userType == CommunityTypes.UserType.ACTIVIST) {
-      Activist memory user = activistRules.getActivist(addr);
-
-      return user.pool.level;
-    } else if (userType == CommunityTypes.UserType.CONTRIBUTOR) {
+    if (userType == CommunityTypes.UserType.CONTRIBUTOR) {
       Contributor memory user = contributorRules.getContributor(addr);
 
       return user.pool.level;
@@ -148,9 +137,7 @@ contract VoteRules {
    * @return levels Total aggregated levels for the specified user type.
    */
   function _totalLevels(CommunityTypes.UserType userType) private view returns (uint256) {
-    if (userType == CommunityTypes.UserType.ACTIVIST) {
-      return activistRules.totalActiveLevels();
-    } else if (userType == CommunityTypes.UserType.CONTRIBUTOR) {
+    if (userType == CommunityTypes.UserType.CONTRIBUTOR) {
       return contributorRules.totalActiveLevels();
     } else if (userType == CommunityTypes.UserType.DEVELOPER) {
       return developerRules.totalActiveLevels();

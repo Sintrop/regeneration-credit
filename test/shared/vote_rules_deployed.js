@@ -141,7 +141,6 @@ const voteRulesDeployed = async () => {
   const voteRulesFactory = await ethers.getContractFactory("VoteRules");
   const voteRules = await voteRulesFactory.deploy(
     communityRules.target,
-    activistRules.target,
     contributorRules.target,
     developerRules.target,
     researcherRules.target
