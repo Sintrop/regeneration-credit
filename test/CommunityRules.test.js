@@ -592,7 +592,7 @@ describe("CommunityRules", function () {
     context("when the vote is valid", () => {
       it("should increment thumbsUp for a positive vote", async () => {
         await instance.connect(voter).voteOnDelation(delationId, true);
-        
+
         const delation = await instance.delationsById(delationId);
 
         expect(delation.thumbsUp).to.equal(1);
@@ -619,46 +619,42 @@ describe("CommunityRules", function () {
     context("when the vote is invalid due to permissions or state", () => {
       it("should revert if the delation does not exist", async () => {
         const nonExistentId = 999;
-        await expect(
-          instance.connect(voter).voteOnDelation(nonExistentId, true)
-        ).to.be.revertedWith("Delation does not exist");
+        await expect(instance.connect(voter).voteOnDelation(nonExistentId, true)).to.be.revertedWith(
+          "Delation does not exist"
+        );
       });
 
       it("should revert if the voter is a Supporter", async () => {
         const supporterVoter = user5Address;
         await addUser(supporterVoter, userTypes.Supporter, owner);
 
-        await expect(
-          instance.connect(supporterVoter).voteOnDelation(delationId, true)
-        ).to.be.revertedWith("Not allowed to supporters");
+        await expect(instance.connect(supporterVoter).voteOnDelation(delationId, true)).to.be.revertedWith(
+          "Not allowed to supporters"
+        );
       });
 
       it("should revert if the voter has been denied", async () => {
         await setToDenied(deniedVoter, owner);
 
-        await expect(
-          instance.connect(deniedVoter).voteOnDelation(delationId, true)
-        ).to.be.revertedWith("User denied");
+        await expect(instance.connect(deniedVoter).voteOnDelation(delationId, true)).to.be.revertedWith("User denied");
       });
 
       it("should revert if the voter is the original informer", async () => {
-        await expect(
-          instance.connect(informer).voteOnDelation(delationId, true)
-        ).to.be.revertedWith("Informer cannot vote");
+        await expect(instance.connect(informer).voteOnDelation(delationId, true)).to.be.revertedWith(
+          "Informer cannot vote"
+        );
       });
 
       it("should revert if the voter is the reported user", async () => {
-        await expect(
-          instance.connect(reported).voteOnDelation(delationId, true)
-        ).to.be.revertedWith("Reported user cannot vote");
+        await expect(instance.connect(reported).voteOnDelation(delationId, true)).to.be.revertedWith(
+          "Reported user cannot vote"
+        );
       });
 
       it("should revert if the user tries to vote twice", async () => {
         await instance.connect(voter).voteOnDelation(delationId, true);
 
-        await expect(
-          instance.connect(voter).voteOnDelation(delationId, false)
-        ).to.be.revertedWith("Already voted");
+        await expect(instance.connect(voter).voteOnDelation(delationId, false)).to.be.revertedWith("Already voted");
       });
     });
   });
