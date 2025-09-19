@@ -196,6 +196,7 @@ contract CommunityRules is Callable {
     require(addr != address(0), "Cannot delate zero address");
     require(addr != msg.sender, "Self-denunciation not allowed");
     require(!_hasDelated[msg.sender][addr], "Already submitted");
+    require(!isDenied(msg.sender), "User denied");
 
     _hasDelated[msg.sender][addr] = true;
     lastDelationBlock[msg.sender] = block.number;
@@ -218,6 +219,44 @@ contract CommunityRules is Callable {
     delationsById[newDelationId] = newDelation;
 
     emit DelationAdded(msg.sender, addr, newDelationId);
+  }
+
+  /**
+   * @notice Allows users to vote (thumbs up/down) on an existing delation.
+   * @dev This creates a social validation layer. Voters cannot be the informer or the reported user.
+   * @param _delationId The ID of the delation to vote on.
+   * @param _supportsDelation True for a "thumbs up" (agrees), false for "thumbs down" (disagrees).
+   */
+  function voteOnDelation(uint64 _delationId, bool _supportsDelation) external {
+    // 1. Check if the delation exists by accessing it. It will revert if the ID is invalid.
+    CommunityTypes.Delation storage delation = delationsById[_delationId];
+    require(delation.id != 0, "Delation does not exist");
+
+    // 2. Check if the voter is eligible.
+    require(users[msg.sender] != CommunityTypes.UserType.UNDEFINED, "Caller must be registered");
+    require(users[msg.sender] != CommunityTypes.UserType.SUPPORTER, "Not allowed to supporters");
+    require(!isDenied(msg.sender), "User denied");
+
+    // 3. The informer and the reported user cannot vote on their own delation.
+    require(msg.sender != delation.informer, "Informer cannot vote");
+    require(msg.sender != delation.reported, "Reported user cannot vote");
+
+    // 4. Check to prevent double voting.
+    require(!_hasVotedOnDelation[_delationId][msg.sender], "Already voted");
+
+    // --- State Changes ---
+
+    // Mark that this user has now voted.
+    _hasVotedOnDelation[_delationId][msg.sender] = true;
+
+    // Increment the appropriate counter.
+    if (_supportsDelation) {
+      delation.thumbsUp++;
+    } else {
+      delation.thumbsDown++;
+    }
+
+    emit DelationVoted(_delationId, msg.sender, _supportsDelation, delation.thumbsUp, delation.thumbsDown);
   }
 
   // --- MustBeAllowedCaller functions (State modifying) ---
@@ -243,43 +282,6 @@ contract CommunityRules is Callable {
     userTypesTotalCount[userType]++;
 
     emit UserRegistered(addr, userType);
-  }
-
-/**
-   * @notice Allows users to vote (thumbs up/down) on an existing delation.
-   * @dev This creates a social validation layer. Voters cannot be the informer or the reported user.
-   * @param _delationId The ID of the delation to vote on.
-   * @param _supportsDelation True for a "thumbs up" (agrees), false for "thumbs down" (disagrees).
-   */
-  function voteOnDelation(uint64 _delationId, bool _supportsDelation) external {
-    // 1. Check if the delation exists by accessing it. It will revert if the ID is invalid.
-    CommunityTypes.Delation storage delation = delationsById[_delationId];
-    require(delation.id != 0, "Delation does not exist");
-
-    // 2. Check if the voter is eligible.
-    require(users[msg.sender] != CommunityTypes.UserType.UNDEFINED, "Caller must be registered");
-    require(users[msg.sender] != CommunityTypes.UserType.SUPPORTER, "Not allowed to supporters");
-    
-    // 3. The informer and the reported user cannot vote on their own delation.
-    require(msg.sender != delation.informer, "Informer cannot vote");
-    require(msg.sender != delation.reported, "Reported user cannot vote");
-
-    // 4. Check to prevent double voting.
-    require(!_hasVotedOnDelation[_delationId][msg.sender], "Already voted");
-
-    // --- State Changes ---
-
-    // Mark that this user has now voted.
-    _hasVotedOnDelation[_delationId][msg.sender] = true;
-
-    // Increment the appropriate counter.
-    if (_supportsDelation) {
-      delation.thumbsUp++;
-    } else {
-      delation.thumbsDown++;
-    }
-
-    emit DelationVoted(_delationId, msg.sender, _supportsDelation, delation.thumbsUp, delation.thumbsDown);
   }
 
   /**
@@ -503,18 +505,18 @@ contract CommunityRules is Callable {
   event InvitationAdded(address indexed inviter, address indexed invited, CommunityTypes.UserType userTypeTo);
 }
 
-  /**
-   * @notice Emitted when a user votes on a delation.
-   * @param delationId The ID of the delation that was voted on.
-   * @param voter The address of the user who voted.
-   * @param supportsDelation True if the vote was a "thumbs up", false for "thumbs down".
-   * @param newThumbsUpCount The new total of "thumbs up" votes for this delation.
-   * @param newThumbsDownCount The new total of "thumbs down" votes for this delation.
-   */
-  event DelationVoted(
-    uint64 indexed delationId,
-    address indexed voter,
-    bool supportsDelation,
-    uint256 newThumbsUpCount,
-    uint256 newThumbsDownCount
-  );
+/**
+ * @notice Emitted when a user votes on a delation.
+ * @param delationId The ID of the delation that was voted on.
+ * @param voter The address of the user who voted.
+ * @param supportsDelation True if the vote was a "thumbs up", false for "thumbs down".
+ * @param newThumbsUpCount The new total of "thumbs up" votes for this delation.
+ * @param newThumbsDownCount The new total of "thumbs down" votes for this delation.
+ */
+event DelationVoted(
+  uint64 indexed delationId,
+  address indexed voter,
+  bool supportsDelation,
+  uint256 newThumbsUpCount,
+  uint256 newThumbsDownCount
+);
