@@ -55,6 +55,8 @@ library CommunityTypes {
     string title;
     string testimony;
     uint256 createdAtBlock;
+    uint256 thumbsUp;
+    uint256 thumbsDown;
   }
 
   /**
