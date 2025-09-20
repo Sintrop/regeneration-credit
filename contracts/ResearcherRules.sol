@@ -112,19 +112,19 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice The interface of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice The interface of the `ResearcherPool` contract, responsible for managing
   /// and distributing token rewards to researchers.
-  IResearcherPool private researcherPool;
+  IResearcherPool public researcherPool;
 
   /// @notice The interface of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating development reports.
-  IValidationRules private validationRules;
+  IValidationRules public validationRules;
 
   /// @notice The interface of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for report validation.
-  IVoteRules private voteRules;
+  IVoteRules public voteRules;
 
   /// @notice The specific `UserType` enumeration value for a Researcher user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.RESEARCHER;
