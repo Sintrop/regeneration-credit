@@ -217,7 +217,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     require(!inspectorInspected[msg.sender][inspection.regenerator], "Already inspected");
     require(
       inspection.status == InspectionStatus.OPEN ||
-        (inspection.status == InspectionStatus.ACCEPTED && _isInspectionExpired(inspection)),
+        (inspection.status == InspectionStatus.ACCEPTED && isInspectionExpired(inspection)),
       "Inspection must be OPEN or EXPIRED"
     );
     require(acceptInspectionDelayBlocksPassed(inspection), "Wait delay blocks");
@@ -458,15 +458,6 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     emit InspectionInvalidated(inspection.id, inspection.inspector, inspection.regenerator, block.number);
   }
 
-  /**
-   * @dev Checks if a previously accepted inspection has expired.
-   * @param inspection The inspection to check.
-   * @return bool True if the inspection is expired, false otherwise.
-   */
-  function _isInspectionExpired(Inspection storage inspection) private view returns (bool) {
-    return inspection.acceptedAt > 0 && (block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection);
-  }
-
   // --- View functions ---
 
   /**
@@ -536,6 +527,15 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     if (regeneratorRules.nextEraIn() < blocksToExpireAcceptedInspection) return false;
 
     return regeneratorRules.nextEraIn() - blocksToExpireAcceptedInspection > securityBlocksToValidation;
+  }
+
+  /**
+   * @dev Checks if a previously accepted inspection has expired.
+   * @param inspection The inspection to check.
+   * @return bool True if the inspection is expired, false otherwise.
+   */
+  function isInspectionExpired(Inspection memory inspection) public view returns (bool) {
+    return inspection.acceptedAt > 0 && (block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection);
   }
 
   // --- Events ---
