@@ -401,18 +401,6 @@ describe("InspectionRules", () => {
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           await acceptInspection(6, inspector6Address);
           await realizeInspection(6, report, treesResultValue, biodiversityResultValue, inspector6Address);
-
-          await advanceBlock(20);
-          await requestInspection(regeneratorAddress);
-          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-          await acceptInspection(7, inspector7Address);
-          await realizeInspection(7, report, treesResultValue, biodiversityResultValue, inspector7Address);
-
-          await advanceBlock(20);
-          await requestInspection(regeneratorAddress);
-          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-          await acceptInspection(8, inspector8Address);
-          await realizeInspection(8, report, treesResultValue, biodiversityResultValue, inspector8Address);
         });
 
         it("should return error", async () => {
