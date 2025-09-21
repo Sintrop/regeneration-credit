@@ -9,8 +9,9 @@ import { IResearcherRules } from "./interfaces/IResearcherRules.sol";
 import { IContributorRules } from "./interfaces/IContributorRules.sol";
 import { IActivistRules } from "./interfaces/IActivistRules.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
+import { IValidationPool } from "./interfaces/IValidationPool.sol";
 import { Regenerator } from "./types/RegeneratorTypes.sol";
-import { ContractsDependency } from "./types/ValidationTypes.sol";
+import { ContractsDependency, Pool } from "./types/ValidationTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
@@ -51,6 +52,12 @@ contract ValidationRules is Callable, ReentrancyGuard {
   /// @notice Relationship between validator and last vote block.number.
   mapping(address => uint256) public validatorLastVoteAt;
 
+  /// @notice Tracks the first user who voted to invalidate a specific user in a given era.
+  mapping(address => mapping(uint256 => address)) public firstInvalidationVoter;
+
+  // Mapping from a hunter's address directly to their governance pool data.
+  mapping(address => Pool) public hunterPools; 
+
   /// @notice CommunityRules contract interface.
   ICommunityRules public communityRules;
 
@@ -64,7 +71,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
   IDeveloperRules public developerRules;
 
   /// @notice ResearcherRules contract interface.
-  IResearcherRules public researcherRules;
+  IResearcherRules public researcherRules; 
 
   /// @notice ContributorRules contract interface.
   IContributorRules public contributorRules;
@@ -74,6 +81,10 @@ contract ValidationRules is Callable, ReentrancyGuard {
 
   /// @notice VoteRules contract interface.
   IVoteRules public voteRules;
+
+  /// @notice The interface of the `ValidationPool` contract, responsible for managing
+  /// and distributing token rewards to validators.
+  IValidationPool public validationPool;
 
   /// @notice Amount of blocks between votes.
   uint256 public immutable timeBetweenVotes;
@@ -105,6 +116,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     contributorRules = IContributorRules(contractDependency.contributorRulesAddress);
     activistRules = IActivistRules(contractDependency.activistRulesAddress);
     voteRules = IVoteRules(contractDependency.voteRulesAddress);
+    validationPool = IValidationPool(contractDependency.validationPoolAddress);
   }
 
   // --- External Functions (State Modifying) ---
@@ -140,12 +152,44 @@ contract ValidationRules is Callable, ReentrancyGuard {
     validatorLastVoteAt[msg.sender] = block.number;
     userValidations[userAddress][currentEra]++;
 
+    if (firstInvalidationVoter[userAddress][currentEra] == address(0)) {
+        firstInvalidationVoter[userAddress][currentEra] = msg.sender;
+    }
+
     uint256 _votesToInvalidate = votesToInvalidate();
     uint256 validationsCount = userValidations[userAddress][currentEra];
 
     emit UserValidation(msg.sender, userAddress, justification);
 
-    if (validationsCount >= _votesToInvalidate) _denyUser(userAddress);
+    if (validationsCount >= _votesToInvalidate) {
+      _denyUser(userAddress);
+
+      address hunter = firstInvalidationVoter[userAddress][currentEra];
+
+      validationPool.addLevel(hunter, userAddress);
+    }  
+  }
+
+  /**
+   * @dev Allows a validator to initiate a withdrawal of Regeneration Credits
+   * based on their hunting level and current era.
+   * @notice Validators can claim tokens for their hunt service.
+   */
+  function withdraw() external nonReentrant {
+    // Only registered voters can call this function.
+    require(communityRules.isVoter(msg.sender), "Pool only to voters");
+
+    Pool storage hunterPool = hunterPools[msg.sender];
+    uint256 currentEra = hunterPool.currentEra;
+
+    // Check if the validator is eligible to withdraw for the current era through DeveloperPool.
+    require(validationPool.canWithdraw(currentEra), "Not eligible to withdraw for this era");
+
+    // Increment the validator's era in their local pool data.
+    hunterPool.currentEra++;
+
+    // Call the DeveloperPool contract to perform the actual token withdrawal.
+    validationPool.withdraw(msg.sender, currentEra);
   }
 
   /**
