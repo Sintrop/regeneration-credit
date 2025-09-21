@@ -189,6 +189,7 @@ contract CommunityRules is Callable {
       bytes(title).length <= MAX_TITLE_LENGTH && bytes(testimony).length <= MAX_TESTIMONY_LENGTH,
       "Max characters reached"
     );
+    require(!isDenied(msg.sender), "User denied");
     require(hasWaitedRequiredTime(msg.sender), "Wait delay blocks");
     require(users[msg.sender] != CommunityTypes.UserType.UNDEFINED, "Caller must be registered");
     require(users[msg.sender] != CommunityTypes.UserType.SUPPORTER, "Not allowed to supporters");
@@ -196,7 +197,6 @@ contract CommunityRules is Callable {
     require(addr != address(0), "Cannot delate zero address");
     require(addr != msg.sender, "Self-denunciation not allowed");
     require(!_hasDelated[msg.sender][addr], "Already submitted");
-    require(!isDenied(msg.sender), "User denied");
 
     _hasDelated[msg.sender][addr] = true;
     lastDelationBlock[msg.sender] = block.number;
