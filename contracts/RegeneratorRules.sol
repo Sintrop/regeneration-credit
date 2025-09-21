@@ -179,14 +179,17 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
         bytes(projectDescription).length <= MAX_PROJECT_DESCRIPTION_LENGTH,
       "Max characters reached"
     );
+
     require(
       _coordinates.length >= MIN_COORDINATES_COUNT && _coordinates.length <= MAX_COORDINATES_COUNT,
       "Minimum 3 and maximum 10 coordinate points"
     );
+
     require(
       totalArea >= MIN_REGENERATION_AREA && totalArea <= MAX_REGENERATION_AREA,
       "Minimum 2500 and maximum 1.000.000 square meters"
     );
+
     require(isRegistrationAllowed(), "Wait for vacancy: Max regenerators limit");
 
     _validateCoordinates(_coordinates);
@@ -643,11 +646,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @return bool True if registration is allowed, false otherwise.
    */
   function isRegistrationAllowed() public view returns (bool) {
-    uint256 totalCreated = communityRules.userTypesCount(USER_TYPE);
-
-    uint256 activeRegenerators = totalCreated - totalCertifiedRegenerators;
-
-    return activeRegenerators < MAX_ACTIVE_REGENERATORS;
+    return communityRules.userTypesCount(USER_TYPE) - totalCertifiedRegenerators < MAX_ACTIVE_REGENERATORS;
   }
 
   // --- Events ---

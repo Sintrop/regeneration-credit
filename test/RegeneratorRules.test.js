@@ -1,5 +1,6 @@
 const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
+const { deployMockContract } = require("@clrfund/waffle-mock-contract");
 const { advanceBlock } = require("./shared/advance_block");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
@@ -747,6 +748,44 @@ describe("RegeneratorRules", () => {
         ]);
 
         expect(JSON.stringify(coordinatesList)).to.equal(expectedCoordinatesList);
+      });
+    });
+  });
+
+  describe("#isRegistrationAllowed", () => {
+    beforeEach(async () => {
+      const communityRulesMock = await hre.artifacts.readArtifact("CommunityRules");
+      let { _, abi: communityRulesAbi } = communityRulesMock;
+
+      communityRules = await deployMockContract(owner, communityRulesAbi);
+
+      const instanceFactory = await ethers.getContractFactory("RegeneratorRules");
+
+      instance = await instanceFactory.deploy(communityRules.target, regeneratorPool.target);
+    });
+
+    context("when total active regenerators is less than MAX_ACTIVE_REGENERATORS", () => {
+      beforeEach(async () => {
+        await communityRules.mock.userTypesCount.returns(10000);
+        await communityRules.mock.userTypesCount.returns(10000);
+      });
+
+      it("", async () => {
+        const isRegistrationAllowed = await instance.isRegistrationAllowed();
+
+        expect(isRegistrationAllowed).to.be.true;
+      });
+    });
+
+    context("when total active regenerators is bigger than MAX_ACTIVE_REGENERATORS", () => {
+      beforeEach(async () => {
+        await communityRules.mock.userTypesCount.returns(500001);
+      });
+
+      it("", async () => {
+        const isRegistrationAllowed = await instance.isRegistrationAllowed();
+
+        expect(isRegistrationAllowed).to.be.false;
       });
     });
   });
