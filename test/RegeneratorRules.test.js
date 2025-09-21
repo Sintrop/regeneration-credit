@@ -488,14 +488,92 @@ describe("RegeneratorRules", () => {
       });
 
       describe(".incrementInspections", () => {
-        beforeEach(async () => {
-          await instance.afterRealizeInspection(prod1Address, 0, 1);
+        // This test block checks the basic functionality of the inspection increment.
+        describe("when a single inspection is performed", () => {
+          beforeEach(async () => {
+            await instance.afterRealizeInspection(prod1Address, 0, 1);
+          });
+
+          it("should increment totalInspections counter", async () => {
+            const regenerator = await instance.getRegenerator(prod1Address);
+            expect(regenerator.totalInspections).to.equal(1);
+          });
         });
 
-        it("incrementInspections", async () => {
-          const regenerator = await instance.getRegenerator(prod1Address);
+        describe("when the maximum number of inspections is reached", () => {
+          const MAXIMUM_INSPECTIONS = 6;
 
+          beforeEach(async () => {
+            await instance.afterRealizeInspection(prod1Address, 0, 1);
+            await instance.afterRealizeInspection(prod1Address, 0, 2);
+            await instance.afterRealizeInspection(prod1Address, 0, 3);
+            await instance.afterRealizeInspection(prod1Address, 0, 4);
+            await instance.afterRealizeInspection(prod1Address, 0, 5);
+          });
+
+          it("should certify the regenerator and update certification counters", async () => {
+            const tx = await instance.afterRealizeInspection(prod1Address, 0, 6);
+
+            const isCertified = await instance.certifiedRegenerators(prod1Address);
+            expect(isCertified).to.be.true;
+
+            const totalCertified = await instance.totalCertifiedRegenerators();
+            expect(totalCertified).to.equal(1);
+
+            await expect(tx).to.emit(instance, "RegeneratorCertified").withArgs(prod1Address);
+          });
+        });
+      });
+    });
+
+    describe(".decrementInspections", () => {
+      const MAXIMUM_INSPECTIONS = 6;
+
+      describe("when adding and then removing a single inspection", () => {
+        it("should correctly increment and then decrement counters", async () => {
+          await instance.afterRealizeInspection(prod1Address, 0, 1);
+
+          expect(await instance.impactRegenerators(prod1Address)).to.be.true;
+          expect(await instance.totalImpactRegenerators()).to.equal(1);
+          let regenerator = await instance.getRegenerator(prod1Address);
           expect(regenerator.totalInspections).to.equal(1);
+
+          await instance.decrementInspections(prod1Address);
+
+          expect(await instance.impactRegenerators(prod1Address)).to.be.false;
+          expect(await instance.totalImpactRegenerators()).to.equal(0);
+          regenerator = await instance.getRegenerator(prod1Address);
+          expect(regenerator.totalInspections).to.equal(0);
+        });
+      });
+
+      describe("when the regenerator is certified", () => {
+        beforeEach(async () => {
+          await instance.afterRealizeInspection(prod1Address, 0, 1);
+          await instance.afterRealizeInspection(prod1Address, 0, 2);
+          await instance.afterRealizeInspection(prod1Address, 0, 3);
+          await instance.afterRealizeInspection(prod1Address, 0, 4);
+          await instance.afterRealizeInspection(prod1Address, 0, 5);
+          await instance.afterRealizeInspection(prod1Address, 0, 6);
+        });
+
+        it("should remove certification and decrement counters", async () => {
+          expect(await instance.certifiedRegenerators(prod1Address)).to.be.true;
+          expect(await instance.totalCertifiedRegenerators()).to.equal(1);
+
+          await instance.decrementInspections(prod1Address);
+
+          expect(await instance.certifiedRegenerators(prod1Address)).to.be.false;
+          expect(await instance.totalCertifiedRegenerators()).to.equal(0);
+
+          const regenerator = await instance.getRegenerator(prod1Address);
+          expect(regenerator.totalInspections).to.equal(MAXIMUM_INSPECTIONS - 1);
+        });
+      });
+
+      describe("when the regenerator has zero inspections", () => {
+        it("should revert the transaction", async () => {
+          await expect(instance.decrementInspections(prod1Address)).to.be.revertedWith("totalInspections invalid");
         });
       });
     });
