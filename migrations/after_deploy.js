@@ -27,6 +27,7 @@ async function createPools() {
   const researcherPool = await getDeployedContract("ResearcherPool");
   const developerPool = await getDeployedContract("DeveloperPool");
   const contributorPool = await getDeployedContract("ContributorPool");
+  const validationPool = await getDeployedContract("ValidationPool");
 
   const developerPoolFunds = process.env["DEVELOPER_POOL_FUNDS"];
   const inspectorPoolFunds = process.env["INSPECTOR_POOL_FUNDS"];
@@ -34,6 +35,7 @@ async function createPools() {
   const researcherPoolFunds = process.env["RESEARCHER_POOL_FUNDS"];
   const contributorPoolFunds = process.env["CONTRIBUTOR_POOL_FUNDS"];
   const activistPoolFunds = process.env["ACTIVIST_POOL_FUNDS"];
+  const validationPoolFunds = process.env["VALIDATION_POOL_FUNDS"];
 
   await regenerationCredit.addContractPool(regeneratorPool.target, regeneratorPoolFunds);  
   await regenerationCredit.addContractPool(inspectorPool.target, inspectorPoolFunds);
@@ -41,6 +43,7 @@ async function createPools() {
   await regenerationCredit.addContractPool(researcherPool.target, researcherPoolFunds);
   await regenerationCredit.addContractPool(contributorPool.target, contributorPoolFunds);
   await regenerationCredit.addContractPool(activistPool.target, activistPoolFunds);
+  await regenerationCredit.addContractPool(validationPool.target, validationPoolFunds);
 
   console.log("After createPools is OK");
   };
@@ -59,6 +62,8 @@ async function configurePools() {
   const researcherRules = await getDeployedContract("ResearcherRules");
   const contributorRules = await getDeployedContract("ContributorRules");
   const inspectorRules = await getDeployedContract("InspectorRules");
+  const validationPool = await getDeployedContract("ValidationPool");
+  const validationRules = await getDeployedContract("ValidationRules");
 
   await activistPool.newAllowedCaller(activistRules.target);
   await activistPool.setContractCall(activistRules.target);
@@ -72,6 +77,8 @@ async function configurePools() {
   await inspectorPool.setContractCall(inspectorRules.target);
   await regeneratorPool.newAllowedCaller(regeneratorRules.target);
   await regeneratorPool.setContractCall(regeneratorRules.target);
+  await validationPool.newAllowedCaller(validationRules.target);
+  await validationPool.setContractCall(validationRules.target);
 
   console.log("After configPools is OK");
 }
@@ -115,6 +122,7 @@ async function configureValidationRules() {
   const activistRules = await getDeployedContract("ActivistRules");
   const contributorRules = await getDeployedContract("ContributorRules");
   const voteRules = await getDeployedContract("VoteRules");
+  const validationPool = await getDeployedContract("ValidationPool");
 
   const contractDependencies = {
     communityRulesAddress: communityRules.target,
@@ -125,6 +133,7 @@ async function configureValidationRules() {
     activistRulesAddress: activistRules.target,
     contributorRulesAddress: contributorRules.target,
     voteRulesAddress: voteRules.target,
+    validationPoolAddress: validationPool.target,
   };
 
   await validationRules.setContractInterfaces(contractDependencies);
