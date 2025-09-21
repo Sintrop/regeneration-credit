@@ -26,6 +26,10 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// to be eligible for rewards from the Regenerator Pool.
   uint8 public constant MINIMUM_INSPECTIONS_TO_POOL = 3;
 
+  /// @notice The maximum number of successful inspections a regenerator must have
+  /// to conclude the inspection life cycle.
+  uint8 public constant MAXIMUM_INSPECTIONS = 6;
+
   /// @notice Minimum number of coordinate points to define a regeneration area.
   uint8 private constant MIN_COORDINATES_COUNT = 3;
 
@@ -50,6 +54,9 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// @notice Maximum total area in square meters (m²) for a regeneration project.
   uint32 public constant MAX_REGENERATION_AREA = 500000;
 
+  /// @notice The maximum number of active 'Regenerator' type users permitted in the system.
+  uint256 public constant MAX_ACTIVE_REGENERATORS = 500000;
+
   // --- State variables ---
 
   /// @notice A mapping from a regenerator's wallet address to their detailed `Regenerator` data structure.
@@ -71,6 +78,10 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// completed at least one inspections).
   mapping(address => bool) public impactRegenerators;
 
+  /// @notice A mapping to track if a regenerator is a "certified regenerator", a user that has successfully
+  /// completed the maximum inspections number, concluding system participation.
+  mapping(address => bool) public certifiedRegenerators;
+
   /// @notice A mapping from a regenerator's wallet address to a hash or identifier of their area photo.
   mapping(address => string) public areaPhoto;
 
@@ -91,9 +102,13 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// @notice The specific `UserType` enumeration value for a Regenerator user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.REGENERATOR;
 
-  /// @notice The total count of regenerators who are considered "impact regenerators"
-  /// (have achieved the minimum of three inspections.
+  /// @notice The total count of regenerators who are considered "impact regenerators",
+  /// have reached the minimum of one inspections.
   uint256 public totalImpactRegenerators;
+
+  /// @notice The total count of regenerators who have completed the certification process,
+  /// have reached the maximum allowed inspections.
+  uint256 public totalCertifiedRegenerators;
 
   /// @notice The grand total sum of all regeneration area (in square meters [m²])
   /// managed by all registered regenerators in the system.
@@ -172,6 +187,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
       totalArea >= MIN_REGENERATION_AREA && totalArea <= MAX_REGENERATION_AREA,
       "Minimum 500 and maximum 500.000 square meters"
     );
+    require(isRegistrationAllowed(), "Wait for vacancy: Max regenerators limit");
 
     _validateCoordinates(_coordinates);
 
@@ -316,6 +332,11 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     if (totalInspections == 1) {
       totalImpactRegenerators--;
       impactRegenerators[addr] = false;
+    }
+
+    if (totalInspections == MAXIMUM_INSPECTIONS) {
+      totalCertifiedRegenerators--;
+      certifiedRegenerators[addr] = false;
     }
 
     regenerators[addr].totalInspections--;
@@ -525,6 +546,13 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
       totalImpactRegenerators++;
     }
 
+    if (regenerator.totalInspections == MAXIMUM_INSPECTIONS) {
+      certifiedRegenerators[addr] = true;
+      totalCertifiedRegenerators++;
+
+      emit RegeneratorCertified(addr);
+    }
+
     return regenerator.totalInspections;
   }
 
@@ -608,6 +636,20 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     return coordinatesList;
   }
 
+  /**
+   * @notice Checks if new Regenerator registrations are allowed based on the dynamic count of active users.
+   * @dev The number of active users is calculated as the total number of created Regenerators
+   * minus the number of those who have completed their lifecycle.
+   * @return bool True if registration is allowed, false otherwise.
+   */
+  function isRegistrationAllowed() public view returns (bool) {
+    uint256 totalCreated = communityRules.userTypesCount(USER_TYPE);
+
+    uint256 activeRegenerators = totalCreated - totalCertifiedRegenerators;
+
+    return activeRegenerators < MAX_ACTIVE_REGENERATORS;
+  }
+
   // --- Events ---
 
   /// @dev Emitted when a new regenerator successfully registers.
@@ -635,4 +677,8 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// @param regeneratorAddress The address of the regenerator entering the pool.
   /// @param blockNumber The block number at which the regenerator entered the pool.
   event RegeneratorEnteredPool(address indexed regeneratorAddress, uint256 blockNumber);
+
+  /// @dev Emitted when a regenerator completes the inspection process.
+  /// @param regeneratorAddress The address of the regenerator entering the pool.
+  event RegeneratorCertified(address indexed regeneratorAddress);
 }
