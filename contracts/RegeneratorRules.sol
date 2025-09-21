@@ -49,10 +49,10 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   uint16 private constant MAX_PROJECT_DESCRIPTION_LENGTH = 200;
 
   /// @notice Minimum total area in square meters (m²) for a regeneration project.
-  uint32 public constant MIN_REGENERATION_AREA = 500;
+  uint32 public constant MIN_REGENERATION_AREA = 2500;
 
   /// @notice Maximum total area in square meters (m²) for a regeneration project.
-  uint32 public constant MAX_REGENERATION_AREA = 500000;
+  uint32 public constant MAX_REGENERATION_AREA = 1000000;
 
   /// @notice The maximum number of active 'Regenerator' type users permitted in the system.
   uint256 public constant MAX_ACTIVE_REGENERATORS = 500000;
@@ -159,7 +159,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * - The `proofPhoto` string must not exceed `MAX_HASH_LENGTH` (150) characters in byte length.
    * - The `projectDescription` string must not exceed `MAX_PROJECT_DESCRIPTION_LENGTH` (200) characters in byte length.
    * - The `_coordinates` array must contain between (3) and (10) points.
-   * - The `totalArea` must be between (500) and (500,000) square meters [m²].
+   * - The `totalArea` must be between (2500) and (1,000,000) square meters [m²].
    * @param totalArea The total area (in square meters [m²]) to be registered.
    * @param name The chosen name for the regenerator.
    * @param proofPhoto A hash or identifier for the regenerator's identity verification photo.
@@ -185,7 +185,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     );
     require(
       totalArea >= MIN_REGENERATION_AREA && totalArea <= MAX_REGENERATION_AREA,
-      "Minimum 500 and maximum 500.000 square meters"
+      "Minimum 2500 and maximum 1.000.000 square meters"
     );
     require(isRegistrationAllowed(), "Wait for vacancy: Max regenerators limit");
 
