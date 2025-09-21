@@ -31,7 +31,7 @@ contract ValidationPool is Poolable, Blockable, Callable, ReentrancyGuard {
   address private validationRulesAddress;
 
   /// @notice Tracks unique resource IDs to ensure levels for a resource are added only once.
-  mapping(address => bool) public hasProcessedLevel; 
+  mapping(address => bool) public hasProcessedLevel;
 
   // --- Constructor ---
 

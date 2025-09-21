@@ -21,6 +21,7 @@ describe("ValidationRules", () => {
   let contributorRules;
   let regenerationCredit;
   let inspectionRules;
+  let validationPool;
 
   let owner,
     regenerator1Address,
@@ -209,6 +210,7 @@ describe("ValidationRules", () => {
     inspectorPool = validatorRulesDeployed.inspectorPool;
     inspectionRules = validatorRulesDeployed.inspectionRules;
     instance = validatorRulesDeployed.validationRules;
+    validationPool = validatorRulesDeployed.validationPool;
 
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(regeneratorRules.target);
@@ -239,6 +241,7 @@ describe("ValidationRules", () => {
     await inspectorRules.newAllowedCaller(owner);
     await instance.newAllowedCaller(owner);
     await instance.newAllowedCaller(developerRules);
+    await validationPool.newAllowedCaller(instance);
 
     await regenerationCredit.addContractPool(regeneratorRules.target, regeneratorPoolArgs.totalTokens);
 
@@ -255,6 +258,7 @@ describe("ValidationRules", () => {
     await researcherPool.setContractCall(researcherRules.target);
     await inspectorPool.setContractCall(inspectorRules.target);
     await regeneratorPool.setContractCall(regeneratorRules.target);
+    await validationPool.setContractCall(instance);
 
     await addInvitation(owner, inspector1Address, userTypes.Inspector, owner);
   });
@@ -536,7 +540,7 @@ describe("ValidationRules", () => {
               });
 
               it("should add validation", async () => {
-                const validations = await instance.getUserValidations(user2Address, 3);
+                const validations = await instance.getUserValidations(user2Address, 4);
 
                 expect(validations).to.equal(1);
               });
@@ -911,7 +915,7 @@ describe("ValidationRules", () => {
               });
 
               it("should add validation", async () => {
-                const validations = await instance.getUserValidations(activist1Address, 4);
+                const validations = await instance.getUserValidations(activist1Address, 5);
 
                 expect(validations).to.equal(2);
               });
@@ -1126,6 +1130,7 @@ describe("ValidationRules", () => {
         contributorRulesAddress: contributorRules.target,
         activistRulesAddress: activistRules.target,
         voteRulesAddress: ZERO_ADDRESS,
+        validationPoolAddress: validationPool.target,
       };
 
       await instance.setContractInterfaces(validationRulesDependencies);

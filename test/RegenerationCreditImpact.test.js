@@ -5,7 +5,7 @@ const { userTypes } = require("./shared/user_types");
 const { advanceBlock } = require("./shared/advance_block");
 
 describe("RegenerationCreditImpact", () => {
-  let instance, inspectionRules, invitationRules, regeneratorRules, inspectorRules, regenerationCredit;
+  let instance, inspectionRules, invitationRules, regeneratorRules, inspectorRules, regenerationCredit, validationPool;
   let owner,
     regeneratorAddress,
     regenerator2Address,

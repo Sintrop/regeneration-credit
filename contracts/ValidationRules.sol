@@ -56,7 +56,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
   mapping(address => mapping(uint256 => address)) public firstInvalidationVoter;
 
   // Mapping from a hunter's address directly to their governance pool data.
-  mapping(address => Pool) public hunterPools; 
+  mapping(address => Pool) public hunterPools;
 
   /// @notice CommunityRules contract interface.
   ICommunityRules public communityRules;
@@ -71,7 +71,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
   IDeveloperRules public developerRules;
 
   /// @notice ResearcherRules contract interface.
-  IResearcherRules public researcherRules; 
+  IResearcherRules public researcherRules;
 
   /// @notice ContributorRules contract interface.
   IContributorRules public contributorRules;
@@ -148,13 +148,13 @@ contract ValidationRules is Callable, ReentrancyGuard {
     require(!validatorUsersValidations[msg.sender][userAddress][currentEra], "Already voted");
     require(waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
+    if (firstInvalidationVoter[userAddress][currentEra] == address(0)) {
+      firstInvalidationVoter[userAddress][currentEra] = msg.sender;
+    }
+
     validatorUsersValidations[msg.sender][userAddress][currentEra] = true;
     validatorLastVoteAt[msg.sender] = block.number;
     userValidations[userAddress][currentEra]++;
-
-    if (firstInvalidationVoter[userAddress][currentEra] == address(0)) {
-        firstInvalidationVoter[userAddress][currentEra] = msg.sender;
-    }
 
     uint256 _votesToInvalidate = votesToInvalidate();
     uint256 validationsCount = userValidations[userAddress][currentEra];
@@ -167,7 +167,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
       address hunter = firstInvalidationVoter[userAddress][currentEra];
 
       validationPool.addLevel(hunter, userAddress);
-    }  
+    }
   }
 
   /**
