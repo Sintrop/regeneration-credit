@@ -26,7 +26,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   // --- Constants ---
 
   /// @notice The maximum number of inspections a Regenerator can receive.
-  uint8 public constant MAX_REGENERATOR_INSPECTIONS = 12;
+  uint8 public constant MAX_REGENERATOR_INSPECTIONS = 6;
 
   /// @notice Max character length for hash or url.
   uint16 private constant MAX_HASH_LENGTH = 150;
@@ -88,25 +88,25 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   mapping(address => mapping(address => bool)) private inspectorInspected;
 
   /// @notice InspectorRules contract interface for interacting with inspector-specific logic.
-  IInspectorRules private inspectorRules;
+  IInspectorRules public inspectorRules;
 
   /// @notice RegeneratorRules contract interface for interacting with regenerator-specific logic.
-  IRegeneratorRules private regeneratorRules;
+  IRegeneratorRules public regeneratorRules;
 
   /// @notice CommunityRules contract interface for checking user types and other community-wide rules.
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice ValidationRules contract interface for handling inspection invalidations.
-  IValidationRules private validationRules;
+  IValidationRules public validationRules;
 
   /// @notice ActivistRules contract interface for updating activist levels based on inspection activities.
-  IActivistRules private activistRules;
+  IActivistRules public activistRules;
 
   /// @notice VoteRules contract interface for checking voter eligibility.
-  IVoteRules private voteRules;
+  IVoteRules public voteRules;
 
   /// @notice RegenerationIndexRules contract interface for calculating regeneration scores.
-  IRegenerationIndexRules private regenerationIndexRules;
+  IRegenerationIndexRules public regenerationIndexRules;
 
   /// @notice Tracks which validator has voted on which inspection to prevent duplicate votes.
   mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
@@ -226,7 +226,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     require(!inspectorInspected[msg.sender][inspection.regenerator], "Already inspected");
     require(
       inspection.status == InspectionStatus.OPEN ||
-        (inspection.status == InspectionStatus.ACCEPTED && _isInspectionExpired(inspection)),
+        (inspection.status == InspectionStatus.ACCEPTED && isInspectionExpired(inspection)),
       "Inspection must be OPEN or EXPIRED"
     );
     require(acceptInspectionDelayBlocksPassed(inspection), "Wait delay blocks");
@@ -488,15 +488,6 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     }
   }
 
-  /**
-   * @dev Checks if a previously accepted inspection has expired.
-   * @param inspection The inspection to check.
-   * @return bool True if the inspection is expired, false otherwise.
-   */
-  function _isInspectionExpired(Inspection storage inspection) private view returns (bool) {
-    return inspection.acceptedAt > 0 && (block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection);
-  }
-
   // --- View functions ---
 
   /**
@@ -566,6 +557,15 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     if (regeneratorRules.nextEraIn() < blocksToExpireAcceptedInspection) return false;
 
     return regeneratorRules.nextEraIn() - blocksToExpireAcceptedInspection > securityBlocksToValidation;
+  }
+
+  /**
+   * @dev Checks if a previously accepted inspection has expired.
+   * @param inspection The inspection to check.
+   * @return bool True if the inspection is expired, false otherwise.
+   */
+  function isInspectionExpired(Inspection memory inspection) public view returns (bool) {
+    return inspection.acceptedAt > 0 && (block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection);
   }
 
   // --- Events ---

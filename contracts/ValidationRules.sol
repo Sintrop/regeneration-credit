@@ -52,28 +52,28 @@ contract ValidationRules is Callable, ReentrancyGuard {
   mapping(address => uint256) public validatorLastVoteAt;
 
   /// @notice CommunityRules contract interface.
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice RegeneratorRules contract interface.
-  IRegeneratorRules private regeneratorRules;
+  IRegeneratorRules public regeneratorRules;
 
   /// @notice InspectorRules contract interface.
-  IInspectorRules private inspectorRules;
+  IInspectorRules public inspectorRules;
 
   /// @notice DeveloperRules contract interface.
-  IDeveloperRules private developerRules;
+  IDeveloperRules public developerRules;
 
   /// @notice ResearcherRules contract interface.
-  IResearcherRules private researcherRules;
+  IResearcherRules public researcherRules;
 
   /// @notice ContributorRules contract interface.
-  IContributorRules private contributorRules;
+  IContributorRules public contributorRules;
 
   /// @notice ActivistRules contract interface.
-  IActivistRules private activistRules;
+  IActivistRules public activistRules;
 
   /// @notice VoteRules contract interface.
-  IVoteRules private voteRules;
+  IVoteRules public voteRules;
 
   /// @notice Amount of blocks between votes.
   uint256 public immutable timeBetweenVotes;
@@ -128,6 +128,10 @@ contract ValidationRules is Callable, ReentrancyGuard {
     require(bytes(justification).length <= MAX_JUSTIFICATION_LENGTH, "Max characters");
     require(voteRules.canVote(msg.sender), "Not a voter");
     require(!communityRules.userTypeIs(CommunityTypes.UserType.UNDEFINED, userAddress), "User not registered");
+    require(
+      !communityRules.userTypeIs(CommunityTypes.UserType.SUPPORTER, userAddress),
+      "Supporter validation not allowed"
+    );
     require(!communityRules.isDenied(userAddress), "User already denied");
     require(_canBeValidated(userAddress), "Regenerator has reached validation immunity");
 
