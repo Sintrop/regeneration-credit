@@ -14,8 +14,6 @@ async function validationRulesDeploy() {
 
   saveContractAddress("ValidationRules", validationRules.target);
 
-  await communityRules.newAllowedCaller(validationRules.target);
-
   console.log(`ValidationRules address ${validationRules.target}`);
 
   await verifyContract(validationRules, "ValidationRules", args);

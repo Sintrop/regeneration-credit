@@ -16,9 +16,6 @@ async function inspectorRulesDeploy() {
 
   saveContractAddress("InspectorRules", inspectorRules.target);
 
-  await communityRules.newAllowedCaller(inspectorRules.target);
-  await inspectorPool.newAllowedCaller(inspectorRules.target);
-
   console.log(`InspectorRules address ${inspectorRules.target}`);
 
   await verifyContract(inspectorRules, "InspectorRules", args);

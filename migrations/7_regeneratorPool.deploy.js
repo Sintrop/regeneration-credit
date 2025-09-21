@@ -5,7 +5,6 @@ const verifyContract = require("../scripts/shared/verifyContract");
 async function regeneratorPoolDeploy() {
   const poolHalving = process.env["POOL_HALVING"];
   const poolBlocksPerEra = process.env["BLOCKS_PER_ERA"];
-  const regeneratorPoolFunds = process.env["REGENERATOR_POOL_FUNDS"];
 
   const regenerationCredit = await getDeployedContract("RegenerationCredit");
 
@@ -16,8 +15,6 @@ async function regeneratorPoolDeploy() {
   const regeneratorPool = await RegeneratorPool.deploy(...args);
 
   saveContractAddress("RegeneratorPool", regeneratorPool.target);
-
-  await regenerationCredit.addContractPool(regeneratorPool.target, regeneratorPoolFunds);
 
   console.log(`RegeneratorPool address ${regeneratorPool.target}`);
 
