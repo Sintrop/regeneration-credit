@@ -37,6 +37,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
   /// @notice Votes thresholds to invalidate a resource/user.
   uint32 private constant VOTES_TO_INVALIDATE_LEVEL_1 = 2;
   uint32 private constant VOTES_TO_INVALIDATE_LEVEL_2 = 5;
+  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_3 = 500;
 
   uint256 private constant DYNAMIC_INVALIDATION_PERCENTAGE = 3;
 
@@ -237,7 +238,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
   /**
    * @notice Get how many validations is necessary to invalidate a user or resource.
    * @dev Calculates the required number of votes for invalidation based on the total number of registered voters in the system.
-   * Calculation is based on the `votersCount` which includes activists, researchers, developers, and contributors.
+   * Calculation is based on the `votersCount` which includes researchers, developers, and contributors.
    * @return count Number of votes required for invalidation.
    */
   function votesToInvalidate() public view returns (uint256) {
@@ -255,8 +256,14 @@ contract ValidationRules is Callable, ReentrancyGuard {
 
     // Threshold 3: Mature stage, calculates votes based on a percentage of active voters.
     uint256 invalidationVotes = (voters * DYNAMIC_INVALIDATION_PERCENTAGE) / 100;
+    uint256 requiredVotes = invalidationVotes + 1;
 
-    return invalidationVotes + 1;
+    // Threshold 4: Capped stage, returns a maximum votes level.
+    if (requiredVotes > VOTES_TO_INVALIDATE_LEVEL_3) {
+      return VOTES_TO_INVALIDATE_LEVEL_3;
+    }
+
+    return requiredVotes;
   }
 
   /**
