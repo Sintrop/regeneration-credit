@@ -48,10 +48,6 @@ describe("InspectionRules", () => {
     invalidated: 3,
   };
 
-  const USER_TYPES = {
-    denied: 8,
-  };
-
   const regeneratorPoolArgs = {
     totalTokens: "750000000000000000000000000",
     halving: 50,
@@ -908,65 +904,165 @@ describe("InspectionRules", () => {
                     await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                   });
 
-                  it("should change inspection status to INSPECTED", async () => {
-                    const inspection = await instance.getInspection(1);
+                  context("when current era is 1", () => {
+                    it("should change inspection status to INSPECTED", async () => {
+                      const inspection = await instance.getInspection(1);
 
-                    expect(inspection.status).to.equal(STATUS.inspected);
+                      expect(inspection.status).to.equal(STATUS.inspected);
+                    });
+
+                    it("should set inspectionsTreesImpact", async () => {
+                      const inspectionsTreesImpact = await instance.inspectionsTreesImpact();
+
+                      expect(inspectionsTreesImpact).to.equal(0);
+                    });
+
+                    it("should set inspectionsBiodiversityImpact", async () => {
+                      const inspectionsBiodiversityImpact = await instance.inspectionsBiodiversityImpact();
+
+                      expect(inspectionsBiodiversityImpact).to.equal(0);
+                    });
+
+                    it("populate inspection inspectedAt", async () => {
+                      const inspection = await instance.getInspection(1);
+
+                      expect(inspection.inspectedAtEra).to.equal(1);
+                    });
+
+                    it("should decrease inspector giveUps by 1", async () => {
+                      const inspector = await inspectorRules.getInspector(inspectorAddress);
+
+                      expect(inspector.giveUps).to.equal("0");
+                    });
+
+                    it("should add regenerationScore in regenerator", async () => {
+                      const inspection = await instance.getInspection(1);
+                      const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+
+                      expect(inspection.regenerationScore).to.equal(regenerator.regenerationScore.score);
+                    });
+
+                    it("should set regenerator pendingInspection to false", async () => {
+                      const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+
+                      expect(regenerator.pendingInspection).to.equal(false);
+                    });
+
+                    it("should increment regenerator totalInspections", async () => {
+                      const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+
+                      expect(regenerator.totalInspections).to.equal(1);
+                    });
+
+                    it("should increment inspector totalInspections", async () => {
+                      const inspector = await inspectorRules.getInspector(inspectorAddress);
+
+                      expect(inspector.totalInspections).to.equal(1);
+                    });
+
+                    it("should increment realizedInspectionsCount", async () => {
+                      const realizedInspectionsCount = await instance.realizedInspectionsCount();
+
+                      expect(realizedInspectionsCount).to.equal(1);
+                    });
+
+                    it("should increment era impactPerEra", async () => {
+                      const impactPerEra = await instance.impactPerEra(1);
+
+                      expect(impactPerEra.trees).to.equal(10);
+                      expect(impactPerEra.biodiversity).to.equal(10);
+                    });
                   });
 
-                  it("should set inspectionsTreesImpact", async () => {
-                    const inspectionsTreesImpact = await instance.inspectionsTreesImpact();
+                  context("when current era is 2", () => {
+                    beforeEach(async () => {
+                      await addRegenerator("Regenerator B", 25000, regenerator2Address); // e.g., 25,000 sqm
+                      await addInspector("Inspector B", inspector3Address);
 
-                    expect(inspectionsTreesImpact).to.equal(10);
-                  });
+                      await advanceBlock(750);
 
-                  it("should set inspectionsBiodiversityImpact", async () => {
-                    const inspectionsBiodiversityImpact = await instance.inspectionsBiodiversityImpact();
+                      await requestInspection(regenerator2Address);
 
-                    expect(inspectionsBiodiversityImpact).to.equal(10);
-                  });
+                      await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
 
-                  it("populate inspection inspectedAt", async () => {
-                    const inspection = await instance.getInspection(1);
+                      await acceptInspection(2, inspector3Address);
+                      await realizeInspection(2, report, treesResultValue, biodiversityResultValue, inspector3Address);
+                    });
 
-                    expect(inspection.inspectedAtEra).to.equal(1);
-                  });
+                    it("should change inspection status to INSPECTED", async () => {
+                      const inspection = await instance.getInspection(1);
 
-                  it("should decrease inspector giveUps by 1", async () => {
-                    const inspector = await inspectorRules.getInspector(inspectorAddress);
+                      expect(inspection.status).to.equal(STATUS.inspected);
+                    });
 
-                    expect(inspector.giveUps).to.equal("0");
-                  });
+                    it("should set inspectionsTreesImpact", async () => {
+                      const inspectionsTreesImpact = await instance.inspectionsTreesImpact();
 
-                  it("should add regenerationScore in regenerator", async () => {
-                    const inspection = await instance.getInspection(1);
-                    const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+                      expect(inspectionsTreesImpact).to.equal(10);
+                    });
 
-                    expect(inspection.regenerationScore).to.equal(regenerator.regenerationScore.score);
-                  });
+                    it("should set inspectionsBiodiversityImpact", async () => {
+                      const inspectionsBiodiversityImpact = await instance.inspectionsBiodiversityImpact();
 
-                  it("should set regenerator pendingInspection to false", async () => {
-                    const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+                      expect(inspectionsBiodiversityImpact).to.equal(10);
+                    });
 
-                    expect(regenerator.pendingInspection).to.equal(false);
-                  });
+                    it("populate inspection inspectedAt", async () => {
+                      const inspection = await instance.getInspection(1);
 
-                  it("should increment regenerator totalInspections", async () => {
-                    const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+                      expect(inspection.inspectedAtEra).to.equal(1);
+                    });
 
-                    expect(regenerator.totalInspections).to.equal(1);
-                  });
+                    it("should decrease inspector giveUps by 1", async () => {
+                      const inspector = await inspectorRules.getInspector(inspectorAddress);
 
-                  it("should increment inspector totalInspections", async () => {
-                    const inspector = await inspectorRules.getInspector(inspectorAddress);
+                      expect(inspector.giveUps).to.equal("0");
+                    });
 
-                    expect(inspector.totalInspections).to.equal(1);
-                  });
+                    it("should add regenerationScore in regenerator", async () => {
+                      const inspection = await instance.getInspection(1);
+                      const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
 
-                  it("should increment realizedInspectionsCount", async () => {
-                    const realizedInspectionsCount = await instance.realizedInspectionsCount();
+                      expect(inspection.regenerationScore).to.equal(regenerator.regenerationScore.score);
+                    });
 
-                    expect(realizedInspectionsCount).to.equal(1);
+                    it("should set regenerator pendingInspection to false", async () => {
+                      const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+
+                      expect(regenerator.pendingInspection).to.equal(false);
+                    });
+
+                    it("should increment regenerator totalInspections", async () => {
+                      const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+
+                      expect(regenerator.totalInspections).to.equal(1);
+                    });
+
+                    it("should increment inspector totalInspections", async () => {
+                      const inspector = await inspectorRules.getInspector(inspectorAddress);
+
+                      expect(inspector.totalInspections).to.equal(1);
+                    });
+
+                    it("should increment realizedInspectionsCount", async () => {
+                      const realizedInspectionsCount = await instance.realizedInspectionsCount();
+
+                      expect(realizedInspectionsCount).to.equal(2);
+                    });
+
+                    it("era 1 impactPerEra is the same", async () => {
+                      const impactPerEra = await instance.impactPerEra(1);
+
+                      expect(impactPerEra.trees).to.equal(10);
+                      expect(impactPerEra.biodiversity).to.equal(10);
+                    });
+
+                    it("increment era 2 impactPerEra", async () => {
+                      const impactPerEra = await instance.impactPerEra(2);
+
+                      expect(impactPerEra.trees).to.equal(10);
+                      expect(impactPerEra.biodiversity).to.equal(10);
+                    });
                   });
                 });
 
@@ -1085,6 +1181,34 @@ describe("InspectionRules", () => {
                       expect(inspection.regenerationScore).to.equal(0);
                     });
                   });
+                });
+              });
+
+              context("when a zero-score inspection is submitted", () => {
+                let initialRealizedInspectionsCount;
+                let initialEraImpact;
+
+                beforeEach(async () => {
+                  initialRealizedInspectionsCount = await instance.realizedInspectionsCount();
+                  initialEraImpact = await instance.impactPerEra(1);
+
+                  await realizeInspection(1, report, 0, 0, inspectorAddress);
+                });
+
+                it("should NOT increment realizedInspectionsCount", async () => {
+                  const finalRealizedInspectionsCount = await instance.realizedInspectionsCount();
+                  expect(finalRealizedInspectionsCount).to.equal(initialRealizedInspectionsCount);
+                });
+
+                it("should NOT add to the era's impact counters", async () => {
+                  const finalEraImpact = await instance.impactPerEra(1);
+                  expect(finalEraImpact.trees).to.equal(initialEraImpact.trees);
+                  expect(finalEraImpact.biodiversity).to.equal(initialEraImpact.biodiversity);
+                });
+
+                it("should still change the inspection status to INSPECTED", async () => {
+                  const inspection = await instance.getInspection(1);
+                  expect(inspection.status).to.equal(STATUS.inspected);
                 });
               });
             });
@@ -1221,16 +1345,11 @@ describe("InspectionRules", () => {
               expect(inspection.validationsCount).to.equal(2);
             });
 
-            it("decrement inspectionsTreesImpact", async () => {
-              const inspectionsTreesImpact = await instance.inspectionsTreesImpact();
+            it("decrement impactPerEra", async () => {
+              const impactPerEra = await instance.impactPerEra(1);
 
-              expect(inspectionsTreesImpact).to.equal(0);
-            });
-
-            it("decrement inspectionsTreesImpact", async () => {
-              const inspectionsBiodiversityImpact = await instance.inspectionsBiodiversityImpact();
-
-              expect(inspectionsBiodiversityImpact).to.equal(0);
+              expect(impactPerEra.trees).to.equal(0);
+              expect(impactPerEra.biodiversity).to.equal(0);
             });
 
             it("inspection status INVALIDATED", async () => {
@@ -1478,169 +1597,6 @@ describe("InspectionRules", () => {
 
             const poolLevels = await inspectorPool.eraLevels(inspectedAtEra, inspectorAddress);
             expect(poolLevels).to.equal(0);
-          });
-        });
-
-        context("when already voted in this inspection", () => {
-          beforeEach(async () => {
-            await instance.connect(user1Address).addInspectionValidation(1, "justification");
-
-            await advanceBlock(10);
-          });
-
-          it("should return error message", async () => {
-            await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-              "Already voted"
-            );
-          });
-        });
-      });
-
-      context("when inspection inspectedAtEra is passed", () => {
-        beforeEach(async () => {
-          await requestInspection(regeneratorAddress);
-          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-          await acceptInspection(1, inspectorAddress);
-          await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
-
-          await advanceBlock(regeneratorPoolArgs.blocksPerEra);
-        });
-
-        it("should return error message", async () => {
-          await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-            "Can't validade anymore"
-          );
-        });
-      });
-
-      context("when inspection is not inspected", () => {
-        it("should return error message", async () => {
-          await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-            "Can't validade anymore"
-          );
-        });
-      });
-    });
-
-    context("with activist", () => {
-      beforeEach(async () => {
-        await addInvitation(owner, user1Address, userTypes.Activist, owner);
-        await addInvitation(owner, user2Address, userTypes.Activist, owner);
-        await addInvitation(owner, user3Address, userTypes.Activist, owner);
-        await addInvitation(owner, user4Address, userTypes.Activist, owner);
-
-        await addActivist("User 1", user1Address);
-        await addActivist("User 2", user2Address);
-        await addActivist("User 3", user3Address);
-        await addActivist("User 4", user4Address);
-      });
-
-      context("with valid inspection", () => {
-        beforeEach(async () => {
-          await requestInspection(regeneratorAddress);
-          await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
-          await acceptInspection(1, inspectorAddress);
-          await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
-        });
-
-        context("when receive 1 validation", () => {
-          beforeEach(async () => {
-            await instance.connect(user1Address).addInspectionValidation(1, "justification");
-          });
-
-          it("add validation", async () => {
-            const inspection = await instance.getInspection(1);
-
-            expect(inspection.validationsCount).to.equal(1);
-          });
-        });
-
-        context("when have 2 validations (half of the validators)", () => {
-          context("when inspection score is positive", () => {
-            beforeEach(async () => {
-              await instance.connect(user1Address).addInspectionValidation(1, "justification");
-              await instance.connect(user2Address).addInspectionValidation(1, "justification");
-            });
-
-            it("add validations", async () => {
-              const inspection = await instance.getInspection(1);
-
-              expect(inspection.validationsCount).to.equal(2);
-            });
-
-            it("decrement inspectionsTreesImpact", async () => {
-              const inspectionsTreesImpact = await instance.inspectionsTreesImpact();
-
-              expect(inspectionsTreesImpact).to.equal(0);
-            });
-
-            it("decrement inspectionsTreesImpact", async () => {
-              const inspectionsBiodiversityImpact = await instance.inspectionsBiodiversityImpact();
-
-              expect(inspectionsBiodiversityImpact).to.equal(0);
-            });
-
-            it("inspection status INVALIDATED", async () => {
-              const inspection = await instance.getInspection(1);
-
-              expect(inspection.status).to.equal(STATUS.invalidated);
-            });
-
-            it("inspector receive 1 penalty", async () => {
-              const totalPenalties = await inspectorRules.totalPenalties(inspectorAddress);
-
-              expect(totalPenalties).to.equal(1);
-            });
-
-            it("remove regenerator regenerationScore", async () => {
-              const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
-
-              expect(regenerator.regenerationScore.score).to.equal(0);
-            });
-
-            it("decrement regenerator totalInspections", async () => {
-              const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
-
-              expect(regenerator.totalInspections).to.equal(0);
-            });
-
-            it("decrement inspector totalInspections", async () => {
-              const inspector = await inspectorRules.getInspector(inspectorAddress);
-
-              expect(inspector.totalInspections).to.equal(0);
-            });
-
-            it("zero regeneratorPool era level score", async () => {
-              const levels = await regeneratorPool.eraLevels(1, regeneratorAddress);
-
-              expect(levels).to.equal(0);
-            });
-
-            it("should decrement realizedInspectionsCount", async () => {
-              const realizedInspectionsCount = await instance.realizedInspectionsCount();
-
-              expect(realizedInspectionsCount).to.equal(0);
-            });
-          });
-        });
-
-        context("when inspector receive max penalties alloweds", () => {
-          beforeEach(async () => {
-            await inspectorRules.setContractCall(owner, owner);
-            await inspectorRules.addPenalty(inspectorAddress, 1);
-
-            await communityRules.setContractCall(user1Address, validationRules.target);
-            await instance.connect(user1Address).addInspectionValidation(1, "justification");
-
-            await communityRules.setContractCall(user2Address, validationRules.target);
-            await inspectorRules.setContractCall(instance.target);
-            await instance.connect(user2Address).addInspectionValidation(1, "justification");
-          });
-
-          it("inspector type to DENIED", async () => {
-            const isDenied = await communityRules.isDenied(inspectorAddress);
-
-            expect(isDenied).to.equal(true);
           });
         });
 

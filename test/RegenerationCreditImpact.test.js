@@ -58,6 +58,12 @@ describe("RegenerationCreditImpact", () => {
     await inspectionRules.connect(from).realizeInspection(id, proofPhoto, report, treesResult, biodiversityResult);
   };
 
+  const nextEraRequestInspection = async (regeneratorAddress) => {
+    await advanceBlock(500);
+
+    await inspectionRules.connect(regeneratorAddress).requestInspection();
+  };
+
   beforeEach(async () => {
     [
       owner,
@@ -158,6 +164,8 @@ describe("RegenerationCreditImpact", () => {
               treesIndicatorValue = 10;
 
               await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
+
+              await nextEraRequestInspection(regeneratorAddress);
             });
 
             it("must returnstotalTreesImpact equal 10", async () => {
@@ -172,6 +180,8 @@ describe("RegenerationCreditImpact", () => {
               treesIndicatorValue = 32;
 
               await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
+
+              await nextEraRequestInspection(regeneratorAddress);
             });
 
             it("must returnstotalTreesImpact equal 32", async () => {
@@ -230,6 +240,8 @@ describe("RegenerationCreditImpact", () => {
 
             treesIndicatorValue = 32;
             await realizeInspection(5, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector5Address);
+
+            await nextEraRequestInspection(regeneratorAddress);
           });
 
           it("must returnstotalTreesImpact equal 174", async () => {
@@ -269,6 +281,8 @@ describe("RegenerationCreditImpact", () => {
 
             treesIndicatorValue = 100;
             await realizeInspection(3, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector3Address);
+
+            await nextEraRequestInspection(regeneratorAddress);
           });
 
           it("must returnstotalTreesImpact equal 88", async () => {
@@ -374,6 +388,8 @@ describe("RegenerationCreditImpact", () => {
               treesIndicatorValue = 10;
 
               await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
+
+              await nextEraRequestInspection(regeneratorAddress);
             });
 
             it("must returnstotalCarbonImpact equal 1000000", async () => {
@@ -388,6 +404,8 @@ describe("RegenerationCreditImpact", () => {
               treesIndicatorValue = 32;
 
               await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
+
+              await nextEraRequestInspection(regeneratorAddress);
             });
 
             it("must returnstotalCarbonImpact equal 3200000", async () => {
@@ -446,6 +464,8 @@ describe("RegenerationCreditImpact", () => {
 
             treesIndicatorValue = 32;
             await realizeInspection(5, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector5Address);
+
+            await nextEraRequestInspection(regeneratorAddress);
           });
 
           it("must returnstotalCarbonImpact equal 17400000", async () => {
@@ -485,6 +505,8 @@ describe("RegenerationCreditImpact", () => {
 
             treesIndicatorValue = 100;
             await realizeInspection(3, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector3Address);
+
+            await nextEraRequestInspection(regeneratorAddress);
           });
 
           it("must returnstotalCarbonImpact equal 8800000", async () => {
@@ -550,6 +572,8 @@ describe("RegenerationCreditImpact", () => {
               biodiversityIndicatorValue = 10;
 
               await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
+
+              await nextEraRequestInspection(regeneratorAddress);
             });
 
             it("must returns totalBiodiversityImpact equal 10", async () => {
@@ -564,6 +588,8 @@ describe("RegenerationCreditImpact", () => {
               biodiversityIndicatorValue = 32;
 
               await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
+
+              await nextEraRequestInspection(regeneratorAddress);
             });
 
             it("must returns totalBiodiversityImpact equal 32", async () => {
@@ -622,6 +648,8 @@ describe("RegenerationCreditImpact", () => {
 
             biodiversityIndicatorValue = 32;
             await realizeInspection(5, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector5Address);
+
+            await nextEraRequestInspection(regeneratorAddress);
           });
 
           it("must returns totalBiodiversityImpact equal 174", async () => {
@@ -661,6 +689,8 @@ describe("RegenerationCreditImpact", () => {
 
             biodiversityIndicatorValue = 100;
             await realizeInspection(3, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector3Address);
+
+            await nextEraRequestInspection(regeneratorAddress);
           });
 
           it("must returns totalBiodiversityImpact equal 88", async () => {
@@ -804,6 +834,8 @@ describe("RegenerationCreditImpact", () => {
                 treesIndicatorValue = 10;
 
                 await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
+
+                await nextEraRequestInspection(regeneratorAddress);
               });
 
               it("must returns treesPerToken equal 6666666666", async () => {
@@ -821,6 +853,8 @@ describe("RegenerationCreditImpact", () => {
                 treesIndicatorValue = 10;
 
                 await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
+
+                await nextEraRequestInspection(regeneratorAddress);
               });
 
               it("must returns treesPerToken equal 11111111111", async () => {
@@ -836,6 +870,8 @@ describe("RegenerationCreditImpact", () => {
               treesIndicatorValue = 32;
 
               await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
+
+              await nextEraRequestInspection(regeneratorAddress);
             });
 
             it("must returnstotalTreesImpact equal 21333333333", async () => {
@@ -894,6 +930,8 @@ describe("RegenerationCreditImpact", () => {
 
             treesIndicatorValue = 32;
             await realizeInspection(5, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector5Address);
+
+            await nextEraRequestInspection(regeneratorAddress);
           });
 
           it("must returns treesPerToken equal 116000000000", async () => {
@@ -933,6 +971,8 @@ describe("RegenerationCreditImpact", () => {
 
             treesIndicatorValue = 100;
             await realizeInspection(3, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector3Address);
+
+            await nextEraRequestInspection(regeneratorAddress);
           });
 
           it("must returns treesPerToken equal 58666666666", async () => {
@@ -1043,6 +1083,8 @@ describe("RegenerationCreditImpact", () => {
                 treesIndicatorValue = 10;
 
                 await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
+
+                await nextEraRequestInspection(regeneratorAddress);
               });
 
               it("must returns carbonPerToken equal 666666666666666", async () => {
@@ -1060,6 +1102,8 @@ describe("RegenerationCreditImpact", () => {
                 treesIndicatorValue = 10;
 
                 await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
+
+                await nextEraRequestInspection(regeneratorAddress);
               });
 
               it("must returns carbonPerToken equal 1111111111111111", async () => {
@@ -1075,6 +1119,8 @@ describe("RegenerationCreditImpact", () => {
               treesIndicatorValue = 32;
 
               await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
+
+              await nextEraRequestInspection(regeneratorAddress);
             });
 
             it("must returnstotalTreesImpact equal 2133333333333333", async () => {
@@ -1133,6 +1179,8 @@ describe("RegenerationCreditImpact", () => {
 
             treesIndicatorValue = 32;
             await realizeInspection(5, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector5Address);
+
+            await nextEraRequestInspection(regeneratorAddress);
           });
 
           it("must returns carbonPerToken equal 11600000000000000", async () => {
@@ -1172,6 +1220,8 @@ describe("RegenerationCreditImpact", () => {
 
             treesIndicatorValue = 100;
             await realizeInspection(3, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector3Address);
+
+            await nextEraRequestInspection(regeneratorAddress);
           });
 
           it("must returns carbonPerToken equal 5866666666666666", async () => {
@@ -1238,6 +1288,8 @@ describe("RegenerationCreditImpact", () => {
                 biodiversityIndicatorValue = 10;
 
                 await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
+
+                await nextEraRequestInspection(regeneratorAddress);
               });
 
               it("must returns biodiversityPerToken equal 6666666666", async () => {
@@ -1255,6 +1307,8 @@ describe("RegenerationCreditImpact", () => {
                 biodiversityIndicatorValue = 10;
 
                 await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
+
+                await nextEraRequestInspection(regeneratorAddress);
               });
 
               it("must returns biodiversityPerToken equal 11111111111", async () => {
@@ -1270,6 +1324,8 @@ describe("RegenerationCreditImpact", () => {
               biodiversityIndicatorValue = 32;
 
               await realizeInspection(1, "report", treesIndicatorValue, biodiversityIndicatorValue, inspectorAddress);
+
+              await nextEraRequestInspection(regeneratorAddress);
             });
 
             it("must returns biodiversityPerToken equal 21333333333", async () => {
@@ -1328,6 +1384,8 @@ describe("RegenerationCreditImpact", () => {
 
             biodiversityIndicatorValue = 32;
             await realizeInspection(5, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector5Address);
+
+            await nextEraRequestInspection(regeneratorAddress);
           });
 
           it("must returns biodiversityPerToken equal 116000000000", async () => {
@@ -1367,6 +1425,8 @@ describe("RegenerationCreditImpact", () => {
 
             biodiversityIndicatorValue = 100;
             await realizeInspection(3, "report", treesIndicatorValue, biodiversityIndicatorValue, inspector3Address);
+
+            await nextEraRequestInspection(regeneratorAddress);
           });
 
           it("must returns biodiversityPerToken equal 58666666666", async () => {
