@@ -207,7 +207,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * - The `inspectionId` must correspond to an existing inspection.
    * - The inspector must not already have an inspection `ACCEPTED` that is not yet `INSPECTED` or `INVALIDATED` or `EXPIRED`.
    * - The inspector must not have previously inspected this specific regenerator.
-   * - The inspection's status must be `OPEN`.
+   * - The inspection's status must be `OPEN` or `ACCEPTED` and expired.
    * - The `acceptInspectionDelayBlocks` must have passed since the inspection was created.
    * - The system must not be within the `securityBlocksToValidation` window before an era ends.
    * - The inspector must adhere to `inspectorRules.canAcceptInspection` (delay from last realized inspection).
@@ -253,6 +253,9 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * How many trees, palm trees and other plants over 1m high and 3cm in diameter there is in the regenerating area? Justify your answer in the report.
    * How many different species of those plants/trees were found? Each different species is equivalent to one unity and only trees and plants managed or planted by the regenerator should be counted. Justify your answer in the report.
    * Max result of 200.000 trees and 300 biodiversity.
+   * Zero score means invalid inspection.
+   * NOTE: If the inspector finds something suspicous about the inspected regenerator, such as invalid area, suspicious of fake account, or if the Regenerator is not
+   * findable, inspectors are encourage to realize passing 0 as values with his justification at the report to avoid being penalized.
    * @param inspectionId The id of the inspection to be realized.
    * @param proofPhotos The string of a photo with the regenerator or the string of a document with the proofPhoto with the regenerator and other area photos.
    * @param justificationReport The justification and report of the result found.

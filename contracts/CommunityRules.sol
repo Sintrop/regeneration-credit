@@ -263,7 +263,7 @@ contract CommunityRules is Callable {
 
   /**
    * @notice Adds a new user to the system with a specified user type.
-   * @dev This function can only be called by an allowed caller (e.g., specific *Rules contracts for each user type).
+   * @dev This function can only be called by an allowed caller (specific *Rules contracts for each user type).
    * It enforces rules for single registration per address, valid user types, proportionality limits, and valid invitations if required.
    * @param addr The address of the user to be registered.
    * @param userType The desired `UserType` for the user.
