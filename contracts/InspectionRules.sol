@@ -9,7 +9,7 @@ import { IValidationRules } from "./interfaces/IValidationRules.sol";
 import { IActivistRules } from "./interfaces/IActivistRules.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
-import { InspectionStatus, Inspection, ContractsDependency } from "./types/InspectionTypes.sol";
+import { InspectionStatus, Inspection, ContractsDependency, EraImpact } from "./types/InspectionTypes.sol";
 import { Regenerator } from "./types/RegeneratorTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
@@ -69,10 +69,10 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   /// @notice Total inspections count, including open, accepted, realized, and invalidated ones.
   uint64 public inspectionsTotalCount;
 
-  /// @notice Sum of all valid inspections' trees impact.
+  /// @notice Sum of all valid inspections' trees impact from all past eras.
   uint256 public inspectionsTreesImpact;
 
-  /// @notice Sum of all valid inspections' biodiversity impact.
+  /// @notice Sum of all valid inspections' biodiversity impact from all past eras.
   uint256 public inspectionsBiodiversityImpact;
 
   /// @notice Tracks inspection IDs that have already been invalidated.
@@ -110,6 +110,12 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
   /// @notice Tracks which validator has voted on which inspection to prevent duplicate votes.
   mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
+
+  /// @notice Tracks the impact generated within each specific era.
+  mapping(uint256 => EraImpact) public impactPerEra;
+
+  /// @notice Tracks the number of the last era that impact has been set.
+  uint256 public lastSettledEra;
 
   // --- Constructor ---
 
@@ -183,6 +189,9 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
     // Update regenerator's state in RegeneratorRules.
     _afterRequestInspection();
+
+    // Update era impact.
+    _setEraImpact();
   }
 
   /**
@@ -198,7 +207,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * - The `inspectionId` must correspond to an existing inspection.
    * - The inspector must not already have an inspection `ACCEPTED` that is not yet `INSPECTED` or `INVALIDATED` or `EXPIRED`.
    * - The inspector must not have previously inspected this specific regenerator.
-   * - The inspection's status must be `OPEN`.
+   * - The inspection's status must be `OPEN` or `ACCEPTED` and expired.
    * - The `acceptInspectionDelayBlocks` must have passed since the inspection was created.
    * - The system must not be within the `securityBlocksToValidation` window before an era ends.
    * - The inspector must adhere to `inspectorRules.canAcceptInspection` (delay from last realized inspection).
@@ -244,6 +253,9 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * How many trees, palm trees and other plants over 1m high and 3cm in diameter there is in the regenerating area? Justify your answer in the report.
    * How many different species of those plants/trees were found? Each different species is equivalent to one unity and only trees and plants managed or planted by the regenerator should be counted. Justify your answer in the report.
    * Max result of 200.000 trees and 300 biodiversity.
+   * Zero score means invalid inspection.
+   * NOTE: If the inspector finds something suspicous about the inspected regenerator, such as invalid area, suspicious of fake account, or if the Regenerator is not
+   * findable, inspectors are encourage to realize passing 0 as values with his justification at the report to avoid being penalized.
    * @param inspectionId The id of the inspection to be realized.
    * @param proofPhotos The string of a photo with the regenerator or the string of a document with the proofPhoto with the regenerator and other area photos.
    * @param justificationReport The justification and report of the result found.
@@ -278,10 +290,14 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
     _afterRealizeInspection(inspection);
 
-    inspectionsTreesImpact += treesResult;
-    inspectionsBiodiversityImpact += biodiversityResult;
+    // Only count inspections that have a positive impact towards the global metrics.
+    if (inspection.regenerationScore > 0) {
+      impactPerEra[inspection.inspectedAtEra].trees += treesResult;
+      impactPerEra[inspection.inspectedAtEra].biodiversity += biodiversityResult;
+      realizedInspectionsCount++;
+    }
+
     inspectorInspected[msg.sender][inspection.regenerator] = true;
-    realizedInspectionsCount++;
 
     emit InspectionRealized(
       inspectionId,
@@ -438,9 +454,9 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * @param inspection A reference to the `Inspection` struct being invalidated.
    */
   function _invalidateInspection(Inspection storage inspection) private {
-    // Decrement global impact metrics.
-    inspectionsTreesImpact -= inspection.treesResult;
-    inspectionsBiodiversityImpact -= inspection.biodiversityResult;
+    // Decrement era impact metrics.
+    impactPerEra[inspection.inspectedAtEra].trees -= inspection.treesResult;
+    impactPerEra[inspection.inspectedAtEra].biodiversity -= inspection.biodiversityResult;
 
     inspectionsCount--; // Decrement valid inspections count
     realizedInspectionsCount--; // Decrement realized inspections count
@@ -456,6 +472,23 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     inspectorRules.removePoolLevels(inspection.inspector, false);
 
     emit InspectionInvalidated(inspection.id, inspection.inspector, inspection.regenerator, block.number);
+  }
+
+  /**
+   * @dev Sets the impact of a pending era to the global counter.
+   */
+  function _setEraImpact() private {
+    uint256 nexEraToSet = lastSettledEra + 1;
+
+    if (nexEraToSet < regeneratorRules.poolCurrentEra()) {
+      EraImpact storage eraImpact = impactPerEra[nexEraToSet];
+
+      inspectionsTreesImpact += eraImpact.trees;
+      inspectionsBiodiversityImpact += eraImpact.biodiversity;
+
+      // Update the lastSetlledEra to the era just settled.
+      lastSettledEra = nexEraToSet;
+    }
   }
 
   // --- View functions ---

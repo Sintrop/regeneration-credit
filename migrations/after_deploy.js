@@ -20,7 +20,7 @@ async function afterDeploy() {
 }
 
 async function createPools() {
-
+  const regenerationCredit = await getDeployedContract("RegenerationCredit");
   const activistPool = await getDeployedContract("ActivistPool");
   const regeneratorPool = await getDeployedContract("RegeneratorPool");
   const inspectorPool = await getDeployedContract("InspectorPool");
@@ -123,6 +123,7 @@ async function configureValidationRules() {
   const contributorRules = await getDeployedContract("ContributorRules");
   const voteRules = await getDeployedContract("VoteRules");
   const validationPool = await getDeployedContract("ValidationPool");
+  const inspectionRules = await getDeployedContract("InspectionRules");
 
   const contractDependencies = {
     communityRulesAddress: communityRules.target,

@@ -73,7 +73,11 @@ describe("ValidationRules", () => {
   };
 
   const addRegenerator = async (name, from) => {
-    await regeneratorRules.connect(from).addRegenerator(1000, name, "projectDescription", "photoURL", coordinates());
+    await regeneratorRules.connect(from).addRegenerator(2500, name, "projectDescription", "photoURL", coordinates());
+  };
+
+  const addSupporter = async (name, from) => {
+    await supporterRules.connect(from).addSupporter(name, "photoURL", "description");
   };
 
   const coordinates = () => {
@@ -212,6 +216,9 @@ describe("ValidationRules", () => {
     instance = validatorRulesDeployed.validationRules;
     validationPool = validatorRulesDeployed.validationPool;
 
+    const supporterRulesFactory = await ethers.getContractFactory("SupporterRules");
+    supporterRules = await supporterRulesFactory.deploy(communityRules.target, researcherRules.target, instance.target);
+
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(regeneratorRules.target);
     await communityRules.newAllowedCaller(inspectorRules.target);
@@ -219,6 +226,7 @@ describe("ValidationRules", () => {
     await communityRules.newAllowedCaller(researcherRules.target);
     await communityRules.newAllowedCaller(contributorRules.target);
     await communityRules.newAllowedCaller(activistRules.target);
+    await communityRules.newAllowedCaller(supporterRules.target);
     await communityRules.newAllowedCaller(owner);
     await regeneratorRules.newAllowedCaller(instance.target);
     await regeneratorRules.newAllowedCaller(owner);
@@ -526,100 +534,6 @@ describe("ValidationRules", () => {
               });
             });
           });
-
-          context("with activist", () => {
-            context("when total users is less than 5", () => {
-              beforeEach(async () => {
-                await addInvitation(owner, user1Address, userTypes.Activist, owner);
-                await addInvitation(owner, user2Address, userTypes.Activist, owner);
-
-                await addActivist("User A", user1Address);
-                await addActivist("User  B", user2Address);
-
-                await instance.connect(user1Address).addUserValidation(user2Address, "my justification");
-              });
-
-              it("should add validation", async () => {
-                const validations = await instance.getUserValidations(user2Address, 4);
-
-                expect(validations).to.equal(1);
-              });
-
-              it("user type must be the same", async () => {
-                const user = await communityRules.getUser(user2Address);
-                const USER_TYPE = 6;
-
-                expect(user).to.equal(USER_TYPE);
-              });
-
-              it("inviter must not get penalty", async () => {
-                const inviterPenalties = await communityRules.inviterPenalties(owner);
-
-                expect(inviterPenalties).to.equal(0);
-              });
-            });
-
-            context("when total users is bigger than 5", () => {
-              beforeEach(async () => {
-                await addInvitation(owner, user1Address, userTypes.Activist, owner);
-                await addInvitation(owner, user2Address, userTypes.Activist, owner);
-                await addInvitation(owner, user3Address, userTypes.Activist, owner);
-                await addInvitation(owner, user4Address, userTypes.Activist, owner);
-                await addInvitation(owner, user5Address, userTypes.Activist, owner);
-                await addInvitation(owner, user6Address, userTypes.Activist, owner);
-
-                await addActivist("User  A", user1Address);
-                await addActivist("User  B", user2Address);
-                await addActivist("User  C", user3Address);
-                await addActivist("User  D", user4Address);
-                await addActivist("User  E", user5Address);
-                await addActivist("User  F", user6Address);
-              });
-
-              context("when user levels is less than total users levels avg", () => {
-                it("should return error", async () => {
-                  await expect(
-                    instance.connect(user1Address).addUserValidation(user2Address, "my justification")
-                  ).to.be.revertedWith("Not a voter");
-                });
-              });
-
-              context("when user levels is bigger than total users levels avg", () => {
-                beforeEach(async () => {
-                  await communityRules.newAllowedCaller(user1Address);
-
-                  await communityRules.setContractCall(user1Address, instance);
-                  await addInvitation(user1Address, user7Address, userTypes.Regenerator, user1Address);
-                  await addInvitation(user1Address, user8Address, userTypes.Regenerator, user1Address);
-                  await communityRules.addUser(user7Address, userTypes.Regenerator, owner);
-                  await communityRules.addUser(user8Address, userTypes.Regenerator, owner);
-
-                  await activistRules.addRegeneratorLevel(user7Address, 3);
-                  await activistRules.addRegeneratorLevel(user8Address, 3);
-
-                  await activistRules.addRegeneratorLevel(user7Address, 3);
-
-                  await communityRules.addUser(inspector1Address, userTypes.Inspector, owner);
-
-                  await activistRules.addInspectorLevel(inspector1Address, 3);
-                  await instance.connect(user1Address).addUserValidation(user2Address, "my justification");
-                });
-
-                it("should add validation", async () => {
-                  const validations = await instance.getUserValidations(user2Address, 4);
-
-                  expect(validations).to.equal(1);
-                });
-
-                it("user type must be the same", async () => {
-                  const user = await communityRules.getUser(user2Address);
-                  const USER_TYPE = 6;
-
-                  expect(user).to.equal(USER_TYPE);
-                });
-              });
-            });
-          });
         });
 
         context("when user validations count is equal or bigger than votesToInvalidate", () => {
@@ -697,7 +611,7 @@ describe("ValidationRules", () => {
               it("regenerationArea should be decremented", async () => {
                 const decrementedArea = await regeneratorRules.regenerationArea();
 
-                expect(decrementedArea).to.equal(1000);
+                expect(decrementedArea).to.equal(2500);
               });
 
               it("must emit DeniedUserEvent", async () => {
@@ -1060,6 +974,19 @@ describe("ValidationRules", () => {
       });
     });
 
+    context("when user is a supporter", () => {
+      it("should return error", async () => {
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addDeveloper("User  A", user1Address);
+
+        await addSupporter("User  A", user8Address);
+
+        await expect(
+          instance.connect(user1Address).addUserValidation(user8Address, "justification")
+        ).to.be.revertedWith("Supporter validation not allowed");
+      });
+    });
+
     context("when regenerator _canBeValidated", () => {
       context("when reached REGENERATOR_VALIDATION_IMMUNITY_THRESHOLD", () => {
         beforeEach(async () => {
@@ -1268,15 +1195,27 @@ describe("ValidationRules", () => {
       });
     });
 
-    context("when votersCount is 20000", () => {
+    context("when votersCount is 15000", () => {
+      beforeEach(async () => {
+        await mockContract.mock.votersCount.returns(15000);
+      });
+
+      it("returns 451", async () => {
+        const votesToInvalidate = await instance.votesToInvalidate();
+
+        expect(votesToInvalidate).to.equal(451);
+      });
+    });
+
+    context("when votersCount is above limit", () => {
       beforeEach(async () => {
         await mockContract.mock.votersCount.returns(20000);
       });
 
-      it("returns 601", async () => {
+      it("returns 500", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(601);
+        expect(votesToInvalidate).to.equal(500);
       });
     });
 
@@ -1285,22 +1224,22 @@ describe("ValidationRules", () => {
         await mockContract.mock.votersCount.returns(35000);
       });
 
-      it("returns 1051", async () => {
+      it("returns 500", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(1051);
+        expect(votesToInvalidate).to.equal(500);
       });
     });
 
-    context("when votersCounts is 64000", () => {
+    context("when votersCounts is max", () => {
       beforeEach(async () => {
-        await mockContract.mock.votersCount.returns(64000);
+        await mockContract.mock.votersCount.returns(48000);
       });
 
-      it("returns 1921", async () => {
+      it("returns 500", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(1921);
+        expect(votesToInvalidate).to.equal(500);
       });
     });
   });

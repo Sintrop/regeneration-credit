@@ -6,14 +6,12 @@ async function voteRulesDeploy() {
     const communityRules = await getDeployedContract("CommunityRules");
     const researcherRules = await getDeployedContract("ResearcherRules");
     const developerRules = await getDeployedContract("DeveloperRules");
-    const activistRules = await getDeployedContract("ActivistRules");
     const contributorRules = await getDeployedContract("ContributorRules");
 
     const VoteRules = await ethers.getContractFactory("VoteRules");
 
     const args = [
         communityRules.target,
-        activistRules.target,
         contributorRules.target,
         developerRules.target,
         researcherRules.target,

@@ -126,7 +126,7 @@ contract CommunityRules is Callable {
       false,
       true,
       VOTER_INVITATION_DELAY_BLOCKS,
-      true
+      false
     );
     userTypeSettings[CommunityTypes.UserType.RESEARCHER] = CommunityTypes.UserTypeSetting(
       researcherProportionality,
@@ -189,6 +189,7 @@ contract CommunityRules is Callable {
       bytes(title).length <= MAX_TITLE_LENGTH && bytes(testimony).length <= MAX_TESTIMONY_LENGTH,
       "Max characters reached"
     );
+    require(!isDenied(msg.sender), "User denied");
     require(hasWaitedRequiredTime(msg.sender), "Wait delay blocks");
     require(users[msg.sender] != CommunityTypes.UserType.UNDEFINED, "Caller must be registered");
     require(users[msg.sender] != CommunityTypes.UserType.SUPPORTER, "Not allowed to supporters");
@@ -196,7 +197,6 @@ contract CommunityRules is Callable {
     require(addr != address(0), "Cannot delate zero address");
     require(addr != msg.sender, "Self-denunciation not allowed");
     require(!_hasDelated[msg.sender][addr], "Already submitted");
-    require(!isDenied(msg.sender), "User denied");
 
     _hasDelated[msg.sender][addr] = true;
     lastDelationBlock[msg.sender] = block.number;
@@ -263,7 +263,7 @@ contract CommunityRules is Callable {
 
   /**
    * @notice Adds a new user to the system with a specified user type.
-   * @dev This function can only be called by an allowed caller (e.g., specific *Rules contracts for each user type).
+   * @dev This function can only be called by an allowed caller (specific *Rules contracts for each user type).
    * It enforces rules for single registration per address, valid user types, proportionality limits, and valid invitations if required.
    * @param addr The address of the user to be registered.
    * @param userType The desired `UserType` for the user.
