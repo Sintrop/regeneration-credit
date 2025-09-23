@@ -179,8 +179,8 @@ contract ValidationRules is Callable, ReentrancyGuard {
 
   /**
    * @dev Allows a validator to initiate a withdrawal of Regeneration Credits
-   * based on their hunting level and current era.
-   * @notice Validators can claim tokens for their hunt service.
+   * for the malicious/fake users hunt service. Rewards will be based on their hunting level and current era.
+   * @notice Validators can claim tokens for their hunt and investigation service.
    */
   function withdraw() external nonReentrant {
     // Only registered voters can call this function.
