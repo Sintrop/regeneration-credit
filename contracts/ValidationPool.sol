@@ -130,7 +130,7 @@ contract ValidationPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * @param era User current era.
    * @return bool True if have tokens to withdraw, false if will just update era.
    */
-  function haveTokensToWithdraw(address delegate, uint256 era) public view returns (bool) {
+  function haveTokensToWithdraw(address delegate, uint256 era) external view returns (bool) {
     return _haveTokensToWithdraw(delegate, era, tokensPerEra(getEpochForEra(era), halving));
   }
 }

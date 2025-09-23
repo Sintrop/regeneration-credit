@@ -52,6 +52,12 @@ describe("ValidationRules", () => {
     blocksPerEra: 12,
   };
 
+  let validationPoolParams = {
+    totalTokens: "5000000000000000000000000",
+    halving: 12,
+    blocksPerEra: 160,
+  };
+
   const addDeveloper = async (name, from) => {
     await developerRules.connect(from).addDeveloper(name, "photoURL");
   };
@@ -62,10 +68,6 @@ describe("ValidationRules", () => {
 
   const addContributor = async (name, from) => {
     await contributorRules.connect(from).addContributor(name, "photoURL");
-  };
-
-  const addActivist = async (name, from) => {
-    await activistRules.connect(from).addActivist(name, "photoURL");
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
@@ -109,57 +111,8 @@ describe("ValidationRules", () => {
     await researcherRules.connect(from).addResearch("title", "thesis", "fileURL");
   };
 
-  const addContribution = async (from) => {
-    await contributorRules.connect(from).addContribution("description", "report");
-  };
-
   const denyUser = async (userAddress) => {
     await communityRules.setToDenied(userAddress);
-  };
-
-  const generateReportObject = (report) => {
-    return {
-      id: report.id,
-      era: report.era,
-      developer: report.developer,
-      level: report.level,
-      description: report.description,
-      report: report.report,
-      validationsCount: report.validationsCount,
-      contributed: report.contributed,
-      valid: report.valid,
-      invalidatedAt: report.invalidatedAt,
-      createdAtBlockNumber: report.createdAtBlockNumber,
-    };
-  };
-
-  const generateResearchObject = (research) => {
-    return {
-      id: research.id,
-      era: research.era,
-      createdBy: research.createdBy,
-      title: research.title,
-      thesis: research.thesis,
-      file: research.file,
-      validationsCount: research.validationsCount,
-      valid: research.valid,
-      invalidatedAt: research.invalidatedAt,
-      createdAtBlock: research.createdAtBlock,
-    };
-  };
-
-  const generateContributionObject = (contribution) => {
-    return {
-      id: contribution.id,
-      era: contribution.era,
-      user: contribution.user,
-      description: contribution.description,
-      report: contribution.report,
-      validationsCount: contribution.validationsCount,
-      valid: contribution.valid,
-      invalidatedAt: contribution.invalidatedAt,
-      createdAtBlockNumber: contribution.createdAtBlockNumber,
-    };
   };
 
   beforeEach(async () => {
@@ -218,6 +171,8 @@ describe("ValidationRules", () => {
 
     const supporterRulesFactory = await ethers.getContractFactory("SupporterRules");
     supporterRules = await supporterRulesFactory.deploy(communityRules.target, researcherRules.target, instance.target);
+
+    await regenerationCredit.addContractPool(validationPool, validationPoolParams.totalTokens);
 
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(regeneratorRules.target);
@@ -324,6 +279,12 @@ describe("ValidationRules", () => {
                 const inviterPenalties = await communityRules.inviterPenalties(owner);
 
                 expect(inviterPenalties).to.equal(0);
+              });
+
+              it("does not set one level to hunter address", async () => {
+                const eraLevels = await validationPool.eraLevels(1, dev1Address);
+
+                expect(eraLevels).to.equal(0);
               });
             });
 
@@ -807,59 +768,6 @@ describe("ValidationRules", () => {
                 expect(userTypesCount).to.equal(1);
               });
             });
-
-            context("with activist", () => {
-              beforeEach(async () => {
-                await addInvitation(owner, activist1Address, userTypes.Activist, owner);
-                await addInvitation(owner, activist2Address, userTypes.Activist, owner);
-                await addActivist("Activist  A", activist1Address);
-                await addActivist("Activist  B", activist2Address);
-
-                await addInvitation(activist1Address, inspector2Address, userTypes.Inspector, owner);
-
-                await addInvitation(activist1Address, regenerator1Address, userTypes.Regenerator, owner);
-                await communityRules.addUser(regenerator1Address, userTypes.Regenerator, owner);
-                await communityRules.addUser(inspector2Address, userTypes.Inspector, owner);
-
-                await activistRules.addRegeneratorLevel(regenerator1Address, 0);
-                await activistRules.addInspectorLevel(inspector2Address, 3);
-
-                await instance.connect(user1Address).addUserValidation(activist1Address, "my justification");
-                await instance.connect(user2Address).addUserValidation(activist1Address, "my justification");
-              });
-
-              it("should add validation", async () => {
-                const validations = await instance.getUserValidations(activist1Address, 5);
-
-                expect(validations).to.equal(2);
-              });
-
-              it("user must be denied", async () => {
-                const isDenied = await communityRules.isDenied(activist1Address);
-
-                expect(isDenied).to.equal(true);
-              });
-
-              it("remove user levels from pool", async () => {
-                const levelsEra1 = await activistPool.eraLevels(1, activist1Address);
-                const levelsEra2 = await activistPool.eraLevels(2, activist1Address);
-
-                expect(levelsEra1).to.equal(0);
-                expect(levelsEra2).to.equal(0);
-              });
-
-              it("do not remove user levels from activist", async () => {
-                const activist = await activistRules.getActivist(activist1Address);
-
-                expect(activist.pool.level).to.equal(1);
-              });
-
-              it("userTypesCount must be decremented", async () => {
-                const userTypesCount = await communityRules.userTypesCount(userTypes.Activist);
-
-                expect(userTypesCount).to.equal(1);
-              });
-            });
           });
 
           context("when current era is 2", () => {
@@ -889,6 +797,20 @@ describe("ValidationRules", () => {
                 const isDenied = await communityRules.isDenied(regenerator1Address);
 
                 expect(isDenied).to.equal(true);
+              });
+
+              it("set hunter as user1Address", async () => {
+                const hunterInvalidationVoter1 = await instance.hunterInvalidationVoter(regenerator1Address, 1);
+                const hunterInvalidationVoter2 = await instance.hunterInvalidationVoter(regenerator1Address, 2);
+
+                expect(hunterInvalidationVoter1).to.equal(user1Address);
+                expect(hunterInvalidationVoter2).to.equal(user1Address);
+              });
+
+              it("set one level to hunter address", async () => {
+                const eraLevels = await validationPool.eraLevels(5, user1Address);
+
+                expect(eraLevels).to.equal(1);
               });
             });
           });
@@ -1240,6 +1162,151 @@ describe("ValidationRules", () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
         expect(votesToInvalidate).to.equal(500);
+      });
+    });
+  });
+
+  describe("#withdraw", () => {
+    context("when is developer", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, dev1Address, userTypes.Developer, owner);
+        await addDeveloper("Developer A", dev1Address);
+
+        await addInvitation(owner, dev2Address, userTypes.Developer, owner);
+        await addDeveloper("Developer B", dev2Address);
+
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addDeveloper("Developer C", user1Address);
+      });
+
+      context("when can withdraw tokens", () => {
+        context("when is unique developer in era with 1 level", () => {
+          context("when Developer is in era 1 and contract is in era 2", () => {
+            beforeEach(async () => {
+              await instance.connect(dev1Address).addUserValidation(user1Address, "my justification");
+              await instance.connect(dev2Address).addUserValidation(user1Address, "my justification");
+
+              await advanceBlock(validationPoolParams.blocksPerEra + 2);
+              await instance.connect(dev1Address).withdraw();
+            });
+
+            it("should add developer to era 2", async () => {
+              const hunterPools = await instance.hunterPools(dev1Address);
+
+              expect(hunterPools.currentEra).to.equal(2);
+            });
+
+            it("should withdraw all tokens from era", async () => {
+              let balanceOf = await regenerationCredit.balanceOf(dev1Address);
+
+              let tokensBalance = 208333333333333333333333n;
+
+              expect(balanceOf).to.equal(tokensBalance);
+            });
+          });
+        });
+
+        context("when has two devs in the era", () => {
+          context("with same levels", () => {
+            context("when Developers is in era 1 and contract is in era 2", () => {
+              beforeEach(async () => {
+                await addInvitation(owner, user2Address, userTypes.Developer, owner);
+                await addDeveloper("Developer D", user2Address);
+
+                await instance.connect(dev1Address).addUserValidation(user1Address, "my justification");
+                await instance.connect(dev2Address).addUserValidation(user1Address, "my justification");
+
+                await advanceBlock(10);
+
+                await instance.connect(dev2Address).addUserValidation(user2Address, "my justification");
+                await instance.connect(dev1Address).addUserValidation(user2Address, "my justification");
+
+                await advanceBlock(validationPoolParams.blocksPerEra + 2);
+                await instance.connect(dev1Address).withdraw();
+                await instance.connect(dev2Address).withdraw();
+              });
+
+              it("should add developer1 to era 2", async () => {
+                const hunterPools = await instance.hunterPools(dev1Address);
+
+                expect(hunterPools.currentEra).to.equal(2);
+              });
+
+              it("should add developer2 to era 2", async () => {
+                const hunterPools = await instance.hunterPools(dev1Address);
+
+                expect(hunterPools.currentEra).to.equal(2);
+              });
+
+              it("developer1 balance must be 104166666666666666666666", async () => {
+                let balanceOf = await regenerationCredit.balanceOf(dev1Address);
+
+                let tokensPerEra = 104166666666666666666666n;
+
+                expect(balanceOf).to.equal(tokensPerEra);
+              });
+
+              it("developer2 balance must be 104166666666666666666666", async () => {
+                let balanceOf = await regenerationCredit.balanceOf(dev2Address);
+
+                let tokensPerEra = 104166666666666666666666n;
+
+                expect(balanceOf).to.equal(tokensPerEra);
+              });
+            });
+          });
+        });
+
+        context("when can withdraw only to one era and try withdraw again", () => {
+          beforeEach(async () => {
+            await instance.connect(dev1Address).addUserValidation(user1Address, "my justification");
+            await advanceBlock(validationPoolParams.blocksPerEra + 2);
+            await instance.connect(dev1Address).withdraw();
+          });
+
+          it("should return error message", async () => {
+            await expect(instance.connect(dev1Address).withdraw()).to.be.revertedWith(
+              "Not eligible to withdraw for this era"
+            );
+          });
+        });
+
+        context("when can withdraw to two eras and try withdraw again", () => {
+          beforeEach(async () => {
+            await addInvitation(owner, user2Address, userTypes.Developer, owner);
+            await addDeveloper("Developer C", user2Address);
+
+            await instance.connect(dev1Address).addUserValidation(user1Address, "my justification");
+            await instance.connect(dev2Address).addUserValidation(user1Address, "my justification");
+            await advanceBlock(validationPoolParams.blocksPerEra + 2);
+
+            await instance.connect(dev1Address).addUserValidation(user2Address, "my justification");
+            await instance.connect(dev2Address).addUserValidation(user2Address, "my justification");
+            await advanceBlock(validationPoolParams.blocksPerEra + 2);
+
+            await instance.connect(dev1Address).withdraw();
+            await instance.connect(dev1Address).withdraw();
+          });
+
+          it("should can withdraw in two eras", async () => {
+            let balanceOf = await regenerationCredit.balanceOf(dev1Address);
+            let balance = 416666666666666666666666n;
+
+            expect(balanceOf).to.equal(balance);
+          });
+        });
+      });
+
+      context("when can't withdraw tokens", () => {
+        it("should return error message", async () => {
+          await expect(instance.connect(dev1Address).withdraw()).to.be.revertedWith("Not eligible to withdraw");
+        });
+      });
+    });
+
+    context("when is not developer", () => {
+      it("should return error message", async () => {
+        await expect(instance.connect(dev1Address).withdraw()).to.be.revertedWith("Pool only to voters");
       });
     });
   });

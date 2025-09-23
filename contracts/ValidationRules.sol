@@ -54,7 +54,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
   mapping(address => uint256) public validatorLastVoteAt;
 
   /// @notice Tracks the first user who voted to invalidate a specific user in a given era.
-  mapping(address => mapping(uint256 => address)) public firstInvalidationVoter;
+  mapping(address => mapping(uint256 => address)) public hunterInvalidationVoter;
 
   // Mapping from a hunter's address directly to their governance pool data.
   mapping(address => Pool) public hunterPools;
@@ -153,26 +153,28 @@ contract ValidationRules is Callable, ReentrancyGuard {
     require(!validatorUsersValidations[msg.sender][userAddress][currentEra], "Already voted");
     require(waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
-    if (firstInvalidationVoter[userAddress][currentEra] == address(0)) {
-      firstInvalidationVoter[userAddress][currentEra] = msg.sender;
+    if (validatorLastVoteAt[msg.sender] == 0) {
+      hunterPools[msg.sender].currentEra = validationPool.currentContractEra();
+    }
+
+    if (userValidations[userAddress][currentEra] == 0) {
+      hunterInvalidationVoter[userAddress][currentEra] = msg.sender;
     }
 
     validatorUsersValidations[msg.sender][userAddress][currentEra] = true;
     validatorLastVoteAt[msg.sender] = block.number;
     userValidations[userAddress][currentEra]++;
 
-    uint256 _votesToInvalidate = votesToInvalidate();
     uint256 validationsCount = userValidations[userAddress][currentEra];
-
-    emit UserValidation(msg.sender, userAddress, justification);
+    uint256 _votesToInvalidate = votesToInvalidate();
 
     if (validationsCount >= _votesToInvalidate) {
       _denyUser(userAddress);
 
-      address hunter = firstInvalidationVoter[userAddress][currentEra];
-
-      validationPool.addLevel(hunter, userAddress);
+      validationPool.addLevel(hunterInvalidationVoter[userAddress][currentEra], userAddress);
     }
+
+    emit UserValidation(msg.sender, userAddress, justification);
   }
 
   /**
@@ -183,6 +185,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
   function withdraw() external nonReentrant {
     // Only registered voters can call this function.
     require(communityRules.isVoter(msg.sender), "Pool only to voters");
+    require(validatorLastVoteAt[msg.sender] > 0, "Not eligible to withdraw");
 
     Pool storage hunterPool = hunterPools[msg.sender];
     uint256 currentEra = hunterPool.currentEra;
