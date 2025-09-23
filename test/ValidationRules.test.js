@@ -800,8 +800,8 @@ describe("ValidationRules", () => {
               });
 
               it("set hunter as user1Address", async () => {
-                const hunterInvalidationVoter1 = await instance.hunterInvalidationVoter(regenerator1Address, 1);
-                const hunterInvalidationVoter2 = await instance.hunterInvalidationVoter(regenerator1Address, 2);
+                const hunterInvalidationVoter1 = await instance.hunterVoter(regenerator1Address, 1);
+                const hunterInvalidationVoter2 = await instance.hunterVoter(regenerator1Address, 2);
 
                 expect(hunterInvalidationVoter1).to.equal(user1Address);
                 expect(hunterInvalidationVoter2).to.equal(user1Address);

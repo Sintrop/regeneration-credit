@@ -54,9 +54,9 @@ contract ValidationRules is Callable, ReentrancyGuard {
   mapping(address => uint256) public validatorLastVoteAt;
 
   /// @notice Tracks the first user who voted to invalidate a specific user in a given era.
-  mapping(address => mapping(uint256 => address)) public hunterInvalidationVoter;
+  mapping(address => mapping(uint256 => address)) public hunterVoter;
 
-  // Mapping from a hunter's address directly to their governance pool data.
+  // Mapping from a hunter's address directly to their pool data.
   mapping(address => Pool) public hunterPools;
 
   /// @notice CommunityRules contract interface.
@@ -158,7 +158,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     }
 
     if (userValidations[userAddress][currentEra] == 0) {
-      hunterInvalidationVoter[userAddress][currentEra] = msg.sender;
+      hunterVoter[userAddress][currentEra] = msg.sender;
     }
 
     validatorUsersValidations[msg.sender][userAddress][currentEra] = true;
@@ -171,7 +171,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     if (validationsCount >= _votesToInvalidate) {
       _denyUser(userAddress);
 
-      validationPool.addLevel(hunterInvalidationVoter[userAddress][currentEra], userAddress);
+      validationPool.addLevel(hunterVoter[userAddress][currentEra], userAddress);
     }
 
     emit UserValidation(msg.sender, userAddress, justification);
