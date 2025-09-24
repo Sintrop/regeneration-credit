@@ -64,10 +64,10 @@ contract SupporterRules is ReentrancyGuard {
   mapping(uint64 => Offset) public offsets;
 
   /// @notice CommunityRules contract interface.
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice ResearcherRules contract interface.
-  IResearcherRules private researcherRules;
+  IResearcherRules public researcherRules;
 
   IRegenerationCredit public regenerationCredit;
 

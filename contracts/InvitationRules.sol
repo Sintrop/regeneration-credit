@@ -38,19 +38,19 @@ contract InvitationRules is Ownable, ReentrancyGuard {
   mapping(CommunityTypes.UserType => CommunityTypes.UserType) public canBeInviteds;
 
   /// @notice CommunityRules contract interface
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice ResearcherRules contract interface
-  IResearcherRules private researcherRules;
+  IResearcherRules public researcherRules;
 
   /// @notice DeveloperRules contract interface
-  IDeveloperRules private developerRules;
+  IDeveloperRules public developerRules;
 
   /// @notice ActivistRules contract interface
-  IActivistRules private activistRules;
+  IActivistRules public activistRules;
 
   /// @notice ContributorRules contract interface
-  IContributorRules private contributorRules;
+  IContributorRules public contributorRules;
 
   // --- Constructor ---
 

@@ -20,7 +20,7 @@ contract ResearcherPool is Poolable, Blockable, Callable, ReentrancyGuard {
   // --- Constants & state variables ---
 
   /// @notice Interface to the Regeneration Credit token contract, used to decrease total locked.
-  IRegenerationCredit private regenerationCredit;
+  IRegenerationCredit public regenerationCredit;
 
   /// @notice The total supply of Regeneration Credit tokens designated for this researcher pool.
   /// This value represents the maximum tokens available for distribution through this contract.
@@ -30,7 +30,7 @@ contract ResearcherPool is Poolable, Blockable, Callable, ReentrancyGuard {
   uint8 private constant RESOURCE_LEVEL = 1;
 
   /// @notice The address of the `ResearcherRules` contract.
-  address private researcherRulesAddress;
+  address public researcherRulesAddress;
 
   /// @notice Tracks unique resource IDs to ensure levels for a resource are added only once.
   mapping(uint64 => bool) public hasProcessedLevel;

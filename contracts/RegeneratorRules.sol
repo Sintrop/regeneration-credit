@@ -115,10 +115,10 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   uint256 public regenerationArea;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private inspectionRulesAddress;
+  address public inspectionRulesAddress;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private validationRulesAddress;
+  address public validationRulesAddress;
 
   // --- Constructor ---
 

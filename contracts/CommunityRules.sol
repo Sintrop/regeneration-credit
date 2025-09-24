@@ -81,10 +81,10 @@ contract CommunityRules is Callable {
   mapping(address => mapping(address => bool)) private _hasDelated;
 
   /// @notice The address of the `InvitationRules` contract.
-  address private invitationRulesAddress;
+  address public invitationRulesAddress;
 
   /// @notice The address of the `InvitationRules` contract.
-  address private validationRulesAddress;
+  address public validationRulesAddress;
 
   // --- Constructor ---
 
