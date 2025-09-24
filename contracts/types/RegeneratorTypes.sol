@@ -52,7 +52,7 @@ struct RegenerationScore {
 
 /**
  * @dev Regenerator coordinate points.
- * @param latitutde The latitude coordinate points (e.g., -13.726317).
+ * @param latitude The latitude coordinate points (e.g., -13.726317).
  * @param longitude The longitude coordinate points (e.g., -39.462539).
  */
 struct Coordinates {
