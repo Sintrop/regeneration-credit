@@ -88,16 +88,13 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// @notice Tracks which inspection IDs have already been processed to prevent replay attacks.
   mapping(uint64 => bool) private processedInspections;
 
-  /// @notice Tracks if a coordinate point have already been processed.
-  mapping(bytes32 => bool) seenCoordinates;
-
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules and user types.
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice The address of the `RegeneratorPool` contract, responsible for managing
   /// and distributing token rewards to regenerators.
-  IRegeneratorPool private regeneratorPool;
+  IRegeneratorPool public regeneratorPool;
 
   /// @notice The specific `UserType` enumeration value for a Regenerator user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.REGENERATOR;
@@ -402,28 +399,26 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param _coords The array of coordinate structs to validate.
    */
   function _validateCoordinates(Coordinates[] calldata _coords) private pure {
-    // Loop through each coordinate
-    for (uint256 i = 0; i < _coords.length; i++) {
-      // --- 1. Check for Duplicates ---
-      // Compare the current coordinate with all subsequent coordinates
-      for (uint256 j = i + 1; j < _coords.length; j++) {
-        // We use keccak256 to compare the structs efficiently
-        require(
-          keccak256(abi.encode(_coords[i])) != keccak256(abi.encode(_coords[j])),
-          "Duplicate coordinates are not allowed"
-        );
+    uint256 len = _coords.length;
+    int256 precision = 10 ** 6;
+
+    for (uint256 i = 0; i < len; i++) {
+      // --- 1. Convert and Validate Range ---
+      int256 lat_i = _stringCoordToInt(_coords[i].latitude);
+      int256 lon_i = _stringCoordToInt(_coords[i].longitude);
+
+      require(lat_i >= -90 * precision && lat_i <= 90 * precision, "Invalid latitude");
+      require(lon_i >= -180 * precision && lon_i <= 180 * precision, "Invalid longitude");
+
+      // --- 2. Check for Duplicates ---
+      for (uint256 j = i + 1; j < len; j++) {
+        int256 lat_j = _stringCoordToInt(_coords[j].latitude);
+        int256 lon_j = _stringCoordToInt(_coords[j].longitude);
+
+        require(lat_i != lat_j || lon_i != lon_j, "Duplicate coordinates are not allowed");
       }
-
-      // --- 2. Check for Valid Values ---
-      int256 lat = _stringCoordToInt(_coords[i].latitude);
-      int256 lon = _stringCoordToInt(_coords[i].longitude);
-      int256 precision = 10 ** 6;
-
-      require(lat >= -90 * precision && lat <= 90 * precision, "Invalid latitude");
-      require(lon >= -180 * precision && lon <= 180 * precision, "Invalid longitude");
     }
   }
-
   /**
    * @dev Converts a coordinate string part (e.g., "-23.547319") into a scaled integer (e.g., -23547319).
    * @notice This is a utility function to handle coordinate strings. It validates characters and
