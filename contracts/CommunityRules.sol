@@ -55,7 +55,7 @@ contract CommunityRules is Callable {
 
   /// @notice Tracks which user has voted on which delation to prevent double voting.
   /// @dev mapping: delationId => voterAddress => hasVoted (bool)
-  mapping(uint64 => mapping(address => bool)) private _hasVotedOnDelation;
+  mapping(uint64 => mapping(address => bool)) public _hasVotedOnDelation;
 
   /// @notice A mapping from an invited user's address to their `Invitation` details.
   mapping(address => CommunityTypes.Invitation) public invitations;

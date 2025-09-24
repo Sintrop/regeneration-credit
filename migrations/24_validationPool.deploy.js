@@ -17,8 +17,6 @@ async function validationPoolDeploy() {
 
   saveContractAddress("ValidationPool", validationPool.target);
 
-  await regenerationCredit.addContractPool(validationPool.target, validationPoolFunds);
-
   console.log(`ValidationPool address ${validationPool.target}`);
 
   await verifyContract(validationPool, "ValidationPool", args);
