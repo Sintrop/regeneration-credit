@@ -581,7 +581,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param _resourceId The id of the resource receiving the vote.
    * @param _justification The justification provided for the vote.
    */
-  event ResearchValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
+  event ResearchValidation(address indexed _validatorAddress, uint256 indexed _resourceId, string _justification);
 
   /**
    * @dev Emitted when a research is successfully invalidated by validators.

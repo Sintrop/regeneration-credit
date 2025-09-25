@@ -190,13 +190,13 @@ contract ValidationRules is Callable, ReentrancyGuard {
     Pool storage hunterPool = hunterPools[msg.sender];
     uint256 currentEra = hunterPool.currentEra;
 
-    // Check if the validator is eligible to withdraw for the current era through DeveloperPool.
+    // Check if the validator is eligible to withdraw for the current era through ValidationPool.
     require(validationPool.canWithdraw(currentEra), "Not eligible to withdraw for this era");
 
     // Increment the validator's era in their local pool data.
     hunterPool.currentEra++;
 
-    // Call the DeveloperPool contract to perform the actual token withdrawal.
+    // Call the ValidationPool contract to perform the actual token withdrawal.
     validationPool.withdraw(msg.sender, currentEra);
   }
 
@@ -272,11 +272,11 @@ contract ValidationRules is Callable, ReentrancyGuard {
   // --- View Functions ---
 
   /**
-   * @notice Get all user validations for a specific user in a given era.
-   * @dev Retrieves an array of `UserValidation` structs for a specified user and era.
+   * @notice Get user validations count for a specific user in a given era.
+   * @dev Retrieves the total number of validation votes received for a specified user and era.
    * @param userAddress The address of the user.
    * @param currentEra The era to check for validations.
-   * @return UserValidation[] An array of `UserValidation` structs.
+   * @return uint256 The number of received invalidation votes.
    */
   function getUserValidations(address userAddress, uint256 currentEra) public view returns (uint256) {
     return userValidations[userAddress][currentEra];
