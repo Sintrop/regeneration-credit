@@ -63,11 +63,11 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   /// @notice Valid inspections count (inspections not invalidated).
   uint64 public inspectionsCount;
 
-  /// @notice Realized inspections count (inspections that have been completed and submitted).
-  uint64 public realizedInspectionsCount;
-
   /// @notice Total inspections count, including open, accepted, realized, and invalidated ones.
   uint64 public inspectionsTotalCount;
+
+  /// @notice Realized inspections count (inspections that have been completed and submitted).
+  uint256 public realizedInspectionsCount;
 
   /// @notice Sum of all valid inspections' trees impact from all past eras.
   uint256 public inspectionsTreesImpact;
@@ -292,9 +292,10 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
     // Only count inspections that have a positive impact towards the global metrics.
     if (inspection.regenerationScore > 0) {
-      impactPerEra[inspection.inspectedAtEra].trees += treesResult;
-      impactPerEra[inspection.inspectedAtEra].biodiversity += biodiversityResult;
-      realizedInspectionsCount++;
+      uint256 era = inspection.inspectedAtEra;
+      impactPerEra[era].trees += treesResult;
+      impactPerEra[era].biodiversity += biodiversityResult;
+      impactPerEra[era].realizedInspections++;
     }
 
     inspectorInspected[msg.sender][inspection.regenerator] = true;
@@ -457,9 +458,9 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     // Decrement era impact metrics.
     impactPerEra[inspection.inspectedAtEra].trees -= inspection.treesResult;
     impactPerEra[inspection.inspectedAtEra].biodiversity -= inspection.biodiversityResult;
+    impactPerEra[inspection.inspectedAtEra].realizedInspections--;
 
     inspectionsCount--; // Decrement valid inspections count
-    realizedInspectionsCount--; // Decrement realized inspections count
 
     // Update inspection status
     inspection.status = InspectionStatus.INVALIDATED;
@@ -485,7 +486,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
       inspectionsTreesImpact += eraImpact.trees;
       inspectionsBiodiversityImpact += eraImpact.biodiversity;
-
+      realizedInspectionsCount += eraImpact.realizedInspections;
       // Update the lastSetlledEra to the era just settled.
       lastSettledEra = nexEraToSet;
     }

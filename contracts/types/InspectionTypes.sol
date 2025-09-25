@@ -67,4 +67,6 @@ struct ContractsDependency {
 struct EraImpact {
   uint256 trees;
   uint256 biodiversity;
+  uint256 realizedInspections;
+  uint256 impactRegenerators;
 }
