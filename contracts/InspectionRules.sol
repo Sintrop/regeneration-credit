@@ -75,6 +75,10 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   /// @notice Sum of all valid inspections' biodiversity impact from all past eras.
   uint256 public inspectionsBiodiversityImpact;
 
+  /// @notice The total count of regenerators who are considered "impact regenerators",
+  /// have reached the minimum of one inspection validated.
+  uint256 public totalImpactRegenerators;
+
   /// @notice Tracks inspection IDs that have already been invalidated.
   mapping(uint64 => bool) public inspectionPenalized;
 
@@ -487,6 +491,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
       inspectionsTreesImpact += eraImpact.trees;
       inspectionsBiodiversityImpact += eraImpact.biodiversity;
       realizedInspectionsCount += eraImpact.realizedInspections;
+      totalImpactRegenerators = regeneratorRules.onCertificationRegenerators();
       // Update the lastSetlledEra to the era just settled.
       lastSettledEra = nexEraToSet;
     }

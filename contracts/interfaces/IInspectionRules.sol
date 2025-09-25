@@ -26,4 +26,10 @@ interface IInspectionRules {
    * @return The total biodiversity impact value.
    */
   function inspectionsBiodiversityImpact() external view returns (uint256);
+
+  /**
+   * @notice Returns the total number of impact regenerators, users with at least one inspection validated.
+   * @return The total of regenerators on the certification process.
+   */
+  function totalImpactRegenerators() external view returns (uint256);
 }

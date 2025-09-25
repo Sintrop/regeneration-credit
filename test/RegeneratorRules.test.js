@@ -548,14 +548,14 @@ describe("RegeneratorRules", () => {
           await instance.afterRealizeInspection(prod1Address, 0, 1);
 
           expect(await instance.impactRegenerators(prod1Address)).to.be.true;
-          expect(await instance.totalImpactRegenerators()).to.equal(1);
+          expect(await instance.onCertificationRegenerators()).to.equal(1);
           let regenerator = await instance.getRegenerator(prod1Address);
           expect(regenerator.totalInspections).to.equal(1);
 
           await instance.decrementInspections(prod1Address);
 
           expect(await instance.impactRegenerators(prod1Address)).to.be.false;
-          expect(await instance.totalImpactRegenerators()).to.equal(0);
+          expect(await instance.onCertificationRegenerators()).to.equal(0);
           regenerator = await instance.getRegenerator(prod1Address);
           expect(regenerator.totalInspections).to.equal(0);
         });
