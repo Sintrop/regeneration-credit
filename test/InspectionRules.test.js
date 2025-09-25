@@ -960,10 +960,10 @@ describe("InspectionRules", () => {
                       expect(inspector.totalInspections).to.equal(1);
                     });
 
-                    it("should increment realizedInspectionsCount", async () => {
+                    it("should not increment realizedInspectionsCount", async () => {
                       const realizedInspectionsCount = await instance.realizedInspectionsCount();
 
-                      expect(realizedInspectionsCount).to.equal(1);
+                      expect(realizedInspectionsCount).to.equal(0);
                     });
 
                     it("should increment era impactPerEra", async () => {
@@ -971,6 +971,7 @@ describe("InspectionRules", () => {
 
                       expect(impactPerEra.trees).to.equal(10);
                       expect(impactPerEra.biodiversity).to.equal(10);
+                      expect(impactPerEra.realizedInspections).to.equal(1);
                     });
                   });
 
@@ -1044,10 +1045,16 @@ describe("InspectionRules", () => {
                       expect(inspector.totalInspections).to.equal(1);
                     });
 
-                    it("should increment realizedInspectionsCount", async () => {
+                    it("should increment realizedInspectionsCount in era 2", async () => {
                       const realizedInspectionsCount = await instance.realizedInspectionsCount();
 
-                      expect(realizedInspectionsCount).to.equal(2);
+                      expect(realizedInspectionsCount).to.equal(1);
+                    });
+
+                    it("should increment impactEra realizedInspectionsCount", async () => {
+                      const impactPerEra = await instance.impactPerEra(1);
+
+                      expect(impactPerEra.realizedInspections).to.equal(1);
                     });
 
                     it("era 1 impactPerEra is the same", async () => {
@@ -1204,6 +1211,7 @@ describe("InspectionRules", () => {
                   const finalEraImpact = await instance.impactPerEra(1);
                   expect(finalEraImpact.trees).to.equal(initialEraImpact.trees);
                   expect(finalEraImpact.biodiversity).to.equal(initialEraImpact.biodiversity);
+                  expect(finalEraImpact.realizedInspections).to.equal(0);
                 });
 
                 it("should still change the inspection status to INSPECTED", async () => {
@@ -1350,6 +1358,7 @@ describe("InspectionRules", () => {
 
               expect(impactPerEra.trees).to.equal(0);
               expect(impactPerEra.biodiversity).to.equal(0);
+              expect(impactPerEra.realizedInspections).to.equal(0);
             });
 
             it("inspection status INVALIDATED", async () => {

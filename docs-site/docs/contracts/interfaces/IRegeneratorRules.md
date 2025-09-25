@@ -130,10 +130,10 @@ returns a status, likely a boolean indicating success._
 | ---- | ---- | ----------- |
 | user | address | The address of the regenerator. |
 
-### totalImpactRegenerators
+### onCertificationRegenerators
 
 ```solidity
-function totalImpactRegenerators() external view returns (uint256)
+function onCertificationRegenerators() external view returns (uint256)
 ```
 
 Returns the total number of impact regenerators, users that completed 3 inspections.

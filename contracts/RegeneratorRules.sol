@@ -99,9 +99,9 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// @notice The specific `UserType` enumeration value for a Regenerator user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.REGENERATOR;
 
-  /// @notice The total count of regenerators who are considered "impact regenerators",
-  /// have reached the minimum of one inspections.
-  uint256 public totalImpactRegenerators;
+  /// @notice The total count of regenerators that have started the certification process,
+  /// and have reached the minimum of one inspection.
+  uint256 public onCertificationRegenerators;
 
   /// @notice The total count of regenerators who have completed the certification process,
   /// have reached the maximum allowed inspections.
@@ -330,7 +330,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     require(totalInspections > 0, "totalInspections invalid");
 
     if (totalInspections == 1) {
-      totalImpactRegenerators--;
+      onCertificationRegenerators--;
       impactRegenerators[addr] = false;
     }
 
@@ -529,7 +529,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /**
    * @dev Private function to increment a regenerator's total completed inspections count.
-   * This also updates the `impactRegenerators` flag and `totalImpactRegenerators` count.
+   * This also updates the `impactRegenerators` flag and `onCertificationRegenerators` count.
    * @param addr The regenerator's wallet address.
    * @return uint256 The updated total number of inspections for the regenerator.
    */
@@ -541,7 +541,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     // Mark as impact regenerator.
     if (!impactRegenerators[addr]) {
       impactRegenerators[addr] = true;
-      totalImpactRegenerators++;
+      onCertificationRegenerators++;
     }
 
     if (regenerator.totalInspections == MAXIMUM_INSPECTIONS) {

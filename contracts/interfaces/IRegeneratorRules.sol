@@ -67,10 +67,10 @@ interface IRegeneratorRules {
   function removePoolLevels(address user) external;
 
   /**
-   * @notice Returns the total number of impact regenerators, users that completed 3 inspections.
-   * @return The total impact regenerators.
+   * @notice Returns the total number of ongoing certification regenerators, users with at least one inspection.
+   * @return The total of regenerators on the certification process.
    */
-  function totalImpactRegenerators() external view returns (uint256);
+  function onCertificationRegenerators() external view returns (uint256);
 
   /**
    * @notice Returns the total area under regeneration across all regenerators.

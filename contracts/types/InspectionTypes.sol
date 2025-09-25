@@ -63,8 +63,10 @@ struct ContractsDependency {
  * @dev This struct is used to register the impact of all inspection of an Era.
  * @param trees Trees count.
  * @param biodiversity Biodiversity count.
+ * @param realizedInspections Era realizedInspections count.
  */
 struct EraImpact {
   uint256 trees;
   uint256 biodiversity;
+  uint256 realizedInspections;
 }

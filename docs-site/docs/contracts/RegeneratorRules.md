@@ -87,10 +87,10 @@ mapping(bytes32 => bool) seenCoordinates
 
 Tracks if a coordinate point have already been processed.
 
-### totalImpactRegenerators
+### onCertificationRegenerators
 
 ```solidity
-uint256 totalImpactRegenerators
+uint256 onCertificationRegenerators
 ```
 
 The total count of regenerators who are considered "impact regenerators"
