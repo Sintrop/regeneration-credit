@@ -1117,15 +1117,15 @@ describe("ValidationRules", () => {
       });
     });
 
-    context("when votersCount is 15000", () => {
+    context("when votersCount is 11500", () => {
       beforeEach(async () => {
-        await mockContract.mock.votersCount.returns(15000);
+        await mockContract.mock.votersCount.returns(11500);
       });
 
       it("returns 451", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(451);
+        expect(votesToInvalidate).to.equal(346);
       });
     });
 
@@ -1134,10 +1134,10 @@ describe("ValidationRules", () => {
         await mockContract.mock.votersCount.returns(20000);
       });
 
-      it("returns 500", async () => {
+      it("returns 360", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(500);
+        expect(votesToInvalidate).to.equal(360);
       });
     });
 
@@ -1146,10 +1146,10 @@ describe("ValidationRules", () => {
         await mockContract.mock.votersCount.returns(35000);
       });
 
-      it("returns 500", async () => {
+      it("returns 360", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(500);
+        expect(votesToInvalidate).to.equal(360);
       });
     });
 
@@ -1158,10 +1158,10 @@ describe("ValidationRules", () => {
         await mockContract.mock.votersCount.returns(48000);
       });
 
-      it("returns 500", async () => {
+      it("returns 360", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(500);
+        expect(votesToInvalidate).to.equal(360);
       });
     });
   });
