@@ -174,7 +174,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
       validationPool.addLevel(hunterVoter[userAddress][currentEra], userAddress);
     }
 
-    emit UserValidation(msg.sender, userAddress, justification);
+    emit UserValidation(msg.sender, userAddress, justification, currentEra);
   }
 
   /**
@@ -334,6 +334,12 @@ contract ValidationRules is Callable, ReentrancyGuard {
    * @param _validatorAddress The address of the validator.
    * @param _userAddress The wallet of the user receiving the vote.
    * @param _justification The justification provided for the vote.
+   * @param _currentEra User validation currentEra.
    */
-  event UserValidation(address indexed _validatorAddress, address indexed _userAddress, string _justification);
+  event UserValidation(
+    address indexed _validatorAddress,
+    address indexed _userAddress,
+    string _justification,
+    uint256 indexed _currentEra
+  );
 }
