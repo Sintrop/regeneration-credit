@@ -22,7 +22,7 @@ describe("ValidationPool", () => {
     denied11Address,
     denied12Address;
   let args = {
-    totalPoolTokens: "5000000000000000000000000",
+    totalPoolTokens: "10000000000000000000000000",
     blocksPerEra: 20,
     halving: 12,
   };
@@ -311,180 +311,180 @@ describe("ValidationPool", () => {
 
   describe("#tokensPerEpoch", () => {
     context("when is epoch 1", () => {
-      it("must return 2500000000000000000000000", async () => {
+      it("must return 5000000000000000000000000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch(1);
+
+        expect(tokensPerEpoch).to.equal("5000000000000000000000000");
+      });
+    });
+
+    context("when is epoch 2", () => {
+      it("must return 2500000000000000000000000", async () => {
+        const tokensPerEpoch = await instance.tokensPerEpoch(2);
 
         expect(tokensPerEpoch).to.equal("2500000000000000000000000");
       });
     });
 
-    context("when is epoch 2", () => {
+    context("when is epoch 3", () => {
       it("must return 1250000000000000000000000", async () => {
-        const tokensPerEpoch = await instance.tokensPerEpoch(2);
+        const tokensPerEpoch = await instance.tokensPerEpoch(3);
 
         expect(tokensPerEpoch).to.equal("1250000000000000000000000");
       });
     });
 
-    context("when is epoch 3", () => {
+    context("when is epoch 4", () => {
       it("must return 625000000000000000000000", async () => {
-        const tokensPerEpoch = await instance.tokensPerEpoch(3);
+        const tokensPerEpoch = await instance.tokensPerEpoch(4);
 
         expect(tokensPerEpoch).to.equal("625000000000000000000000");
       });
     });
 
-    context("when is epoch 4", () => {
+    context("when is epoch 5", () => {
       it("must return 312500000000000000000000", async () => {
-        const tokensPerEpoch = await instance.tokensPerEpoch(4);
+        const tokensPerEpoch = await instance.tokensPerEpoch(5);
 
         expect(tokensPerEpoch).to.equal("312500000000000000000000");
       });
     });
 
-    context("when is epoch 5", () => {
+    context("when is epoch 6", () => {
       it("must return 156250000000000000000000", async () => {
-        const tokensPerEpoch = await instance.tokensPerEpoch(5);
+        const tokensPerEpoch = await instance.tokensPerEpoch(6);
 
         expect(tokensPerEpoch).to.equal("156250000000000000000000");
       });
     });
 
-    context("when is epoch 6", () => {
+    context("when is epoch 7", () => {
       it("must return 78125000000000000000000", async () => {
-        const tokensPerEpoch = await instance.tokensPerEpoch(6);
+        const tokensPerEpoch = await instance.tokensPerEpoch(7);
 
         expect(tokensPerEpoch).to.equal("78125000000000000000000");
       });
     });
 
-    context("when is epoch 7", () => {
+    context("when is epoch 8", () => {
       it("must return 39062500000000000000000", async () => {
-        const tokensPerEpoch = await instance.tokensPerEpoch(7);
+        const tokensPerEpoch = await instance.tokensPerEpoch(8);
 
         expect(tokensPerEpoch).to.equal("39062500000000000000000");
       });
     });
 
-    context("when is epoch 8", () => {
+    context("when is epoch 9", () => {
       it("must return 19531250000000000000000", async () => {
-        const tokensPerEpoch = await instance.tokensPerEpoch(8);
+        const tokensPerEpoch = await instance.tokensPerEpoch(9);
 
         expect(tokensPerEpoch).to.equal("19531250000000000000000");
       });
     });
 
-    context("when is epoch 9", () => {
+    context("when is epoch 10", () => {
       it("must return 9765625000000000000000", async () => {
-        const tokensPerEpoch = await instance.tokensPerEpoch(9);
+        const tokensPerEpoch = await instance.tokensPerEpoch(10);
 
         expect(tokensPerEpoch).to.equal("9765625000000000000000");
       });
     });
 
-    context("when is epoch 10", () => {
-      it("must return 4882812500000000000000", async () => {
-        const tokensPerEpoch = await instance.tokensPerEpoch(10);
-
-        expect(tokensPerEpoch).to.equal("4882812500000000000000");
-      });
-    });
-
     context("when is epoch 15", () => {
-      it("must return 152587890625000000000", async () => {
+      it("must return 305175781250000000000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch(15);
 
-        expect(tokensPerEpoch).to.equal("152587890625000000000");
+        expect(tokensPerEpoch).to.equal("305175781250000000000");
       });
     });
 
     context("when is epoch 20", () => {
-      it("must return 4768371582031250000", async () => {
+      it("must return 9536743164062500000", async () => {
         const tokensPerEpoch = await instance.tokensPerEpoch(20);
 
-        expect(tokensPerEpoch).to.equal("4768371582031250000");
+        expect(tokensPerEpoch).to.equal("9536743164062500000");
       });
     });
   });
 
   describe("#tokensPerEra", () => {
     context("when is epoch 1", () => {
-      it("must return 208333333333333333333333", async () => {
+      it("must return 416666666666666666666666", async () => {
         const tokensPerEra = await instance.tokensPerEra(1, args.halving);
+
+        expect(tokensPerEra).to.equal("416666666666666666666666");
+      });
+    });
+
+    context("when is epoch 2", () => {
+      it("must return 208333333333333333333333", async () => {
+        const tokensPerEra = await instance.tokensPerEra(2, args.halving);
 
         expect(tokensPerEra).to.equal("208333333333333333333333");
       });
     });
 
-    context("when is epoch 2", () => {
+    context("when is epoch 3", () => {
       it("must return 104166666666666666666666", async () => {
-        const tokensPerEra = await instance.tokensPerEra(2, args.halving);
+        const tokensPerEra = await instance.tokensPerEra(3, args.halving);
 
         expect(tokensPerEra).to.equal("104166666666666666666666");
       });
     });
 
-    context("when is epoch 3", () => {
+    context("when is epoch 4", () => {
       it("must return 52083333333333333333333", async () => {
-        const tokensPerEra = await instance.tokensPerEra(3, args.halving);
+        const tokensPerEra = await instance.tokensPerEra(4, args.halving);
 
         expect(tokensPerEra).to.equal("52083333333333333333333");
       });
     });
 
-    context("when is epoch 4", () => {
+    context("when is epoch 5", () => {
       it("must return 26041666666666666666666", async () => {
-        const tokensPerEra = await instance.tokensPerEra(4, args.halving);
+        const tokensPerEra = await instance.tokensPerEra(5, args.halving);
 
         expect(tokensPerEra).to.equal("26041666666666666666666");
       });
     });
 
-    context("when is epoch 5", () => {
+    context("when is epoch 6", () => {
       it("must return 13020833333333333333333", async () => {
-        const tokensPerEra = await instance.tokensPerEra(5, args.halving);
+        const tokensPerEra = await instance.tokensPerEra(6, args.halving);
 
         expect(tokensPerEra).to.equal("13020833333333333333333");
       });
     });
 
-    context("when is epoch 6", () => {
+    context("when is epoch 7", () => {
       it("must return 6510416666666666666666", async () => {
-        const tokensPerEra = await instance.tokensPerEra(6, args.halving);
+        const tokensPerEra = await instance.tokensPerEra(7, args.halving);
 
         expect(tokensPerEra).to.equal("6510416666666666666666");
       });
     });
 
-    context("when is epoch 7", () => {
+    context("when is epoch 8", () => {
       it("must return 3255208333333333333333", async () => {
-        const tokensPerEra = await instance.tokensPerEra(7, args.halving);
+        const tokensPerEra = await instance.tokensPerEra(8, args.halving);
 
         expect(tokensPerEra).to.equal("3255208333333333333333");
       });
     });
 
-    context("when is epoch 8", () => {
+    context("when is epoch 9", () => {
       it("must return 1627604166666666666666", async () => {
-        const tokensPerEra = await instance.tokensPerEra(8, args.halving);
+        const tokensPerEra = await instance.tokensPerEra(9, args.halving);
 
         expect(tokensPerEra).to.equal("1627604166666666666666");
       });
     });
 
-    context("when is epoch 9", () => {
-      it("must return 813802083333333333333", async () => {
-        const tokensPerEra = await instance.tokensPerEra(9, args.halving);
-
-        expect(tokensPerEra).to.equal("813802083333333333333");
-      });
-    });
-
     context("when is epoch 10", () => {
-      it("must return 406901041666666666666", async () => {
+      it("must return 813802083333333333333", async () => {
         const tokensPerEra = await instance.tokensPerEra(10, args.halving);
 
-        expect(tokensPerEra).to.equal("406901041666666666666");
+        expect(tokensPerEra).to.equal("813802083333333333333");
       });
     });
   });
@@ -512,18 +512,18 @@ describe("ValidationPool", () => {
                   await advanceBlock(args.blocksPerEra);
                 });
 
-                it("user1 must withdraw 104166666666666666666666 tokens", async () => {
+                it("user1 must withdraw 208333333333333333333333 tokens", async () => {
                   await instance.withdraw(user1Address, 1);
                   const balanceOf = await regenerationCredit.balanceOf(user1Address);
 
-                  expect(balanceOf).to.equal(104166666666666666666666n);
+                  expect(balanceOf).to.equal(208333333333333333333333n);
                 });
 
-                it("user2 must withdraw 104166666666666666666666 tokens", async () => {
+                it("user2 must withdraw 208333333333333333333333 tokens", async () => {
                   await instance.withdraw(user2Address, 1);
                   const balanceOf = await regenerationCredit.balanceOf(user2Address);
 
-                  expect(balanceOf).to.equal(104166666666666666666666n);
+                  expect(balanceOf).to.equal(208333333333333333333333n);
                 });
 
                 it("must update get era to user1", async () => {
@@ -532,7 +532,7 @@ describe("ValidationPool", () => {
                   const era = await instance.getEra(1);
 
                   expect(era.claimsCount).to.equal(1);
-                  expect(era.tokens).to.equal(104166666666666666666666n);
+                  expect(era.tokens).to.equal(208333333333333333333333n);
                   expect(era.levels).to.equal(6);
                 });
 
@@ -542,7 +542,7 @@ describe("ValidationPool", () => {
                   const era = await instance.getEra(1);
 
                   expect(era.claimsCount).to.equal(1);
-                  expect(era.tokens).to.equal(104166666666666666666666n);
+                  expect(era.tokens).to.equal(208333333333333333333333n);
                   expect(era.levels).to.equal(6);
                 });
               });
@@ -559,11 +559,11 @@ describe("ValidationPool", () => {
                   await advanceBlock(args.blocksPerEra);
                 });
 
-                it("shoud withdraw 208333333333333333333333 tokens", async () => {
+                it("shoud withdraw 416666666666666666666666 tokens", async () => {
                   await instance.withdraw(user1Address, 1);
                   const balanceOf = await regenerationCredit.balanceOf(user1Address);
 
-                  expect(balanceOf).to.equal(208333333333333333333333n);
+                  expect(balanceOf).to.equal(416666666666666666666666n);
                 });
 
                 it("shoud withdraw 0 tokens to user2", async () => {
@@ -609,67 +609,67 @@ describe("ValidationPool", () => {
                   await instance.withdraw(user2Address, 2);
                 });
 
-                it("user1 pool balance must be 4583333333333333333333336", async () => {
+                it("user1 pool balance must be 9166666666666666666666668", async () => {
                   const balance = await regenerationCredit.balanceOf(instance.target);
 
-                  expect(balance).to.equal(4583333333333333333333336n);
+                  expect(balance).to.equal(9166666666666666666666668n);
                 });
 
-                it("user1 balance must be 208333333333333333333332", async () => {
+                it("user1 balance must be 416666666666666666666666", async () => {
                   const balanceOf = await regenerationCredit.balanceOf(user1Address);
 
-                  expect(balanceOf).to.equal(208333333333333333333332n);
+                  expect(balanceOf).to.equal(416666666666666666666666n);
                 });
 
-                it("user1 balance in era 1 must be 104166666666666666666666", async () => {
+                it("user1 balance in era 1 must be 208333333333333333333333", async () => {
                   const balanceOf = await instance.eraTokens(1, user1Address);
 
-                  expect(balanceOf).to.equal(104166666666666666666666n);
+                  expect(balanceOf).to.equal(208333333333333333333333n);
                 });
 
-                it("user1 balance in era 2 must be 104166666666666666666666", async () => {
+                it("user1 balance in era 2 must be 208333333333333333333333", async () => {
                   const balanceOf = await instance.eraTokens(2, user1Address);
 
-                  expect(balanceOf).to.equal(104166666666666666666666n);
+                  expect(balanceOf).to.equal(208333333333333333333333n);
                 });
 
                 it("user1 must update eras", async () => {
                   const era = await instance.getEra(2);
 
                   expect(era.claimsCount).to.equal(2);
-                  expect(era.tokens).to.equal(208333333333333333333332n);
+                  expect(era.tokens).to.equal(416666666666666666666666n);
                   expect(era.levels).to.equal(6);
                 });
 
-                it("user2 pool balance must be 4583333333333333333333336", async () => {
+                it("user2 pool balance must be 9166666666666666666666668", async () => {
                   const balance = await regenerationCredit.balanceOf(instance.target);
 
-                  expect(balance).to.equal(4583333333333333333333336n);
+                  expect(balance).to.equal(9166666666666666666666668n);
                 });
 
-                it("user2 balance must be 208333333333333333333332", async () => {
+                it("user2 balance must be 416666666666666666666666", async () => {
                   const balanceOf = await regenerationCredit.balanceOf(user2Address);
 
-                  expect(balanceOf).to.equal(208333333333333333333332n);
+                  expect(balanceOf).to.equal(416666666666666666666666n);
                 });
 
-                it("user2 balance in era 1 must be 104166666666666666666666", async () => {
+                it("user2 balance in era 1 must be 208333333333333333333333", async () => {
                   const balanceOf = await instance.eraTokens(1, user2Address);
 
-                  expect(balanceOf).to.equal(104166666666666666666666n);
+                  expect(balanceOf).to.equal(208333333333333333333333n);
                 });
 
-                it("user2 balance in era 2 must be 104166666666666666666666", async () => {
+                it("user2 balance in era 2 must be 208333333333333333333333", async () => {
                   const balanceOf = await instance.eraTokens(2, user2Address);
 
-                  expect(balanceOf).to.equal(104166666666666666666666n);
+                  expect(balanceOf).to.equal(208333333333333333333333n);
                 });
 
                 it("user2 must update eras", async () => {
                   const era = await instance.getEra(2);
 
                   expect(era.claimsCount).to.equal(2);
-                  expect(era.tokens).to.equal(208333333333333333333332n);
+                  expect(era.tokens).to.equal(416666666666666666666666n);
                   expect(era.levels).to.equal(6);
                 });
               });
@@ -698,16 +698,16 @@ describe("ValidationPool", () => {
                   await instance.withdraw(user2Address, 1);
                 });
 
-                it("user1 must withdraw 104166666666666666666666 tokens", async () => {
+                it("user1 must withdraw 208333333333333333333333 tokens", async () => {
                   const balanceOf = await regenerationCredit.balanceOf(user1Address);
 
-                  expect(balanceOf).to.equal(104166666666666666666666n);
+                  expect(balanceOf).to.equal(208333333333333333333333n);
                 });
 
-                it("user2 must withdraw 104166666666666666666666 tokens", async () => {
+                it("user2 must withdraw 208333333333333333333333 tokens", async () => {
                   const balanceOf = await regenerationCredit.balanceOf(user2Address);
 
-                  expect(balanceOf).to.equal(104166666666666666666666n);
+                  expect(balanceOf).to.equal(208333333333333333333333n);
                 });
               });
 
@@ -723,11 +723,11 @@ describe("ValidationPool", () => {
                   await advanceBlock(args.blocksPerEra * args.halving);
                 });
 
-                it("shoud withdraw 208333333333333333333333 tokens", async () => {
+                it("shoud withdraw 416666666666666666666666 tokens", async () => {
                   await instance.withdraw(user1Address, 1);
                   const balanceOf = await regenerationCredit.balanceOf(user1Address);
 
-                  expect(balanceOf).to.equal(208333333333333333333333n);
+                  expect(balanceOf).to.equal(416666666666666666666666n);
                 });
 
                 it("shoud withdraw 0 tokens to dev2", async () => {
@@ -772,28 +772,28 @@ describe("ValidationPool", () => {
                   await instance.withdraw(user2Address, 2);
                 });
 
-                it("dev pool balance must be 4583333333333333333333336", async () => {
+                it("dev pool balance must be 9166666666666666666666670", async () => {
                   const balance = await regenerationCredit.balanceOf(instance.target);
 
-                  expect(balance).to.equal(4583333333333333333333336n);
+                  expect(balance).to.equal(9166666666666666666666670n);
                 });
 
-                it("user1 balance must be 202380952380952380952380", async () => {
+                it("user1 balance must be 404761904761904761904760", async () => {
                   const balanceOf = await regenerationCredit.balanceOf(user1Address);
 
-                  expect(balanceOf).to.equal(202380952380952380952380n);
+                  expect(balanceOf).to.equal(404761904761904761904760n);
                 });
 
-                it("user1 balance in era 1 must be 119047619047619047619047", async () => {
+                it("user1 balance in era 1 must be 238095238095238095238094", async () => {
                   const balanceOf = await instance.eraTokens(1, user1Address);
 
-                  expect(balanceOf).to.equal(119047619047619047619047n);
+                  expect(balanceOf).to.equal(238095238095238095238094n);
                 });
 
-                it("user1 balance in era 2 must be 83333333333333333333333", async () => {
+                it("user1 balance in era 2 must be 166666666666666666666666", async () => {
                   const balanceOf = await instance.eraTokens(2, user1Address);
 
-                  expect(balanceOf).to.equal(83333333333333333333333n);
+                  expect(balanceOf).to.equal(166666666666666666666666n);
                 });
               });
 
@@ -806,22 +806,22 @@ describe("ValidationPool", () => {
                   await instance.withdraw(user2Address, 2);
                 });
 
-                it("user2 balance must be 214285714285714285714284", async () => {
+                it("user2 balance must be 428571428571428571428570", async () => {
                   const balanceOf = await regenerationCredit.balanceOf(user2Address);
 
-                  expect(balanceOf).to.equal(214285714285714285714284n);
+                  expect(balanceOf).to.equal(428571428571428571428570n);
                 });
 
-                it("user2 balance in era 1 must be 89285714285714285714285", async () => {
+                it("user2 balance in era 1 must be 178571428571428571428571", async () => {
                   const balanceOf = await instance.eraTokens(1, user2Address);
 
-                  expect(balanceOf).to.equal(89285714285714285714285n);
+                  expect(balanceOf).to.equal(178571428571428571428571n);
                 });
 
-                it("user2 balance in era 2 must be 124999999999999999999999", async () => {
+                it("user2 balance in era 2 must be 249999999999999999999999", async () => {
                   const balanceOf = await instance.eraTokens(2, user2Address);
 
-                  expect(balanceOf).to.equal(124999999999999999999999n);
+                  expect(balanceOf).to.equal(249999999999999999999999n);
                 });
               });
             });

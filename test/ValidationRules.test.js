@@ -53,7 +53,7 @@ describe("ValidationRules", () => {
   };
 
   let validationPoolParams = {
-    totalTokens: "5000000000000000000000000",
+    totalTokens: "10000000000000000000000000",
     halving: 12,
     blocksPerEra: 160,
   };
@@ -1214,7 +1214,7 @@ describe("ValidationRules", () => {
             it("should withdraw all tokens from era", async () => {
               let balanceOf = await regenerationCredit.balanceOf(dev1Address);
 
-              let tokensBalance = 208333333333333333333333n;
+              let tokensBalance = 416666666666666666666666n;
 
               expect(balanceOf).to.equal(tokensBalance);
             });
@@ -1253,18 +1253,18 @@ describe("ValidationRules", () => {
                 expect(hunterPools.currentEra).to.equal(2);
               });
 
-              it("developer1 balance must be 104166666666666666666666", async () => {
+              it("developer1 balance must be 208333333333333333333333", async () => {
                 let balanceOf = await regenerationCredit.balanceOf(dev1Address);
 
-                let tokensPerEra = 104166666666666666666666n;
+                let tokensPerEra = 208333333333333333333333n;
 
                 expect(balanceOf).to.equal(tokensPerEra);
               });
 
-              it("developer2 balance must be 104166666666666666666666", async () => {
+              it("developer2 balance must be 208333333333333333333333", async () => {
                 let balanceOf = await regenerationCredit.balanceOf(dev2Address);
 
-                let tokensPerEra = 104166666666666666666666n;
+                let tokensPerEra = 208333333333333333333333n;
 
                 expect(balanceOf).to.equal(tokensPerEra);
               });
@@ -1305,7 +1305,7 @@ describe("ValidationRules", () => {
 
           it("should can withdraw in two eras", async () => {
             let balanceOf = await regenerationCredit.balanceOf(dev1Address);
-            let balance = 416666666666666666666666n;
+            let balance = 833333333333333333333332n;
 
             expect(balanceOf).to.equal(balance);
           });

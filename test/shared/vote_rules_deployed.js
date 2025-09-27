@@ -31,7 +31,7 @@ const voteRulesDeployed = async () => {
   };
 
   let validationPoolParams = {
-    totalTokens: "5000000000000000000000000",
+    totalTokens: "10000000000000000000000000",
     halving: 12,
     blocksPerEra: 160,
   };

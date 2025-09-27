@@ -22,7 +22,7 @@ contract ValidationPool is Poolable, Blockable, Callable, ReentrancyGuard {
 
   /// @notice The total supply of Regeneration Credit tokens designated for this validation pool.
   /// This value represents the maximum tokens available for distribution through this contract.
-  uint256 private constant TOTAL_POOL_TOKENS = 5000000e18;
+  uint256 private constant TOTAL_POOL_TOKENS = 10000000e18;
 
   /// @notice Maximum possible level from a single resource.
   uint8 private constant RESOURCE_LEVEL = 1;
