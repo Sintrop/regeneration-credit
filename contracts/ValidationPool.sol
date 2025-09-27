@@ -122,6 +122,19 @@ contract ValidationPool is Poolable, Blockable, Callable, ReentrancyGuard {
     _addPoolLevel(addr, RESOURCE_LEVEL, currentContractEra());
   }
 
+  /**
+   * @dev Allows an authorized caller to increase the user pool level.
+   * This function updates the validation level within the system's pooling mechanism.
+   * @notice Can only be called by the validationRules address.
+   * @param addr The wallet address of the validation.
+   */
+  function addPointsLevel(
+    address addr
+  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
+    // Calls the _addPoolLevel function from Poolable.sol.
+    _addPoolLevel(addr, RESOURCE_LEVEL, currentContractEra());
+  }
+
   // --- View functions ---
 
   /**

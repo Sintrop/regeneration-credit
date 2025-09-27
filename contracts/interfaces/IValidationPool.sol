@@ -22,11 +22,17 @@ interface IValidationPool {
   function withdraw(address user, uint256 era) external;
 
   /**
-   * @notice Adds a new level to a user's pool configuration.
+   * @notice Adds a new level to the user's validation pool from search/hunt service.
    * @param user The address of the validator.
    * @param denied The denied address.
    */
   function addLevel(address user, address denied) external;
+
+  /**
+   * @notice Adds a new level to the user's validation pool from voting points.
+   * @param user The address of the validator.
+   */
+  function addPointsLevel(address user) external;
 
   /**
    * @notice Returns the current era of the contract.

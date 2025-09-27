@@ -42,6 +42,9 @@ contract ValidationRules is Callable, ReentrancyGuard {
 
   uint256 private constant DYNAMIC_INVALIDATION_PERCENTAGE = 3;
 
+  /// @notice Validation points required for one pool level.
+  uint256 public constant POINTS_PER_LEVEL = 100;
+
   // --- State variables ---
 
   /// @notice The relationship between address and validations received by era.
@@ -56,8 +59,11 @@ contract ValidationRules is Callable, ReentrancyGuard {
   /// @notice Tracks the first user who voted to invalidate a specific user in a given era.
   mapping(address => mapping(uint256 => address)) public hunterVoter;
 
-  // Mapping from a hunter's address directly to their pool data.
+  /// @notice Mapping from a hunter's address directly to their pool data.
   mapping(address => Pool) public hunterPools;
+
+  /// @notice Tracks the accumulated, unspent validation points for each voter.
+  mapping(address => uint256) public validationPoints;
 
   /// @notice CommunityRules contract interface.
   ICommunityRules public communityRules;
@@ -164,6 +170,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     validatorUsersValidations[msg.sender][userAddress][currentEra] = true;
     validatorLastVoteAt[msg.sender] = block.number;
     userValidations[userAddress][currentEra]++;
+    validationPoints[msg.sender]++;
 
     uint256 validationsCount = userValidations[userAddress][currentEra];
     uint256 _votesToInvalidate = votesToInvalidate();
@@ -175,6 +182,27 @@ contract ValidationRules is Callable, ReentrancyGuard {
     }
 
     emit UserValidation(msg.sender, userAddress, justification, currentEra);
+  }
+
+  /**
+   * @notice Allows a voter to exchange their accumulated validation points for a single level.
+   * @dev This function implements a fixed exchange rate where a voter can trade a specific
+   * amount of points (POINTS_PER_LEVEL) for one level, which contributes to their
+   * standing and potential rewards in the Validation Pool.
+   *
+   * Requirements:
+   * - The caller (`msg.sender`) must be a registered voter (e.g., Researcher, Developer, Contributor).
+   * - The caller must have accumulated at least `POINTS_PER_LEVEL` points to be eligible for the exchange.
+   */
+  function exchangePointsForLevel() external nonReentrant {
+    require(communityRules.isVoter(msg.sender), "Pool only to voters");
+
+    uint256 userPoints = validationPoints[msg.sender];
+    require(userPoints >= POINTS_PER_LEVEL, "Not enough points");
+
+    validationPoints[msg.sender] = userPoints - POINTS_PER_LEVEL;
+
+    validationPool.addPointsLevel(msg.sender);
   }
 
   /**

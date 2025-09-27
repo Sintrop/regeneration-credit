@@ -215,6 +215,75 @@ describe("ValidationPool", () => {
     });
   });
 
+  describe("#addPointsLevel", () => {
+    beforeEach(async () => {
+      await instance.setContractCall(owner);
+    });
+
+    context("with an allowed caller", () => {
+      it("should add one level to a user in the current era", async () => {
+        await instance.addPointsLevel(user1Address);
+
+        const eraLevels = await instance.eraLevels(1, user1Address);
+        expect(eraLevels).to.equal(1);
+
+        const era1 = await instance.getEra(1);
+        expect(era1.levels).to.equal(1);
+      });
+
+      it("should correctly add levels to multiple users", async () => {
+        await instance.addPointsLevel(user1Address);
+        await instance.addPointsLevel(user2Address);
+
+        const era1 = await instance.getEra(1);
+        expect(era1.levels).to.equal(2);
+
+        const user1Levels = await instance.eraLevels(1, user1Address);
+        expect(user1Levels).to.equal(1);
+
+        const user2Levels = await instance.eraLevels(1, user2Address);
+        expect(user2Levels).to.equal(1);
+      });
+
+      it("should allow multiple levels to be added to the same user in the same era", async () => {
+        await instance.addPointsLevel(user1Address);
+        await instance.addPointsLevel(user1Address);
+        await instance.addPointsLevel(user1Address);
+
+        const eraLevels = await instance.eraLevels(1, user1Address);
+        expect(eraLevels).to.equal(3);
+
+        const era1 = await instance.getEra(1);
+        expect(era1.levels).to.equal(3);
+      });
+
+      it("should add levels in the correct era after time has passed", async () => {
+        await instance.addPointsLevel(user1Address);
+
+        await advanceBlock(args.blocksPerEra);
+
+        await instance.addPointsLevel(user1Address);
+
+        const userLevelsEra1 = await instance.eraLevels(1, user1Address);
+        expect(userLevelsEra1).to.equal(1);
+
+        const userLevelsEra2 = await instance.eraLevels(2, user1Address);
+        expect(userLevelsEra2).to.equal(1);
+
+        const era2 = await instance.getEra(2);
+        expect(era2.levels).to.equal(1);
+      });
+    });
+
+    context("without an allowed caller", () => {
+      it("should revert the transaction with an error message", async () => {
+        await expect(instance.connect(user1Address).addPointsLevel(user1Address)).to.be.revertedWith(
+          "Not allowed caller"
+        );
+      });
+    });
+  });
+
   describe("canWithdrawTimes", () => {
     context("when cant approve", () => {
       it("should return zero times", async () => {

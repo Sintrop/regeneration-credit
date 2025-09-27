@@ -286,6 +286,11 @@ describe("ValidationRules", () => {
 
                 expect(eraLevels).to.equal(0);
               });
+
+              it("should increment the voter's validationPoints by one", async () => {
+                const validationPoints = await instance.validationPoints(dev1Address);
+                expect(validationPoints).to.equal(1);
+              });
             });
 
             context("when total users is bigger than 5", () => {
@@ -366,6 +371,11 @@ describe("ValidationRules", () => {
 
                 expect(inviterPenalties).to.equal(0);
               });
+
+              it("should increment the voter's validationPoints by one", async () => {
+                const validationPoints = await instance.validationPoints(user1Address);
+                expect(validationPoints).to.equal(1);
+              });
             });
 
             context("when total users is bigger than 5", () => {
@@ -445,6 +455,11 @@ describe("ValidationRules", () => {
                 const inviterPenalties = await communityRules.inviterPenalties(owner);
 
                 expect(inviterPenalties).to.equal(0);
+              });
+
+              it("should increment the voter's validationPoints by one", async () => {
+                const validationPoints = await instance.validationPoints(user1Address);
+                expect(validationPoints).to.equal(1);
               });
             });
 
@@ -1308,6 +1323,44 @@ describe("ValidationRules", () => {
       it("should return error message", async () => {
         await expect(instance.connect(dev1Address).withdraw()).to.be.revertedWith("Pool only to voters");
       });
+    });
+  });
+
+  describe("#exchangePointsForLevel", () => {
+    let voter;
+    const POINTS_PER_LEVEL = 100;
+
+    beforeEach(async () => {
+      [owner, voter] = await ethers.getSigners();
+
+      await addInvitation(owner, voter, userTypes.Developer, owner);
+      await addDeveloper("Test Voter", voter);
+    });
+
+    context("when the user is not a registered voter", () => {
+      it("should revert the transaction", async () => {
+        await expect(instance.connect(owner).exchangePointsForLevel()).to.be.revertedWith("Pool only to voters");
+      });
+    });
+
+    context("when the voter has insufficient points", () => {
+      it("should revert the transaction", async () => {
+        await expect(instance.connect(voter).exchangePointsForLevel()).to.be.revertedWith("Not enough points");
+      });
+    });
+
+    context("when the voter has exactly enough points", () => {
+      beforeEach(async () => {});
+
+      it("should successfully exchange points for one level", async () => {});
+
+      it("should decrease the voter's points balance by the exact amount", async () => {});
+    });
+
+    context("when the voter has more than enough points", () => {
+      beforeEach(async () => {});
+
+      it("should exchange for one level and keep the remainder", async () => {});
     });
   });
 });
