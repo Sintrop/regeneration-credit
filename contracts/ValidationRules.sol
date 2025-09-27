@@ -228,6 +228,8 @@ contract ValidationRules is Callable, ReentrancyGuard {
     validationPool.withdraw(msg.sender, currentEra);
   }
 
+  // --- MustBeAllowedCaller functions ---
+
   /**
    * @notice Called only by authorized callers.
    * @dev Update last validator vote block.number.
@@ -235,6 +237,15 @@ contract ValidationRules is Callable, ReentrancyGuard {
    */
   function updateValidatorLastVoteBlock(address validatorAddress) external mustBeAllowedCaller {
     validatorLastVoteAt[validatorAddress] = block.number;
+  }
+
+  /**
+   * @notice Grants a single validation point to a voter for a voting action.
+   * @dev This is a function intended to be called by the InspectionRules contract after inspection validation vote.
+   * @param voter The address of the voter who is earning the point.
+   */
+  function addValidationPoint(address voter) external mustBeAllowedCaller {
+    validationPoints[voter]++;
   }
 
   // --- Private Functions ---
