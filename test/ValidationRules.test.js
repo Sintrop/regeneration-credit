@@ -590,9 +590,9 @@ describe("ValidationRules", () => {
                 await inspectorRules.afterAcceptInspection(inspector1Address, 1);
                 await inspectorRules.afterAcceptInspection(inspector1Address, 1);
 
-                await inspectorRules.afterRealizeInspection(inspector1Address, 1);
-                await inspectorRules.afterRealizeInspection(inspector1Address, 1);
-                await inspectorRules.afterRealizeInspection(inspector1Address, 1);
+                await inspectorRules.afterRealizeInspection(inspector1Address, 1, 1);
+                await inspectorRules.afterRealizeInspection(inspector1Address, 1, 1);
+                await inspectorRules.afterRealizeInspection(inspector1Address, 1, 1);
 
                 await instance.connect(user1Address).addUserValidation(inspector1Address, "my justification");
                 await instance.connect(user2Address).addUserValidation(inspector1Address, "my justification");
