@@ -35,7 +35,7 @@ interface IInspectorRules {
    * @notice A hook to be called after an inspector successfully completes an inspection.
    * @dev This function likely updates the inspector's counters and returns their new level or score.
    * @param inspector The address of the inspector who completed the inspection.
-   * @param score The inpsection score.
+   * @param score The inspection score.
    * @return The new calculated level for the inspector.
    */
   function afterRealizeInspection(address inspector, uint32 score, uint64 inspectionId) external returns (uint256);
