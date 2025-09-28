@@ -43,7 +43,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
   uint256 private constant DYNAMIC_INVALIDATION_PERCENTAGE = 3;
 
   /// @notice Validation points required for one pool level.
-  uint256 public constant POINTS_PER_LEVEL = 100;
+  uint256 public constant POINTS_PER_LEVEL = 30;
 
   // --- State variables ---
 
