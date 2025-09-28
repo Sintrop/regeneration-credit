@@ -610,6 +610,11 @@ describe("ContributorRules", (accounts) => {
           it("should set contributionPenalized to true to prevent double penalties", async () => {
             expect(await instance.contributionPenalized(1)).to.be.true;
           });
+
+          it("should grant a validation point to the voter", async () => {
+            const userPoints = await validationRules.validationPoints(user1Address);
+            expect(userPoints).to.equal(1);
+          });
         });
 
         context("when contribution must not be invalidated", () => {
