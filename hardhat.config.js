@@ -25,7 +25,7 @@ module.exports = {
     hardhat: {
       allowUnlimitedContractSize: true,
       accounts: {
-        count: 50,
+        count: 70,
       },
     },
     localhost: {

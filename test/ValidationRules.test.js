@@ -58,6 +58,26 @@ describe("ValidationRules", () => {
     user28Address,
     user29Address,
     user30Address,
+    user31Address,
+    user32Address,
+    user33Address,
+    user34Address,
+    user35Address,
+    user36Address,
+    user37Address,
+    user38Address,
+    user39Address,
+    user40Address,
+    user41Address,
+    user42Address,
+    user43Address,
+    user44Address,
+    user45Address,
+    user46Address,
+    user47Address,
+    user48Address,
+    user49Address,
+    user50Address,
     contributor1Address,
     contributor2Address,
     dev1Address,
@@ -174,6 +194,26 @@ describe("ValidationRules", () => {
       user28Address,
       user29Address,
       user30Address,
+      user31Address,
+      user32Address,
+      user33Address,
+      user34Address,
+      user35Address,
+      user36Address,
+      user37Address,
+      user38Address,
+      user39Address,
+      user40Address,
+      user41Address,
+      user42Address,
+      user43Address,
+      user44Address,
+      user45Address,
+      user46Address,
+      user47Address,
+      user48Address,
+      user49Address,
+      user50Address,
       contributor1Address,
       contributor2Address,
       dev1Address,
@@ -1397,6 +1437,26 @@ describe("ValidationRules", () => {
       await addInvitation(owner, user28Address, userTypes.Regenerator, owner);
       await addInvitation(owner, user29Address, userTypes.Regenerator, owner);
       await addInvitation(owner, user30Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user31Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user32Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user33Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user34Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user35Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user36Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user37Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user38Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user39Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user40Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user41Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user42Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user43Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user44Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user45Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user46Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user47Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user48Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user49Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user50Address, userTypes.Regenerator, owner);
 
       await addRegenerator("Regenerator", user1Address);
       await addRegenerator("Regenerator", user2Address);
@@ -1428,6 +1488,26 @@ describe("ValidationRules", () => {
       await addRegenerator("Regenerator", user28Address);
       await addRegenerator("Regenerator", user29Address);
       await addRegenerator("Regenerator", user30Address);
+      await addRegenerator("Regenerator", user31Address);
+      await addRegenerator("Regenerator", user32Address);
+      await addRegenerator("Regenerator", user33Address);
+      await addRegenerator("Regenerator", user34Address);
+      await addRegenerator("Regenerator", user35Address);
+      await addRegenerator("Regenerator", user36Address);
+      await addRegenerator("Regenerator", user37Address);
+      await addRegenerator("Regenerator", user38Address);
+      await addRegenerator("Regenerator", user39Address);
+      await addRegenerator("Regenerator", user40Address);
+      await addRegenerator("Regenerator", user41Address);
+      await addRegenerator("Regenerator", user42Address);
+      await addRegenerator("Regenerator", user43Address);
+      await addRegenerator("Regenerator", user44Address);
+      await addRegenerator("Regenerator", user45Address);
+      await addRegenerator("Regenerator", user46Address);
+      await addRegenerator("Regenerator", user47Address);
+      await addRegenerator("Regenerator", user48Address);
+      await addRegenerator("Regenerator", user49Address);
+      await addRegenerator("Regenerator", user50Address);
 
       await addInvitation(owner, dev1Address, userTypes.Developer, owner);
       await addDeveloper("Developer A", dev1Address);
@@ -1509,17 +1589,57 @@ describe("ValidationRules", () => {
         await advanceBlock(timeBetweenVotes);
         await instance.connect(dev1Address).addUserValidation(user30Address, "my justification");
         await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user31Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user32Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user33Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user34Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user35Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user36Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user37Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user38Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user39Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user40Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user41Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user42Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user43Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user44Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user45Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user46Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user47Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user48Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user49Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
+        await instance.connect(dev1Address).addUserValidation(user50Address, "my justification");
+        await advanceBlock(timeBetweenVotes);
       });
 
       it("should have accumulated the correct number of points before exchange", async () => {
         const userPoints = await instance.validationPoints(dev1Address);
-        expect(userPoints).to.equal(30);
+        expect(userPoints).to.equal(50);
       });
 
       it("should successfully exchange points for one level", async () => {
         await instance.connect(dev1Address).exchangePointsForLevel();
 
-        const level = await validationPool.eraLevels(3, dev1Address);
+        const level = await validationPool.eraLevels(5, dev1Address);
 
         expect(level).to.equal(1);
       });
