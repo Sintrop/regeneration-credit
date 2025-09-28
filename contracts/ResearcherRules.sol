@@ -301,6 +301,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
       }
     }
     validationRules.updateValidatorLastVoteBlock(msg.sender);
+    validationRules.addValidationPoint(msg.sender);
 
     emit ResearchValidation(msg.sender, research.id, justification);
   }
