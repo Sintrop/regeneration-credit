@@ -397,7 +397,8 @@ describe("RegeneratorRules", () => {
       });
 
       it("should not add regenerator on certification process", async () => {
-        expect(await instance.onCertificationRegenerators()).to.equal(0);
+        const currentEra = await instance.poolCurrentEra();
+        expect(await instance.newCertificationRegenerators(currentEra)).to.equal(0);
       });
     });
 
@@ -562,15 +563,16 @@ describe("RegeneratorRules", () => {
         it("should correctly increment and then decrement counters", async () => {
           await instance.afterRealizeInspection(prod1Address, 1, 1);
 
+          const currentEra = await instance.poolCurrentEra();
           expect(await instance.impactRegenerators(prod1Address)).to.be.true;
-          expect(await instance.onCertificationRegenerators()).to.equal(1);
+          expect(await instance.newCertificationRegenerators(currentEra)).to.equal(1);
           let regenerator = await instance.getRegenerator(prod1Address);
           expect(regenerator.totalInspections).to.equal(1);
 
           await instance.decrementInspections(prod1Address);
 
           expect(await instance.impactRegenerators(prod1Address)).to.be.false;
-          expect(await instance.onCertificationRegenerators()).to.equal(0);
+          expect(await instance.newCertificationRegenerators(currentEra)).to.equal(0);
           regenerator = await instance.getRegenerator(prod1Address);
           expect(regenerator.totalInspections).to.equal(0);
         });

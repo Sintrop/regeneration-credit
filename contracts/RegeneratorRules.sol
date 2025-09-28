@@ -99,9 +99,9 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// @notice The specific `UserType` enumeration value for a Regenerator user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.REGENERATOR;
 
-  /// @notice The total count of regenerators that have started the certification process,
+  /// @notice The number of regenerators that have started the certification process on each era,
   /// and have reached the minimum of one inspection.
-  uint256 public onCertificationRegenerators;
+  mapping(uint256 => uint256) public newCertificationRegenerators;
 
   /// @notice The total count of regenerators who have completed the certification process,
   /// have reached the maximum allowed inspections.
@@ -330,7 +330,10 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     require(totalInspections > 0, "totalInspections invalid");
 
     if (totalInspections == 1) {
-      onCertificationRegenerators--;
+      uint256 era = poolCurrentEra();
+      if (newCertificationRegenerators[era] > 0) {
+        newCertificationRegenerators[era]--;
+      }
       impactRegenerators[addr] = false;
     }
 
@@ -547,7 +550,8 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     // Mark as impact regenerator.
     if (!impactRegenerators[addr]) {
       impactRegenerators[addr] = true;
-      onCertificationRegenerators++;
+      uint256 era = poolCurrentEra();
+      newCertificationRegenerators[era]++;
     }
 
     if (regenerator.totalInspections == MAXIMUM_INSPECTIONS) {
