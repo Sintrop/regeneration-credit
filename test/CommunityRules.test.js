@@ -438,34 +438,28 @@ describe("CommunityRules", function () {
           receipt = await addDelation(user1Address, user2Address);
         });
 
-        it("should add delation to user1", async () => {
-          const delations = await instance.getUserDelations(user1Address);
-          const reported = delations[0].reported;
+        it("should add the delation ID to the user's list", async () => {
+          const delationIds = await instance.getUserDelations(user1Address); // Renamed for clarity
 
-          expect(delations.length).to.equal(1);
-          expect(reported).to.equal(user1Address.address);
+          expect(delationIds.length).to.equal(1);
+          expect(delationIds[0]).to.equal(1);
         });
 
-        it("should refer informer as user2", async () => {
-          const delations = await instance.getUserDelations(user1Address);
-          const informer = delations[0].informer;
+        it("should store the correct delation data by its ID", async () => {
+          const delationId = 1;
+          const delation = await instance.delationsById(delationId);
 
-          expect(informer).to.equal(user2Address.address);
-        });
-
-        it("should add have fields", async () => {
-          const delations = await instance.getUserDelations(user1Address);
-          const id = delations[0].id;
-          const title = delations[0].title;
-          const testimony = delations[0].testimony;
-
-          expect(id).to.equal(1);
-          expect(title).to.equal("title");
-          expect(testimony).to.equal("testimony");
+          expect(delation.id).to.equal(delationId);
+          expect(delation.reported).to.equal(user1Address.address);
+          expect(delation.informer).to.equal(user2Address.address);
+          expect(delation.title).to.equal("title");
+          expect(delation.testimony).to.equal("testimony");
         });
 
         it("must emit DelationAdded", async () => {
-          await expect(receipt).to.emit(instance, "DelationAdded").withArgs(user2Address, user1Address, 1);
+          await expect(receipt)
+            .to.emit(instance, "DelationAdded")
+            .withArgs(user2Address.address, user1Address.address, 1);
         });
       });
     });
@@ -500,13 +494,15 @@ describe("CommunityRules", function () {
 
     context("when a user tries to make multiple delations in a short period", () => {
       context("when a user tries to make multiple delations in a short period", () => {
-        const BLOCKS_BETWEEN_DELATIONS = 5000;
+        const BLOCKS_BETWEEN_DELATIONS = 500;
 
         beforeEach(async () => {
           await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
           await addInvitation(owner, user2Address, userTypes.Developer, owner);
+          await addInvitation(owner, user3Address, userTypes.Developer, owner);
           await addUser(user1Address, userTypes.Regenerator, owner);
           await addUser(user2Address, userTypes.Developer, owner);
+          await addUser(user3Address, userTypes.Developer, owner);
 
           await addDelation(user1Address, user2Address);
         });
@@ -518,11 +514,129 @@ describe("CommunityRules", function () {
         it("should succeed if the cooldown period has passed", async () => {
           await advanceBlock(BLOCKS_BETWEEN_DELATIONS);
 
-          await addDelation(user1Address, user2Address);
+          await addDelation(user1Address, user3Address);
 
           const delations = await instance.getUserDelations(user1Address);
           expect(delations.length).to.equal(2);
         });
+      });
+
+      context("when a user tries to delate the same target twice", () => {
+        beforeEach(async () => {
+          const BLOCKS_BETWEEN_DELATIONS = 500;
+
+          await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+          await addInvitation(owner, user2Address, userTypes.Developer, owner);
+          await addUser(user1Address, userTypes.Regenerator, owner);
+          await addUser(user2Address, userTypes.Developer, owner);
+
+          await addDelation(user1Address, user2Address);
+          await advanceBlock(BLOCKS_BETWEEN_DELATIONS);
+        });
+
+        it("should revert the second delation attempt", async () => {
+          await expect(addDelation(user1Address, user2Address)).to.be.revertedWith("Already submitted");
+        });
+
+        it("should still allow the user to delate a different target", async () => {
+          await addInvitation(owner, user3Address, userTypes.Inspector, owner);
+          await addUser(user3Address, userTypes.Inspector, owner);
+
+          await expect(addDelation(user3Address, user2Address)).to.not.be.reverted;
+        });
+      });
+    });
+  });
+
+  describe("#voteOnDelation", () => {
+    let informer, reported, voter, deniedVoter;
+    const delationId = 1;
+
+    beforeEach(async () => {
+      informer = user1Address;
+      reported = user2Address;
+      voter = user3Address;
+      deniedVoter = user4Address;
+
+      await addInvitation(owner, informer, userTypes.Developer, owner);
+      await addInvitation(owner, reported, userTypes.Developer, owner);
+      await addInvitation(owner, voter, userTypes.Developer, owner);
+      await addInvitation(owner, deniedVoter, userTypes.Developer, owner);
+
+      await addUser(informer, userTypes.Developer, owner);
+      await addUser(reported, userTypes.Developer, owner);
+      await addUser(voter, userTypes.Developer, owner);
+      await addUser(deniedVoter, userTypes.Developer, owner);
+
+      await addDelation(reported, informer);
+    });
+
+    context("when the vote is valid", () => {
+      it("should increment thumbsUp for a positive vote", async () => {
+        await instance.connect(voter).voteOnDelation(delationId, true);
+
+        const delation = await instance.delationsById(delationId);
+
+        expect(delation.thumbsUp).to.equal(1);
+        expect(delation.thumbsDown).to.equal(0);
+      });
+
+      it("should increment thumbsDown for a negative vote", async () => {
+        await instance.connect(voter).voteOnDelation(delationId, false);
+
+        const delation = await instance.delationsById(delationId);
+
+        expect(delation.thumbsUp).to.equal(0);
+        expect(delation.thumbsDown).to.equal(1);
+      });
+
+      it("should emit a DelationVoted event", async () => {
+        const supportsDelation = true;
+        await expect(instance.connect(voter).voteOnDelation(delationId, supportsDelation))
+          .to.emit(instance, "DelationVoted")
+          .withArgs(delationId, voter.address, supportsDelation, 1, 0);
+      });
+    });
+
+    context("when the vote is invalid due to permissions or state", () => {
+      it("should revert if the delation does not exist", async () => {
+        const nonExistentId = 999;
+        await expect(instance.connect(voter).voteOnDelation(nonExistentId, true)).to.be.revertedWith(
+          "Delation does not exist"
+        );
+      });
+
+      it("should revert if the voter is a Supporter", async () => {
+        const supporterVoter = user5Address;
+        await addUser(supporterVoter, userTypes.Supporter, owner);
+
+        await expect(instance.connect(supporterVoter).voteOnDelation(delationId, true)).to.be.revertedWith(
+          "Not allowed to supporters"
+        );
+      });
+
+      it("should revert if the voter has been denied", async () => {
+        await communityRules.setToDenied(deniedVoter);
+
+        await expect(instance.connect(deniedVoter).voteOnDelation(delationId, true)).to.be.revertedWith("User denied");
+      });
+
+      it("should revert if the voter is the original informer", async () => {
+        await expect(instance.connect(informer).voteOnDelation(delationId, true)).to.be.revertedWith(
+          "Informer cannot vote"
+        );
+      });
+
+      it("should revert if the voter is the reported user", async () => {
+        await expect(instance.connect(reported).voteOnDelation(delationId, true)).to.be.revertedWith(
+          "Reported user cannot vote"
+        );
+      });
+
+      it("should revert if the user tries to vote twice", async () => {
+        await instance.connect(voter).voteOnDelation(delationId, true);
+
+        await expect(instance.connect(voter).voteOnDelation(delationId, false)).to.be.revertedWith("Already voted");
       });
     });
   });
@@ -532,13 +646,15 @@ describe("CommunityRules", function () {
       beforeEach(async () => {
         await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
         await addInvitation(owner, user2Address, userTypes.Regenerator, owner);
+        await addInvitation(owner, user3Address, userTypes.Regenerator, owner);
 
         await addUser(user1Address, userTypes.Regenerator, owner);
         await addUser(user2Address, userTypes.Regenerator, owner);
+        await addUser(user3Address, userTypes.Regenerator, owner);
 
         await addDelation(user1Address, user2Address);
         await advanceBlock(5000);
-        await addDelation(user1Address, user2Address);
+        await addDelation(user1Address, user3Address);
       });
 
       it("should return 2 delations", async () => {
