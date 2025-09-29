@@ -58,17 +58,17 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice The address of the `ActivistPool` contract, responsible for managing
   /// and distributing token rewards to activists.
-  IActivistPool private activistPool;
+  IActivistPool public activistPool;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private inspectionRulesAddress;
+  address public inspectionRulesAddress;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private validationRulesAddress;
+  address public validationRulesAddress;
 
   /// @notice The specific `UserType` enumeration value for the Activist user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.ACTIVIST;

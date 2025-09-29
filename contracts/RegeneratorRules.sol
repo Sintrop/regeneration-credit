@@ -82,11 +82,11 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules and user types.
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice The address of the `RegeneratorPool` contract, responsible for managing
   /// and distributing token rewards to regenerators.
-  IRegeneratorPool private regeneratorPool;
+  IRegeneratorPool public regeneratorPool;
 
   /// @notice The specific `UserType` enumeration value for a Regenerator user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.REGENERATOR;
@@ -100,10 +100,10 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   uint256 public regenerationArea;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private inspectionRulesAddress;
+  address public inspectionRulesAddress;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private validationRulesAddress;
+  address public validationRulesAddress;
 
   // --- Constructor ---
 

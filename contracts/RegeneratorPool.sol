@@ -20,14 +20,14 @@ contract RegeneratorPool is Poolable, Blockable, Callable, ReentrancyGuard {
   // --- Constants & state variables ---
 
   /// @notice Interface to the Regeneration Credit token contract, used to decrease total locked.
-  IRegenerationCredit private regenerationCredit;
+  IRegenerationCredit public regenerationCredit;
 
   /// @notice The total supply of Regeneration Credit tokens designated for this regenerator pool.
   /// This value represents the maximum tokens available for distribution through this contract.
   uint256 private constant TOTAL_POOL_TOKENS = 750000000e18;
 
   /// @notice The address of the `RegeneratorRules` contract.
-  address private regeneratorRulesAddress;
+  address public regeneratorRulesAddress;
 
   /// @notice Maximum possible score from a single resource.
   uint256 public constant MAX_NEW_LEVELS = 192;
