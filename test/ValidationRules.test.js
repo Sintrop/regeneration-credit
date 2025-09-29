@@ -670,6 +670,11 @@ describe("ValidationRules", () => {
               it("must emit DeniedUserEvent", async () => {
                 await expect(receipt).to.emit(communityRules, "DeniedUserEvent").withArgs(regenerator1Address);
               });
+
+              it("should increment the voter's totalValidationLevels by one", async () => {
+                const totalLevels = await instance.totalValidationLevels(user1Address);
+                expect(totalLevels).to.equal(1);
+              });
             });
 
             context("with inspector", () => {
@@ -1649,6 +1654,13 @@ describe("ValidationRules", () => {
 
         const userPoints = await instance.validationPoints(dev1Address);
         expect(userPoints).to.equal(0);
+      });
+
+      it("should increment the voter's totalValidationLevels by one", async () => {
+        await instance.connect(dev1Address).exchangePointsForLevel();
+
+        const totalLevels = await instance.totalValidationLevels(dev1Address);
+        expect(totalLevels).to.equal(1);
       });
     });
   });
