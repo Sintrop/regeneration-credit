@@ -26,7 +26,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   // --- Constants ---
 
   /// @notice The maximum number of inspections a Regenerator can receive.
-  uint8 public constant MAX_REGENERATOR_INSPECTIONS = 12;
+  uint8 public constant MAX_REGENERATOR_INSPECTIONS = 6;
 
   /// @notice Max character length for hash or url.
   uint16 private constant MAX_HASH_LENGTH = 150;
