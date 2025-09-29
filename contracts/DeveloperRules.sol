@@ -60,6 +60,9 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   /// This acts as a global unique ID counter for new reports.
   uint64 public reportsTotalCount;
 
+  /// @notice The sum of all active levels from valid reports by non-denied developers.
+  uint256 public totalActiveLevels;
+
   /// @notice A mapping from a developer's wallet address to their detailed `Developer` data structure.
   /// This serves as the primary storage for developer profiles.
   mapping(address => Developer) private developers;
@@ -213,6 +216,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     // Increment global report counters and assign a unique ID.
     reportsCount++;
     reportsTotalCount++;
+    totalActiveLevels++;
     uint64 id = reportsTotalCount;
 
     // Increment developer's total reports count within their struct.
@@ -329,6 +333,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * @param addr The wallet address of the developer from whom levels are to be removed.
    */
   function removePoolLevels(address addr) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+    totalActiveLevels -= developers[addr].pool.level;
     // Notify the DeveloperPool contract to adjust the developer's pool levels there as well.
     developerPool.removePoolLevels(addr, true);
   }
@@ -363,6 +368,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     report.invalidatedAt = block.number;
     reports[report.id] = report;
     developers[report.developer].pool.level -= RESOURCE_LEVEL;
+    totalActiveLevels--;
 
     developerPool.removePoolLevels(report.developer, false);
   }
@@ -373,6 +379,8 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    */
   function _denyDeveloper(address userAddress) private {
     if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
+
+    totalActiveLevels -= developers[userAddress].pool.level;
 
     communityRules.setToDenied(userAddress);
 
@@ -419,7 +427,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
 
     // Calls the inherited `canInvite` function from `Invitable` to calculate eligibility.
     // This depends on total reports count, total developer count, and the developer's pool level.
-    return canInvite(reportsTotalCount, communityRules.userTypesTotalCount(USER_TYPE), developer.pool.level);
+    return canInvite(totalActiveLevels, communityRules.userTypesCount(USER_TYPE), developer.pool.level);
   }
 
   /**

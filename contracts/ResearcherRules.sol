@@ -74,6 +74,9 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   /// This acts as a global unique ID counter for new researchs.
   uint64 public researchesTotalCount;
 
+  /// @notice The sum of all active levels from valid researches by non-denied researchers.
+  uint256 public totalActiveLevels;
+
   /// @notice Total calculatorItems count.
   uint64 public calculatorItemsCount;
 
@@ -230,6 +233,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
     researchesCount++;
     researchesTotalCount++;
+    totalActiveLevels++;
     uint64 id = researchesTotalCount;
 
     researches[id] = Research(id, poolCurrentEra(), msg.sender, title, thesis, file, 0, true, 0, block.number);
@@ -388,6 +392,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param addr The wallet address of the researcher from whom levels are to be removed.
    */
   function removePoolLevels(address addr) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+    totalActiveLevels -= researchers[addr].pool.level;
+
     researcherPool.removePoolLevels(addr, true);
   }
 
@@ -413,6 +419,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   function _denyResearcher(address userAddress) private {
     if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
 
+    totalActiveLevels -= researchers[userAddress].pool.level;
+
     communityRules.setToDenied(userAddress);
 
     // Inviter slashing mechanism.
@@ -436,6 +444,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     research.invalidatedAt = block.number;
     researches[research.id] = research;
     researchers[research.createdBy].pool.level -= RESOURCE_LEVEL;
+    totalActiveLevels--;
 
     researcherPool.removePoolLevels(research.createdBy, false);
   }
@@ -466,7 +475,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
     if (researcher.id <= 0) return false;
 
-    return canInvite(researchesTotalCount, communityRules.userTypesTotalCount(USER_TYPE), researcher.pool.level);
+    return canInvite(totalActiveLevels, communityRules.userTypesCount(USER_TYPE), researcher.pool.level);
   }
 
   /**
