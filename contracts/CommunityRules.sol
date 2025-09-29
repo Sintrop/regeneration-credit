@@ -18,6 +18,9 @@ contract CommunityRules is Callable {
   /// @notice Minimum number of users allowed for a specific type before proportionality rules apply.
   uint16 private constant MINIMUM_REGISTERED_USERS_QUANTITY = 5;
 
+  /// @notice The maximum allowed amount of invalidated invited users.
+  uint16 private constant MAX_INVITER_PENALTIES = 5;
+
   /// @notice The number of blocks an invitation is delayed for Supporters.
   uint32 public constant SUPPORTER_INVITATION_DELAY_BLOCKS = 150;
 
@@ -275,6 +278,7 @@ contract CommunityRules is Callable {
     require(_registrationProportionalityAllowed(userType), "Proportionality invalid"); // Vacancies according to the number of regenerators
     require(_invitedTypeOnRegister(addr, userType), "Invalid invitation"); // Only with valid invitation
     require(!isDenied(invitations[addr].inviter), "Inviter denied"); // Inviter cannot be denied
+    require(inviterPenalties[invitations[addr].inviter] < MAX_INVITER_PENALTIES, "Inviter with too many penalties"); // Inviter cannot exceed penalties
 
     users[addr] = userType;
     usersCount++;

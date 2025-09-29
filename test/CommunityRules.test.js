@@ -31,6 +31,10 @@ describe("CommunityRules", function () {
     return await instance.connect(from).setToDenied(address);
   };
 
+  const addInviterPenalty = async (address, from) => {
+    return await instance.connect(from).addInviterPenalty(address);
+  };
+
   beforeEach(async function () {
     [owner, user1Address, user2Address, user3Address, user4Address, user5Address, user6Address, user7Address] =
       await ethers.getSigners();
@@ -98,6 +102,27 @@ describe("CommunityRules", function () {
 
         it("should revert the addUser transaction for the invitee", async () => {
           await expect(addUser(user1Address, userTypes.Regenerator, owner)).to.be.revertedWith("Inviter denied");
+        });
+      });
+
+      context("when the inviter exceeded maxInviter penalties", () => {
+        beforeEach(async () => {
+          await addInvitation(owner, user2Address, userTypes.Activist, owner);
+          await addUser(user2Address, userTypes.Activist, owner);
+
+          await addInvitation(user2Address, user1Address, userTypes.Regenerator, owner);
+
+          await addInviterPenalty(user2Address, owner);
+          await addInviterPenalty(user2Address, owner);
+          await addInviterPenalty(user2Address, owner);
+          await addInviterPenalty(user2Address, owner);
+          await addInviterPenalty(user2Address, owner);
+        });
+
+        it("should revert the addUser transaction for the invitee", async () => {
+          await expect(addUser(user1Address, userTypes.Regenerator, owner)).to.be.revertedWith(
+            "Inviter with too many penalties"
+          );
         });
       });
 
