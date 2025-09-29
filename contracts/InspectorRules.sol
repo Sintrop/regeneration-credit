@@ -195,16 +195,23 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @dev MustBeAllowedCaller function to handle actions after an inspector successfully realizes (completes) an inspection.
    * This decrements give-ups and increments total inspections.
    * @notice This function is called by the InspectionRules contract after an inspection is realized.
-   * @param addr The inspector's wallet address.
+   * @param addr Inspector address
+   * @param score The score of the realized inspection.
+   * @param inspectionId InspectionId
    * @return uint256 The updated total number of inspections completed by the inspector.
    */
   function afterRealizeInspection(
     address addr,
+    uint32 score,
     uint64 inspectionId
   ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant returns (uint256) {
     _decreaseGiveUps(addr);
 
-    return _incrementInspections(addr, inspectionId);
+    if (score > 0) {
+      return _incrementInspections(addr, inspectionId);
+    }
+
+    return inspectors[addr].totalInspections;
   }
 
   /**

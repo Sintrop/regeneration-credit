@@ -373,6 +373,21 @@ describe("RegeneratorRules", () => {
     });
 
     context("with allowed user", () => {
+      context("when score is set to zero", () => {
+        beforeEach(async () => {
+          await instance.afterRealizeInspection(prod1Address, 0, 2);
+        });
+
+        it("should not increment regenerator inspection count", async () => {
+          const regenerator = await instance.getRegenerator(prod1Address);
+          expect(regenerator.totalInspections).to.equal(0);
+        });
+
+        it("should not add regenerator on certification process", async () => {
+          expect(await instance.onCertificationRegenerators()).to.equal(0);
+        });
+      });
+
       describe(".setRegenerationScore", () => {
         context("when dont have regenerators sustainable", () => {
           context("when have 1 regenerator", () => {

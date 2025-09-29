@@ -362,9 +362,13 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     require(score <= MAX_SCORE, "Maximum score");
     require(!processedInspections[inspectionId], "Inspection results already submitted");
 
-    processedInspections[inspectionId] = true;
+    uint256 totalInspections;
 
-    uint256 totalInspections = _incrementInspections(addr);
+    if (score > 0) {
+      totalInspections = _incrementInspections(addr);
+    } else {
+      totalInspections = regenerators[addr].totalInspections;
+    }
 
     _setRegenerationScore(addr, score, inspectionId);
 
