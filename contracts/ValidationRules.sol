@@ -65,6 +65,9 @@ contract ValidationRules is Callable, ReentrancyGuard {
   /// @notice Tracks the accumulated, unspent validation points for each voter.
   mapping(address => uint256) public validationPoints;
 
+  /// @notice Tracks the total number of validation levels a user has ever earned.
+  mapping(address => uint256) public totalValidationLevels;
+
   /// @notice CommunityRules contract interface.
   ICommunityRules public communityRules;
 
@@ -159,7 +162,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     require(!validatorUsersValidations[msg.sender][userAddress][currentEra], "Already voted");
     require(waitedTimeBetweenVotes(msg.sender), "Wait timeBetweenVotes");
 
-    if (validatorLastVoteAt[msg.sender] == 0) {
+    if (hunterPools[msg.sender].currentEra == 0) {
       hunterPools[msg.sender].currentEra = validationPool.currentContractEra();
     }
 
@@ -177,8 +180,9 @@ contract ValidationRules is Callable, ReentrancyGuard {
 
     if (validationsCount >= _votesToInvalidate) {
       _denyUser(userAddress);
-
-      validationPool.addLevel(hunterVoter[userAddress][currentEra], userAddress);
+      address hunter = hunterVoter[userAddress][currentEra];
+      totalValidationLevels[hunter]++;
+      validationPool.addLevel(hunter, userAddress);
     }
 
     emit UserValidation(msg.sender, userAddress, justification, currentEra);
@@ -200,7 +204,12 @@ contract ValidationRules is Callable, ReentrancyGuard {
     uint256 userPoints = validationPoints[msg.sender];
     require(userPoints >= POINTS_PER_LEVEL, "Not enough points");
 
+    if (hunterPools[msg.sender].currentEra == 0) {
+      hunterPools[msg.sender].currentEra = validationPool.currentContractEra();
+    }
+
     validationPoints[msg.sender] = userPoints - POINTS_PER_LEVEL;
+    totalValidationLevels[msg.sender]++;
 
     validationPool.addPointsLevel(msg.sender);
   }
