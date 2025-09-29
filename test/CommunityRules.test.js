@@ -27,6 +27,14 @@ describe("CommunityRules", function () {
     return await instance.connect(from).addDelation(denouncedAddress, "title", "testimony");
   };
 
+  const addInviterPenalty = async (address, from) => {
+    return await instance.connect(from).addInviterPenalty(address);
+  };
+
+  const setToDenied = async (address, from) => {
+    return await instance.connect(from).setToDenied(address);
+  };
+
   beforeEach(async function () {
     [owner, user1Address, user2Address, user3Address, user4Address, user5Address, user6Address, user7Address] =
       await ethers.getSigners();
@@ -80,6 +88,41 @@ describe("CommunityRules", function () {
           await addUser(user1Address, userTypes.Regenerator, owner);
 
           await expect(addUser(user1Address, userTypes.Regenerator, owner)).to.be.revertedWith("User already exists");
+        });
+      });
+
+      context("when the inviter has been denied", () => {
+        beforeEach(async () => {
+          await addInvitation(owner, user2Address, userTypes.Activist, owner);
+          await addUser(user2Address, userTypes.Activist, owner);
+
+          await addInvitation(user2Address, user1Address, userTypes.Regenerator, owner);
+          await setToDenied(user2Address, owner);
+        });
+
+        it("should revert the addUser transaction for the invitee", async () => {
+          await expect(addUser(user1Address, userTypes.Regenerator, owner)).to.be.revertedWith("Inviter denied");
+        });
+      });
+
+      context("when the inviter exceeded maxInviter penalties", () => {
+        beforeEach(async () => {
+          await addInvitation(owner, user2Address, userTypes.Activist, owner);
+          await addUser(user2Address, userTypes.Activist, owner);
+
+          await addInvitation(user2Address, user1Address, userTypes.Regenerator, owner);
+
+          await addInviterPenalty(user2Address, owner);
+          await addInviterPenalty(user2Address, owner);
+          await addInviterPenalty(user2Address, owner);
+          await addInviterPenalty(user2Address, owner);
+          await addInviterPenalty(user2Address, owner);
+        });
+
+        it("should revert the addUser transaction for the invitee", async () => {
+          await expect(addUser(user1Address, userTypes.Regenerator, owner)).to.be.revertedWith(
+            "Inviter with too many penalties"
+          );
         });
       });
 
@@ -741,7 +784,7 @@ describe("CommunityRules", function () {
         await addUser(user1Address, userTypes.Regenerator, owner);
       });
 
-      it("", async () => {
+      it("should return error", async () => {
         await expect(communityRules.connect(user1Address).setToDenied(user1Address)).to.be.revertedWith(
           "Not allowed caller"
         );
