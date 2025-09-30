@@ -914,16 +914,16 @@ describe("InspectionRules", () => {
                     expect(inspection.status).to.equal(STATUS.inspected);
                   });
 
-                  it("should set inspectionsTreesImpact", async () => {
+                  it("should not set inspectionsTreesImpact", async () => {
                     const inspectionsTreesImpact = await instance.inspectionsTreesImpact();
 
-                    expect(inspectionsTreesImpact).to.equal(10);
+                    expect(inspectionsTreesImpact).to.equal(0);
                   });
 
-                  it("should set inspectionsBiodiversityImpact", async () => {
+                  it("should not set inspectionsBiodiversityImpact", async () => {
                     const inspectionsBiodiversityImpact = await instance.inspectionsBiodiversityImpact();
 
-                    expect(inspectionsBiodiversityImpact).to.equal(10);
+                    expect(inspectionsBiodiversityImpact).to.equal(0);
                   });
 
                   it("populate inspection inspectedAt", async () => {
@@ -963,10 +963,18 @@ describe("InspectionRules", () => {
                     expect(inspector.totalInspections).to.equal(1);
                   });
 
-                  it("should increment realizedInspectionsCount", async () => {
+                  it("should not increment realizedInspectionsCount", async () => {
                     const realizedInspectionsCount = await instance.realizedInspectionsCount();
 
-                    expect(realizedInspectionsCount).to.equal(1);
+                    expect(realizedInspectionsCount).to.equal(0);
+                  });
+
+                  it("should increment era impactPerEra", async () => {
+                    const impactPerEra = await instance.impactPerEra(1);
+
+                    expect(impactPerEra.trees).to.equal(10);
+                    expect(impactPerEra.biodiversity).to.equal(10);
+                    expect(impactPerEra.realizedInspections).to.equal(1);
                   });
                 });
 
