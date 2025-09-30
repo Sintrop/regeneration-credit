@@ -541,6 +541,16 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     return uint256(researcherPool.nextEraIn(poolCurrentEra()));
   }
 
+  /**
+   * @dev Returns an array of IDs of the researches made by a specific address.
+   * @notice Provides a list of all researches submitted by a given user.
+   * @param addr The address of the researcges whose researches are to be retrieved.
+   * @return uint256[] An array of research IDs.
+   */
+  function getResearchesIds(address addr) public view returns (uint256[] memory) {
+    return researchesIds[addr];
+  }
+  
   // --- Events ---
 
   /**
