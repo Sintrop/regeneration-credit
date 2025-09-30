@@ -266,6 +266,19 @@ describe("RegeneratorRules", () => {
       );
     });
 
+    it("should revert for duplicates with different decimal precision", async () => {
+      const semanticDuplicates = [
+        { latitude: "-22.1", longitude: "-44.1" },
+        { latitude: "10.5", longitude: "20.25" },
+        { latitude: "-30.0", longitude: "-50.75" },
+        { latitude: "-22.100", longitude: "-44.10" },
+      ];
+
+      await expect(addRegenerator("Regenerator B", prod1Address, semanticDuplicates)).to.be.revertedWith(
+        "Duplicate coordinates are not allowed"
+      );
+    });
+
     it("should revert if latitude is out of range (> 90)", async () => {
       const invalidLatitudeCoords = [
         { latitude: "-22.1", longitude: "-44.1" },
