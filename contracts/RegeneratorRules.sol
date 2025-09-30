@@ -91,10 +91,6 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// @notice The specific `UserType` enumeration value for a Regenerator user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.REGENERATOR;
 
-  /// @notice The total count of regenerators who are considered "impact regenerators"
-  /// (have achieved the minimum of three inspections.
-  uint256 public totalImpactRegenerators;
-
   /// @notice The grand total sum of all regeneration area (in square meters [m²])
   /// managed by all registered regenerators in the system.
   uint256 public regenerationArea;
@@ -104,6 +100,10 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /// @notice The address of the `InspectionRules` contract.
   address private validationRulesAddress;
+
+  /// @notice The number of regenerators that have started the certification process on each era,
+  /// and have reached the minimum of one inspection.
+  mapping(uint256 => uint256) public newCertificationRegenerators;
 
   // --- Constructor ---
 
@@ -314,7 +314,10 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     require(totalInspections > 0, "totalInspections invalid");
 
     if (totalInspections == 1) {
-      totalImpactRegenerators--;
+      uint256 era = poolCurrentEra();
+      if (newCertificationRegenerators[era] > 0) {
+        newCertificationRegenerators[era]--;
+      }
       impactRegenerators[addr] = false;
     }
 
@@ -522,7 +525,8 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     // Mark as impact regenerator.
     if (!impactRegenerators[addr]) {
       impactRegenerators[addr] = true;
-      totalImpactRegenerators++;
+      uint256 era = poolCurrentEra();
+      newCertificationRegenerators[era]++;
     }
 
     return regenerator.totalInspections;
