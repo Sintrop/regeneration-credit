@@ -697,6 +697,11 @@ describe("ResearcherRules", () => {
             expect(eraLevels).to.eq(0);
           });
 
+          it("should grant a validation point to the voter", async () => {
+            const userPoints = await validationRules.validationPoints(user1Address);
+            expect(userPoints).to.equal(1);
+          });
+          
           it("must decrement researchesCount in one", async () => {
             const researchesCount = await instance.researchesCount();
 

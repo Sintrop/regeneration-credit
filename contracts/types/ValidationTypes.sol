@@ -13,4 +13,15 @@ struct ContractsDependency {
   address contributorRulesAddress;
   address activistRulesAddress;
   address voteRulesAddress;
+  address validationPoolAddress;  
+}
+
+/**
+ * @dev Validation pool data.
+ * @param level User pool level.
+ * @param currentEra User currentEra, updated after each withdraw.
+ */
+struct Pool {
+  uint256 level;
+  uint256 currentEra;
 }

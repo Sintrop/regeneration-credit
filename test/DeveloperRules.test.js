@@ -713,6 +713,11 @@ describe("DeveloperRules", (accounts) => {
             expect(eraLevels).to.eq(0);
           });
 
+          it("should grant a validation point to the voter", async () => {
+            const userPoints = await validationRules.validationPoints(user1Address);
+            expect(userPoints).to.equal(1);
+          });
+
           it("must decrement reportsCount in one", async () => {
             const reportsCount = await instance.reportsCount();
 

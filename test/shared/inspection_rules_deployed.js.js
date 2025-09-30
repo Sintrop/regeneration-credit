@@ -40,6 +40,12 @@ const inspectionRulesDeployed = async (owner, args = {}) => {
     blocksPerEra: 13,
   };
 
+  let validationPoolParams = {
+    totalTokens: "10000000000000000000000000",
+    halving: 12,
+    blocksPerEra: 160,
+  };
+
   const regenerationCredit = await regenerationCreditDeployed();
   const communityRules = await communityRulesDeployed();
 
@@ -69,6 +75,13 @@ const inspectionRulesDeployed = async (owner, args = {}) => {
     regenerationCredit.target,
     activistPoolArgs.halving,
     activistPoolArgs.blocksPerEra
+  );
+
+  const validationPoolFactory = await ethers.getContractFactory("ValidationPool");
+  const validationPool = await validationPoolFactory.deploy(
+    regenerationCredit.target,
+    validationPoolParams.halving,
+    validationPoolParams.blocksPerEra
   );
 
   const inspectorRulesFactory = await ethers.getContractFactory("InspectorRules");
@@ -107,6 +120,7 @@ const inspectionRulesDeployed = async (owner, args = {}) => {
     contributorRulesAddress: ZERO_ADDRESS,
     activistRulesAddress: activistRules.target,
     voteRulesAddress: ZERO_ADDRESS,
+    validationPoolAddress: validationPool.target,
   };
 
   const inspectionRulesDependencies = {

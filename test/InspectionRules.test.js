@@ -1209,6 +1209,11 @@ describe("InspectionRules", () => {
           it("should keep inspectionPenalized to false", async () => {
             expect(await instance.inspectionPenalized(1)).to.be.false;
           });
+
+          it("should grant a validation point to the voter", async () => {
+            const userPoints = await validationRules.validationPoints(user1Address);
+            expect(userPoints).to.equal(1);
+          });          
         });
 
         context("when have 2 validations (half of the validators)", () => {

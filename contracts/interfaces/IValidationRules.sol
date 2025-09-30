@@ -30,4 +30,9 @@ interface IValidationRules {
    * @dev Function to updade validator last vote block.number.
    */
   function updateValidatorLastVoteBlock(address validatorAddress) external;
+
+  /**
+   * @dev Function to updade voter validationPoints.
+   */
+  function addValidationPoint(address validatorAddress) external;  
 }

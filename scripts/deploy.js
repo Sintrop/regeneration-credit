@@ -28,6 +28,7 @@ const contributorRulesDeploy = require("../migrations/12_contributorRules.deploy
 const afterDeploy = require("../migrations/after_deploy.js");
 const regenerationCreditImpactDeploy = require("../migrations/22_regenerationCredImpact.deploy.js");
 const voteRulesDeploy = require("../migrations/23_voteRules.deploy.js");
+const validationPoolDeploy = require("../migrations/24_validationPool.deploy.js");
 
 const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -91,6 +92,7 @@ async function main() {
       await validationRulesDeploy();
       await voteRulesDeploy();
       await invitationRulesDeploy();
+      await validationPoolDeploy();
   }
 
   if (runAfterDeploy == "true") {
