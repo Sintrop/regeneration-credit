@@ -21,6 +21,7 @@ describe("InspectionRules", () => {
     regenerator2Address,
     regenerator3Address,
     regenerator4Address,
+    regenerator5Address,
     inspectorAddress,
     inspector2Address,
     inspector3Address,
@@ -153,6 +154,7 @@ describe("InspectionRules", () => {
       regenerator2Address,
       regenerator3Address,
       regenerator4Address,
+      regenerator5Address,
       inspectorAddress,
       inspector2Address,
       inspector3Address,
@@ -564,10 +566,12 @@ describe("InspectionRules", () => {
             await addInvitation(owner, regenerator2Address, userTypes.Regenerator, owner);
             await addInvitation(owner, regenerator3Address, userTypes.Regenerator, owner);
             await addInvitation(owner, regenerator4Address, userTypes.Regenerator, owner);
+            await addInvitation(owner, regenerator5Address, userTypes.Regenerator, owner);
 
             await addRegenerator("Regenerator B", 25000, regenerator2Address);
             await addRegenerator("Regenerator C", 25000, regenerator3Address);
             await addRegenerator("Regenerator D", 25000, regenerator4Address);
+            await addRegenerator("Regenerator E", 25000, regenerator5Address);
 
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
             await acceptInspection(1, inspectorAddress);
@@ -585,10 +589,15 @@ describe("InspectionRules", () => {
 
             await requestInspection(regenerator4Address);
             await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+            await acceptInspection(4, inspectorAddress);
+            await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
+
+            await requestInspection(regenerator5Address);
+            await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
           });
 
           it("should return error message", async () => {
-            await expect(acceptInspection(4, inspectorAddress)).to.be.revertedWith("Only 3 giveUps allowed");
+            await expect(acceptInspection(5, inspectorAddress)).to.be.revertedWith("Only 3 giveUps allowed");
           });
         });
 
