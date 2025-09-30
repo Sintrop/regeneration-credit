@@ -77,7 +77,7 @@ describe("ValidationRules", () => {
     user47Address,
     user48Address,
     user49Address,
-    user50Address,    
+    user50Address,
     contributor1Address,
     contributor2Address,
     dev1Address,
@@ -217,7 +217,7 @@ describe("ValidationRules", () => {
       user47Address,
       user48Address,
       user49Address,
-      user50Address,      
+      user50Address,
       contributor1Address,
       contributor2Address,
       dev1Address,
@@ -261,7 +261,7 @@ describe("ValidationRules", () => {
     await communityRules.newAllowedCaller(researcherRules.target);
     await communityRules.newAllowedCaller(contributorRules.target);
     await communityRules.newAllowedCaller(activistRules.target);
-    await communityRules.newAllowedCaller(supporterRules.target);    
+    await communityRules.newAllowedCaller(supporterRules.target);
     await communityRules.newAllowedCaller(owner);
     await regeneratorRules.newAllowedCaller(instance.target);
     await regeneratorRules.newAllowedCaller(owner);

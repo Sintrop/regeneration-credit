@@ -94,7 +94,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
   /// @notice The interface of the `ValidationPool` contract, responsible for managing
   /// and distributing token rewards to validators.
   IValidationPool public validationPool;
-  
+
   /// @notice Amount of blocks between votes.
   uint256 public immutable timeBetweenVotes;
 
@@ -125,7 +125,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
     contributorRules = IContributorRules(contractDependency.contributorRulesAddress);
     activistRules = IActivistRules(contractDependency.activistRulesAddress);
     voteRules = IVoteRules(contractDependency.voteRulesAddress);
-    validationPool = IValidationPool(contractDependency.validationPoolAddress);    
+    validationPool = IValidationPool(contractDependency.validationPoolAddress);
   }
 
   // --- External Functions (State Modifying) ---
@@ -379,7 +379,12 @@ contract ValidationRules is Callable, ReentrancyGuard {
    * @param _justification The justification provided for the vote.
    * @param _currentEra User validation currentEra.
    */
-  event UserValidation(address indexed _validatorAddress, address indexed _userAddress, string _justification, uint256 indexed _currentEra);
+  event UserValidation(
+    address indexed _validatorAddress,
+    address indexed _userAddress,
+    string _justification,
+    uint256 indexed _currentEra
+  );
 
   /**
    * @notice Emitted when a user is successfully invalidated and denied.

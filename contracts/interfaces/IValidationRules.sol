@@ -34,5 +34,5 @@ interface IValidationRules {
   /**
    * @dev Function to updade voter validationPoints.
    */
-  function addValidationPoint(address validatorAddress) external;  
+  function addValidationPoint(address validatorAddress) external;
 }

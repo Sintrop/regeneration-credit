@@ -287,7 +287,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     }
     validationRules.updateValidatorLastVoteBlock(msg.sender);
     validationRules.addValidationPoint(msg.sender);
-    
+
     emit ReportValidation(msg.sender, report.id, justification);
   }
 

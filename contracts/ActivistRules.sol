@@ -13,7 +13,7 @@ import { Invitable } from "./shared/Invitable.sol";
  * @title ActivistRules
  * @author Sintrop
  * @notice This contract defines and manages the rules and data specific to "Activist" users
- * within the system. Activists are primarily responsible for inviting new Regenerators
+ * within the system. Activists are responsible for inviting new Regenerators
  * and Inspectors, and they earn rewards based on the approval of their invited users.
  * @dev Inherits functionalities from `Callable` (for whitelisted function access) and `Invitable`
  * (for managing invitation logic). It interacts with `CommunityRules` for general user management

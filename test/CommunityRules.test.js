@@ -586,7 +586,7 @@ describe("CommunityRules", function () {
       it("returns settings", async () => {
         const settings = await instance.getUserTypeSettings(userTypes.Activist);
 
-        expect(settings).deep.to.equal([1n, false, true, 100000n, true]);
+        expect(settings).deep.to.equal([1n, false, true, 100000n, false]);
       });
     });
 
@@ -669,10 +669,10 @@ describe("CommunityRules", function () {
     });
 
     context("when is activist", () => {
-      it("must returns true", async () => {
+      it("must returns false", async () => {
         const isVoter = await instance.isVoter(user2Address);
 
-        expect(isVoter).to.equal(true);
+        expect(isVoter).to.equal(false);
       });
     });
 

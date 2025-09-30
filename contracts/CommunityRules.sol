@@ -120,7 +120,7 @@ contract CommunityRules is Callable {
       false,
       true,
       VOTER_INVITATION_DELAY_BLOCKS,
-      true
+      false
     );
     userTypeSettings[CommunityTypes.UserType.RESEARCHER] = CommunityTypes.UserTypeSetting(
       researcherProportionality,

@@ -13,7 +13,7 @@ struct ContractsDependency {
   address contributorRulesAddress;
   address activistRulesAddress;
   address voteRulesAddress;
-  address validationPoolAddress;  
+  address validationPoolAddress;
 }
 
 /**

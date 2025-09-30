@@ -11,7 +11,7 @@ import { Poolable } from "./shared/Poolable.sol";
  * @title ActivistPool
  * @author Sintrop
  * @notice This contract manages the distribution of Regeneration Credit tokens as rewards to activists
- * for their participation, primarily for providing invitation services.
+ * for providing invitation services and community growth support.
  * Each invited who completes 3 inspections is equivalent to one level in the pool.
  * @dev Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for deploy setup only),
  * `Blockable` (for era/epoch tracking), and `Callable` (for whitelisted caller control).
