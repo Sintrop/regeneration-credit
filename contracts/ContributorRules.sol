@@ -312,6 +312,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
       }
     }
     validationRules.updateValidatorLastVoteBlock(msg.sender);
+    validationRules.addValidationPoint(msg.sender);
 
     emit ContributionValidation(msg.sender, contribution.id, justification);
   }

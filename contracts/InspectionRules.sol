@@ -368,6 +368,8 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     }
 
     validationRules.updateValidatorLastVoteBlock(msg.sender);
+    validationRules.addValidationPoint(msg.sender);
+
     emit InspectionValidation(msg.sender, inspection.id, justification);
   }
 

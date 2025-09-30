@@ -8,37 +8,35 @@ import { Callable } from "./shared/Callable.sol";
 import { Poolable } from "./shared/Poolable.sol";
 
 /**
- * @title ActivistPool
+ * @title ValidationPool
  * @author Sintrop
- * @notice This contract manages the distribution of Regeneration Credit tokens as rewards to activists
- * for providing invitation services and community growth support.
- * Each invited who completes 3 inspections is equivalent to one level in the pool.
+ * @notice This contract manages the distribution of Regeneration Credit tokens as rewards to validators.
  * @dev Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for deploy setup only),
  * `Blockable` (for era/epoch tracking), and `Callable` (for whitelisted caller control).
  */
-contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
+contract ValidationPool is Poolable, Blockable, Callable, ReentrancyGuard {
   // --- Constants & state variables ---
 
   /// @notice Interface to the Regeneration Credit token contract, used to decrease total locked.
   IRegenerationCredit public regenerationCredit;
 
-  /// @notice The total supply of Regeneration Credit tokens designated for this activist pool.
+  /// @notice The total supply of Regeneration Credit tokens designated for this validation pool.
   /// This value represents the maximum tokens available for distribution through this contract.
-  uint256 private constant TOTAL_POOL_TOKENS = 40000000e18;
+  uint256 private constant TOTAL_POOL_TOKENS = 10000000e18;
 
-  /// @notice Maximum possible level from a single invited.
+  /// @notice Maximum possible level from a single resource.
   uint8 private constant RESOURCE_LEVEL = 1;
 
-  /// @notice The address of the `ActivistRules` contract.
-  address public activistRulesAddress;
+  /// @notice The address of the `ValidationRules` contract.
+  address public validationRulesAddress;
 
   /// @notice Tracks unique resource IDs to ensure levels for a resource are added only once.
-  mapping(bytes32 => bool) public hasProcessedLevel;
+  mapping(address => bool) public hasProcessedLevel;
 
   // --- Constructor ---
 
   /**
-   * @dev Initializes the ActivistPool contract.
+   * @dev Initializes the ValidationPool contract.
    * Sets up the Regeneration Credit token interface and initializes inherited base contracts.
    * @param regenerationCreditAddress The address of the RegenerationCredit token contract.
    * @param _halving The number of eras that constitute one halving cycle/epoch for reward adjustments.
@@ -59,20 +57,20 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
   /**
    * @dev onlyOwner function to set contract call addresses.
    * This function must be called only once after the contract deploy and ownership must be renounced.
-   * @param _activistRulesAddress Address of ActivistRules.
+   * @param _validationRulesAddress Address of ValidationRules.
    */
-  function setContractCall(address _activistRulesAddress) external onlyOwner {
-    activistRulesAddress = _activistRulesAddress;
+  function setContractCall(address _validationRulesAddress) external onlyOwner {
+    validationRulesAddress = _validationRulesAddress;
   }
 
   // --- MustBeAllowedCaller functions (State modifying) ---
 
   /**
-   * @dev Allows an authorized caller, the Activist contract, to trigger a token withdrawal for a user.
+   * @dev Allows an authorized caller, the Validation contract, to trigger a token withdrawal for a user.
    * This function calculates the eligible tokens for the user's era and transfers them.
-   * @notice This function can only be called by the ActivistRules contract, whitelisted via the `Callable` contract's mechanisms.
+   * @notice This function can only be called by the ValidationRules contract, whitelisted via the `Callable` contract's mechanisms.
    * The user must also be eligible for withdrawal based on the `Blockable` contract's era tracking.
-   * @param delegate The address of the user (activist) for whom the withdrawal is being processed.
+   * @param delegate The address of the user (validation) for whom the withdrawal is being processed.
    * @param era The last recorded era of the `delegate` user, used for reward calculation and eligibility.
    */
   function withdraw(
@@ -81,7 +79,7 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
   )
     external
     mustBeAllowedCaller
-    mustBeContractCall(activistRulesAddress)
+    mustBeContractCall(validationRulesAddress)
     canWithdrawModifier(era)
     hasWithdrawnEraModifier(era, delegate)
     nonReentrant
@@ -108,42 +106,33 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
 
   /**
    * @dev Allows an authorized caller to increase the user pool level.
-   * This function updates the activist level within the system's pooling mechanism.
-   * @notice Can only be called by the ActivistRules address.
-   * @param addr The wallet address of the activist.
-   * @param levels The number of levels to increase the activist's pool level by.
-   * @param eventId A bytes32 representing a unique event for level processing mechanism.
+   * This function updates the validation level within the system's pooling mechanism.
+   * @notice Can only be called by the validationRules address.
+   * @param addr The wallet address of the validation.
+   * @param denied The address of the denied user.
    */
   function addLevel(
     address addr,
-    uint256 levels,
-    bytes32 eventId
-  ) external mustBeAllowedCaller mustBeContractCall(activistRulesAddress) nonReentrant {
-    require(levels <= RESOURCE_LEVEL, "Exceeds max levels");
-    require(!hasProcessedLevel[eventId], "Event already processed");
-    hasProcessedLevel[eventId] = true;
+    address denied
+  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
+    require(!hasProcessedLevel[denied], "User already processed");
+    hasProcessedLevel[denied] = true;
 
     // Calls the _addPoolLevel function from Poolable.sol.
-    _addPoolLevel(addr, levels, currentContractEra());
+    _addPoolLevel(addr, RESOURCE_LEVEL, currentContractEra());
   }
 
   /**
-   * @dev Allows an authorized caller to decrease an activist's pool level.
-   * This function adjusts the activist's level downwards within the system's pooling mechanism.
-   * @notice Can only be called by activistRules address.
-   * @param addr The wallet address of the activist.
-   * @param denied Check if user is being denied. If true, user is being denied and all era levels should be removed.
+   * @dev Allows an authorized caller to increase the user pool level.
+   * This function updates the validation level within the system's pooling mechanism.
+   * @notice Can only be called by the validationRules address.
+   * @param addr The wallet address of the validation.
    */
-  function removePoolLevels(
-    address addr,
-    bool denied
-  ) external mustBeAllowedCaller mustBeContractCall(activistRulesAddress) nonReentrant {
-    uint256 era = currentContractEra();
-
-    uint256 amountToRemovePool = denied ? eraLevels[era][addr] : RESOURCE_LEVEL;
-
-    // Calls the _removePoolLevel function from Poolable.sol.
-    _removePoolLevel(addr, era, amountToRemovePool);
+  function addPointsLevel(
+    address addr
+  ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
+    // Calls the _addPoolLevel function from Poolable.sol.
+    _addPoolLevel(addr, RESOURCE_LEVEL, currentContractEra());
   }
 
   // --- View functions ---
@@ -154,7 +143,7 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * @param era User current era.
    * @return bool True if have tokens to withdraw, false if will just update era.
    */
-  function haveTokensToWithdraw(address delegate, uint256 era) public view returns (bool) {
+  function haveTokensToWithdraw(address delegate, uint256 era) external view returns (bool) {
     return _haveTokensToWithdraw(delegate, era, tokensPerEra(getEpochForEra(era), halving));
   }
 }
