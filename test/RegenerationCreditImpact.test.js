@@ -24,7 +24,7 @@ describe("RegenerationCreditImpact", () => {
     const coordinatesParams = _coordinates.length > 0 ? _coordinates : coordinates();
     await regeneratorRules
       .connect(from)
-      .addRegenerator(1000, name, "projectDescription", "photoURL", coordinatesParams);
+      .addRegenerator(2500, name, "projectDescription", "photoURL", coordinatesParams);
   };
 
   const addInspector = async (name, from) => {
@@ -724,10 +724,10 @@ describe("RegenerationCreditImpact", () => {
 
     context("when have two regenerators", () => {
       context("when all regenerators are valids", async () => {
-        it("totalAreaImpact must be 2000", async () => {
+        it("totalAreaImpact must be 5000", async () => {
           const totalAreaImpact = await instance.totalAreaImpact();
 
-          expect(totalAreaImpact).to.equal(2000);
+          expect(totalAreaImpact).to.equal(5000);
         });
       });
 
@@ -737,10 +737,10 @@ describe("RegenerationCreditImpact", () => {
           await regeneratorRules.removePoolLevels(regenerator2Address);
         });
 
-        it("totalAreaImpact must be 1000", async () => {
+        it("totalAreaImpact must be 2500", async () => {
           const totalAreaImpact = await instance.totalAreaImpact();
 
-          expect(totalAreaImpact).to.equal(1000);
+          expect(totalAreaImpact).to.equal(2500);
         });
       });
     });
@@ -1431,10 +1431,10 @@ describe("RegenerationCreditImpact", () => {
     context("when have two regenerators", () => {
       context("when all regenerators are valids", async () => {
         context("when do not have tokens totalLocked_", () => {
-          it("areaPerToken must be 1333333333333", async () => {
+          it("areaPerToken must be 3333333333333", async () => {
             const areaPerToken = await instance.areaPerToken();
 
-            expect(areaPerToken).to.equal(1333333333333);
+            expect(areaPerToken).to.equal(3333333333333);
           });
         });
 
@@ -1444,10 +1444,10 @@ describe("RegenerationCreditImpact", () => {
             await regenerationCredit.addContractPool(owner, 300000000000000000000000000n);
           });
 
-          it("areaPerToken must be 2222222222222", async () => {
+          it("areaPerToken must be 5555555555555", async () => {
             const areaPerToken = await instance.areaPerToken();
 
-            expect(areaPerToken).to.equal(2222222222222);
+            expect(areaPerToken).to.equal(5555555555555);
           });
         });
       });
@@ -1458,10 +1458,10 @@ describe("RegenerationCreditImpact", () => {
           await regeneratorRules.removePoolLevels(regenerator2Address);
         });
 
-        it("areaPerToken must be 666666666666", async () => {
+        it("areaPerToken must be 1666666666666", async () => {
           const areaPerToken = await instance.areaPerToken();
 
-          expect(areaPerToken).to.equal(666666666666);
+          expect(areaPerToken).to.equal(1666666666666);
         });
       });
     });
