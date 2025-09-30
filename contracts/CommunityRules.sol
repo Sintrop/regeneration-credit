@@ -25,7 +25,7 @@ contract CommunityRules is Callable {
   uint32 public constant VOTER_INVITATION_DELAY_BLOCKS = 100000;
 
   /// @notice The number of blocks a user must wait between submitting delations.
-  uint256 private constant BLOCKS_BETWEEN_DELATIONS = 5000;
+  uint256 private constant BLOCKS_BETWEEN_DELATIONS = 500;
 
   /// @notice Max character length for delation titles.
   uint16 private constant MAX_TITLE_LENGTH = 100;
@@ -51,8 +51,15 @@ contract CommunityRules is Callable {
   /// Stores a historical record of all delations against a user.
   mapping(address => CommunityTypes.Delation[]) private delations;
 
+  /// @dev Index of delation IDs for each reported user.
+  mapping(address => uint64[]) private _delationIdsForUser;
+
   /// @notice A mapping from a delation id to the `Delation` struct.
   mapping(uint256 => CommunityTypes.Delation) public delationsById;
+
+  /// @notice Tracks which user has voted on which delation to prevent double voting.
+  /// @dev mapping: delationId => voterAddress => hasVoted (bool)
+  mapping(uint64 => mapping(address => bool)) private _hasVotedOnDelation;
 
   /// @notice A mapping from an invited user's address to their `Invitation` details.
   mapping(address => CommunityTypes.Invitation) public invitations;
@@ -73,6 +80,9 @@ contract CommunityRules is Callable {
 
   /// @notice Tracks the block number of each user's last submitted delation.
   mapping(address => uint256) public lastDelationBlock;
+
+  /// @notice Tracks which user has already submitted a delation against another to prevent spam.
+  mapping(address => mapping(address => bool)) private _hasDelated;
 
   /// @notice The address of the `InvitationRules` contract.
   address public invitationRulesAddress;
@@ -163,6 +173,7 @@ contract CommunityRules is Callable {
   /**
    * @dev Adds a new delation to the system. Enforces character limits for title and testimony, and requires both reporter and reported user to be registered.
    * @notice Allows registered users (excluding Supporters) to report other users or resources that may require invalidation.
+   * Limited to one delation per target.
    *
    * Examples of unwanted behavior:
    *
@@ -182,13 +193,16 @@ contract CommunityRules is Callable {
       bytes(title).length <= MAX_TITLE_LENGTH && bytes(testimony).length <= MAX_TESTIMONY_LENGTH,
       "Max characters reached"
     );
+    require(!isDenied(msg.sender), "User denied");
     require(hasWaitedRequiredTime(msg.sender), "Wait delay blocks");
     require(users[msg.sender] != CommunityTypes.UserType.UNDEFINED, "Caller must be registered");
     require(users[msg.sender] != CommunityTypes.UserType.SUPPORTER, "Not allowed to supporters");
     require(users[addr] != CommunityTypes.UserType.UNDEFINED, "User must be registered");
     require(addr != address(0), "Cannot delate zero address");
     require(addr != msg.sender, "Self-denunciation not allowed");
+    require(!_hasDelated[msg.sender][addr], "Already submitted");
 
+    _hasDelated[msg.sender][addr] = true;
     lastDelationBlock[msg.sender] = block.number;
 
     delationsCount++;
@@ -200,13 +214,54 @@ contract CommunityRules is Callable {
       addr,
       title,
       testimony,
-      block.number
+      block.number,
+      0,
+      0
     );
 
+    _delationIdsForUser[addr].push(newDelationId);
     delations[addr].push(newDelation);
     delationsById[newDelationId] = newDelation;
 
     emit DelationAdded(msg.sender, addr, newDelationId);
+  }
+
+  /**
+   * @notice Allows users to vote (thumbs up/down) on an existing delation.
+   * @dev This creates a social validation layer. Voters cannot be the informer or the reported user.
+   * @param _delationId The ID of the delation to vote on.
+   * @param _supportsDelation True for a "thumbs up" (agrees), false for "thumbs down" (disagrees).
+   */
+  function voteOnDelation(uint64 _delationId, bool _supportsDelation) external {
+    // 1. Check if the delation exists by accessing it. It will revert if the ID is invalid.
+    CommunityTypes.Delation storage delation = delationsById[_delationId];
+    require(delation.id != 0, "Delation does not exist");
+
+    // 2. Check if the voter is eligible.
+    require(users[msg.sender] != CommunityTypes.UserType.UNDEFINED, "Caller must be registered");
+    require(users[msg.sender] != CommunityTypes.UserType.SUPPORTER, "Not allowed to supporters");
+    require(!isDenied(msg.sender), "User denied");
+
+    // 3. The informer and the reported user cannot vote on their own delation.
+    require(msg.sender != delation.informer, "Informer cannot vote");
+    require(msg.sender != delation.reported, "Reported user cannot vote");
+
+    // 4. Check to prevent double voting.
+    require(!_hasVotedOnDelation[_delationId][msg.sender], "Already voted");
+
+    // --- State Changes ---
+
+    // Mark that this user has now voted.
+    _hasVotedOnDelation[_delationId][msg.sender] = true;
+
+    // Increment the appropriate counter.
+    if (_supportsDelation) {
+      delation.thumbsUp++;
+    } else {
+      delation.thumbsDown++;
+    }
+
+    emit DelationVoted(_delationId, msg.sender, _supportsDelation, delation.thumbsUp, delation.thumbsDown);
   }
 
   // --- MustBeAllowedCaller functions (State modifying) ---
@@ -393,12 +448,14 @@ contract CommunityRules is Callable {
   }
 
   /**
-   * @notice Get the delations of a user.
-   * @param addr User address.
-   * @return array Of delations.
+   * @notice Gets the unique IDs of all delations filed against a user.
+   * @dev This function returns an array of IDs. The full data for each delation
+   * can then be fetched individually from the public `delationsById` mapping.
+   * @param _user The address of the user whose delation IDs are to be retrieved.
+   * @return An array of `uint64` delation IDs.
    */
-  function getUserDelations(address addr) public view returns (CommunityTypes.Delation[] memory) {
-    return delations[addr];
+  function getUserDelations(address _user) external view returns (uint64[] memory) {
+    return _delationIdsForUser[_user];
   }
 
   /**
@@ -450,4 +507,20 @@ contract CommunityRules is Callable {
    * @param userTypeTo The `UserType` the invited user is intended to register as.
    */
   event InvitationAdded(address indexed inviter, address indexed invited, CommunityTypes.UserType userTypeTo);
+
+  /**
+   * @notice Emitted when a user votes on a delation.
+   * @param delationId The ID of the delation that was voted on.
+   * @param voter The address of the user who voted.
+   * @param supportsDelation True if the vote was a "thumbs up", false for "thumbs down".
+   * @param newThumbsUpCount The new total of "thumbs up" votes for this delation.
+   * @param newThumbsDownCount The new total of "thumbs down" votes for this delation.
+   */
+  event DelationVoted(
+    uint64 indexed delationId,
+    address indexed voter,
+    bool supportsDelation,
+    uint256 newThumbsUpCount,
+    uint256 newThumbsDownCount
+  );
 }
