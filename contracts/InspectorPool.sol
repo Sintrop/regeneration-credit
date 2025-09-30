@@ -24,7 +24,7 @@ contract InspectorPool is Poolable, Blockable, Callable, ReentrancyGuard {
 
   /// @notice The total supply of Regeneration Credit tokens designated for this inspector pool.
   /// This value represents the maximum tokens available for distribution through this contract.
-  uint256 private constant TOTAL_POOL_TOKENS = 180000000e18;
+  uint256 private constant TOTAL_POOL_TOKENS = 230000000e18;
 
   /// @notice Maximum possible level from a single resource.
   uint8 private constant RESOURCE_LEVEL = 1;

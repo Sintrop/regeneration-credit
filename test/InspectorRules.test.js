@@ -19,7 +19,7 @@ describe("InspectorRules", () => {
   };
 
   const args = {
-    totalTokens: "180000000000000000000000000",
+    totalTokens: "230000000000000000000000000",
     halving: 12,
     blocksPerEra: 26,
   };
@@ -300,9 +300,9 @@ describe("InspectorRules", () => {
             await instance.connect(inspe1Address).withdraw();
           });
 
-          it("withdraw 7500000000000000000000000n tokens", async () => {
+          it("withdraw 9583333333333333333333333n tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(inspe1Address);
-            const expectedBalance = 7500000000000000000000000n;
+            const expectedBalance = 9583333333333333333333333n;
 
             expect(balanceOf).to.equal(expectedBalance);
           });
@@ -327,9 +327,9 @@ describe("InspectorRules", () => {
             await instance.connect(inspe1Address).withdraw();
           });
 
-          it("withdraw 3750000000000000000000000n tokens", async () => {
+          it("withdraw 4791666666666666666666666n tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(inspe1Address);
-            const expectedBalance = 3750000000000000000000000n;
+            const expectedBalance = 4791666666666666666666666n;
 
             expect(balanceOf).to.equal(expectedBalance);
           });
