@@ -198,7 +198,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * - The `inspectionId` must correspond to an existing inspection.
    * - The inspector must not already have an inspection `ACCEPTED` that is not yet `INSPECTED` or `INVALIDATED` or `EXPIRED`.
    * - The inspector must not have previously inspected this specific regenerator.
-   * - The inspection's status must be `OPEN`.
+   * - The inspection's status must be `OPEN` or `EXPIRED`.
    * - The `acceptInspectionDelayBlocks` must have passed since the inspection was created.
    * - The system must not be within the `securityBlocksToValidation` window before an era ends.
    * - The inspector must adhere to `inspectorRules.canAcceptInspection` (delay from last realized inspection).
