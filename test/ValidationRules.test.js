@@ -72,7 +72,7 @@ describe("ValidationRules", () => {
   };
 
   const addRegenerator = async (name, from) => {
-    await regeneratorRules.connect(from).addRegenerator(1000, name, "projectDescription", "photoURL", coordinates());
+    await regeneratorRules.connect(from).addRegenerator(2500, name, "projectDescription", "photoURL", coordinates());
   };
 
   const coordinates = () => {
@@ -693,7 +693,7 @@ describe("ValidationRules", () => {
               it("regenerationArea should be decremented", async () => {
                 const decrementedArea = await regeneratorRules.regenerationArea();
 
-                expect(decrementedArea).to.equal(1000);
+                expect(decrementedArea).to.equal(2500);
               });
 
               it("must emit DeniedUserEvent", async () => {
@@ -1268,10 +1268,10 @@ describe("ValidationRules", () => {
         await mockContract.mock.votersCount.returns(20000);
       });
 
-      it("returns 601", async () => {
+      it("returns 360", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(601);
+        expect(votesToInvalidate).to.equal(360);
       });
     });
 
@@ -1280,22 +1280,22 @@ describe("ValidationRules", () => {
         await mockContract.mock.votersCount.returns(35000);
       });
 
-      it("returns 1051", async () => {
+      it("returns 360", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(1051);
+        expect(votesToInvalidate).to.equal(360);
       });
     });
 
-    context("when votersCounts is 64000", () => {
+    context("when votersCounts is 48000", () => {
       beforeEach(async () => {
-        await mockContract.mock.votersCount.returns(64000);
+        await mockContract.mock.votersCount.returns(48000);
       });
 
-      it("returns 1921", async () => {
+      it("returns 360", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(1921);
+        expect(votesToInvalidate).to.equal(360);
       });
     });
   });
