@@ -386,6 +386,22 @@ describe("RegeneratorRules", () => {
       await addRegenerator("Regenerator A", prod1Address);
     });
 
+    context("when score is set to zero", () => {
+      beforeEach(async () => {
+        await instance.afterRealizeInspection(prod1Address, 0, 2);
+      });
+
+      it("should not increment regenerator inspection count", async () => {
+        const regenerator = await instance.getRegenerator(prod1Address);
+        expect(regenerator.totalInspections).to.equal(0);
+      });
+
+      it("should not add regenerator on certification process", async () => {
+        const currentEra = await instance.poolCurrentEra();
+        expect(await instance.newCertificationRegenerators(currentEra)).to.equal(0);
+      });
+    });
+
     context("with allowed user", () => {
       describe(".setRegenerationScore", () => {
         context("when dont have regenerators sustainable", () => {
@@ -502,9 +518,10 @@ describe("RegeneratorRules", () => {
       });
 
       describe(".incrementInspections", () => {
+        // This test block checks the basic functionality of the inspection increment.
         describe("when a single inspection is performed", () => {
           beforeEach(async () => {
-            await instance.afterRealizeInspection(prod1Address, 0, 1);
+            await instance.afterRealizeInspection(prod1Address, 1, 1);
           });
 
           it("should increment totalInspections counter", async () => {
@@ -517,15 +534,15 @@ describe("RegeneratorRules", () => {
           const MAXIMUM_INSPECTIONS = 6;
 
           beforeEach(async () => {
-            await instance.afterRealizeInspection(prod1Address, 0, 1);
-            await instance.afterRealizeInspection(prod1Address, 0, 2);
-            await instance.afterRealizeInspection(prod1Address, 0, 3);
-            await instance.afterRealizeInspection(prod1Address, 0, 4);
-            await instance.afterRealizeInspection(prod1Address, 0, 5);
+            await instance.afterRealizeInspection(prod1Address, 1, 1);
+            await instance.afterRealizeInspection(prod1Address, 1, 2);
+            await instance.afterRealizeInspection(prod1Address, 1, 3);
+            await instance.afterRealizeInspection(prod1Address, 1, 4);
+            await instance.afterRealizeInspection(prod1Address, 1, 5);
           });
 
           it("should certify the regenerator and update certification counters", async () => {
-            const tx = await instance.afterRealizeInspection(prod1Address, 0, 6);
+            const tx = await instance.afterRealizeInspection(prod1Address, 1, 6);
 
             const isCertified = await instance.certifiedRegenerators(prod1Address);
             expect(isCertified).to.be.true;
@@ -544,17 +561,18 @@ describe("RegeneratorRules", () => {
 
       describe("when adding and then removing a single inspection", () => {
         it("should correctly increment and then decrement counters", async () => {
-          await instance.afterRealizeInspection(prod1Address, 0, 1);
+          await instance.afterRealizeInspection(prod1Address, 1, 1);
 
+          const currentEra = await instance.poolCurrentEra();
           expect(await instance.impactRegenerators(prod1Address)).to.be.true;
-          expect(await instance.totalImpactRegenerators()).to.equal(1);
+          expect(await instance.newCertificationRegenerators(currentEra)).to.equal(1);
           let regenerator = await instance.getRegenerator(prod1Address);
           expect(regenerator.totalInspections).to.equal(1);
 
           await instance.decrementInspections(prod1Address);
 
           expect(await instance.impactRegenerators(prod1Address)).to.be.false;
-          expect(await instance.totalImpactRegenerators()).to.equal(0);
+          expect(await instance.newCertificationRegenerators(currentEra)).to.equal(0);
           regenerator = await instance.getRegenerator(prod1Address);
           expect(regenerator.totalInspections).to.equal(0);
         });
@@ -562,12 +580,12 @@ describe("RegeneratorRules", () => {
 
       describe("when the regenerator is certified", () => {
         beforeEach(async () => {
-          await instance.afterRealizeInspection(prod1Address, 0, 1);
-          await instance.afterRealizeInspection(prod1Address, 0, 2);
-          await instance.afterRealizeInspection(prod1Address, 0, 3);
-          await instance.afterRealizeInspection(prod1Address, 0, 4);
-          await instance.afterRealizeInspection(prod1Address, 0, 5);
-          await instance.afterRealizeInspection(prod1Address, 0, 6);
+          await instance.afterRealizeInspection(prod1Address, 1, 1);
+          await instance.afterRealizeInspection(prod1Address, 1, 2);
+          await instance.afterRealizeInspection(prod1Address, 1, 3);
+          await instance.afterRealizeInspection(prod1Address, 1, 4);
+          await instance.afterRealizeInspection(prod1Address, 1, 5);
+          await instance.afterRealizeInspection(prod1Address, 1, 6);
         });
 
         it("should remove certification and decrement counters", async () => {
@@ -611,16 +629,16 @@ describe("RegeneratorRules", () => {
         context("when regenerator have minimum inspections", () => {
           context("when levels in era is 100", () => {
             beforeEach(async () => {
-              await instance.afterRealizeInspection(prod1Address, 0, 1);
-              await instance.afterRealizeInspection(prod1Address, 0, 2);
-              await instance.afterRealizeInspection(prod1Address, 0, 3);
+              await instance.afterRealizeInspection(prod1Address, 1, 1);
+              await instance.afterRealizeInspection(prod1Address, 1, 2);
+              await instance.afterRealizeInspection(prod1Address, 1, 3);
             });
 
             context("when regenerator have regenerationScore 50", () => {
               beforeEach(async () => {
-                await instance.afterRealizeInspection(prod2Address, 0, 4);
-                await instance.afterRealizeInspection(prod2Address, 0, 5);
-                await instance.afterRealizeInspection(prod2Address, 0, 6);
+                await instance.afterRealizeInspection(prod2Address, 1, 4);
+                await instance.afterRealizeInspection(prod2Address, 1, 5);
+                await instance.afterRealizeInspection(prod2Address, 1, 6);
 
                 await instance.afterRealizeInspection(prod1Address, 50, 7);
                 await instance.afterRealizeInspection(prod2Address, 50, 8);
@@ -687,9 +705,9 @@ describe("RegeneratorRules", () => {
 
       context("when cant approve #blockable", () => {
         beforeEach(async () => {
-          await instance.afterRealizeInspection(prod1Address, 0, 1);
-          await instance.afterRealizeInspection(prod1Address, 0, 2);
-          await instance.afterRealizeInspection(prod1Address, 0, 3);
+          await instance.afterRealizeInspection(prod1Address, 1, 1);
+          await instance.afterRealizeInspection(prod1Address, 1, 2);
+          await instance.afterRealizeInspection(prod1Address, 1, 3);
         });
 
         it("should return error message", async () => {

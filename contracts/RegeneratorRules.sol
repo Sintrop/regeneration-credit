@@ -384,7 +384,13 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
     processedInspections[inspectionId] = true;
 
-    uint256 totalInspections = _incrementInspections(addr);
+    uint256 totalInspections;
+
+    if (score > 0) {
+      totalInspections = _incrementInspections(addr);
+    } else {
+      totalInspections = regenerators[addr].totalInspections;
+    }
 
     _setRegenerationScore(addr, score, inspectionId);
 
