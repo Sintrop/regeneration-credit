@@ -24,11 +24,10 @@ interface IDeveloperRules {
   function getDeveloper(address account) external view returns (Developer memory);
 
   /**
-   * @notice Returns the total number of reports made.
-   * @dev This is likely a getter for a public state variable.
-   * @return The total count of all reports.
+   * @notice Returns the total number of activeLevels from non-denied users.
+   * @return The total count of totalActiveLevels.
    */
-  function reportsTotalCount() external view returns (uint64);
+  function totalActiveLevels() external view returns (uint256);
 
   /**
    * @notice Adds a penalty to a developer and returns their new total penalty count.

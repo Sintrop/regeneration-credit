@@ -106,8 +106,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 4, totalUsers is 4 and userLevels is 1", () => {
           beforeEach(async () => {
-            await communityRules.mock.userTypesTotalCount.returns(4);
-            await activistRules.mock.approvedInvites.returns(4);
+            await communityRules.mock.userTypesCount.returns(4);
+            await activistRules.mock.totalActiveLevels.returns(4);
             await activistRules.mock.getActivist.returns(activistMockLevels(1));
           });
 
@@ -120,8 +120,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 10, totalUsers is 10 and userLevels is 1", () => {
           beforeEach(async () => {
-            await communityRules.mock.userTypesTotalCount.returns(10);
-            await activistRules.mock.approvedInvites.returns(10);
+            await communityRules.mock.userTypesCount.returns(10);
+            await activistRules.mock.totalActiveLevels.returns(10);
             await activistRules.mock.getActivist.returns(activistMockLevels(1));
           });
 
@@ -134,8 +134,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 60, totalUsers is 30 and userLevels is 1", () => {
           beforeEach(async () => {
-            await activistRules.mock.approvedInvites.returns(60);
-            await communityRules.mock.userTypesTotalCount.returns(30);
+            await activistRules.mock.totalActiveLevels.returns(60);
+            await communityRules.mock.userTypesCount.returns(30);
             await activistRules.mock.getActivist.returns(activistMockLevels(1));
           });
 
@@ -148,8 +148,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 60, totalUsers is 30 and userLevels is 3", () => {
           beforeEach(async () => {
-            await activistRules.mock.approvedInvites.returns(60);
-            await communityRules.mock.userTypesTotalCount.returns(30);
+            await activistRules.mock.totalActiveLevels.returns(60);
+            await communityRules.mock.userTypesCount.returns(30);
             await activistRules.mock.getActivist.returns(activistMockLevels(3));
           });
 
@@ -162,8 +162,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 6000, totalUsers is 600 and userLevels is 50", () => {
           beforeEach(async () => {
-            await activistRules.mock.approvedInvites.returns(6000);
-            await communityRules.mock.userTypesTotalCount.returns(600);
+            await activistRules.mock.totalActiveLevels.returns(6000);
+            await communityRules.mock.userTypesCount.returns(600);
             await activistRules.mock.getActivist.returns(activistMockLevels(50));
           });
 
@@ -176,8 +176,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 0, totalUsers is 10 and userLevels is 0", () => {
           beforeEach(async () => {
-            await activistRules.mock.approvedInvites.returns(0);
-            await communityRules.mock.userTypesTotalCount.returns(10);
+            await activistRules.mock.totalActiveLevels.returns(0);
+            await communityRules.mock.userTypesCount.returns(10);
             await activistRules.mock.getActivist.returns(activistMockLevels(0));
           });
 
@@ -190,8 +190,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 50000, totalUsers is 5000 and userLevels is 10", () => {
           beforeEach(async () => {
-            await activistRules.mock.approvedInvites.returns(50000);
-            await communityRules.mock.userTypesTotalCount.returns(5000);
+            await activistRules.mock.totalActiveLevels.returns(50000);
+            await communityRules.mock.userTypesCount.returns(5000);
             await activistRules.mock.getActivist.returns(activistMockLevels(10));
           });
 
@@ -204,8 +204,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 50000, totalUsers is 5000 and userLevels is 20", () => {
           beforeEach(async () => {
-            await activistRules.mock.approvedInvites.returns(50000);
-            await communityRules.mock.userTypesTotalCount.returns(5000);
+            await activistRules.mock.totalActiveLevels.returns(50000);
+            await communityRules.mock.userTypesCount.returns(5000);
             await activistRules.mock.getActivist.returns(activistMockLevels(20));
           });
 
@@ -224,8 +224,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 4, totalUsers is 4 and userLevels is 1", () => {
           beforeEach(async () => {
-            await contributorRules.mock.contributionsTotalCount.returns(4);
-            await communityRules.mock.userTypesTotalCount.returns(4);
+            await contributorRules.mock.totalActiveLevels.returns(4);
+            await communityRules.mock.userTypesCount.returns(4);
             await contributorRules.mock.getContributor.returns(contributorMockLevels(1));
           });
 
@@ -238,8 +238,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 10, totalUsers is 10 and userLevels is 1", () => {
           beforeEach(async () => {
-            await contributorRules.mock.contributionsTotalCount.returns(10);
-            await communityRules.mock.userTypesTotalCount.returns(10);
+            await contributorRules.mock.totalActiveLevels.returns(10);
+            await communityRules.mock.userTypesCount.returns(10);
             await contributorRules.mock.getContributor.returns(contributorMockLevels(1));
           });
 
@@ -252,8 +252,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 60, totalUsers is 30 and userLevels is 1", () => {
           beforeEach(async () => {
-            await contributorRules.mock.contributionsTotalCount.returns(60);
-            await communityRules.mock.userTypesTotalCount.returns(30);
+            await contributorRules.mock.totalActiveLevels.returns(60);
+            await communityRules.mock.userTypesCount.returns(30);
             await contributorRules.mock.getContributor.returns(contributorMockLevels(1));
           });
 
@@ -266,8 +266,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 60, totalUsers is 30 and userLevels is 3", () => {
           beforeEach(async () => {
-            await contributorRules.mock.contributionsTotalCount.returns(60);
-            await communityRules.mock.userTypesTotalCount.returns(30);
+            await contributorRules.mock.totalActiveLevels.returns(60);
+            await communityRules.mock.userTypesCount.returns(30);
             await contributorRules.mock.getContributor.returns(contributorMockLevels(3));
           });
 
@@ -280,8 +280,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 6000, totalUsers is 600 and userLevels is 50", () => {
           beforeEach(async () => {
-            await contributorRules.mock.contributionsTotalCount.returns(6000);
-            await communityRules.mock.userTypesTotalCount.returns(600);
+            await contributorRules.mock.totalActiveLevels.returns(6000);
+            await communityRules.mock.userTypesCount.returns(600);
             await contributorRules.mock.getContributor.returns(contributorMockLevels(50));
           });
 
@@ -294,8 +294,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 0, totalUsers is 10 and userLevels is 0", () => {
           beforeEach(async () => {
-            await contributorRules.mock.contributionsTotalCount.returns(0);
-            await communityRules.mock.userTypesTotalCount.returns(10);
+            await contributorRules.mock.totalActiveLevels.returns(0);
+            await communityRules.mock.userTypesCount.returns(10);
             await contributorRules.mock.getContributor.returns(contributorMockLevels(0));
           });
 
@@ -308,8 +308,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 50000, totalUsers is 5000 and userLevels is 10", () => {
           beforeEach(async () => {
-            await contributorRules.mock.contributionsTotalCount.returns(50000);
-            await communityRules.mock.userTypesTotalCount.returns(5000);
+            await contributorRules.mock.totalActiveLevels.returns(50000);
+            await communityRules.mock.userTypesCount.returns(5000);
             await contributorRules.mock.getContributor.returns(contributorMockLevels(10));
           });
 
@@ -322,8 +322,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 50000, totalUsers is 5000 and userLevels is 20", () => {
           beforeEach(async () => {
-            await contributorRules.mock.contributionsTotalCount.returns(50000);
-            await communityRules.mock.userTypesTotalCount.returns(5000);
+            await contributorRules.mock.totalActiveLevels.returns(50000);
+            await communityRules.mock.userTypesCount.returns(5000);
             await contributorRules.mock.getContributor.returns(contributorMockLevels(20));
           });
 
@@ -342,8 +342,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 4, totalUsers is 4 and userLevels is 1", () => {
           beforeEach(async () => {
-            await developerRules.mock.reportsTotalCount.returns(4);
-            await communityRules.mock.userTypesTotalCount.returns(4);
+            await developerRules.mock.totalActiveLevels.returns(4);
+            await communityRules.mock.userTypesCount.returns(4);
             await developerRules.mock.getDeveloper.returns(developerMockLevels(1));
           });
 
@@ -356,8 +356,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 10, totalUsers is 10 and userLevels is 1", () => {
           beforeEach(async () => {
-            await developerRules.mock.reportsTotalCount.returns(10);
-            await communityRules.mock.userTypesTotalCount.returns(10);
+            await developerRules.mock.totalActiveLevels.returns(10);
+            await communityRules.mock.userTypesCount.returns(10);
             await developerRules.mock.getDeveloper.returns(developerMockLevels(1));
           });
 
@@ -370,8 +370,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 60, totalUsers is 30 and userLevels is 1", () => {
           beforeEach(async () => {
-            await developerRules.mock.reportsTotalCount.returns(60);
-            await communityRules.mock.userTypesTotalCount.returns(30);
+            await developerRules.mock.totalActiveLevels.returns(60);
+            await communityRules.mock.userTypesCount.returns(30);
             await developerRules.mock.getDeveloper.returns(developerMockLevels(1));
           });
 
@@ -384,8 +384,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 60, totalUsers is 30 and userLevels is 3", () => {
           beforeEach(async () => {
-            await developerRules.mock.reportsTotalCount.returns(60);
-            await communityRules.mock.userTypesTotalCount.returns(30);
+            await developerRules.mock.totalActiveLevels.returns(60);
+            await communityRules.mock.userTypesCount.returns(30);
             await developerRules.mock.getDeveloper.returns(developerMockLevels(3));
           });
 
@@ -398,8 +398,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 6000, totalUsers is 600 and userLevels is 50", () => {
           beforeEach(async () => {
-            await developerRules.mock.reportsTotalCount.returns(6000);
-            await communityRules.mock.userTypesTotalCount.returns(600);
+            await developerRules.mock.totalActiveLevels.returns(6000);
+            await communityRules.mock.userTypesCount.returns(600);
             await developerRules.mock.getDeveloper.returns(developerMockLevels(50));
           });
 
@@ -412,8 +412,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 0, totalUsers is 10 and userLevels is 0", () => {
           beforeEach(async () => {
-            await developerRules.mock.reportsTotalCount.returns(0);
-            await communityRules.mock.userTypesTotalCount.returns(10);
+            await developerRules.mock.totalActiveLevels.returns(0);
+            await communityRules.mock.userTypesCount.returns(10);
             await developerRules.mock.getDeveloper.returns(developerMockLevels(0));
           });
 
@@ -426,8 +426,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 50000, totalUsers is 5000 and userLevels is 10", () => {
           beforeEach(async () => {
-            await developerRules.mock.reportsTotalCount.returns(50000);
-            await communityRules.mock.userTypesTotalCount.returns(5000);
+            await developerRules.mock.totalActiveLevels.returns(50000);
+            await communityRules.mock.userTypesCount.returns(5000);
             await developerRules.mock.getDeveloper.returns(developerMockLevels(10));
           });
 
@@ -440,8 +440,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 50000, totalUsers is 5000 and userLevels is 20", () => {
           beforeEach(async () => {
-            await developerRules.mock.reportsTotalCount.returns(50000);
-            await communityRules.mock.userTypesTotalCount.returns(5000);
+            await developerRules.mock.totalActiveLevels.returns(50000);
+            await communityRules.mock.userTypesCount.returns(5000);
             await developerRules.mock.getDeveloper.returns(developerMockLevels(20));
           });
 
@@ -460,8 +460,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 4, totalUsers is 4 and userLevels is 1", () => {
           beforeEach(async () => {
-            await researcherRules.mock.researchesTotalCount.returns(4);
-            await communityRules.mock.userTypesTotalCount.returns(4);
+            await researcherRules.mock.totalActiveLevels.returns(4);
+            await communityRules.mock.userTypesCount.returns(4);
             await researcherRules.mock.getResearcher.returns(researcherMockLevels(1));
           });
 
@@ -474,8 +474,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 10, totalUsers is 10 and userLevels is 1", () => {
           beforeEach(async () => {
-            await researcherRules.mock.researchesTotalCount.returns(10);
-            await communityRules.mock.userTypesTotalCount.returns(10);
+            await researcherRules.mock.totalActiveLevels.returns(10);
+            await communityRules.mock.userTypesCount.returns(10);
             await researcherRules.mock.getResearcher.returns(researcherMockLevels(1));
           });
 
@@ -488,8 +488,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 60, totalUsers is 30 and userLevels is 1", () => {
           beforeEach(async () => {
-            await researcherRules.mock.researchesTotalCount.returns(60);
-            await communityRules.mock.userTypesTotalCount.returns(30);
+            await researcherRules.mock.totalActiveLevels.returns(60);
+            await communityRules.mock.userTypesCount.returns(30);
             await researcherRules.mock.getResearcher.returns(researcherMockLevels(1));
           });
 
@@ -502,8 +502,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 60, totalUsers is 30 and userLevels is 3", () => {
           beforeEach(async () => {
-            await researcherRules.mock.researchesTotalCount.returns(60);
-            await communityRules.mock.userTypesTotalCount.returns(30);
+            await researcherRules.mock.totalActiveLevels.returns(60);
+            await communityRules.mock.userTypesCount.returns(30);
             await researcherRules.mock.getResearcher.returns(researcherMockLevels(3));
           });
 
@@ -516,8 +516,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 6000, totalUsers is 600 and userLevels is 50", () => {
           beforeEach(async () => {
-            await researcherRules.mock.researchesTotalCount.returns(6000);
-            await communityRules.mock.userTypesTotalCount.returns(600);
+            await researcherRules.mock.totalActiveLevels.returns(6000);
+            await communityRules.mock.userTypesCount.returns(600);
             await researcherRules.mock.getResearcher.returns(researcherMockLevels(50));
           });
 
@@ -530,8 +530,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 0, totalUsers is 10 and userLevels is 0", () => {
           beforeEach(async () => {
-            await researcherRules.mock.researchesTotalCount.returns(0);
-            await communityRules.mock.userTypesTotalCount.returns(10);
+            await researcherRules.mock.totalActiveLevels.returns(0);
+            await communityRules.mock.userTypesCount.returns(10);
             await researcherRules.mock.getResearcher.returns(researcherMockLevels(0));
           });
 
@@ -544,8 +544,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 50000, totalUsers is 5000 and userLevels is 10", () => {
           beforeEach(async () => {
-            await researcherRules.mock.researchesTotalCount.returns(50000);
-            await communityRules.mock.userTypesTotalCount.returns(5000);
+            await researcherRules.mock.totalActiveLevels.returns(50000);
+            await communityRules.mock.userTypesCount.returns(5000);
             await researcherRules.mock.getResearcher.returns(researcherMockLevels(10));
           });
 
@@ -558,8 +558,8 @@ describe("VoteRules", () => {
 
         context("when totalLevels is 50000, totalUsers is 5000 and userLevels is 20", () => {
           beforeEach(async () => {
-            await researcherRules.mock.researchesTotalCount.returns(50000);
-            await communityRules.mock.userTypesTotalCount.returns(5000);
+            await researcherRules.mock.totalActiveLevels.returns(50000);
+            await communityRules.mock.userTypesCount.returns(5000);
             await researcherRules.mock.getResearcher.returns(researcherMockLevels(20));
           });
 

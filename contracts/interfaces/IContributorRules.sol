@@ -24,11 +24,10 @@ interface IContributorRules {
   function getContributor(address account) external view returns (Contributor memory);
 
   /**
-   * @notice Returns the total number of contributions made.
-   * @dev This is likely a getter for a public state variable.
-   * @return The total count of all contributions.
+   * @notice Returns the total number of activeLevels from non-denied users.
+   * @return The total count of totalActiveLevels.
    */
-  function contributionsTotalCount() external view returns (uint64);
+  function totalActiveLevels() external view returns (uint256);
 
   /**
    * @notice Adds a penalty to a contributor and returns their new total penalty count.
