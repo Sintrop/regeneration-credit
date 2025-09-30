@@ -274,8 +274,11 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
     _afterRealizeInspection(inspection);
 
-    inspectionsTreesImpact += treesResult;
-    inspectionsBiodiversityImpact += biodiversityResult;
+    if (inspection.regenerationScore > 0) {
+      inspectionsTreesImpact += treesResult;
+      inspectionsBiodiversityImpact += biodiversityResult;
+    }
+
     inspectorInspected[msg.sender][inspection.regenerator] = true;
     realizedInspectionsCount++;
 
@@ -420,7 +423,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
     activistRules.addInspectorLevel(
       inspectorAddress,
-      inspectorRules.afterRealizeInspection(inspectorAddress, inspection.id)
+      inspectorRules.afterRealizeInspection(inspectorAddress, inspection.regenerationScore, inspection.id)
     );
 
     regeneratorInspections[regeneratorAddress].push(inspection.id);
