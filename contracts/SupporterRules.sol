@@ -281,5 +281,9 @@ contract SupporterRules is ReentrancyGuard {
    * @param calculatorItemId The ID of the calculator item for the commitment.
    * @param blockNumber The block number at which the commitment was declared.
    */
-  event ReductionCommitmentDeclared(address indexed supporterAddress, uint256 indexed calculatorItemId, uint256 blockNumber);
+  event ReductionCommitmentDeclared(
+    address indexed supporterAddress,
+    uint256 indexed calculatorItemId,
+    uint256 blockNumber
+  );
 }

@@ -540,7 +540,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   function nextEraIn() public view returns (uint256) {
     return uint256(researcherPool.nextEraIn(poolCurrentEra()));
   }
-  
+
   // --- Events ---
 
   /**
