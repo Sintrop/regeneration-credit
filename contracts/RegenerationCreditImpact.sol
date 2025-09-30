@@ -32,13 +32,13 @@ contract RegenerationCreditImpact {
   // --- State variables ---
 
   /// @notice Interface to the `RegenerationCredit` contract.
-  IRegenerationCredit private regenerationCredit;
+  IRegenerationCredit public regenerationCredit;
 
   /// @notice Interface to the `InspectionRules` contract.
-  IInspectionRules private inspectionRules;
+  IInspectionRules public inspectionRules;
 
   /// @notice Interface to the `RegeneratorRules` contract.
-  IRegeneratorRules private regeneratorRules;
+  IRegeneratorRules public regeneratorRules;
 
   // --- Constructor ---
 

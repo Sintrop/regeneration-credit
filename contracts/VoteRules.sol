@@ -30,19 +30,19 @@ contract VoteRules {
   // --- State variables ---
 
   /// @notice CommunityRules contract interface.
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice ActivistRules contract interface.
-  IActivistRules private activistRules;
+  IActivistRules public activistRules;
 
   /// @notice ContributorRules contract interface.
-  IContributorRules private contributorRules;
+  IContributorRules public contributorRules;
 
   /// @notice DeveloperRules contract interface.
-  IDeveloperRules private developerRules;
+  IDeveloperRules public developerRules;
 
   /// @notice ResearcherRules contract interface.
-  IResearcherRules private researcherRules;
+  IResearcherRules public researcherRules;
 
   // --- Constructor ---
 

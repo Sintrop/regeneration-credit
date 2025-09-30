@@ -75,10 +75,10 @@ contract CommunityRules is Callable {
   mapping(address => uint256) public lastDelationBlock;
 
   /// @notice The address of the `InvitationRules` contract.
-  address private invitationRulesAddress;
+  address public invitationRulesAddress;
 
   /// @notice The address of the `InvitationRules` contract.
-  address private validationRulesAddress;
+  address public validationRulesAddress;
 
   // --- Constructor ---
 

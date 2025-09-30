@@ -57,14 +57,14 @@ contract InspectorRules is Callable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules and user types.
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice The address of the `InspectorPool` contract, responsible for managing
   /// and distributing token rewards to inspectors.
-  IInspectorPool private inspectorPool;
+  IInspectorPool public inspectorPool;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private inspectionRulesAddress;
+  address public inspectionRulesAddress;
 
   /// @notice The specific `UserType` enumeration value for an Inspector user.
   /// This is a constant for gas efficiency and clarity.
