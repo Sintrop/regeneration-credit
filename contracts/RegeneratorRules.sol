@@ -77,6 +77,10 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// @notice Tracks which inspection IDs have already been processed to prevent replay attacks.
   mapping(uint64 => bool) private processedInspections;
 
+  /// @notice The number of regenerators that have started the certification process on each era,
+  /// and have reached the minimum of one inspection.
+  mapping(uint256 => uint256) public newCertificationRegenerators;
+
   /// @notice Tracks if a coordinate point have already been processed.
   mapping(bytes32 => bool) seenCoordinates;
 
@@ -100,10 +104,6 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /// @notice The address of the `InspectionRules` contract.
   address private validationRulesAddress;
-
-  /// @notice The number of regenerators that have started the certification process on each era,
-  /// and have reached the minimum of one inspection.
-  mapping(uint256 => uint256) public newCertificationRegenerators;
 
   // --- Constructor ---
 
