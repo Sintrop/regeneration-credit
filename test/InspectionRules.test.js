@@ -605,7 +605,32 @@ describe("InspectionRules", () => {
             });
 
             it("should return error message", async () => {
-              await expect(acceptInspection(1, inspector2Address)).to.be.revertedWith("Inspection must be OPEN");
+              await expect(acceptInspection(1, inspector2Address)).to.be.revertedWith(
+                "Inspection must be OPEN or EXPIRED"
+              );
+            });
+          });
+
+          context("when inspection is EXPIRED", () => {
+            beforeEach(async () => {
+              await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+              await addInvitation(owner, inspector2Address, userTypes.Inspector, owner);
+              await acceptInspection(1, inspectorAddress);
+              await addInspector("Inspector B", inspector2Address);
+              await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
+              await acceptInspection(1, inspector2Address);
+            });
+
+            it("should allow other inspector to accept expired inspection", async () => {
+              const inspection = await instance.getInspection(1);
+              expect(inspection.inspector).to.equal(inspector2Address);
+            });
+
+            it("should allow second inspector to realize the inspection", async () => {
+              await realizeInspection(1, "", treesResultValue, biodiversityResultValue, inspector2Address);
+
+              const inspection = await instance.getInspection(1);
+              expect(inspection.status).to.equal(STATUS.inspected);
             });
           });
 
