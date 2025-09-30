@@ -239,7 +239,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * @notice Inspectors must evaluate the amount of trees and species of the regeneration area.
    * How many trees, palm trees and other plants over 1m high and 3cm in diameter there is in the regenerating area? Justify your answer in the report.
    * How many different species of those plants/trees were found? Each different species is equivalent to one unity and only trees and plants managed or planted by the regenerator should be counted. Justify your answer in the report.
-   * Max result of 200.000 trees and 300 biodiversity.
+   * Max result of trees by area and 300 biodiversity.
    * @param inspectionId The id of the inspection to be realized.
    * @param proofPhotos The string of a photo with the regenerator or the string of a document with the proofPhoto with the regenerator and other area photos.
    * @param justificationReport The justification and report of the result found.
