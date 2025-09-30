@@ -132,7 +132,7 @@ contract VoteRules {
 
   /**
    * @notice Calculates the total aggregated levels for a specific user type across the system.
-   * @dev Sums up levels based on specific metrics for each UserType (e.g., approved invites for Activists).
+   * @dev Sums up levels based on specific metrics for each UserType (e.g., approved reports for Developers).
    * Returns 0 if the user type is not recognized or has no aggregated levels.
    * @param userType The UserType to check.
    * @return levels Total aggregated levels for the specified user type.

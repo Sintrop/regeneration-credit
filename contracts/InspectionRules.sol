@@ -623,7 +623,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * @param _resourceId The id of the resource receiving the vote.
    * @param _justification The justification provided for the vote.
    */
-  event InspectionValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
+  event InspectionValidation(address indexed _validatorAddress, uint256 indexed _resourceId, string _justification);
 
   /**
    * @notice Emitted when an inspection is successfully invalidated due to validator votes.

@@ -570,7 +570,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * @param _resourceId The id of the resource receiving the vote.
    * @param _justification The justification provided for the vote.
    */
-  event ContributionValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
+  event ContributionValidation(address indexed _validatorAddress, uint256 indexed _resourceId, string _justification);
 
   /// @dev Emitted when a contributor successfully initiates a withdrawal of tokens.
   /// @param contributorAddress The address of the contributor initiating the withdrawal.

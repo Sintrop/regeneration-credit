@@ -545,7 +545,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * @param _resourceId The id of the resource receiving the vote.
    * @param _justification The justification provided for the vote.
    */
-  event ReportValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
+  event ReportValidation(address indexed _validatorAddress, uint256 indexed _resourceId, string _justification);
 
   /// @dev Emitted when a penalty is added to a developer's record.
   /// @param developerAddress The address of the developer who received the penalty.
