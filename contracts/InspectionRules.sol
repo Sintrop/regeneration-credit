@@ -162,13 +162,13 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * @notice Regenerators agree to receive an inspector to assess their registered area.
    * They can make an `allowedInitialRequests` number of requests without delay.
    * After that, they must wait `timeBetweenInspections` blocks between requests.
-   * A hard limit of 12 total inspections is enforced.
+   * A hard limit of 6 total inspections is enforced.
    *
    * Requirements:
    * - The caller (`msg.sender`) must be a registered `REGENERATOR`.
    * - The regenerator must not have a `_pendingInspection` already open.
    * - The regenerator must adhere to the `timeBetweenInspections` delay if `allowedInitialRequests` are used up.
-   * - The regenerator must have completed less than 12 total inspections.
+   * - The regenerator must have completed less than 6 total inspections.
    */
   function requestInspection() external nonReentrant {
     Regenerator memory regenerator = regeneratorRules.getRegenerator(msg.sender);
