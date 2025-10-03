@@ -49,3 +49,11 @@ function updateValidatorLastVoteBlock(address validatorAddress) external
 
 _Function to updade validator last vote block.number._
 
+### addValidationPoint
+
+```solidity
+function addValidationPoint(address validatorAddress) external
+```
+
+_Function to updade voter validationPoints._
+

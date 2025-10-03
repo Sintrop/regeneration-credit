@@ -130,19 +130,25 @@ returns a status, likely a boolean indicating success._
 | ---- | ---- | ----------- |
 | user | address | The address of the regenerator. |
 
-### totalImpactRegenerators
+### newCertificationRegenerators
 
 ```solidity
-function totalImpactRegenerators() external view returns (uint256)
+function newCertificationRegenerators(uint256 era) external view returns (uint256)
 ```
 
-Returns the total number of impact regenerators, users that completed 3 inspections.
+Returns the number of new regenerators that achieved impact status in a specific era.
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| era | uint256 | The era number to query. |
 
 #### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | uint256 | The total impact regenerators. |
+| [0] | uint256 | uint256 The count of new impact regenerators for that era. |
 
 ### regenerationArea
 

@@ -62,6 +62,14 @@ uint64 contributionsTotalCount
 The total count of all contributions ever submitted, including invalidated ones.
 This acts as a global unique ID counter for new contributions.
 
+### totalActiveLevels
+
+```solidity
+uint256 totalActiveLevels
+```
+
+The sum of all active levels from valid contributions by non-denied contributors.
+
 ### contributions
 
 ```solidity
@@ -95,6 +103,50 @@ mapping(uint64 => bool) contributionPenalized
 ```
 
 Tracks contribution IDs that have already been invalidated.
+
+### communityRules
+
+```solidity
+contract ICommunityRules communityRules
+```
+
+The interface of the `CommunityRules` contract, used to interact with
+community-wide rules, user types, and invitation data.
+
+### contributorPool
+
+```solidity
+contract IContributorPool contributorPool
+```
+
+The interface of the `ContributorPool` contract, responsible for managing
+and distributing token rewards to contributors.
+
+### validationRules
+
+```solidity
+contract IValidationRules validationRules
+```
+
+The interface of the `ValidationRules` contract, which defines the rules
+and processes for validating or invalidating contributions.
+
+### voteRules
+
+```solidity
+contract IVoteRules voteRules
+```
+
+The interface of the `VoteRules` contract, which defines rules for user voting
+eligibility, particularly for contribution validation.
+
+### validationRulesAddress
+
+```solidity
+address validationRulesAddress
+```
+
+The address of the `InspectionRules` contract.
 
 ### penalties
 

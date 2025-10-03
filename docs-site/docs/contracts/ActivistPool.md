@@ -3,11 +3,27 @@
 ## ActivistPool
 
 This contract manages the distribution of Regeneration Credit tokens as rewards to activists
-for their participation, primarily for providing invitation services.
+for providing invitation services and community growth support.
 Each invited who completes 3 inspections is equivalent to one level in the pool.
 
 _Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for deploy setup only),
 `Blockable` (for era/epoch tracking), and `Callable` (for whitelisted caller control)._
+
+### regenerationCredit
+
+```solidity
+contract IRegenerationCredit regenerationCredit
+```
+
+Interface to the Regeneration Credit token contract, used to decrease total locked.
+
+### activistRulesAddress
+
+```solidity
+address activistRulesAddress
+```
+
+The address of the `ActivistRules` contract.
 
 ### hasProcessedLevel
 

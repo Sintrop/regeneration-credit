@@ -49,3 +49,17 @@ across all completed inspections.
 | ---- | ---- | ----------- |
 | [0] | uint256 | The total biodiversity impact value. |
 
+### totalImpactRegenerators
+
+```solidity
+function totalImpactRegenerators() external view returns (uint256)
+```
+
+Returns the total number of impact regenerators, users with at least one inspection validated.
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint256 | The total of regenerators on the certification process. |
+

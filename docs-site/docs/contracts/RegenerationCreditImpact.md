@@ -20,6 +20,30 @@ from biome to biome, from soil to soil, from management to management and from e
 However, we need to standardize this value to simplify and allow the decentralized certification system to occur.
 This result was obtained by estimating that, on average, each tree/plant sequesters 10 kg of carbon per year, living an average of 10 years. With the result expressed in grams [g].
 
+### regenerationCredit
+
+```solidity
+contract IRegenerationCredit regenerationCredit
+```
+
+Interface to the `RegenerationCredit` contract.
+
+### inspectionRules
+
+```solidity
+contract IInspectionRules inspectionRules
+```
+
+Interface to the `InspectionRules` contract.
+
+### regeneratorRules
+
+```solidity
+contract IRegeneratorRules regeneratorRules
+```
+
+Interface to the `RegeneratorRules` contract.
+
 ### constructor
 
 ```solidity

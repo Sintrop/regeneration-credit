@@ -71,11 +71,29 @@ mapping(uint64 => struct Offset) offsets
 
 The relationship between offset id and its data.
 
+### communityRules
+
+```solidity
+contract ICommunityRules communityRules
+```
+
+CommunityRules contract interface.
+
+### researcherRules
+
+```solidity
+contract IResearcherRules researcherRules
+```
+
+ResearcherRules contract interface.
+
 ### regenerationCredit
 
 ```solidity
 contract IRegenerationCredit regenerationCredit
 ```
+
+RegenerationCredit contract interface.
 
 ### constructor
 
@@ -136,7 +154,7 @@ function offset(uint256 amount, uint256 minAmountToBurn, uint64 calculatorItemId
 ```
 
 Allows a supporter to burn tokens to compensate for a specific item's degradation, with a message to the community.
-Before calling this function, supporters must approve the SupporterRules contract to burn the tokens.
+Before calling this function, supporters must approve the SupporterRules contract to burn the required amount oftokens.
 
 _This function calls the token transfer function to pay comissions and burnFrom to trade tokens
 for the compensation certificate. If a valid calculatorItemId is provided,

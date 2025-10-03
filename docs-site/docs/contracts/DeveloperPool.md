@@ -10,6 +10,22 @@ Each valid published development report is equivalent to one level in the pool.
 _Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for deploy setup only),
 `Blockable` (for era/epoch tracking), and `Callable` (for whitelisted caller control)._
 
+### regenerationCredit
+
+```solidity
+contract IRegenerationCredit regenerationCredit
+```
+
+Interface to the Regeneration Credit token contract, used to decrease total locked.
+
+### developerRulesAddress
+
+```solidity
+address developerRulesAddress
+```
+
+The address of the `DeveloperRules` contract.
+
 ### hasProcessedLevel
 
 ```solidity

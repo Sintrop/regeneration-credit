@@ -45,21 +45,19 @@ Retrieves the full calculatorItem struct for a given id.
 | ---- | ---- | ----------- |
 | [0] | struct CalculatorItem | The Calculator item struct containing the item's data. |
 
-### researchesTotalCount
+### totalActiveLevels
 
 ```solidity
-function researchesTotalCount() external view returns (uint64)
+function totalActiveLevels() external view returns (uint256)
 ```
 
-Returns the total number of researches made.
-
-_This is likely a getter for a public state variable._
+Returns the total number of activeLevels from non-denied users.
 
 #### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | uint64 | The total count of all researches. |
+| [0] | uint256 | The total count of totalActiveLevels. |
 
 ### addPenalty
 

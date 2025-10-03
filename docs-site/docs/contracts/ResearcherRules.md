@@ -77,6 +77,14 @@ uint64 researchesTotalCount
 The grand total count of all researchs ever submitted, including invalidated ones.
 This acts as a global unique ID counter for new researchs.
 
+### totalActiveLevels
+
+```solidity
+uint256 totalActiveLevels
+```
+
+The sum of all active levels from valid researches by non-denied researchers.
+
 ### calculatorItemsCount
 
 ```solidity
@@ -150,6 +158,42 @@ mapping(uint256 => address) researchersAddress
 
 A mapping from a unique reseracher ID to their corresponding wallet address.
 Facilitates lookup of a reseracher's address by their ID.
+
+### communityRules
+
+```solidity
+contract ICommunityRules communityRules
+```
+
+The interface of the `CommunityRules` contract, used to interact with
+community-wide rules, user types, and invitation data.
+
+### researcherPool
+
+```solidity
+contract IResearcherPool researcherPool
+```
+
+The interface of the `ResearcherPool` contract, responsible for managing
+and distributing token rewards to researchers.
+
+### validationRules
+
+```solidity
+contract IValidationRules validationRules
+```
+
+The interface of the `ValidationRules` contract, which defines the rules
+and processes for validating or invalidating development reports.
+
+### voteRules
+
+```solidity
+contract IVoteRules voteRules
+```
+
+The interface of the `VoteRules` contract, which defines rules for user voting
+eligibility, particularly for report validation.
 
 ### constructor
 

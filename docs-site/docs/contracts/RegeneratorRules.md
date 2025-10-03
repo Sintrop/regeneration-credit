@@ -20,6 +20,15 @@ uint8 MINIMUM_INSPECTIONS_TO_POOL
 The minimum number of successful inspections a regenerator must have
 to be eligible for rewards from the Regenerator Pool.
 
+### MAXIMUM_INSPECTIONS
+
+```solidity
+uint8 MAXIMUM_INSPECTIONS
+```
+
+The maximum number of successful inspections a regenerator must have
+to conclude the inspection life cycle.
+
 ### MIN_REGENERATION_AREA
 
 ```solidity
@@ -35,6 +44,14 @@ uint32 MAX_REGENERATION_AREA
 ```
 
 Maximum total area in square meters (m²) for a regeneration project.
+
+### MAX_ACTIVE_REGENERATORS
+
+```solidity
+uint256 MAX_ACTIVE_REGENERATORS
+```
+
+The maximum number of active 'Regenerator' type users permitted in the system.
 
 ### regeneratorsAddress
 
@@ -71,6 +88,15 @@ mapping(address => bool) impactRegenerators
 A mapping to track if a regenerator is an "impact regenerator" (has successfully
 completed at least one inspections).
 
+### certifiedRegenerators
+
+```solidity
+mapping(address => bool) certifiedRegenerators
+```
+
+A mapping to track if a regenerator is a "certified regenerator", a user that has successfully
+completed the maximum inspections number, concluding system participation.
+
 ### areaPhoto
 
 ```solidity
@@ -79,22 +105,40 @@ mapping(address => string) areaPhoto
 
 A mapping from a regenerator's wallet address to a hash or identifier of their area photo.
 
-### seenCoordinates
+### newCertificationRegenerators
 
 ```solidity
-mapping(bytes32 => bool) seenCoordinates
+mapping(uint256 => uint256) newCertificationRegenerators
 ```
 
-Tracks if a coordinate point have already been processed.
+The number of regenerators that have started the certification process on each era,
+and have reached the minimum of one inspection.
 
-### totalImpactRegenerators
+### communityRules
 
 ```solidity
-uint256 totalImpactRegenerators
+contract ICommunityRules communityRules
 ```
 
-The total count of regenerators who are considered "impact regenerators"
-(have achieved the minimum of three inspections.
+The address of the `CommunityRules` contract, used to interact with
+community-wide rules and user types.
+
+### regeneratorPool
+
+```solidity
+contract IRegeneratorPool regeneratorPool
+```
+
+The address of the `RegeneratorPool` contract, responsible for managing
+and distributing token rewards to regenerators.
+
+### totalCertifiedRegenerators
+
+```solidity
+uint256 totalCertifiedRegenerators
+```
+
+The total count of regenerators who have completed the certification process.
 
 ### regenerationArea
 
@@ -104,6 +148,22 @@ uint256 regenerationArea
 
 The grand total sum of all regeneration area (in square meters [m²])
 managed by all registered regenerators in the system.
+
+### inspectionRulesAddress
+
+```solidity
+address inspectionRulesAddress
+```
+
+The address of the `InspectionRules` contract.
+
+### validationRulesAddress
+
+```solidity
+address validationRulesAddress
+```
+
+The address of the `InspectionRules` contract.
 
 ### constructor
 
@@ -151,7 +211,7 @@ Requirements:
 - The `proofPhoto` string must not exceed `MAX_HASH_LENGTH` (150) characters in byte length.
 - The `projectDescription` string must not exceed `MAX_PROJECT_DESCRIPTION_LENGTH` (200) characters in byte length.
 - The `_coordinates` array must contain between (3) and (10) points.
-- The `totalArea` must be between (500) and (500,000) square meters [m²].
+- The `totalArea` must be between (2500) and (1,000,000) square meters [m²].
 
 _Allows a user to attempt to register as a regenerator.
 Creates a new `Regenerator` profile for the caller if all requirements are met._
@@ -408,6 +468,23 @@ _Returns all coordinate points defining a regenerator's area._
 | ---- | ---- | ----------- |
 | [0] | struct Coordinates[] | Coordinates[] An array of `Coordinates` structs representing the regenerator's area. |
 
+### isRegistrationAllowed
+
+```solidity
+function isRegistrationAllowed() public view returns (bool)
+```
+
+Checks if new Regenerator registrations are allowed based on the dynamic count of active users.
+
+_The number of active users is calculated as the total number of valid Regenerators
+minus the number of those who have completed their lifecycle._
+
+#### Return Values
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | bool | bool True if registration is allowed, false otherwise. |
+
 ### RegeneratorRegistered
 
 ```solidity
@@ -457,4 +534,18 @@ by meeting the minimum inspection criteria and `onContractPool` is set to true._
 | ---- | ---- | ----------- |
 | regeneratorAddress | address | The address of the regenerator entering the pool. |
 | blockNumber | uint256 | The block number at which the regenerator entered the pool. |
+
+### RegeneratorCertified
+
+```solidity
+event RegeneratorCertified(address regeneratorAddress)
+```
+
+_Emitted when a regenerator completes the inspection process._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| regeneratorAddress | address | The address of the regenerator entering the pool. |
 

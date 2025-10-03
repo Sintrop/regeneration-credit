@@ -3,7 +3,7 @@
 ## ActivistRules
 
 This contract defines and manages the rules and data specific to "Activist" users
-within the system. Activists are primarily responsible for inviting new Regenerators
+within the system. Activists are responsible for inviting new Regenerators
 and Inspectors, and they earn rewards based on the approval of their invited users.
 
 _Inherits functionalities from `Callable` (for whitelisted function access) and `Invitable`
@@ -34,6 +34,14 @@ uint64 approvedInvites
 
 The total count of all invitations that have been successfully approved across the entire system.
 
+### totalActiveLevels
+
+```solidity
+uint256 totalActiveLevels
+```
+
+The sum of all active levels from non-denied activists. Used for governance calculations.
+
 ### activistsAddress
 
 ```solidity
@@ -42,6 +50,40 @@ mapping(uint256 => address) activistsAddress
 
 A public mapping from a unique activist ID to their corresponding wallet address.
 Facilitates lookup of an activist's address by their ID.
+
+### communityRules
+
+```solidity
+contract ICommunityRules communityRules
+```
+
+The address of the `CommunityRules` contract, used to interact with
+community-wide rules, user types, and invitation data.
+
+### activistPool
+
+```solidity
+contract IActivistPool activistPool
+```
+
+The address of the `ActivistPool` contract, responsible for managing
+and distributing token rewards to activists.
+
+### inspectionRulesAddress
+
+```solidity
+address inspectionRulesAddress
+```
+
+The address of the `InspectionRules` contract.
+
+### validationRulesAddress
+
+```solidity
+address validationRulesAddress
+```
+
+The address of the `InspectionRules` contract.
 
 ### constructor
 

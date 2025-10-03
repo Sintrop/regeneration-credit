@@ -65,7 +65,7 @@ _Updates the inspector's state accordingly._
 ### afterRealizeInspection
 
 ```solidity
-function afterRealizeInspection(address inspector, uint64 inspectionId) external returns (uint256)
+function afterRealizeInspection(address inspector, uint32 score, uint64 inspectionId) external returns (uint256)
 ```
 
 A hook to be called after an inspector successfully completes an inspection.
@@ -77,7 +77,8 @@ _This function likely updates the inspector's counters and returns their new lev
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | inspector | address | The address of the inspector who completed the inspection. |
-| inspectionId | uint64 |  |
+| score | uint32 | The regenerationScore of the inspection. |
+| inspectionId | uint64 | The inspection unique ID. |
 
 #### Return Values
 

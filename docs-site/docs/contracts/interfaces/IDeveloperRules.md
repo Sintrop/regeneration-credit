@@ -45,21 +45,19 @@ Retrieves the full Developer struct for a given account.
 | ---- | ---- | ----------- |
 | [0] | struct Developer | The Developer struct containing the user's data. |
 
-### reportsTotalCount
+### totalActiveLevels
 
 ```solidity
-function reportsTotalCount() external view returns (uint64)
+function totalActiveLevels() external view returns (uint256)
 ```
 
-Returns the total number of reports made.
-
-_This is likely a getter for a public state variable._
+Returns the total number of activeLevels from non-denied users.
 
 #### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | uint64 | The total count of all reports. |
+| [0] | uint256 | The total count of totalActiveLevels. |
 
 ### addPenalty
 
