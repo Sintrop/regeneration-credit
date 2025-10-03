@@ -281,3 +281,19 @@ Emitted when a supporter declares a reduction commitment.
 | calculatorItemId | uint256 | The ID of the calculator item for the commitment. |
 | blockNumber | uint256 | The block number at which the commitment was declared. |
 
+### CommissionsPaid
+
+```solidity
+event CommissionsPaid(address supporter, address inviter, uint256 amount)
+```
+
+_Emitted when a supporter offset results in a commission payment to the inviter._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| supporter | address | The address of the supporter who paid the commission. |
+| inviter | address | The address of the inviter who received the commission. |
+| amount | uint256 | The commission amount paid. |
+

@@ -170,6 +170,7 @@ contract SupporterRules is ReentrancyGuard {
 
     if (commission > 0 && inviter != address(0)) {
       regenerationCredit.transferFrom(msg.sender, inviter, commission);
+      emit CommissionsPaid(msg.sender, inviter, commission);
     }
     regenerationCredit.burnFrom(msg.sender, amountToBurn);
 
@@ -287,4 +288,12 @@ contract SupporterRules is ReentrancyGuard {
     uint256 indexed calculatorItemId,
     uint256 blockNumber
   );
+
+  /**
+   * @dev Emitted when a supporter offset results in a commission payment to the inviter.
+   * @param supporter The address of the supporter who paid the commission.
+   * @param inviter The address of the inviter who received the commission.
+   * @param amount The commission amount paid.
+   */
+  event CommissionsPaid(address indexed supporter, address indexed inviter, uint256 amount);
 }
