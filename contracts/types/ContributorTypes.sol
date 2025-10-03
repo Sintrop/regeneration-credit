@@ -39,6 +39,9 @@ struct Pool {
  * @param user Contributor wallet address.
  * @param description Contribution description.
  * @param report Hash of the justification report file.
+ * @param validationsCount Number of votes to invalidate.
+ * @param valid Boolean if resource is valid or not.
+ * @param invalidatedAt Block number of invalidation.
  * @param createdAtBlockNumber Block of contribution creation.
  */
 struct Contribution {

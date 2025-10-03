@@ -230,7 +230,7 @@ contract CommunityRules is Callable {
   }
 
   /**
-   * @notice Allows users to vote (thumbs up/down) on an existing delation.
+   * @notice Allows users to vote (true/false) on an existing delation.
    * @dev This creates a social validation layer. Voters cannot be the informer or the reported user.
    * @param _delationId The ID of the delation to vote on.
    * @param _supportsDelation True for a "thumbs up" (agrees), false for "thumbs down" (disagrees).
@@ -294,7 +294,7 @@ contract CommunityRules is Callable {
   }
 
   /**
-   * @notice Attempts to add an invitation for a user.
+   * @notice Attempts to add an invitation for a new user.
    * @dev This function is intended to be called by an allowed caller, the Invitation Rules.
    * It records an invitation for a specific user to register as a certain user type.
    * Prevents re-inviting an already invited or registered address.

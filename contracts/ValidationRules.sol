@@ -59,7 +59,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
   /// @notice Tracks the first user who voted to invalidate a specific user in a given era.
   mapping(address => mapping(uint256 => address)) public hunterVoter;
 
-  /// @notice Mapping from a hunter's address directly to their pool data.
+  /// @notice Mapping from a validators's address directly to their pool data.
   mapping(address => Pool) public hunterPools;
 
   /// @notice Tracks the accumulated, unspent validation points for each voter.
@@ -250,7 +250,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
 
   /**
    * @notice Grants a single validation point to a voter for a voting action.
-   * @dev This is a function intended to be called by the InspectionRules contract after inspection validation vote.
+   * @dev This is a function intended to be called by the resources contract after a validation vote.
    * @param voter The address of the voter who is earning the point.
    */
   function addValidationPoint(address voter) external mustBeAllowedCaller {
@@ -304,8 +304,8 @@ contract ValidationRules is Callable, ReentrancyGuard {
 
   /**
    * @dev Checks if a regenerator has reached validation imunity.
-   * @dev The process to achieve immunity will take at least four eras, enough time to review
-   * and ensure the user is in compliance. After this time, the user is granted immunity.
+   * @dev The process to achieve immunity will take six inspections, enough time to check
+   * and ensure the user is in compliance. After this time, the user concludes the certification process and is granted immunity.
    * @param addr The address of the regenerator.
    * @return bool True if user has reached validation imunity, false otherwise.
    */

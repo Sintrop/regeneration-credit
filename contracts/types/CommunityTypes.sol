@@ -47,6 +47,8 @@ library CommunityTypes {
    * @param title A brief title or summary of the delation.
    * @param testimony Detailed justification and evidence for the delation.
    * @param createdAtBlock The block number at which the delation was issued.
+   * @param thumbsUp Number of true votes.
+   * @param thumbsDown Number of false votes.
    */
   struct Delation {
     uint64 id;

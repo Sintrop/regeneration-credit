@@ -69,6 +69,7 @@ contract SupporterRules is ReentrancyGuard {
   /// @notice ResearcherRules contract interface.
   IResearcherRules public researcherRules;
 
+  /// @notice RegenerationCredit contract interface.
   IRegenerationCredit public regenerationCredit;
 
   /// @notice Supporter UserType.
@@ -136,7 +137,7 @@ contract SupporterRules is ReentrancyGuard {
   /**
    *
    * @notice Allows a supporter to burn tokens to compensate for a specific item's degradation, with a message to the community.
-   * Before calling this function, supporters must approve the SupporterRules contract to burn the tokens.
+   * Before calling this function, supporters must approve the SupporterRules contract to burn the required amount oftokens.
    * @dev This function calls the token transfer function to pay comissions and burnFrom to trade tokens
    * for the compensation certificate. If a valid calculatorItemId is provided,
    * records the burned amount as a certificate for that item.

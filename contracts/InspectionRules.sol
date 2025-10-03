@@ -172,13 +172,13 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * @notice Regenerators agree to receive an inspector to assess their registered area.
    * They can make an `allowedInitialRequests` number of requests without delay.
    * After that, they must wait `timeBetweenInspections` blocks between requests.
-   * A hard limit of 12 total inspections is enforced.
+   * A hard limit of 6 total inspections is enforced.
    *
    * Requirements:
    * - The caller (`msg.sender`) must be a registered `REGENERATOR`.
    * - The regenerator must not have a `_pendingInspection` already open.
    * - The regenerator must adhere to the `timeBetweenInspections` delay if `allowedInitialRequests` are used up.
-   * - The regenerator must have completed less than 12 total inspections.
+   * - The regenerator must have completed less than 6 total inspections.
    */
   function requestInspection() external nonReentrant {
     Regenerator memory regenerator = regeneratorRules.getRegenerator(msg.sender);
@@ -199,9 +199,12 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   }
 
   /**
-   * @dev Allows an inspector to accept an open inspection request.
+   * @dev Allows an inspector to accept an open or expired inspection request.
    * @notice Inspectors must only accept inspections they are capable of performing, being aware
-   * of the safety risks and responsibilities. Accepting an inspection counts as a 'give-up' until realized.
+   * of the safety risks and responsibilities. By accepting an inspection, inspectors agree that the they are responsible
+   * for their own safety at the data collection. It is recommended to use long sleeves clothes, hats, boots that can prevent
+   * bites from animals, gloves to protect from spines and any other useful safety equipment, such as machetes or pepper spray.
+   * Accepting an inspection counts as a 'give-up' until realized.
    * Inspectors can only accept one open inspection at a time and cannot inspect the same regenerator twice.
    * They must also adhere to specific delays and security windows.
    *
@@ -211,7 +214,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * - The `inspectionId` must correspond to an existing inspection.
    * - The inspector must not already have an inspection `ACCEPTED` that is not yet `INSPECTED` or `INVALIDATED` or `EXPIRED`.
    * - The inspector must not have previously inspected this specific regenerator.
-   * - The inspection's status must be `OPEN`.
+   * - The inspection's status must be `OPEN` or `EXPIRED`.
    * - The `acceptInspectionDelayBlocks` must have passed since the inspection was created.
    * - The system must not be within the `securityBlocksToValidation` window before an era ends.
    * - The inspector must adhere to `inspectorRules.canAcceptInspection` (delay from last realized inspection).

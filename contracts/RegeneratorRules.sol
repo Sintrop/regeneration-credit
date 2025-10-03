@@ -535,7 +535,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /**
    * @dev Private function to increment a regenerator's total completed inspections count.
-   * This also updates the `impactRegenerators` flag and `totalImpactRegenerators` count.
+   * This also updates the `impactRegenerators` flag and `newCertificationRegenerators` count.
    * @param addr The regenerator's wallet address.
    * @return uint256 The updated total number of inspections for the regenerator.
    */
@@ -643,7 +643,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /**
    * @notice Checks if new Regenerator registrations are allowed based on the dynamic count of active users.
-   * @dev The number of active users is calculated as the total number of created Regenerators
+   * @dev The number of active users is calculated as the total number of valid Regenerators
    * minus the number of those who have completed their lifecycle.
    * @return bool True if registration is allowed, false otherwise.
    */
