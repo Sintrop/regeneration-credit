@@ -23,7 +23,7 @@ contract InvitationRules is Ownable, ReentrancyGuard {
   uint16 private constant MAX_INVITER_PENALTIES = 5;
 
   /// @notice The minimum number of blocks an activist needs to wait to invite Regenerators or Inspectors again.
-  uint16 public constant ACTIVIST_DELAY_BLOCKS = 500;
+  uint16 public constant ACTIVIST_DELAY_BLOCKS = 3000;
 
   // --- State variables ---
 
