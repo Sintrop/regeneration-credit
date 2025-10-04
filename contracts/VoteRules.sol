@@ -30,39 +30,33 @@ contract VoteRules {
   // --- State variables ---
 
   /// @notice CommunityRules contract interface.
-  ICommunityRules private communityRules;
-
-  /// @notice ActivistRules contract interface.
-  IActivistRules private activistRules;
+  ICommunityRules public communityRules;
 
   /// @notice ContributorRules contract interface.
-  IContributorRules private contributorRules;
+  IContributorRules public contributorRules;
 
   /// @notice DeveloperRules contract interface.
-  IDeveloperRules private developerRules;
+  IDeveloperRules public developerRules;
 
   /// @notice ResearcherRules contract interface.
-  IResearcherRules private researcherRules;
+  IResearcherRules public researcherRules;
 
   // --- Constructor ---
 
   /**
    * @dev Initializes the contract with the addresses of the various rule contracts.
    * @param communityRulesAddress Address of the CommunityRules contract.
-   * @param activistRulesAddress Address of the ActivistRules contract.
    * @param contributorRulesAddress Address of the ContributorRules contract.
    * @param developerRulesAddress Address of the DeveloperRules contract.
    * @param researcherRulesAddress Address of the ResearcherRules contract.
    */
   constructor(
     address communityRulesAddress,
-    address activistRulesAddress,
     address contributorRulesAddress,
     address developerRulesAddress,
     address researcherRulesAddress
   ) {
     communityRules = ICommunityRules(communityRulesAddress);
-    activistRules = IActivistRules(activistRulesAddress);
     contributorRules = IContributorRules(contributorRulesAddress);
     developerRules = IDeveloperRules(developerRulesAddress);
     researcherRules = IResearcherRules(researcherRulesAddress);
@@ -81,7 +75,7 @@ contract VoteRules {
     require(communityRules.isVoter(addr), "Not a voter user");
 
     CommunityTypes.UserType userType = communityRules.getUser(addr);
-    uint256 totalUsers = communityRules.userTypesTotalCount(userType);
+    uint256 totalUsers = communityRules.userTypesCount(userType);
 
     return _canVoteRules(_totalLevels(userType), totalUsers, _totalUserLevels(addr, userType));
   }
@@ -98,13 +92,13 @@ contract VoteRules {
    * @return bool True if the user meets the voting criteria, false otherwise.
    */
   function _canVoteRules(uint256 totalTypeLevels, uint256 totalUsers, uint256 userLevels) private pure returns (bool) {
-    // Rule 1: Allow anyone to vote if the user type has few members.
-    if (totalUsers <= INITIAL_USER_COUNT_THRESHOLD) return true;
-
     // Edge case: If there are no users, no one can vote.
     if (totalUsers == 0) {
       return false;
     }
+
+    // Rule 1: Allow anyone to vote if the user type has few members.
+    if (totalUsers <= INITIAL_USER_COUNT_THRESHOLD) return true;
 
     // Rule 2: Check if the user's level is strictly greater than the average
     return userLevels * totalUsers > totalTypeLevels;
@@ -119,11 +113,7 @@ contract VoteRules {
    * @return levels Total levels for the given address.
    */
   function _totalUserLevels(address addr, CommunityTypes.UserType userType) private view returns (uint256) {
-    if (userType == CommunityTypes.UserType.ACTIVIST) {
-      Activist memory user = activistRules.getActivist(addr);
-
-      return user.pool.level;
-    } else if (userType == CommunityTypes.UserType.CONTRIBUTOR) {
+    if (userType == CommunityTypes.UserType.CONTRIBUTOR) {
       Contributor memory user = contributorRules.getContributor(addr);
 
       return user.pool.level;
@@ -142,20 +132,18 @@ contract VoteRules {
 
   /**
    * @notice Calculates the total aggregated levels for a specific user type across the system.
-   * @dev Sums up levels based on specific metrics for each UserType (e.g., approved invites for Activists).
+   * @dev Sums up levels based on specific metrics for each UserType (e.g., approved reports for Developers).
    * Returns 0 if the user type is not recognized or has no aggregated levels.
    * @param userType The UserType to check.
    * @return levels Total aggregated levels for the specified user type.
    */
   function _totalLevels(CommunityTypes.UserType userType) private view returns (uint256) {
-    if (userType == CommunityTypes.UserType.ACTIVIST) {
-      return activistRules.approvedInvites();
-    } else if (userType == CommunityTypes.UserType.CONTRIBUTOR) {
-      return contributorRules.contributionsTotalCount();
+    if (userType == CommunityTypes.UserType.CONTRIBUTOR) {
+      return contributorRules.totalActiveLevels();
     } else if (userType == CommunityTypes.UserType.DEVELOPER) {
-      return developerRules.reportsTotalCount();
+      return developerRules.totalActiveLevels();
     } else if (userType == CommunityTypes.UserType.RESEARCHER) {
-      return researcherRules.researchesTotalCount();
+      return researcherRules.totalActiveLevels();
     } else {
       return 0;
     }

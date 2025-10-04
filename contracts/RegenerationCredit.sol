@@ -184,7 +184,7 @@ contract RegenerationCredit is ERC20, ERC20Burnable, Ownable, ReentrancyGuard {
 
   // --- Events ---
 
-  /// @dev Emitted when tokens are burned (certified) by a user or on behalf of a pool.
+  /// @dev Emitted when tokens are burned (certified) by a user.
   /// @param account The address from which tokens were burned.
   /// @param amount The amount of tokens burned.
   /// @param newAccountCertifiedTotal The total amount of tokens certified by `account`.

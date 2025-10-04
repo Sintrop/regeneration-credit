@@ -26,6 +26,10 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// to be eligible for rewards from the Regenerator Pool.
   uint8 public constant MINIMUM_INSPECTIONS_TO_POOL = 3;
 
+  /// @notice The maximum number of successful inspections a regenerator must have
+  /// to conclude the inspection life cycle.
+  uint8 public constant MAXIMUM_INSPECTIONS = 6;
+
   /// @notice Minimum number of coordinate points to define a regeneration area.
   uint8 private constant MIN_COORDINATES_COUNT = 3;
 
@@ -45,10 +49,13 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   uint16 private constant MAX_PROJECT_DESCRIPTION_LENGTH = 200;
 
   /// @notice Minimum total area in square meters (m²) for a regeneration project.
-  uint32 public constant MIN_REGENERATION_AREA = 500;
+  uint32 public constant MIN_REGENERATION_AREA = 2500;
 
   /// @notice Maximum total area in square meters (m²) for a regeneration project.
-  uint32 public constant MAX_REGENERATION_AREA = 500000;
+  uint32 public constant MAX_REGENERATION_AREA = 1000000;
+
+  /// @notice The maximum number of active 'Regenerator' type users permitted in the system.
+  uint256 public constant MAX_ACTIVE_REGENERATORS = 500000;
 
   // --- State variables ---
 
@@ -71,39 +78,43 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// completed at least one inspections).
   mapping(address => bool) public impactRegenerators;
 
+  /// @notice A mapping to track if a regenerator is a "certified regenerator", a user that has successfully
+  /// completed the maximum inspections number, concluding system participation.
+  mapping(address => bool) public certifiedRegenerators;
+
   /// @notice A mapping from a regenerator's wallet address to a hash or identifier of their area photo.
   mapping(address => string) public areaPhoto;
 
   /// @notice Tracks which inspection IDs have already been processed to prevent replay attacks.
   mapping(uint64 => bool) private processedInspections;
 
-  /// @notice Tracks if a coordinate point have already been processed.
-  mapping(bytes32 => bool) seenCoordinates;
+  /// @notice The number of regenerators that have started the certification process on each era,
+  /// and have reached the minimum of one inspection.
+  mapping(uint256 => uint256) public newCertificationRegenerators;
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules and user types.
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice The address of the `RegeneratorPool` contract, responsible for managing
   /// and distributing token rewards to regenerators.
-  IRegeneratorPool private regeneratorPool;
+  IRegeneratorPool public regeneratorPool;
 
   /// @notice The specific `UserType` enumeration value for a Regenerator user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.REGENERATOR;
 
-  /// @notice The total count of regenerators who are considered "impact regenerators"
-  /// (have achieved the minimum of three inspections.
-  uint256 public totalImpactRegenerators;
+  /// @notice The total count of regenerators who have completed the certification process.
+  uint256 public totalCertifiedRegenerators;
 
   /// @notice The grand total sum of all regeneration area (in square meters [m²])
   /// managed by all registered regenerators in the system.
   uint256 public regenerationArea;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private inspectionRulesAddress;
+  address public inspectionRulesAddress;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private validationRulesAddress;
+  address public validationRulesAddress;
 
   // --- Constructor ---
 
@@ -144,7 +155,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * - The `proofPhoto` string must not exceed `MAX_HASH_LENGTH` (150) characters in byte length.
    * - The `projectDescription` string must not exceed `MAX_PROJECT_DESCRIPTION_LENGTH` (200) characters in byte length.
    * - The `_coordinates` array must contain between (3) and (10) points.
-   * - The `totalArea` must be between (500) and (500,000) square meters [m²].
+   * - The `totalArea` must be between (2500) and (1,000,000) square meters [m²].
    * @param totalArea The total area (in square meters [m²]) to be registered.
    * @param name The chosen name for the regenerator.
    * @param proofPhoto A hash or identifier for the regenerator's identity verification photo.
@@ -170,8 +181,9 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     );
     require(
       totalArea >= MIN_REGENERATION_AREA && totalArea <= MAX_REGENERATION_AREA,
-      "Minimum 500 and maximum 500.000 square meters"
+      "Minimum 2500 and maximum 1.000.000 square meters"
     );
+    require(isRegistrationAllowed(), "Wait for vacancy: Max regenerators limit");
 
     _validateCoordinates(_coordinates);
 
@@ -314,8 +326,16 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     require(totalInspections > 0, "totalInspections invalid");
 
     if (totalInspections == 1) {
-      totalImpactRegenerators--;
+      uint256 era = poolCurrentEra();
+      if (newCertificationRegenerators[era] > 0) {
+        newCertificationRegenerators[era]--;
+      }
       impactRegenerators[addr] = false;
+    }
+
+    if (totalInspections == MAXIMUM_INSPECTIONS) {
+      totalCertifiedRegenerators--;
+      certifiedRegenerators[addr] = false;
     }
 
     regenerators[addr].totalInspections--;
@@ -364,7 +384,13 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
     processedInspections[inspectionId] = true;
 
-    uint256 totalInspections = _incrementInspections(addr);
+    uint256 totalInspections;
+
+    if (score > 0) {
+      totalInspections = _incrementInspections(addr);
+    } else {
+      totalInspections = regenerators[addr].totalInspections;
+    }
 
     _setRegenerationScore(addr, score, inspectionId);
 
@@ -378,25 +404,24 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param _coords The array of coordinate structs to validate.
    */
   function _validateCoordinates(Coordinates[] calldata _coords) private pure {
-    // Loop through each coordinate
-    for (uint256 i = 0; i < _coords.length; i++) {
-      // --- 1. Check for Duplicates ---
-      // Compare the current coordinate with all subsequent coordinates
-      for (uint256 j = i + 1; j < _coords.length; j++) {
-        // We use keccak256 to compare the structs efficiently
-        require(
-          keccak256(abi.encode(_coords[i])) != keccak256(abi.encode(_coords[j])),
-          "Duplicate coordinates are not allowed"
-        );
+    uint256 len = _coords.length;
+    int256 precision = 10 ** 6;
+
+    for (uint256 i = 0; i < len; i++) {
+      // --- 1. Convert and Validate Range ---
+      int256 lat_i = _stringCoordToInt(_coords[i].latitude);
+      int256 lon_i = _stringCoordToInt(_coords[i].longitude);
+
+      require(lat_i >= -90 * precision && lat_i <= 90 * precision, "Invalid latitude");
+      require(lon_i >= -180 * precision && lon_i <= 180 * precision, "Invalid longitude");
+
+      // --- 2. Check for Duplicates ---
+      for (uint256 j = i + 1; j < len; j++) {
+        int256 lat_j = _stringCoordToInt(_coords[j].latitude);
+        int256 lon_j = _stringCoordToInt(_coords[j].longitude);
+
+        require(lat_i != lat_j || lon_i != lon_j, "Duplicate coordinates are not allowed");
       }
-
-      // --- 2. Check for Valid Values ---
-      int256 lat = _stringCoordToInt(_coords[i].latitude);
-      int256 lon = _stringCoordToInt(_coords[i].longitude);
-      int256 precision = 10 ** 6;
-
-      require(lat >= -90 * precision && lat <= 90 * precision, "Invalid latitude");
-      require(lon >= -180 * precision && lon <= 180 * precision, "Invalid longitude");
     }
   }
 
@@ -510,7 +535,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /**
    * @dev Private function to increment a regenerator's total completed inspections count.
-   * This also updates the `impactRegenerators` flag and `totalImpactRegenerators` count.
+   * This also updates the `impactRegenerators` flag and `newCertificationRegenerators` count.
    * @param addr The regenerator's wallet address.
    * @return uint256 The updated total number of inspections for the regenerator.
    */
@@ -522,7 +547,15 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     // Mark as impact regenerator.
     if (!impactRegenerators[addr]) {
       impactRegenerators[addr] = true;
-      totalImpactRegenerators++;
+      uint256 era = poolCurrentEra();
+      newCertificationRegenerators[era]++;
+    }
+
+    if (regenerator.totalInspections == MAXIMUM_INSPECTIONS) {
+      certifiedRegenerators[addr] = true;
+      totalCertifiedRegenerators++;
+
+      emit RegeneratorCertified(addr);
     }
 
     return regenerator.totalInspections;
@@ -608,6 +641,16 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     return coordinatesList;
   }
 
+  /**
+   * @notice Checks if new Regenerator registrations are allowed based on the dynamic count of active users.
+   * @dev The number of active users is calculated as the total number of valid Regenerators
+   * minus the number of those who have completed their lifecycle.
+   * @return bool True if registration is allowed, false otherwise.
+   */
+  function isRegistrationAllowed() public view returns (bool) {
+    return communityRules.userTypesCount(USER_TYPE) - totalCertifiedRegenerators < MAX_ACTIVE_REGENERATORS;
+  }
+
   // --- Events ---
 
   /// @dev Emitted when a new regenerator successfully registers.
@@ -635,4 +678,8 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// @param regeneratorAddress The address of the regenerator entering the pool.
   /// @param blockNumber The block number at which the regenerator entered the pool.
   event RegeneratorEnteredPool(address indexed regeneratorAddress, uint256 blockNumber);
+
+  /// @dev Emitted when a regenerator completes the inspection process.
+  /// @param regeneratorAddress The address of the regenerator entering the pool.
+  event RegeneratorCertified(address indexed regeneratorAddress);
 }

@@ -62,6 +62,14 @@ uint64 reportsTotalCount
 The grand total count of all development reports ever submitted, including invalidated ones.
 This acts as a global unique ID counter for new reports.
 
+### totalActiveLevels
+
+```solidity
+uint256 totalActiveLevels
+```
+
+The sum of all active levels from valid reports by non-denied developers.
+
 ### reports
 
 ```solidity
@@ -103,6 +111,50 @@ mapping(uint64 => bool) reportPenalized
 ```
 
 Tracks report IDs that have already been invalidated.
+
+### communityRules
+
+```solidity
+contract ICommunityRules communityRules
+```
+
+The interface of the `CommunityRules` contract, used to interact with
+community-wide rules, user types, and invitation data.
+
+### developerPool
+
+```solidity
+contract IDeveloperPool developerPool
+```
+
+The interface of the `DeveloperPool` contract, responsible for managing
+and distributing token rewards to developers.
+
+### validationRules
+
+```solidity
+contract IValidationRules validationRules
+```
+
+The interface of the `ValidationRules` contract, which defines the rules
+and processes for validating or invalidating development reports.
+
+### voteRules
+
+```solidity
+contract IVoteRules voteRules
+```
+
+The interface of the `VoteRules` contract, which defines rules for user voting
+eligibility, particularly for report validation.
+
+### validationRulesAddress
+
+```solidity
+address validationRulesAddress
+```
+
+The address of the `InspectionRules` contract.
 
 ### constructor
 

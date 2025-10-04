@@ -9,6 +9,22 @@ The reward is distributed related to the number of valid published researches.
 _Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for deploy setup only),
 `Blockable` (for era/epoch tracking), and `Callable` (for whitelisted caller control)._
 
+### regenerationCredit
+
+```solidity
+contract IRegenerationCredit regenerationCredit
+```
+
+Interface to the Regeneration Credit token contract, used to decrease total locked.
+
+### researcherRulesAddress
+
+```solidity
+address researcherRulesAddress
+```
+
+The address of the `ResearcherRules` contract.
+
 ### hasProcessedLevel
 
 ```solidity

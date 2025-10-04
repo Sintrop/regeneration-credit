@@ -14,6 +14,7 @@ describe("ActivistRules", () => {
     regenerator1Address,
     inspector1Address,
     inspector2Address,
+    inspector3Address,
     user1Address;
 
   const activistPoolArgs = {
@@ -31,8 +32,16 @@ describe("ActivistRules", () => {
   };
 
   beforeEach(async () => {
-    [owner, activ1Address, activ2Address, activ3Address, regenerator1Address, inspector1Address, inspector2Address] =
-      await ethers.getSigners();
+    [
+      owner,
+      activ1Address,
+      activ2Address,
+      activ3Address,
+      regenerator1Address,
+      inspector1Address,
+      inspector2Address,
+      inspector3Address,
+    ] = await ethers.getSigners();
 
     regenerationCredit = await regenerationCreditDeployed();
     communityRules = await communityRulesDeployed();
@@ -401,14 +410,20 @@ describe("ActivistRules", () => {
   describe("#removePoolLevels", () => {
     beforeEach(async () => {
       await addActivist("Activist  A", activ1Address);
+      await addActivist("Activist  B", activ3Address);
 
       await addInvitation(activ1Address, regenerator1Address, userTypes.Regenerator, owner);
       await addInvitation(activ1Address, inspector2Address, userTypes.Inspector, owner);
 
+      await addInvitation(activ3Address, inspector3Address, userTypes.Inspector, owner);
+
       await communityRules.addUser(regenerator1Address, userTypes.Regenerator, owner);
       await communityRules.addUser(inspector2Address, userTypes.Inspector, owner);
+      await communityRules.addUser(inspector3Address, userTypes.Inspector, owner);
+
       await instance.addRegeneratorLevel(regenerator1Address, 3);
       await instance.addInspectorLevel(inspector2Address, 3);
+      await instance.addInspectorLevel(inspector3Address, 3);
     });
 
     context("when user is denied", () => {
@@ -426,6 +441,12 @@ describe("ActivistRules", () => {
         const activist = await instance.getActivist(activ1Address);
 
         expect(activist.pool.level).to.equal(2);
+      });
+
+      it("remove all activist levels from totalActiveLevels", async () => {
+        const totalActiveLevels = await instance.totalActiveLevels();
+
+        expect(totalActiveLevels).to.equal(1);
       });
     });
   });

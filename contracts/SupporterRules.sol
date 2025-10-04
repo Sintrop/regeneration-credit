@@ -64,11 +64,12 @@ contract SupporterRules is ReentrancyGuard {
   mapping(uint64 => Offset) public offsets;
 
   /// @notice CommunityRules contract interface.
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice ResearcherRules contract interface.
-  IResearcherRules private researcherRules;
+  IResearcherRules public researcherRules;
 
+  /// @notice RegenerationCredit contract interface.
   IRegenerationCredit public regenerationCredit;
 
   /// @notice Supporter UserType.
@@ -136,7 +137,7 @@ contract SupporterRules is ReentrancyGuard {
   /**
    *
    * @notice Allows a supporter to burn tokens to compensate for a specific item's degradation, with a message to the community.
-   * Before calling this function, supporters must approve the SupporterRules contract to burn the tokens.
+   * Before calling this function, supporters must approve the SupporterRules contract to burn the required amount oftokens.
    * @dev This function calls the token transfer function to pay comissions and burnFrom to trade tokens
    * for the compensation certificate. If a valid calculatorItemId is provided,
    * records the burned amount as a certificate for that item.
@@ -169,6 +170,7 @@ contract SupporterRules is ReentrancyGuard {
 
     if (commission > 0 && inviter != address(0)) {
       regenerationCredit.transferFrom(msg.sender, inviter, commission);
+      emit CommissionsPaid(msg.sender, inviter, commission);
     }
     regenerationCredit.burnFrom(msg.sender, amountToBurn);
 
@@ -281,5 +283,17 @@ contract SupporterRules is ReentrancyGuard {
    * @param calculatorItemId The ID of the calculator item for the commitment.
    * @param blockNumber The block number at which the commitment was declared.
    */
-  event ReductionCommitmentDeclared(address indexed supporterAddress, uint256 calculatorItemId, uint256 blockNumber);
+  event ReductionCommitmentDeclared(
+    address indexed supporterAddress,
+    uint256 indexed calculatorItemId,
+    uint256 blockNumber
+  );
+
+  /**
+   * @dev Emitted when a supporter offset results in a commission payment to the inviter.
+   * @param supporter The address of the supporter who paid the commission.
+   * @param inviter The address of the inviter who received the commission.
+   * @param amount The commission amount paid.
+   */
+  event CommissionsPaid(address indexed supporter, address indexed inviter, uint256 amount);
 }

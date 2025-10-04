@@ -40,6 +40,46 @@ Maps which UserType (inviter) can invite which other UserTypes (invited).
 
 _The key is the inviter's UserType, and the value is a mapping from UserType (invited) to a boolean (true if allowed)._
 
+### communityRules
+
+```solidity
+contract ICommunityRules communityRules
+```
+
+CommunityRules contract interface
+
+### researcherRules
+
+```solidity
+contract IResearcherRules researcherRules
+```
+
+ResearcherRules contract interface
+
+### developerRules
+
+```solidity
+contract IDeveloperRules developerRules
+```
+
+DeveloperRules contract interface
+
+### activistRules
+
+```solidity
+contract IActivistRules activistRules
+```
+
+ActivistRules contract interface
+
+### contributorRules
+
+```solidity
+contract IContributorRules contributorRules
+```
+
+ContributorRules contract interface
+
 ### constructor
 
 ```solidity

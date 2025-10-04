@@ -1,5 +1,6 @@
 const { communityRulesDeployed } = require("./shared/user_contract_deployed");
 const { regenerationCreditDeployed } = require("./shared/regeneration_credit_deployed");
+const { deployMockContract } = require("@clrfund/waffle-mock-contract");
 const { advanceBlock } = require("./shared/advance_block");
 const { userTypes } = require("./shared/user_types");
 const { expect } = require("chai");
@@ -13,7 +14,7 @@ describe("RegeneratorRules", () => {
 
   const addRegenerator = async (name, from, _coordinates = []) => {
     const test = _coordinates.length > 0 ? _coordinates : coordinates();
-    await instance.connect(from).addRegenerator(1000, name, "photoURL", "projectDescription", test);
+    await instance.connect(from).addRegenerator(2500, name, "photoURL", "projectDescription", test);
   };
 
   const addRegenerator2 = async (name, from, _coordinates = []) => {
@@ -103,7 +104,7 @@ describe("RegeneratorRules", () => {
       expect(regenerator.regeneratorWallet).to.equal(prod1Address.address);
       expect(regenerator.name).to.equal("Regenerator A");
       expect(regenerator.proofPhoto).to.equal("photoURL");
-      expect(regenerator.totalArea).to.equal("1000");
+      expect(regenerator.totalArea).to.equal("2500");
       expect(regenerator.totalInspections).to.equal(0);
       expect(regenerator.pendingInspection).to.equal(false);
       expect(regenerator.regenerationScore.score).to.equal("0");
@@ -175,7 +176,7 @@ describe("RegeneratorRules", () => {
       await addRegenerator("Regenerator B", prod2Address);
 
       const newRegenerationArea = await instance.regenerationArea();
-      expect(newRegenerationArea).to.equal(2000);
+      expect(newRegenerationArea).to.equal(5000);
     });
   });
 
@@ -265,6 +266,19 @@ describe("RegeneratorRules", () => {
       );
     });
 
+    it("should revert for duplicates with different decimal precision", async () => {
+      const semanticDuplicates = [
+        { latitude: "-22.1", longitude: "-44.1" },
+        { latitude: "10.5", longitude: "20.25" },
+        { latitude: "-30.0", longitude: "-50.75" },
+        { latitude: "-22.100", longitude: "-44.10" },
+      ];
+
+      await expect(addRegenerator("Regenerator B", prod1Address, semanticDuplicates)).to.be.revertedWith(
+        "Duplicate coordinates are not allowed"
+      );
+    });
+
     it("should revert if latitude is out of range (> 90)", async () => {
       const invalidLatitudeCoords = [
         { latitude: "-22.1", longitude: "-44.1" },
@@ -314,18 +328,18 @@ describe("RegeneratorRules", () => {
     });
   });
 
-  context("when totalArea is below 500", () => {
+  context("when totalArea is below 2500", () => {
     it("should return error", async () => {
       await expect(addRegenerator2("Regenerator A", prod1Address)).to.be.revertedWith(
-        "Minimum 500 and maximum 500.000 square meters"
+        "Minimum 2500 and maximum 1.000.000 square meters"
       );
     });
   });
 
-  context("when totalArea is over 500.000", () => {
+  context("when totalArea is over 1.000.000", () => {
     it("should return error", async () => {
       await expect(addRegenerator3("Regenerator A", prod1Address)).to.be.revertedWith(
-        "Minimum 500 and maximum 500.000 square meters"
+        "Minimum 2500 and maximum 1.000.000 square meters"
       );
     });
   });
@@ -370,6 +384,22 @@ describe("RegeneratorRules", () => {
   describe("#afterRealizeInspection", () => {
     beforeEach(async () => {
       await addRegenerator("Regenerator A", prod1Address);
+    });
+
+    context("when score is set to zero", () => {
+      beforeEach(async () => {
+        await instance.afterRealizeInspection(prod1Address, 0, 2);
+      });
+
+      it("should not increment regenerator inspection count", async () => {
+        const regenerator = await instance.getRegenerator(prod1Address);
+        expect(regenerator.totalInspections).to.equal(0);
+      });
+
+      it("should not add regenerator on certification process", async () => {
+        const currentEra = await instance.poolCurrentEra();
+        expect(await instance.newCertificationRegenerators(currentEra)).to.equal(0);
+      });
     });
 
     context("with allowed user", () => {
@@ -488,14 +518,93 @@ describe("RegeneratorRules", () => {
       });
 
       describe(".incrementInspections", () => {
-        beforeEach(async () => {
-          await instance.afterRealizeInspection(prod1Address, 0, 1);
+        // This test block checks the basic functionality of the inspection increment.
+        describe("when a single inspection is performed", () => {
+          beforeEach(async () => {
+            await instance.afterRealizeInspection(prod1Address, 1, 1);
+          });
+
+          it("should increment totalInspections counter", async () => {
+            const regenerator = await instance.getRegenerator(prod1Address);
+            expect(regenerator.totalInspections).to.equal(1);
+          });
         });
 
-        it("incrementInspections", async () => {
-          const regenerator = await instance.getRegenerator(prod1Address);
+        describe("when the maximum number of inspections is reached", () => {
+          const MAXIMUM_INSPECTIONS = 6;
 
+          beforeEach(async () => {
+            await instance.afterRealizeInspection(prod1Address, 1, 1);
+            await instance.afterRealizeInspection(prod1Address, 1, 2);
+            await instance.afterRealizeInspection(prod1Address, 1, 3);
+            await instance.afterRealizeInspection(prod1Address, 1, 4);
+            await instance.afterRealizeInspection(prod1Address, 1, 5);
+          });
+
+          it("should certify the regenerator and update certification counters", async () => {
+            const tx = await instance.afterRealizeInspection(prod1Address, 1, 6);
+
+            const isCertified = await instance.certifiedRegenerators(prod1Address);
+            expect(isCertified).to.be.true;
+
+            const totalCertified = await instance.totalCertifiedRegenerators();
+            expect(totalCertified).to.equal(1);
+
+            await expect(tx).to.emit(instance, "RegeneratorCertified").withArgs(prod1Address);
+          });
+        });
+      });
+    });
+
+    describe(".decrementInspections", () => {
+      const MAXIMUM_INSPECTIONS = 6;
+
+      describe("when adding and then removing a single inspection", () => {
+        it("should correctly increment and then decrement counters", async () => {
+          await instance.afterRealizeInspection(prod1Address, 1, 1);
+
+          const currentEra = await instance.poolCurrentEra();
+          expect(await instance.impactRegenerators(prod1Address)).to.be.true;
+          expect(await instance.newCertificationRegenerators(currentEra)).to.equal(1);
+          let regenerator = await instance.getRegenerator(prod1Address);
           expect(regenerator.totalInspections).to.equal(1);
+
+          await instance.decrementInspections(prod1Address);
+
+          expect(await instance.impactRegenerators(prod1Address)).to.be.false;
+          expect(await instance.newCertificationRegenerators(currentEra)).to.equal(0);
+          regenerator = await instance.getRegenerator(prod1Address);
+          expect(regenerator.totalInspections).to.equal(0);
+        });
+      });
+
+      describe("when the regenerator is certified", () => {
+        beforeEach(async () => {
+          await instance.afterRealizeInspection(prod1Address, 1, 1);
+          await instance.afterRealizeInspection(prod1Address, 1, 2);
+          await instance.afterRealizeInspection(prod1Address, 1, 3);
+          await instance.afterRealizeInspection(prod1Address, 1, 4);
+          await instance.afterRealizeInspection(prod1Address, 1, 5);
+          await instance.afterRealizeInspection(prod1Address, 1, 6);
+        });
+
+        it("should remove certification and decrement counters", async () => {
+          expect(await instance.certifiedRegenerators(prod1Address)).to.be.true;
+          expect(await instance.totalCertifiedRegenerators()).to.equal(1);
+
+          await instance.decrementInspections(prod1Address);
+
+          expect(await instance.certifiedRegenerators(prod1Address)).to.be.false;
+          expect(await instance.totalCertifiedRegenerators()).to.equal(0);
+
+          const regenerator = await instance.getRegenerator(prod1Address);
+          expect(regenerator.totalInspections).to.equal(MAXIMUM_INSPECTIONS - 1);
+        });
+      });
+
+      describe("when the regenerator has zero inspections", () => {
+        it("should revert the transaction", async () => {
+          await expect(instance.decrementInspections(prod1Address)).to.be.revertedWith("totalInspections invalid");
         });
       });
     });
@@ -520,16 +629,16 @@ describe("RegeneratorRules", () => {
         context("when regenerator have minimum inspections", () => {
           context("when levels in era is 100", () => {
             beforeEach(async () => {
-              await instance.afterRealizeInspection(prod1Address, 0, 1);
-              await instance.afterRealizeInspection(prod1Address, 0, 2);
-              await instance.afterRealizeInspection(prod1Address, 0, 3);
+              await instance.afterRealizeInspection(prod1Address, 1, 1);
+              await instance.afterRealizeInspection(prod1Address, 1, 2);
+              await instance.afterRealizeInspection(prod1Address, 1, 3);
             });
 
             context("when regenerator have regenerationScore 50", () => {
               beforeEach(async () => {
-                await instance.afterRealizeInspection(prod2Address, 0, 4);
-                await instance.afterRealizeInspection(prod2Address, 0, 5);
-                await instance.afterRealizeInspection(prod2Address, 0, 6);
+                await instance.afterRealizeInspection(prod2Address, 1, 4);
+                await instance.afterRealizeInspection(prod2Address, 1, 5);
+                await instance.afterRealizeInspection(prod2Address, 1, 6);
 
                 await instance.afterRealizeInspection(prod1Address, 50, 7);
                 await instance.afterRealizeInspection(prod2Address, 50, 8);
@@ -596,9 +705,9 @@ describe("RegeneratorRules", () => {
 
       context("when cant approve #blockable", () => {
         beforeEach(async () => {
-          await instance.afterRealizeInspection(prod1Address, 0, 1);
-          await instance.afterRealizeInspection(prod1Address, 0, 2);
-          await instance.afterRealizeInspection(prod1Address, 0, 3);
+          await instance.afterRealizeInspection(prod1Address, 1, 1);
+          await instance.afterRealizeInspection(prod1Address, 1, 2);
+          await instance.afterRealizeInspection(prod1Address, 1, 3);
         });
 
         it("should return error message", async () => {
@@ -669,6 +778,44 @@ describe("RegeneratorRules", () => {
         ]);
 
         expect(JSON.stringify(coordinatesList)).to.equal(expectedCoordinatesList);
+      });
+    });
+  });
+
+  describe("#isRegistrationAllowed", () => {
+    beforeEach(async () => {
+      const communityRulesMock = await hre.artifacts.readArtifact("CommunityRules");
+      let { _, abi: communityRulesAbi } = communityRulesMock;
+
+      communityRules = await deployMockContract(owner, communityRulesAbi);
+
+      const instanceFactory = await ethers.getContractFactory("RegeneratorRules");
+
+      instance = await instanceFactory.deploy(communityRules.target, regeneratorPool.target);
+    });
+
+    context("when total active regenerators is less than MAX_ACTIVE_REGENERATORS", () => {
+      beforeEach(async () => {
+        await communityRules.mock.userTypesCount.returns(10000);
+        await communityRules.mock.userTypesCount.returns(10000);
+      });
+
+      it("", async () => {
+        const isRegistrationAllowed = await instance.isRegistrationAllowed();
+
+        expect(isRegistrationAllowed).to.be.true;
+      });
+    });
+
+    context("when total active regenerators is bigger than MAX_ACTIVE_REGENERATORS", () => {
+      beforeEach(async () => {
+        await communityRules.mock.userTypesCount.returns(500001);
+      });
+
+      it("", async () => {
+        const isRegistrationAllowed = await instance.isRegistrationAllowed();
+
+        expect(isRegistrationAllowed).to.be.false;
       });
     });
   });

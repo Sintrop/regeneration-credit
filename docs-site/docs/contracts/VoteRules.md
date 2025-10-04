@@ -15,10 +15,42 @@ uint256 INITIAL_USER_COUNT_THRESHOLD
 _The threshold of total users below (or equal to) which any user can invite.
 This allows for easier invitations in the early stages of the system._
 
+### communityRules
+
+```solidity
+contract ICommunityRules communityRules
+```
+
+CommunityRules contract interface.
+
+### contributorRules
+
+```solidity
+contract IContributorRules contributorRules
+```
+
+ContributorRules contract interface.
+
+### developerRules
+
+```solidity
+contract IDeveloperRules developerRules
+```
+
+DeveloperRules contract interface.
+
+### researcherRules
+
+```solidity
+contract IResearcherRules researcherRules
+```
+
+ResearcherRules contract interface.
+
 ### constructor
 
 ```solidity
-constructor(address communityRulesAddress, address activistRulesAddress, address contributorRulesAddress, address developerRulesAddress, address researcherRulesAddress) public
+constructor(address communityRulesAddress, address contributorRulesAddress, address developerRulesAddress, address researcherRulesAddress) public
 ```
 
 _Initializes the contract with the addresses of the various rule contracts._
@@ -28,7 +60,6 @@ _Initializes the contract with the addresses of the various rule contracts._
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | communityRulesAddress | address | Address of the CommunityRules contract. |
-| activistRulesAddress | address | Address of the ActivistRules contract. |
 | contributorRulesAddress | address | Address of the ContributorRules contract. |
 | developerRulesAddress | address | Address of the DeveloperRules contract. |
 | researcherRulesAddress | address | Address of the ResearcherRules contract. |

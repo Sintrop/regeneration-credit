@@ -59,6 +59,32 @@ mapping(uint256 => address) inspectorsAddress
 
 A mapping from a unique inspector ID to their corresponding wallet address.
 
+### communityRules
+
+```solidity
+contract ICommunityRules communityRules
+```
+
+The address of the `CommunityRules` contract, used to interact with
+community-wide rules and user types.
+
+### inspectorPool
+
+```solidity
+contract IInspectorPool inspectorPool
+```
+
+The address of the `InspectorPool` contract, responsible for managing
+and distributing token rewards to inspectors.
+
+### inspectionRulesAddress
+
+```solidity
+address inspectionRulesAddress
+```
+
+The address of the `InspectionRules` contract.
+
 ### constructor
 
 ```solidity
@@ -155,7 +181,7 @@ This marks the time of acceptance and increments the inspector's "give-up" count
 ### afterRealizeInspection
 
 ```solidity
-function afterRealizeInspection(address addr, uint64 inspectionId) external returns (uint256)
+function afterRealizeInspection(address addr, uint32 score, uint64 inspectionId) external returns (uint256)
 ```
 
 This function is called by the InspectionRules contract after an inspection is realized.
@@ -168,7 +194,8 @@ This decrements give-ups and increments total inspections._
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | addr | address | The inspector's wallet address. |
-| inspectionId | uint64 |  |
+| score | uint32 | The inspection regenerationScore. |
+| inspectionId | uint64 | The inspection unique ID. |
 
 #### Return Values
 

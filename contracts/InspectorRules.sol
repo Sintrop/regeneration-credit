@@ -57,14 +57,14 @@ contract InspectorRules is Callable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules and user types.
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice The address of the `InspectorPool` contract, responsible for managing
   /// and distributing token rewards to inspectors.
-  IInspectorPool private inspectorPool;
+  IInspectorPool public inspectorPool;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private inspectionRulesAddress;
+  address public inspectionRulesAddress;
 
   /// @notice The specific `UserType` enumeration value for an Inspector user.
   /// This is a constant for gas efficiency and clarity.
@@ -196,15 +196,22 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * This decrements give-ups and increments total inspections.
    * @notice This function is called by the InspectionRules contract after an inspection is realized.
    * @param addr The inspector's wallet address.
+   * @param score The inspection regenerationScore.
+   * @param inspectionId The inspection unique ID.
    * @return uint256 The updated total number of inspections completed by the inspector.
    */
   function afterRealizeInspection(
     address addr,
+    uint32 score,
     uint64 inspectionId
   ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant returns (uint256) {
     _decreaseGiveUps(addr);
 
-    return _incrementInspections(addr, inspectionId);
+    if (score > 0) {
+      return _incrementInspections(addr, inspectionId);
+    }
+
+    return inspectors[addr].totalInspections;
   }
 
   /**
@@ -388,7 +395,7 @@ contract InspectorRules is Callable, ReentrancyGuard {
    * @return bool `true` if the inspector is currently valid (has less than max give-ups), `false` otherwise.
    */
   function isInspectorValid(address addr) public view returns (bool) {
-    return inspectors[addr].giveUps < MAX_GIVEUPS;
+    return inspectors[addr].giveUps <= MAX_GIVEUPS;
   }
 
   /**

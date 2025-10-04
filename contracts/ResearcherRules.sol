@@ -74,6 +74,9 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   /// This acts as a global unique ID counter for new researchs.
   uint64 public researchesTotalCount;
 
+  /// @notice The sum of all active levels from valid researches by non-denied researchers.
+  uint256 public totalActiveLevels;
+
   /// @notice Total calculatorItems count.
   uint64 public calculatorItemsCount;
 
@@ -109,19 +112,19 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice The interface of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice The interface of the `ResearcherPool` contract, responsible for managing
   /// and distributing token rewards to researchers.
-  IResearcherPool private researcherPool;
+  IResearcherPool public researcherPool;
 
   /// @notice The interface of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating development reports.
-  IValidationRules private validationRules;
+  IValidationRules public validationRules;
 
   /// @notice The interface of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for report validation.
-  IVoteRules private voteRules;
+  IVoteRules public voteRules;
 
   /// @notice The specific `UserType` enumeration value for a Researcher user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.RESEARCHER;
@@ -230,6 +233,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
     researchesCount++;
     researchesTotalCount++;
+    totalActiveLevels++;
     uint64 id = researchesTotalCount;
 
     researches[id] = Research(id, poolCurrentEra(), msg.sender, title, thesis, file, 0, true, 0, block.number);
@@ -297,6 +301,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
       }
     }
     validationRules.updateValidatorLastVoteBlock(msg.sender);
+    validationRules.addValidationPoint(msg.sender);
 
     emit ResearchValidation(msg.sender, research.id, justification);
   }
@@ -388,6 +393,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param addr The wallet address of the researcher from whom levels are to be removed.
    */
   function removePoolLevels(address addr) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+    totalActiveLevels -= researchers[addr].pool.level;
+
     researcherPool.removePoolLevels(addr, true);
   }
 
@@ -413,6 +420,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   function _denyResearcher(address userAddress) private {
     if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
 
+    totalActiveLevels -= researchers[userAddress].pool.level;
+
     communityRules.setToDenied(userAddress);
 
     // Inviter slashing mechanism.
@@ -436,6 +445,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     research.invalidatedAt = block.number;
     researches[research.id] = research;
     researchers[research.createdBy].pool.level -= RESOURCE_LEVEL;
+    totalActiveLevels--;
 
     researcherPool.removePoolLevels(research.createdBy, false);
   }
@@ -466,7 +476,7 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
     if (researcher.id <= 0) return false;
 
-    return canInvite(researchesTotalCount, communityRules.userTypesTotalCount(USER_TYPE), researcher.pool.level);
+    return canInvite(totalActiveLevels, communityRules.userTypesCount(USER_TYPE), researcher.pool.level);
   }
 
   /**

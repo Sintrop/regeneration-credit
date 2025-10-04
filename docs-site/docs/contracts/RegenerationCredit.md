@@ -217,7 +217,7 @@ designated as "contract pools" in the `contractsPools` mapping._
 event TokensCertified(address account, uint256 amount, uint256 newAccountCertifiedTotal)
 ```
 
-_Emitted when tokens are burned (certified) by a user or on behalf of a pool._
+_Emitted when tokens are burned (certified) by a user._
 
 #### Parameters
 

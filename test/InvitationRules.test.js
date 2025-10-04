@@ -25,7 +25,9 @@ describe("InvitationRules", () => {
     user5Address,
     user6Address,
     user7Address,
-    user8Address;
+    user8Address,
+    user9Address,
+    user10Address;
 
   const addUser = async (address, userType, from) => {
     await communityRules.connect(from).addUser(address, userType);
@@ -74,6 +76,8 @@ describe("InvitationRules", () => {
       user6Address,
       user7Address,
       user8Address,
+      user9Address,
+      user10Address,
       inspector1Address,
     ] = await ethers.getSigners();
 
@@ -154,9 +158,17 @@ describe("InvitationRules", () => {
           await addInvitation(user2Address, owner, userTypes.Activist, owner);
           await addInvitation(owner, user2Address, userTypes.Activist, owner);
           await addInvitation(owner, user3Address, userTypes.Activist, owner);
+          await addInvitation(owner, user6Address, userTypes.Activist, owner);
+          await addInvitation(owner, user7Address, userTypes.Activist, owner);
+          await addInvitation(owner, user8Address, userTypes.Activist, owner);
+          await addInvitation(owner, user9Address, userTypes.Activist, owner);
 
           await addActivist("Activist A", user2Address);
           await addActivist("Activist B", user3Address);
+          await addActivist("Activist C", user6Address);
+          await addActivist("Activist D", user7Address);
+          await addActivist("Activist E", user8Address);
+
           await communityRules.setContractCall(instance, owner);
         });
 
@@ -170,16 +182,74 @@ describe("InvitationRules", () => {
           });
 
           context("when send to activist", () => {
-            context("when have a previous invitation", () => {
-              context("when is not recent", () => {
+            context("when have less than 5 users", () => {
+              context("when have a previous invitation", () => {
+                context("when is not recent", () => {
+                  beforeEach(async () => {
+                    const blocks = await userTypeDelayBlocks(userTypes.Activist);
+
+                    await advanceBlock(blocks);
+                  });
+
+                  it("invite with success", async () => {
+                    await instance.connect(user2Address).invite(user4Address, userTypes.Activist);
+
+                    const invitation = await communityRules.invitations(user4Address);
+
+                    expect(invitation.invited).to.equal(user4Address.address);
+                  });
+                });
+
+                context("when is recent", () => {
+                  beforeEach(async () => {
+                    await instance.connect(user2Address).invite(user4Address, userTypes.Activist);
+                  });
+
+                  it("revert", async () => {
+                    await expect(
+                      instance.connect(user2Address).invite(user4Address, userTypes.Activist)
+                    ).to.be.revertedWith("Invite delay not reached");
+                  });
+                });
+              });
+
+              context("when do not have a previous invitation", () => {
+                it("invite with success", async () => {
+                  const invitation = await communityRules.invitations(user3Address);
+
+                  expect(invitation.invited).to.equal(user3Address.address);
+                });
+              });
+            });
+
+            context("when have more than 5 users", () => {
+              beforeEach(async () => {
+                await addActivist("Activist E", user9Address);
+
+                await addInvitation(user2Address, user4Address, userTypes.Inspector, owner);
+                await addInvitation(user2Address, user5Address, userTypes.Inspector, owner);
+
+                await communityRules.addUser(user4Address, userTypes.Inspector, owner);
+                await communityRules.addUser(user5Address, userTypes.Inspector, owner);
+
+                await activistRules.addRegeneratorLevel(user1Address, 3);
+
+                await activistRules.addInspectorLevel(user4Address, 3);
+                await activistRules.addInspectorLevel(user5Address, 3);
+                await activistRules.addInspectorLevel(inspector1Address, 3);
+              });
+
+              context("when is one of most active users", () => {
                 beforeEach(async () => {
                   const blocks = await userTypeDelayBlocks(userTypes.Activist);
 
                   await advanceBlock(blocks);
+
+                  await communityRules.setToDenied(user5Address);
                 });
 
                 it("invite with success", async () => {
-                  await instance.connect(user2Address).invite(user4Address, userTypes.Activist);
+                  await addInvitation(user2Address, user10Address, userTypes.Inspector, owner);
 
                   const invitation = await communityRules.invitations(user4Address);
 
@@ -187,24 +257,18 @@ describe("InvitationRules", () => {
                 });
               });
 
-              context("when is recent", () => {
+              context("when not is one of most active users", () => {
                 beforeEach(async () => {
-                  await instance.connect(user2Address).invite(user4Address, userTypes.Activist);
+                  const blocks = await userTypeDelayBlocks(userTypes.Activist);
+
+                  await advanceBlock(blocks);
                 });
 
-                it("revert", async () => {
+                it("returns error message", async () => {
                   await expect(
-                    instance.connect(user2Address).invite(user4Address, userTypes.Activist)
-                  ).to.be.revertedWith("Invite delay not reached");
+                    instance.connect(user3Address).invite(user10Address, userTypes.Activist)
+                  ).to.be.revertedWith("Only most active users allowed to invite");
                 });
-              });
-            });
-
-            context("when do not have a previous invitation", () => {
-              it("invite with success", async () => {
-                const invitation = await communityRules.invitations(user3Address);
-
-                expect(invitation.invited).to.equal(user3Address.address);
               });
             });
           });
@@ -309,14 +373,8 @@ describe("InvitationRules", () => {
         context("cannot send invite", () => {
           it("returns message error", async () => {
             await addInvitation(owner, user5Address, userTypes.Activist, owner);
-            await addInvitation(owner, user6Address, userTypes.Activist, owner);
-            await addInvitation(owner, user7Address, userTypes.Activist, owner);
-            await addInvitation(owner, user8Address, userTypes.Activist, owner);
 
             await addActivist("Activist C", user5Address);
-            await addActivist("Activist D", user6Address);
-            await addActivist("Activist E", user7Address);
-            await addActivist("Activist E", user8Address);
 
             await expect(instance.connect(user2Address).invite(user4Address, userTypes.Activist)).to.be.revertedWith(
               "Only most active users allowed to invite"
@@ -333,6 +391,7 @@ describe("InvitationRules", () => {
           await addInvitation(owner, user6Address, userTypes.Developer, owner);
           await addInvitation(owner, user7Address, userTypes.Developer, owner);
           await addInvitation(owner, user8Address, userTypes.Developer, owner);
+          await addInvitation(owner, user9Address, userTypes.Developer, owner);
 
           await addDeveloper("Developer A", user2Address);
           await addDeveloper("Developer B", user3Address);
@@ -347,12 +406,70 @@ describe("InvitationRules", () => {
           });
 
           context("when send to developer", () => {
-            context("when have a previous invitation", () => {
-              context("when is not recent", () => {
+            context("when have less than 5 users", () => {
+              context("when have a previous invitation", () => {
+                context("when is not recent", () => {
+                  beforeEach(async () => {
+                    const blocks = await userTypeDelayBlocks(userTypes.Developer);
+
+                    await advanceBlock(blocks);
+                  });
+
+                  it("invite with success", async () => {
+                    await instance.connect(user2Address).invite(user4Address, userTypes.Developer);
+
+                    const invitation = await communityRules.invitations(user4Address);
+
+                    expect(invitation.invited).to.equal(user4Address.address);
+                  });
+                });
+
+                context("when is recent", () => {
+                  beforeEach(async () => {
+                    await instance.connect(user2Address).invite(user4Address, userTypes.Developer);
+                  });
+
+                  it("revert", async () => {
+                    await expect(
+                      instance.connect(user2Address).invite(user4Address, userTypes.Developer)
+                    ).to.be.revertedWith("Invite delay not reached");
+                  });
+                });
+              });
+
+              context("when do not have a previous invitation", () => {
+                it("invite with success", async () => {
+                  await instance.connect(user2Address).invite(user4Address, userTypes.Developer);
+
+                  const invitation = await communityRules.invitations(user3Address);
+
+                  expect(invitation.invited).to.equal(user3Address.address);
+                });
+              });
+            });
+
+            context("when have more than 5 users", () => {
+              beforeEach(async () => {
+                await addDeveloper("Developer F", user9Address);
+
+                await developerRules.connect(user3Address).addReport("description", "report");
+
+                await developerRules.connect(user5Address).addReport("description", "report");
+                await advanceBlock(10);
+                await developerRules.connect(user5Address).addReport("description", "report");
+                await advanceBlock(10);
+                await developerRules.connect(user5Address).addReport("description", "report");
+                await advanceBlock(10);
+                await developerRules.connect(user5Address).addReport("description", "report");
+              });
+
+              context("when is one of most active users", () => {
                 beforeEach(async () => {
                   const blocks = await userTypeDelayBlocks(userTypes.Developer);
 
                   await advanceBlock(blocks);
+
+                  await communityRules.setToDenied(user5Address);
                 });
 
                 it("invite with success", async () => {
@@ -364,26 +481,18 @@ describe("InvitationRules", () => {
                 });
               });
 
-              context("when is recent", () => {
+              context("when not is one of most active users", () => {
                 beforeEach(async () => {
-                  await instance.connect(user2Address).invite(user4Address, userTypes.Developer);
+                  const blocks = await userTypeDelayBlocks(userTypes.Developer);
+
+                  await advanceBlock(blocks);
                 });
 
-                it("revert", async () => {
+                it("returns error message", async () => {
                   await expect(
                     instance.connect(user2Address).invite(user4Address, userTypes.Developer)
-                  ).to.be.revertedWith("Invite delay not reached");
+                  ).to.be.revertedWith("Only most active users allowed to invite");
                 });
-              });
-            });
-
-            context("when do not have a previous invitation", () => {
-              it("invite with success", async () => {
-                await instance.connect(user2Address).invite(user4Address, userTypes.Developer);
-
-                const invitation = await communityRules.invitations(user3Address);
-
-                expect(invitation.invited).to.equal(user3Address.address);
               });
             });
           });
@@ -408,6 +517,7 @@ describe("InvitationRules", () => {
           await addInvitation(owner, user6Address, userTypes.Contributor, owner);
           await addInvitation(owner, user7Address, userTypes.Contributor, owner);
           await addInvitation(owner, user8Address, userTypes.Contributor, owner);
+          await addInvitation(owner, user9Address, userTypes.Contributor, owner);
 
           await addContributor("Contributor A", user2Address);
           await addContributor("Contributor B", user3Address);
@@ -423,12 +533,70 @@ describe("InvitationRules", () => {
           });
 
           context("when send to contributor", () => {
-            context("when have a previous invitation", () => {
-              context("when is not recent", () => {
+            context("when have less than 5 users", () => {
+              context("when have a previous invitation", () => {
+                context("when is not recent", () => {
+                  beforeEach(async () => {
+                    const blocks = await userTypeDelayBlocks(userTypes.Contributor);
+
+                    await advanceBlock(blocks);
+                  });
+
+                  it("invite with success", async () => {
+                    await instance.connect(user2Address).invite(user4Address, userTypes.Contributor);
+
+                    const invitation = await communityRules.invitations(user4Address);
+
+                    expect(invitation.invited).to.equal(user4Address.address);
+                  });
+                });
+
+                context("when is recent", () => {
+                  beforeEach(async () => {
+                    await instance.connect(user2Address).invite(user4Address, userTypes.Contributor);
+                  });
+
+                  it("revert", async () => {
+                    await expect(
+                      instance.connect(user2Address).invite(user4Address, userTypes.Contributor)
+                    ).to.be.revertedWith("Invite delay not reached");
+                  });
+                });
+              });
+
+              context("when do not have a previous invitation", () => {
+                it("invite with success", async () => {
+                  await instance.connect(user2Address).invite(user4Address, userTypes.Contributor);
+
+                  const invitation = await communityRules.invitations(user3Address);
+
+                  expect(invitation.invited).to.equal(user3Address.address);
+                });
+              });
+            });
+
+            context("when have more than 5 users", () => {
+              beforeEach(async () => {
+                await addContributor("Contibutor F", user9Address);
+
+                await contributorRules.connect(user3Address).addContribution("description", "report");
+
+                await contributorRules.connect(user5Address).addContribution("description", "report");
+                await advanceBlock(10);
+                await contributorRules.connect(user5Address).addContribution("description", "report");
+                await advanceBlock(10);
+                await contributorRules.connect(user5Address).addContribution("description", "report");
+                await advanceBlock(10);
+                await contributorRules.connect(user5Address).addContribution("description", "report");
+              });
+
+              context("when is one of most active users", () => {
                 beforeEach(async () => {
                   const blocks = await userTypeDelayBlocks(userTypes.Contributor);
 
                   await advanceBlock(blocks);
+
+                  await communityRules.setToDenied(user5Address);
                 });
 
                 it("invite with success", async () => {
@@ -440,32 +608,24 @@ describe("InvitationRules", () => {
                 });
               });
 
-              context("when is recent", () => {
+              context("when not is one of most active users", () => {
                 beforeEach(async () => {
-                  await instance.connect(user2Address).invite(user4Address, userTypes.Contributor);
+                  const blocks = await userTypeDelayBlocks(userTypes.Contributor);
+
+                  await advanceBlock(blocks);
                 });
 
-                it("revert", async () => {
+                it("returns error message", async () => {
                   await expect(
                     instance.connect(user2Address).invite(user4Address, userTypes.Contributor)
-                  ).to.be.revertedWith("Invite delay not reached");
+                  ).to.be.revertedWith("Only most active users allowed to invite");
                 });
-              });
-            });
-
-            context("when do not have a previous invitation", () => {
-              it("invite with success", async () => {
-                await instance.connect(user2Address).invite(user4Address, userTypes.Contributor);
-
-                const invitation = await communityRules.invitations(user3Address);
-
-                expect(invitation.invited).to.equal(user3Address.address);
               });
             });
           });
         });
 
-        context("can not send invite", () => {
+        context("when can not send invite", () => {
           it("returns message error", async () => {
             await addContributor("Contributor F", user8Address);
 
@@ -484,6 +644,7 @@ describe("InvitationRules", () => {
           await addInvitation(owner, user6Address, userTypes.Researcher, owner);
           await addInvitation(owner, user7Address, userTypes.Researcher, owner);
           await addInvitation(owner, user8Address, userTypes.Researcher, owner);
+          await addInvitation(owner, user9Address, userTypes.Researcher, owner);
 
           await addResearcher("Researcher A", user2Address);
           await addResearcher("Researcher B", user3Address);
@@ -498,12 +659,70 @@ describe("InvitationRules", () => {
           });
 
           context("when send to researcher", () => {
-            context("when have a previous invitation", () => {
-              context("when is not recent", () => {
+            context("when have less than 5 users", () => {
+              context("when have a previous invitation", () => {
+                context("when is not recent", () => {
+                  beforeEach(async () => {
+                    const blocks = await userTypeDelayBlocks(userTypes.Researcher);
+
+                    await advanceBlock(blocks);
+                  });
+
+                  it("invite with success", async () => {
+                    await instance.connect(user2Address).invite(user4Address, userTypes.Researcher);
+
+                    const invitation = await communityRules.invitations(user4Address);
+
+                    expect(invitation.invited).to.equal(user4Address.address);
+                  });
+                });
+
+                context("when is recent", () => {
+                  beforeEach(async () => {
+                    await instance.connect(user2Address).invite(user4Address, userTypes.Researcher);
+                  });
+
+                  it("revert", async () => {
+                    await expect(
+                      instance.connect(user2Address).invite(user4Address, userTypes.Researcher)
+                    ).to.be.revertedWith("Invite delay not reached");
+                  });
+                });
+              });
+
+              context("when do not have a previous invitation", () => {
+                it("invite with success", async () => {
+                  await instance.connect(user2Address).invite(user4Address, userTypes.Researcher);
+
+                  const invitation = await communityRules.invitations(user4Address);
+
+                  expect(invitation.invited).to.equal(user4Address.address);
+                });
+              });
+            });
+
+            context("when have more than 5 users", () => {
+              beforeEach(async () => {
+                await addResearcher("Researcher F", user9Address);
+
+                await researcherRules.connect(user3Address).addResearch("description", "report", "file");
+
+                await researcherRules.connect(user5Address).addResearch("description", "report", "file");
+                await advanceBlock(10);
+                await researcherRules.connect(user5Address).addResearch("description", "report", "file");
+                await advanceBlock(10);
+                await researcherRules.connect(user5Address).addResearch("description", "report", "file");
+                await advanceBlock(10);
+                await researcherRules.connect(user5Address).addResearch("description", "report", "file");
+              });
+
+              context("when is one of most active users", () => {
                 beforeEach(async () => {
                   const blocks = await userTypeDelayBlocks(userTypes.Researcher);
 
                   await advanceBlock(blocks);
+
+                  await communityRules.setToDenied(user5Address);
                 });
 
                 it("invite with success", async () => {
@@ -515,26 +734,18 @@ describe("InvitationRules", () => {
                 });
               });
 
-              context("when is recent", () => {
+              context("when not is one of most active users", () => {
                 beforeEach(async () => {
-                  await instance.connect(user2Address).invite(user4Address, userTypes.Researcher);
+                  const blocks = await userTypeDelayBlocks(userTypes.Researcher);
+
+                  await advanceBlock(blocks);
                 });
 
-                it("revert", async () => {
+                it("returns error message", async () => {
                   await expect(
                     instance.connect(user2Address).invite(user4Address, userTypes.Researcher)
-                  ).to.be.revertedWith("Invite delay not reached");
+                  ).to.be.revertedWith("Only most active users allowed to invite");
                 });
-              });
-            });
-
-            context("when do not have a previous invitation", () => {
-              it("invite with success", async () => {
-                await instance.connect(user2Address).invite(user4Address, userTypes.Researcher);
-
-                const invitation = await communityRules.invitations(user4Address);
-
-                expect(invitation.invited).to.equal(user4Address.address);
               });
             });
           });
@@ -765,7 +976,7 @@ describe("InvitationRules", () => {
     let instance; // The InvitationRules contract instance
     let mockCommunityRules; // The mock for CommunityRules
     let owner, badInviter, goodInviter, invitee;
-    const MAX_ACTIVIST_PENALTIES = 10;
+    const MAX_ACTIVIST_PENALTIES = 5;
 
     // This setup runs only for the tests inside this describe block
     beforeEach(async () => {

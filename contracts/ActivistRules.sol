@@ -13,7 +13,7 @@ import { Invitable } from "./shared/Invitable.sol";
  * @title ActivistRules
  * @author Sintrop
  * @notice This contract defines and manages the rules and data specific to "Activist" users
- * within the system. Activists are primarily responsible for inviting new Regenerators
+ * within the system. Activists are responsible for inviting new Regenerators
  * and Inspectors, and they earn rewards based on the approval of their invited users.
  * @dev Inherits functionalities from `Callable` (for whitelisted function access) and `Invitable`
  * (for managing invitation logic). It interacts with `CommunityRules` for general user management
@@ -43,6 +43,9 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   /// @notice The total count of all invitations that have been successfully approved across the entire system.
   uint64 public approvedInvites;
 
+  /// @notice The sum of all active levels from non-denied activists. Used for governance calculations.
+  uint256 public totalActiveLevels;
+
   /// @notice A mapping from an activist's wallet address to their detailed `Activist` data structure.
   /// This serves as the primary storage for activist profiles.
   mapping(address => Activist) private activists;
@@ -58,17 +61,17 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice The address of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice The address of the `ActivistPool` contract, responsible for managing
   /// and distributing token rewards to activists.
-  IActivistPool private activistPool;
+  IActivistPool public activistPool;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private inspectionRulesAddress;
+  address public inspectionRulesAddress;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private validationRulesAddress;
+  address public validationRulesAddress;
 
   /// @notice The specific `UserType` enumeration value for the Activist user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.ACTIVIST;
@@ -209,6 +212,8 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
   function removePoolLevels(
     address addr
   ) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) nonReentrant {
+    totalActiveLevels -= activists[addr].pool.level;
+
     activistPool.removePoolLevels(addr, true);
   }
 
@@ -233,7 +238,6 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
       regeneratorTotalInspections >= MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS
     ) {
       activistWonLevel[activistAddress][regeneratorAddress] = true;
-      approvedInvites++;
 
       bytes32 eventId = keccak256(abi.encodePacked("activist_reward_regenerator", activistAddress, regeneratorAddress));
 
@@ -260,7 +264,6 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
       inspectorTotalInspections >= MINIMUM_INSPECTIONS_TO_WON_POOL_LEVELS
     ) {
       activistWonLevel[activistAddress][inspectorAddress] = true;
-      approvedInvites++;
 
       bytes32 eventId = keccak256(abi.encodePacked("activist_reward_inspector", activistAddress, inspectorAddress));
 
@@ -279,6 +282,9 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
 
     // If activist does not exist, return.
     if (activist.id == 0) return;
+
+    approvedInvites++;
+    totalActiveLevels++;
 
     // Inscrease the activist pool level
     activist.pool.level++;
@@ -306,7 +312,7 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
 
     // Calls the inherited `canInvite` function from `Invitable` to calculate eligibility.
     // This depends on total approved invites, total activist count, and the activist's pool level.
-    return canInvite(approvedInvites, communityRules.userTypesTotalCount(USER_TYPE), activist.pool.level);
+    return canInvite(totalActiveLevels, communityRules.userTypesCount(USER_TYPE), activist.pool.level);
   }
 
   /**

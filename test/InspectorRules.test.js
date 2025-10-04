@@ -19,7 +19,7 @@ describe("InspectorRules", () => {
   };
 
   const args = {
-    totalTokens: "180000000000000000000000000",
+    totalTokens: "230000000000000000000000000",
     halving: 12,
     blocksPerEra: 26,
   };
@@ -134,6 +134,21 @@ describe("InspectorRules", () => {
 
   describe("#afterRealizeInspection", () => {
     context("with allowed caller", () => {
+      context("when score is set to zero", () => {
+        beforeEach(async () => {
+          await addInspector("Inspector A", inspe1Address);
+          await instance.setContractCall(owner, owner);
+          await instance.afterAcceptInspection(inspe1Address, 1);
+          await instance.afterRealizeInspection(inspe1Address, 0, 1);
+        });
+
+        it("should not increment inspector inspection count", async () => {
+          const inspector = await instance.getInspector(inspe1Address);
+
+          expect(inspector.totalInspections).to.equal(0);
+        });
+      });
+
       describe(".decreaseGiveUps", () => {
         beforeEach(async () => {
           await addInspector("Inspector A", inspe1Address);
@@ -142,7 +157,7 @@ describe("InspectorRules", () => {
 
           await instance.afterAcceptInspection(inspe1Address, 1);
           await instance.afterAcceptInspection(inspe1Address, 1);
-          await instance.afterRealizeInspection(inspe1Address, 1);
+          await instance.afterRealizeInspection(inspe1Address, 1, 1);
         });
 
         context("must decreaseGiveUps", () => {
@@ -159,7 +174,7 @@ describe("InspectorRules", () => {
           await addInspector("Inspector A", inspe1Address);
           await instance.setContractCall(owner, owner);
           await instance.afterAcceptInspection(inspe1Address, 1);
-          await instance.afterRealizeInspection(inspe1Address, 1);
+          await instance.afterRealizeInspection(inspe1Address, 1, 1);
         });
 
         context("when do not reached minimum inspections", () => {
@@ -180,8 +195,8 @@ describe("InspectorRules", () => {
               await instance.afterAcceptInspection(inspe1Address, 1);
               await instance.afterAcceptInspection(inspe1Address, 1);
 
-              await instance.afterRealizeInspection(inspe1Address, 1);
-              await instance.afterRealizeInspection(inspe1Address, 1);
+              await instance.afterRealizeInspection(inspe1Address, 1, 1);
+              await instance.afterRealizeInspection(inspe1Address, 1, 1);
             });
 
             it("should add 1 level to pool", async () => {
@@ -203,7 +218,7 @@ describe("InspectorRules", () => {
     context("without allowed caller", async () => {
       it("should return error when", async () => {
         await addInspector("Inspector A", inspe1Address);
-        await expect(instance.connect(inspe1Address).afterRealizeInspection(inspe1Address, 1)).to.be.revertedWith(
+        await expect(instance.connect(inspe1Address).afterRealizeInspection(inspe1Address, 1, 1)).to.be.revertedWith(
           "Not allowed caller"
         );
       });
@@ -268,8 +283,8 @@ describe("InspectorRules", () => {
         await instance.afterAcceptInspection(inspe1Address, 1);
         await instance.afterAcceptInspection(inspe1Address, 1);
 
-        await instance.afterRealizeInspection(inspe1Address, 1);
-        await instance.afterRealizeInspection(inspe1Address, 1);
+        await instance.afterRealizeInspection(inspe1Address, 1, 1);
+        await instance.afterRealizeInspection(inspe1Address, 1, 1);
       });
 
       context("when have less then 3 inspections", () => {
@@ -281,7 +296,7 @@ describe("InspectorRules", () => {
       context("when inspector is in era 1 and current era is 1", () => {
         it("should return error", async () => {
           await instance.afterAcceptInspection(inspe1Address, 1);
-          await instance.afterRealizeInspection(inspe1Address, 1);
+          await instance.afterRealizeInspection(inspe1Address, 1, 1);
 
           await expect(instance.connect(inspe1Address).withdraw()).to.be.revertedWith(
             "Not eligible to withdraw for this era"
@@ -293,16 +308,16 @@ describe("InspectorRules", () => {
         context("with one inspection", () => {
           beforeEach(async () => {
             await instance.afterAcceptInspection(inspe1Address, 1);
-            await instance.afterRealizeInspection(inspe1Address, 1);
+            await instance.afterRealizeInspection(inspe1Address, 1, 1);
 
             await advanceBlock(args.blocksPerEra);
 
             await instance.connect(inspe1Address).withdraw();
           });
 
-          it("withdraw 7500000000000000000000000n tokens", async () => {
+          it("withdraw 9583333333333333333333333n tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(inspe1Address);
-            const expectedBalance = 7500000000000000000000000n;
+            const expectedBalance = 9583333333333333333333333n;
 
             expect(balanceOf).to.equal(expectedBalance);
           });
@@ -312,24 +327,24 @@ describe("InspectorRules", () => {
           beforeEach(async () => {
             await addInspector("Inspector B", inspe2Address);
             await instance.afterAcceptInspection(inspe1Address, 1);
-            await instance.afterRealizeInspection(inspe1Address, 1);
+            await instance.afterRealizeInspection(inspe1Address, 1, 1);
 
             await instance.afterAcceptInspection(inspe2Address, 1);
             await instance.afterAcceptInspection(inspe2Address, 1);
             await instance.afterAcceptInspection(inspe2Address, 1);
 
-            await instance.afterRealizeInspection(inspe2Address, 1);
-            await instance.afterRealizeInspection(inspe2Address, 1);
-            await instance.afterRealizeInspection(inspe2Address, 2);
+            await instance.afterRealizeInspection(inspe2Address, 1, 1);
+            await instance.afterRealizeInspection(inspe2Address, 1, 1);
+            await instance.afterRealizeInspection(inspe2Address, 1, 2);
 
             await advanceBlock(args.blocksPerEra);
 
             await instance.connect(inspe1Address).withdraw();
           });
 
-          it("withdraw 3750000000000000000000000n tokens", async () => {
+          it("withdraw 4791666666666666666666666n tokens", async () => {
             const balanceOf = await regenerationCredit.balanceOf(inspe1Address);
-            const expectedBalance = 3750000000000000000000000n;
+            const expectedBalance = 4791666666666666666666666n;
 
             expect(balanceOf).to.equal(expectedBalance);
           });

@@ -60,6 +60,9 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   /// This acts as a global unique ID counter for new contributions.
   uint64 public contributionsTotalCount;
 
+  /// @notice The sum of all active levels from valid contributions by non-denied contributors.
+  uint256 public totalActiveLevels;
+
   /// @notice A mapping from a contributor's wallet address to their detailed `Contributor` data structure.
   /// This serves as the primary storage for contributor profiles.
   mapping(address => Contributor) private contributors;
@@ -80,22 +83,22 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice The interface of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice The interface of the `ContributorPool` contract, responsible for managing
   /// and distributing token rewards to contributors.
-  IContributorPool private contributorPool;
+  IContributorPool public contributorPool;
 
   /// @notice The interface of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating contributions.
-  IValidationRules private validationRules;
+  IValidationRules public validationRules;
 
   /// @notice The interface of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for contribution validation.
-  IVoteRules private voteRules;
+  IVoteRules public voteRules;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private validationRulesAddress;
+  address public validationRulesAddress;
 
   /// @notice The specific `UserType` enumeration value for a Contributor user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.CONTRIBUTOR;
@@ -226,6 +229,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     // Increment global contribution counters and assign a unique ID.
     contributionsCount++;
     contributionsTotalCount++;
+    totalActiveLevels++;
     uint64 id = contributionsTotalCount;
 
     // Increment contributor's total contributions count within their struct.
@@ -308,6 +312,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
       }
     }
     validationRules.updateValidatorLastVoteBlock(msg.sender);
+    validationRules.addValidationPoint(msg.sender);
 
     emit ContributionValidation(msg.sender, contribution.id, justification);
   }
@@ -353,6 +358,8 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * @param addr The wallet address of the contributor from whom levels are to be removed.
    */
   function removePoolLevels(address addr) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+    totalActiveLevels -= contributors[addr].pool.level;
+
     contributorPool.removePoolLevels(addr, true);
   }
 
@@ -376,6 +383,8 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    */
   function _denyContributor(address userAddress) private {
     if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
+
+    totalActiveLevels -= contributors[userAddress].pool.level;
 
     communityRules.setToDenied(userAddress);
 
@@ -420,6 +429,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     contribution.invalidatedAt = block.number;
     contributions[contribution.id] = contribution;
     contributors[contribution.user].pool.level -= RESOURCE_LEVEL;
+    totalActiveLevels--;
 
     contributorPool.removePoolLevels(contribution.user, false);
   }
@@ -470,7 +480,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
 
     // Calls the inherited `canInvite` function from `Invitable` to calculate eligibility.
     // This depends on total contributions count, total contributor count, and the contributor's pool level.
-    return canInvite(contributionsTotalCount, communityRules.userTypesTotalCount(USER_TYPE), contributor.pool.level);
+    return canInvite(totalActiveLevels, communityRules.userTypesCount(USER_TYPE), contributor.pool.level);
   }
 
   /**
@@ -560,7 +570,7 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
    * @param _resourceId The id of the resource receiving the vote.
    * @param _justification The justification provided for the vote.
    */
-  event ContributionValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
+  event ContributionValidation(address indexed _validatorAddress, uint256 indexed _resourceId, string _justification);
 
   /// @dev Emitted when a contributor successfully initiates a withdrawal of tokens.
   /// @param contributorAddress The address of the contributor initiating the withdrawal.

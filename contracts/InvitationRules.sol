@@ -22,11 +22,8 @@ contract InvitationRules is Ownable, ReentrancyGuard {
   /// @notice The maximum allowed amount of invalidated invited users.
   uint16 private constant MAX_INVITER_PENALTIES = 5;
 
-  /// @notice The maximum allowed amount of invalidated invited users for activists.
-  uint16 private constant MAX_ACTIVIST_PENALTIES = 10;
-
   /// @notice The minimum number of blocks an activist needs to wait to invite Regenerators or Inspectors again.
-  uint16 public constant ACTIVIST_DELAY_BLOCKS = 500;
+  uint16 public constant ACTIVIST_DELAY_BLOCKS = 3000;
 
   // --- State variables ---
 
@@ -41,19 +38,19 @@ contract InvitationRules is Ownable, ReentrancyGuard {
   mapping(CommunityTypes.UserType => CommunityTypes.UserType) public canBeInviteds;
 
   /// @notice CommunityRules contract interface
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice ResearcherRules contract interface
-  IResearcherRules private researcherRules;
+  IResearcherRules public researcherRules;
 
   /// @notice DeveloperRules contract interface
-  IDeveloperRules private developerRules;
+  IDeveloperRules public developerRules;
 
   /// @notice ActivistRules contract interface
-  IActivistRules private activistRules;
+  IActivistRules public activistRules;
 
   /// @notice ContributorRules contract interface
-  IContributorRules private contributorRules;
+  IContributorRules public contributorRules;
 
   // --- Constructor ---
 
@@ -134,7 +131,7 @@ contract InvitationRules is Ownable, ReentrancyGuard {
    * @param userType The user type to which the invited user will be assigned (must be REGENERATOR or INSPECTOR).
    */
   function inviteRegeneratorInspector(address invited, CommunityTypes.UserType userType) external nonReentrant {
-    require(communityRules.inviterPenalties(msg.sender) < MAX_ACTIVIST_PENALTIES, "Too many penalties");
+    require(communityRules.inviterPenalties(msg.sender) < MAX_INVITER_PENALTIES, "Too many penalties");
     // Checks if the caller is an activist.
     require(communityRules.userTypeIs(CommunityTypes.UserType.ACTIVIST, msg.sender), "Only to activists");
     // Checks if the invited user type is Regenerator or Inspector.

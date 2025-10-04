@@ -24,11 +24,10 @@ interface IResearcherRules {
   function getCalculatorItem(uint64 id) external view returns (CalculatorItem memory);
 
   /**
-   * @notice Returns the total number of researches made.
-   * @dev This is likely a getter for a public state variable.
-   * @return The total count of all researches.
+   * @notice Returns the total number of activeLevels from non-denied users.
+   * @return The total count of totalActiveLevels.
    */
-  function researchesTotalCount() external view returns (uint64);
+  function totalActiveLevels() external view returns (uint256);
 
   /**
    * @notice Adds a penalty to a researcher and returns their new total penalty count.

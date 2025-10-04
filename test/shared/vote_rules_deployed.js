@@ -30,6 +30,12 @@ const voteRulesDeployed = async () => {
     blocksPerEra: 160,
   };
 
+  let validationPoolParams = {
+    totalTokens: "10000000000000000000000000",
+    halving: 12,
+    blocksPerEra: 160,
+  };
+
   let researcherPoolParams = {
     totalTokens: "40000000000000000000000000",
     halving: 12,
@@ -89,6 +95,13 @@ const voteRulesDeployed = async () => {
     contributorPoolParams.blocksPerEra
   );
 
+  const validationPoolFactory = await ethers.getContractFactory("ValidationPool");
+  const validationPool = await validationPoolFactory.deploy(
+    regenerationCredit.target,
+    validationPoolParams.halving,
+    validationPoolParams.blocksPerEra
+  );
+
   const maxPenalties = 2;
   const inspectorRulesFactory = await ethers.getContractFactory("InspectorRules");
   const inspectorRules = await inspectorRulesFactory.deploy(communityRules.target, inspectorPool.target, maxPenalties);
@@ -141,7 +154,6 @@ const voteRulesDeployed = async () => {
   const voteRulesFactory = await ethers.getContractFactory("VoteRules");
   const voteRules = await voteRulesFactory.deploy(
     communityRules.target,
-    activistRules.target,
     contributorRules.target,
     developerRules.target,
     researcherRules.target
@@ -156,6 +168,7 @@ const voteRulesDeployed = async () => {
     contributorRulesAddress: contributorRules.target,
     activistRulesAddress: activistRules.target,
     voteRulesAddress: voteRules.target,
+    validationPoolAddress: validationPool.target,
   };
 
   const inspectionRulesDependencies = {
@@ -183,6 +196,8 @@ const voteRulesDeployed = async () => {
   await researcherPool.newAllowedCaller(researcherRules.target);
 
   await validationRules.setContractInterfaces(validationRulesDependencies);
+  await validationPool.newAllowedCaller(validationRules.target);
+  await validationPool.setContractCall(validationRules.target);
 
   const developerRulesContractDependencies = {
     communityRulesAddress: communityRules.target,
@@ -231,6 +246,7 @@ const voteRulesDeployed = async () => {
     voteRules,
     validationRules,
     regenerationIndexRules,
+    validationPool,
   };
 };
 

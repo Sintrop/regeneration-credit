@@ -9,7 +9,7 @@ import { IValidationRules } from "./interfaces/IValidationRules.sol";
 import { IActivistRules } from "./interfaces/IActivistRules.sol";
 import { ICommunityRules } from "./interfaces/ICommunityRules.sol";
 import { IVoteRules } from "./interfaces/IVoteRules.sol";
-import { InspectionStatus, Inspection, ContractsDependency } from "./types/InspectionTypes.sol";
+import { InspectionStatus, Inspection, ContractsDependency, EraImpact } from "./types/InspectionTypes.sol";
 import { Regenerator } from "./types/RegeneratorTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
@@ -26,7 +26,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   // --- Constants ---
 
   /// @notice The maximum number of inspections a Regenerator can receive.
-  uint8 public constant MAX_REGENERATOR_INSPECTIONS = 12;
+  uint8 public constant MAX_REGENERATOR_INSPECTIONS = 6;
 
   /// @notice Max character length for hash or url.
   uint16 private constant MAX_HASH_LENGTH = 150;
@@ -63,17 +63,21 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   /// @notice Valid inspections count (inspections not invalidated).
   uint64 public inspectionsCount;
 
-  /// @notice Realized inspections count (inspections that have been completed and submitted).
-  uint64 public realizedInspectionsCount;
-
   /// @notice Total inspections count, including open, accepted, realized, and invalidated ones.
   uint64 public inspectionsTotalCount;
 
-  /// @notice Sum of all valid inspections' trees impact.
+  /// @notice Realized inspections count (inspections that have been completed and submitted).
+  uint256 public realizedInspectionsCount;
+
+  /// @notice Sum of all valid inspections' trees impact from all past settled eras.
   uint256 public inspectionsTreesImpact;
 
-  /// @notice Sum of all valid inspections' biodiversity impact.
+  /// @notice Sum of all valid inspections' biodiversity impact from all past settled eras.
   uint256 public inspectionsBiodiversityImpact;
+
+  /// @notice The total count of regenerators who are considered "impact regenerators",
+  /// have reached the minimum of one inspection validated.
+  uint256 public totalImpactRegenerators;
 
   /// @notice Tracks inspection IDs that have already been invalidated.
   mapping(uint64 => bool) public inspectionPenalized;
@@ -88,28 +92,34 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   mapping(address => mapping(address => bool)) private inspectorInspected;
 
   /// @notice InspectorRules contract interface for interacting with inspector-specific logic.
-  IInspectorRules private inspectorRules;
+  IInspectorRules public inspectorRules;
 
   /// @notice RegeneratorRules contract interface for interacting with regenerator-specific logic.
-  IRegeneratorRules private regeneratorRules;
+  IRegeneratorRules public regeneratorRules;
 
   /// @notice CommunityRules contract interface for checking user types and other community-wide rules.
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice ValidationRules contract interface for handling inspection invalidations.
-  IValidationRules private validationRules;
+  IValidationRules public validationRules;
 
   /// @notice ActivistRules contract interface for updating activist levels based on inspection activities.
-  IActivistRules private activistRules;
+  IActivistRules public activistRules;
 
   /// @notice VoteRules contract interface for checking voter eligibility.
-  IVoteRules private voteRules;
+  IVoteRules public voteRules;
 
   /// @notice RegenerationIndexRules contract interface for calculating regeneration scores.
-  IRegenerationIndexRules private regenerationIndexRules;
+  IRegenerationIndexRules public regenerationIndexRules;
 
   /// @notice Tracks which validator has voted on which inspection to prevent duplicate votes.
   mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
+
+  /// @notice Tracks the impact generated within each specific era.
+  mapping(uint256 => EraImpact) public impactPerEra;
+
+  /// @notice Tracks the number of the last era that impact has been set.
+  uint256 public lastSettledEra;
 
   // --- Constructor ---
 
@@ -162,13 +172,13 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * @notice Regenerators agree to receive an inspector to assess their registered area.
    * They can make an `allowedInitialRequests` number of requests without delay.
    * After that, they must wait `timeBetweenInspections` blocks between requests.
-   * A hard limit of 12 total inspections is enforced.
+   * A hard limit of 6 total inspections is enforced.
    *
    * Requirements:
    * - The caller (`msg.sender`) must be a registered `REGENERATOR`.
    * - The regenerator must not have a `_pendingInspection` already open.
    * - The regenerator must adhere to the `timeBetweenInspections` delay if `allowedInitialRequests` are used up.
-   * - The regenerator must have completed less than 12 total inspections.
+   * - The regenerator must have completed less than 6 total inspections.
    */
   function requestInspection() external nonReentrant {
     Regenerator memory regenerator = regeneratorRules.getRegenerator(msg.sender);
@@ -183,12 +193,18 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
     // Update regenerator's state in RegeneratorRules.
     _afterRequestInspection();
+
+    // Update era impact.
+    _setEraImpact();
   }
 
   /**
-   * @dev Allows an inspector to accept an open inspection request.
+   * @dev Allows an inspector to accept an open or expired inspection request.
    * @notice Inspectors must only accept inspections they are capable of performing, being aware
-   * of the safety risks and responsibilities. Accepting an inspection counts as a 'give-up' until realized.
+   * of the safety risks and responsibilities. By accepting an inspection, inspectors agree that the they are responsible
+   * for their own safety at the data collection. It is recommended to use long sleeves clothes, hats, boots that can prevent
+   * bites from animals, gloves to protect from spines and any other useful safety equipment, such as machetes or pepper spray.
+   * Accepting an inspection counts as a 'give-up' until realized.
    * Inspectors can only accept one open inspection at a time and cannot inspect the same regenerator twice.
    * They must also adhere to specific delays and security windows.
    *
@@ -198,7 +214,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * - The `inspectionId` must correspond to an existing inspection.
    * - The inspector must not already have an inspection `ACCEPTED` that is not yet `INSPECTED` or `INVALIDATED` or `EXPIRED`.
    * - The inspector must not have previously inspected this specific regenerator.
-   * - The inspection's status must be `OPEN`.
+   * - The inspection's status must be `OPEN` or `EXPIRED`.
    * - The `acceptInspectionDelayBlocks` must have passed since the inspection was created.
    * - The system must not be within the `securityBlocksToValidation` window before an era ends.
    * - The inspector must adhere to `inspectorRules.canAcceptInspection` (delay from last realized inspection).
@@ -215,7 +231,11 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     require(inspection.id >= 1, "Inspection do not exist");
     require(alreadyHaveInspectionAccepted(), "Already accepted");
     require(!inspectorInspected[msg.sender][inspection.regenerator], "Already inspected");
-    require(inspection.status == InspectionStatus.OPEN, "Inspection must be OPEN");
+    require(
+      inspection.status == InspectionStatus.OPEN ||
+        (inspection.status == InspectionStatus.ACCEPTED && _isInspectionExpired(inspection)),
+      "Inspection must be OPEN or EXPIRED"
+    );
     require(acceptInspectionDelayBlocksPassed(inspection), "Wait delay blocks");
     require(beforeAcceptHaveSecurityBlocksToVote(), "Wait until next era");
     require(inspectorRules.canAcceptInspection(msg.sender), "Wait to accept");
@@ -240,6 +260,9 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * How many trees, palm trees and other plants over 1m high and 3cm in diameter there is in the regenerating area? Justify your answer in the report.
    * How many different species of those plants/trees were found? Each different species is equivalent to one unity and only trees and plants managed or planted by the regenerator should be counted. Justify your answer in the report.
    * Max result of 200.000 trees and 300 biodiversity.
+   * Zero score means invalid inspection.
+   * NOTE: If the inspector finds something suspicous about the inspected regenerator, such as invalid area, suspicious of fake account, or if the Regenerator is not
+   * findable, inspectors are encourage to realize passing 0 as values with his justification at the report to avoid being penalized.
    * @param inspectionId The id of the inspection to be realized.
    * @param proofPhotos The string of a photo with the regenerator or the string of a document with the proofPhoto with the regenerator and other area photos.
    * @param justificationReport The justification and report of the result found.
@@ -274,10 +297,15 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
     _afterRealizeInspection(inspection);
 
-    inspectionsTreesImpact += treesResult;
-    inspectionsBiodiversityImpact += biodiversityResult;
+    // Only count inspections that have a positive impact towards the global metrics.
+    if (inspection.regenerationScore > 0) {
+      uint256 era = inspection.inspectedAtEra;
+      impactPerEra[era].trees += treesResult;
+      impactPerEra[era].biodiversity += biodiversityResult;
+      impactPerEra[era].realizedInspections++;
+    }
+
     inspectorInspected[msg.sender][inspection.regenerator] = true;
-    realizedInspectionsCount++;
 
     emit InspectionRealized(
       inspectionId,
@@ -343,6 +371,8 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     }
 
     validationRules.updateValidatorLastVoteBlock(msg.sender);
+    validationRules.addValidationPoint(msg.sender);
+
     emit InspectionValidation(msg.sender, inspection.id, justification);
   }
 
@@ -420,7 +450,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
     activistRules.addInspectorLevel(
       inspectorAddress,
-      inspectorRules.afterRealizeInspection(inspectorAddress, inspection.id)
+      inspectorRules.afterRealizeInspection(inspectorAddress, inspection.regenerationScore, inspection.id)
     );
 
     regeneratorInspections[regeneratorAddress].push(inspection.id);
@@ -434,12 +464,12 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * @param inspection A reference to the `Inspection` struct being invalidated.
    */
   function _invalidateInspection(Inspection storage inspection) private {
-    // Decrement global impact metrics.
-    inspectionsTreesImpact -= inspection.treesResult;
-    inspectionsBiodiversityImpact -= inspection.biodiversityResult;
+    // Decrement era impact metrics.
+    impactPerEra[inspection.inspectedAtEra].trees -= inspection.treesResult;
+    impactPerEra[inspection.inspectedAtEra].biodiversity -= inspection.biodiversityResult;
+    impactPerEra[inspection.inspectedAtEra].realizedInspections--;
 
     inspectionsCount--; // Decrement valid inspections count
-    realizedInspectionsCount--; // Decrement realized inspections count
 
     // Update inspection status
     inspection.status = InspectionStatus.INVALIDATED;
@@ -452,6 +482,33 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     inspectorRules.removePoolLevels(inspection.inspector, false);
 
     emit InspectionInvalidated(inspection.id, inspection.inspector, inspection.regenerator, block.number);
+  }
+
+  /**
+   * @dev Sets the impact of a pending era to the global counter.
+   */
+  function _setEraImpact() private {
+    uint256 nextEraToSet = lastSettledEra + 1;
+
+    if (nextEraToSet < regeneratorRules.poolCurrentEra()) {
+      EraImpact storage eraImpact = impactPerEra[nextEraToSet];
+
+      inspectionsTreesImpact += eraImpact.trees;
+      inspectionsBiodiversityImpact += eraImpact.biodiversity;
+      realizedInspectionsCount += eraImpact.realizedInspections;
+      totalImpactRegenerators += regeneratorRules.newCertificationRegenerators(nextEraToSet);
+      // Update the lastSetlledEra to the era just settled.
+      lastSettledEra = nextEraToSet;
+    }
+  }
+
+  /**
+   * @dev Checks if a previously accepted inspection has expired.
+   * @param inspection The inspection to check.
+   * @return bool True if the inspection is expired, false otherwise.
+   */
+  function _isInspectionExpired(Inspection storage inspection) private view returns (bool) {
+    return inspection.acceptedAt > 0 && (block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection);
   }
 
   // --- View functions ---
@@ -569,7 +626,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * @param _resourceId The id of the resource receiving the vote.
    * @param _justification The justification provided for the vote.
    */
-  event InspectionValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
+  event InspectionValidation(address indexed _validatorAddress, uint256 indexed _resourceId, string _justification);
 
   /**
    * @notice Emitted when an inspection is successfully invalidated due to validator votes.

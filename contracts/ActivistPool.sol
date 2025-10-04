@@ -11,7 +11,7 @@ import { Poolable } from "./shared/Poolable.sol";
  * @title ActivistPool
  * @author Sintrop
  * @notice This contract manages the distribution of Regeneration Credit tokens as rewards to activists
- * for their participation, primarily for providing invitation services.
+ * for providing invitation services and community growth support.
  * Each invited who completes 3 inspections is equivalent to one level in the pool.
  * @dev Inherits core functionalities from `Poolable` (for pool management), `Ownable` (for deploy setup only),
  * `Blockable` (for era/epoch tracking), and `Callable` (for whitelisted caller control).
@@ -20,7 +20,7 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
   // --- Constants & state variables ---
 
   /// @notice Interface to the Regeneration Credit token contract, used to decrease total locked.
-  IRegenerationCredit private regenerationCredit;
+  IRegenerationCredit public regenerationCredit;
 
   /// @notice The total supply of Regeneration Credit tokens designated for this activist pool.
   /// This value represents the maximum tokens available for distribution through this contract.
@@ -30,7 +30,7 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
   uint8 private constant RESOURCE_LEVEL = 1;
 
   /// @notice The address of the `ActivistRules` contract.
-  address private activistRulesAddress;
+  address public activistRulesAddress;
 
   /// @notice Tracks unique resource IDs to ensure levels for a resource are added only once.
   mapping(bytes32 => bool) public hasProcessedLevel;

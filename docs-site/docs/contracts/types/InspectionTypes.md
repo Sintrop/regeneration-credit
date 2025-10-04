@@ -55,3 +55,21 @@ struct ContractsDependency {
   address voteRulesAddress;
 }
 ```
+## EraImpact
+
+Tracks the inspection impact of an Era.
+
+_This struct is used to register the impact of all inspection of an Era._
+
+### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+
+```solidity
+struct EraImpact {
+  uint256 trees;
+  uint256 biodiversity;
+  uint256 realizedInspections;
+}
+```

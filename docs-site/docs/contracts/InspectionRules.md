@@ -71,14 +71,6 @@ uint64 inspectionsCount
 
 Valid inspections count (inspections not invalidated).
 
-### realizedInspectionsCount
-
-```solidity
-uint64 realizedInspectionsCount
-```
-
-Realized inspections count (inspections that have been completed and submitted).
-
 ### inspectionsTotalCount
 
 ```solidity
@@ -87,13 +79,21 @@ uint64 inspectionsTotalCount
 
 Total inspections count, including open, accepted, realized, and invalidated ones.
 
+### realizedInspectionsCount
+
+```solidity
+uint256 realizedInspectionsCount
+```
+
+Realized inspections count (inspections that have been completed and submitted).
+
 ### inspectionsTreesImpact
 
 ```solidity
 uint256 inspectionsTreesImpact
 ```
 
-Sum of all valid inspections' trees impact.
+Sum of all valid inspections' trees impact from all past settled eras.
 
 ### inspectionsBiodiversityImpact
 
@@ -101,7 +101,16 @@ Sum of all valid inspections' trees impact.
 uint256 inspectionsBiodiversityImpact
 ```
 
-Sum of all valid inspections' biodiversity impact.
+Sum of all valid inspections' biodiversity impact from all past settled eras.
+
+### totalImpactRegenerators
+
+```solidity
+uint256 totalImpactRegenerators
+```
+
+The total count of regenerators who are considered "impact regenerators",
+have reached the minimum of one inspection validated.
 
 ### inspectionPenalized
 
@@ -110,6 +119,78 @@ mapping(uint64 => bool) inspectionPenalized
 ```
 
 Tracks inspection IDs that have already been invalidated.
+
+### inspectorRules
+
+```solidity
+contract IInspectorRules inspectorRules
+```
+
+InspectorRules contract interface for interacting with inspector-specific logic.
+
+### regeneratorRules
+
+```solidity
+contract IRegeneratorRules regeneratorRules
+```
+
+RegeneratorRules contract interface for interacting with regenerator-specific logic.
+
+### communityRules
+
+```solidity
+contract ICommunityRules communityRules
+```
+
+CommunityRules contract interface for checking user types and other community-wide rules.
+
+### validationRules
+
+```solidity
+contract IValidationRules validationRules
+```
+
+ValidationRules contract interface for handling inspection invalidations.
+
+### activistRules
+
+```solidity
+contract IActivistRules activistRules
+```
+
+ActivistRules contract interface for updating activist levels based on inspection activities.
+
+### voteRules
+
+```solidity
+contract IVoteRules voteRules
+```
+
+VoteRules contract interface for checking voter eligibility.
+
+### regenerationIndexRules
+
+```solidity
+contract IRegenerationIndexRules regenerationIndexRules
+```
+
+RegenerationIndexRules contract interface for calculating regeneration scores.
+
+### impactPerEra
+
+```solidity
+mapping(uint256 => struct EraImpact) impactPerEra
+```
+
+Tracks the impact generated within each specific era.
+
+### lastSettledEra
+
+```solidity
+uint256 lastSettledEra
+```
+
+Tracks the number of the last era that impact has been set.
 
 ### constructor
 
@@ -158,13 +239,13 @@ function requestInspection() external
 Regenerators agree to receive an inspector to assess their registered area.
 They can make an `allowedInitialRequests` number of requests without delay.
 After that, they must wait `timeBetweenInspections` blocks between requests.
-A hard limit of 12 total inspections is enforced.
+A hard limit of 6 total inspections is enforced.
 
 Requirements:
 - The caller (`msg.sender`) must be a registered `REGENERATOR`.
 - The regenerator must not have a `_pendingInspection` already open.
 - The regenerator must adhere to the `timeBetweenInspections` delay if `allowedInitialRequests` are used up.
-- The regenerator must have completed less than 12 total inspections.
+- The regenerator must have completed less than 6 total inspections.
 
 _Allows a regenerator to request a new inspection for their registered area._
 
@@ -175,7 +256,10 @@ function acceptInspection(uint64 inspectionId) external
 ```
 
 Inspectors must only accept inspections they are capable of performing, being aware
-of the safety risks and responsibilities. Accepting an inspection counts as a 'give-up' until realized.
+of the safety risks and responsibilities. By accepting an inspection, inspectors agree that the they are responsible
+for their own safety at the data collection. It is recommended to use long sleeves clothes, hats, boots that can prevent
+bites from animals, gloves to protect from spines and any other useful safety equipment, such as machetes or pepper spray.
+Accepting an inspection counts as a 'give-up' until realized.
 Inspectors can only accept one open inspection at a time and cannot inspect the same regenerator twice.
 They must also adhere to specific delays and security windows.
 
@@ -185,13 +269,13 @@ Requirements:
 - The `inspectionId` must correspond to an existing inspection.
 - The inspector must not already have an inspection `ACCEPTED` that is not yet `INSPECTED` or `INVALIDATED` or `EXPIRED`.
 - The inspector must not have previously inspected this specific regenerator.
-- The inspection's status must be `OPEN`.
+- The inspection's status must be `OPEN` or `EXPIRED`.
 - The `acceptInspectionDelayBlocks` must have passed since the inspection was created.
 - The system must not be within the `securityBlocksToValidation` window before an era ends.
 - The inspector must adhere to `inspectorRules.canAcceptInspection` (delay from last realized inspection).
 - The `inspection.regenerator` must be a valid `REGENERATOR`.
 
-_Allows an inspector to accept an open inspection request._
+_Allows an inspector to accept an open or expired inspection request._
 
 #### Parameters
 
@@ -209,6 +293,9 @@ Inspectors must evaluate the amount of trees and species of the regeneration are
 How many trees, palm trees and other plants over 1m high and 3cm in diameter there is in the regenerating area? Justify your answer in the report.
 How many different species of those plants/trees were found? Each different species is equivalent to one unity and only trees and plants managed or planted by the regenerator should be counted. Justify your answer in the report.
 Max result of 200.000 trees and 300 biodiversity.
+Zero score means invalid inspection.
+NOTE: If the inspector finds something suspicous about the inspected regenerator, such as invalid area, suspicious of fake account, or if the Regenerator is not
+findable, inspectors are encourage to realize passing 0 as values with his justification at the report to avoid being penalized.
 
 _Allow a inspector realize a inspection and mark as INSPECTED._
 

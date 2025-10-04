@@ -28,14 +28,14 @@ contract Invitable {
    * @return bool True if the user can invite, false otherwise.
    */
   function canInvite(uint256 totalLevels, uint256 totalUsers, uint256 userLevels) public pure returns (bool) {
-    // Rule 1: Allow anyone to invite if the system has few users.
-    if (totalUsers <= INITIAL_USER_COUNT_THRESHOLD) {
-      return true;
-    }
-
     // If there are no users, no one can invite. This also prevents totalUsers from being zero in the calculation.
     if (totalUsers == 0) {
       return false;
+    }
+
+    // Rule 1: Allow anyone to invite if the system has few users.
+    if (totalUsers <= INITIAL_USER_COUNT_THRESHOLD) {
+      return true;
     }
 
     // Rule 2: Check if the user's level is strictly greater than the average.

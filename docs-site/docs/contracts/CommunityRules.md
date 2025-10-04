@@ -98,6 +98,22 @@ mapping(address => uint256) lastDelationBlock
 
 Tracks the block number of each user's last submitted delation.
 
+### invitationRulesAddress
+
+```solidity
+address invitationRulesAddress
+```
+
+The address of the `InvitationRules` contract.
+
+### validationRulesAddress
+
+```solidity
+address validationRulesAddress
+```
+
+The address of the `InvitationRules` contract.
+
 ### constructor
 
 ```solidity
@@ -141,6 +157,7 @@ function addDelation(address addr, string title, string testimony) external
 ```
 
 Allows registered users (excluding Supporters) to report other users or resources that may require invalidation.
+Limited to one delation per target.
 
 Examples of unwanted behavior:
 
@@ -160,6 +177,23 @@ _Adds a new delation to the system. Enforces character limits for title and test
 | addr | address | The address of the user being reported. |
 | title | string | Title of the delation (Max 100 characters). |
 | testimony | string | Justification/details of the delation (Max 300 characters). |
+
+### voteOnDelation
+
+```solidity
+function voteOnDelation(uint64 _delationId, bool _supportsDelation) external
+```
+
+Allows users to vote (true/false) on an existing delation.
+
+_This creates a social validation layer. Voters cannot be the informer or the reported user._
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _delationId | uint64 | The ID of the delation to vote on. |
+| _supportsDelation | bool | True for a "thumbs up" (agrees), false for "thumbs down" (disagrees). |
 
 ### addUser
 
@@ -185,7 +219,7 @@ It enforces rules for single registration per address, valid user types, proport
 function addInvitation(address inviter, address invited, enum CommunityTypes.UserType userType) external
 ```
 
-Attempts to add an invitation for a user.
+Attempts to add an invitation for a new user.
 
 _This function is intended to be called by an allowed caller, the Invitation Rules.
 It records an invitation for a specific user to register as a certain user type.
@@ -356,22 +390,25 @@ Function to check if an userAddress is denied.
 ### getUserDelations
 
 ```solidity
-function getUserDelations(address addr) public view returns (struct CommunityTypes.Delation[])
+function getUserDelations(address _user) external view returns (uint64[])
 ```
 
-Get the delations of a user.
+Gets the unique IDs of all delations filed against a user.
+
+_This function returns an array of IDs. The full data for each delation
+can then be fetched individually from the public `delationsById` mapping._
 
 #### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| addr | address | User address. |
+| _user | address | The address of the user whose delation IDs are to be retrieved. |
 
 #### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | struct CommunityTypes.Delation[] | array Of delations. |
+| [0] | uint64[] | An array of `uint64` delation IDs. |
 
 ### getInvitation
 
@@ -476,4 +513,22 @@ Emitted when an invitation is successfully added to the system.
 | inviter | address | The address of the user who issued the invitation. |
 | invited | address | The address of the user who received the invitation. |
 | userTypeTo | enum CommunityTypes.UserType | The `UserType` the invited user is intended to register as. |
+
+### DelationVoted
+
+```solidity
+event DelationVoted(uint64 delationId, address voter, bool supportsDelation, uint256 newThumbsUpCount, uint256 newThumbsDownCount)
+```
+
+Emitted when a user votes on a delation.
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| delationId | uint64 | The ID of the delation that was voted on. |
+| voter | address | The address of the user who voted. |
+| supportsDelation | bool | True if the vote was a "thumbs up", false for "thumbs down". |
+| newThumbsUpCount | uint256 | The new total of "thumbs up" votes for this delation. |
+| newThumbsDownCount | uint256 | The new total of "thumbs down" votes for this delation. |
 

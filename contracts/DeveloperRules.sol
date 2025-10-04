@@ -60,6 +60,9 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   /// This acts as a global unique ID counter for new reports.
   uint64 public reportsTotalCount;
 
+  /// @notice The sum of all active levels from valid reports by non-denied developers.
+  uint256 public totalActiveLevels;
+
   /// @notice A mapping from a developer's wallet address to their detailed `Developer` data structure.
   /// This serves as the primary storage for developer profiles.
   mapping(address => Developer) private developers;
@@ -83,22 +86,22 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
 
   /// @notice The interface of the `CommunityRules` contract, used to interact with
   /// community-wide rules, user types, and invitation data.
-  ICommunityRules private communityRules;
+  ICommunityRules public communityRules;
 
   /// @notice The interface of the `DeveloperPool` contract, responsible for managing
   /// and distributing token rewards to developers.
-  IDeveloperPool private developerPool;
+  IDeveloperPool public developerPool;
 
   /// @notice The interface of the `ValidationRules` contract, which defines the rules
   /// and processes for validating or invalidating development reports.
-  IValidationRules private validationRules;
+  IValidationRules public validationRules;
 
   /// @notice The interface of the `VoteRules` contract, which defines rules for user voting
   /// eligibility, particularly for report validation.
-  IVoteRules private voteRules;
+  IVoteRules public voteRules;
 
   /// @notice The address of the `InspectionRules` contract.
-  address private validationRulesAddress;
+  address public validationRulesAddress;
 
   /// @notice The specific `UserType` enumeration value for a Developer user.
   CommunityTypes.UserType private constant USER_TYPE = CommunityTypes.UserType.DEVELOPER;
@@ -213,6 +216,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     // Increment global report counters and assign a unique ID.
     reportsCount++;
     reportsTotalCount++;
+    totalActiveLevels++;
     uint64 id = reportsTotalCount;
 
     // Increment developer's total reports count within their struct.
@@ -286,6 +290,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
       }
     }
     validationRules.updateValidatorLastVoteBlock(msg.sender);
+    validationRules.addValidationPoint(msg.sender);
 
     emit ReportValidation(msg.sender, report.id, justification);
   }
@@ -329,6 +334,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * @param addr The wallet address of the developer from whom levels are to be removed.
    */
   function removePoolLevels(address addr) external mustBeAllowedCaller mustBeContractCall(validationRulesAddress) {
+    totalActiveLevels -= developers[addr].pool.level;
     // Notify the DeveloperPool contract to adjust the developer's pool levels there as well.
     developerPool.removePoolLevels(addr, true);
   }
@@ -363,6 +369,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     report.invalidatedAt = block.number;
     reports[report.id] = report;
     developers[report.developer].pool.level -= RESOURCE_LEVEL;
+    totalActiveLevels--;
 
     developerPool.removePoolLevels(report.developer, false);
   }
@@ -373,6 +380,8 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    */
   function _denyDeveloper(address userAddress) private {
     if (communityRules.isDenied(userAddress)) return; // Already denied, nothing to do
+
+    totalActiveLevels -= developers[userAddress].pool.level;
 
     communityRules.setToDenied(userAddress);
 
@@ -419,7 +428,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
 
     // Calls the inherited `canInvite` function from `Invitable` to calculate eligibility.
     // This depends on total reports count, total developer count, and the developer's pool level.
-    return canInvite(reportsTotalCount, communityRules.userTypesTotalCount(USER_TYPE), developer.pool.level);
+    return canInvite(totalActiveLevels, communityRules.userTypesCount(USER_TYPE), developer.pool.level);
   }
 
   /**
@@ -536,7 +545,7 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
    * @param _resourceId The id of the resource receiving the vote.
    * @param _justification The justification provided for the vote.
    */
-  event ReportValidation(address indexed _validatorAddress, uint256 _resourceId, string _justification);
+  event ReportValidation(address indexed _validatorAddress, uint256 indexed _resourceId, string _justification);
 
   /// @dev Emitted when a penalty is added to a developer's record.
   /// @param developerAddress The address of the developer who received the penalty.

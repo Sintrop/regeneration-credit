@@ -294,6 +294,12 @@ describe("ContributorRules", (accounts) => {
             expect(contributionsCount).to.equal(1);
           });
 
+          it("increment totalActiveLevels", async () => {
+            const totalActiveLevels = await instance.totalActiveLevels();
+
+            expect(totalActiveLevels).to.equal(1);
+          });
+
           context("when adding contribution to eras", () => {
             beforeEach(async () => {
               await advanceBlock(contributorPoolParams.blocksPerEra);
@@ -595,8 +601,19 @@ describe("ContributorRules", (accounts) => {
             expect(contributionsCount).to.eq(0);
           });
 
+          it("must decrement totalActiveLevels in one", async () => {
+            const totalActiveLevels = await instance.totalActiveLevels();
+
+            expect(totalActiveLevels).to.eq(0);
+          });
+
           it("should set contributionPenalized to true to prevent double penalties", async () => {
             expect(await instance.contributionPenalized(1)).to.be.true;
+          });
+
+          it("should grant a validation point to the voter", async () => {
+            const userPoints = await validationRules.validationPoints(user1Address);
+            expect(userPoints).to.equal(1);
           });
         });
 
@@ -648,7 +665,11 @@ describe("ContributorRules", (accounts) => {
           await addDeveloper("User B", user2Address);
           await addDeveloper("User C", user3Address);
 
+          await addInvitation(owner, contr2Address, userTypes.Contributor, owner);
+          await addContributor("Contributor B", contr2Address);
+
           await addContribution(contr1Address);
+
           await instance.connect(user1Address).addContributionValidation(1, "justification");
           await instance.connect(user2Address).addContributionValidation(1, "justification");
 
@@ -666,6 +687,8 @@ describe("ContributorRules", (accounts) => {
           await advanceBlock(10);
 
           await addContribution(contr1Address);
+          await addContribution(contr2Address);
+
           await instance.connect(user1Address).addContributionValidation(3, "justification");
           await instance.connect(user2Address).addContributionValidation(3, "justification");
         });
@@ -694,6 +717,12 @@ describe("ContributorRules", (accounts) => {
           const contributor = await instance.getContributor(contr1Address);
 
           expect(contributor.pool.level).to.eq(1);
+        });
+
+        it("remove all contributor levels from totalActiveLevels", async () => {
+          const totalActiveLevels = await instance.totalActiveLevels();
+
+          expect(totalActiveLevels).to.equal(1);
         });
       });
 
@@ -1180,186 +1209,53 @@ describe("ContributorRules", (accounts) => {
       });
     });
 
-    context("with activist", () => {
-      beforeEach(async () => {
-        await addInvitation(owner, user1Address, userTypes.Activist, owner);
-        await addInvitation(owner, user2Address, userTypes.Activist, owner);
-        await addInvitation(owner, user3Address, userTypes.Activist, owner);
-        await addInvitation(owner, user4Address, userTypes.Activist, owner);
-
-        await addActivist("User A", user1Address);
-        await addContributor("Contributor A", contr1Address);
-      });
-
-      context("with valid contribution", () => {
-        context("when contribution must be invalidated", () => {
-          beforeEach(async () => {
-            await addContribution(contr1Address);
-
-            await addActivist("User B", user2Address);
-            await addActivist("User C", user3Address);
-            await addActivist("User D", user4Address);
-
-            await instance.connect(user1Address).addContributionValidation(1, "justification");
-            await instance.connect(user2Address).addContributionValidation(1, "justification");
-          });
-
-          it("set valid field to false", async () => {
-            const contribution = await instance.contributions(1);
-
-            expect(contribution.valid).to.eq(false);
-          });
-
-          it("populate invalidatedAt field", async () => {
-            const contribution = await instance.contributions(1);
-
-            expect(contribution.invalidatedAt).to.above(0);
-          });
-
-          it("set maxPenalties to reseacher", async () => {
-            const totalPenalties = await instance.totalPenalties(contr1Address);
-
-            expect(totalPenalties).to.eq(1);
-          });
-
-          it("user type must be CONTRIBUTOR yet", async () => {
-            const userType = await communityRules.getUser(contr1Address);
-
-            expect(userType).to.eq(userTypes.Contributor);
-          });
-
-          it("must remove one pool level from current era", async () => {
-            const contribution = await instance.contributions(1);
-
-            const eraLevels = await contributorPool.eraLevels(contribution.era, contr1Address);
-
-            expect(eraLevels).to.eq(0);
-          });
-
-          it("must decrement contributionsCount in one", async () => {
-            const contributionsCount = await instance.contributionsCount();
-
-            expect(contributionsCount).to.eq(0);
-          });
-        });
-
-        context("when contribution must not be invalidated", () => {
-          beforeEach(async () => {
-            await addContribution(contr1Address);
-
-            await addActivist("User B", user2Address);
-            await addActivist("User C", user3Address);
-            await addActivist("User D", user4Address);
-
-            await instance.connect(user1Address).addContributionValidation(1, "justification");
-          });
-
-          it("valid field is true", async () => {
-            const contribution = await instance.contributions(1);
-
-            expect(contribution.valid).to.eq(true);
-          });
-
-          it("invalidatedAt is equal 0", async () => {
-            const contribution = await instance.contributions(1);
-
-            expect(contribution.invalidatedAt).to.eq(0);
-          });
-
-          it("contributioner totalPenalties is 0", async () => {
-            const totalPenalties = await instance.totalPenalties(contr1Address);
-
-            expect(totalPenalties).to.eq(0);
-          });
-
-          it("reseacher pool level is 1", async () => {
-            const contribution = await instance.contributions(1);
-
-            const eraLevels = await contributorPool.eraLevels(contribution.era, contr1Address);
-
-            expect(eraLevels).to.eq(1);
-          });
-        });
-      });
-
-      context("when contributioner reach max maxPenalties", () => {
-        beforeEach(async () => {
-          await addActivist("User B", user2Address);
-          await addActivist("User C", user3Address);
-
-          await addContribution(contr1Address);
-          await instance.connect(user1Address).addContributionValidation(1, "justification");
-          await instance.connect(user2Address).addContributionValidation(1, "justification");
-
-          await advanceBlock(contributorPoolParams.blocksPerEra);
-
-          await addContribution(contr1Address);
-          await instance.connect(user1Address).addContributionValidation(2, "justification");
-          await instance.connect(user3Address).addContributionValidation(2, "justification");
-
-          await advanceBlock(contributorPoolParams.blocksPerEra);
-          await communityRules.setContractCall(owner, validationRules.target);
-
-          await addContribution(contr1Address);
-          await instance.connect(user1Address).addContributionValidation(3, "justification");
-          await instance.connect(user2Address).addContributionValidation(3, "justification");
-        });
-
-        it("user type must be DENIED", async () => {
-          const isDenied = await communityRules.isDenied(contr1Address);
-
-          expect(isDenied).to.eq(true);
-        });
-      });
-
-      context("with invalid contribution", () => {
-        context("when current era is different from contribution created era", () => {
-          beforeEach(async () => {
-            await addContribution(contr1Address);
-
-            await advanceBlock(contributorPoolParams.blocksPerEra);
-          });
-
-          it("should return error message", async () => {
-            await expect(
-              instance.connect(user1Address).addContributionValidation(1, "justification")
-            ).to.be.revertedWith("This contribution is not VALID");
-          });
-        });
-
-        context("when contribution is invalidated", () => {
-          beforeEach(async () => {
-            await addActivist("User B", user2Address);
-            await addActivist("User C", user3Address);
-
-            await addContribution(contr1Address);
-
-            await instance.connect(user1Address).addContributionValidation(1, "justification");
-            await instance.connect(user2Address).addContributionValidation(1, "justification");
-          });
-
-          it("should return error message", async () => {
-            await expect(
-              instance.connect(user3Address).addContributionValidation(1, "justification")
-            ).to.be.revertedWith("Penalties already applied");
-          });
-        });
-
-        context("when contribution do not exists", () => {
-          it("should return error message", async () => {
-            await expect(
-              instance.connect(user1Address).addContributionValidation(0, "justification")
-            ).to.be.revertedWith("This contribution is not VALID");
-          });
-        });
-      });
-    });
-
     context("without validator", () => {
       it("should return error message", async () => {
         await expect(instance.connect(owner).addContributionValidation(1, "justification")).to.be.revertedWith(
           "Not a voter user"
         );
+      });
+    });
+  });
+
+  describe("#removePoolLevels", () => {
+    beforeEach(async () => {
+      await addInvitation(owner, contr2Address, userTypes.Contributor, owner);
+
+      await addContributor("Contributor  A", contr1Address);
+      await addContributor("Contributor  B", contr2Address);
+
+      await addContribution(contr1Address);
+      await addContribution(contr2Address);
+
+      await advanceBlock(contributorPoolParams.blocksPerEra);
+
+      await addContribution(contr1Address);
+
+      await instance.setContractCall(owner);
+    });
+
+    context("when user is denied", () => {
+      beforeEach(async () => {
+        await instance.removePoolLevels(contr1Address);
+      });
+
+      it("remove user levels from pool", async () => {
+        const levelsEra1 = await contributorPool.eraLevels(2, contr1Address);
+
+        expect(levelsEra1).to.equal(0);
+      });
+
+      it("should not remove user levels from developer local level", async () => {
+        const contributor = await instance.getContributor(contr1Address);
+
+        expect(contributor.pool.level).to.equal(2);
+      });
+
+      it("remove all contributor levels from totalActiveLevels", async () => {
+        const totalActiveLevels = await instance.totalActiveLevels();
+
+        expect(totalActiveLevels).to.equal(1);
       });
     });
   });

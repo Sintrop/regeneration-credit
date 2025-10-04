@@ -110,19 +110,17 @@ Retrieves the full Activist struct for a given account.
 | ---- | ---- | ----------- |
 | [0] | struct Activist | The Activist struct containing the user's data. |
 
-### approvedInvites
+### totalActiveLevels
 
 ```solidity
-function approvedInvites() external view returns (uint32)
+function totalActiveLevels() external view returns (uint256)
 ```
 
-Returns the number of approved invites.
-
-_This is likely a getter for a public state variable._
+Returns the number of approved invites from non-denied users.
 
 #### Return Values
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| [0] | uint32 | The total count of approved invites. |
+| [0] | uint256 | The total count of totalActiveLevels. |
 
