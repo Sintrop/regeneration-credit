@@ -280,8 +280,8 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
     // Retrieve the activist's data.
     Activist storage activist = activists[activistAddress];
 
-    // If activist does not exist, return.
-    if (activist.id == 0) return;
+    // If activist does not exist or was denied, return.
+    if (activist.id == 0 || communityRules.isDenied(activistAddress)) return;
 
     approvedInvites++;
     totalActiveLevels++;
