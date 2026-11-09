@@ -61,7 +61,8 @@ const voteRulesDeployed = async () => {
   const regeneratorPool = await regeneratorPoolFactory.deploy(
     regenerationCredit.target,
     regeneratorPoolArgs.halving,
-    regeneratorPoolArgs.blocksPerEra
+    regeneratorPoolArgs.blocksPerEra,
+    0
   );
 
   const regeneratorRulesFactory = await ethers.getContractFactory("RegeneratorRules");
@@ -71,35 +72,40 @@ const voteRulesDeployed = async () => {
   const inspectorPool = await inspectorPoolFactory.deploy(
     regenerationCredit.target,
     inspectorPoolArgs.halving,
-    inspectorPoolArgs.blocksPerEra
+    inspectorPoolArgs.blocksPerEra,
+    0
   );
 
   const developerPoolFactory = await ethers.getContractFactory("DeveloperPool");
   const developerPool = await developerPoolFactory.deploy(
     regenerationCredit.target,
     developerPoolParams.halving,
-    developerPoolParams.blocksPerEra
+    developerPoolParams.blocksPerEra,
+    0
   );
 
   const reseacherPoolFactory = await ethers.getContractFactory("ResearcherPool");
   const researcherPool = await reseacherPoolFactory.deploy(
     regenerationCredit.target,
     researcherPoolParams.halving,
-    researcherPoolParams.blocksPerEra
+    researcherPoolParams.blocksPerEra,
+    0
   );
 
   const contributorPoolFactory = await ethers.getContractFactory("ContributorPool");
   const contributorPool = await contributorPoolFactory.deploy(
     regenerationCredit.target,
     contributorPoolParams.halving,
-    contributorPoolParams.blocksPerEra
+    contributorPoolParams.blocksPerEra,
+    0
   );
 
   const validationPoolFactory = await ethers.getContractFactory("ValidationPool");
   const validationPool = await validationPoolFactory.deploy(
     regenerationCredit.target,
     validationPoolParams.halving,
-    validationPoolParams.blocksPerEra
+    validationPoolParams.blocksPerEra,
+    0
   );
 
   const maxPenalties = 2;
@@ -142,7 +148,8 @@ const voteRulesDeployed = async () => {
   const activistPool = await activistPoolFactory.deploy(
     regenerationCredit.target,
     activistPoolArgs.halving,
-    activistPoolArgs.blocksPerEra
+    activistPoolArgs.blocksPerEra,
+    0
   );
 
   const activistRulesFactory = await ethers.getContractFactory("ActivistRules");

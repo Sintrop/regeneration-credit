@@ -16,7 +16,43 @@ describe("Blockable", () => {
 
     const blockableContractFactory = await ethers.getContractFactory("Blockable");
 
-    instance = await blockableContractFactory.deploy(params.blocksPerEra, params.halving);
+    instance = await blockableContractFactory.deploy(params.blocksPerEra, params.halving, 0);
+  });
+
+  describe("#constructor", () => {
+    context("with deployedAt from a previous deployment", () => {
+      let deployedAt;
+
+      beforeEach(async () => {
+        await advanceBlock(params.blocksPerEra * 2);
+        deployedAt = (await ethers.provider.getBlockNumber()) - params.blocksPerEra * 2;
+
+        const blockableContractFactory = await ethers.getContractFactory("Blockable");
+        instance = await blockableContractFactory.deploy(params.blocksPerEra, params.halving, deployedAt);
+      });
+
+      it("should count eras from deployedAt", async () => {
+        expect(await instance.currentContractEra()).to.equal(3);
+      });
+
+      it("should end the era at the same block as the previous deployment", async () => {
+        const currentBlock = await ethers.provider.getBlockNumber();
+        const endOfEra3 = deployedAt + params.blocksPerEra * 3;
+
+        expect(await instance.nextEraIn(3)).to.equal(endOfEra3 - currentBlock);
+      });
+    });
+
+    context("with deployedAt in the future", () => {
+      it("should return error message", async () => {
+        const currentBlock = await ethers.provider.getBlockNumber();
+        const blockableContractFactory = await ethers.getContractFactory("Blockable");
+
+        await expect(
+          blockableContractFactory.deploy(params.blocksPerEra, params.halving, currentBlock + 100)
+        ).to.be.revertedWith("Invalid deployedAt");
+      });
+    });
   });
 
   describe("#currentContractEra", () => {

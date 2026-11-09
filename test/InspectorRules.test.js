@@ -32,7 +32,7 @@ describe("InspectorRules", () => {
     const maxPenalties = 2;
 
     const inspectorPoolFactory = await ethers.getContractFactory("InspectorPool");
-    inspectorPool = await inspectorPoolFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra);
+    inspectorPool = await inspectorPoolFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra, 0);
 
     const instanceFactory = await ethers.getContractFactory("InspectorRules");
     instance = await instanceFactory.deploy(communityRules.target, inspectorPool.target, maxPenalties);
