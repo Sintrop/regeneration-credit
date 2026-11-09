@@ -17,12 +17,6 @@ interface IRegeneratorRules {
   function getRegenerator(address account) external view returns (Regenerator memory);
 
   /**
-   * @notice A hook to be called after an inspection has been accepted.
-   * @param regenerator The address of the regenerator associated with the inspection.
-   */
-  function afterAcceptInspection(address regenerator) external;
-
-  /**
    * @notice Returns the current era of the related pool.
    * @return The current era number.
    */
