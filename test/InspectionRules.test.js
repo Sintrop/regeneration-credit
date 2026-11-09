@@ -1179,6 +1179,25 @@ describe("InspectionRules", () => {
       });
     });
 
+    context("when trying to vote on a zero score inspection", () => {
+      beforeEach(async () => {
+        await requestInspection(regeneratorAddress);
+        await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+        await acceptInspection(1, inspectorAddress);
+        await realizeInspection(1, report, 0, 0, inspectorAddress);
+
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addDeveloper("User 1", user1Address);
+      });
+
+      it("should revert because zero score inspections have no impact to invalidate", async () => {
+        expect((await instance.getInspection(1)).regenerationScore).to.equal(0);
+        await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
+          "Zero score inspection"
+        );
+      });
+    });
+
     context("with developer", () => {
       beforeEach(async () => {
         await addInvitation(owner, user1Address, userTypes.Developer, owner);

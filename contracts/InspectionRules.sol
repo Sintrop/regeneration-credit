@@ -328,6 +328,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * - The caller must have waited the required `timeBetweenVotes` (from `validationRules.waitedTimeBetweenVotes`).
    * - The `inspectionId` must correspond to an existing and currently valid inspection.
    * - The inspection must have been realized (`INSPECTED` status).
+   * - The inspection must have a regeneration score greater than zero.
    * - The current `poolCurrentEra() must be less than or equal to the `inspection's `inspectedAtEra` .
    *
    * @param id The unique ID of the inspection to be validated/invalidated.
@@ -354,6 +355,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     require(regeneratorRules.poolCurrentEra() == inspection.inspectedAtEra, "Can't validade anymore");
     require(inspection.id >= 1 && inspection.id <= inspectionsTotalCount, "Inspection does not exist");
     require(inspection.status == InspectionStatus.INSPECTED, "Only to inspected inspections");
+    require(inspection.regenerationScore > 0, "Zero score inspection");
 
     inspection.validationsCount += 1;
 
