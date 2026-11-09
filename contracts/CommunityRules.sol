@@ -390,12 +390,11 @@ contract CommunityRules is Callable {
 
   /**
    * @notice Returns the total count of users currently classified as voters.
-   * @dev Sums the active counts of Activist, Contributor, Developer, and Researcher user types.
+   * @dev Sums the active counts of Contributor, Developer, and Researcher user types.
    * @return uint256 The total number of voters.
    */
   function votersCount() public view returns (uint256) {
     return
-      userTypesCount[CommunityTypes.UserType.ACTIVIST] +
       userTypesCount[CommunityTypes.UserType.CONTRIBUTOR] +
       userTypesCount[CommunityTypes.UserType.DEVELOPER] +
       userTypesCount[CommunityTypes.UserType.RESEARCHER];
