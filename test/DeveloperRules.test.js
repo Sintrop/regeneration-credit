@@ -579,6 +579,28 @@ describe("DeveloperRules", (accounts) => {
 
           expect(totalActiveLevels).to.equal(16);
         });
+
+        context("when another valid report of the denied developer is invalidated", () => {
+          let totalActiveLevelsBefore;
+
+          beforeEach(async () => {
+            totalActiveLevelsBefore = await instance.totalActiveLevels();
+
+            await instance.connect(user3Address).addReportValidation(20, "justification");
+            await instance.connect(user4Address).addReportValidation(20, "justification");
+          });
+
+          it("should not remove levels from totalActiveLevels again", async () => {
+            expect((await instance.reports(20)).valid).to.eq(false);
+            expect(await instance.totalActiveLevels()).to.equal(totalActiveLevelsBefore);
+          });
+
+          it("should remove the invalidated report level from developer", async () => {
+            const developer = await instance.getDeveloper(user1Address);
+
+            expect(developer.pool.level).to.eq(0);
+          });
+        });
       });
 
       context("with invalid report", () => {
