@@ -59,6 +59,9 @@ contract ValidationRules is Callable, ReentrancyGuard {
   /// @notice Tracks the first user who voted to invalidate a specific user in a given era.
   mapping(address => mapping(uint256 => address)) public hunterVoter;
 
+  /// @notice Tracks if a user received, in a given era, a vote from a user type different from the first voter.
+  mapping(address => mapping(uint256 => bool)) public crossTypeVote;
+
   /// @notice Mapping from a validators's address directly to their pool data.
   mapping(address => Pool) public hunterPools;
 
@@ -142,6 +145,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
    * - Caller must vote only once per user per era.
    * - The target user must be registered and not already denied.
    * - If the target user is a Regenerator, they must have fewer than 4 completed inspections to be eligible for invalidation.
+   * - The user is denied only with votes from at least two different user types.
    *
    * @param userAddress Invalidation user address.
    * @param justification Invalidation justification (Max characters).
@@ -168,6 +172,8 @@ contract ValidationRules is Callable, ReentrancyGuard {
 
     if (userValidations[userAddress][currentEra] == 0) {
       hunterVoter[userAddress][currentEra] = msg.sender;
+    } else if (communityRules.getUser(msg.sender) != communityRules.getUser(hunterVoter[userAddress][currentEra])) {
+      crossTypeVote[userAddress][currentEra] = true;
     }
 
     validatorUsersValidations[msg.sender][userAddress][currentEra] = true;
@@ -178,7 +184,8 @@ contract ValidationRules is Callable, ReentrancyGuard {
     uint256 validationsCount = userValidations[userAddress][currentEra];
     uint256 _votesToInvalidate = votesToInvalidate();
 
-    if (validationsCount >= _votesToInvalidate) {
+    // Denial also requires a vote from a user type different from the first voter.
+    if (validationsCount >= _votesToInvalidate && crossTypeVote[userAddress][currentEra]) {
       _denyUser(userAddress);
       address hunter = hunterVoter[userAddress][currentEra];
       totalValidationLevels[hunter]++;
