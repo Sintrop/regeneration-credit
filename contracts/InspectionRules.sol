@@ -14,6 +14,7 @@ import { Regenerator } from "./types/RegeneratorTypes.sol";
 import { Inspector } from "./types/InspectorTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { Migratable } from "./shared/Migratable.sol";
 
 /**
  * @title InspectionRules
@@ -22,7 +23,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
  * @dev This contract allows Regenerators to request inspections, and Inspectors to accept, perform, and submit them.
  * It integrates with various other rule contracts for user validation, level updates, and penalty management.
  */
-contract InspectionRules is Ownable, ReentrancyGuard {
+contract InspectionRules is Ownable, ReentrancyGuard, Migratable {
   // --- Constants ---
 
   /// @notice The maximum number of inspections a Regenerator can receive.
@@ -509,6 +510,72 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    */
   function _isInspectionExpired(Inspection storage inspection) private view returns (bool) {
     return inspection.acceptedAt > 0 && (block.number > inspection.acceptedAt + blocksToExpireAcceptedInspection);
+  }
+
+  // --- Migration functions ---
+
+  /**
+   * @notice Imports inspections of the previous deployment.
+   * @param _inspections Inspections data.
+   */
+  function migrateInspections(Inspection[] calldata _inspections) external onlyMigration {
+    for (uint256 i = 0; i < _inspections.length; i++) inspections[_inspections[i].id] = _inspections[i];
+  }
+
+  /**
+   * @notice Imports the realized inspections history of each regenerator.
+   * @param regeneratorAddresses Regenerator addresses.
+   * @param histories Realized inspection ids of each regenerator, in the original order.
+   */
+  function migrateInspectionsHistory(
+    address[] calldata regeneratorAddresses,
+    uint64[][] calldata histories
+  ) external onlyMigration {
+    require(regeneratorAddresses.length == histories.length, "Invalid length");
+
+    for (uint256 i = 0; i < regeneratorAddresses.length; i++) {
+      regeneratorInspections[regeneratorAddresses[i]] = histories[i];
+    }
+  }
+
+  /**
+   * @notice Imports the inspectors that already inspected each regenerator.
+   * @param inspectorAddresses Inspector addresses.
+   * @param regeneratorAddresses Regenerator inspected by each inspector.
+   */
+  function migrateInspectorInspected(
+    address[] calldata inspectorAddresses,
+    address[] calldata regeneratorAddresses
+  ) external onlyMigration {
+    require(inspectorAddresses.length == regeneratorAddresses.length, "Invalid length");
+
+    for (uint256 i = 0; i < inspectorAddresses.length; i++) {
+      inspectorInspected[inspectorAddresses[i]][regeneratorAddresses[i]] = true;
+    }
+  }
+
+  /**
+   * @notice Imports the inspection counters of the previous deployment.
+   * @param counters inspectionsCount, inspectionsTotalCount, realizedInspectionsCount, inspectionsTreesImpact,
+   * inspectionsBiodiversityImpact, totalImpactRegenerators and lastSettledEra.
+   * @param eras Eras with impact.
+   * @param impacts Impact of each era.
+   */
+  function migrateInspectionsTotals(
+    uint256[7] calldata counters,
+    uint256[] calldata eras,
+    EraImpact[] calldata impacts
+  ) external onlyMigration {
+    require(eras.length == impacts.length, "Invalid length");
+
+    inspectionsCount = uint64(counters[0]);
+    inspectionsTotalCount = uint64(counters[1]);
+    realizedInspectionsCount = counters[2];
+    inspectionsTreesImpact = counters[3];
+    inspectionsBiodiversityImpact = counters[4];
+    totalImpactRegenerators = counters[5];
+    lastSettledEra = counters[6];
+    for (uint256 i = 0; i < eras.length; i++) impactPerEra[eras[i]] = impacts[i];
   }
 
   // --- View functions ---

@@ -10,6 +10,7 @@ import { IValidationRules } from "./interfaces/IValidationRules.sol";
 import { Researcher, Research, Pool, CalculatorItem, EvaluationMethod, Penalty, ContractsDependency } from "./types/ResearcherTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
+import { Migratable } from "./shared/Migratable.sol";
 
 /**
  * @title ResearcherRules
@@ -22,7 +23,7 @@ import { Callable } from "./shared/Callable.sol";
  * for general user management, `ResearcherPool` for reward distribution, `VoteRules` for voting
  * eligibility, and `ValidationRules` for research validation processes.
  */
-contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
+contract ResearcherRules is Callable, Invitable, ReentrancyGuard, Migratable {
   // --- Constants ---
 
   /// @notice Maximum users count allowed for this UserType.
@@ -461,6 +462,52 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
       return true;
     }
     return block.number > lastActionBlock + timeBetweenWorks;
+  }
+
+  // --- Migration functions ---
+
+  /**
+   * @notice Imports researchers of the previous deployment.
+   * @param _researchers Researchers data.
+   */
+  function migrateResearchers(Researcher[] calldata _researchers) external onlyMigration {
+    for (uint256 i = 0; i < _researchers.length; i++) {
+      researchers[_researchers[i].researcherWallet] = _researchers[i];
+      researchersAddress[_researchers[i].id] = _researchers[i].researcherWallet;
+    }
+  }
+
+  /**
+   * @notice Imports researches, calculator items and evaluation methods of the previous deployment.
+   * @dev Researches must be imported in id order, so the researchers history keeps the original order.
+   * @param _researches Researches data.
+   * @param items Calculator items data.
+   * @param methods Evaluation methods data.
+   */
+  function migrateResearches(
+    Research[] calldata _researches,
+    CalculatorItem[] calldata items,
+    EvaluationMethod[] calldata methods
+  ) external onlyMigration {
+    for (uint256 i = 0; i < _researches.length; i++) {
+      researches[_researches[i].id] = _researches[i];
+      researchesIds[_researches[i].createdBy].push(_researches[i].id);
+    }
+    for (uint256 i = 0; i < items.length; i++) calculatorItems[items[i].id] = items[i];
+    for (uint256 i = 0; i < methods.length; i++) evaluationMethods[methods[i].id] = methods[i];
+  }
+
+  /**
+   * @notice Imports the researcher counters of the previous deployment.
+   * @param counters researchesCount, researchesTotalCount, calculatorItemsCount, evaluationMethodsCount
+   * and totalActiveLevels.
+   */
+  function migrateResearchersTotals(uint256[5] calldata counters) external onlyMigration {
+    researchesCount = uint64(counters[0]);
+    researchesTotalCount = uint64(counters[1]);
+    calculatorItemsCount = uint64(counters[2]);
+    evaluationMethodsCount = uint64(counters[3]);
+    totalActiveLevels = counters[4];
   }
 
   // --- View Functions ---

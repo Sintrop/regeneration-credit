@@ -9,6 +9,7 @@ import { IDeveloperRules } from "./interfaces/IDeveloperRules.sol";
 import { IActivistRules } from "./interfaces/IActivistRules.sol";
 import { IContributorRules } from "./interfaces/IContributorRules.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
+import { Migratable } from "./shared/Migratable.sol";
 
 /**
  * @title InvitationRules
@@ -16,7 +17,7 @@ import { CommunityTypes } from "./types/CommunityTypes.sol";
  * @dev Manages the logic to allow users to invite others to the community.
  * @notice This contract manages the rules and logic for users to invite others into the community.
  */
-contract InvitationRules is Ownable, ReentrancyGuard {
+contract InvitationRules is Ownable, ReentrancyGuard, Migratable {
   // --- Constants ---
 
   /// @notice The maximum allowed amount of invalidated invited users.
@@ -201,6 +202,27 @@ contract InvitationRules is Ownable, ReentrancyGuard {
    */
   function _hasInvitationDelayPassed(uint256 lastInviteBlock, uint32 delayBlocks) private view returns (bool) {
     return lastInviteBlock == 0 || block.number - lastInviteBlock >= delayBlocks;
+  }
+
+  // --- Migration functions ---
+
+  /**
+   * @notice Imports the last invitation blocks of the previous deployment.
+   * @param inviters Inviter addresses.
+   * @param inviteBlocks Block of the last invitation of each inviter.
+   * @param activistInviteBlocks Block of the last regenerator or inspector invitation of each inviter.
+   */
+  function migrateInviteBlocks(
+    address[] calldata inviters,
+    uint256[] calldata inviteBlocks,
+    uint256[] calldata activistInviteBlocks
+  ) external onlyMigration {
+    require(inviters.length == inviteBlocks.length && inviters.length == activistInviteBlocks.length, "Invalid length");
+
+    for (uint256 i = 0; i < inviters.length; i++) {
+      lastInviteBlocks[inviters[i]] = inviteBlocks[i];
+      lastInviteActivist[inviters[i]] = activistInviteBlocks[i];
+    }
   }
 
   // --- Deploy functions ---

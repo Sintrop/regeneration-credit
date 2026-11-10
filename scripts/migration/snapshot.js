@@ -11,6 +11,8 @@
  * - <Contract>.json: state of each contract. Mapping entries with default values (0, false, empty) are omitted.
  *
  * Usage: npx hardhat run scripts/migration/snapshot.js
+ * Run it from a checkout whose contracts match the deployed ones (private mappings are read with the local storage
+ * layout).
  */
 const hre = require("hardhat");
 const fs = require("fs");
@@ -21,7 +23,7 @@ const { ethers } = hre;
 const RPC_URL = process.env.SNAPSHOT_RPC_URL || "https://rpc.sintrop.com";
 const OUT_DIR = process.env.SNAPSHOT_OUT_DIR || path.join(__dirname, "../../migration/snapshots");
 const CONCURRENCY = Number(process.env.SNAPSHOT_CONCURRENCY || 200);
-const ADDRESSES = require("./v1-mainnet-addresses.json");
+const V1_ADDRESSES = require("./v1-mainnet-addresses.json");
 
 const USER_TYPES = [0, 1, 2, 3, 4, 5, 6, 7];
 const POOLS = [
@@ -69,6 +71,7 @@ const ERA_ADDRESS = new Set(["eraLevels", "eraTokens", "hasWithdrawn"]);
 
 let provider;
 let snapshotBlock;
+let ADDRESSES;
 
 // --- Helpers ---
 
@@ -342,13 +345,23 @@ async function readContract(name, contract, ctx) {
   return state;
 }
 
-// --- Main ---
+// --- Snapshot ---
 
-async function main() {
-  provider = new ethers.JsonRpcProvider(RPC_URL, undefined, { staticNetwork: true });
+/**
+ * Reads the protocol state at one block.
+ * @param options.provider Provider of the chain to read.
+ * @param options.addresses Contract name => address.
+ * @param options.block Block to read. Default: latest - 2.
+ * @param options.extraAddresses Addresses to read besides the ones found in the events.
+ * @param options.checkCreationBlock Require each pool era clock to start at its creation block.
+ * @returns { meta, events, state }
+ */
+async function takeSnapshot(options) {
+  provider = options.provider;
+  ADDRESSES = options.addresses;
   const network = await provider.getNetwork();
   const latest = await provider.getBlockNumber();
-  snapshotBlock = Number(process.env.SNAPSHOT_BLOCK || latest - 2);
+  snapshotBlock = Number(options.block ?? latest - 2);
   const block = await provider.getBlock(snapshotBlock);
   console.log(`Snapshot of chain ${network.chainId} at block ${snapshotBlock}`);
 
@@ -374,6 +387,7 @@ async function main() {
     collectAddresses(event.args, addressSet);
     addressSet.add(ethers.getAddress(event.from));
   }
+  for (const address of options.extraAddresses || []) addressSet.add(ethers.getAddress(address));
   for (const contract of Object.values(contracts)) {
     const owner = await call(contract, "owner");
     if (owner.ok && owner.value !== ethers.ZeroAddress) addressSet.add(ethers.getAddress(owner.value));
@@ -396,7 +410,7 @@ async function main() {
       currentEra,
       creationBlock: firstEvent ? firstEvent.blockNumber : null,
     };
-    if (firstEvent && BigInt(firstEvent.blockNumber) !== deployedAt) {
+    if (options.checkCreationBlock !== false && firstEvent && BigInt(firstEvent.blockNumber) !== deployedAt) {
       throw new Error(`${name}: deployedAt ${deployedAt} does not match the creation block ${firstEvent.blockNumber}`);
     }
   }
@@ -549,7 +563,6 @@ async function main() {
   const latestAfter = await provider.getBlockNumber();
   const meta = {
     chainId: network.chainId.toString(),
-    rpc: RPC_URL,
     snapshotBlock,
     snapshotBlockHash: block.hash,
     snapshotTimestamp: block.timestamp,
@@ -557,6 +570,7 @@ async function main() {
     latestBlockAtEnd: latestAfter,
     addresses: ADDRESSES,
     clocks,
+    addressList: addresses,
     counts: {
       events: events.length,
       addresses: addresses.length,
@@ -564,17 +578,36 @@ async function main() {
     },
   };
 
-  const dir = path.join(OUT_DIR, `v1-${snapshotBlock}`);
+  return { meta, events, state };
+}
+
+function writeSnapshot(dir, { meta, events, state }) {
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, "meta.json"), JSON.stringify(meta, null, 2) + "\n");
   fs.writeFileSync(path.join(dir, "events.json"), JSON.stringify(events, null, 2) + "\n");
   for (const [name, contractState] of Object.entries(state)) {
     fs.writeFileSync(path.join(dir, `${name}.json`), JSON.stringify(contractState, null, 2) + "\n");
   }
+}
+
+// --- Main ---
+
+async function main() {
+  const snapshot = await takeSnapshot({
+    provider: new ethers.JsonRpcProvider(RPC_URL, undefined, { staticNetwork: true }),
+    addresses: V1_ADDRESSES,
+    block: process.env.SNAPSHOT_BLOCK,
+  });
+  const dir = path.join(OUT_DIR, `v1-${snapshot.meta.snapshotBlock}`);
+  writeSnapshot(dir, snapshot);
   console.log(`Snapshot saved to ${dir}`);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+module.exports = { takeSnapshot, writeSnapshot };
+
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}

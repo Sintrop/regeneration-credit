@@ -10,6 +10,7 @@ import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Contributor, Pool, Contribution, Penalty, ContractsDependency } from "./types/ContributorTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
+import { Migratable } from "./shared/Migratable.sol";
 
 /**
  * @title ContributorRules
@@ -22,7 +23,7 @@ import { Invitable } from "./shared/Invitable.sol";
  * for general user management, `ContributorPool` for reward distribution, `VoteRules` for voting
  * eligibility, and `ValidationRules` for contribution validation processes.
  */
-contract ContributorRules is Callable, Invitable, ReentrancyGuard {
+contract ContributorRules is Callable, Invitable, ReentrancyGuard, Migratable {
   // --- Constants ---
 
   /// @notice Maximum users count allowed for this UserType.
@@ -432,6 +433,44 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     totalActiveLevels--;
 
     contributorPool.removePoolLevels(contribution.user, false);
+  }
+
+  // --- Migration functions ---
+
+  /**
+   * @notice Imports contributors and contributions of the previous deployment.
+   * @dev Contributions must be imported in id order, so the contributors history keeps the original order.
+   * @param _contributors Contributors data.
+   * @param _contributions Contributions data.
+   */
+  function migrateContributors(
+    Contributor[] calldata _contributors,
+    Contribution[] calldata _contributions
+  ) external onlyMigration {
+    for (uint256 i = 0; i < _contributors.length; i++) {
+      contributors[_contributors[i].contributorWallet] = _contributors[i];
+      contributorsAddress[_contributors[i].id] = _contributors[i].contributorWallet;
+    }
+    for (uint256 i = 0; i < _contributions.length; i++) {
+      contributions[_contributions[i].id] = _contributions[i];
+      contributionsIds[_contributions[i].user].push(_contributions[i].id);
+    }
+  }
+
+  /**
+   * @notice Imports the contributor counters of the previous deployment.
+   * @param _contributionsCount Valid contributions.
+   * @param _contributionsTotalCount Total contributions.
+   * @param _totalActiveLevels Total active levels.
+   */
+  function migrateContributorsTotals(
+    uint64 _contributionsCount,
+    uint64 _contributionsTotalCount,
+    uint256 _totalActiveLevels
+  ) external onlyMigration {
+    contributionsCount = _contributionsCount;
+    contributionsTotalCount = _contributionsTotalCount;
+    totalActiveLevels = _totalActiveLevels;
   }
 
   // --- View functions ---
