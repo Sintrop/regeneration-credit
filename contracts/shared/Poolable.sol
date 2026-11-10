@@ -2,6 +2,7 @@
 pragma solidity 0.8.27;
 
 import { Era } from "contracts/types/PoolTypes.sol";
+import { Migratable } from "contracts/shared/Migratable.sol";
 
 /**
  * @title Poolable
@@ -11,7 +12,7 @@ import { Era } from "contracts/types/PoolTypes.sol";
  * tracking user participation (levels and withdrawals) within specific eras, and managing the pool token supply.
  * It is designed to be inherited by other pool contracts.
  */
-contract Poolable {
+contract Poolable is Migratable {
   // --- State variables ---
 
   /// @notice The total supply of tokens to be managed by this contract.
@@ -39,6 +40,49 @@ contract Poolable {
    */
   constructor(uint256 _totalTokens) {
     totalTokens = _totalTokens;
+  }
+
+  // --- Migration functions ---
+
+  /**
+   * @notice Imports the eras data of the previous deployment.
+   * @param eraIds Era numbers.
+   * @param eraData Data of each era.
+   */
+  function migrateEras(uint256[] calldata eraIds, Era[] calldata eraData) external onlyMigration {
+    require(eraIds.length == eraData.length, "Invalid length");
+
+    for (uint256 i = 0; i < eraIds.length; i++) eras[eraIds[i]] = eraData[i];
+  }
+
+  /**
+   * @notice Imports the levels, claimed tokens and withdrawals of users per era of the previous deployment.
+   * @param eraIds Era number of each entry.
+   * @param users User of each entry.
+   * @param levels User levels in the era.
+   * @param tokens Tokens claimed by the user in the era.
+   * @param withdrawn True if the user withdrew the era.
+   */
+  function migrateUserEras(
+    uint256[] calldata eraIds,
+    address[] calldata users,
+    uint256[] calldata levels,
+    uint256[] calldata tokens,
+    bool[] calldata withdrawn
+  ) external onlyMigration {
+    require(
+      eraIds.length == users.length &&
+        users.length == levels.length &&
+        levels.length == tokens.length &&
+        tokens.length == withdrawn.length,
+      "Invalid length"
+    );
+
+    for (uint256 i = 0; i < eraIds.length; i++) {
+      eraLevels[eraIds[i]][users[i]] = levels[i];
+      eraTokens[eraIds[i]][users[i]] = tokens[i];
+      hasWithdrawn[eraIds[i]][users[i]] = withdrawn[i];
+    }
   }
 
   // --- View Functions ---

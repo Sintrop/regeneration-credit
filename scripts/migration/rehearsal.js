@@ -7,8 +7,10 @@
  * Usage: MIGRATION_SNAPSHOT=<snapshot dir> npx hardhat run scripts/migration/rehearsal.js
  */
 const hre = require("hardhat");
+const fs = require("fs");
 const { loadSnapshot, importSnapshot, closeMigration, NOT_REPLAYED } = require("./import");
 const { takeSnapshot } = require("./snapshot");
+const { POOL_IMPORTERS } = require("./pools");
 
 const { ethers } = hre;
 
@@ -269,10 +271,13 @@ async function main() {
   const contracts = await deployProtocol(v1, { keepEraClock });
   await configure(contracts, v1);
 
-  await importSnapshot(v1, contracts);
+  await importSnapshot(v1, contracts, { importers: keepEraClock ? POOL_IMPORTERS : {} });
   await closeMigration(contracts);
 
   const addresses = Object.fromEntries(Object.entries(contracts).map(([name, contract]) => [name, contract.target]));
+  if (process.env.MIGRATION_ADDRESSES_OUT) {
+    fs.writeFileSync(process.env.MIGRATION_ADDRESSES_OUT, JSON.stringify(addresses, null, 2) + "\n");
+  }
   const map = {};
   for (const [name, address] of Object.entries(v1.meta.addresses)) map[address.toLowerCase()] = addresses[name];
   const extraAddresses = [...new Set([...(v1.meta.addressList || []), ...v1.events.map((event) => event.from)])].map(

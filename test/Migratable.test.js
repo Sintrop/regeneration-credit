@@ -15,6 +15,13 @@ describe("Migratable", () => {
     ["DeveloperRules", () => [10, 3, 10]],
     ["ContributorRules", () => [10, 3, 10]],
     ["SupporterRules", (a) => [a, a, a]],
+    ["ActivistPool", (a) => [a, 12, 10, 0]],
+    ["ContributorPool", (a) => [a, 12, 10, 0]],
+    ["DeveloperPool", (a) => [a, 12, 10, 0]],
+    ["InspectorPool", (a) => [a, 12, 10, 0]],
+    ["RegeneratorPool", (a) => [a, 12, 10, 0]],
+    ["ResearcherPool", (a) => [a, 12, 10, 0]],
+    ["ValidationPool", (a) => [a, 12, 10, 0]],
   ];
 
   const deploy = async (name, args) => {

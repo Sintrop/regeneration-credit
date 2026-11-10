@@ -67,6 +67,16 @@ contract ActivistPool is Poolable, Blockable, Callable, ReentrancyGuard {
     activistRulesAddress = _activistRulesAddress;
   }
 
+  // --- Migration functions ---
+
+  /**
+   * @notice Imports the events that already generated levels in the previous deployment.
+   * @param eventIds Processed event ids.
+   */
+  function migrateProcessedLevels(bytes32[] calldata eventIds) external onlyMigration {
+    for (uint256 i = 0; i < eventIds.length; i++) hasProcessedLevel[eventIds[i]] = true;
+  }
+
   // --- MustBeAllowedCaller functions (State modifying) ---
 
   /**
