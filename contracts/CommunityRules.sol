@@ -87,6 +87,9 @@ contract CommunityRules is Callable {
   /// @notice Tracks which user has already submitted a delation against another to prevent spam.
   mapping(address => mapping(address => bool)) private _hasDelated;
 
+  /// @notice Tracks inviters rejected by an invited address. Mapping: invited => inviter => rejected.
+  mapping(address => mapping(address => bool)) public rejectedInviter;
+
   /// @notice The address of the `InvitationRules` contract.
   address public invitationRulesAddress;
 
@@ -267,6 +270,28 @@ contract CommunityRules is Callable {
     emit DelationVoted(_delationId, msg.sender, _supportsDelation, delation.thumbsUp, delation.thumbsDown);
   }
 
+  /**
+   * @notice Rejects the invitation received, before registration.
+   * @dev Deletes the invitation, so the address can be invited again, and blocks the rejected inviter
+   * from inviting this address again. Allows an address to refuse unsolicited invitations, which would
+   * otherwise fix its user type and inviter forever.
+   *
+   * Requirements:
+   * - The caller must not be registered.
+   * - The caller must have an invitation.
+   */
+  function rejectInvitation() external {
+    require(users[msg.sender] == CommunityTypes.UserType.UNDEFINED, "Already registered");
+
+    address inviter = invitations[msg.sender].inviter;
+    require(invitations[msg.sender].invited != address(0), "No invitation");
+
+    rejectedInviter[msg.sender][inviter] = true;
+    invitations[msg.sender] = CommunityTypes.Invitation(address(0), address(0), CommunityTypes.UserType.UNDEFINED, 0);
+
+    emit InvitationRejected(inviter, msg.sender);
+  }
+
   // --- MustBeAllowedCaller functions (State modifying) ---
 
   /**
@@ -282,8 +307,11 @@ contract CommunityRules is Callable {
     require(userType != CommunityTypes.UserType.UNDEFINED, "Invalid user type"); // Must selected the appropriate userType
     require(_registrationProportionalityAllowed(userType), "Proportionality invalid"); // Vacancies according to the number of regenerators
     require(_invitedTypeOnRegister(addr, userType), "Invalid invitation"); // Only with valid invitation
-    require(!isDenied(invitations[addr].inviter), "Inviter denied"); // Inviter cannot be denied
-    require(inviterPenalties[invitations[addr].inviter] < MAX_INVITER_PENALTIES, "Inviter with too many penalties"); // Inviter cannot exceed penalties
+    // Inviter checks only apply to user types that require an invitation.
+    if (userTypeSettings[userType].needInvitationOnRegister) {
+      require(!isDenied(invitations[addr].inviter), "Inviter denied"); // Inviter cannot be denied
+      require(inviterPenalties[invitations[addr].inviter] < MAX_INVITER_PENALTIES, "Inviter with too many penalties"); // Inviter cannot exceed penalties
+    }
 
     users[addr] = userType;
     usersCount++;
@@ -297,7 +325,7 @@ contract CommunityRules is Callable {
    * @notice Attempts to add an invitation for a new user.
    * @dev This function is intended to be called by an allowed caller, the Invitation Rules.
    * It records an invitation for a specific user to register as a certain user type.
-   * Prevents re-inviting an already invited or registered address.
+   * Prevents re-inviting an already invited or registered address, or an address that rejected this inviter.
    * @param inviter The address of the user who issued the invitation.
    * @param invited The address of the user who received the invitation.
    * @param userType The `UserType` the `invited` user is intended to register as.
@@ -309,6 +337,7 @@ contract CommunityRules is Callable {
   ) external mustBeAllowedCaller mustBeContractCall(invitationRulesAddress) {
     require(invited != address(0), "Invited address cannot be zero");
     require(invitations[invited].invited == address(0), "Already invited");
+    require(!rejectedInviter[invited][inviter], "Invitation rejected");
     require(users[invited] == CommunityTypes.UserType.UNDEFINED, "Already registered");
     require(userType != CommunityTypes.UserType.UNDEFINED, "Invalid user type for invitation");
 
@@ -512,6 +541,13 @@ contract CommunityRules is Callable {
    * @param userTypeTo The `UserType` the invited user is intended to register as.
    */
   event InvitationAdded(address indexed inviter, address indexed invited, CommunityTypes.UserType userTypeTo);
+
+  /**
+   * @dev Emitted when an invited address rejects its invitation.
+   * @param inviter The address of the rejected inviter.
+   * @param invited The address that rejected the invitation.
+   */
+  event InvitationRejected(address indexed inviter, address indexed invited);
 
   /**
    * @notice Emitted when a user votes on a delation.

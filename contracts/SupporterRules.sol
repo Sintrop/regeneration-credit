@@ -215,7 +215,8 @@ contract SupporterRules is ReentrancyGuard {
     uint256 amount
   ) private view returns (uint256 amountToBurn, uint256 commission, address inviter) {
     CommunityTypes.Invitation memory invitation = communityRules.getInvitation(supporterAddress);
-    bool isInvited = invitation.createdAtBlock != 0; // Check if invitation exists
+    // Commission only for invitations to the supporter user type.
+    bool isInvited = invitation.createdAtBlock != 0 && invitation.userType == CommunityTypes.UserType.SUPPORTER;
 
     inviter = invitation.inviter;
 
