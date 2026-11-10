@@ -368,6 +368,7 @@ describe("DeveloperRules", (accounts) => {
 
         await instance.connect(user1Address).addReportValidation(1, "justification");
         await instance.connect(user2Address).addReportValidation(1, "justification");
+        await instance.connect(dev1Address).addReportValidation(1, "justification");
       });
 
       it("should revert because the report is no longer valid", async () => {
@@ -404,6 +405,7 @@ describe("DeveloperRules", (accounts) => {
 
             await instance.connect(user1Address).addReportValidation(1, "justification");
             await instance.connect(user2Address).addReportValidation(1, "justification");
+            await instance.connect(dev1Address).addReportValidation(1, "justification");
           });
 
           it("set valid field to false", async () => {
@@ -524,6 +526,7 @@ describe("DeveloperRules", (accounts) => {
           await instance.connect(user3Address).addReport("description", "report");
           await instance.connect(user4Address).addReport("description", "report");
           await instance.connect(user5Address).addReport("description", "report");
+          await instance.connect(user6Address).addReport("description", "report");
 
           await advanceBlock(10);
 
@@ -535,17 +538,20 @@ describe("DeveloperRules", (accounts) => {
 
           await instance.connect(user2Address).addReportValidation(1, "justification");
           await instance.connect(user3Address).addReportValidation(1, "justification");
+          await instance.connect(user5Address).addReportValidation(1, "justification");
 
           await instance.connect(user1Address).addReportValidation(10, "justification");
           await instance.connect(user4Address).addReportValidation(10, "justification");
+          await instance.connect(user6Address).addReportValidation(10, "justification");
 
           await advanceBlock(10);
           await communityRules.setContractCall(owner, validationRules.target);
 
           await instance.connect(user1Address).addReport("description", "report");
 
-          await instance.connect(user5Address).addReportValidation(15, "justification");
-          await instance.connect(user2Address).addReportValidation(15, "justification");
+          await instance.connect(user5Address).addReportValidation(16, "justification");
+          await instance.connect(user2Address).addReportValidation(16, "justification");
+          await instance.connect(user3Address).addReportValidation(16, "justification");
         });
 
         it("user type must be DENIED", async () => {
@@ -577,7 +583,7 @@ describe("DeveloperRules", (accounts) => {
         it("remove all develeper levels from totalActiveLevels", async () => {
           const totalActiveLevels = await instance.totalActiveLevels();
 
-          expect(totalActiveLevels).to.equal(16);
+          expect(totalActiveLevels).to.equal(17);
         });
 
         context("when another valid report of the denied developer is invalidated", () => {
@@ -586,12 +592,14 @@ describe("DeveloperRules", (accounts) => {
           beforeEach(async () => {
             totalActiveLevelsBefore = await instance.totalActiveLevels();
 
-            await instance.connect(user3Address).addReportValidation(20, "justification");
-            await instance.connect(user4Address).addReportValidation(20, "justification");
+            await advanceBlock(10);
+            await instance.connect(user3Address).addReportValidation(21, "justification");
+            await instance.connect(user4Address).addReportValidation(21, "justification");
+            await instance.connect(user5Address).addReportValidation(21, "justification");
           });
 
           it("should not remove levels from totalActiveLevels again", async () => {
-            expect((await instance.reports(20)).valid).to.eq(false);
+            expect((await instance.reports(21)).valid).to.eq(false);
             expect(await instance.totalActiveLevels()).to.equal(totalActiveLevelsBefore);
           });
 
@@ -628,6 +636,7 @@ describe("DeveloperRules", (accounts) => {
 
             await instance.connect(user1Address).addReportValidation(1, "justification");
             await instance.connect(user2Address).addReportValidation(1, "justification");
+            await instance.connect(dev1Address).addReportValidation(1, "justification");
           });
 
           it("should return error message", async () => {
@@ -714,6 +723,7 @@ describe("DeveloperRules", (accounts) => {
 
             await instance.connect(user1Address).addReportValidation(1, "justification");
             await instance.connect(user2Address).addReportValidation(1, "justification");
+            await instance.connect(user3Address).addReportValidation(1, "justification");
           });
 
           it("set valid field to false", async () => {
@@ -809,12 +819,14 @@ describe("DeveloperRules", (accounts) => {
           await instance.connect(anyAddress).addReport("description", "report");
           await instance.connect(user1Address).addReportValidation(1, "justification");
           await instance.connect(user2Address).addReportValidation(1, "justification");
+          await instance.connect(user3Address).addReportValidation(1, "justification");
 
           await advanceBlock(10);
 
           await instance.connect(anyAddress).addReport("description", "report");
           await instance.connect(user1Address).addReportValidation(2, "justification");
           await instance.connect(user3Address).addReportValidation(2, "justification");
+          await instance.connect(user2Address).addReportValidation(2, "justification");
 
           await advanceBlock(10);
           await communityRules.setContractCall(owner, validationRules.target);
@@ -822,6 +834,7 @@ describe("DeveloperRules", (accounts) => {
           await instance.connect(anyAddress).addReport("description", "report");
           await instance.connect(user1Address).addReportValidation(3, "justification");
           await instance.connect(user2Address).addReportValidation(3, "justification");
+          await instance.connect(user3Address).addReportValidation(3, "justification");
         });
 
         it("user type must be DENIED", async () => {
@@ -856,6 +869,7 @@ describe("DeveloperRules", (accounts) => {
 
             await instance.connect(user1Address).addReportValidation(1, "justification");
             await instance.connect(user2Address).addReportValidation(1, "justification");
+            await instance.connect(user4Address).addReportValidation(1, "justification");
           });
 
           it("should return error message", async () => {
@@ -902,6 +916,7 @@ describe("DeveloperRules", (accounts) => {
 
             await instance.connect(user1Address).addReportValidation(1, "justification");
             await instance.connect(user2Address).addReportValidation(1, "justification");
+            await instance.connect(user3Address).addReportValidation(1, "justification");
           });
 
           it("set valid field to false", async () => {
@@ -1022,6 +1037,7 @@ describe("DeveloperRules", (accounts) => {
           await researcherRules.connect(user3Address).addResearch("description", "report", "file");
           await researcherRules.connect(user4Address).addResearch("description", "report", "file");
           await researcherRules.connect(user5Address).addResearch("description", "report", "file");
+          await researcherRules.connect(user6Address).addResearch("description", "report", "file");
 
           await advanceBlock(10);
 
@@ -1030,18 +1046,22 @@ describe("DeveloperRules", (accounts) => {
           await researcherRules.connect(user3Address).addResearch("description", "report", "file");
           await researcherRules.connect(user4Address).addResearch("description", "report", "file");
           await researcherRules.connect(user5Address).addResearch("description", "report", "file");
+          await researcherRules.connect(user6Address).addResearch("description", "report", "file");
 
           await instance.connect(user2Address).addReportValidation(1, "justification");
           await instance.connect(user3Address).addReportValidation(1, "justification");
+          await instance.connect(user5Address).addReportValidation(1, "justification");
 
           await instance.connect(user1Address).addReportValidation(2, "justification");
           await instance.connect(user4Address).addReportValidation(2, "justification");
+          await instance.connect(user6Address).addReportValidation(2, "justification");
 
-          await advanceBlock(10);
+          await advanceBlock(6);
           await communityRules.setContractCall(owner, validationRules.target);
 
           await instance.connect(user5Address).addReportValidation(3, "justification");
           await instance.connect(user2Address).addReportValidation(3, "justification");
+          await instance.connect(user3Address).addReportValidation(3, "justification");
         });
 
         it("user type must be DENIED", async () => {
@@ -1076,6 +1096,7 @@ describe("DeveloperRules", (accounts) => {
 
             await instance.connect(user1Address).addReportValidation(1, "justification");
             await instance.connect(user2Address).addReportValidation(1, "justification");
+            await instance.connect(user4Address).addReportValidation(1, "justification");
           });
 
           it("should return error message", async () => {
