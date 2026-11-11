@@ -937,6 +937,22 @@ describe("ValidationRules", () => {
                 expect(validations).to.equal(2);
               });
 
+              it("should record the era of the denial and reward only the votes of that era", async () => {
+                expect(await instance.deniedByVotesEra(regenerator1Address)).to.equal(2);
+
+                await instance.connect(user1Address).claimValidationPoint(regenerator1Address, 2);
+                await instance.connect(user2Address).claimValidationPoint(regenerator1Address, 2);
+                expect(await instance.validationPoints(user1Address)).to.equal(1);
+                expect(await instance.validationPoints(user2Address)).to.equal(1);
+
+                await expect(
+                  instance.connect(user1Address).claimValidationPoint(regenerator1Address, 1)
+                ).to.be.revertedWith("User not denied by votes");
+                await expect(
+                  instance.connect(user2Address).claimValidationPoint(regenerator1Address, 1)
+                ).to.be.revertedWith("No vote");
+              });
+
               it("user type must be denied", async () => {
                 const isDenied = await communityRules.isDenied(regenerator1Address);
 

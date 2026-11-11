@@ -727,6 +727,14 @@ describe("ResearcherRules", () => {
             expect(await instance.validationPointClaimed(1, user1Address)).to.equal(true);
           });
 
+          it("should grant one point to each voter that claims it", async () => {
+            await instance.connect(user1Address).claimValidationPoint(1);
+            await instance.connect(user2Address).claimValidationPoint(1);
+
+            expect(await validationRules.validationPoints(user1Address)).to.equal(1);
+            expect(await validationRules.validationPoints(user2Address)).to.equal(1);
+          });
+
           it("should not grant the same point twice", async () => {
             await instance.connect(user1Address).claimValidationPoint(1);
 
