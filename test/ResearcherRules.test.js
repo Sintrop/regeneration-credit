@@ -579,6 +579,26 @@ describe("ResearcherRules", () => {
 
           expect(totalActiveLevels).to.equal(1);
         });
+
+        context("when another valid research of the denied researcher is invalidated", () => {
+          beforeEach(async () => {
+            await advanceBlock(10);
+            await instance.connect(user3Address).addResearchValidation(4, "justification");
+            await instance.connect(user2Address).addResearchValidation(4, "justification");
+          });
+
+          it("should not remove levels from totalActiveLevels again", async () => {
+            const totalActiveLevels = await instance.totalActiveLevels();
+
+            expect(totalActiveLevels).to.equal(1);
+          });
+
+          it("should remove the invalidated research level from researcher", async () => {
+            const researcher = await instance.getResearcher(resea1Address);
+
+            expect(researcher.pool.level).to.eq(0);
+          });
+        });
       });
 
       context("with invalid research", () => {

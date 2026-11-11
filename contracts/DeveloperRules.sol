@@ -369,7 +369,8 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
     report.invalidatedAt = block.number;
     reports[report.id] = report;
     developers[report.developer].pool.level -= RESOURCE_LEVEL;
-    totalActiveLevels--;
+    // Denied users' levels were already removed from totalActiveLevels.
+    if (!communityRules.isDenied(report.developer)) totalActiveLevels--;
 
     developerPool.removePoolLevels(report.developer, false);
   }
