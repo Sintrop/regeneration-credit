@@ -1,0 +1,103 @@
+{
+  "address": "0x3d7C162cf5c18432c3bb8535a96046A5e4E95ABB",
+  "scalars": {
+    "BLOCKS_PRECISION": "5",
+    "currentContractEra": "3",
+    "currentEpoch": "1",
+    "inspectorRulesAddress": "0x753B8cAea6D0BCF23DD29aF0dF2e2E9d0d494E2f",
+    "owner": "0x0000000000000000000000000000000000000000",
+    "regenerationCredit": "0x24fD0C0eA35F00625094795aa105fcE15cb6f1Ed"
+  },
+  "mappings": {
+    "allowedCallers": {
+      "0x753B8cAea6D0BCF23DD29aF0dF2e2E9d0d494E2f": true
+    },
+    "eraLevels": {
+      "1:0x6c74D0aEBC1b7379d0089381AE4c5d0660B917C9": "10",
+      "1:0x73A6f9e0b1E301fF2fa6b04076f7F857279d16C6": "18",
+      "1:0xF0B8a5c0A77e026A50245b59c898F49f4be7cbA5": "1",
+      "1:0xf81c6Af52cB65fA03DaE2dCF80Af75837472C9e6": "2",
+      "2:0x2d628eC8e66De783A644dE2015fd723c6935284d": "1",
+      "2:0x6c74D0aEBC1b7379d0089381AE4c5d0660B917C9": "4",
+      "2:0x73A6f9e0b1E301fF2fa6b04076f7F857279d16C6": "1",
+      "2:0xF0B8a5c0A77e026A50245b59c898F49f4be7cbA5": "1"
+    },
+    "eraTokens": {
+      "1:0x6c74D0aEBC1b7379d0089381AE4c5d0660B917C9": "3091397849462365591397849",
+      "1:0xF0B8a5c0A77e026A50245b59c898F49f4be7cbA5": "309139784946236559139784",
+      "2:0x6c74D0aEBC1b7379d0089381AE4c5d0660B917C9": "5476190476190476190476190"
+    },
+    "eras": {
+      "1": {
+        "claimsCount": "2",
+        "tokens": "3400537634408602150537633",
+        "levels": "31"
+      },
+      "2": {
+        "claimsCount": "1",
+        "tokens": "5476190476190476190476190",
+        "levels": "7"
+      }
+    },
+    "getEra": {
+      "1": {
+        "claimsCount": "2",
+        "tokens": "3400537634408602150537633",
+        "levels": "31"
+      },
+      "2": {
+        "claimsCount": "1",
+        "tokens": "5476190476190476190476190",
+        "levels": "7"
+      }
+    },
+    "hasProcessedLevel": {
+      "8": true,
+      "10": true,
+      "11": true,
+      "12": true,
+      "13": true,
+      "16": true,
+      "19": true,
+      "24": true,
+      "26": true,
+      "28": true,
+      "31": true,
+      "36": true,
+      "37": true,
+      "38": true,
+      "39": true,
+      "41": true,
+      "42": true,
+      "43": true,
+      "45": true,
+      "47": true,
+      "48": true,
+      "49": true,
+      "50": true,
+      "52": true,
+      "53": true,
+      "54": true,
+      "55": true,
+      "56": true,
+      "58": true,
+      "59": true,
+      "61": true,
+      "62": true,
+      "66": true,
+      "68": true,
+      "70": true,
+      "71": true,
+      "73": true,
+      "76": true
+    },
+    "hasWithdrawn": {
+      "1:0x6c74D0aEBC1b7379d0089381AE4c5d0660B917C9": true,
+      "1:0xF0B8a5c0A77e026A50245b59c898F49f4be7cbA5": true,
+      "2:0x6c74D0aEBC1b7379d0089381AE4c5d0660B917C9": true
+    },
+    "isAllowedCaller": {
+      "0x753B8cAea6D0BCF23DD29aF0dF2e2E9d0d494E2f": true
+    }
+  }
+}

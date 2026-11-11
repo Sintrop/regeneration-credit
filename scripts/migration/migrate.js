@@ -46,9 +46,12 @@ async function main() {
   const v1 = loadSnapshot(required("MIGRATION_SNAPSHOT"));
   const addressesFile = required("MIGRATION_ADDRESSES");
   const [migrator] = await ethers.getSigners();
+  if (!migrator && step !== "verify") throw new Error("Set PRIVATE_KEY_ACCOUNT_TO_DEPLOY to run this step");
 
   console.log(
-    `Network ${hre.network.name}, block ${await ethers.provider.getBlockNumber()}, signer ${migrator.address}`
+    `Network ${hre.network.name}, block ${await ethers.provider.getBlockNumber()}, signer ${
+      migrator?.address ?? "none"
+    }`
   );
   console.log(`Snapshot of block ${v1.meta.snapshotBlock}, step ${step}`);
 
@@ -64,12 +67,14 @@ async function main() {
   }
 
   const addresses = readAddresses(addressesFile);
-  const contracts = await attachProtocol(addresses);
+  if (step === "verify") {
+    printReport(await verifyDeployment(v1, addresses));
+    return;
+  }
 
+  const contracts = await attachProtocol(addresses);
   if (step === "import") {
     await importSnapshot(v1, contracts, { importers: POOL_IMPORTERS });
-  } else if (step === "verify") {
-    printReport(await verifyDeployment(v1, addresses));
   } else if (step === "close") {
     await closeMigration(contracts);
     await checkMigrationClosed(contracts);
