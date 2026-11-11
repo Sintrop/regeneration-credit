@@ -14,7 +14,9 @@
  *
  * Usage:
  * MIGRATION_SNAPSHOT=<snapshot dir> MIGRATION_ADDRESSES=<addresses file> MIGRATION_STEP=<step> \
- *   npx hardhat run --network <network> scripts/migration/migrate.js
+ *   npx hardhat run --config scripts/migration/hardhat.mainnet.config.js --network mainnet scripts/migration/migrate.js
+ *
+ * The same steps run on a local node with scripts/migration/hardhat.local.config.js and --network localhost.
  */
 const hre = require("hardhat");
 const fs = require("fs");
