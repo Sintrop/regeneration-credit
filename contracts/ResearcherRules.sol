@@ -135,6 +135,9 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   /// @notice Tracks which validator has voted on which research to prevent duplicate votes.
   mapping(uint64 => mapping(address => bool)) private hasVotedOnResearch;
 
+  /// @notice Tracks validation points already claimed. Mapping: research id => voter => claimed.
+  mapping(uint64 => mapping(address => bool)) public validationPointClaimed;
+
   // --- Constructor ---
 
   /**
@@ -301,9 +304,22 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
       }
     }
     validationRules.updateValidatorLastVoteBlock(msg.sender);
-    validationRules.addValidationPoint(msg.sender);
 
     emit ResearchValidation(msg.sender, research.id, justification);
+  }
+
+  /**
+   * @notice Grants one validation point to a voter whose vote helped invalidate a research.
+   * @dev Points are claimed after the invalidation, so only votes on invalidated researches are rewarded.
+   * @param id The invalidated research id.
+   */
+  function claimValidationPoint(uint64 id) external nonReentrant {
+    require(hasVotedOnResearch[id][msg.sender], "No vote");
+    require(researchPenalized[id], "Research not invalidated");
+    require(!validationPointClaimed[id][msg.sender], "Point already claimed");
+
+    validationPointClaimed[id][msg.sender] = true;
+    validationRules.addValidationPoint(msg.sender);
   }
 
   /**

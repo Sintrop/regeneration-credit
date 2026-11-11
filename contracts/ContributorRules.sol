@@ -109,6 +109,9 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   /// @notice Tracks which validator has voted on which contribution to prevent duplicate votes.
   mapping(uint64 => mapping(address => bool)) private hasVotedOnContribution;
 
+  /// @notice Tracks validation points already claimed. Mapping: contribution id => voter => claimed.
+  mapping(uint64 => mapping(address => bool)) public validationPointClaimed;
+
   // --- Constructor ---
 
   /**
@@ -312,9 +315,22 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
       }
     }
     validationRules.updateValidatorLastVoteBlock(msg.sender);
-    validationRules.addValidationPoint(msg.sender);
 
     emit ContributionValidation(msg.sender, contribution.id, justification);
+  }
+
+  /**
+   * @notice Grants one validation point to a voter whose vote helped invalidate a contribution.
+   * @dev Points are claimed after the invalidation, so only votes on invalidated contributions are rewarded.
+   * @param id The invalidated contribution id.
+   */
+  function claimValidationPoint(uint64 id) external nonReentrant {
+    require(hasVotedOnContribution[id][msg.sender], "No vote");
+    require(contributionPenalized[id], "Contribution not invalidated");
+    require(!validationPointClaimed[id][msg.sender], "Point already claimed");
+
+    validationPointClaimed[id][msg.sender] = true;
+    validationRules.addValidationPoint(msg.sender);
   }
 
   /**

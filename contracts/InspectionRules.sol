@@ -115,6 +115,9 @@ contract InspectionRules is Ownable, ReentrancyGuard {
   /// @notice Tracks which validator has voted on which inspection to prevent duplicate votes.
   mapping(address => mapping(uint256 => bool)) private validatorInspectionsValidations;
 
+  /// @notice Tracks validation points already claimed. Mapping: inspection id => voter => claimed.
+  mapping(uint64 => mapping(address => bool)) public validationPointClaimed;
+
   /// @notice Tracks the impact generated within each specific era.
   mapping(uint256 => EraImpact) public impactPerEra;
 
@@ -371,9 +374,22 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     }
 
     validationRules.updateValidatorLastVoteBlock(msg.sender);
-    validationRules.addValidationPoint(msg.sender);
 
     emit InspectionValidation(msg.sender, inspection.id, justification);
+  }
+
+  /**
+   * @notice Grants one validation point to a voter whose vote helped invalidate a inspection.
+   * @dev Points are claimed after the invalidation, so only votes on invalidated inspections are rewarded.
+   * @param id The invalidated inspection id.
+   */
+  function claimValidationPoint(uint64 id) external nonReentrant {
+    require(validatorInspectionsValidations[msg.sender][id], "No vote");
+    require(inspectionPenalized[id], "Inspection not invalidated");
+    require(!validationPointClaimed[id][msg.sender], "Point already claimed");
+
+    validationPointClaimed[id][msg.sender] = true;
+    validationRules.addValidationPoint(msg.sender);
   }
 
   // --- Private functions ---
