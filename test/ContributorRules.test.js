@@ -528,8 +528,11 @@ describe("ContributorRules", (accounts) => {
         await addDeveloper("User B", user2Address);
         await addDeveloper("User C", user3Address);
 
+        await addInvitation(owner, user4Address, userTypes.Developer, owner);
+        await addDeveloper("User D", user4Address);
         await instance.connect(user1Address).addContributionValidation(1, "justification");
         await instance.connect(user2Address).addContributionValidation(1, "justification");
+        await instance.connect(user4Address).addContributionValidation(1, "justification");
       });
 
       it("should revert because the contribution is no longer valid", async () => {
@@ -561,6 +564,7 @@ describe("ContributorRules", (accounts) => {
 
             await instance.connect(user1Address).addContributionValidation(1, "justification");
             await instance.connect(user2Address).addContributionValidation(1, "justification");
+            await instance.connect(user3Address).addContributionValidation(1, "justification");
           });
 
           it("set valid field to false", async () => {
@@ -672,12 +676,14 @@ describe("ContributorRules", (accounts) => {
 
           await instance.connect(user1Address).addContributionValidation(1, "justification");
           await instance.connect(user2Address).addContributionValidation(1, "justification");
+          await instance.connect(user3Address).addContributionValidation(1, "justification");
 
           await advanceBlock(contributorPoolParams.blocksPerEra);
 
           await addContribution(contr1Address);
           await instance.connect(user1Address).addContributionValidation(2, "justification");
           await instance.connect(user3Address).addContributionValidation(2, "justification");
+          await instance.connect(user2Address).addContributionValidation(2, "justification");
 
           await advanceBlock(contributorPoolParams.blocksPerEra);
           await communityRules.setContractCall(owner, validationRules.target);
@@ -691,6 +697,7 @@ describe("ContributorRules", (accounts) => {
 
           await instance.connect(user1Address).addContributionValidation(3, "justification");
           await instance.connect(user2Address).addContributionValidation(3, "justification");
+          await instance.connect(user3Address).addContributionValidation(3, "justification");
         });
 
         it("user type must be DENIED", async () => {
@@ -724,6 +731,27 @@ describe("ContributorRules", (accounts) => {
 
           expect(totalActiveLevels).to.equal(1);
         });
+
+        context("when another valid contribution of the denied contributor is invalidated", () => {
+          beforeEach(async () => {
+            await advanceBlock(10);
+            await instance.connect(user3Address).addContributionValidation(4, "justification");
+            await instance.connect(user2Address).addContributionValidation(4, "justification");
+            await instance.connect(user1Address).addContributionValidation(4, "justification");
+          });
+
+          it("should not remove levels from totalActiveLevels again", async () => {
+            const totalActiveLevels = await instance.totalActiveLevels();
+
+            expect(totalActiveLevels).to.equal(1);
+          });
+
+          it("should remove the invalidated contribution level from contributor", async () => {
+            const contributor = await instance.getContributor(contr1Address);
+
+            expect(contributor.pool.level).to.eq(0);
+          });
+        });
       });
 
       context("with invalid contribution", () => {
@@ -748,8 +776,10 @@ describe("ContributorRules", (accounts) => {
 
             await addContribution(contr1Address);
 
+            await addDeveloper("User D", user4Address);
             await instance.connect(user1Address).addContributionValidation(1, "justification");
             await instance.connect(user2Address).addContributionValidation(1, "justification");
+            await instance.connect(user4Address).addContributionValidation(1, "justification");
           });
 
           it("should return error message", async () => {
@@ -796,6 +826,7 @@ describe("ContributorRules", (accounts) => {
 
             await instance.connect(user1Address).addContributionValidation(1, "justification");
             await instance.connect(user2Address).addContributionValidation(1, "justification");
+            await instance.connect(user3Address).addContributionValidation(1, "justification");
           });
 
           it("set valid field to false", async () => {
@@ -916,6 +947,7 @@ describe("ContributorRules", (accounts) => {
           await researcherRules.connect(user3Address).addResearch("description", "contribution", "file");
           await researcherRules.connect(user4Address).addResearch("description", "contribution", "file");
           await researcherRules.connect(user5Address).addResearch("description", "contribution", "file");
+          await researcherRules.connect(user6Address).addResearch("description", "contribution", "file");
 
           await advanceBlock(10);
 
@@ -924,18 +956,22 @@ describe("ContributorRules", (accounts) => {
           await researcherRules.connect(user3Address).addResearch("description", "contribution", "file");
           await researcherRules.connect(user4Address).addResearch("description", "contribution", "file");
           await researcherRules.connect(user5Address).addResearch("description", "contribution", "file");
+          await researcherRules.connect(user6Address).addResearch("description", "contribution", "file");
 
           await instance.connect(user2Address).addContributionValidation(1, "justification");
           await instance.connect(user3Address).addContributionValidation(1, "justification");
+          await instance.connect(user5Address).addContributionValidation(1, "justification");
 
           await instance.connect(user1Address).addContributionValidation(2, "justification");
           await instance.connect(user4Address).addContributionValidation(2, "justification");
+          await instance.connect(user6Address).addContributionValidation(2, "justification");
 
           await advanceBlock(10);
           await communityRules.setContractCall(owner, validationRules.target);
 
           await instance.connect(user5Address).addContributionValidation(3, "justification");
           await instance.connect(user2Address).addContributionValidation(3, "justification");
+          await instance.connect(user3Address).addContributionValidation(3, "justification");
         });
 
         it("user type must be DENIED", async () => {
@@ -970,6 +1006,7 @@ describe("ContributorRules", (accounts) => {
 
             await instance.connect(user1Address).addContributionValidation(1, "justification");
             await instance.connect(user2Address).addContributionValidation(1, "justification");
+            await instance.connect(user4Address).addContributionValidation(1, "justification");
           });
 
           it("should return error message", async () => {
@@ -1016,6 +1053,7 @@ describe("ContributorRules", (accounts) => {
 
             await instance.connect(user1Address).addContributionValidation(1, "justification");
             await instance.connect(user2Address).addContributionValidation(1, "justification");
+            await instance.connect(contr1Address).addContributionValidation(1, "justification");
           });
 
           it("set valid field to false", async () => {
@@ -1136,6 +1174,7 @@ describe("ContributorRules", (accounts) => {
           await instance.connect(user3Address).addContribution("description", "contribution");
           await instance.connect(user4Address).addContribution("description", "contribution");
           await instance.connect(user5Address).addContribution("description", "contribution");
+          await instance.connect(user6Address).addContribution("description", "contribution");
 
           await advanceBlock(10);
 
@@ -1144,18 +1183,22 @@ describe("ContributorRules", (accounts) => {
           await instance.connect(user3Address).addContribution("description", "contribution");
           await instance.connect(user4Address).addContribution("description", "contribution");
           await instance.connect(user5Address).addContribution("description", "contribution");
+          await instance.connect(user6Address).addContribution("description", "contribution");
 
           await instance.connect(user2Address).addContributionValidation(1, "justification");
           await instance.connect(user3Address).addContributionValidation(1, "justification");
+          await instance.connect(user5Address).addContributionValidation(1, "justification");
 
           await instance.connect(user1Address).addContributionValidation(2, "justification");
           await instance.connect(user4Address).addContributionValidation(2, "justification");
+          await instance.connect(user6Address).addContributionValidation(2, "justification");
 
           await advanceBlock(10);
           await communityRules.setContractCall(owner, validationRules.target);
 
           await instance.connect(user5Address).addContributionValidation(3, "justification");
           await instance.connect(user2Address).addContributionValidation(3, "justification");
+          await instance.connect(user3Address).addContributionValidation(3, "justification");
         });
 
         it("user type must be DENIED", async () => {
@@ -1190,6 +1233,7 @@ describe("ContributorRules", (accounts) => {
 
             await instance.connect(user1Address).addContributionValidation(1, "justification");
             await instance.connect(user2Address).addContributionValidation(1, "justification");
+            await instance.connect(contr1Address).addContributionValidation(1, "justification");
           });
 
           it("should return error message", async () => {

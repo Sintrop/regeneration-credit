@@ -1168,8 +1168,11 @@ describe("InspectionRules", () => {
         await addDeveloper("User 2", user2Address);
         await addDeveloper("User 3", user3Address);
 
+        await addInvitation(owner, user4Address, userTypes.Developer, owner);
+        await addDeveloper("User D", user4Address);
         await instance.connect(user1Address).addInspectionValidation(1, "justification");
         await instance.connect(user2Address).addInspectionValidation(1, "justification");
+        await instance.connect(user4Address).addInspectionValidation(1, "justification");
       });
 
       it("should revert because the inspection status is no longer INSPECTED", async () => {
@@ -1221,17 +1224,18 @@ describe("InspectionRules", () => {
           });
         });
 
-        context("when have 2 validations (half of the validators)", () => {
+        context("when have 3 validations", () => {
           context("when inspection score is positive", () => {
             beforeEach(async () => {
               await instance.connect(user1Address).addInspectionValidation(1, "justification");
               await instance.connect(user2Address).addInspectionValidation(1, "justification");
+              await instance.connect(user3Address).addInspectionValidation(1, "justification");
             });
 
             it("add validations", async () => {
               const inspection = await instance.getInspection(1);
 
-              expect(inspection.validationsCount).to.equal(2);
+              expect(inspection.validationsCount).to.equal(3);
             });
 
             it("decrement inspectionsTreesImpact", async () => {
@@ -1302,6 +1306,9 @@ describe("InspectionRules", () => {
 
             await communityRules.setContractCall(user1Address, validationRules.target);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
+
+            await communityRules.setContractCall(user3Address, validationRules.target);
+            await instance.connect(user3Address).addInspectionValidation(1, "justification");
 
             await communityRules.setContractCall(user2Address, validationRules.target);
             await inspectorRules.setContractCall(instance.target);
@@ -1389,17 +1396,18 @@ describe("InspectionRules", () => {
           });
         });
 
-        context("when have 2 validations (half of the validators)", () => {
+        context("when have 3 validations", () => {
           context("when inspection score is positive", () => {
             beforeEach(async () => {
               await instance.connect(user1Address).addInspectionValidation(1, "justification");
               await instance.connect(user2Address).addInspectionValidation(1, "justification");
+              await instance.connect(user3Address).addInspectionValidation(1, "justification");
             });
 
             it("add validations", async () => {
               const inspection = await instance.getInspection(1);
 
-              expect(inspection.validationsCount).to.equal(2);
+              expect(inspection.validationsCount).to.equal(3);
             });
 
             it("decrement inspectionsTreesImpact", async () => {
@@ -1465,6 +1473,9 @@ describe("InspectionRules", () => {
 
             await communityRules.setContractCall(user1Address, validationRules.target);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
+
+            await communityRules.setContractCall(user3Address, validationRules.target);
+            await instance.connect(user3Address).addInspectionValidation(1, "justification");
 
             await communityRules.setContractCall(user2Address, validationRules.target);
             await inspectorRules.setContractCall(instance.target);
@@ -1568,17 +1579,18 @@ describe("InspectionRules", () => {
           });
         });
 
-        context("when have 2 validations (votesToInvalidate)", () => {
+        context("when have 3 validations (votesToInvalidate)", () => {
           context("when inspection score is positive", () => {
             beforeEach(async () => {
               await instance.connect(user1Address).addInspectionValidation(1, "justification");
               await instance.connect(user2Address).addInspectionValidation(1, "justification");
+              await instance.connect(resea1Address).addInspectionValidation(1, "justification");
             });
 
             it("add validations", async () => {
               const inspection = await instance.getInspection(1);
 
-              expect(inspection.validationsCount).to.equal(2);
+              expect(inspection.validationsCount).to.equal(3);
             });
 
             it("decrement inspectionsTreesImpact", async () => {
@@ -1644,6 +1656,9 @@ describe("InspectionRules", () => {
 
             await communityRules.setContractCall(user1Address, validationRules.target);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
+
+            await communityRules.setContractCall(user3Address, validationRules.target);
+            await instance.connect(user3Address).addInspectionValidation(1, "justification");
 
             await communityRules.setContractCall(user2Address, validationRules.target);
             await inspectorRules.setContractCall(instance.target);

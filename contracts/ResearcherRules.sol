@@ -445,7 +445,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     research.invalidatedAt = block.number;
     researches[research.id] = research;
     researchers[research.createdBy].pool.level -= RESOURCE_LEVEL;
-    totalActiveLevels--;
+    // Denied users' levels were already removed from totalActiveLevels.
+    if (!communityRules.isDenied(research.createdBy)) totalActiveLevels--;
 
     researcherPool.removePoolLevels(research.createdBy, false);
   }
