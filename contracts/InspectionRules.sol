@@ -210,7 +210,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    *
    * Requirements:
    * - The caller (`msg.sender`) must be a registered `INSPECTOR`.
-   * - The inspector must have less than `MAX_GIVEUPS` (from InspectorRules).
+   * - The inspector must have at most `MAX_GIVEUPS` give-ups (from InspectorRules).
    * - The `inspectionId` must correspond to an existing inspection.
    * - The inspector must not already have an inspection `ACCEPTED` that is not yet `INSPECTED` or `INVALIDATED` or `EXPIRED`.
    * - The inspector must not have previously inspected this specific regenerator.
@@ -224,7 +224,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    */
   function acceptInspection(uint64 inspectionId) external nonReentrant {
     require(communityRules.userTypeIs(CommunityTypes.UserType.INSPECTOR, msg.sender), "Only inspectors");
-    require(inspectorRules.isInspectorValid(msg.sender), "Only 3 giveUps allowed");
+    require(inspectorRules.isInspectorValid(msg.sender), "Maximum giveUps");
 
     Inspection storage inspection = inspections[inspectionId];
 

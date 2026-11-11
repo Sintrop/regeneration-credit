@@ -389,10 +389,10 @@ contract InspectorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @dev Checks if an inspector has less than `MAX_GIVEUPS` (maximum allowed give-ups).
-   * Inspectors with `MAX_GIVEUPS` or more are considered invalid and blocked from core actions.
+   * @dev Checks if an inspector has at most `MAX_GIVEUPS` (maximum allowed give-ups).
+   * Inspectors with more than `MAX_GIVEUPS` are considered invalid and blocked from core actions.
    * @param addr The inspector's wallet address.
-   * @return bool `true` if the inspector is currently valid (has less than max give-ups), `false` otherwise.
+   * @return bool `true` if the inspector is currently valid (has at most max give-ups), `false` otherwise.
    */
   function isInspectorValid(address addr) public view returns (bool) {
     return inspectors[addr].giveUps <= MAX_GIVEUPS;
