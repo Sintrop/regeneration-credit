@@ -43,7 +43,7 @@ describe("RegenerationIndexRules", () => {
       categoryRegenerationIndexDescriptions = categoryRegenerationIndexDescriptions.toString();
 
       expect(categoryRegenerationIndexDescriptions).to.equal(
-        "1,trees >= 50000,2,trees >= 25000 && trees < 50000,3,trees >= 12500 && trees < 25000,4,trees >= 6250 && trees < 12500,5,trees >= 3125 && trees < 6250,6,trees >= 20 && trees < 3125,7,trees < 20"
+        "1,trees >= 50000,2,trees >= 25000 && trees < 50000,3,trees >= 12500 && trees < 25000,4,trees >= 6250 && trees < 12500,5,trees >= 3125 && trees < 6250,6,trees >= 30 && trees < 3125,7,trees < 30"
       );
     });
 
@@ -53,7 +53,7 @@ describe("RegenerationIndexRules", () => {
       categoryRegenerationIndexDescriptions = categoryRegenerationIndexDescriptions.toString();
 
       expect(categoryRegenerationIndexDescriptions).to.equal(
-        "1,Biodiversity >= 160,2,Biodiversity >= 80 && Biodiversity < 160,3,Biodiversity >= 40 && Biodiversity < 80,4,Biodiversity >= 20 && Biodiversity < 40,5,Biodiversity >= 10 && Biodiversity < 20,6,Biodiversity >= 5 && Biodiversity < 10,7,Biodiversity < 5"
+        "1,Biodiversity >= 160,2,Biodiversity >= 120 && Biodiversity < 160,3,Biodiversity >= 80 && Biodiversity < 120,4,Biodiversity >= 40 && Biodiversity < 80,5,Biodiversity >= 20 && Biodiversity < 40,6,Biodiversity >= 10 && Biodiversity < 20,7,Biodiversity < 10"
       );
     });
   });
@@ -63,6 +63,25 @@ describe("RegenerationIndexRules", () => {
       it("calculate regenerationScore", async () => {
         const score = await instance.calculateScore(treesResultValue, biodiversityResultValue);
         expect(score).to.equal(64);
+      });
+
+      it("should apply the trees and biodiversity thresholds", async () => {
+        const cases = [
+          [29, 9, 0],
+          [30, 0, 1],
+          [0, 10, 1],
+          [30, 10, 2],
+          [3125, 20, 4],
+          [6250, 40, 8],
+          [12500, 80, 16],
+          [25000, 120, 32],
+          [50000, 160, 64],
+          [50000, 159, 48],
+        ];
+
+        for (const [trees, biodiversity, expected] of cases) {
+          expect(await instance.calculateScore(trees, biodiversity)).to.equal(expected);
+        }
       });
     });
   });
