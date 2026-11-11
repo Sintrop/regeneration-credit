@@ -105,6 +105,22 @@ describe("CommunityRules", function () {
         });
       });
 
+      context("when the inviter has been denied and the invitee registers as supporter", () => {
+        beforeEach(async () => {
+          await addInvitation(owner, user2Address, userTypes.Activist, owner);
+          await addUser(user2Address, userTypes.Activist, owner);
+
+          await addInvitation(user2Address, user1Address, userTypes.Regenerator, owner);
+          await setToDenied(user2Address, owner);
+        });
+
+        it("should register the supporter, since supporters do not need an invitation", async () => {
+          await addUser(user1Address, userTypes.Supporter, owner);
+
+          expect(await instance.getUser(user1Address)).to.equal(userTypes.Supporter);
+        });
+      });
+
       context("when the inviter exceeded maxInviter penalties", () => {
         beforeEach(async () => {
           await addInvitation(owner, user2Address, userTypes.Activist, owner);
@@ -414,6 +430,63 @@ describe("CommunityRules", function () {
     });
 
     context("without allowed caller", () => {});
+  });
+
+  describe("#rejectInvitation", () => {
+    context("when the address was invited and is not registered", () => {
+      let receipt;
+
+      beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+        receipt = await instance.connect(user1Address).rejectInvitation();
+      });
+
+      it("should delete the invitation", async () => {
+        const invitation = await instance.getInvitation(user1Address);
+
+        expect(invitation.invited).to.equal(ethers.ZeroAddress);
+        expect(invitation.createdAtBlock).to.equal(0);
+      });
+
+      it("should mark the inviter as rejected", async () => {
+        expect(await instance.rejectedInviter(user1Address, owner)).to.equal(true);
+      });
+
+      it("should emit InvitationRejected", async () => {
+        await expect(receipt).to.emit(instance, "InvitationRejected").withArgs(owner.address, user1Address.address);
+      });
+
+      it("should not allow the rejected inviter to invite again", async () => {
+        await expect(addInvitation(owner, user1Address, userTypes.Regenerator, owner)).to.be.revertedWith(
+          "Invitation rejected"
+        );
+      });
+
+      it("should allow another inviter to invite", async () => {
+        await addInvitation(user2Address, user1Address, userTypes.Inspector, owner);
+
+        const invitation = await instance.getInvitation(user1Address);
+        expect(invitation.inviter).to.equal(user2Address.address);
+        expect(invitation.userType).to.equal(userTypes.Inspector);
+      });
+    });
+
+    context("when the address has no invitation", () => {
+      it("should return error message", async () => {
+        await expect(instance.connect(user1Address).rejectInvitation()).to.be.revertedWith("No invitation");
+      });
+    });
+
+    context("when the address is already registered", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+        await addUser(user1Address, userTypes.Regenerator, owner);
+      });
+
+      it("should return error message", async () => {
+        await expect(instance.connect(user1Address).rejectInvitation()).to.be.revertedWith("Already registered");
+      });
+    });
   });
 
   describe("#getInvitation", () => {

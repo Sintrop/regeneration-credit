@@ -175,6 +175,25 @@ describe("SupporterRules", () => {
             });
           });
 
+          context("when SUPPORTER was invited as another user type", () => {
+            beforeEach(async () => {
+              await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Regenerator);
+              await addSupporter("Supporter B", "description", "profilePhoto", inv2Address);
+              await transferTokensTo(inv2Address, 100000000000000000000n);
+
+              await regenerationCredit.connect(inv2Address).approve(instance.target, 1000000000000000000n);
+              await instance.connect(inv2Address).offset(1000000000000000000n, 1000000000000000000n, 1, "message");
+            });
+
+            it("must not pay comission", async () => {
+              expect(await regenerationCredit.balanceOf(inv1Address)).to.equal(0);
+            });
+
+            it("must burn the whole amount", async () => {
+              expect(await instance.calculatorItemCertificates(inv2Address, 1)).to.equal(1000000000000000000n);
+            });
+          });
+
           context("when SUPPORTER wasn't invited", () => {
             beforeEach(async () => {
               await transferTokensTo(inv1Address, 100000000000000000000n);
