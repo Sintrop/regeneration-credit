@@ -176,7 +176,7 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    *
    * Requirements:
    * - The caller (`msg.sender`) must be a registered `REGENERATOR`.
-   * - The regenerator must not have a `_pendingInspection` already open.
+   * - The regenerator must not have a `_pendingInspection` already open or accepted and not yet realized.
    * - The regenerator must adhere to the `timeBetweenInspections` delay if `allowedInitialRequests` are used up.
    * - The regenerator must have completed less than 6 total inspections.
    */
@@ -248,7 +248,6 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     inspection.acceptedAt = block.number;
     inspection.inspector = msg.sender;
 
-    regeneratorRules.afterAcceptInspection(inspection.regenerator);
     inspectorRules.afterAcceptInspection(msg.sender, inspectionId);
 
     emit InspectionAccepted(inspectionId, msg.sender, block.number);
