@@ -366,6 +366,7 @@ contract CommunityRules is Callable {
 
   /**
    * @dev Checks if registration for a specific user type is allowed based on proportionality rules.
+   * For non-direct proportionality, the vacancies are the minimum quantity plus one for every `proportionality` regenerators.
    * @param userType The `UserType` for which registration is being checked.
    * @return bool True if registration is allowed according to proportionality, false otherwise.
    */
@@ -383,7 +384,7 @@ contract CommunityRules is Callable {
     // Apply direct multiplication proportionality.
     if (setting.directProportionalityRegistration) return registeredUserTypeCount < regeneratorsCount * proportionality;
 
-    return registeredUserTypeCount <= regeneratorsCount / proportionality;
+    return registeredUserTypeCount < MINIMUM_REGISTERED_USERS_QUANTITY + regeneratorsCount / proportionality;
   }
 
   // --- View functions ---

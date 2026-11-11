@@ -217,7 +217,10 @@ describe("CommunityRules", function () {
       });
 
       context("with proportionality invalid", () => {
+        let user8Address;
+
         beforeEach(async () => {
+          user8Address = (await ethers.getSigners())[8];
           await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
           await addUser(user1Address, userTypes.Regenerator, owner);
         });
@@ -251,16 +254,18 @@ describe("CommunityRules", function () {
             await addInvitation(owner, user4Address, userTypes.Activist, owner);
             await addInvitation(owner, user5Address, userTypes.Activist, owner);
             await addInvitation(owner, user6Address, userTypes.Activist, owner);
+            await addInvitation(owner, user7Address, userTypes.Activist, owner);
 
             await addUser(user2Address, userTypes.Activist, owner);
             await addUser(user3Address, userTypes.Activist, owner);
             await addUser(user4Address, userTypes.Activist, owner);
             await addUser(user5Address, userTypes.Activist, owner);
             await addUser(user6Address, userTypes.Activist, owner);
+            await addUser(user7Address, userTypes.Activist, owner);
           });
 
           it("should return error message", async () => {
-            await expect(addUser(user7Address, userTypes.Activist, owner)).to.be.revertedWith(
+            await expect(addUser(user8Address, userTypes.Activist, owner)).to.be.revertedWith(
               "Proportionality invalid"
             );
           });
@@ -273,16 +278,18 @@ describe("CommunityRules", function () {
             await addInvitation(owner, user4Address, userTypes.Researcher, owner);
             await addInvitation(owner, user5Address, userTypes.Researcher, owner);
             await addInvitation(owner, user6Address, userTypes.Researcher, owner);
+            await addInvitation(owner, user7Address, userTypes.Researcher, owner);
 
             await addUser(user2Address, userTypes.Researcher, owner);
             await addUser(user3Address, userTypes.Researcher, owner);
             await addUser(user4Address, userTypes.Researcher, owner);
             await addUser(user5Address, userTypes.Researcher, owner);
             await addUser(user6Address, userTypes.Researcher, owner);
+            await addUser(user7Address, userTypes.Researcher, owner);
           });
 
           it("should return error message", async () => {
-            await expect(addUser(user7Address, userTypes.Researcher, owner)).to.be.revertedWith(
+            await expect(addUser(user8Address, userTypes.Researcher, owner)).to.be.revertedWith(
               "Proportionality invalid"
             );
           });
@@ -295,16 +302,18 @@ describe("CommunityRules", function () {
             await addInvitation(owner, user4Address, userTypes.Developer, owner);
             await addInvitation(owner, user5Address, userTypes.Developer, owner);
             await addInvitation(owner, user6Address, userTypes.Developer, owner);
+            await addInvitation(owner, user7Address, userTypes.Developer, owner);
 
             await addUser(user2Address, userTypes.Developer, owner);
             await addUser(user3Address, userTypes.Developer, owner);
             await addUser(user4Address, userTypes.Developer, owner);
             await addUser(user5Address, userTypes.Developer, owner);
             await addUser(user6Address, userTypes.Developer, owner);
+            await addUser(user7Address, userTypes.Developer, owner);
           });
 
           it("should return error message", async () => {
-            await expect(addUser(user7Address, userTypes.Developer, owner)).to.be.revertedWith(
+            await expect(addUser(user8Address, userTypes.Developer, owner)).to.be.revertedWith(
               "Proportionality invalid"
             );
           });
@@ -317,19 +326,65 @@ describe("CommunityRules", function () {
             await addInvitation(owner, user4Address, userTypes.Contributor, owner);
             await addInvitation(owner, user5Address, userTypes.Contributor, owner);
             await addInvitation(owner, user6Address, userTypes.Contributor, owner);
+            await addInvitation(owner, user7Address, userTypes.Contributor, owner);
 
             await addUser(user2Address, userTypes.Contributor, owner);
             await addUser(user3Address, userTypes.Contributor, owner);
             await addUser(user4Address, userTypes.Contributor, owner);
             await addUser(user5Address, userTypes.Contributor, owner);
             await addUser(user6Address, userTypes.Contributor, owner);
+            await addUser(user7Address, userTypes.Contributor, owner);
           });
 
           it("should return error message", async () => {
-            await expect(addUser(user7Address, userTypes.Contributor, owner)).to.be.revertedWith(
+            await expect(addUser(user8Address, userTypes.Contributor, owner)).to.be.revertedWith(
               "Proportionality invalid"
             );
           });
+        });
+      });
+
+      context("with vacancies above the minimum quantity", () => {
+        let signers;
+
+        const addUsers = async (from, to, userType) => {
+          for (let i = from; i < to; i++) {
+            await addInvitation(owner, signers[i], userType, owner);
+            await addUser(signers[i], userType, owner);
+          }
+        };
+
+        beforeEach(async () => {
+          signers = await ethers.getSigners();
+          instance = await communityRulesDeployed({ ...communityRulesParams, activistProportionality: 10 });
+          await instance.newAllowedCaller(owner);
+          await communityRules.setContractCall(owner, owner);
+
+          await addUsers(1, 40, userTypes.Regenerator);
+          await addUsers(40, 47, userTypes.Activist);
+        });
+
+        it("should allow the minimum quantity plus one vacancy for every proportionality regenerators", async () => {
+          await addInvitation(owner, signers[47], userTypes.Activist, owner);
+          await addUser(signers[47], userTypes.Activist, owner);
+
+          expect(await instance.userTypesCount(userTypes.Activist)).to.equal(8);
+        });
+
+        it("should return error message when vacancies are full", async () => {
+          await addUsers(47, 48, userTypes.Activist);
+          await addInvitation(owner, signers[48], userTypes.Activist, owner);
+
+          await expect(addUser(signers[48], userTypes.Activist, owner)).to.be.revertedWith("Proportionality invalid");
+        });
+
+        it("should open a new vacancy when regenerators reach the next proportionality", async () => {
+          await addUsers(47, 48, userTypes.Activist);
+          await addUsers(48, 49, userTypes.Regenerator);
+          await addInvitation(owner, signers[49], userTypes.Activist, owner);
+          await addUser(signers[49], userTypes.Activist, owner);
+
+          expect(await instance.userTypesCount(userTypes.Activist)).to.equal(9);
         });
       });
 
