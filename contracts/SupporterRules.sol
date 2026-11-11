@@ -8,6 +8,7 @@ import { CalculatorItem } from "./types/ResearcherTypes.sol";
 import { Supporter, Offset } from "./types/SupporterTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import { Migratable } from "./shared/Migratable.sol";
 
 /**
  * @title SupporterRules
@@ -16,7 +17,7 @@ import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.s
  * @dev This contract handles supporter registration, profile updates, token burning
  * for environmental offsets and management of reduction commitments.
  */
-contract SupporterRules is ReentrancyGuard {
+contract SupporterRules is ReentrancyGuard, Migratable {
   // --- Constants ---
 
   /// @notice Commission percentage paid to the inviter when an invited supporter burns tokens.
@@ -197,6 +198,54 @@ contract SupporterRules is ReentrancyGuard {
     supporters[msg.sender].reductionItemsCount++;
 
     emit ReductionCommitmentDeclared(msg.sender, calculatorItemId, block.number);
+  }
+
+  // --- Migration functions ---
+
+  /**
+   * @notice Imports supporters and their reduction commitments of the previous deployment.
+   * @param _supporters Supporters data.
+   * @param commitments Reduction commitments (calculator item ids) of each supporter.
+   */
+  function migrateSupporters(Supporter[] calldata _supporters, uint64[][] calldata commitments) external onlyMigration {
+    require(_supporters.length == commitments.length, "Invalid length");
+
+    for (uint256 i = 0; i < _supporters.length; i++) {
+      address addr = _supporters[i].supporterWallet;
+      supporters[addr] = _supporters[i];
+      supportersAddress[_supporters[i].id] = addr;
+      delete reductionCommitments[addr];
+      for (uint256 j = 0; j < commitments[i].length; j++) {
+        reductionCommitments[addr].push(commitments[i][j]);
+        declaredReduction[addr][commitments[i][j]] = true;
+      }
+    }
+  }
+
+  /**
+   * @notice Imports offsets and certificates by calculator item of the previous deployment.
+   * @param _offsetsCount Total offsets.
+   * @param firstId Id of the first offset.
+   * @param _offsets Offsets data, in id order.
+   * @param certifiedAddresses Supporter addresses.
+   * @param itemIds Calculator item of each certificate.
+   * @param amounts Certified amount of each certificate.
+   */
+  function migrateOffsets(
+    uint64 _offsetsCount,
+    uint64 firstId,
+    Offset[] calldata _offsets,
+    address[] calldata certifiedAddresses,
+    uint64[] calldata itemIds,
+    uint256[] calldata amounts
+  ) external onlyMigration {
+    require(certifiedAddresses.length == itemIds.length && itemIds.length == amounts.length, "Invalid length");
+
+    for (uint256 i = 0; i < _offsets.length; i++) offsets[firstId + uint64(i)] = _offsets[i];
+    offsetsCount = _offsetsCount;
+    for (uint256 i = 0; i < itemIds.length; i++) {
+      calculatorItemCertificates[certifiedAddresses[i]][itemIds[i]] = amounts[i];
+    }
   }
 
   // --- View Functions ---

@@ -10,6 +10,7 @@ import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Developer, Pool, Report, Penalty, ContractsDependency } from "./types/DeveloperTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
+import { Migratable } from "./shared/Migratable.sol";
 
 /**
  * @title DeveloperRules
@@ -22,7 +23,7 @@ import { Invitable } from "./shared/Invitable.sol";
  * for general user management, `DeveloperPool` for reward distribution, `VoteRules` for voting
  * eligibility, and `ValidationRules` for report validation processes.
  */
-contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
+contract DeveloperRules is Callable, Invitable, ReentrancyGuard, Migratable {
   // --- Constants ---
 
   /// @notice Maximum users count allowed for this UserType.
@@ -410,6 +411,41 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
 
     // Emit an event.
     emit DeveloperLevelIncreased(addr, developer.pool.level, block.number);
+  }
+
+  // --- Migration functions ---
+
+  /**
+   * @notice Imports developers and reports of the previous deployment.
+   * @dev Reports must be imported in id order, so the developers history keeps the original order.
+   * @param _developers Developers data.
+   * @param _reports Reports data.
+   */
+  function migrateDevelopers(Developer[] calldata _developers, Report[] calldata _reports) external onlyMigration {
+    for (uint256 i = 0; i < _developers.length; i++) {
+      developers[_developers[i].developerWallet] = _developers[i];
+      developersAddress[_developers[i].id] = _developers[i].developerWallet;
+    }
+    for (uint256 i = 0; i < _reports.length; i++) {
+      reports[_reports[i].id] = _reports[i];
+      reportsIds[_reports[i].developer].push(_reports[i].id);
+    }
+  }
+
+  /**
+   * @notice Imports the developer counters of the previous deployment.
+   * @param _reportsCount Valid reports.
+   * @param _reportsTotalCount Total reports.
+   * @param _totalActiveLevels Total active levels.
+   */
+  function migrateDevelopersTotals(
+    uint64 _reportsCount,
+    uint64 _reportsTotalCount,
+    uint256 _totalActiveLevels
+  ) external onlyMigration {
+    reportsCount = _reportsCount;
+    reportsTotalCount = _reportsTotalCount;
+    totalActiveLevels = _totalActiveLevels;
   }
 
   // --- View functions ---

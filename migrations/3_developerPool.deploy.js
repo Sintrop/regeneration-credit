@@ -5,12 +5,13 @@ const verifyContract = require("../scripts/shared/verifyContract");
 async function developerPoolDeploy() {
   const poolHalving = process.env["POOL_HALVING"];
   const poolBlocksPerEra = process.env["BLOCKS_PER_ERA"];
+  const poolDeployedAt = process.env["DEVELOPER_POOL_DEPLOYED_AT"] || 0;
 
   const regenerationCredit = await getDeployedContract("RegenerationCredit");
 
   const DeveloperPool = await ethers.getContractFactory("DeveloperPool");
 
-  const args = [regenerationCredit.target, poolHalving, poolBlocksPerEra];
+  const args = [regenerationCredit.target, poolHalving, poolBlocksPerEra, poolDeployedAt];
 
   const developerPool = await DeveloperPool.deploy(...args);
 

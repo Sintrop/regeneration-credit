@@ -3,6 +3,7 @@ pragma solidity 0.8.27;
 
 import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
+import { Migratable } from "./shared/Migratable.sol";
 
 /**
  * @title CommunityRules
@@ -12,7 +13,7 @@ import { Callable } from "./shared/Callable.sol";
  * @dev Inherits from `Ownable` for deploy setup and `Callable` for restricting access to sensitive functions
  * to whitelisted addresses. It defines critical parameters and logic for user onboarding and community governance.
  */
-contract CommunityRules is Callable {
+contract CommunityRules is Callable, Migratable {
   // --- Constants ---
 
   /// @notice Minimum number of users allowed for a specific type before proportionality rules apply.
@@ -384,6 +385,44 @@ contract CommunityRules is Callable {
     if (setting.directProportionalityRegistration) return registeredUserTypeCount < regeneratorsCount * proportionality;
 
     return registeredUserTypeCount <= regeneratorsCount / proportionality;
+  }
+
+  // --- Migration functions ---
+
+  /**
+   * @notice Imports users and invitations of the previous deployment.
+   * @param addresses User addresses.
+   * @param userTypes UserType of each user.
+   * @param _invitations Invitations, keyed by the invited address.
+   */
+  function migrateUsers(
+    address[] calldata addresses,
+    CommunityTypes.UserType[] calldata userTypes,
+    CommunityTypes.Invitation[] calldata _invitations
+  ) external onlyMigration {
+    require(addresses.length == userTypes.length, "Invalid length");
+
+    for (uint256 i = 0; i < addresses.length; i++) users[addresses[i]] = userTypes[i];
+    for (uint256 i = 0; i < _invitations.length; i++) invitations[_invitations[i].invited] = _invitations[i];
+  }
+
+  /**
+   * @notice Imports the user counters of the previous deployment.
+   * @param _usersCount Total registered users.
+   * @param typesCount Active users of each UserType, indexed by UserType.
+   * @param typesTotalCount Registered users of each UserType, indexed by UserType.
+   */
+  function migrateUsersCount(
+    uint64 _usersCount,
+    uint64[8] calldata typesCount,
+    uint64[8] calldata typesTotalCount
+  ) external onlyMigration {
+    usersCount = _usersCount;
+
+    for (uint8 i = 0; i < 8; i++) {
+      userTypesCount[CommunityTypes.UserType(i)] = typesCount[i];
+      userTypesTotalCount[CommunityTypes.UserType(i)] = typesTotalCount[i];
+    }
   }
 
   // --- View functions ---

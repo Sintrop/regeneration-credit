@@ -46,12 +46,14 @@ contract DeveloperPool is Poolable, Blockable, Callable, ReentrancyGuard {
    * Passed to the `Blockable` base contract.
    * @param _blocksPerEra The number of blocks that constitute a single era.
    * Passed to the `Blockable` base contract.
+   * @param _deployedAt The block from which eras are counted. Passed to the `Blockable` base contract.
    */
   constructor(
     address regenerationCreditAddress,
     uint256 _halving,
-    uint256 _blocksPerEra
-  ) Blockable(_blocksPerEra, _halving) Poolable(TOTAL_POOL_TOKENS) {
+    uint256 _blocksPerEra,
+    uint256 _deployedAt
+  ) Blockable(_blocksPerEra, _halving, _deployedAt) Poolable(TOTAL_POOL_TOKENS) {
     regenerationCredit = IRegenerationCredit(regenerationCreditAddress);
   }
 
@@ -64,6 +66,16 @@ contract DeveloperPool is Poolable, Blockable, Callable, ReentrancyGuard {
    */
   function setContractCall(address _developerRulesAddress) external onlyOwner {
     developerRulesAddress = _developerRulesAddress;
+  }
+
+  // --- Migration functions ---
+
+  /**
+   * @notice Imports the events that already generated levels in the previous deployment.
+   * @param eventIds Processed event ids.
+   */
+  function migrateProcessedLevels(uint64[] calldata eventIds) external onlyMigration {
+    for (uint256 i = 0; i < eventIds.length; i++) hasProcessedLevel[eventIds[i]] = true;
   }
 
   // --- MustBeAllowedCaller functions (State modifying) ---

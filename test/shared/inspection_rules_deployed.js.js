@@ -53,35 +53,40 @@ const inspectionRulesDeployed = async (owner, args = {}) => {
   const researcherPool = await researcherPoolFactory.deploy(
     regenerationCredit.target,
     researcherPoolargs.halving,
-    researcherPoolargs.blocksPerEra
+    researcherPoolargs.blocksPerEra,
+    0
   );
 
   const inspectorPoolFactory = await ethers.getContractFactory("InspectorPool");
   const inspectorPool = await inspectorPoolFactory.deploy(
     regenerationCredit.target,
     inspectorPoolargs.halving,
-    inspectorPoolargs.blocksPerEra
+    inspectorPoolargs.blocksPerEra,
+    0
   );
 
   const regeneratorPoolFactory = await ethers.getContractFactory("RegeneratorPool");
   const regeneratorPool = await regeneratorPoolFactory.deploy(
     regenerationCredit.target,
     regeneratorPoolArgs.halving,
-    regeneratorPoolArgs.blocksPerEra
+    regeneratorPoolArgs.blocksPerEra,
+    0
   );
 
   const activistPoolFactory = await ethers.getContractFactory("ActivistPool");
   const activistPool = await activistPoolFactory.deploy(
     regenerationCredit.target,
     activistPoolArgs.halving,
-    activistPoolArgs.blocksPerEra
+    activistPoolArgs.blocksPerEra,
+    0
   );
 
   const validationPoolFactory = await ethers.getContractFactory("ValidationPool");
   const validationPool = await validationPoolFactory.deploy(
     regenerationCredit.target,
     validationPoolParams.halving,
-    validationPoolParams.blocksPerEra
+    validationPoolParams.blocksPerEra,
+    0
   );
 
   const inspectorRulesFactory = await ethers.getContractFactory("InspectorRules");

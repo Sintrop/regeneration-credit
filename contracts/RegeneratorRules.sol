@@ -7,6 +7,7 @@ import { IRegeneratorPool } from "./interfaces/IRegeneratorPool.sol";
 import { Regenerator, Pool, Coordinates, RegenerationScore } from "./types/RegeneratorTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
+import { Migratable } from "./shared/Migratable.sol";
 
 /**
  * @title RegeneratorRules
@@ -19,7 +20,7 @@ import { Callable } from "./shared/Callable.sol";
  * for reward distribution. This contract handles regenerator registration, area management (coordinates,
  * total area), regeneration score tracking, inspection processes, and penalty management.
  */
-contract RegeneratorRules is Callable, ReentrancyGuard {
+contract RegeneratorRules is Callable, ReentrancyGuard, Migratable {
   // --- Constants ---
 
   /// @notice The minimum number of successful inspections a regenerator must have
@@ -581,6 +582,60 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    */
   function _decrementArea(address addr) private {
     regenerationArea -= regenerators[addr].totalArea;
+  }
+
+  // --- Migration functions ---
+
+  /**
+   * @notice Imports a regenerator of the previous deployment.
+   * @param regenerator Regenerator data.
+   * @param _coordinates Regeneration area coordinates.
+   * @param projectDescription Project description.
+   * @param _areaPhoto Regeneration area photo.
+   * @param impactRegenerator True if the regenerator counts in the impact.
+   * @param certifiedRegenerator True if the regenerator is certified.
+   */
+  function migrateRegenerator(
+    Regenerator calldata regenerator,
+    Coordinates[] calldata _coordinates,
+    string calldata projectDescription,
+    string calldata _areaPhoto,
+    bool impactRegenerator,
+    bool certifiedRegenerator
+  ) external onlyMigration {
+    address addr = regenerator.regeneratorWallet;
+
+    regenerators[addr] = regenerator;
+    regeneratorsAddress[regenerator.id] = addr;
+    delete coordinates[addr];
+    for (uint256 i = 0; i < _coordinates.length; i++) coordinates[addr].push(_coordinates[i]);
+    projectDescriptions[addr] = projectDescription;
+    areaPhoto[addr] = _areaPhoto;
+    impactRegenerators[addr] = impactRegenerator;
+    certifiedRegenerators[addr] = certifiedRegenerator;
+  }
+
+  /**
+   * @notice Imports the regenerator counters of the previous deployment.
+   * @param _totalCertifiedRegenerators Total certified regenerators.
+   * @param _regenerationArea Total regeneration area.
+   * @param eras Eras with new certifications.
+   * @param newCertifications New certified regenerators of each era.
+   * @param inspectionIds Inspections already processed.
+   */
+  function migrateRegeneratorsTotals(
+    uint256 _totalCertifiedRegenerators,
+    uint256 _regenerationArea,
+    uint256[] calldata eras,
+    uint256[] calldata newCertifications,
+    uint64[] calldata inspectionIds
+  ) external onlyMigration {
+    require(eras.length == newCertifications.length, "Invalid length");
+
+    totalCertifiedRegenerators = _totalCertifiedRegenerators;
+    regenerationArea = _regenerationArea;
+    for (uint256 i = 0; i < eras.length; i++) newCertificationRegenerators[eras[i]] = newCertifications[i];
+    for (uint256 i = 0; i < inspectionIds.length; i++) processedInspections[inspectionIds[i]] = true;
   }
 
   // --- View Functions ---

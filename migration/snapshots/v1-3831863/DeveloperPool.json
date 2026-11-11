@@ -1,0 +1,69 @@
+{
+  "address": "0xCd74352812802a476161815daD31A0197BC65BC5",
+  "scalars": {
+    "BLOCKS_PRECISION": "5",
+    "currentContractEra": "3",
+    "currentEpoch": "1",
+    "developerRulesAddress": "0x8C2b66D1aB42ebf226fe88a815385D3ce4E752CB",
+    "owner": "0x0000000000000000000000000000000000000000",
+    "regenerationCredit": "0x24fD0C0eA35F00625094795aa105fcE15cb6f1Ed"
+  },
+  "mappings": {
+    "allowedCallers": {
+      "0x8C2b66D1aB42ebf226fe88a815385D3ce4E752CB": true
+    },
+    "eraLevels": {
+      "1:0x885a0F6a5fa238Adb4B19Fb693f6763d0B5738C3": "2",
+      "1:0x9468f1099134455F7984374432B875D60257ED1f": "2",
+      "1:0xBC54FD1A89a371D657336Faf8cF6C2A5CAdeC50B": "3",
+      "2:0xBC54FD1A89a371D657336Faf8cF6C2A5CAdeC50B": "1"
+    },
+    "eraTokens": {
+      "1:0x885a0F6a5fa238Adb4B19Fb693f6763d0B5738C3": "476190476190476190476190",
+      "1:0xBC54FD1A89a371D657336Faf8cF6C2A5CAdeC50B": "714285714285714285714285",
+      "2:0xBC54FD1A89a371D657336Faf8cF6C2A5CAdeC50B": "1666666666666666666666666"
+    },
+    "eras": {
+      "1": {
+        "claimsCount": "2",
+        "tokens": "1190476190476190476190475",
+        "levels": "7"
+      },
+      "2": {
+        "claimsCount": "1",
+        "tokens": "1666666666666666666666666",
+        "levels": "1"
+      }
+    },
+    "getEra": {
+      "1": {
+        "claimsCount": "2",
+        "tokens": "1190476190476190476190475",
+        "levels": "7"
+      },
+      "2": {
+        "claimsCount": "1",
+        "tokens": "1666666666666666666666666",
+        "levels": "1"
+      }
+    },
+    "hasProcessedLevel": {
+      "1": true,
+      "2": true,
+      "3": true,
+      "4": true,
+      "5": true,
+      "6": true,
+      "7": true,
+      "8": true
+    },
+    "hasWithdrawn": {
+      "1:0x885a0F6a5fa238Adb4B19Fb693f6763d0B5738C3": true,
+      "1:0xBC54FD1A89a371D657336Faf8cF6C2A5CAdeC50B": true,
+      "2:0xBC54FD1A89a371D657336Faf8cF6C2A5CAdeC50B": true
+    },
+    "isAllowedCaller": {
+      "0x8C2b66D1aB42ebf226fe88a815385D3ce4E752CB": true
+    }
+  }
+}

@@ -31,7 +31,7 @@ describe("DeveloperPool", () => {
     regenerationCredit = await regenerationCreditDeployed();
 
     const instanceFactory = await ethers.getContractFactory("DeveloperPool");
-    instance = await instanceFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra);
+    instance = await instanceFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra, 0);
 
     await instance.newAllowedCaller(owner);
     await instance.setContractCall(owner);
