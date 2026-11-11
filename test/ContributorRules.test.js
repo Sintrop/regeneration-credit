@@ -611,9 +611,27 @@ describe("ContributorRules", (accounts) => {
             expect(await instance.contributionPenalized(1)).to.be.true;
           });
 
-          it("should grant a validation point to the voter", async () => {
-            const userPoints = await validationRules.validationPoints(user1Address);
-            expect(userPoints).to.equal(1);
+          it("should not grant a validation point before the claim", async () => {
+            expect(await validationRules.validationPoints(user1Address)).to.equal(0);
+          });
+
+          it("should grant a validation point when the voter claims it", async () => {
+            await instance.connect(user1Address).claimValidationPoint(1);
+
+            expect(await validationRules.validationPoints(user1Address)).to.equal(1);
+            expect(await instance.validationPointClaimed(1, user1Address)).to.equal(true);
+          });
+
+          it("should not grant the same point twice", async () => {
+            await instance.connect(user1Address).claimValidationPoint(1);
+
+            await expect(instance.connect(user1Address).claimValidationPoint(1)).to.be.revertedWith(
+              "Point already claimed"
+            );
+          });
+
+          it("should not grant a point to who did not vote", async () => {
+            await expect(instance.connect(owner).claimValidationPoint(1)).to.be.revertedWith("No vote");
           });
         });
 

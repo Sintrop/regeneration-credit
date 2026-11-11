@@ -1215,9 +1215,14 @@ describe("InspectionRules", () => {
             expect(await instance.inspectionPenalized(1)).to.be.false;
           });
 
-          it("should grant a validation point to the voter", async () => {
-            const userPoints = await validationRules.validationPoints(user1Address);
-            expect(userPoints).to.equal(1);
+          it("should not grant a validation point to the voter", async () => {
+            expect(await validationRules.validationPoints(user1Address)).to.equal(0);
+          });
+
+          it("should not allow claiming a point while the inspection is valid", async () => {
+            await expect(instance.connect(user1Address).claimValidationPoint(1)).to.be.revertedWith(
+              "Inspection not invalidated"
+            );
           });
         });
 

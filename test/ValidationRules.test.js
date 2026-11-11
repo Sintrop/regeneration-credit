@@ -367,9 +367,15 @@ describe("ValidationRules", () => {
                 expect(eraLevels).to.equal(0);
               });
 
-              it("should increment the voter's validationPoints by one", async () => {
+              it("should not grant a validation point before the denial", async () => {
                 const validationPoints = await instance.validationPoints(dev1Address);
-                expect(validationPoints).to.equal(1);
+                expect(validationPoints).to.equal(0);
+              });
+
+              it("should not allow claiming a point for a user not denied", async () => {
+                await expect(instance.connect(dev1Address).claimValidationPoint(dev2Address, 1)).to.be.revertedWith(
+                  "User not denied by votes"
+                );
               });
             });
 
@@ -452,9 +458,15 @@ describe("ValidationRules", () => {
                 expect(inviterPenalties).to.equal(0);
               });
 
-              it("should increment the voter's validationPoints by one", async () => {
+              it("should not grant a validation point before the denial", async () => {
                 const validationPoints = await instance.validationPoints(user1Address);
-                expect(validationPoints).to.equal(1);
+                expect(validationPoints).to.equal(0);
+              });
+
+              it("should not allow claiming a point for a user not denied", async () => {
+                await expect(instance.connect(user1Address).claimValidationPoint(user2Address, 1)).to.be.revertedWith(
+                  "User not denied by votes"
+                );
               });
             });
 
@@ -537,9 +549,15 @@ describe("ValidationRules", () => {
                 expect(inviterPenalties).to.equal(0);
               });
 
-              it("should increment the voter's validationPoints by one", async () => {
+              it("should not grant a validation point before the denial", async () => {
                 const validationPoints = await instance.validationPoints(user1Address);
-                expect(validationPoints).to.equal(1);
+                expect(validationPoints).to.equal(0);
+              });
+
+              it("should not allow claiming a point for a user not denied", async () => {
+                await expect(instance.connect(user1Address).claimValidationPoint(user2Address, 1)).to.be.revertedWith(
+                  "User not denied by votes"
+                );
               });
             });
 
@@ -677,6 +695,32 @@ describe("ValidationRules", () => {
               it("should increment the voter's totalValidationLevels by one", async () => {
                 const totalLevels = await instance.totalValidationLevels(user1Address);
                 expect(totalLevels).to.equal(1);
+              });
+
+              it("should record the era of the denial by votes", async () => {
+                expect(await instance.deniedByVotesEra(regenerator1Address)).to.equal(1);
+              });
+
+              it("should grant one point to each voter that claims it", async () => {
+                await instance.connect(user1Address).claimValidationPoint(regenerator1Address, 1);
+                await instance.connect(user2Address).claimValidationPoint(regenerator1Address, 1);
+
+                expect(await instance.validationPoints(user1Address)).to.equal(1);
+                expect(await instance.validationPoints(user2Address)).to.equal(1);
+              });
+
+              it("should not grant the same point twice", async () => {
+                await instance.connect(user1Address).claimValidationPoint(regenerator1Address, 1);
+
+                await expect(
+                  instance.connect(user1Address).claimValidationPoint(regenerator1Address, 1)
+                ).to.be.revertedWith("Point already claimed");
+              });
+
+              it("should not grant a point to who did not vote", async () => {
+                await expect(
+                  instance.connect(user3Address).claimValidationPoint(regenerator1Address, 1)
+                ).to.be.revertedWith("No vote");
               });
             });
 
@@ -1625,11 +1669,15 @@ describe("ValidationRules", () => {
         await advanceBlock(timeBetweenVotes);
         await instance.connect(dev1Address).addUserValidation(user50Address, "my justification");
         await advanceBlock(timeBetweenVotes);
+
+        // Votes no longer grant points; points come from claims after denials.
+        await instance.newAllowedCaller(owner);
+        for (let i = 0; i < 10; i++) await instance.addValidationPoint(dev1Address);
       });
 
       it("should have accumulated the correct number of points before exchange", async () => {
         const userPoints = await instance.validationPoints(dev1Address);
-        expect(userPoints).to.equal(50);
+        expect(userPoints).to.equal(10);
       });
 
       it("should successfully exchange points for one level", async () => {
