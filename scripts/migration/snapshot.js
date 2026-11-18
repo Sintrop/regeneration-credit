@@ -354,6 +354,7 @@ async function readContract(name, contract, ctx) {
  * @param options.block Block to read. Default: latest - 2.
  * @param options.extraAddresses Addresses to read besides the ones found in the events.
  * @param options.checkCreationBlock Require each pool era clock to start at its creation block.
+ * @param options.includeEra0 Also read era 0 (era 0 scenario).
  * @returns { meta, events, state }
  */
 async function takeSnapshot(options) {
@@ -415,7 +416,8 @@ async function takeSnapshot(options) {
     }
   }
   const maxEra = Math.max(...Object.values(clocks).map((clock) => clock.currentEra));
-  const eras = Array.from({ length: maxEra + 1 }, (_, i) => i + 1);
+  // Era 0 only exists in the era 0 scenario (see era0.js), where the v1 history is settled there.
+  const eras = [...(options.includeEra0 ? [0] : []), ...Array.from({ length: maxEra + 1 }, (_, i) => i + 1)];
 
   const community = contracts.CommunityRules;
   const userTypesTotal = await Promise.all(

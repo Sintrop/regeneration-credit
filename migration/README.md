@@ -36,6 +36,33 @@ See `scripts/migration/migrate.js`.
 - Regeneration index descriptions follow the new thresholds.
 - Replayed events carry the block and timestamp of the migration.
 
+## Era 0 scenario
+
+With `MIGRATION_SCENARIO=era0` in every step, the v2 starts at era 1 with a new era clock and the v1 history becomes
+era 0 (`scripts/migration/era0.js`). No contract changes:
+
+- users, invitations, inspections, resources, offsets and certificates are kept, with the same ids and blocks;
+- realized inspections and published resources move to era 0: they keep counting in the token impact, but cannot be
+  voted on or give pool levels again. Open inspections stay open;
+- the impact of the v1 eras is settled as era 0, and every user restarts the pool withdrawals at era 1;
+- the pools start with their full allocation, and their v1 history is replaced by the era 0 payout.
+
+`era0/config.json` sets the payout:
+
+- `mode: "single"`: one era of each pool, split by the levels of v1 eras 1 and 2;
+- `net: true`: each user's balance becomes v1 balance - tokens withdrawn from the v1 pools + era 0 payout (never below
+  zero). Tokens that did not come from the pools are kept;
+- `fundFrom` / `fundFull`: the pre-launch wallets of `era0/prelaunch-wallets.txt` fund the payout, in proportion to
+  the tokens each one holds that did not come from the pools, after the `fundFull` wallets give all of theirs. The v2
+  supply equals the v1 supply.
+
+The `deploy` step saves the payout to `<addresses>.era0-payout.json`, to be published with the addresses.
+
+Expected differences in this scenario, besides the ones above: the era fields of inspections, resources and users,
+the pools, the balances of the users paid or funding the era 0, and the per-token values of
+`RegenerationCreditImpact`. The `verify` step compares the deployment with the transformed snapshot, so it only
+reports the common differences.
+
 ## Verifying a deployment
 
 With the v2 addresses saved by the `deploy` step:

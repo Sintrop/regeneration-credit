@@ -86,6 +86,7 @@ function compareEvents(v1, v2) {
  * @param v1 Snapshot loaded with loadSnapshot.
  * @param addresses Contract name => address of the new deployment.
  * @param options.skipContracts Contract names left out of the state comparison.
+ * @param options.includeEra0 Also read era 0 (era 0 scenario).
  * @returns { stateReport, eventsReport }
  */
 async function verifyDeployment(v1, addresses, options = {}) {
@@ -102,6 +103,7 @@ async function verifyDeployment(v1, addresses, options = {}) {
     block: options.block ?? (await ethers.provider.getBlockNumber()),
     extraAddresses,
     checkCreationBlock: false,
+    includeEra0: options.includeEra0,
   });
 
   return {
