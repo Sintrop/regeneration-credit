@@ -5,7 +5,8 @@
  * with the same snapshot reader and compares both, contract by contract, and the replayed events log by log.
  *
  * Usage: MIGRATION_SNAPSHOT=<snapshot dir> npx hardhat run scripts/migration/rehearsal.js
- * Era 0 scenario (see era0.js): MIGRATION_SCENARIO=era0 [ERA0_PAYOUT=owed|unified|single] [ERA0_NET=true]
+ * Era 0 scenario (see era0.js): MIGRATION_SCENARIO=era0 [MIGRATION_ERA0_CONFIG=migration/era0/config.json]
+ * or [ERA0_PAYOUT=owed|unified|single] [ERA0_NET=true]
  * [ERA0_FUND_FROM=<file>] [ERA0_FUND_FULL=<a,b>] [ERA0_PAYOUT_OUT=<file>]
  */
 const hre = require("hardhat");
@@ -14,7 +15,7 @@ const { loadSnapshot, importSnapshot, closeMigration } = require("./import");
 const { POOL_IMPORTERS } = require("./pools");
 const { deployProtocol, configure, checkMigrationClosed } = require("./protocol");
 const { verifyDeployment, printReport } = require("./verify");
-const { toEra0 } = require("./era0");
+const { toEra0, loadEra0Config, payoutJson } = require("./era0");
 
 const { ethers } = hre;
 
@@ -25,22 +26,22 @@ async function main() {
   const keepEraClock = !era0 && process.env.MIGRATION_ERA_CLOCK !== "new";
   let v1 = loadSnapshot(dir);
   if (era0) {
-    const fundFrom = process.env.ERA0_FUND_FROM
-      ? fs.readFileSync(process.env.ERA0_FUND_FROM, "utf8").split(/\s+/).filter(Boolean)
-      : [];
-    const result = toEra0(v1, {
-      mode: process.env.ERA0_PAYOUT || "owed",
-      net: process.env.ERA0_NET === "true",
-      fundFrom,
-      fundFull: (process.env.ERA0_FUND_FULL || "").split(",").filter(Boolean),
-    });
+    // Same configuration file as migrate.js, or the ERA0_* variables to compare other settings.
+    const options = process.env.MIGRATION_ERA0_CONFIG
+      ? loadEra0Config(process.env.MIGRATION_ERA0_CONFIG)
+      : {
+          mode: process.env.ERA0_PAYOUT || "owed",
+          net: process.env.ERA0_NET === "true",
+          fundFrom: process.env.ERA0_FUND_FROM
+            ? fs.readFileSync(process.env.ERA0_FUND_FROM, "utf8").split(/\s+/).filter(Boolean)
+            : [],
+          fundFull: (process.env.ERA0_FUND_FULL || "").split(",").filter(Boolean),
+        };
+    const result = toEra0(v1, options);
     v1 = result.snapshot;
     printPayout(result.payout);
     if (process.env.ERA0_PAYOUT_OUT) {
-      fs.writeFileSync(
-        process.env.ERA0_PAYOUT_OUT,
-        JSON.stringify(result.payout, (_, v) => (typeof v === "bigint" ? v.toString() : v), 2) + "\n"
-      );
+      fs.writeFileSync(process.env.ERA0_PAYOUT_OUT, payoutJson(result.payout));
     }
   }
 

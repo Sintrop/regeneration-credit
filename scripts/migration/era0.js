@@ -274,4 +274,25 @@ function toEra0(snapshot, options = {}) {
   return { snapshot: s, payout };
 }
 
-module.exports = { toEra0, era0Payouts, tokensPerEra, POOLS };
+/**
+ * Reads an era 0 configuration file: { mode, net, fundFrom (file relative to the configuration), fundFull }.
+ * @returns The options for toEra0.
+ */
+function loadEra0Config(file) {
+  const fs = require("fs");
+  const path = require("path");
+  const config = JSON.parse(fs.readFileSync(file, "utf8"));
+  const fundFrom = config.fundFrom
+    ? fs
+        .readFileSync(path.resolve(path.dirname(file), config.fundFrom), "utf8")
+        .split(/\s+/)
+        .filter(Boolean)
+    : [];
+  return { mode: config.mode || "owed", net: !!config.net, fundFrom, fundFull: config.fundFull || [] };
+}
+
+/** JSON of an era 0 payout, with the amounts in wei as strings. */
+const payoutJson = (payout) =>
+  JSON.stringify(payout, (_, value) => (typeof value === "bigint" ? value.toString() : value), 2) + "\n";
+
+module.exports = { toEra0, era0Payouts, loadEra0Config, payoutJson, tokensPerEra, POOLS };

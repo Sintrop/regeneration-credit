@@ -1,0 +1,6 @@
+{
+  "mode": "single",
+  "net": true,
+  "fundFrom": "prelaunch-wallets.txt",
+  "fundFull": ["0x298952B186D23d41C043Cc4cC49dD4340592A459"]
+}
