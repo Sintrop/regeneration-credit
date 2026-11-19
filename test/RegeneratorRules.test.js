@@ -87,7 +87,7 @@ describe("RegeneratorRules", () => {
     await instance.newAllowedCaller(owner);
     await regeneratorPool.newAllowedCaller(instance.target);
 
-    await communityRules.setContractCall(owner, owner);
+    await communityRules.setContractCall(owner, owner, ethers.ZeroAddress);
     await instance.setContractCall(owner, owner);
     await regeneratorPool.setContractCall(instance);
 

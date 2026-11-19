@@ -93,6 +93,9 @@ contract CommunityRules is Callable {
   /// @notice The address of the `InvitationRules` contract.
   address public validationRulesAddress;
 
+  /// @notice The address of the `SupporterRules` contract.
+  address public supporterRulesAddress;
+
   // --- Constructor ---
 
   /**
@@ -165,10 +168,16 @@ contract CommunityRules is Callable {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _invitationRulesAddress Address of InvitationRules.
    * @param _validationRulesAddress Address of ValidationRules.
+   * @param _supporterRulesAddress Address of SupporterRules.
    */
-  function setContractCall(address _invitationRulesAddress, address _validationRulesAddress) external onlyOwner {
+  function setContractCall(
+    address _invitationRulesAddress,
+    address _validationRulesAddress,
+    address _supporterRulesAddress
+  ) external onlyOwner {
     invitationRulesAddress = _invitationRulesAddress;
     validationRulesAddress = _validationRulesAddress;
+    supporterRulesAddress = _supporterRulesAddress;
   }
 
   // --- Public functions (State Modifying) ---
@@ -291,6 +300,26 @@ contract CommunityRules is Callable {
     userTypesTotalCount[userType]++;
 
     emit UserRegistered(addr, userType);
+  }
+
+  /**
+   * @notice Removes the invitation of an address that registers as a Supporter without accepting it.
+   * @dev This function is intended to be called by an allowed caller, the Supporter Rules, when the new
+   * supporter declares no inviter. Keeps an unaccepted invitation from binding the registered account.
+   *
+   * Requirements:
+   * - The address must not be registered.
+   * @param invited The address whose invitation is removed.
+   */
+  function removeInvitation(address invited) external mustBeAllowedCaller mustBeContractCall(supporterRulesAddress) {
+    require(users[invited] == CommunityTypes.UserType.UNDEFINED, "Already registered");
+
+    address inviter = invitations[invited].inviter;
+    if (invitations[invited].invited == address(0)) return;
+
+    invitations[invited] = CommunityTypes.Invitation(address(0), address(0), CommunityTypes.UserType.UNDEFINED, 0);
+
+    emit InvitationRejected(inviter, invited);
   }
 
   /**
@@ -512,6 +541,13 @@ contract CommunityRules is Callable {
    * @param userTypeTo The `UserType` the invited user is intended to register as.
    */
   event InvitationAdded(address indexed inviter, address indexed invited, CommunityTypes.UserType userTypeTo);
+
+  /**
+   * @dev Emitted when an invited address registers as a Supporter without accepting its invitation.
+   * @param inviter The address of the rejected inviter.
+   * @param invited The address that rejected the invitation.
+   */
+  event InvitationRejected(address indexed inviter, address indexed invited);
 
   /**
    * @notice Emitted when a user votes on a delation.
