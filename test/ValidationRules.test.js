@@ -630,6 +630,29 @@ describe("ValidationRules", () => {
             await developerRules.connect(user2Address).addReport("description", "report");
           });
 
+          context("when the hunter is denied before the denial completes", () => {
+            beforeEach(async () => {
+              await addInvitation(owner, regenerator1Address, userTypes.Regenerator, owner);
+              await addRegenerator("Regenerator A", regenerator1Address);
+
+              await instance.connect(user1Address).addUserValidation(regenerator1Address, "my justification");
+              await communityRules.setToDenied(user1Address);
+
+              await instance.connect(user2Address).addUserValidation(regenerator1Address, "my justification");
+            });
+
+            it("should deny the user", async () => {
+              expect(await communityRules.isDenied(regenerator1Address)).to.equal(true);
+            });
+
+            it("should not add a level to the denied hunter", async () => {
+              const era = await validationPool.currentContractEra();
+
+              expect(await validationPool.eraLevels(era, user1Address)).to.equal(0);
+              expect(await instance.totalValidationLevels(user1Address)).to.equal(0);
+            });
+          });
+
           context("when current era is 1", () => {
             context("with regenerator", () => {
               beforeEach(async () => {

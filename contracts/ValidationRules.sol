@@ -187,8 +187,12 @@ contract ValidationRules is Callable, ReentrancyGuard {
       deniedByVotesEra[userAddress] = currentEra;
       _denyUser(userAddress);
       address hunter = hunterVoter[userAddress][currentEra];
-      totalValidationLevels[hunter]++;
-      validationPool.addLevel(hunter, userAddress);
+
+      // A hunter denied before the denial completes receives no level.
+      if (!communityRules.isDenied(hunter)) {
+        totalValidationLevels[hunter]++;
+        validationPool.addLevel(hunter, userAddress);
+      }
     }
 
     emit UserValidation(msg.sender, userAddress, justification, currentEra);
