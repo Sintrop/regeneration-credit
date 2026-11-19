@@ -1688,12 +1688,13 @@ describe("ValidationRules", () => {
 
         // Votes no longer grant points; points come from claims after denials.
         await instance.newAllowedCaller(owner);
-        for (let i = 0; i < 10; i++) await instance.addValidationPoint(dev1Address);
+        const pointsPerLevel = await instance.POINTS_PER_LEVEL();
+        for (let i = 0; i < pointsPerLevel; i++) await instance.addValidationPoint(dev1Address);
       });
 
       it("should have accumulated the correct number of points before exchange", async () => {
         const userPoints = await instance.validationPoints(dev1Address);
-        expect(userPoints).to.equal(10);
+        expect(userPoints).to.equal(50);
       });
 
       it("should successfully exchange points for one level", async () => {
