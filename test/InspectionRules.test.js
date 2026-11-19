@@ -630,7 +630,7 @@ describe("InspectionRules", () => {
           });
 
           it("should return error message", async () => {
-            await expect(acceptInspection(5, inspectorAddress)).to.be.revertedWith("Only 3 giveUps allowed");
+            await expect(acceptInspection(5, inspectorAddress)).to.be.revertedWith("Maximum giveUps");
           });
         });
 
