@@ -109,6 +109,9 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   /// @notice Tracks which validator has voted on which report to prevent duplicate votes.
   mapping(uint64 => mapping(address => bool)) private hasVotedOnReport;
 
+  /// @notice Tracks validation points already claimed. Mapping: report id => voter => claimed.
+  mapping(uint64 => mapping(address => bool)) public validationPointClaimed;
+
   // --- Constructor ---
 
   /**
@@ -290,9 +293,22 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
       }
     }
     validationRules.updateValidatorLastVoteBlock(msg.sender);
-    validationRules.addValidationPoint(msg.sender);
 
     emit ReportValidation(msg.sender, report.id, justification);
+  }
+
+  /**
+   * @notice Grants one validation point to a voter whose vote helped invalidate a report.
+   * @dev Points are claimed after the invalidation, so only votes on invalidated reports are rewarded.
+   * @param id The invalidated report id.
+   */
+  function claimValidationPoint(uint64 id) external nonReentrant {
+    require(hasVotedOnReport[id][msg.sender], "No vote");
+    require(reportPenalized[id], "Report not invalidated");
+    require(!validationPointClaimed[id][msg.sender], "Point already claimed");
+
+    validationPointClaimed[id][msg.sender] = true;
+    validationRules.addValidationPoint(msg.sender);
   }
 
   /**

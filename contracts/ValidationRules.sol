@@ -65,6 +65,12 @@ contract ValidationRules is Callable, ReentrancyGuard {
   /// @notice Tracks the accumulated, unspent validation points for each voter.
   mapping(address => uint256) public validationPoints;
 
+  /// @notice Era in which each user was denied by votes. Zero if never denied by votes.
+  mapping(address => uint256) public deniedByVotesEra;
+
+  /// @notice Tracks validation points already claimed. Mapping: voter => user => era => claimed.
+  mapping(address => mapping(address => mapping(uint256 => bool))) public pointClaimed;
+
   /// @notice Tracks the total number of validation levels a user has ever earned.
   mapping(address => uint256) public totalValidationLevels;
 
@@ -173,19 +179,44 @@ contract ValidationRules is Callable, ReentrancyGuard {
     validatorUsersValidations[msg.sender][userAddress][currentEra] = true;
     validatorLastVoteAt[msg.sender] = block.number;
     userValidations[userAddress][currentEra]++;
-    validationPoints[msg.sender]++;
 
     uint256 validationsCount = userValidations[userAddress][currentEra];
     uint256 _votesToInvalidate = votesToInvalidate();
 
     if (validationsCount >= _votesToInvalidate) {
+      deniedByVotesEra[userAddress] = currentEra;
       _denyUser(userAddress);
       address hunter = hunterVoter[userAddress][currentEra];
-      totalValidationLevels[hunter]++;
-      validationPool.addLevel(hunter, userAddress);
+
+      // A hunter denied before the denial completes receives no level.
+      if (!communityRules.isDenied(hunter)) {
+        totalValidationLevels[hunter]++;
+        validationPool.addLevel(hunter, userAddress);
+      }
     }
 
     emit UserValidation(msg.sender, userAddress, justification, currentEra);
+  }
+
+  /**
+   * @notice Grants one validation point to a voter whose vote helped deny a user.
+   * @dev Points are claimed after the denial, so only votes on users actually denied are rewarded.
+   *
+   * Requirements:
+   * - The caller must have voted to invalidate `userAddress` in `era`.
+   * - `userAddress` must have been denied by votes in `era`.
+   * - The point must not have been claimed yet.
+   *
+   * @param userAddress The denied user address.
+   * @param era The era of the votes.
+   */
+  function claimValidationPoint(address userAddress, uint256 era) external nonReentrant {
+    require(validatorUsersValidations[msg.sender][userAddress][era], "No vote");
+    require(era != 0 && deniedByVotesEra[userAddress] == era, "User not denied by votes");
+    require(!pointClaimed[msg.sender][userAddress][era], "Point already claimed");
+
+    pointClaimed[msg.sender][userAddress][era] = true;
+    validationPoints[msg.sender]++;
   }
 
   /**
@@ -249,8 +280,8 @@ contract ValidationRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @notice Grants a single validation point to a voter for a voting action.
-   * @dev This is a function intended to be called by the resources contract after a validation vote.
+   * @notice Grants a single validation point to a voter whose vote helped invalidate a resource.
+   * @dev Called by the resources contracts when the voter claims the point, after the invalidation.
    * @param voter The address of the voter who is earning the point.
    */
   function addValidationPoint(address voter) external mustBeAllowedCaller {

@@ -367,9 +367,15 @@ describe("ValidationRules", () => {
                 expect(eraLevels).to.equal(0);
               });
 
-              it("should increment the voter's validationPoints by one", async () => {
+              it("should not grant a validation point before the denial", async () => {
                 const validationPoints = await instance.validationPoints(dev1Address);
-                expect(validationPoints).to.equal(1);
+                expect(validationPoints).to.equal(0);
+              });
+
+              it("should not allow claiming a point for a user not denied", async () => {
+                await expect(instance.connect(dev1Address).claimValidationPoint(dev2Address, 1)).to.be.revertedWith(
+                  "User not denied by votes"
+                );
               });
             });
 
@@ -452,9 +458,15 @@ describe("ValidationRules", () => {
                 expect(inviterPenalties).to.equal(0);
               });
 
-              it("should increment the voter's validationPoints by one", async () => {
+              it("should not grant a validation point before the denial", async () => {
                 const validationPoints = await instance.validationPoints(user1Address);
-                expect(validationPoints).to.equal(1);
+                expect(validationPoints).to.equal(0);
+              });
+
+              it("should not allow claiming a point for a user not denied", async () => {
+                await expect(instance.connect(user1Address).claimValidationPoint(user2Address, 1)).to.be.revertedWith(
+                  "User not denied by votes"
+                );
               });
             });
 
@@ -537,9 +549,15 @@ describe("ValidationRules", () => {
                 expect(inviterPenalties).to.equal(0);
               });
 
-              it("should increment the voter's validationPoints by one", async () => {
+              it("should not grant a validation point before the denial", async () => {
                 const validationPoints = await instance.validationPoints(user1Address);
-                expect(validationPoints).to.equal(1);
+                expect(validationPoints).to.equal(0);
+              });
+
+              it("should not allow claiming a point for a user not denied", async () => {
+                await expect(instance.connect(user1Address).claimValidationPoint(user2Address, 1)).to.be.revertedWith(
+                  "User not denied by votes"
+                );
               });
             });
 
@@ -612,6 +630,29 @@ describe("ValidationRules", () => {
             await developerRules.connect(user2Address).addReport("description", "report");
           });
 
+          context("when the hunter is denied before the denial completes", () => {
+            beforeEach(async () => {
+              await addInvitation(owner, regenerator1Address, userTypes.Regenerator, owner);
+              await addRegenerator("Regenerator A", regenerator1Address);
+
+              await instance.connect(user1Address).addUserValidation(regenerator1Address, "my justification");
+              await communityRules.setToDenied(user1Address);
+
+              await instance.connect(user2Address).addUserValidation(regenerator1Address, "my justification");
+            });
+
+            it("should deny the user", async () => {
+              expect(await communityRules.isDenied(regenerator1Address)).to.equal(true);
+            });
+
+            it("should not add a level to the denied hunter", async () => {
+              const era = await validationPool.currentContractEra();
+
+              expect(await validationPool.eraLevels(era, user1Address)).to.equal(0);
+              expect(await instance.totalValidationLevels(user1Address)).to.equal(0);
+            });
+          });
+
           context("when current era is 1", () => {
             context("with regenerator", () => {
               beforeEach(async () => {
@@ -677,6 +718,32 @@ describe("ValidationRules", () => {
               it("should increment the voter's totalValidationLevels by one", async () => {
                 const totalLevels = await instance.totalValidationLevels(user1Address);
                 expect(totalLevels).to.equal(1);
+              });
+
+              it("should record the era of the denial by votes", async () => {
+                expect(await instance.deniedByVotesEra(regenerator1Address)).to.equal(1);
+              });
+
+              it("should grant one point to each voter that claims it", async () => {
+                await instance.connect(user1Address).claimValidationPoint(regenerator1Address, 1);
+                await instance.connect(user2Address).claimValidationPoint(regenerator1Address, 1);
+
+                expect(await instance.validationPoints(user1Address)).to.equal(1);
+                expect(await instance.validationPoints(user2Address)).to.equal(1);
+              });
+
+              it("should not grant the same point twice", async () => {
+                await instance.connect(user1Address).claimValidationPoint(regenerator1Address, 1);
+
+                await expect(
+                  instance.connect(user1Address).claimValidationPoint(regenerator1Address, 1)
+                ).to.be.revertedWith("Point already claimed");
+              });
+
+              it("should not grant a point to who did not vote", async () => {
+                await expect(
+                  instance.connect(user3Address).claimValidationPoint(regenerator1Address, 1)
+                ).to.be.revertedWith("No vote");
               });
             });
 
@@ -891,6 +958,22 @@ describe("ValidationRules", () => {
                 const validations = await instance.getUserValidations(regenerator1Address, 2);
 
                 expect(validations).to.equal(2);
+              });
+
+              it("should record the era of the denial and reward only the votes of that era", async () => {
+                expect(await instance.deniedByVotesEra(regenerator1Address)).to.equal(2);
+
+                await instance.connect(user1Address).claimValidationPoint(regenerator1Address, 2);
+                await instance.connect(user2Address).claimValidationPoint(regenerator1Address, 2);
+                expect(await instance.validationPoints(user1Address)).to.equal(1);
+                expect(await instance.validationPoints(user2Address)).to.equal(1);
+
+                await expect(
+                  instance.connect(user1Address).claimValidationPoint(regenerator1Address, 1)
+                ).to.be.revertedWith("User not denied by votes");
+                await expect(
+                  instance.connect(user2Address).claimValidationPoint(regenerator1Address, 1)
+                ).to.be.revertedWith("No vote");
               });
 
               it("user type must be denied", async () => {
@@ -1625,6 +1708,11 @@ describe("ValidationRules", () => {
         await advanceBlock(timeBetweenVotes);
         await instance.connect(dev1Address).addUserValidation(user50Address, "my justification");
         await advanceBlock(timeBetweenVotes);
+
+        // Votes no longer grant points; points come from claims after denials.
+        await instance.newAllowedCaller(owner);
+        const pointsPerLevel = await instance.POINTS_PER_LEVEL();
+        for (let i = 0; i < pointsPerLevel; i++) await instance.addValidationPoint(dev1Address);
       });
 
       it("should have accumulated the correct number of points before exchange", async () => {
