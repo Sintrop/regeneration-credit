@@ -42,7 +42,7 @@ describe("CommunityRules", function () {
     instance = await communityRulesDeployed(communityRulesParams);
 
     await instance.newAllowedCaller(owner);
-    await communityRules.setContractCall(owner, owner);
+    await communityRules.setContractCall(owner, owner, ethers.ZeroAddress);
   });
 
   describe("#addUser", () => {
@@ -102,22 +102,6 @@ describe("CommunityRules", function () {
 
         it("should revert the addUser transaction for the invitee", async () => {
           await expect(addUser(user1Address, userTypes.Regenerator, owner)).to.be.revertedWith("Inviter denied");
-        });
-      });
-
-      context("when the inviter has been denied and the invitee registers as supporter", () => {
-        beforeEach(async () => {
-          await addInvitation(owner, user2Address, userTypes.Activist, owner);
-          await addUser(user2Address, userTypes.Activist, owner);
-
-          await addInvitation(user2Address, user1Address, userTypes.Regenerator, owner);
-          await setToDenied(user2Address, owner);
-        });
-
-        it("should register the supporter, since supporters do not need an invitation", async () => {
-          await addUser(user1Address, userTypes.Supporter, owner);
-
-          expect(await instance.getUser(user1Address)).to.equal(userTypes.Supporter);
         });
       });
 
@@ -432,59 +416,72 @@ describe("CommunityRules", function () {
     context("without allowed caller", () => {});
   });
 
-  describe("#rejectInvitation", () => {
+  describe("#removeInvitation", () => {
+    beforeEach(async () => {
+      await instance.setContractCall(owner, owner, owner);
+    });
+
     context("when the address was invited and is not registered", () => {
       let receipt;
 
       beforeEach(async () => {
-        await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
-        receipt = await instance.connect(user1Address).rejectInvitation();
+        await addInvitation(owner, user1Address, userTypes.Supporter, owner);
+        receipt = await instance.removeInvitation(user1Address);
       });
 
-      it("should delete the invitation", async () => {
+      it("should reset the invitation", async () => {
         const invitation = await instance.getInvitation(user1Address);
 
+        expect(invitation.inviter).to.equal(ethers.ZeroAddress);
         expect(invitation.invited).to.equal(ethers.ZeroAddress);
+        expect(invitation.userType).to.equal(0);
         expect(invitation.createdAtBlock).to.equal(0);
-      });
-
-      it("should mark the inviter as rejected", async () => {
-        expect(await instance.rejectedInviter(user1Address, owner)).to.equal(true);
       });
 
       it("should emit InvitationRejected", async () => {
         await expect(receipt).to.emit(instance, "InvitationRejected").withArgs(owner.address, user1Address.address);
       });
 
-      it("should not allow the rejected inviter to invite again", async () => {
-        await expect(addInvitation(owner, user1Address, userTypes.Regenerator, owner)).to.be.revertedWith(
-          "Invitation rejected"
-        );
-      });
-
-      it("should allow another inviter to invite", async () => {
-        await addInvitation(user2Address, user1Address, userTypes.Inspector, owner);
+      it("should allow the address to be invited again", async () => {
+        await addInvitation(user2Address, user1Address, userTypes.Supporter, owner);
 
         const invitation = await instance.getInvitation(user1Address);
         expect(invitation.inviter).to.equal(user2Address.address);
-        expect(invitation.userType).to.equal(userTypes.Inspector);
       });
     });
 
     context("when the address has no invitation", () => {
-      it("should return error message", async () => {
-        await expect(instance.connect(user1Address).rejectInvitation()).to.be.revertedWith("No invitation");
+      it("should not emit InvitationRejected", async () => {
+        await expect(instance.removeInvitation(user1Address)).not.to.emit(instance, "InvitationRejected");
       });
     });
 
     context("when the address is already registered", () => {
-      beforeEach(async () => {
+      it("should return error message", async () => {
         await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
         await addUser(user1Address, userTypes.Regenerator, owner);
-      });
 
+        await expect(instance.removeInvitation(user1Address)).to.be.revertedWith("Already registered");
+      });
+    });
+
+    context("when the caller is not the SupporterRules", () => {
       it("should return error message", async () => {
-        await expect(instance.connect(user1Address).rejectInvitation()).to.be.revertedWith("Already registered");
+        await instance.setContractCall(owner, owner, user2Address);
+        await addInvitation(owner, user1Address, userTypes.Supporter, owner);
+
+        await expect(instance.removeInvitation(user1Address)).to.be.revertedWith("Caller must be system contract");
+      });
+    });
+
+    context("without allowed caller", () => {
+      it("should return error message", async () => {
+        await instance.setContractCall(owner, owner, user2Address);
+        await addInvitation(owner, user1Address, userTypes.Supporter, owner);
+
+        await expect(instance.connect(user2Address).removeInvitation(user1Address)).to.be.revertedWith(
+          "Not allowed caller"
+        );
       });
     });
   });

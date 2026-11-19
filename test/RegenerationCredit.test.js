@@ -20,7 +20,7 @@ describe("RegenerationCredit", (accounts) => {
   };
 
   const addSupporter = async (name, description, profilePhoto, from) => {
-    await supporterRules.connect(from).addSupporter(name, description, profilePhoto);
+    await supporterRules.connect(from).addSupporter(name, description, profilePhoto, ethers.ZeroAddress);
   };
 
   const addResearcher = async (name, from) => {

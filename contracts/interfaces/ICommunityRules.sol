@@ -69,6 +69,12 @@ interface ICommunityRules {
   function addInvitation(address inviter, address invitee, CommunityTypes.UserType userType) external;
 
   /**
+   * @notice Removes the invitation of an address that registers without accepting it.
+   * @param invitee The address whose invitation is removed.
+   */
+  function removeInvitation(address invitee) external;
+
+  /**
    * @notice Retrieves the settings configuration for a specific UserType.
    * @dev Returns a struct from which specific settings can be accessed.
    * @param userType The UserType for which to get the settings.

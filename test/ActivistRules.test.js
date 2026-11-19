@@ -56,7 +56,7 @@ describe("ActivistRules", () => {
     instanceContractFactory = await ethers.getContractFactory("ActivistRules");
     instance = await instanceContractFactory.deploy(communityRules.target, activistPool.target);
 
-    await communityRules.setContractCall(owner, owner);
+    await communityRules.setContractCall(owner, owner, ethers.ZeroAddress);
     await instance.setContractCall(owner, owner);
     await activistPool.setContractCall(instance);
 
@@ -161,7 +161,7 @@ describe("ActivistRules", () => {
         beforeEach(async () => {
           await addActivist("Activist A", activ1Address);
 
-          await communityRules.setContractCall(activ1Address, owner);
+          await communityRules.setContractCall(activ1Address, owner, ethers.ZeroAddress);
           await addInvitation(activ1Address, regenerator1Address, userTypes.Regenerator, activ1Address);
           await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
 
@@ -239,7 +239,7 @@ describe("ActivistRules", () => {
 
       context("when activist is not registered", () => {
         beforeEach(async () => {
-          await communityRules.setContractCall(activ1Address, owner);
+          await communityRules.setContractCall(activ1Address, owner, ethers.ZeroAddress);
           await addInvitation(activ1Address, regenerator1Address, userTypes.Regenerator, activ1Address);
           await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
 
@@ -275,7 +275,7 @@ describe("ActivistRules", () => {
   describe("#withdraw", () => {
     context("when is a activist", () => {
       beforeEach(async () => {
-        await communityRules.setContractCall(activ1Address, owner);
+        await communityRules.setContractCall(activ1Address, owner, ethers.ZeroAddress);
 
         await addActivist("Activist A", activ1Address);
       });
@@ -337,7 +337,7 @@ describe("ActivistRules", () => {
               await addActivist("Activist B", activ3Address);
 
               await communityRules.newAllowedCaller(activ3Address);
-              await communityRules.setContractCall(activ3Address, owner);
+              await communityRules.setContractCall(activ3Address, owner, ethers.ZeroAddress);
               await addInvitation(activ3Address, inspector2Address, userTypes.Inspector, activ3Address);
               await communityRules.addUser(inspector2Address, userTypes.Inspector, owner);
 

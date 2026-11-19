@@ -101,15 +101,35 @@ contract SupporterRules is ReentrancyGuard {
    * Requires name and profile photo length to be within limits.
    * @param name The name of the supporter (max 100 characters).
    * @param description Brief description of the the supporter (max 200 characters).
+   * The new supporter declares the inviter they accept. An invitation stored for the address only binds
+   * the account when it matches the declared inviter, so an invitation placed before registration
+   * (or ordered before the registration transaction) can never capture the offset commission.
+   * Declaring no inviter (zero address) discards any invitation received.
+   * @param name The name of the supporter (max 100 characters).
+   * @param description Brief description of the the supporter (max 200 characters).
    * @param profilePhoto The profile photo URL/hash of the supporter (max 150 characters).
+   * @param expectedInviter The inviter accepted by the supporter, or the zero address for no inviter.
    */
-  function addSupporter(string memory name, string memory description, string memory profilePhoto) external {
+  function addSupporter(
+    string memory name,
+    string memory description,
+    string memory profilePhoto,
+    address expectedInviter
+  ) external {
     require(
       bytes(name).length <= MAX_NAME_LENGTH &&
         bytes(description).length <= MAX_TEXT_LENGTH &&
         bytes(profilePhoto).length <= MAX_HASH_LENGTH,
       "Max characters reached"
     );
+
+    CommunityTypes.Invitation memory invitation = communityRules.getInvitation(msg.sender);
+
+    if (expectedInviter == address(0)) {
+      if (invitation.invited != address(0)) communityRules.removeInvitation(msg.sender);
+    } else {
+      require(invitation.inviter == expectedInviter && invitation.userType == USER_TYPE, "Unexpected inviter");
+    }
 
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 

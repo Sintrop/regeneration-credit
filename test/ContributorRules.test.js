@@ -59,9 +59,9 @@ describe("ContributorRules", (accounts) => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await communityRules.setContractCall(owner, owner);
+    await communityRules.setContractCall(owner, owner, ethers.ZeroAddress);
     await communityRules.connect(from).addInvitation(inviter, invited, userType);
-    await communityRules.setContractCall(instance.target, owner);
+    await communityRules.setContractCall(instance.target, owner, ethers.ZeroAddress);
   };
 
   beforeEach(async () => {
@@ -680,7 +680,7 @@ describe("ContributorRules", (accounts) => {
           await instance.connect(user3Address).addContributionValidation(2, "justification");
 
           await advanceBlock(contributorPoolParams.blocksPerEra);
-          await communityRules.setContractCall(owner, validationRules.target);
+          await communityRules.setContractCall(owner, validationRules.target, ethers.ZeroAddress);
 
           await addContribution(contr1Address);
 
@@ -932,7 +932,7 @@ describe("ContributorRules", (accounts) => {
           await instance.connect(user4Address).addContributionValidation(2, "justification");
 
           await advanceBlock(10);
-          await communityRules.setContractCall(owner, validationRules.target);
+          await communityRules.setContractCall(owner, validationRules.target, ethers.ZeroAddress);
 
           await instance.connect(user5Address).addContributionValidation(3, "justification");
           await instance.connect(user2Address).addContributionValidation(3, "justification");
@@ -1152,7 +1152,7 @@ describe("ContributorRules", (accounts) => {
           await instance.connect(user4Address).addContributionValidation(2, "justification");
 
           await advanceBlock(10);
-          await communityRules.setContractCall(owner, validationRules.target);
+          await communityRules.setContractCall(owner, validationRules.target, ethers.ZeroAddress);
 
           await instance.connect(user5Address).addContributionValidation(3, "justification");
           await instance.connect(user2Address).addContributionValidation(3, "justification");
