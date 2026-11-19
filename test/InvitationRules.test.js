@@ -170,6 +170,7 @@ describe("InvitationRules", () => {
           await addActivist("Activist E", user8Address);
 
           await communityRules.setContractCall(instance, owner);
+          await advanceBlock(await userTypeDelayBlocks(userTypes.Activist));
         });
 
         context("when can invite", () => {
@@ -398,6 +399,7 @@ describe("InvitationRules", () => {
           await addDeveloper("Developer C", user5Address);
           await addDeveloper("Developer D", user6Address);
           await addDeveloper("Developer E", user7Address);
+          await advanceBlock(await userTypeDelayBlocks(userTypes.Developer));
         });
 
         context("when can invite", () => {
@@ -524,6 +526,7 @@ describe("InvitationRules", () => {
           await addContributor("Contributor C", user5Address);
           await addContributor("Contributor D", user6Address);
           await addContributor("Contributor E", user7Address);
+          await advanceBlock(await userTypeDelayBlocks(userTypes.Contributor));
         });
 
         context("when can invite", () => {
@@ -651,6 +654,7 @@ describe("InvitationRules", () => {
           await addResearcher("Researcher C", user5Address);
           await addResearcher("Researcher D", user6Address);
           await addResearcher("Researcher E", user7Address);
+          await advanceBlock(await userTypeDelayBlocks(userTypes.Researcher));
         });
 
         context("when can invite", () => {
@@ -766,6 +770,7 @@ describe("InvitationRules", () => {
         beforeEach(async () => {
           await addInvitation(owner, user2Address, userTypes.Supporter, owner);
           await addUser(user2Address, userTypes.Supporter, owner);
+          await advanceBlock(await userTypeDelayBlocks(userTypes.Supporter));
         });
 
         context("when send to supporter", () => {
@@ -814,6 +819,52 @@ describe("InvitationRules", () => {
     });
   });
 
+  describe("#invite delay for new users", () => {
+    beforeEach(async () => {
+      await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+      await addInvitation(owner, user2Address, userTypes.Developer, owner);
+      await addDeveloper("Developer A", user2Address);
+    });
+
+    context("when the user never invited and was invited recently", () => {
+      it("revert", async () => {
+        await expect(instance.connect(user2Address).invite(user4Address, userTypes.Developer)).to.be.revertedWith(
+          "Invite delay not reached"
+        );
+      });
+
+      it("revert before the delay counted from the user invitation", async () => {
+        const blocks = await userTypeDelayBlocks(userTypes.Developer);
+        await advanceBlock(blocks / 2n);
+
+        await expect(instance.connect(user2Address).invite(user4Address, userTypes.Developer)).to.be.revertedWith(
+          "Invite delay not reached"
+        );
+      });
+    });
+
+    context("when the delay counted from the user invitation has passed", () => {
+      it("invite with success", async () => {
+        await advanceBlock(await userTypeDelayBlocks(userTypes.Developer));
+
+        await instance.connect(user2Address).invite(user4Address, userTypes.Developer);
+
+        const invitation = await communityRules.invitations(user4Address);
+        expect(invitation.inviter).to.equal(user2Address.address);
+      });
+    });
+
+    context("when the user has no invitation", () => {
+      it("invite with success", async () => {
+        await addUser(user5Address, userTypes.Supporter, owner);
+
+        await instance.connect(user5Address).invite(user6Address, userTypes.Supporter);
+
+        const invitation = await communityRules.invitations(user6Address);
+        expect(invitation.inviter).to.equal(user5Address.address);
+      });
+    });
+  });
   describe("#inviteRegeneratorInspector", () => {
     beforeEach(async () => {
       await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
