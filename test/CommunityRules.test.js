@@ -781,21 +781,33 @@ describe("CommunityRules", function () {
       await addUser(user5Address, userTypes.Researcher, owner);
     });
 
-    context("when have 4 voters", () => {
+    context("when have 3 voters", () => {
       context("when all voters is not denied", () => {
-        it("must returns 4 voters", async () => {
+        it("must returns 3 voters", async () => {
           const votersCount = await instance.votersCount();
 
-          expect(votersCount).to.equal(4);
+          expect(votersCount).to.equal(3);
         });
       });
 
       context("when some voters is  denied", () => {
         beforeEach(async () => {
-          await instance.setToDenied(user2Address);
+          await instance.setToDenied(user3Address);
         });
 
         it("must return only valid voters", async () => {
+          const votersCount = await instance.votersCount();
+
+          expect(votersCount).to.equal(2);
+        });
+      });
+
+      context("when an activist is denied", () => {
+        beforeEach(async () => {
+          await instance.setToDenied(user2Address);
+        });
+
+        it("must not change voters count", async () => {
           const votersCount = await instance.votersCount();
 
           expect(votersCount).to.equal(3);
