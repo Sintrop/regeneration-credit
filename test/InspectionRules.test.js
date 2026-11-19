@@ -1100,7 +1100,7 @@ describe("InspectionRules", () => {
                   context("when select REGENERATIVE_5", () => {
                     beforeEach(async () => {
                       const treesResultValue = 25001; // e.g., >= 25000
-                      const biodiversityResultValue = 81; // e.g., >= 80
+                      const biodiversityResultValue = 121; // e.g., >= 120
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
@@ -1116,7 +1116,7 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_4", () => {
                     beforeEach(async () => {
-                      await realizeInspection(1, report, 12501, 41, inspectorAddress);
+                      await realizeInspection(1, report, 12501, 81, inspectorAddress);
                     });
                     it("should add 16 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
@@ -1126,7 +1126,7 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_3", () => {
                     beforeEach(async () => {
-                      await realizeInspection(1, report, 6251, 21, inspectorAddress);
+                      await realizeInspection(1, report, 6251, 41, inspectorAddress);
                     });
                     it("should add 8 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
@@ -1136,7 +1136,7 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_2", () => {
                     beforeEach(async () => {
-                      await realizeInspection(1, report, 3126, 11, inspectorAddress);
+                      await realizeInspection(1, report, 3126, 21, inspectorAddress);
                     });
                     it("should add 4 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
@@ -1146,7 +1146,7 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_1", () => {
                     beforeEach(async () => {
-                      await realizeInspection(1, report, 21, 6, inspectorAddress);
+                      await realizeInspection(1, report, 31, 11, inspectorAddress);
                     });
                     it("should add 2 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
@@ -1156,7 +1156,7 @@ describe("InspectionRules", () => {
 
                   context("when select NEUTRO", () => {
                     beforeEach(async () => {
-                      await realizeInspection(1, report, 19, 4, inspectorAddress);
+                      await realizeInspection(1, report, 29, 9, inspectorAddress);
                     });
                     it("should add 0 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
