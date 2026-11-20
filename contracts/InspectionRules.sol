@@ -460,25 +460,29 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * Updates global impact counters, decreases `inspectionsCount` and `realizedInspectionsCount`,
    * marks the inspection as `INVALIDATED`, and records the invalidation time.
    * It also adds penalties to the involved regenerator and inspector.
+   * A zero score inspection recorded no impact, inspections or levels, so only its status is updated.
    * @param inspection A reference to the `Inspection` struct being invalidated.
    */
   function _invalidateInspection(Inspection storage inspection) private {
-    // Decrement era impact metrics.
-    impactPerEra[inspection.inspectedAtEra].trees -= inspection.treesResult;
-    impactPerEra[inspection.inspectedAtEra].biodiversity -= inspection.biodiversityResult;
-    impactPerEra[inspection.inspectedAtEra].realizedInspections--;
-
     inspectionsCount--; // Decrement valid inspections count
 
     // Update inspection status
     inspection.status = InspectionStatus.INVALIDATED;
     inspection.invalidatedAt = block.number;
 
-    regeneratorRules.decrementInspections(inspection.regenerator);
-    regeneratorRules.removeInspectionLevels(inspection.regenerator, inspection.regenerationScore);
+    // Only revert the effects recorded by inspections with a positive score.
+    if (inspection.regenerationScore > 0) {
+      // Decrement era impact metrics.
+      impactPerEra[inspection.inspectedAtEra].trees -= inspection.treesResult;
+      impactPerEra[inspection.inspectedAtEra].biodiversity -= inspection.biodiversityResult;
+      impactPerEra[inspection.inspectedAtEra].realizedInspections--;
 
-    inspectorRules.decrementInspections(inspection.inspector);
-    inspectorRules.removePoolLevels(inspection.inspector, false);
+      regeneratorRules.decrementInspections(inspection.regenerator);
+      regeneratorRules.removeInspectionLevels(inspection.regenerator, inspection.regenerationScore);
+
+      inspectorRules.decrementInspections(inspection.inspector);
+      inspectorRules.removePoolLevels(inspection.inspector, false);
+    }
 
     emit InspectionInvalidated(inspection.id, inspection.inspector, inspection.regenerator, block.number);
   }
