@@ -429,7 +429,8 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
     contribution.invalidatedAt = block.number;
     contributions[contribution.id] = contribution;
     contributors[contribution.user].pool.level -= RESOURCE_LEVEL;
-    totalActiveLevels--;
+    // Denied users' levels were already removed from totalActiveLevels.
+    if (!communityRules.isDenied(contribution.user)) totalActiveLevels--;
 
     contributorPool.removePoolLevels(contribution.user, false);
   }
