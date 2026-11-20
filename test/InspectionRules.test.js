@@ -1179,7 +1179,9 @@ describe("InspectionRules", () => {
       });
     });
 
-    context("when trying to vote on a zero score inspection", () => {
+    context("when a zero score inspection is invalidated", () => {
+      let inspectionsCountBefore;
+
       beforeEach(async () => {
         await requestInspection(regeneratorAddress);
         await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
@@ -1187,17 +1189,49 @@ describe("InspectionRules", () => {
         await realizeInspection(1, report, 0, 0, inspectorAddress);
 
         await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
         await addDeveloper("User 1", user1Address);
+        await addDeveloper("User 2", user2Address);
+
+        inspectionsCountBefore = await instance.inspectionsCount();
+
+        await instance.connect(user1Address).addInspectionValidation(1, "justification");
+        await instance.connect(user2Address).addInspectionValidation(1, "justification");
       });
 
-      it("should revert because zero score inspections have no impact to invalidate", async () => {
-        expect((await instance.getInspection(1)).regenerationScore).to.equal(0);
-        await expect(instance.connect(user1Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
-          "Zero score inspection"
-        );
+      it("should mark the inspection as invalidated", async () => {
+        const inspection = await instance.getInspection(1);
+
+        expect(inspection.regenerationScore).to.equal(0);
+        expect(inspection.status).to.equal(3);
+        expect(await instance.inspectionPenalized(1)).to.equal(true);
+      });
+
+      it("should add a penalty to the inspector", async () => {
+        expect(await inspectorRules.totalPenalties(inspectorAddress)).to.equal(1);
+      });
+
+      it("should decrement the inspections count", async () => {
+        expect(await instance.inspectionsCount()).to.equal(inspectionsCountBefore - 1n);
+      });
+
+      it("should keep the era impact unchanged", async () => {
+        const impactPerEra = await instance.impactPerEra(1);
+
+        expect(impactPerEra.trees).to.equal(0);
+        expect(impactPerEra.biodiversity).to.equal(0);
+        expect(impactPerEra.realizedInspections).to.equal(0);
+      });
+
+      it("should keep the regenerator and inspector counters unchanged", async () => {
+        const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+        const inspector = await inspectorRules.getInspector(inspectorAddress);
+
+        expect(regenerator.totalInspections).to.equal(0);
+        expect(regenerator.regenerationScore.score).to.equal(0);
+        expect(inspector.totalInspections).to.equal(0);
       });
     });
-
     context("with developer", () => {
       beforeEach(async () => {
         await addInvitation(owner, user1Address, userTypes.Developer, owner);

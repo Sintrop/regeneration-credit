@@ -328,7 +328,6 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * - The caller must have waited the required `timeBetweenVotes` (from `validationRules.waitedTimeBetweenVotes`).
    * - The `inspectionId` must correspond to an existing and currently valid inspection.
    * - The inspection must have been realized (`INSPECTED` status).
-   * - The inspection must have a regeneration score greater than zero.
    * - The current `poolCurrentEra() must be less than or equal to the `inspection's `inspectedAtEra` .
    *
    * @param id The unique ID of the inspection to be validated/invalidated.
@@ -355,7 +354,6 @@ contract InspectionRules is Ownable, ReentrancyGuard {
     require(regeneratorRules.poolCurrentEra() == inspection.inspectedAtEra, "Can't validade anymore");
     require(inspection.id >= 1 && inspection.id <= inspectionsTotalCount, "Inspection does not exist");
     require(inspection.status == InspectionStatus.INSPECTED, "Only to inspected inspections");
-    require(inspection.regenerationScore > 0, "Zero score inspection");
 
     inspection.validationsCount += 1;
 
@@ -463,25 +461,29 @@ contract InspectionRules is Ownable, ReentrancyGuard {
    * Updates global impact counters, decreases `inspectionsCount` and `realizedInspectionsCount`,
    * marks the inspection as `INVALIDATED`, and records the invalidation time.
    * It also adds penalties to the involved regenerator and inspector.
+   * A zero score inspection recorded no impact, inspections or levels, so only its status is updated.
    * @param inspection A reference to the `Inspection` struct being invalidated.
    */
   function _invalidateInspection(Inspection storage inspection) private {
-    // Decrement era impact metrics.
-    impactPerEra[inspection.inspectedAtEra].trees -= inspection.treesResult;
-    impactPerEra[inspection.inspectedAtEra].biodiversity -= inspection.biodiversityResult;
-    impactPerEra[inspection.inspectedAtEra].realizedInspections--;
-
     inspectionsCount--; // Decrement valid inspections count
 
     // Update inspection status
     inspection.status = InspectionStatus.INVALIDATED;
     inspection.invalidatedAt = block.number;
 
-    regeneratorRules.decrementInspections(inspection.regenerator);
-    regeneratorRules.removeInspectionLevels(inspection.regenerator, inspection.regenerationScore);
+    // Only revert the effects recorded by inspections with a positive score.
+    if (inspection.regenerationScore > 0) {
+      // Decrement era impact metrics.
+      impactPerEra[inspection.inspectedAtEra].trees -= inspection.treesResult;
+      impactPerEra[inspection.inspectedAtEra].biodiversity -= inspection.biodiversityResult;
+      impactPerEra[inspection.inspectedAtEra].realizedInspections--;
 
-    inspectorRules.decrementInspections(inspection.inspector);
-    inspectorRules.removePoolLevels(inspection.inspector, false);
+      regeneratorRules.decrementInspections(inspection.regenerator);
+      regeneratorRules.removeInspectionLevels(inspection.regenerator, inspection.regenerationScore);
+
+      inspectorRules.decrementInspections(inspection.inspector);
+      inspectorRules.removePoolLevels(inspection.inspector, false);
+    }
 
     emit InspectionInvalidated(inspection.id, inspection.inspector, inspection.regenerator, block.number);
   }
