@@ -610,6 +610,7 @@ describe("ValidationRules", () => {
 
             await developerRules.connect(user1Address).addReport("description", "report");
             await developerRules.connect(user2Address).addReport("description", "report");
+            await developerRules.connect(user3Address).addReport("description", "report");
           });
 
           context("when current era is 1", () => {
@@ -622,16 +623,17 @@ describe("ValidationRules", () => {
                 await addRegenerator("Regenerator B", regenerator2Address);
 
                 await instance.connect(user1Address).addUserValidation(regenerator1Address, "my justification");
+                await instance.connect(user2Address).addUserValidation(regenerator1Address, "my justification");
 
                 receipt = await instance
-                  .connect(user2Address)
+                  .connect(user3Address)
                   .addUserValidation(regenerator1Address, "my justification");
               });
 
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(regenerator1Address, 1);
 
-                expect(validations).to.equal(2);
+                expect(validations).to.equal(3);
               });
 
               it("user type must be denied", async () => {
@@ -696,12 +698,13 @@ describe("ValidationRules", () => {
 
                 await instance.connect(user1Address).addUserValidation(inspector1Address, "my justification");
                 await instance.connect(user2Address).addUserValidation(inspector1Address, "my justification");
+                await instance.connect(user3Address).addUserValidation(inspector1Address, "my justification");
               });
 
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(inspector1Address, 5);
 
-                expect(validations).to.equal(2);
+                expect(validations).to.equal(3);
               });
 
               it("user must be denied", async () => {
@@ -742,12 +745,13 @@ describe("ValidationRules", () => {
 
                 await instance.connect(user1Address).addUserValidation(contributor1Address, "my justification");
                 await instance.connect(user2Address).addUserValidation(contributor1Address, "my justification");
+                await instance.connect(user3Address).addUserValidation(contributor1Address, "my justification");
               });
 
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(contributor1Address, 1);
 
-                expect(validations).to.equal(2);
+                expect(validations).to.equal(3);
               });
 
               it("user must be denied", async () => {
@@ -788,12 +792,13 @@ describe("ValidationRules", () => {
 
                 await instance.connect(user1Address).addUserValidation(dev1Address, "my justification");
                 await instance.connect(user2Address).addUserValidation(dev1Address, "my justification");
+                await instance.connect(user3Address).addUserValidation(dev1Address, "my justification");
               });
 
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(dev1Address, 1);
 
-                expect(validations).to.equal(2);
+                expect(validations).to.equal(3);
               });
 
               it("user must be denied", async () => {
@@ -834,12 +839,13 @@ describe("ValidationRules", () => {
 
                 await instance.connect(user1Address).addUserValidation(resea1Address, "my justification");
                 await instance.connect(user2Address).addUserValidation(resea1Address, "my justification");
+                await instance.connect(user3Address).addUserValidation(resea1Address, "my justification");
               });
 
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(resea1Address, 1);
 
-                expect(validations).to.equal(2);
+                expect(validations).to.equal(3);
               });
 
               it("user must be denied", async () => {
@@ -885,12 +891,13 @@ describe("ValidationRules", () => {
 
                 await instance.connect(user1Address).addUserValidation(regenerator1Address, "my justification");
                 await instance.connect(user2Address).addUserValidation(regenerator1Address, "my justification");
+                await instance.connect(user3Address).addUserValidation(regenerator1Address, "my justification");
               });
 
               it("should add validation", async () => {
                 const validations = await instance.getUserValidations(regenerator1Address, 2);
 
-                expect(validations).to.equal(2);
+                expect(validations).to.equal(3);
               });
 
               it("user type must be denied", async () => {
@@ -1090,10 +1097,10 @@ describe("ValidationRules", () => {
         await mockContract.mock.votersCount.returns(8);
       });
 
-      it("returns 2", async () => {
+      it("returns 3", async () => {
         const votesToInvalidate = await instance.votesToInvalidate();
 
-        expect(votesToInvalidate).to.equal(2);
+        expect(votesToInvalidate).to.equal(3);
       });
     });
 
@@ -1265,6 +1272,9 @@ describe("ValidationRules", () => {
 
         await addInvitation(owner, user1Address, userTypes.Developer, owner);
         await addDeveloper("Developer C", user1Address);
+
+        await addInvitation(owner, user20Address, userTypes.Developer, owner);
+        await addDeveloper("Developer E", user20Address);
       });
 
       context("when can withdraw tokens", () => {
@@ -1273,6 +1283,7 @@ describe("ValidationRules", () => {
             beforeEach(async () => {
               await instance.connect(dev1Address).addUserValidation(user1Address, "my justification");
               await instance.connect(dev2Address).addUserValidation(user1Address, "my justification");
+              await instance.connect(user20Address).addUserValidation(user1Address, "my justification");
 
               await advanceBlock(validationPoolParams.blocksPerEra + 2);
               await instance.connect(dev1Address).withdraw();
@@ -1303,11 +1314,13 @@ describe("ValidationRules", () => {
 
                 await instance.connect(dev1Address).addUserValidation(user1Address, "my justification");
                 await instance.connect(dev2Address).addUserValidation(user1Address, "my justification");
+                await instance.connect(user20Address).addUserValidation(user1Address, "my justification");
 
                 await advanceBlock(10);
 
                 await instance.connect(dev2Address).addUserValidation(user2Address, "my justification");
                 await instance.connect(dev1Address).addUserValidation(user2Address, "my justification");
+                await instance.connect(user20Address).addUserValidation(user2Address, "my justification");
 
                 await advanceBlock(validationPoolParams.blocksPerEra + 2);
                 await instance.connect(dev1Address).withdraw();
@@ -1366,10 +1379,12 @@ describe("ValidationRules", () => {
 
             await instance.connect(dev1Address).addUserValidation(user1Address, "my justification");
             await instance.connect(dev2Address).addUserValidation(user1Address, "my justification");
+            await instance.connect(user20Address).addUserValidation(user1Address, "my justification");
             await advanceBlock(validationPoolParams.blocksPerEra + 2);
 
             await instance.connect(dev1Address).addUserValidation(user2Address, "my justification");
             await instance.connect(dev2Address).addUserValidation(user2Address, "my justification");
+            await instance.connect(user20Address).addUserValidation(user2Address, "my justification");
             await advanceBlock(validationPoolParams.blocksPerEra + 2);
 
             await instance.connect(dev1Address).withdraw();

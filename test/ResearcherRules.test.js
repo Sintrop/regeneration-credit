@@ -419,9 +419,12 @@ describe("ResearcherRules", () => {
         await addDeveloper("User A", user1Address);
         await addDeveloper("User B", user2Address);
         await addDeveloper("User C", user3Address);
+        await addInvitation(owner, user4Address, userTypes.Developer, owner);
+        await addDeveloper("User D", user4Address);
 
         await instance.connect(user1Address).addResearchValidation(1, "justification");
         await instance.connect(user2Address).addResearchValidation(1, "justification");
+        await instance.connect(user4Address).addResearchValidation(1, "justification");
       });
 
       it("should revert because the research is no longer valid", async () => {
@@ -453,6 +456,7 @@ describe("ResearcherRules", () => {
 
             await instance.connect(user1Address).addResearchValidation(1, "justification");
             await instance.connect(user2Address).addResearchValidation(1, "justification");
+            await instance.connect(resea1Address).addResearchValidation(1, "justification");
           });
 
           it("set valid field to false", async () => {
@@ -547,12 +551,14 @@ describe("ResearcherRules", () => {
           await addResearch(resea1Address);
           await instance.connect(user1Address).addResearchValidation(1, "justification");
           await instance.connect(user2Address).addResearchValidation(1, "justification");
+          await instance.connect(resea1Address).addResearchValidation(1, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
           await addResearch(resea1Address);
           await instance.connect(user1Address).addResearchValidation(2, "justification");
           await instance.connect(user3Address).addResearchValidation(2, "justification");
+          await instance.connect(resea1Address).addResearchValidation(2, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
@@ -564,6 +570,7 @@ describe("ResearcherRules", () => {
           await addResearch(user2Address);
           await instance.connect(user1Address).addResearchValidation(3, "justification");
           await instance.connect(user2Address).addResearchValidation(3, "justification");
+          await instance.connect(resea1Address).addResearchValidation(3, "justification");
         });
 
         it("user type must be DENIED", async () => {
@@ -589,6 +596,7 @@ describe("ResearcherRules", () => {
             await advanceBlock(10);
             await instance.connect(user3Address).addResearchValidation(4, "justification");
             await instance.connect(user2Address).addResearchValidation(4, "justification");
+            await instance.connect(user1Address).addResearchValidation(4, "justification");
           });
 
           it("should not remove levels from totalActiveLevels again", async () => {
@@ -629,6 +637,7 @@ describe("ResearcherRules", () => {
 
             await instance.connect(user1Address).addResearchValidation(1, "justification");
             await instance.connect(user2Address).addResearchValidation(1, "justification");
+            await instance.connect(resea1Address).addResearchValidation(1, "justification");
           });
 
           it("should return error message", async () => {
@@ -706,6 +715,7 @@ describe("ResearcherRules", () => {
 
             await instance.connect(user1Address).addResearchValidation(1, "justification");
             await instance.connect(user2Address).addResearchValidation(1, "justification");
+            await instance.connect(user3Address).addResearchValidation(1, "justification");
           });
 
           it("set valid field to false", async () => {
@@ -807,12 +817,14 @@ describe("ResearcherRules", () => {
           await addResearch(resea1Address);
           await instance.connect(user1Address).addResearchValidation(1, "justification");
           await instance.connect(user2Address).addResearchValidation(1, "justification");
+          await instance.connect(user3Address).addResearchValidation(1, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
           await addResearch(resea1Address);
           await instance.connect(user1Address).addResearchValidation(2, "justification");
           await instance.connect(user3Address).addResearchValidation(2, "justification");
+          await instance.connect(user2Address).addResearchValidation(2, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
@@ -823,6 +835,7 @@ describe("ResearcherRules", () => {
           await addResearch(resea1Address);
           await instance.connect(user1Address).addResearchValidation(3, "justification");
           await instance.connect(user2Address).addResearchValidation(3, "justification");
+          await instance.connect(user3Address).addResearchValidation(3, "justification");
         });
 
         it("user type must be DENIED", async () => {
@@ -871,11 +884,13 @@ describe("ResearcherRules", () => {
           beforeEach(async () => {
             await addDeveloper("User B", user2Address);
             await addDeveloper("User C", user3Address);
+            await addDeveloper("User D", user4Address);
 
             await addResearch(resea1Address);
 
             await instance.connect(user1Address).addResearchValidation(1, "justification");
             await instance.connect(user2Address).addResearchValidation(1, "justification");
+            await instance.connect(user4Address).addResearchValidation(1, "justification");
           });
 
           it("should return error message", async () => {
@@ -917,6 +932,7 @@ describe("ResearcherRules", () => {
 
             await instance.connect(user1Address).addResearchValidation(1, "justification");
             await instance.connect(user2Address).addResearchValidation(1, "justification");
+            await instance.connect(user3Address).addResearchValidation(1, "justification");
           });
 
           it("set valid field to false", async () => {
@@ -1005,12 +1021,14 @@ describe("ResearcherRules", () => {
           await addResearch(resea1Address);
           await instance.connect(user1Address).addResearchValidation(1, "justification");
           await instance.connect(user2Address).addResearchValidation(1, "justification");
+          await instance.connect(user3Address).addResearchValidation(1, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
           await addResearch(resea1Address);
           await instance.connect(user1Address).addResearchValidation(2, "justification");
           await instance.connect(user3Address).addResearchValidation(2, "justification");
+          await instance.connect(user2Address).addResearchValidation(2, "justification");
 
           await advanceBlock(args.blocksPerEra);
 
@@ -1021,6 +1039,7 @@ describe("ResearcherRules", () => {
           await addResearch(resea1Address);
           await instance.connect(user1Address).addResearchValidation(3, "justification");
           await instance.connect(user2Address).addResearchValidation(3, "justification");
+          await instance.connect(user3Address).addResearchValidation(3, "justification");
         });
 
         it("user type must be DENIED", async () => {
@@ -1055,11 +1074,13 @@ describe("ResearcherRules", () => {
           beforeEach(async () => {
             await addContributor("User B", user2Address);
             await addContributor("User C", user3Address);
+            await addContributor("User D", user4Address);
 
             await addResearch(resea1Address);
 
             await instance.connect(user1Address).addResearchValidation(1, "justification");
             await instance.connect(user2Address).addResearchValidation(1, "justification");
+            await instance.connect(user4Address).addResearchValidation(1, "justification");
           });
 
           it("should return error message", async () => {

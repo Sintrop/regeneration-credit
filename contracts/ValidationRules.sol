@@ -36,7 +36,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
   uint32 private constant VOTERS_THRESHOLD_LEVEL_2 = 167;
 
   /// @notice Votes thresholds to invalidate a resource/user.
-  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_1 = 2;
+  uint32 private constant VOTES_TO_INVALIDATE_LEVEL_1 = 3;
   uint32 private constant VOTES_TO_INVALIDATE_LEVEL_2 = 5;
   uint32 private constant VOTES_TO_INVALIDATE_LEVEL_3 = 360;
 
@@ -338,7 +338,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
    */
   function votesToInvalidate() public view returns (uint256) {
     uint256 voters = communityRules.votersCount();
-    // Threshold 1: Very early stage, requires a fixed number of 2 votes.
+    // Threshold 1: Very early stage, requires a fixed number of 3 votes.
     if (voters < VOTERS_THRESHOLD_LEVEL_1) {
       return VOTES_TO_INVALIDATE_LEVEL_1;
     }
