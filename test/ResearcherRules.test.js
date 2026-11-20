@@ -1,3 +1,4 @@
+const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { userTypes } = require("./shared/user_types");
 const { advanceBlock } = require("./shared/advance_block");
 const { expect } = require("chai");
@@ -245,6 +246,9 @@ describe("ResearcherRules", () => {
           });
 
           it("withdraw 1666666666666666666666666 tokens", async () => {
+            const [event] = await instance.queryFilter(instance.filters.ResearcherWithdrawalInitiated(resea1Address));
+            expect(event.args.era).to.equal(1);
+
             const balanceOf = await regenerationCredit.balanceOf(resea1Address);
             const expectedBalance = 1666666666666666666666666n;
 
@@ -578,6 +582,26 @@ describe("ResearcherRules", () => {
           const totalActiveLevels = await instance.totalActiveLevels();
 
           expect(totalActiveLevels).to.equal(1);
+        });
+
+        context("when another valid research of the denied researcher is invalidated", () => {
+          beforeEach(async () => {
+            await advanceBlock(10);
+            await instance.connect(user3Address).addResearchValidation(4, "justification");
+            await instance.connect(user2Address).addResearchValidation(4, "justification");
+          });
+
+          it("should not remove levels from totalActiveLevels again", async () => {
+            const totalActiveLevels = await instance.totalActiveLevels();
+
+            expect(totalActiveLevels).to.equal(1);
+          });
+
+          it("should remove the invalidated research level from researcher", async () => {
+            const researcher = await instance.getResearcher(resea1Address);
+
+            expect(researcher.pool.level).to.eq(0);
+          });
         });
       });
 
@@ -1112,6 +1136,16 @@ describe("ResearcherRules", () => {
     });
   });
 
+  describe("ResearcherLevelIncreased", () => {
+    it("should be emitted when a research is published", async () => {
+      await addResearcher("Researcher A", resea1Address);
+
+      await expect(instance.connect(resea1Address).addResearch("title", "thesis", "fileURL"))
+        .to.emit(instance, "ResearcherLevelIncreased")
+        .withArgs(resea1Address.address, 1, anyValue);
+    });
+  });
+
   describe("#addCalculatorItem", () => {
     context("when is not a researcher", () => {
       it("should return error", async () => {
@@ -1133,6 +1167,11 @@ describe("ResearcherRules", () => {
         });
 
         it("should add researcher publishedItems", async () => {
+          const [event] = await instance.queryFilter(instance.filters.CalculatorItemAdded());
+          expect(event.args.itemId).to.equal(1);
+          expect(event.args.researcherAddress).to.equal(resea1Address.address);
+          expect(event.args.item).to.equal("item");
+
           const researcher = await instance.getResearcher(resea1Address);
           const publishedItems = await researcher.publishedItems;
 
@@ -1175,6 +1214,10 @@ describe("ResearcherRules", () => {
 
       context("when did not publish a method before", () => {
         it("add an evaluationMethod", async () => {
+          const [event] = await instance.queryFilter(instance.filters.EvaluationMethodAdded());
+          expect(event.args.methodId).to.equal(1);
+          expect(event.args.researcherAddress).to.equal(resea1Address.address);
+
           const firstEvaluationMethod = await instance.evaluationMethodsCount();
 
           expect(firstEvaluationMethod).to.equal(1);

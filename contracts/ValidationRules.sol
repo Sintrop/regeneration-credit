@@ -141,7 +141,7 @@ contract ValidationRules is Callable, ReentrancyGuard {
    * - Caller must have waited `timeBetweenVotes` since their last vote.
    * - Caller must vote only once per user per era.
    * - The target user must be registered and not already denied.
-   * - If the target user is a Regenerator, they must have fewer than 4 completed inspections to be eligible for invalidation.
+   * - If the target user is a Regenerator, they must have fewer than 6 completed inspections to be eligible for invalidation.
    *
    * @param userAddress Invalidation user address.
    * @param justification Invalidation justification (Max characters).

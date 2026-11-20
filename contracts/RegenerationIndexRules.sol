@@ -22,15 +22,15 @@ contract RegenerationIndexRules {
   uint32 private constant TREES_THRESHOLD_LEVEL_3 = 12500;
   uint32 private constant TREES_THRESHOLD_LEVEL_4 = 6250;
   uint32 private constant TREES_THRESHOLD_LEVEL_5 = 3125;
-  uint32 private constant TREES_THRESHOLD_LEVEL_6 = 20;
+  uint32 private constant TREES_THRESHOLD_LEVEL_6 = 30;
 
   // Biodiversity thresholds
   uint32 private constant BIO_THRESHOLD_LEVEL_1 = 160;
-  uint32 private constant BIO_THRESHOLD_LEVEL_2 = 80;
-  uint32 private constant BIO_THRESHOLD_LEVEL_3 = 40;
-  uint32 private constant BIO_THRESHOLD_LEVEL_4 = 20;
-  uint32 private constant BIO_THRESHOLD_LEVEL_5 = 10;
-  uint32 private constant BIO_THRESHOLD_LEVEL_6 = 5;
+  uint32 private constant BIO_THRESHOLD_LEVEL_2 = 120;
+  uint32 private constant BIO_THRESHOLD_LEVEL_3 = 80;
+  uint32 private constant BIO_THRESHOLD_LEVEL_4 = 40;
+  uint32 private constant BIO_THRESHOLD_LEVEL_5 = 20;
+  uint32 private constant BIO_THRESHOLD_LEVEL_6 = 10;
 
   // --- State variables ---
 
@@ -73,8 +73,8 @@ contract RegenerationIndexRules {
     categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(3, "trees >= 12500 && trees < 25000"));
     categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(4, "trees >= 6250 && trees < 12500"));
     categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(5, "trees >= 3125 && trees < 6250"));
-    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(6, "trees >= 20 && trees < 3125"));
-    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(7, "trees < 20"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(6, "trees >= 30 && trees < 3125"));
+    categoryRegenerationIndexDescriptions[1].push(RegenerationIndexDescription(7, "trees < 30"));
 
     Category memory biodiversityCategory = Category(
       2,
@@ -84,21 +84,21 @@ contract RegenerationIndexRules {
 
     categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(1, "Biodiversity >= 160"));
     categoryRegenerationIndexDescriptions[2].push(
-      RegenerationIndexDescription(2, "Biodiversity >= 80 && Biodiversity < 160")
+      RegenerationIndexDescription(2, "Biodiversity >= 120 && Biodiversity < 160")
     );
     categoryRegenerationIndexDescriptions[2].push(
-      RegenerationIndexDescription(3, "Biodiversity >= 40 && Biodiversity < 80")
+      RegenerationIndexDescription(3, "Biodiversity >= 80 && Biodiversity < 120")
     );
     categoryRegenerationIndexDescriptions[2].push(
-      RegenerationIndexDescription(4, "Biodiversity >= 20 && Biodiversity < 40")
+      RegenerationIndexDescription(4, "Biodiversity >= 40 && Biodiversity < 80")
     );
     categoryRegenerationIndexDescriptions[2].push(
-      RegenerationIndexDescription(5, "Biodiversity >= 10 && Biodiversity < 20")
+      RegenerationIndexDescription(5, "Biodiversity >= 20 && Biodiversity < 40")
     );
     categoryRegenerationIndexDescriptions[2].push(
-      RegenerationIndexDescription(6, "Biodiversity >= 5 && Biodiversity < 10")
+      RegenerationIndexDescription(6, "Biodiversity >= 10 && Biodiversity < 20")
     );
-    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(7, "Biodiversity < 5"));
+    categoryRegenerationIndexDescriptions[2].push(RegenerationIndexDescription(7, "Biodiversity < 10"));
 
     categories[1] = treesCategory;
     categories[2] = biodiversityCategory;

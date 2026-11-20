@@ -249,6 +249,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
 
     researcherPool.addLevel(msg.sender, 1, id);
 
+    emit ResearcherLevelIncreased(msg.sender, researcher.pool.level, block.number);
+
     // --- Event Emission ---
     emit ResearchPublished(id, msg.sender, block.number);
   }
@@ -337,6 +339,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     calculatorItemsCount++;
     researchers[msg.sender].lastCalculatorItemAt = block.number;
     researchers[msg.sender].publishedItems++;
+
+    emit CalculatorItemAdded(id, msg.sender, item, block.number);
   }
 
   /**
@@ -362,6 +366,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     evaluationMethods[id] = EvaluationMethod(id, msg.sender, title, research, projectURL, block.number);
     evaluationMethodsCount++;
     researchers[msg.sender].canPublishMethod = false;
+
+    emit EvaluationMethodAdded(id, msg.sender, title, block.number);
   }
 
   /**
@@ -381,6 +387,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     researcher.pool.currentEra++;
 
     researcherPool.withdraw(msg.sender, currentEra);
+
+    emit ResearcherWithdrawalInitiated(msg.sender, currentEra, block.number);
   }
 
   // --- MustBeAllowedCaller functions ---
@@ -445,7 +453,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
     research.invalidatedAt = block.number;
     researches[research.id] = research;
     researchers[research.createdBy].pool.level -= RESOURCE_LEVEL;
-    totalActiveLevels--;
+    // Denied users' levels were already removed from totalActiveLevels.
+    if (!communityRules.isDenied(research.createdBy)) totalActiveLevels--;
 
     researcherPool.removePoolLevels(research.createdBy, false);
   }
@@ -583,4 +592,35 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
    * @param justification A brief justification for the invalidation.
    */
   event ResearchInvalidated(uint256 indexed researchId, address indexed invalidatedBy, string justification);
+
+  /// @notice Emitted when a researcher's pool level increases.
+  /// @param researcherAddress The address of the researcher.
+  /// @param newLevel The new pool level of the researcher.
+  /// @param blockNumber The block number of the increase.
+  event ResearcherLevelIncreased(address indexed researcherAddress, uint256 newLevel, uint256 blockNumber);
+
+  /// @notice Emitted when a researcher initiates a withdrawal.
+  /// @param researcherAddress The address of the researcher.
+  /// @param era The era being withdrawn.
+  /// @param blockNumber The block number of the withdrawal.
+  event ResearcherWithdrawalInitiated(address indexed researcherAddress, uint256 indexed era, uint256 blockNumber);
+
+  /// @notice Emitted when a calculator item is published.
+  /// @param itemId The id of the calculator item.
+  /// @param researcherAddress The address of the researcher.
+  /// @param item The item name.
+  /// @param blockNumber The block number of the publication.
+  event CalculatorItemAdded(uint64 indexed itemId, address indexed researcherAddress, string item, uint256 blockNumber);
+
+  /// @notice Emitted when an evaluation method is published.
+  /// @param methodId The id of the evaluation method.
+  /// @param researcherAddress The address of the researcher.
+  /// @param title The method title.
+  /// @param blockNumber The block number of the publication.
+  event EvaluationMethodAdded(
+    uint64 indexed methodId,
+    address indexed researcherAddress,
+    string title,
+    uint256 blockNumber
+  );
 }

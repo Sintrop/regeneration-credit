@@ -355,18 +355,9 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   }
 
   /**
-   * @notice Processes actions after an inspector accepts an inspection request from a regenerator.
-   * Sets the regenerator's `_pendingInspection` status to `false`.
-   * @dev This function is intended to be called by a whitelisted external contract, the InspectorRules.
-   * @param addr The regenerator's wallet address.
-   */
-  function afterAcceptInspection(address addr) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
-    _pendingInspection(addr, false);
-  }
-
-  /**
    * @notice Processes actions after an inspection is successfully realized for a regenerator's area.
-   * Increments the regenerator's total inspections and updates their regeneration score.
+   * Sets the `_pendingInspection` status to `false`, increments the regenerator's total inspections
+   * and updates their regeneration score.
    * @dev This function is intended to be called by a whitelisted external contract, the InspectionRules
    * after an inspection is completed.
    * @param addr The regenerator's wallet address.
@@ -383,6 +374,8 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     require(!processedInspections[inspectionId], "Inspection results already submitted");
 
     processedInspections[inspectionId] = true;
+
+    _pendingInspection(addr, false);
 
     uint256 totalInspections;
 

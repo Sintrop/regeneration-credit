@@ -366,6 +366,7 @@ contract CommunityRules is Callable {
 
   /**
    * @dev Checks if registration for a specific user type is allowed based on proportionality rules.
+   * For non-direct proportionality, the vacancies are the minimum quantity plus one for every `proportionality` regenerators.
    * @param userType The `UserType` for which registration is being checked.
    * @return bool True if registration is allowed according to proportionality, false otherwise.
    */
@@ -383,19 +384,18 @@ contract CommunityRules is Callable {
     // Apply direct multiplication proportionality.
     if (setting.directProportionalityRegistration) return registeredUserTypeCount < regeneratorsCount * proportionality;
 
-    return registeredUserTypeCount <= regeneratorsCount / proportionality;
+    return registeredUserTypeCount < MINIMUM_REGISTERED_USERS_QUANTITY + regeneratorsCount / proportionality;
   }
 
   // --- View functions ---
 
   /**
    * @notice Returns the total count of users currently classified as voters.
-   * @dev Sums the active counts of Activist, Contributor, Developer, and Researcher user types.
+   * @dev Sums the active counts of Contributor, Developer, and Researcher user types.
    * @return uint256 The total number of voters.
    */
   function votersCount() public view returns (uint256) {
     return
-      userTypesCount[CommunityTypes.UserType.ACTIVIST] +
       userTypesCount[CommunityTypes.UserType.CONTRIBUTOR] +
       userTypesCount[CommunityTypes.UserType.DEVELOPER] +
       userTypesCount[CommunityTypes.UserType.RESEARCHER];

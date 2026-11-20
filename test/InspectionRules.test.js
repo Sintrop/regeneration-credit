@@ -448,6 +448,76 @@ describe("InspectionRules", () => {
       });
     });
 
+    context("when the regenerator has an accepted inspection not realized yet", () => {
+      beforeEach(async () => {
+        await requestInspection(regeneratorAddress);
+        await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+        await acceptInspection(1, inspectorAddress);
+      });
+
+      it("should keep regenerator pendingInspection as true", async () => {
+        const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+
+        expect(regenerator.pendingInspection).to.equal(true);
+      });
+
+      it("should not allow a new request", async () => {
+        await expect(requestInspection(regeneratorAddress)).to.be.revertedWith("Request OPEN");
+      });
+
+      context("when the accepted inspection expires", () => {
+        beforeEach(async () => {
+          await advanceBlock(sintropArgs.blocksToExpireAcceptedInspection);
+        });
+
+        it("should still not allow a new request", async () => {
+          await expect(requestInspection(regeneratorAddress)).to.be.revertedWith("Request OPEN");
+        });
+
+        it("should allow another inspector to accept and realize the same inspection", async () => {
+          await acceptInspection(1, inspector2Address);
+          await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspector2Address);
+
+          const inspection = await instance.getInspection(1);
+          const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+
+          expect(inspection.inspector).to.equal(inspector2Address.address);
+          expect(inspection.status).to.equal(STATUS.inspected);
+          expect(regenerator.pendingInspection).to.equal(false);
+          expect(regenerator.totalInspections).to.equal(1);
+        });
+      });
+
+      context("when the accepted inspection is realized", () => {
+        beforeEach(async () => {
+          await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
+        });
+
+        it("should set regenerator pendingInspection to false", async () => {
+          const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+
+          expect(regenerator.pendingInspection).to.equal(false);
+        });
+
+        it("should allow a new request after timeBetweenInspections", async () => {
+          await advanceBlock(sintropArgs.timeBetweenInspections);
+          await requestInspection(regeneratorAddress);
+
+          expect(await instance.inspectionsTotalCount()).to.equal(2);
+        });
+      });
+
+      context("when the accepted inspection is realized with zero score", () => {
+        it("should set regenerator pendingInspection to false", async () => {
+          await realizeInspection(1, report, 0, 0, inspectorAddress);
+
+          const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+
+          expect(regenerator.pendingInspection).to.equal(false);
+        });
+      });
+    });
+
     context("with non regenerator", () => {
       context("when is not regenerator and try request inspection", () => {
         it("should return message error", async () => {
@@ -560,7 +630,7 @@ describe("InspectionRules", () => {
           });
 
           it("should return error message", async () => {
-            await expect(acceptInspection(5, inspectorAddress)).to.be.revertedWith("Only 3 giveUps allowed");
+            await expect(acceptInspection(5, inspectorAddress)).to.be.revertedWith("Maximum giveUps");
           });
         });
 
@@ -1030,7 +1100,7 @@ describe("InspectionRules", () => {
                   context("when select REGENERATIVE_5", () => {
                     beforeEach(async () => {
                       const treesResultValue = 25001; // e.g., >= 25000
-                      const biodiversityResultValue = 81; // e.g., >= 80
+                      const biodiversityResultValue = 121; // e.g., >= 120
                       await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
                     });
 
@@ -1046,7 +1116,7 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_4", () => {
                     beforeEach(async () => {
-                      await realizeInspection(1, report, 12501, 41, inspectorAddress);
+                      await realizeInspection(1, report, 12501, 81, inspectorAddress);
                     });
                     it("should add 16 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
@@ -1056,7 +1126,7 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_3", () => {
                     beforeEach(async () => {
-                      await realizeInspection(1, report, 6251, 21, inspectorAddress);
+                      await realizeInspection(1, report, 6251, 41, inspectorAddress);
                     });
                     it("should add 8 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
@@ -1066,7 +1136,7 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_2", () => {
                     beforeEach(async () => {
-                      await realizeInspection(1, report, 3126, 11, inspectorAddress);
+                      await realizeInspection(1, report, 3126, 21, inspectorAddress);
                     });
                     it("should add 4 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
@@ -1076,7 +1146,7 @@ describe("InspectionRules", () => {
 
                   context("when select REGENERATIVE_1", () => {
                     beforeEach(async () => {
-                      await realizeInspection(1, report, 21, 6, inspectorAddress);
+                      await realizeInspection(1, report, 31, 11, inspectorAddress);
                     });
                     it("should add 2 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);
@@ -1086,7 +1156,7 @@ describe("InspectionRules", () => {
 
                   context("when select NEUTRO", () => {
                     beforeEach(async () => {
-                      await realizeInspection(1, report, 19, 4, inspectorAddress);
+                      await realizeInspection(1, report, 29, 9, inspectorAddress);
                     });
                     it("should add 0 regenerationScore to inspection", async () => {
                       const inspection = await instance.getInspection(1);

@@ -724,6 +724,26 @@ describe("ContributorRules", (accounts) => {
 
           expect(totalActiveLevels).to.equal(1);
         });
+
+        context("when another valid contribution of the denied contributor is invalidated", () => {
+          beforeEach(async () => {
+            await advanceBlock(10);
+            await instance.connect(user3Address).addContributionValidation(4, "justification");
+            await instance.connect(user2Address).addContributionValidation(4, "justification");
+          });
+
+          it("should not remove levels from totalActiveLevels again", async () => {
+            const totalActiveLevels = await instance.totalActiveLevels();
+
+            expect(totalActiveLevels).to.equal(1);
+          });
+
+          it("should remove the invalidated contribution level from contributor", async () => {
+            const contributor = await instance.getContributor(contr1Address);
+
+            expect(contributor.pool.level).to.eq(0);
+          });
+        });
       });
 
       context("with invalid contribution", () => {

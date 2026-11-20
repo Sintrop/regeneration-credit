@@ -237,6 +237,46 @@ describe("ActivistRules", () => {
         });
       });
 
+      context("when activist was denied after inviting", () => {
+        beforeEach(async () => {
+          await addActivist("Activist A", activ1Address);
+
+          await communityRules.setContractCall(activ1Address, owner);
+          await addInvitation(activ1Address, regenerator1Address, userTypes.Regenerator, activ1Address);
+          await addInvitation(activ1Address, inspector1Address, userTypes.Inspector, activ1Address);
+
+          await communityRules.addUser(regenerator1Address, userTypes.Regenerator, owner);
+          await communityRules.addUser(inspector1Address, userTypes.Inspector, owner);
+
+          await communityRules.setToDenied(activ1Address);
+
+          await instance.addRegeneratorLevel(regenerator1Address, 3);
+          await instance.addInspectorLevel(inspector1Address, 3);
+        });
+
+        it("do not add level to activist.pool.level", async () => {
+          const activist = await instance.getActivist(activ1Address);
+
+          expect(activist.pool.level).to.equal(0);
+        });
+
+        it("do not add level to activistPool", async () => {
+          const eraLevels = await activistPool.eraLevels(1, activ1Address);
+
+          expect(eraLevels).to.equal(0);
+        });
+
+        it("do not change totalActiveLevels and approvedInvites", async () => {
+          expect(await instance.totalActiveLevels()).to.equal(0);
+          expect(await instance.approvedInvites()).to.equal(0);
+        });
+
+        it("keep invited users active", async () => {
+          expect(await communityRules.isDenied(regenerator1Address)).to.be.false;
+          expect(await communityRules.isDenied(inspector1Address)).to.be.false;
+        });
+      });
+
       context("when activist is not registered", () => {
         beforeEach(async () => {
           await communityRules.setContractCall(activ1Address, owner);
