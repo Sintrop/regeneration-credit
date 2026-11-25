@@ -764,51 +764,23 @@ describe("InvitationRules", () => {
 
       context("when supporter send invite", () => {
         beforeEach(async () => {
-          await addInvitation(owner, user2Address, userTypes.Supporter, owner);
           await addUser(user2Address, userTypes.Supporter, owner);
         });
 
         context("when send to supporter", () => {
-          context("when have a previous invitation", () => {
-            context("when is not recent", () => {
-              beforeEach(async () => {
-                await instance.connect(user2Address).invite(user3Address, userTypes.Supporter);
-                const blocks = await userTypeDelayBlocks(userTypes.Supporter);
-
-                await advanceBlock(blocks);
-              });
-
-              it("invite with success", async () => {
-                await instance.connect(user2Address).invite(user4Address, userTypes.Supporter);
-
-                const invitation = await communityRules.invitations(user4Address);
-
-                expect(invitation.invited).to.equal(user4Address.address);
-              });
-            });
-
-            context("when is recent", () => {
-              beforeEach(async () => {
-                await instance.connect(user2Address).invite(user3Address, userTypes.Supporter);
-              });
-
-              it("invite with success", async () => {
-                await expect(
-                  instance.connect(user2Address).invite(user4Address, userTypes.Supporter)
-                ).to.be.revertedWith("Invite delay not reached");
-              });
-            });
+          it("returns message error", async () => {
+            await expect(instance.connect(user2Address).invite(user3Address, userTypes.Supporter)).to.be.revertedWith(
+              "Only most active users allowed to invite"
+            );
           });
+        });
+      });
 
-          context("when do not have a previous invitation", () => {
-            it("invite with success", async () => {
-              await instance.connect(user2Address).invite(user3Address, userTypes.Supporter);
-
-              const invitation = await communityRules.invitations(user3Address);
-
-              expect(invitation.invited).to.equal(user3Address.address);
-            });
-          });
+      context("when an unregistered address sends a supporter invite", () => {
+        it("returns message error", async () => {
+          await expect(instance.connect(user3Address).invite(user4Address, userTypes.Supporter)).to.be.revertedWith(
+            "Only most active users allowed to invite"
+          );
         });
       });
     });
@@ -882,6 +854,14 @@ describe("InvitationRules", () => {
           const invitation = await communityRules.invitations(user3Address);
 
           expect(invitation.invited).to.equal(user3Address.address);
+        });
+
+        it("returns message error when inviting a supporter", async () => {
+          await communityRules.setContractCall(instance.target, validationRules.target, ethers.ZeroAddress);
+
+          await expect(instance.onlyOwnerInvite(user3Address, userTypes.Supporter)).to.be.revertedWith(
+            "Supporters declare their inviter"
+          );
         });
       });
 

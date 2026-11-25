@@ -288,7 +288,7 @@ describe("ValidationRules", () => {
 
     await regenerationCredit.addContractPool(regeneratorRules.target, regeneratorPoolArgs.totalTokens);
 
-    await communityRules.setContractCall(owner, instance, ethers.ZeroAddress);
+    await communityRules.setContractCall(owner, instance, supporterRules.target);
     await activistRules.setContractCall(owner, instance);
     await regeneratorRules.setContractCall(owner, instance);
     await inspectorRules.setContractCall(owner, instance);
@@ -316,7 +316,7 @@ describe("ValidationRules", () => {
           await addDeveloper("Developer  A", dev1Address);
           await addDeveloper("Developer  B", dev2Address);
 
-          await communityRules.setContractCall(owner, owner, ethers.ZeroAddress);
+          await communityRules.setContractCall(owner, owner, supporterRules.target);
 
           await denyUser(dev2Address);
         });

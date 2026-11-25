@@ -99,22 +99,20 @@ contract SupporterRules is ReentrancyGuard {
    * @notice Allows a new user to register as a Supporter.
    * @dev Registers the sender as a Supporter, assigning them a unique ID and updating CommunityRules.
    * Requires name and profile photo length to be within limits.
-   * @param name The name of the supporter (max 100 characters).
-   * @param description Brief description of the the supporter (max 200 characters).
-   * The new supporter declares the inviter they accept. An invitation stored for the address only binds
-   * the account when it matches the declared inviter, so an invitation placed before registration
-   * (or ordered before the registration transaction) can never capture the offset commission.
-   * Declaring no inviter (zero address) discards any invitation received.
-   * @param name The name of the supporter (max 100 characters).
+   * The new supporter declares who invited them, and that inviter receives the commission of their offsets.
+   * Supporter invitations are not sent on-chain, so only the supporter can choose the inviter of their account.
+   * The declared inviter must be a registered Supporter, not denied and below the inviter penalties limit.
+   * An address invited to another user type cannot register as a Supporter.
+   * @param name The name of the supporter (max 50 characters).
    * @param description Brief description of the the supporter (max 200 characters).
    * @param profilePhoto The profile photo URL/hash of the supporter (max 150 characters).
-   * @param expectedInviter The inviter accepted by the supporter, or the zero address for no inviter.
+   * @param inviter The supporter who invited the new supporter, or the zero address for no inviter.
    */
   function addSupporter(
     string memory name,
     string memory description,
     string memory profilePhoto,
-    address expectedInviter
+    address inviter
   ) external {
     require(
       bytes(name).length <= MAX_NAME_LENGTH &&
@@ -123,13 +121,7 @@ contract SupporterRules is ReentrancyGuard {
       "Max characters reached"
     );
 
-    CommunityTypes.Invitation memory invitation = communityRules.getInvitation(msg.sender);
-
-    if (expectedInviter == address(0)) {
-      if (invitation.invited != address(0)) communityRules.removeInvitation(msg.sender);
-    } else {
-      require(invitation.inviter == expectedInviter && invitation.userType == USER_TYPE, "Unexpected inviter");
-    }
+    communityRules.setSupporterInviter(msg.sender, inviter);
 
     uint64 id = communityRules.userTypesTotalCount(USER_TYPE) + 1;
 
@@ -235,8 +227,7 @@ contract SupporterRules is ReentrancyGuard {
     uint256 amount
   ) private view returns (uint256 amountToBurn, uint256 commission, address inviter) {
     CommunityTypes.Invitation memory invitation = communityRules.getInvitation(supporterAddress);
-    // Commission only for invitations to the supporter user type.
-    bool isInvited = invitation.createdAtBlock != 0 && invitation.userType == CommunityTypes.UserType.SUPPORTER;
+    bool isInvited = invitation.createdAtBlock != 0; // Check if invitation exists
 
     inviter = invitation.inviter;
 
