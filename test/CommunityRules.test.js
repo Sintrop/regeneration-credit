@@ -42,7 +42,7 @@ describe("CommunityRules", function () {
     instance = await communityRulesDeployed(communityRulesParams);
 
     await instance.newAllowedCaller(owner);
-    await communityRules.setContractCall(owner, owner);
+    await communityRules.setContractCall(owner, owner, ethers.ZeroAddress);
   });
 
   describe("#addUser", () => {
@@ -447,6 +447,14 @@ describe("CommunityRules", function () {
         });
       });
 
+      context("when the user type is Supporter", () => {
+        it("should return error message", async () => {
+          await expect(addInvitation(owner, user1Address, userTypes.Supporter, owner)).to.be.revertedWith(
+            "Supporters declare their inviter"
+          );
+        });
+      });
+
       context("when dont invited yet", () => {
         beforeEach(async () => {
           receipt = await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
@@ -469,6 +477,124 @@ describe("CommunityRules", function () {
     });
 
     context("without allowed caller", () => {});
+  });
+
+  describe("#setSupporterInviter", () => {
+    beforeEach(async () => {
+      await instance.setContractCall(owner, owner, owner);
+      await addUser(user2Address, userTypes.Supporter, owner);
+    });
+
+    context("when the declared inviter is a supporter", () => {
+      let receipt;
+
+      beforeEach(async () => {
+        receipt = await instance.setSupporterInviter(user1Address, user2Address);
+      });
+
+      it("should record the invitation", async () => {
+        const invitation = await instance.getInvitation(user1Address);
+
+        expect(invitation.invited).to.equal(user1Address.address);
+        expect(invitation.inviter).to.equal(user2Address.address);
+        expect(invitation.userType).to.equal(userTypes.Supporter);
+        expect(invitation.createdAtBlock).to.be.greaterThan(0);
+      });
+
+      it("should emit InvitationAdded", async () => {
+        await expect(receipt)
+          .to.emit(instance, "InvitationAdded")
+          .withArgs(user2Address.address, user1Address.address, userTypes.Supporter);
+      });
+    });
+
+    context("when no inviter is declared", () => {
+      it("should not record an invitation", async () => {
+        await instance.setSupporterInviter(user1Address, ethers.ZeroAddress);
+
+        const invitation = await instance.getInvitation(user1Address);
+        expect(invitation.invited).to.equal(ethers.ZeroAddress);
+        expect(invitation.createdAtBlock).to.equal(0);
+      });
+
+      it("should not emit InvitationAdded", async () => {
+        await expect(instance.setSupporterInviter(user1Address, ethers.ZeroAddress)).not.to.emit(
+          instance,
+          "InvitationAdded"
+        );
+      });
+    });
+
+    context("when the address has an invitation for another user type", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
+      });
+
+      it("should return error message when an inviter is declared", async () => {
+        await expect(instance.setSupporterInviter(user1Address, user2Address)).to.be.revertedWith("Already invited");
+      });
+
+      it("should return error message when no inviter is declared", async () => {
+        await expect(instance.setSupporterInviter(user1Address, ethers.ZeroAddress)).to.be.revertedWith(
+          "Already invited"
+        );
+      });
+
+      it("should keep the invitation", async () => {
+        await expect(instance.setSupporterInviter(user1Address, ethers.ZeroAddress)).to.be.reverted;
+
+        const invitation = await instance.getInvitation(user1Address);
+        expect(invitation.inviter).to.equal(owner.address);
+        expect(invitation.userType).to.equal(userTypes.Regenerator);
+      });
+    });
+
+    context("when the declared inviter is not a supporter", () => {
+      it("should return error message", async () => {
+        await addInvitation(owner, user3Address, userTypes.Regenerator, owner);
+        await addUser(user3Address, userTypes.Regenerator, owner);
+
+        await expect(instance.setSupporterInviter(user1Address, user3Address)).to.be.revertedWith(
+          "Inviter must be a supporter"
+        );
+      });
+    });
+
+    context("when the declared inviter is not registered", () => {
+      it("should return error message", async () => {
+        await expect(instance.setSupporterInviter(user1Address, user3Address)).to.be.revertedWith(
+          "Inviter must be a supporter"
+        );
+      });
+    });
+
+    context("when the address is already registered", () => {
+      it("should return error message", async () => {
+        await expect(instance.setSupporterInviter(user2Address, ethers.ZeroAddress)).to.be.revertedWith(
+          "Already registered"
+        );
+      });
+    });
+
+    context("when the caller is not the SupporterRules", () => {
+      it("should return error message", async () => {
+        await instance.setContractCall(owner, owner, user3Address);
+
+        await expect(instance.setSupporterInviter(user1Address, user2Address)).to.be.revertedWith(
+          "Caller must be system contract"
+        );
+      });
+    });
+
+    context("without allowed caller", () => {
+      it("should return error message", async () => {
+        await instance.setContractCall(owner, owner, user3Address);
+
+        await expect(instance.connect(user3Address).setSupporterInviter(user1Address, user2Address)).to.be.revertedWith(
+          "Not allowed caller"
+        );
+      });
+    });
   });
 
   describe("#getInvitation", () => {

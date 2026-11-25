@@ -54,9 +54,9 @@ describe("InvitationRules", () => {
   };
 
   const addInvitation = async (inviter, invited, userType, from) => {
-    await communityRules.setContractCall(from, owner);
+    await communityRules.setContractCall(from, owner, ethers.ZeroAddress);
     await communityRules.connect(from).addInvitation(inviter, invited, userType);
-    await communityRules.setContractCall(instance.target, validationRules.target);
+    await communityRules.setContractCall(instance.target, validationRules.target, ethers.ZeroAddress);
   };
 
   const userTypeDelayBlocks = async (userType) => {
@@ -169,7 +169,7 @@ describe("InvitationRules", () => {
           await addActivist("Activist D", user7Address);
           await addActivist("Activist E", user8Address);
 
-          await communityRules.setContractCall(instance, owner);
+          await communityRules.setContractCall(instance, owner, ethers.ZeroAddress);
         });
 
         context("when can invite", () => {
@@ -764,51 +764,23 @@ describe("InvitationRules", () => {
 
       context("when supporter send invite", () => {
         beforeEach(async () => {
-          await addInvitation(owner, user2Address, userTypes.Supporter, owner);
           await addUser(user2Address, userTypes.Supporter, owner);
         });
 
         context("when send to supporter", () => {
-          context("when have a previous invitation", () => {
-            context("when is not recent", () => {
-              beforeEach(async () => {
-                await instance.connect(user2Address).invite(user3Address, userTypes.Supporter);
-                const blocks = await userTypeDelayBlocks(userTypes.Supporter);
-
-                await advanceBlock(blocks);
-              });
-
-              it("invite with success", async () => {
-                await instance.connect(user2Address).invite(user4Address, userTypes.Supporter);
-
-                const invitation = await communityRules.invitations(user4Address);
-
-                expect(invitation.invited).to.equal(user4Address.address);
-              });
-            });
-
-            context("when is recent", () => {
-              beforeEach(async () => {
-                await instance.connect(user2Address).invite(user3Address, userTypes.Supporter);
-              });
-
-              it("invite with success", async () => {
-                await expect(
-                  instance.connect(user2Address).invite(user4Address, userTypes.Supporter)
-                ).to.be.revertedWith("Invite delay not reached");
-              });
-            });
+          it("returns message error", async () => {
+            await expect(instance.connect(user2Address).invite(user3Address, userTypes.Supporter)).to.be.revertedWith(
+              "Only most active users allowed to invite"
+            );
           });
+        });
+      });
 
-          context("when do not have a previous invitation", () => {
-            it("invite with success", async () => {
-              await instance.connect(user2Address).invite(user3Address, userTypes.Supporter);
-
-              const invitation = await communityRules.invitations(user3Address);
-
-              expect(invitation.invited).to.equal(user3Address.address);
-            });
-          });
+      context("when an unregistered address sends a supporter invite", () => {
+        it("returns message error", async () => {
+          await expect(instance.connect(user3Address).invite(user4Address, userTypes.Supporter)).to.be.revertedWith(
+            "Only most active users allowed to invite"
+          );
         });
       });
     });
@@ -876,12 +848,20 @@ describe("InvitationRules", () => {
     context("when invite", () => {
       context("with owner", () => {
         it("invite with success", async () => {
-          await communityRules.setContractCall(instance.target, validationRules.target);
+          await communityRules.setContractCall(instance.target, validationRules.target, ethers.ZeroAddress);
           await instance.onlyOwnerInvite(user3Address, userTypes.Developer);
 
           const invitation = await communityRules.invitations(user3Address);
 
           expect(invitation.invited).to.equal(user3Address.address);
+        });
+
+        it("returns message error when inviting a supporter", async () => {
+          await communityRules.setContractCall(instance.target, validationRules.target, ethers.ZeroAddress);
+
+          await expect(instance.onlyOwnerInvite(user3Address, userTypes.Supporter)).to.be.revertedWith(
+            "Supporters declare their inviter"
+          );
         });
       });
 

@@ -21,9 +21,6 @@ contract CommunityRules is Callable {
   /// @notice The maximum allowed amount of invalidated invited users.
   uint16 private constant MAX_INVITER_PENALTIES = 5;
 
-  /// @notice The number of blocks an invitation is delayed for Supporters.
-  uint32 public constant SUPPORTER_INVITATION_DELAY_BLOCKS = 150;
-
   /// @notice The number of blocks an invitation is delayed for voter-type users.
   uint32 public constant VOTER_INVITATION_DELAY_BLOCKS = 100000;
 
@@ -93,6 +90,9 @@ contract CommunityRules is Callable {
   /// @notice The address of the `InvitationRules` contract.
   address public validationRulesAddress;
 
+  /// @notice The address of the `SupporterRules` contract.
+  address public supporterRulesAddress;
+
   // --- Constructor ---
 
   /**
@@ -113,13 +113,7 @@ contract CommunityRules is Callable {
     uint8 contributorProportionality
   ) {
     // Initialize settings for all relevant UserTypes
-    userTypeSettings[CommunityTypes.UserType.SUPPORTER] = CommunityTypes.UserTypeSetting(
-      0,
-      false,
-      false,
-      SUPPORTER_INVITATION_DELAY_BLOCKS,
-      false
-    );
+    userTypeSettings[CommunityTypes.UserType.SUPPORTER] = CommunityTypes.UserTypeSetting(0, false, false, 0, false);
     userTypeSettings[CommunityTypes.UserType.REGENERATOR] = CommunityTypes.UserTypeSetting(0, false, true, 0, false);
     userTypeSettings[CommunityTypes.UserType.INSPECTOR] = CommunityTypes.UserTypeSetting(
       inspectorProportionality,
@@ -165,10 +159,16 @@ contract CommunityRules is Callable {
    * This function must be called only once after the contract deploy and ownership must be renounced.
    * @param _invitationRulesAddress Address of InvitationRules.
    * @param _validationRulesAddress Address of ValidationRules.
+   * @param _supporterRulesAddress Address of SupporterRules.
    */
-  function setContractCall(address _invitationRulesAddress, address _validationRulesAddress) external onlyOwner {
+  function setContractCall(
+    address _invitationRulesAddress,
+    address _validationRulesAddress,
+    address _supporterRulesAddress
+  ) external onlyOwner {
     invitationRulesAddress = _invitationRulesAddress;
     validationRulesAddress = _validationRulesAddress;
+    supporterRulesAddress = _supporterRulesAddress;
   }
 
   // --- Public functions (State Modifying) ---
@@ -294,6 +294,38 @@ contract CommunityRules is Callable {
   }
 
   /**
+   * @notice Records the inviter declared by a new Supporter at registration.
+   * @dev This function is intended to be called by an allowed caller, the Supporter Rules, right before the
+   * registration of the supporter. Supporter invitations are never sent on-chain by the inviter: the new
+   * supporter declares who invited them, so no transaction ordered before the registration can bind another
+   * inviter to the account. An address invited to another user type cannot register as a Supporter.
+   *
+   * Requirements:
+   * - The address must not be registered.
+   * - The address must not have an invitation.
+   * - The declared inviter, when not the zero address, must be a registered Supporter.
+   * @param invited The address registering as a Supporter.
+   * @param inviter The declared inviter, or the zero address for no inviter.
+   */
+  function setSupporterInviter(
+    address invited,
+    address inviter
+  ) external mustBeAllowedCaller mustBeContractCall(supporterRulesAddress) {
+    require(users[invited] == CommunityTypes.UserType.UNDEFINED, "Already registered");
+    require(invitations[invited].invited == address(0), "Already invited");
+    require(
+      inviter == address(0) || users[inviter] == CommunityTypes.UserType.SUPPORTER,
+      "Inviter must be a supporter"
+    );
+
+    if (inviter == address(0)) return;
+
+    invitations[invited] = CommunityTypes.Invitation(invited, inviter, CommunityTypes.UserType.SUPPORTER, block.number);
+
+    emit InvitationAdded(inviter, invited, CommunityTypes.UserType.SUPPORTER);
+  }
+
+  /**
    * @notice Attempts to add an invitation for a new user.
    * @dev This function is intended to be called by an allowed caller, the Invitation Rules.
    * It records an invitation for a specific user to register as a certain user type.
@@ -311,6 +343,7 @@ contract CommunityRules is Callable {
     require(invitations[invited].invited == address(0), "Already invited");
     require(users[invited] == CommunityTypes.UserType.UNDEFINED, "Already registered");
     require(userType != CommunityTypes.UserType.UNDEFINED, "Invalid user type for invitation");
+    require(userType != CommunityTypes.UserType.SUPPORTER, "Supporters declare their inviter");
 
     invitations[invited] = CommunityTypes.Invitation(invited, inviter, userType, block.number);
 

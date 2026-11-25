@@ -7,8 +7,8 @@ describe("SupporterRules", () => {
   let instance, communityRules, regenerationCredit, researcherRules;
   let ownerAddress, inv1Address, inv2Address, user1Address;
 
-  const addSupporter = async (name, description, profilePhoto, from) => {
-    await instance.connect(from).addSupporter(name, description, profilePhoto);
+  const addSupporter = async (name, description, profilePhoto, from, inviter = ethers.ZeroAddress) => {
+    await instance.connect(from).addSupporter(name, description, profilePhoto, inviter);
   };
 
   const updateProfilePhoto = async (newPhoto, from) => {
@@ -38,6 +38,7 @@ describe("SupporterRules", () => {
     await communityRules.newAllowedCaller(instance.target);
     await communityRules.newAllowedCaller(researcherRules.target);
     await communityRules.newAllowedCaller(ownerAddress);
+    await communityRules.setContractCall(ownerAddress, ownerAddress, instance.target);
   });
 
   describe("#addSupporter", () => {
@@ -45,7 +46,7 @@ describe("SupporterRules", () => {
       it("should return error", async () => {
         await addSupporter("Supporter A", "description", "profilePhoto", inv1Address);
         await expect(addSupporter("Supporter A", "description", "profilePhoto", inv1Address)).to.be.revertedWith(
-          "User already exists"
+          "Already registered"
         );
       });
     });
@@ -78,6 +79,109 @@ describe("SupporterRules", () => {
         const SUPPORTER = 7;
 
         expect(userType).to.equal(SUPPORTER);
+      });
+    });
+
+    context("when the supporter declares an inviter", () => {
+      beforeEach(async () => {
+        await communityRules.setContractCall(ownerAddress, ownerAddress, instance.target);
+        await addSupporter("Supporter A", "description", "profilePhoto", inv1Address);
+      });
+
+      it("records the declared inviter", async () => {
+        await addSupporter("Supporter B", "description", "profilePhoto", inv2Address, inv1Address);
+
+        const invitation = await communityRules.getInvitation(inv2Address);
+        expect(invitation.inviter).to.equal(inv1Address.address);
+        expect(invitation.userType).to.equal(userTypes.Supporter);
+      });
+
+      it("emits InvitationAdded", async () => {
+        await expect(
+          instance.connect(inv2Address).addSupporter("Supporter B", "description", "profilePhoto", inv1Address)
+        )
+          .to.emit(communityRules, "InvitationAdded")
+          .withArgs(inv1Address.address, inv2Address.address, userTypes.Supporter);
+      });
+
+      it("does not need an invitation sent by the inviter", async () => {
+        await addSupporter("Supporter B", "description", "profilePhoto", inv2Address, inv1Address);
+
+        expect(await communityRules.getUser(inv2Address)).to.equal(userTypes.Supporter);
+      });
+    });
+
+    context("when the supporter declares no inviter", () => {
+      it("registers the supporter without invitation", async () => {
+        await addSupporter("Supporter A", "description", "profilePhoto", inv1Address);
+
+        const invitation = await communityRules.getInvitation(inv1Address);
+        expect(invitation.inviter).to.equal(ethers.ZeroAddress);
+        expect(invitation.createdAtBlock).to.equal(0);
+      });
+    });
+
+    context("when the declared inviter is not a supporter", () => {
+      it("should return error when the inviter is not registered", async () => {
+        await expect(
+          addSupporter("Supporter A", "description", "profilePhoto", inv1Address, inv2Address)
+        ).to.be.revertedWith("Inviter must be a supporter");
+      });
+
+      it("should return error when the inviter is another user type", async () => {
+        await communityRules.setContractCall(ownerAddress, ownerAddress, instance.target);
+        await communityRules.addInvitation(ownerAddress, user1Address, userTypes.Activist);
+        await communityRules.addUser(user1Address, userTypes.Activist);
+
+        await expect(
+          addSupporter("Supporter B", "description", "profilePhoto", inv2Address, user1Address)
+        ).to.be.revertedWith("Inviter must be a supporter");
+      });
+
+      it("should return error when the supporter declares itself", async () => {
+        await expect(
+          addSupporter("Supporter A", "description", "profilePhoto", inv1Address, inv1Address)
+        ).to.be.revertedWith("Inviter must be a supporter");
+      });
+    });
+
+    context("when the declared inviter has been denied", () => {
+      it("should return error", async () => {
+        await addSupporter("Supporter A", "description", "profilePhoto", inv1Address);
+        await communityRules.setToDenied(inv1Address);
+
+        await expect(
+          addSupporter("Supporter B", "description", "profilePhoto", inv2Address, inv1Address)
+        ).to.be.revertedWith("Inviter denied");
+      });
+    });
+
+    context("when an invitation for another user type exists before registration", () => {
+      beforeEach(async () => {
+        await addSupporter("Supporter A", "description", "profilePhoto", inv1Address);
+        await communityRules.addInvitation(ownerAddress, user1Address, userTypes.Activist);
+        await communityRules.addUser(user1Address, userTypes.Activist);
+        await communityRules.addInvitation(user1Address, inv2Address, userTypes.Regenerator);
+      });
+
+      it("should return error when the supporter declares an inviter", async () => {
+        await expect(
+          addSupporter("Supporter B", "description", "profilePhoto", inv2Address, inv1Address)
+        ).to.be.revertedWith("Already invited");
+      });
+
+      it("should return error when the supporter declares no inviter", async () => {
+        await expect(addSupporter("Supporter B", "description", "profilePhoto", inv2Address)).to.be.revertedWith(
+          "Already invited"
+        );
+      });
+
+      it("keeps the invitation", async () => {
+        await expect(addSupporter("Supporter B", "description", "profilePhoto", inv2Address)).to.be.reverted;
+
+        const invitation = await communityRules.getInvitation(inv2Address);
+        expect(invitation.inviter).to.equal(user1Address.address);
+        expect(invitation.userType).to.equal(userTypes.Regenerator);
       });
     });
   });
@@ -122,7 +226,7 @@ describe("SupporterRules", () => {
       context("when amount is valid", () => {
         context("when calculatorItemId exists", () => {
           beforeEach(async () => {
-            await communityRules.setContractCall(ownerAddress, ownerAddress);
+            await communityRules.setContractCall(ownerAddress, ownerAddress, instance.target);
             await communityRules.addInvitation(inv1Address, user1Address, userTypes.Researcher);
             await researcherRules.connect(user1Address).addResearcher("Researcher  A", "photoURL");
 
@@ -131,8 +235,7 @@ describe("SupporterRules", () => {
 
           context("when SUPPORTER was invited", () => {
             beforeEach(async () => {
-              await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
-              await addSupporter("Supporter B", "description", "profilePhoto", inv2Address);
+              await addSupporter("Supporter B", "description", "profilePhoto", inv2Address, inv1Address);
               await transferTokensTo(inv2Address, 100000000000000000000n);
             });
 
@@ -225,9 +328,8 @@ describe("SupporterRules", () => {
 
         context("when calculatorItemId does not exists", () => {
           beforeEach(async () => {
-            await communityRules.setContractCall(ownerAddress, ownerAddress);
-            await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
-            await addSupporter("Supporter B", "description", "profilePhoto", inv2Address);
+            await communityRules.setContractCall(ownerAddress, ownerAddress, instance.target);
+            await addSupporter("Supporter B", "description", "profilePhoto", inv2Address, inv1Address);
             await transferTokensTo(inv2Address, 100000000000000000000n);
           });
 
@@ -243,7 +345,7 @@ describe("SupporterRules", () => {
 
       context("when amount is invalid", () => {
         beforeEach(async () => {
-          await communityRules.setContractCall(ownerAddress, ownerAddress);
+          await communityRules.setContractCall(ownerAddress, ownerAddress, instance.target);
           await communityRules.addInvitation(inv1Address, user1Address, userTypes.Researcher);
           await researcherRules.connect(user1Address).addResearcher("Researcher  A", "photoURL");
 
@@ -278,7 +380,7 @@ describe("SupporterRules", () => {
   //     context("when amount is valid", () => {
   //       context("when text is valid", () => {
   //         beforeEach(async () => {
-  //           await communityRules.setContractCall(ownerAddress, ownerAddress);
+  //           await communityRules.setContractCall(ownerAddress, ownerAddress, instance.target);
   //         });
 
   //         context("when SUPPORTER was invited", () => {
@@ -367,7 +469,7 @@ describe("SupporterRules", () => {
 
   //       context("when text is invalid", () => {
   //         beforeEach(async () => {
-  //           await communityRules.setContractCall(ownerAddress, ownerAddress);
+  //           await communityRules.setContractCall(ownerAddress, ownerAddress, instance.target);
   //           await communityRules.addInvitation(inv1Address, inv2Address, userTypes.Supporter);
   //           await addSupporter("Supporter B", "description", "profilePhoto", inv2Address);
   //           await transferTokensTo(inv2Address, 100000000000000000000n);
@@ -393,7 +495,7 @@ describe("SupporterRules", () => {
 
   //     context("when amount is invalid", () => {
   //       beforeEach(async () => {
-  //         await communityRules.setContractCall(ownerAddress, ownerAddress);
+  //         await communityRules.setContractCall(ownerAddress, ownerAddress, instance.target);
   //       });
 
   //       context("without allowance", () => {
@@ -423,7 +525,7 @@ describe("SupporterRules", () => {
     context("when is supporter", () => {
       context("when calculatorItem exists", () => {
         beforeEach(async () => {
-          await communityRules.setContractCall(ownerAddress, ownerAddress);
+          await communityRules.setContractCall(ownerAddress, ownerAddress, instance.target);
           await communityRules.addInvitation(inv1Address, user1Address, userTypes.Researcher);
           await researcherRules.connect(user1Address).addResearcher("Researcher  A", "photoURL");
 
@@ -446,7 +548,7 @@ describe("SupporterRules", () => {
 
       context("when try to declared the same item twice", () => {
         it("should return error", async () => {
-          await communityRules.setContractCall(ownerAddress, ownerAddress);
+          await communityRules.setContractCall(ownerAddress, ownerAddress, instance.target);
           await communityRules.addInvitation(inv1Address, user1Address, userTypes.Researcher);
           await researcherRules.connect(user1Address).addResearcher("Researcher  A", "photoURL");
 

@@ -107,7 +107,7 @@ async function configureCommunityRules() {
   await communityRules.newAllowedCaller(invitationRules.target);
 
 
-  await communityRules.setContractCall(invitationRules.target, validationRules.target);
+  await communityRules.setContractCall(invitationRules.target, validationRules.target, supporterRules.target);
 
   console.log("After CommunityRules deploy is OK");
 }

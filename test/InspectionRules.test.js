@@ -205,7 +205,7 @@ describe("InspectionRules", () => {
       sintropArgs.securityBlocksToValidation_
     );
 
-    await communityRules.setContractCall(owner, validationRules.target);
+    await communityRules.setContractCall(owner, validationRules.target, ethers.ZeroAddress);
     await activistRules.setContractCall(instance.target, validationRules.target);
     await regeneratorRules.setContractCall(instance.target, validationRules.target);
     await inspectorRules.setContractCall(instance.target);
@@ -788,7 +788,7 @@ describe("InspectionRules", () => {
           await requestInspection(regeneratorAddress);
           await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
 
-          await communityRules.setContractCall(owner, owner);
+          await communityRules.setContractCall(owner, owner, ethers.ZeroAddress);
 
           await denyUser(regeneratorAddress);
           await expect(acceptInspection(1, inspectorAddress)).to.be.revertedWith("Regenerator invalid");
@@ -811,7 +811,7 @@ describe("InspectionRules", () => {
       await addInvitation(owner, activist1Address, userTypes.Activist, owner);
       await addActivist("Activist 1", activist1Address);
 
-      await communityRules.setContractCall(activist1Address, validationRules.target);
+      await communityRules.setContractCall(activist1Address, validationRules.target, ethers.ZeroAddress);
       await addInvitation(activist1Address, regeneratorAddress, userTypes.Regenerator, activist1Address);
       await addInvitation(activist1Address, regenerator2Address, userTypes.Regenerator, activist1Address);
       await addInvitation(activist1Address, inspectorAddress, userTypes.Inspector, activist1Address);
@@ -1170,7 +1170,7 @@ describe("InspectionRules", () => {
 
           context("when is accepted by other inspector", () => {
             beforeEach(async () => {
-              await communityRules.setContractCall(owner, validationRules.target);
+              await communityRules.setContractCall(owner, validationRules.target, ethers.ZeroAddress);
 
               await addInvitation(owner, inspector2Address, userTypes.Inspector, owner);
               await addInspector("Inspector B", inspector2Address);
@@ -1370,10 +1370,10 @@ describe("InspectionRules", () => {
             await inspectorRules.setContractCall(owner, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
-            await communityRules.setContractCall(user1Address, validationRules.target);
+            await communityRules.setContractCall(user1Address, validationRules.target, ethers.ZeroAddress);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
-            await communityRules.setContractCall(user2Address, validationRules.target);
+            await communityRules.setContractCall(user2Address, validationRules.target, ethers.ZeroAddress);
             await inspectorRules.setContractCall(instance.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
@@ -1533,10 +1533,10 @@ describe("InspectionRules", () => {
             await inspectorRules.setContractCall(owner, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
-            await communityRules.setContractCall(user1Address, validationRules.target);
+            await communityRules.setContractCall(user1Address, validationRules.target, ethers.ZeroAddress);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
-            await communityRules.setContractCall(user2Address, validationRules.target);
+            await communityRules.setContractCall(user2Address, validationRules.target, ethers.ZeroAddress);
             await inspectorRules.setContractCall(instance.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
@@ -1712,10 +1712,10 @@ describe("InspectionRules", () => {
             await inspectorRules.setContractCall(owner, owner);
             await inspectorRules.addPenalty(inspectorAddress, 1);
 
-            await communityRules.setContractCall(user1Address, validationRules.target);
+            await communityRules.setContractCall(user1Address, validationRules.target, ethers.ZeroAddress);
             await instance.connect(user1Address).addInspectionValidation(1, "justification");
 
-            await communityRules.setContractCall(user2Address, validationRules.target);
+            await communityRules.setContractCall(user2Address, validationRules.target, ethers.ZeroAddress);
             await inspectorRules.setContractCall(instance.target);
             await instance.connect(user2Address).addInspectionValidation(1, "justification");
           });
