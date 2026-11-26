@@ -1,0 +1,83 @@
+{
+  "address": "0x138EaB1427437F5B22E834863294a13b5CB9d175",
+  "scalars": {
+    "BLOCKS_PRECISION": "5",
+    "activistRulesAddress": "0xe6D42dFd5c38f7aC2D81bdfC73cd7e770f235841",
+    "currentContractEra": "3",
+    "currentEpoch": "1",
+    "owner": "0x0000000000000000000000000000000000000000",
+    "regenerationCredit": "0x24fD0C0eA35F00625094795aa105fcE15cb6f1Ed"
+  },
+  "mappings": {
+    "allowedCallers": {
+      "0xe6D42dFd5c38f7aC2D81bdfC73cd7e770f235841": true
+    },
+    "eraLevels": {
+      "1:0x580559D72fD3521Fc4D8d2ADEbE6C99A1F37DbA1": "1",
+      "1:0x5B62d304eBe7CD9BE58C2CB822134C711FFF349c": "8",
+      "1:0xF517E432D5AAB650C770921106916301d67a263C": "1",
+      "1:0xb649048ad1F72E4cdA71C1b96CAF247d762a374C": "1",
+      "2:0x5B62d304eBe7CD9BE58C2CB822134C711FFF349c": "8",
+      "2:0xCAbD19a32D8090447D80Ec3BD18467F105D69303": "2"
+    },
+    "eraTokens": {
+      "1:0x5B62d304eBe7CD9BE58C2CB822134C711FFF349c": "1212121212121212121212120",
+      "1:0xb649048ad1F72E4cdA71C1b96CAF247d762a374C": "151515151515151515151515"
+    },
+    "eras": {
+      "1": {
+        "claimsCount": "3",
+        "tokens": "1363636363636363636363635",
+        "levels": "11"
+      },
+      "2": {
+        "claimsCount": "0",
+        "tokens": "0",
+        "levels": "10"
+      }
+    },
+    "getEra": {
+      "1": {
+        "claimsCount": "3",
+        "tokens": "1363636363636363636363635",
+        "levels": "11"
+      },
+      "2": {
+        "claimsCount": "0",
+        "tokens": "0",
+        "levels": "10"
+      }
+    },
+    "hasProcessedLevel": {
+      "0x6672ae16bc06d75a4932f9ad657c29ae4f2a4440b75747ef2051f85cfce408f8": true,
+      "0x68e6b76dda96ca01c5aa680a2685ed0e9df722cadf93d9f388a983c5ab281607": true,
+      "0xb13b857548992fa4e0b428ebc98f98c59c687f245b99b89f35cd0ef4f247bf9c": true,
+      "0x0e3db1c6f2eeca0d89c837fc037b241041cc1fc1b3fadc59a7ddabd94bfae564": true,
+      "0xa97407fd06d4068479753c7395cb662747f51aebcc19fd6ef42f19d59f12c2ca": true,
+      "0xfbd1a79290955a6b90c5c274f99edbf4a90fe61fe8c3d93a1339466d0a61bb86": true,
+      "0xf747e7b2c891517dcff79c3f4e5dfca2333989cec493f8f72ea58b9cca9094bf": true,
+      "0xf761236c6c0eeca2a194a963463f7e908cfa462c8b03d36b0d05ec17921b485d": true,
+      "0x27e7be43e9d382e79f5997f26ccfaec829c53111b10955a243df13d413a66b10": true,
+      "0xac0fad682f43b280024d2da0ad51e310a35757cd73ab93c970d64d6aee14e3a8": true,
+      "0xc1dca7badff97f300c950eb5c72aaae8da53b08a88f1a100da5d973bab277e3a": true,
+      "0x7bb8e7bb9554752b6fc3f96b6f00d041211c8b23a53942e898ff57c61243ef9f": true,
+      "0x62e02694363543cc0cdf5222d015838c944f72e811735180cfc6b39e02478369": true,
+      "0x3df5581ccd4635b096cc47053fb4f4a4828108c4e8aafdb93c8b50cfe9c30acd": true,
+      "0xeb33f052b4db0b5b822306f8aaa888e0088c4e01ed1b97b10a92d85c78e560e3": true,
+      "0xf4097a0a2668f5593239432a720c8b5112c37a08386d21e68a616a314e21a350": true,
+      "0x29d4f2fbb9818349e7e65a8fda4116d4e068e0dc24b80e37ff5d7c3f0bdc2070": true,
+      "0x16aa2954f78f0946d788c804f96e6e4a6cd48be690f3b8f2918dbb5ceec41060": true,
+      "0xd51293776bb5030fb275c4e7ad58ce2998b91feed0d34bab2f1d62e72d18e2ec": true,
+      "0xe8daaeba49b7424c9594f6c318da1b96ee7718a590f7ab3c022acabb33e1b086": true,
+      "0x96030bd4df097770cb1df4b5008c8aaf019a955c09fe16c04c7e53905856a65d": true
+    },
+    "hasWithdrawn": {
+      "1:0x5B62d304eBe7CD9BE58C2CB822134C711FFF349c": true,
+      "1:0xCAbD19a32D8090447D80Ec3BD18467F105D69303": true,
+      "1:0xb649048ad1F72E4cdA71C1b96CAF247d762a374C": true
+    },
+    "isAllowedCaller": {
+      "0xe6D42dFd5c38f7aC2D81bdfC73cd7e770f235841": true
+    }
+  }
+}

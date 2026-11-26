@@ -1,0 +1,85 @@
+{
+  "address": "0xcd42a990B7A2DA6e529a1B89CCc2439b398cbF4A",
+  "scalars": {
+    "CATEGORY_COUNTS": "2"
+  },
+  "mappings": {
+    "categories": {
+      "1": {
+        "id": "1",
+        "name": "Trees",
+        "description": "Indicator to measure the total amount of trees, palm trees and other plants over 1m high and 3cm in diameter in the regenerating area. How many trees, palm trees and other plants over 1m high and 3cm in diameter there is in the regenerating area? Justify your answer in the report."
+      },
+      "2": {
+        "id": "2",
+        "name": "Biodiversity",
+        "description": "Indicator to measure the level of biodiversity of trees, palm trees and other plants over 1m high and 3cm in diameter in the regenerating area. How many different species are there in the area? Each different species is equivalent to one point and only trees and plants managed or planted by the regenerator should be counted."
+      }
+    },
+    "getCategoryRegenerationIndexDescription": {
+      "1": [
+        {
+          "regenerationIndexId": "1",
+          "description": "trees >= 50000"
+        },
+        {
+          "regenerationIndexId": "2",
+          "description": "trees >= 25000 && trees < 50000"
+        },
+        {
+          "regenerationIndexId": "3",
+          "description": "trees >= 12500 && trees < 25000"
+        },
+        {
+          "regenerationIndexId": "4",
+          "description": "trees >= 6250 && trees < 12500"
+        },
+        {
+          "regenerationIndexId": "5",
+          "description": "trees >= 3125 && trees < 6250"
+        },
+        {
+          "regenerationIndexId": "6",
+          "description": "trees >= 20 && trees < 3125"
+        },
+        {
+          "regenerationIndexId": "7",
+          "description": "trees < 20"
+        }
+      ],
+      "2": [
+        {
+          "regenerationIndexId": "1",
+          "description": "Biodiversity >= 160"
+        },
+        {
+          "regenerationIndexId": "2",
+          "description": "Biodiversity >= 80 && Biodiversity < 160"
+        },
+        {
+          "regenerationIndexId": "3",
+          "description": "Biodiversity >= 40 && Biodiversity < 80"
+        },
+        {
+          "regenerationIndexId": "4",
+          "description": "Biodiversity >= 20 && Biodiversity < 40"
+        },
+        {
+          "regenerationIndexId": "5",
+          "description": "Biodiversity >= 10 && Biodiversity < 20"
+        },
+        {
+          "regenerationIndexId": "6",
+          "description": "Biodiversity >= 5 && Biodiversity < 10"
+        },
+        {
+          "regenerationIndexId": "7",
+          "description": "Biodiversity < 5"
+        }
+      ]
+    }
+  },
+  "skipped": [
+    "categoryRegenerationIndexDescriptions(uint8,uint256)"
+  ]
+}

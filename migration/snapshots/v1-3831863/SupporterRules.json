@@ -1,0 +1,1152 @@
+{
+  "address": "0x69a5c30Df857E7AB58fe6f5d6c7F29E0FbEc27C1",
+  "scalars": {
+    "INVITER_PERCENTAGE": "5",
+    "MAX_COMMITMENTS": "1000",
+    "communityRules": "0xec19012cA2C396EF3390E726095e25a794f34150",
+    "offsetsCount": "106",
+    "regenerationCredit": "0x24fD0C0eA35F00625094795aa105fcE15cb6f1Ed",
+    "researcherRules": "0x74A6eff5c2E696F683d878710F840ce4c652b4f6"
+  },
+  "mappings": {
+    "calculatorItemCertificates": {
+      "0x10584a75402fBbB9D2b9239078f8C94fFDed5E1e:3": "1000000000000000000",
+      "0x1C2026bfF084BF1D009f6E07559A619aabBA919F:2": "3000000000000000000",
+      "0x23940C1C2967FF4eb285BD697B7B1368652D8AE4:2": "1000000000000000000",
+      "0x298952B186D23d41C043Cc4cC49dD4340592A459:1": "1000000000000000000000000",
+      "0x2E14e148e5AE3b2670aD9186565B7a01e9910595:3": "1000000000000000000",
+      "0x3A5480EfDB7407FBa41c62769d093C01d734c657:1": "25000000000000000000",
+      "0x3A5480EfDB7407FBa41c62769d093C01d734c657:2": "1040000000000000000000",
+      "0x47C451020636999B2037c5bDe6A05C159c03BdF2:3": "40000000000000000000",
+      "0x47C451020636999B2037c5bDe6A05C159c03BdF2:4": "1915000000000000000000",
+      "0x747A3AD2c10EF53dDFc12BB4c32FD9AD038c7a7B:2": "10000000000000000000",
+      "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D:1": "115000000000000000000",
+      "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D:2": "1196000000000000000000",
+      "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D:3": "55000000000000000000",
+      "0x68CD2862072381F62cfa25701c450B6842690ccB:2": "1000000000000000000",
+      "0x6bF341EE6e6B2a750c75f852Da0d0e244fD83836:1": "10000000000000000000",
+      "0x996dAE2024cF7Ff33bA21444d492CBa10458144C:1": "4750000000000000000",
+      "0xAd4f23776bf5131F7Be8215112Cd234982145061:1": "1000000000000000000",
+      "0xAd4f23776bf5131F7Be8215112Cd234982145061:2": "9000000000000000000",
+      "0xCE1622e8B8C4f190738AAecA91cDFb2E0A312778:4": "1000000000000000000",
+      "0xaCF6c84050B5F8F27E14881943325206E9eD68Ae:2": "8000000000000000000",
+      "0xaCF6c84050B5F8F27E14881943325206E9eD68Ae:3": "2000000000000000000",
+      "0xc07f7bacB76A2de1ab9254E0325780AD4EEAe3D1:3": "2000000000000000000",
+      "0xc38eF1d3b5915c22CFe9Ec3FC11F953EE4751768:3": "5000000000000000000",
+      "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB:1": "1010000000000000000000",
+      "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB:2": "12110000000000000000000",
+      "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB:3": "209239999999999983222784"
+    },
+    "declaredReduction": {
+      "0x298952B186D23d41C043Cc4cC49dD4340592A459:1": true,
+      "0x47C451020636999B2037c5bDe6A05C159c03BdF2:2": true,
+      "0x47C451020636999B2037c5bDe6A05C159c03BdF2:4": true,
+      "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB:2": true,
+      "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB:3": true
+    },
+    "getReductionCommitments": {
+      "0x298952B186D23d41C043Cc4cC49dD4340592A459": [
+        "1"
+      ],
+      "0x47C451020636999B2037c5bDe6A05C159c03BdF2": [
+        "4",
+        "2"
+      ],
+      "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB": [
+        "3",
+        "2"
+      ]
+    },
+    "getSupporter": {
+      "0x5f747b7dcdeb95606669097F631da4ef7C6a23B0": {
+        "id": "16",
+        "supporterWallet": "0x5f747b7dcdeb95606669097F631da4ef7C6a23B0",
+        "name": "Duda",
+        "description": "Apoiando a regeneração",
+        "profilePhoto": "",
+        "offsetsCount": "0",
+        "reductionItemsCount": "0",
+        "createdAt": "2158376"
+      },
+      "0x60a5C479175A17622cA6BDde7cc46Fb8A0466296": {
+        "id": "6",
+        "supporterWallet": "0x60a5C479175A17622cA6BDde7cc46Fb8A0466296",
+        "name": "Rovieri",
+        "description": ".",
+        "profilePhoto": "",
+        "offsetsCount": "0",
+        "reductionItemsCount": "0",
+        "createdAt": "1646143"
+      },
+      "0x68CD2862072381F62cfa25701c450B6842690ccB": {
+        "id": "14",
+        "supporterWallet": "0x68CD2862072381F62cfa25701c450B6842690ccB",
+        "name": "Gustavo",
+        "description": "Apoiador da regeneração de agroflorestas",
+        "profilePhoto": "",
+        "offsetsCount": "1",
+        "reductionItemsCount": "0",
+        "createdAt": "2132783"
+      },
+      "0x6bF341EE6e6B2a750c75f852Da0d0e244fD83836": {
+        "id": "19",
+        "supporterWallet": "0x6bF341EE6e6B2a750c75f852Da0d0e244fD83836",
+        "name": "Conexaobemviver ",
+        "description": "Rede de conexão regenerativa ",
+        "profilePhoto": "",
+        "offsetsCount": "1",
+        "reductionItemsCount": "0",
+        "createdAt": "2761875"
+      },
+      "0x747A3AD2c10EF53dDFc12BB4c32FD9AD038c7a7B": {
+        "id": "17",
+        "supporterWallet": "0x747A3AD2c10EF53dDFc12BB4c32FD9AD038c7a7B",
+        "name": "John",
+        "description": "Apoiador do projeto de regeneração ",
+        "profilePhoto": "",
+        "offsetsCount": "1",
+        "reductionItemsCount": "0",
+        "createdAt": "2266504"
+      },
+      "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D": {
+        "id": "1",
+        "supporterWallet": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "name": "André Rav",
+        "description": "Em uma eterna e imperfeita caminhada para diminuir o impacto do meu consumo.",
+        "profilePhoto": "QmYhoQJg6JjQpXMJnXoGhTSb854gkyJikTfozCmBswCcUL",
+        "offsetsCount": "58",
+        "reductionItemsCount": "0",
+        "createdAt": "1408814"
+      },
+      "0x996dAE2024cF7Ff33bA21444d492CBa10458144C": {
+        "id": "21",
+        "supporterWallet": "0x996dAE2024cF7Ff33bA21444d492CBa10458144C",
+        "name": "Gauchafers",
+        "description": "Ferragem e materiais de construção ",
+        "profilePhoto": "QmZuwPgh9TjRmAVcCmUPw72KdSJsVUAdaKcoHktksBY2zU",
+        "offsetsCount": "1",
+        "reductionItemsCount": "0",
+        "createdAt": "2918799"
+      },
+      "0xAd4f23776bf5131F7Be8215112Cd234982145061": {
+        "id": "8",
+        "supporterWallet": "0xAd4f23776bf5131F7Be8215112Cd234982145061",
+        "name": "Frank Vilela",
+        "description": "Entusiasta do projeto ",
+        "profilePhoto": "QmR59q1fQhWErsD9ngTHGEZhBwbjN4WtbTK1XcWKdArCKp",
+        "offsetsCount": "2",
+        "reductionItemsCount": "0",
+        "createdAt": "1680698"
+      },
+      "0x10584a75402fBbB9D2b9239078f8C94fFDed5E1e": {
+        "id": "11",
+        "supporterWallet": "0x10584a75402fBbB9D2b9239078f8C94fFDed5E1e",
+        "name": "Daniel Simao",
+        "description": ".",
+        "profilePhoto": "",
+        "offsetsCount": "1",
+        "reductionItemsCount": "0",
+        "createdAt": "1781524"
+      },
+      "0x179420A07A1fa993c393778aB9F8c500dA46D4E8": {
+        "id": "20",
+        "supporterWallet": "0x179420A07A1fa993c393778aB9F8c500dA46D4E8",
+        "name": "Renan",
+        "description": " L",
+        "profilePhoto": "",
+        "offsetsCount": "0",
+        "reductionItemsCount": "0",
+        "createdAt": "2811667"
+      },
+      "0x1C2026bfF084BF1D009f6E07559A619aabBA919F": {
+        "id": "7",
+        "supporterWallet": "0x1C2026bfF084BF1D009f6E07559A619aabBA919F",
+        "name": "JRCosta Design",
+        "description": "Acredito em um futuro vivo. Quero ajudar a regenerar o planeta e impulsionar sistemas agroflorestais.",
+        "profilePhoto": "QmWkJ86bmnmfJyvwZKj4stZK9qQYiEgoNz7waAdv5bZXS9",
+        "offsetsCount": "3",
+        "reductionItemsCount": "0",
+        "createdAt": "1678956"
+      },
+      "0x2080770FfCB03f05B1403f92354A3376E077Dd46": {
+        "id": "9",
+        "supporterWallet": "0x2080770FfCB03f05B1403f92354A3376E077Dd46",
+        "name": "Ryoshi ",
+        "description": "Apoiador da regeneração ecológica ",
+        "profilePhoto": "QmVu2gEfp7PzkgCohwUh36DsmUav3xwNchxfpoK7gQdjug",
+        "offsetsCount": "0",
+        "reductionItemsCount": "0",
+        "createdAt": "1684873"
+      },
+      "0x23940C1C2967FF4eb285BD697B7B1368652D8AE4": {
+        "id": "27",
+        "supporterWallet": "0x23940C1C2967FF4eb285BD697B7B1368652D8AE4",
+        "name": "Filipe91",
+        "description": "Apoio regeneração ",
+        "profilePhoto": "",
+        "offsetsCount": "1",
+        "reductionItemsCount": "0",
+        "createdAt": "3412267"
+      },
+      "0x2732Ac83b8cE4Acd54cABe8F31A2FfbccB0D2A7c": {
+        "id": "4",
+        "supporterWallet": "0x2732Ac83b8cE4Acd54cABe8F31A2FfbccB0D2A7c",
+        "name": "Kevin",
+        "description": "Apoiando a regeneração.",
+        "profilePhoto": "noPhoto",
+        "offsetsCount": "0",
+        "reductionItemsCount": "0",
+        "createdAt": "1499157"
+      },
+      "0x298952B186D23d41C043Cc4cC49dD4340592A459": {
+        "id": "2",
+        "supporterWallet": "0x298952B186D23d41C043Cc4cC49dD4340592A459",
+        "name": "Sintrop",
+        "description": "A Blockchain for Social and Environmental Impact Applications",
+        "profilePhoto": "QmSirYEaZSESkYPJ6JfgTs6hFbBKHc1JvZyxu2sGST5wQu",
+        "offsetsCount": "1",
+        "reductionItemsCount": "1",
+        "createdAt": "1435551"
+      },
+      "0x2E14e148e5AE3b2670aD9186565B7a01e9910595": {
+        "id": "13",
+        "supporterWallet": "0x2E14e148e5AE3b2670aD9186565B7a01e9910595",
+        "name": "Tamy",
+        "description": "Acredito na regeneração ",
+        "profilePhoto": "",
+        "offsetsCount": "1",
+        "reductionItemsCount": "0",
+        "createdAt": "1826446"
+      },
+      "0x3A5480EfDB7407FBa41c62769d093C01d734c657": {
+        "id": "3",
+        "supporterWallet": "0x3A5480EfDB7407FBa41c62769d093C01d734c657",
+        "name": "Edevapps",
+        "description": "Transformando ideias em aplicativos!",
+        "profilePhoto": "",
+        "offsetsCount": "4",
+        "reductionItemsCount": "0",
+        "createdAt": "1472379"
+      },
+      "0x43dDf2EB9e7416254bda142e6f927ba6465057Be": {
+        "id": "29",
+        "supporterWallet": "0x43dDf2EB9e7416254bda142e6f927ba6465057Be",
+        "name": "Vila das Pedras",
+        "description": "Apoiando a Regeneração ",
+        "profilePhoto": "",
+        "offsetsCount": "0",
+        "reductionItemsCount": "0",
+        "createdAt": "3809386"
+      },
+      "0x47C451020636999B2037c5bDe6A05C159c03BdF2": {
+        "id": "18",
+        "supporterWallet": "0x47C451020636999B2037c5bDe6A05C159c03BdF2",
+        "name": "Panquecas d'Irene",
+        "description": "Antigo restaurante de panquecas de Sorocaba buscando reduzir o impacto passado.",
+        "profilePhoto": "QmVjQyadhYUyuUEuc5ysQAnnLY1mpTSmtp2V7vQHzpDi4i",
+        "offsetsCount": "5",
+        "reductionItemsCount": "2",
+        "createdAt": "2452958"
+      },
+      "0xBAf18568DE712a30c53928a6bE0D4354340b59A6": {
+        "id": "22",
+        "supporterWallet": "0xBAf18568DE712a30c53928a6bE0D4354340b59A6",
+        "name": "ASAS Teresa",
+        "description": "Sustentabilidade ",
+        "profilePhoto": "",
+        "offsetsCount": "0",
+        "reductionItemsCount": "0",
+        "createdAt": "2956654"
+      },
+      "0xCE1622e8B8C4f190738AAecA91cDFb2E0A312778": {
+        "id": "28",
+        "supporterWallet": "0xCE1622e8B8C4f190738AAecA91cDFb2E0A312778",
+        "name": "Platelminto",
+        "description": "4",
+        "profilePhoto": "",
+        "offsetsCount": "1",
+        "reductionItemsCount": "0",
+        "createdAt": "3448221"
+      },
+      "0xCdf465ABaA9d490d06AF46616b0b196104f90616": {
+        "id": "30",
+        "supporterWallet": "0xCdf465ABaA9d490d06AF46616b0b196104f90616",
+        "name": "Dr.P",
+        "description": "Regeneration",
+        "profilePhoto": "",
+        "offsetsCount": "0",
+        "reductionItemsCount": "0",
+        "createdAt": "3810431"
+      },
+      "0xD703663db05Cc1c122930c90Ce016145EFd32F8b": {
+        "id": "24",
+        "supporterWallet": "0xD703663db05Cc1c122930c90Ce016145EFd32F8b",
+        "name": "Gabrielli Silveira",
+        "description": "Gestora e Analista Ambiental",
+        "profilePhoto": "QmVNsEyW81S6qb4q1HJ9MKockjSwhuGUaPwFYBDPY73d4N",
+        "offsetsCount": "0",
+        "reductionItemsCount": "0",
+        "createdAt": "3096190"
+      },
+      "0xEd4A876252FbAdF34B4Efbe0c9b325927c0FE55E": {
+        "id": "25",
+        "supporterWallet": "0xEd4A876252FbAdF34B4Efbe0c9b325927c0FE55E",
+        "name": "Juliana",
+        "description": "Salve o planeta",
+        "profilePhoto": "",
+        "offsetsCount": "0",
+        "reductionItemsCount": "0",
+        "createdAt": "3102615"
+      },
+      "0xa1630f11Fb47AcfA8c027f365ACAaF3409eD2A60": {
+        "id": "5",
+        "supporterWallet": "0xa1630f11Fb47AcfA8c027f365ACAaF3409eD2A60",
+        "name": "Wong Consultor",
+        "description": "Consultor da Saúde Física e Ambiental",
+        "profilePhoto": "QmZjXEzF43MvKQ4LzE7Xqq4MBRfMjG68BM79oRWxQ9n9C6",
+        "offsetsCount": "0",
+        "reductionItemsCount": "0",
+        "createdAt": "1569484"
+      },
+      "0xaCF6c84050B5F8F27E14881943325206E9eD68Ae": {
+        "id": "10",
+        "supporterWallet": "0xaCF6c84050B5F8F27E14881943325206E9eD68Ae",
+        "name": "M Angélica ",
+        "description": "Apoiando a regeneraçao",
+        "profilePhoto": "QmYPsTJ1bzLED7rP5z1xUYmAF9HKrdUxXE5qhfuafgH9fp",
+        "offsetsCount": "4",
+        "reductionItemsCount": "0",
+        "createdAt": "1704558"
+      },
+      "0xc07f7bacB76A2de1ab9254E0325780AD4EEAe3D1": {
+        "id": "12",
+        "supporterWallet": "0xc07f7bacB76A2de1ab9254E0325780AD4EEAe3D1",
+        "name": "Bárbara Furlan",
+        "description": "Buscando reduzir meu impacto",
+        "profilePhoto": "QmdesdNVSQjEsSoG275SEpZjfFons3qtyJGZ6ek4JiXcxV",
+        "offsetsCount": "1",
+        "reductionItemsCount": "0",
+        "createdAt": "1791822"
+      },
+      "0xc38eF1d3b5915c22CFe9Ec3FC11F953EE4751768": {
+        "id": "15",
+        "supporterWallet": "0xc38eF1d3b5915c22CFe9Ec3FC11F953EE4751768",
+        "name": "Silmar",
+        "description": "Apoiando a regeneração ",
+        "profilePhoto": "",
+        "offsetsCount": "1",
+        "reductionItemsCount": "0",
+        "createdAt": "2153613"
+      },
+      "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB": {
+        "id": "23",
+        "supporterWallet": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "name": "Planeta Regenerativo",
+        "description": "Livro de educação ambiental. Peça já o seu!",
+        "profilePhoto": "QmQnCcnx3mRkU5MXeJjgMmm6QXngG1zLMJDMqs4JRug2TS",
+        "offsetsCount": "19",
+        "reductionItemsCount": "2",
+        "createdAt": "3024447"
+      },
+      "0xe6Ac4cbEb7eCc707c020B8386DDEB3A69F30D9F7": {
+        "id": "26",
+        "supporterWallet": "0xe6Ac4cbEb7eCc707c020B8386DDEB3A69F30D9F7",
+        "name": "Amanda D.",
+        "description": "Aspirante à regeneradora ",
+        "profilePhoto": "",
+        "offsetsCount": "0",
+        "reductionItemsCount": "0",
+        "createdAt": "3260268"
+      }
+    },
+    "offsets": {
+      "1": {
+        "supporterAddress": "0x298952B186D23d41C043Cc4cC49dD4340592A459",
+        "createdAt": "1435562",
+        "amountBurn": "1000000000000000000000000",
+        "calculatorItemId": "1",
+        "message": "Offset for the network energy consumption. We highly recommend nodes and miners to use renewable energy source."
+      },
+      "2": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1436062",
+        "amountBurn": "100000000000000000000",
+        "calculatorItemId": "1",
+        "message": "Sem floresta, sem futuro."
+      },
+      "3": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1456523",
+        "amountBurn": "100000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Compensação da gasolina da minha viagem de hoje para cadastrar o Sítio Boaventura"
+      },
+      "4": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1456686",
+        "amountBurn": "10000000000000000000",
+        "calculatorItemId": "2",
+        "message": "When we reach the regeneration inflection point, will be the moment that we will let the Planet heal itself from this serious disease."
+      },
+      "5": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1494445",
+        "amountBurn": "100000000000000000000",
+        "calculatorItemId": "2",
+        "message": ""
+      },
+      "6": {
+        "supporterAddress": "0x3A5480EfDB7407FBa41c62769d093C01d734c657",
+        "createdAt": "1498915",
+        "amountBurn": "25000000000000000000",
+        "calculatorItemId": "2",
+        "message": ""
+      },
+      "7": {
+        "supporterAddress": "0x3A5480EfDB7407FBa41c62769d093C01d734c657",
+        "createdAt": "1499496",
+        "amountBurn": "25000000000000000000",
+        "calculatorItemId": "1",
+        "message": ""
+      },
+      "8": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1543596",
+        "amountBurn": "300000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Transporte para fazer as últimas inspeções e visitas. "
+      },
+      "9": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1546413",
+        "amountBurn": "100000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Agradecimento ao @Terramana e @Wong, novos regeneradores que receberam suas primeiras inspeções."
+      },
+      "10": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1557824",
+        "amountBurn": "50000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Boas-vindas ao Centro Educacional Vargem Bonita. Um exemplo de como ensinar agroecologia e os valores da Natureza para crianças. Que sonho se todas escolas tivessem uma agrofloresta feita pelos alunos e educadores."
+      },
+      "11": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1563248",
+        "amountBurn": "40000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Sonho com um Planeta regenerativo! Um passo cada dia, na direção certa."
+      },
+      "12": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1564184",
+        "amountBurn": "20000000000000000000",
+        "calculatorItemId": "2",
+        "message": "É lindo de ver a agrofloresta do @SitioSantaTerra. Eles concluíram a primeira etapa do processo de certificação do Crédito de Regeneração com a maior pontuação de biodiversidade até o momento, 89 espécies registradas.v"
+      },
+      "13": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1583780",
+        "amountBurn": "20000000000000000000",
+        "calculatorItemId": "2",
+        "message": "As chamadas “eras” são os períodos de prestação de serviço dentro da plataforma. Durante an era atual, recursos podem ser invalidados. Quando passa de era, usuários com pontos válidos ganham o direito de sacar o token."
+      },
+      "14": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1586708",
+        "amountBurn": "10000000000000000000",
+        "calculatorItemId": "2",
+        "message": "O @SitioSantaTerra concluiu as 3 inspeções iniciais de validação e já estão aptos a sacar o Crédito de Regeneração assim que virar para an era 2."
+      },
+      "15": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1588321",
+        "amountBurn": "10000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Quando uma inspeção é solicitada, é necessário aguardar 500 blocos para poder aceitá-la."
+      },
+      "16": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1588944",
+        "amountBurn": "25000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Inspetores, nunca aceite uma inspeção que não possa fazer e evite ser penalizado. "
+      },
+      "17": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1590799",
+        "amountBurn": "15000000000000000000",
+        "calculatorItemId": "2",
+        "message": "O Planeta é um ser vivo, um macroorganismo que caminha no sentido de aumentar e complexificar formas de vida."
+      },
+      "18": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1590813",
+        "amountBurn": "10000000000000000000",
+        "calculatorItemId": "1",
+        "message": "Quantas vidas irão custar até entendermos que somos parte da Natureza e que não podemos viver sem ela?"
+      },
+      "19": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1590901",
+        "amountBurn": "50000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Enquanto houver mais área sendo destruída do que regenerada, caminharemos para um futuro de desertos e escassez. O contrário, é permitir que o próprio Planeta se cure 🌎"
+      },
+      "20": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1590917",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Trazer de volta a vida aos ecossistemas terrestres, regenerar uma área, é um serviço prestado a todas as formas de vida presentes e futuras."
+      },
+      "21": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1590947",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Sonho com um Planeta regenerativo. Um lugar de abundância, com água fresca e comida para todos. Imagine se toda área degradada fosse transformada de volta em floresta e que aprendêssemos a viver integrados com a Natureza?"
+      },
+      "22": {
+        "supporterAddress": "0x3A5480EfDB7407FBa41c62769d093C01d734c657",
+        "createdAt": "1594780",
+        "amountBurn": "15000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Em breve uma nova forma de publicar conteúdos e textos aqui no feed.\n\nAguardem a próxima versāo"
+      },
+      "23": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1609794",
+        "amountBurn": "20000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Compensação do combustível que utilizei nas minhas últimas viagens no DF"
+      },
+      "24": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1609806",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Boas-vindas aos novos regeneradores @FazendaBella @ChacaraSuindara @ChaDaTerra. Seguimos com as inspeções e cadastros!"
+      },
+      "25": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1609974",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Um passo cada dia, na direção correta. "
+      },
+      "26": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1642474",
+        "amountBurn": "3000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Novo item adicionado na calculadora, o Plástico! Parabéns @LuccaPovoa pela pesquisa. São dados assustadores, que possamos caminhar no sentido de eliminar esse item dos nossos hábitos."
+      },
+      "27": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1642500",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Compenso a embalagem de plástico da carne de jaca que consumi. Fiz uma paella panc, ficou incrível. Super recomendo o produto do @Terramana. Muito saboroso mesmo. Recomendo muito como uma alternativa vegana a carne. Só a embalagem que ficaria melhor se fosse biodegradável.\n"
+      },
+      "28": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1664605",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Compenso o lacre plástico da embalagem de café."
+      },
+      "29": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1664617",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "3",
+        "message": "O Crédito de Regeneração é tipo um jogo, onde cada ERA é como se fosse uma fase. Os blocos estão passando, quanto antes executar as ações no sistema, mais tokens você tende a ganhar."
+      },
+      "30": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1674111",
+        "amountBurn": "4000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Gasolina da última viagem que fiz. Usei álcool na verdade. Um dos estudos que gostaria de fazer é do impacto do etanol. Sinceramente não sei se é melhor ou pior que a gasolina. A monocultura e o desmatamento não podem ser desconsiderados do impacto. "
+      },
+      "31": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1680536",
+        "amountBurn": "2000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Compenso o combustível da minha última viagem. Sonho com o dia que conseguirei me locomover apenas com eletricidade que eu mesmo produzir."
+      },
+      "32": {
+        "supporterAddress": "0xAd4f23776bf5131F7Be8215112Cd234982145061",
+        "createdAt": "1680710",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "1",
+        "message": "Compenso minha energia de novembro "
+      },
+      "33": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1690628",
+        "amountBurn": "2000000000000000000",
+        "calculatorItemId": "1",
+        "message": "Por que regenerar o planeta é o mais importante a se fazer? Somos parte da Natureza, se quisermos aumentar a vida que aqui habita ou habitará, temos que regenerar os ecossistemas terrestres e viver integrado com o meio. Novo vídeo sobre o tema:\nhttps://youtu.be/3uziUtMWg9U?si=eBBLVTflxFE8rx5l"
+      },
+      "34": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1691474",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "1",
+        "message": "https://chatbot-ai-regeneration-credits.streamlit.app/\n\nRegeneration Credit AI assistant, tire suas dúvidas sobre o projeto neste link. Créditos de desenvolvimento @PedroRovieri\n"
+      },
+      "35": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1704196",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Compensado gasolina da minha última viagem. "
+      },
+      "36": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1717440",
+        "amountBurn": "10000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Compensado o combustível de hoje"
+      },
+      "37": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1722300",
+        "amountBurn": "10000000000000000000",
+        "calculatorItemId": "2",
+        "message": "São os humanos todos homo sapiens, ou existe mais de uma espécie? O homo destructor que explora a Natureza e o homo originaris, que vive no mesmo sentido que flui a vida."
+      },
+      "38": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1722315",
+        "amountBurn": "10000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Todas as espécies contribuem para aumentar a vida no Planeta através da interação com o meio ao longo dos processos de vida. A única que caminha no sentido oposto é o homo destructor, que explora e destrói a vida para ganhos individuais."
+      },
+      "39": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1728802",
+        "amountBurn": "2000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Compenso a embalagem do chá."
+      },
+      "40": {
+        "supporterAddress": "0x1C2026bfF084BF1D009f6E07559A619aabBA919F",
+        "createdAt": "1730364",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "2",
+        "message": ""
+      },
+      "41": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1735280",
+        "amountBurn": "2000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Compenso o transporte dos últimos dias."
+      },
+      "42": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1768200",
+        "amountBurn": "5000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Compenso o combustível dos últimos deslocamentos."
+      },
+      "43": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1768208",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Sejam bem-vindos @Mateus @Barbara ao Crédito de Regeneração, parabéns pelas primeiras inspeções realizadas."
+      },
+      "44": {
+        "supporterAddress": "0x1C2026bfF084BF1D009f6E07559A619aabBA919F",
+        "createdAt": "1771745",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Compensado meu consumo de gasolina."
+      },
+      "45": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1772813",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Compenso a embalagem do pó de beterraba. "
+      },
+      "46": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1772820",
+        "amountBurn": "2000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Compra de hoje quase toda sem plástico, só a embalagem de farinha de beterraba. Se estivessem vendendo a granel teria conseguido ficar sem."
+      },
+      "47": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1772835",
+        "amountBurn": "2000000000000000000",
+        "calculatorItemId": "3",
+        "message": "O que importa é o caminho de redução, de querer de fato eliminar certos elementos dos nossos hábitos e sentir a dor quando for realmente necessário."
+      },
+      "48": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1772843",
+        "amountBurn": "2000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Antes de comprar algo com plástico pergunte-se: Faz sentido esse item ficar por séculos aqui no Planeta, podendo eventualmente se dividir em inúmeros outros pedaços e prejudicar outras formas de vida? "
+      },
+      "49": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1772869",
+        "amountBurn": "10000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Na grande maioria das vezes não é necessário. No geral, tudo que é descartável pode e deve ser eliminado dos hábitos e processos. Faz sentido que um canudo fique pra sempre por aqui só pra eu tomar algo que poderia ser consumido diretamente sem ele? "
+      },
+      "50": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1772890",
+        "amountBurn": "15000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Mas as vezes pode sim fazer sentido, por isso o mecanismo de compensação. Compenso bota anti picada de cobra que comprei recentemente. Nesse caso, se a bota plástica salvar minha vida vai ter valido muito a pena. "
+      },
+      "51": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1772906",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Os convido a escolher um item da calculadora e sempre queimar 1 Crédito de Regeneração a cada vez que o comprar. Mas que o faça com a intenção de um dia não mais precisar."
+      },
+      "52": {
+        "supporterAddress": "0x10584a75402fBbB9D2b9239078f8C94fFDed5E1e",
+        "createdAt": "1781552",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "3",
+        "message": "compenso 10 sacolas plasticas"
+      },
+      "53": {
+        "supporterAddress": "0xaCF6c84050B5F8F27E14881943325206E9eD68Ae",
+        "createdAt": "1791705",
+        "amountBurn": "2000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Queimar créditos é transformar consciência em ação.\nCada um queimado em novembro me compromete a gerar MAIS regeneração do que gasto com plástico.\nRecusar sacolas, escolher sem plástico e consumir com propósito são créditos de vida para o planeta. Vamos regenerar. "
+      },
+      "54": {
+        "supporterAddress": "0xc07f7bacB76A2de1ab9254E0325780AD4EEAe3D1",
+        "createdAt": "1791838",
+        "amountBurn": "2000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Compenso o plástico filme do melão que veio na cesta agroecológica "
+      },
+      "55": {
+        "supporterAddress": "0x1C2026bfF084BF1D009f6E07559A619aabBA919F",
+        "createdAt": "1811869",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Compensando meu consumo "
+      },
+      "56": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1820719",
+        "amountBurn": "5000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Compenso o transporte dos últimos dias. Sonhando em quem sabe um dia conseguir me locomover com eletricidade e sem combustão."
+      },
+      "57": {
+        "supporterAddress": "0xAd4f23776bf5131F7Be8215112Cd234982145061",
+        "createdAt": "1821769",
+        "amountBurn": "9000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Compenso a gasolina dos últimos 15 dias. Apesar de um carro híbrido, ainda consumimos gasolina"
+      },
+      "58": {
+        "supporterAddress": "0x2E14e148e5AE3b2670aD9186565B7a01e9910595",
+        "createdAt": "1826495",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Minha emissão de carbono mensal total (estimativa já que devemos estar emitindo cerca de 10MM por dia no Brasil, dividendo pela população total, e reduzindo parte por ter carro elétrico)"
+      },
+      "59": {
+        "supporterAddress": "0xaCF6c84050B5F8F27E14881943325206E9eD68Ae",
+        "createdAt": "1873922",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "2",
+        "message": "A contradição de usar combustíveis fósseis para regenerar exige ação. Inovação em ferramentas manuais e elétricas, apoiada por empresas, pode cortar este laço. A verdadeira sintropia está em reduzir o impacto na fonte, não apenas em compensá-lo."
+      },
+      "60": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1880389",
+        "amountBurn": "3000000000000000000",
+        "calculatorItemId": "2",
+        "message": "A compensação só faz sentido se seguida por uma real intenção de reduzir o consumo. Nada justifica a destruição da Natureza para lucros privados e nada pode de fato compensar pois o prejuízo nas mais diferentes formas de vida que aqui habitam é imensurável. "
+      },
+      "61": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1880403",
+        "amountBurn": "2000000000000000000",
+        "calculatorItemId": "2",
+        "message": "O que podemos fazer é caminhar no sentido de reduzir o impacto de nossas vidas ao longo do tempo. E usar mecanismos de compensação para acelerar projetos de impacto positivo ao longo do caminhar de um viver em harmonia com a Natureza."
+      },
+      "62": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1993291",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Compenso o plástico do saco de arroz."
+      },
+      "63": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1993438",
+        "amountBurn": "2000000000000000000",
+        "calculatorItemId": "1",
+        "message": "Energia de Dezembro. Infelizmente ainda não estou 100% solar."
+      },
+      "64": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "1993695",
+        "amountBurn": "2000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Como conectar e realizar ações: https://youtube.com/live/CZO5JENyk-s?feature=share"
+      },
+      "65": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "2123732",
+        "amountBurn": "10000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Compenso último abastecimento."
+      },
+      "66": {
+        "supporterAddress": "0x68CD2862072381F62cfa25701c450B6842690ccB",
+        "createdAt": "2139600",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Compensação de gasolina"
+      },
+      "67": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "2153630",
+        "amountBurn": "2000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Compenso combustível da última viagem "
+      },
+      "68": {
+        "supporterAddress": "0xc38eF1d3b5915c22CFe9Ec3FC11F953EE4751768",
+        "createdAt": "2153650",
+        "amountBurn": "5000000000000000000",
+        "calculatorItemId": "3",
+        "message": ""
+      },
+      "69": {
+        "supporterAddress": "0x747A3AD2c10EF53dDFc12BB4c32FD9AD038c7a7B",
+        "createdAt": "2266528",
+        "amountBurn": "10000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Estou compensando meu gasto de gasolina em minha última viagem."
+      },
+      "70": {
+        "supporterAddress": "0x47C451020636999B2037c5bDe6A05C159c03BdF2",
+        "createdAt": "2573094",
+        "amountBurn": "1000000000000000000000",
+        "calculatorItemId": "4",
+        "message": "Compenso parte do consumo para ajudar na regeneração."
+      },
+      "71": {
+        "supporterAddress": "0x47C451020636999B2037c5bDe6A05C159c03BdF2",
+        "createdAt": "2617493",
+        "amountBurn": "10000000000000000000",
+        "calculatorItemId": "4",
+        "message": "Compenso parte do consumo histórico do restaurante."
+      },
+      "72": {
+        "supporterAddress": "0x47C451020636999B2037c5bDe6A05C159c03BdF2",
+        "createdAt": "2669884",
+        "amountBurn": "900000000000000000000",
+        "calculatorItemId": "4",
+        "message": "Financio o plantio de aproximadamente 1 árvore."
+      },
+      "73": {
+        "supporterAddress": "0x6bF341EE6e6B2a750c75f852Da0d0e244fD83836",
+        "createdAt": "2761892",
+        "amountBurn": "10000000000000000000",
+        "calculatorItemId": "1",
+        "message": "Seguimos juntos de mãos dadas caminhando para o mar da consciência regenerativa hasta lá vitória!"
+      },
+      "74": {
+        "supporterAddress": "0x47C451020636999B2037c5bDe6A05C159c03BdF2",
+        "createdAt": "2786262",
+        "amountBurn": "40000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Compenso plástico das embalagens!"
+      },
+      "75": {
+        "supporterAddress": "0x47C451020636999B2037c5bDe6A05C159c03BdF2",
+        "createdAt": "2918741",
+        "amountBurn": "5000000000000000000",
+        "calculatorItemId": "4",
+        "message": "Compenso consumo passado"
+      },
+      "76": {
+        "supporterAddress": "0x996dAE2024cF7Ff33bA21444d492CBa10458144C",
+        "createdAt": "2918821",
+        "amountBurn": "4750000000000000000",
+        "calculatorItemId": "1",
+        "message": "Compenso energia utilizada na loja"
+      },
+      "77": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "2918958",
+        "amountBurn": "100000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Compenso abastecimento de etanol "
+      },
+      "78": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "2949572",
+        "amountBurn": "5000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Só a regeneração pode nos salvar."
+      },
+      "79": {
+        "supporterAddress": "0xaCF6c84050B5F8F27E14881943325206E9eD68Ae",
+        "createdAt": "2949826",
+        "amountBurn": "5000000000000000000",
+        "calculatorItemId": "2",
+        "message": " Espero nao precisar mais desse item gasolina ou combustão fósseis aqui no sitio."
+      },
+      "80": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "2955593",
+        "amountBurn": "50000000000000000000",
+        "calculatorItemId": "2",
+        "message": "A regeneração está dentro de nós!"
+      },
+      "81": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "3001723",
+        "amountBurn": "100000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Compenso o abastecimento da viagem, sonhando com o dia que converterei um carro em elétrico."
+      },
+      "82": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "3001748",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Pré-venda do livro “Planeta Regenerativo” disponível  "
+      },
+      "83": {
+        "supporterAddress": "0x3A5480EfDB7407FBa41c62769d093C01d734c657",
+        "createdAt": "3015083",
+        "amountBurn": "1000000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Meu consumo de gasolina mensal"
+      },
+      "84": {
+        "supporterAddress": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+        "createdAt": "3019024",
+        "amountBurn": "10000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Link pré venda do livro Planeta Regenerativo\nhttps://docs.google.com/forms/d/e/1FAIpQLSfqIqsYvYON_dfOcQs5QL5TcfVS_yMd0IJu_mMFDJvSWEMuVQ/viewform?usp=header"
+      },
+      "85": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3073710",
+        "amountBurn": "500000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Compenso a película plástica dos primeiros livros."
+      },
+      "86": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3095306",
+        "amountBurn": "500000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Compenso o plástico da película do livro."
+      },
+      "87": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3180656",
+        "amountBurn": "10000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Compenso primeiros fretes do livro."
+      },
+      "88": {
+        "supporterAddress": "0xaCF6c84050B5F8F27E14881943325206E9eD68Ae",
+        "createdAt": "3180672",
+        "amountBurn": "2000000000000000000",
+        "calculatorItemId": "2",
+        "message": ""
+      },
+      "89": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3240288",
+        "amountBurn": "100000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Compenso plástico dos últimos livros."
+      },
+      "90": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3379740",
+        "amountBurn": "100000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Compenso película plástica dos livros"
+      },
+      "91": {
+        "supporterAddress": "0x23940C1C2967FF4eb285BD697B7B1368652D8AE4",
+        "createdAt": "3412302",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "2",
+        "message": ""
+      },
+      "92": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3448174",
+        "amountBurn": "80000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Compenso a película plástica dos livros."
+      },
+      "93": {
+        "supporterAddress": "0xCE1622e8B8C4f190738AAecA91cDFb2E0A312778",
+        "createdAt": "3448236",
+        "amountBurn": "1000000000000000000",
+        "calculatorItemId": "4",
+        "message": ""
+      },
+      "94": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3463620",
+        "amountBurn": "4710000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Compenso plástico das películas dos livros"
+      },
+      "95": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3469395",
+        "amountBurn": "199999999999999983222784",
+        "calculatorItemId": "3",
+        "message": "Nosso objetivo como sociedade deve ser atingir o ponto de inflexão da regeneração, ou seja, o momento futuro no qual áreas em processo de regeneração passam áreas em degradação."
+      },
+      "96": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3471849",
+        "amountBurn": "10000000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Só a regeneração pode nos salvar"
+      },
+      "97": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3551869",
+        "amountBurn": "1000000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Compenso película dos livros"
+      },
+      "98": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3749250",
+        "amountBurn": "1000000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Para chegarmos ao Planeta Regenerativo, precisamos zerar toda forma de desmatamento."
+      },
+      "99": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3749367",
+        "amountBurn": "10000000000000000000",
+        "calculatorItemId": "1",
+        "message": "Para chegar no Planeta Regenerativo, precisamos tornar a agricultura em florestal"
+      },
+      "100": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3749425",
+        "amountBurn": "100000000000000000000",
+        "calculatorItemId": "3",
+        "message": ""
+      },
+      "101": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3749437",
+        "amountBurn": "1000000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Agrofloresta é a solução!"
+      },
+      "102": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3749502",
+        "amountBurn": "100000000000000000000",
+        "calculatorItemId": "2",
+        "message": "Compenso fretes e transportes dos livros."
+      },
+      "103": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3763620",
+        "amountBurn": "1000000000000000000000",
+        "calculatorItemId": "1",
+        "message": "Peça já o livro do Planeta Regenerativo em: https://www.andrerav.com/livros/planeta-regenerativo"
+      },
+      "104": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3769757",
+        "amountBurn": "1050000000000000000000",
+        "calculatorItemId": "3",
+        "message": "O Planeta Regenerativo é o estado no qual existem mais áreas em processo de regeneração do que de degradação, retomando o sentido de aumentar e complexificar a vida"
+      },
+      "105": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3802826",
+        "amountBurn": "100000000000000000000",
+        "calculatorItemId": "3",
+        "message": "Livro Planeta Regenerativo disponível para leitura, compre já!"
+      },
+      "106": {
+        "supporterAddress": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+        "createdAt": "3803855",
+        "amountBurn": "1000000000000000000000",
+        "calculatorItemId": "2",
+        "message": ""
+      }
+    },
+    "reductionCommitments": {
+      "0x298952B186D23d41C043Cc4cC49dD4340592A459": [
+        "1"
+      ],
+      "0x47C451020636999B2037c5bDe6A05C159c03BdF2": [
+        "4",
+        "2"
+      ],
+      "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB": [
+        "3",
+        "2"
+      ]
+    },
+    "supportersAddress": {
+      "1": "0x782bd7AEC7d0BF9dE8563A073d24Bf8E0010D74D",
+      "2": "0x298952B186D23d41C043Cc4cC49dD4340592A459",
+      "3": "0x3A5480EfDB7407FBa41c62769d093C01d734c657",
+      "4": "0x2732Ac83b8cE4Acd54cABe8F31A2FfbccB0D2A7c",
+      "5": "0xa1630f11Fb47AcfA8c027f365ACAaF3409eD2A60",
+      "6": "0x60a5C479175A17622cA6BDde7cc46Fb8A0466296",
+      "7": "0x1C2026bfF084BF1D009f6E07559A619aabBA919F",
+      "8": "0xAd4f23776bf5131F7Be8215112Cd234982145061",
+      "9": "0x2080770FfCB03f05B1403f92354A3376E077Dd46",
+      "10": "0xaCF6c84050B5F8F27E14881943325206E9eD68Ae",
+      "11": "0x10584a75402fBbB9D2b9239078f8C94fFDed5E1e",
+      "12": "0xc07f7bacB76A2de1ab9254E0325780AD4EEAe3D1",
+      "13": "0x2E14e148e5AE3b2670aD9186565B7a01e9910595",
+      "14": "0x68CD2862072381F62cfa25701c450B6842690ccB",
+      "15": "0xc38eF1d3b5915c22CFe9Ec3FC11F953EE4751768",
+      "16": "0x5f747b7dcdeb95606669097F631da4ef7C6a23B0",
+      "17": "0x747A3AD2c10EF53dDFc12BB4c32FD9AD038c7a7B",
+      "18": "0x47C451020636999B2037c5bDe6A05C159c03BdF2",
+      "19": "0x6bF341EE6e6B2a750c75f852Da0d0e244fD83836",
+      "20": "0x179420A07A1fa993c393778aB9F8c500dA46D4E8",
+      "21": "0x996dAE2024cF7Ff33bA21444d492CBa10458144C",
+      "22": "0xBAf18568DE712a30c53928a6bE0D4354340b59A6",
+      "23": "0xdBd61d731Cf4DB3AEA5993Af0Ae25f5f19Ed8aDB",
+      "24": "0xD703663db05Cc1c122930c90Ce016145EFd32F8b",
+      "25": "0xEd4A876252FbAdF34B4Efbe0c9b325927c0FE55E",
+      "26": "0xe6Ac4cbEb7eCc707c020B8386DDEB3A69F30D9F7",
+      "27": "0x23940C1C2967FF4eb285BD697B7B1368652D8AE4",
+      "28": "0xCE1622e8B8C4f190738AAecA91cDFb2E0A312778",
+      "29": "0x43dDf2EB9e7416254bda142e6f927ba6465057Be",
+      "30": "0xCdf465ABaA9d490d06AF46616b0b196104f90616"
+    }
+  }
+}

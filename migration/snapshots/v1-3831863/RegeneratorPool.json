@@ -1,0 +1,107 @@
+{
+  "address": "0xFC222077860d34dEfA62Dd8A848703025B7b75f7",
+  "scalars": {
+    "BLOCKS_PRECISION": "5",
+    "MAX_NEW_LEVELS": "192",
+    "currentContractEra": "3",
+    "currentEpoch": "1",
+    "owner": "0x0000000000000000000000000000000000000000",
+    "regenerationCredit": "0x24fD0C0eA35F00625094795aa105fcE15cb6f1Ed",
+    "regeneratorRulesAddress": "0x984Add883400C6E11241B9109Db59484917dF566"
+  },
+  "mappings": {
+    "allowedCallers": {
+      "0x984Add883400C6E11241B9109Db59484917dF566": true
+    },
+    "eraLevels": {
+      "1:0x25DDa7D767d9c380Ea608f6EAa18935d4Eb958aA": "6",
+      "1:0x4d9c3EafA8A88dd5712c0CC115F08aEf41D924f5": "56",
+      "1:0x5268Fe0d69bf1A8e4107fD86Ebb43B3825Db8b84": "13",
+      "1:0x593D84F67b06C593454978489605F7d418CAD2fe": "19",
+      "1:0x76fC7eDE2c586A49C326DDFaAc0A1AD6F142b737": "15",
+      "1:0xA05f72a230f1e3CC748DebDCAe5b51eb5fa1A421": "36",
+      "1:0xB8C9475fEDF4A0A30f4FEe19Dd434253A7998B57": "15",
+      "1:0xCe7Dc828700D09FAE41c50b9E9949b52EbF3EA46": "80",
+      "1:0xaC3Dd98E8025BD37Ca653f314B5CBE8492738919": "38",
+      "1:0xaadbB4bb9B8696870c2C8ef94447858b8a6F2117": "51",
+      "1:0xfC201FA2Ac0908789134E3933Cc811C1f0b06E4D": "12",
+      "2:0x15D55E11Fa024583C481b26f2e06d515ffffA832": "27",
+      "2:0x15E3E70537523965a01287724867e017EDC72C74": "16",
+      "2:0x19c46FD44d57EF64e06430E39884fdE882Acf9c5": "52",
+      "2:0x26BFE99771Cc3bba2764C230e83eF2172957cFcd": "15",
+      "2:0x2aA807C82E88ca0F52552D00cBdade53924Ab10F": "20",
+      "2:0x407f0552187F31599C2729d832F4660ee4293ec3": "9",
+      "2:0x4e2137792c4539c93a05088130081d065ea07a2f": "27",
+      "2:0xDd55aee76C9A4B924025A99cc62db9379403b641": "28",
+      "2:0xaAd26CC704f6A34ec3e31e418F80A1b066603f23": "26"
+    },
+    "eraTokens": {
+      "1:0x25DDa7D767d9c380Ea608f6EAa18935d4Eb958aA": "549853372434017595307917",
+      "1:0x5268Fe0d69bf1A8e4107fD86Ebb43B3825Db8b84": "1191348973607038123167155",
+      "1:0x593D84F67b06C593454978489605F7d418CAD2fe": "1741202346041055718475073",
+      "1:0xA05f72a230f1e3CC748DebDCAe5b51eb5fa1A421": "3299120234604105571847507",
+      "1:0xB8C9475fEDF4A0A30f4FEe19Dd434253A7998B57": "1374633431085043988269794",
+      "1:0xaC3Dd98E8025BD37Ca653f314B5CBE8492738919": "3482404692082111436950146",
+      "1:0xfC201FA2Ac0908789134E3933Cc811C1f0b06E4D": "1099706744868035190615835"
+    },
+    "eras": {
+      "1": {
+        "claimsCount": "8",
+        "tokens": "12738269794721407624633427",
+        "levels": "341"
+      },
+      "2": {
+        "claimsCount": "0",
+        "tokens": "0",
+        "levels": "220"
+      }
+    },
+    "getEra": {
+      "1": {
+        "claimsCount": "8",
+        "tokens": "12738269794721407624633427",
+        "levels": "341"
+      },
+      "2": {
+        "claimsCount": "0",
+        "tokens": "0",
+        "levels": "220"
+      }
+    },
+    "hasProcessedLevel": {
+      "5": true,
+      "23": true,
+      "31": true,
+      "33": true,
+      "36": true,
+      "41": true,
+      "45": true,
+      "50": true,
+      "54": true,
+      "56": true,
+      "57": true,
+      "62": true,
+      "63": true,
+      "66": true,
+      "71": true,
+      "74": true,
+      "76": true,
+      "78": true,
+      "85": true,
+      "86": true
+    },
+    "hasWithdrawn": {
+      "1:0x19c46FD44d57EF64e06430E39884fdE882Acf9c5": true,
+      "1:0x25DDa7D767d9c380Ea608f6EAa18935d4Eb958aA": true,
+      "1:0x5268Fe0d69bf1A8e4107fD86Ebb43B3825Db8b84": true,
+      "1:0x593D84F67b06C593454978489605F7d418CAD2fe": true,
+      "1:0xA05f72a230f1e3CC748DebDCAe5b51eb5fa1A421": true,
+      "1:0xB8C9475fEDF4A0A30f4FEe19Dd434253A7998B57": true,
+      "1:0xaC3Dd98E8025BD37Ca653f314B5CBE8492738919": true,
+      "1:0xfC201FA2Ac0908789134E3933Cc811C1f0b06E4D": true
+    },
+    "isAllowedCaller": {
+      "0x984Add883400C6E11241B9109Db59484917dF566": true
+    }
+  }
+}

@@ -53,7 +53,7 @@ describe("ValidationPool", () => {
     instance = validatorRulesDeployed.validationRules;
 
     const instanceFactory = await ethers.getContractFactory("ValidationPool");
-    instance = await instanceFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra);
+    instance = await instanceFactory.deploy(regenerationCredit.target, args.halving, args.blocksPerEra, 0);
 
     await instance.newAllowedCaller(owner);
     await instance.setContractCall(instance.target);

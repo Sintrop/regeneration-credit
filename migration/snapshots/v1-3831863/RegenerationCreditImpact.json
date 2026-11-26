@@ -1,0 +1,18 @@
+{
+  "address": "0x323b2162a7E8cB4b718c03eFd8BacE1C294C55F5",
+  "scalars": {
+    "CARBON_PER_TREE": "100000",
+    "areaPerToken": "9600072220101040",
+    "biodiversityPerToken": "6671775193375",
+    "carbonPerToken": "96251969431393852372",
+    "inspectionRules": "0x13A40b1Cacb10A065AdC19e98270a9CC0f583281",
+    "regenerationCredit": "0x24fD0C0eA35F00625094795aa105fcE15cb6f1Ed",
+    "regeneratorRules": "0x984Add883400C6E11241B9109Db59484917dF566",
+    "totalAreaImpact": "1818780",
+    "totalBiodiversityImpact": "1264",
+    "totalCarbonImpact": "18235400000",
+    "totalTreesImpact": "182354",
+    "treesPerToken": "962519694313938"
+  },
+  "mappings": {}
+}

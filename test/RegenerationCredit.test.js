@@ -40,7 +40,7 @@ describe("RegenerationCredit", (accounts) => {
     communityRules = await communityRulesDeployed();
 
     const reseacherPoolFactory = await ethers.getContractFactory("ResearcherPool");
-    const researcherPool = await reseacherPoolFactory.deploy(instance.target, 12, 12);
+    const researcherPool = await reseacherPoolFactory.deploy(instance.target, 12, 12, 0);
 
     const researcherRulesFactory = await ethers.getContractFactory("ResearcherRules");
     researcherRules = await researcherRulesFactory.deploy(3, 10, 10);
@@ -52,7 +52,8 @@ describe("RegenerationCredit", (accounts) => {
     regeneratorPool = await regeneratorPoolFactory.deploy(
       instance.target,
       argsRegeneratorPool.halving,
-      argsRegeneratorPool.blocksPerEra
+      argsRegeneratorPool.blocksPerEra,
+      0
     );
 
     const researcherRulesContractDependencies = {

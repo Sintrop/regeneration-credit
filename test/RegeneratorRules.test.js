@@ -74,7 +74,8 @@ describe("RegeneratorRules", () => {
     regeneratorPool = await regeneratorPoolFactory.deploy(
       regenerationCredit.target,
       regeneratorPoolArgs.halving,
-      regeneratorPoolArgs.blocksPerEra
+      regeneratorPoolArgs.blocksPerEra,
+      0
     );
 
     const instanceFactory = await ethers.getContractFactory("RegeneratorRules");

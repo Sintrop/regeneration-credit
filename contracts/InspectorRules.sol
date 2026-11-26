@@ -7,6 +7,7 @@ import { IInspectorPool } from "./interfaces/IInspectorPool.sol";
 import { Inspector, Penalty, Pool } from "./types/InspectorTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
+import { Migratable } from "./shared/Migratable.sol";
 
 /**
  * @title InspectorRules
@@ -18,7 +19,7 @@ import { Callable } from "./shared/Callable.sol";
  * It interacts with `CommunityRules` for general user management and `InspectorPool` for reward distribution.
  * This contract handles inspector registration, inspection tracking, give-ups, and penalties.
  */
-contract InspectorRules is Callable, ReentrancyGuard {
+contract InspectorRules is Callable, ReentrancyGuard, Migratable {
   // --- Constants ---
 
   /// @notice The minimum number of completed inspections required for an inspector to be eligible for pool rewards.
@@ -356,6 +357,19 @@ contract InspectorRules is Callable, ReentrancyGuard {
    */
   function _minimumInspections(uint256 totalInspections) private pure returns (bool) {
     return totalInspections >= MINIMUM_INSPECTIONS_TO_POOL;
+  }
+
+  // --- Migration functions ---
+
+  /**
+   * @notice Imports inspectors of the previous deployment.
+   * @param _inspectors Inspectors data.
+   */
+  function migrateInspectors(Inspector[] calldata _inspectors) external onlyMigration {
+    for (uint256 i = 0; i < _inspectors.length; i++) {
+      inspectors[_inspectors[i].inspectorWallet] = _inspectors[i];
+      inspectorsAddress[_inspectors[i].id] = _inspectors[i].inspectorWallet;
+    }
   }
 
   // --- View functions ---

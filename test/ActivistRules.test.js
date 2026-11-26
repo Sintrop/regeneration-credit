@@ -50,7 +50,8 @@ describe("ActivistRules", () => {
     activistPool = await activistPoolFactory.deploy(
       regenerationCredit.target,
       activistPoolArgs.halving,
-      activistPoolArgs.blocksPerEra
+      activistPoolArgs.blocksPerEra,
+      0
     );
 
     instanceContractFactory = await ethers.getContractFactory("ActivistRules");

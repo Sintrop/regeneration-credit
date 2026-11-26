@@ -1,0 +1,25 @@
+{
+  "address": "0xA9E14EefACeb8b9E83592F6BC692BfdAA6F7f1F1",
+  "scalars": {
+    "BLOCKS_PRECISION": "5",
+    "currentContractEra": "3",
+    "currentEpoch": "1",
+    "owner": "0x0000000000000000000000000000000000000000",
+    "regenerationCredit": "0x24fD0C0eA35F00625094795aa105fcE15cb6f1Ed",
+    "validationRulesAddress": "0xB6b72b88227E81a5b634697a09fffD082Ef22Da2"
+  },
+  "mappings": {
+    "allowedCallers": {
+      "0xB6b72b88227E81a5b634697a09fffD082Ef22Da2": true
+    },
+    "eraLevels": {},
+    "eraTokens": {},
+    "eras": {},
+    "getEra": {},
+    "hasProcessedLevel": {},
+    "hasWithdrawn": {},
+    "isAllowedCaller": {
+      "0xB6b72b88227E81a5b634697a09fffD082Ef22Da2": true
+    }
+  }
+}

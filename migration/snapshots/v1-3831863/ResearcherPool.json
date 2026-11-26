@@ -1,0 +1,50 @@
+{
+  "address": "0x659962e70B2cD88886461e8165D56fA4C5CB4278",
+  "scalars": {
+    "BLOCKS_PRECISION": "5",
+    "currentContractEra": "3",
+    "currentEpoch": "1",
+    "owner": "0x0000000000000000000000000000000000000000",
+    "regenerationCredit": "0x24fD0C0eA35F00625094795aa105fcE15cb6f1Ed",
+    "researcherRulesAddress": "0x74A6eff5c2E696F683d878710F840ce4c652b4f6"
+  },
+  "mappings": {
+    "allowedCallers": {
+      "0x74A6eff5c2E696F683d878710F840ce4c652b4f6": true
+    },
+    "eraLevels": {
+      "1:0x29a9C883563dBf93F68b60Bd7074Ac82625377d9": "2",
+      "1:0xD5268a415832843E05C0e3979f7294F3F5E4C933": "3"
+    },
+    "eraTokens": {
+      "1:0xD5268a415832843E05C0e3979f7294F3F5E4C933": "999999999999999999999999"
+    },
+    "eras": {
+      "1": {
+        "claimsCount": "1",
+        "tokens": "999999999999999999999999",
+        "levels": "5"
+      }
+    },
+    "getEra": {
+      "1": {
+        "claimsCount": "1",
+        "tokens": "999999999999999999999999",
+        "levels": "5"
+      }
+    },
+    "hasProcessedLevel": {
+      "1": true,
+      "2": true,
+      "3": true,
+      "4": true,
+      "5": true
+    },
+    "hasWithdrawn": {
+      "1:0xD5268a415832843E05C0e3979f7294F3F5E4C933": true
+    },
+    "isAllowedCaller": {
+      "0x74A6eff5c2E696F683d878710F840ce4c652b4f6": true
+    }
+  }
+}

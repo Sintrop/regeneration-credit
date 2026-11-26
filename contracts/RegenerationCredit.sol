@@ -5,6 +5,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { ERC20Burnable } from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import { Migratable } from "./shared/Migratable.sol";
 
 /**
  * @title RegenerationCredit
@@ -15,7 +16,7 @@ import { ERC20Burnable } from "@openzeppelin/contracts/token/ERC20/extensions/ER
  * and for burning tokens to certify environmental offset.
  * @dev Inherits from OpenZeppelin's `ERC20` for standard token functionalities and `Ownable` for deploy setup.
  */
-contract RegenerationCredit is ERC20, ERC20Burnable, Ownable, ReentrancyGuard {
+contract RegenerationCredit is ERC20, ERC20Burnable, Ownable, ReentrancyGuard, Migratable {
   // --- Constants (Standard ERC-20 Metadata) ---
 
   /// @notice The official name of the token.
@@ -142,6 +143,23 @@ contract RegenerationCredit is ERC20, ERC20Burnable, Ownable, ReentrancyGuard {
 
     // Emit event for monitoring and certification.
     emit TokensCertified(tokenOwner, amount, certificate[tokenOwner]);
+  }
+
+  // --- Migration functions ---
+
+  /**
+   * @notice Imports the offset certificates of the previous deployment.
+   * @dev Balances and contract pools are imported with regular transfers and `addContractPool`.
+   * @param accounts Certified accounts.
+   * @param amounts Certified amount of each account.
+   */
+  function migrateCertificates(address[] calldata accounts, uint256[] calldata amounts) external onlyMigration {
+    require(accounts.length == amounts.length, "Invalid length");
+
+    for (uint256 i = 0; i < accounts.length; i++) {
+      totalCertified_ = totalCertified_ - certificate[accounts[i]] + amounts[i];
+      certificate[accounts[i]] = amounts[i];
+    }
   }
 
   // --- View functions ---

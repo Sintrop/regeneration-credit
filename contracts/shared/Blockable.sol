@@ -17,7 +17,7 @@ contract Blockable {
   /// @notice The number of blocks that constitute a single ERA.
   uint256 private immutable blocksPerEra;
 
-  /// @notice The block number at which this contract was deployed.
+  /// @notice The block number from which eras are counted.
   uint256 private immutable deployedAt;
 
   /// @dev Used to determine epoch changes, linked to reward halving adjustments
@@ -30,11 +30,14 @@ contract Blockable {
    * @dev Initializes the Blockable contract.
    * @param _blocksPerEra The number of blocks in each era. Must be greater than 0.
    * @param _halving The number of eras that constitute one halving cycle/epoch.
+   * @param _deployedAt The block from which eras are counted. Zero uses the deployment block.
+   * Allows a new deployment to keep the era clock of a previous deployment.
    */
 
-  constructor(uint256 _blocksPerEra, uint256 _halving) {
+  constructor(uint256 _blocksPerEra, uint256 _halving, uint256 _deployedAt) {
+    require(_deployedAt <= _currentBlockNumber(), "Invalid deployedAt");
     blocksPerEra = _blocksPerEra;
-    deployedAt = _currentBlockNumber();
+    deployedAt = _deployedAt == 0 ? _currentBlockNumber() : _deployedAt;
     halving = _halving;
   }
 

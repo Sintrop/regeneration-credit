@@ -8,6 +8,7 @@ import { Activist, Pool } from "./types/ActivistTypes.sol";
 import { CommunityTypes } from "./types/CommunityTypes.sol";
 import { Callable } from "./shared/Callable.sol";
 import { Invitable } from "./shared/Invitable.sol";
+import { Migratable } from "./shared/Migratable.sol";
 
 /**
  * @title ActivistRules
@@ -20,7 +21,7 @@ import { Invitable } from "./shared/Invitable.sol";
  * and `ActivistPool` for reward distribution.
  */
 
-contract ActivistRules is Callable, Invitable, ReentrancyGuard {
+contract ActivistRules is Callable, Invitable, ReentrancyGuard, Migratable {
   // --- Constants ---
 
   /// @notice Maximum possible level from a single invited.
@@ -294,6 +295,39 @@ contract ActivistRules is Callable, Invitable, ReentrancyGuard {
 
     // Emit an event for off-chain monitoring.
     emit ActivistLevelIncreased(activistAddress, activist.pool.level, block.number);
+  }
+
+  // --- Migration functions ---
+
+  /**
+   * @notice Imports activists of the previous deployment.
+   * @param _activists Activists data.
+   */
+  function migrateActivists(Activist[] calldata _activists) external onlyMigration {
+    for (uint256 i = 0; i < _activists.length; i++) {
+      activists[_activists[i].activistWallet] = _activists[i];
+      activistsAddress[_activists[i].id] = _activists[i].activistWallet;
+    }
+  }
+
+  /**
+   * @notice Imports the activist counters of the previous deployment.
+   * @param _approvedInvites Total approved invites.
+   * @param _totalActiveLevels Total active levels.
+   * @param inviters Inviter addresses.
+   * @param inviteds User invited by each inviter that already generated the inviter level.
+   */
+  function migrateActivistsTotals(
+    uint64 _approvedInvites,
+    uint256 _totalActiveLevels,
+    address[] calldata inviters,
+    address[] calldata inviteds
+  ) external onlyMigration {
+    require(inviters.length == inviteds.length, "Invalid length");
+
+    approvedInvites = _approvedInvites;
+    totalActiveLevels = _totalActiveLevels;
+    for (uint256 i = 0; i < inviters.length; i++) activistWonLevel[inviters[i]][inviteds[i]] = true;
   }
 
   // --- View functions ---
