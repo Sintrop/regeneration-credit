@@ -176,13 +176,18 @@ contract InvitationRules is Ownable, ReentrancyGuard {
 
   /**
    * @dev Calculates if the user has reached the general invitation delay based on their user type.
+   * A user who has never invited counts the delay from the block in which they were invited, so new
+   * accounts cannot invite right after registering.
    * @param userType The user type of the inviter.
    * @return bool True if the user waited the delay blocks, false otherwise.
    */
   function _invitationDelayReached(CommunityTypes.UserType userType) private view returns (bool) {
     uint32 delayBlocks = communityRules.getUserTypeSettings(userType).invitationDelayBlocks;
+    uint256 lastInviteBlock = lastInviteBlocks[msg.sender];
 
-    return _hasInvitationDelayPassed(lastInviteBlocks[msg.sender], delayBlocks);
+    if (lastInviteBlock == 0) lastInviteBlock = communityRules.getInvitation(msg.sender).createdAtBlock;
+
+    return _hasInvitationDelayPassed(lastInviteBlock, delayBlocks);
   }
 
   /**

@@ -424,8 +424,8 @@ contract DeveloperRules is Callable, Invitable, ReentrancyGuard {
   function canSendInvite(address addr) public view returns (bool) {
     Developer memory developer = developers[addr];
 
-    // Return false if the address is not a registered developer (id is 0).
-    if (developer.id <= 0) return false;
+    // Return false if the address is not a registered developer (id is 0) or has no valid report.
+    if (developer.id <= 0 || developer.pool.level == 0) return false;
 
     // Calls the inherited `canInvite` function from `Invitable` to calculate eligibility.
     // This depends on total reports count, total developer count, and the developer's pool level.

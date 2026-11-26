@@ -1,4 +1,5 @@
 const { userTypes } = require("./shared/user_types");
+const { addVoterLevel } = require("./shared/voter_level");
 const { expect } = require("chai");
 
 const { advanceBlock } = require("./shared/advance_block");
@@ -42,12 +43,27 @@ describe("ContributorRules", (accounts) => {
     await instance.connect(from).addContributor(name, "photoURL");
   };
 
+  // A contributor that votes needs one valid work. It gets a level without publishing, so the ids and
+  // counters of the works under test do not change.
+  const giveVoterLevel = async (from) => {
+    await addVoterLevel(instance, "getContributor", from.address ?? from);
+  };
+
+  const addVoterContributor = async (name, from) => {
+    await addContributor(name, from);
+    await giveVoterLevel(from);
+  };
+
   const addResearcher = async (name, from) => {
     await researcherRules.connect(from).addResearcher(name, "photoURL");
+    // A voter needs at least one valid work.
+    await researcherRules.connect(from).addResearch("title", "thesis", "file");
   };
 
   const addDeveloper = async (name, from) => {
     await developerRules.connect(from).addDeveloper(name, "photoURL");
+    // A voter needs at least one valid work.
+    await developerRules.connect(from).addReport("description", "report");
   };
 
   const addActivist = async (name, from) => {
@@ -83,6 +99,12 @@ describe("ContributorRules", (accounts) => {
     ] = await ethers.getSigners();
 
     const validatorRulesDeployed = await voteRulesDeployed();
+
+    // Voters of the other types publish a work when they register.
+    await validatorRulesDeployed.researcherPool.newAllowedCaller(validatorRulesDeployed.researcherRules.target);
+    await validatorRulesDeployed.researcherPool.setContractCall(validatorRulesDeployed.researcherRules.target);
+    await validatorRulesDeployed.developerPool.newAllowedCaller(validatorRulesDeployed.developerRules.target);
+    await validatorRulesDeployed.developerPool.setContractCall(validatorRulesDeployed.developerRules.target);
 
     regenerationCredit = validatorRulesDeployed.regenerationCredit;
     communityRules = validatorRulesDeployed.communityRules;
@@ -373,6 +395,26 @@ describe("ContributorRules", (accounts) => {
     });
   });
 
+  describe("#canSendInvite", () => {
+    beforeEach(async () => {
+      await addContributor("Contributor A", contr1Address);
+    });
+
+    context("without a valid contribution", () => {
+      it("returns false", async () => {
+        expect(await instance.canSendInvite(contr1Address)).to.eq(false);
+      });
+    });
+
+    context("with a valid contribution", () => {
+      it("returns true", async () => {
+        await instance.connect(contr1Address).addContribution("description", "contribution");
+
+        expect(await instance.canSendInvite(contr1Address)).to.eq(true);
+      });
+    });
+  });
+
   describe("#getContributor", () => {
     it("should return a contributor", async () => {
       await addContributor("Contributor A", contr1Address);
@@ -528,8 +570,11 @@ describe("ContributorRules", (accounts) => {
         await addDeveloper("User B", user2Address);
         await addDeveloper("User C", user3Address);
 
+        await addInvitation(owner, user4Address, userTypes.Developer, owner);
+        await addDeveloper("User D", user4Address);
         await instance.connect(user1Address).addContributionValidation(1, "justification");
         await instance.connect(user2Address).addContributionValidation(1, "justification");
+        await instance.connect(user4Address).addContributionValidation(1, "justification");
       });
 
       it("should revert because the contribution is no longer valid", async () => {
@@ -561,6 +606,7 @@ describe("ContributorRules", (accounts) => {
 
             await instance.connect(user1Address).addContributionValidation(1, "justification");
             await instance.connect(user2Address).addContributionValidation(1, "justification");
+            await instance.connect(user3Address).addContributionValidation(1, "justification");
           });
 
           it("set valid field to false", async () => {
@@ -672,12 +718,14 @@ describe("ContributorRules", (accounts) => {
 
           await instance.connect(user1Address).addContributionValidation(1, "justification");
           await instance.connect(user2Address).addContributionValidation(1, "justification");
+          await instance.connect(user3Address).addContributionValidation(1, "justification");
 
           await advanceBlock(contributorPoolParams.blocksPerEra);
 
           await addContribution(contr1Address);
           await instance.connect(user1Address).addContributionValidation(2, "justification");
           await instance.connect(user3Address).addContributionValidation(2, "justification");
+          await instance.connect(user2Address).addContributionValidation(2, "justification");
 
           await advanceBlock(contributorPoolParams.blocksPerEra);
           await communityRules.setContractCall(owner, validationRules.target);
@@ -691,6 +739,7 @@ describe("ContributorRules", (accounts) => {
 
           await instance.connect(user1Address).addContributionValidation(3, "justification");
           await instance.connect(user2Address).addContributionValidation(3, "justification");
+          await instance.connect(user3Address).addContributionValidation(3, "justification");
         });
 
         it("user type must be DENIED", async () => {
@@ -730,6 +779,7 @@ describe("ContributorRules", (accounts) => {
             await advanceBlock(10);
             await instance.connect(user3Address).addContributionValidation(4, "justification");
             await instance.connect(user2Address).addContributionValidation(4, "justification");
+            await instance.connect(user1Address).addContributionValidation(4, "justification");
           });
 
           it("should not remove levels from totalActiveLevels again", async () => {
@@ -768,8 +818,10 @@ describe("ContributorRules", (accounts) => {
 
             await addContribution(contr1Address);
 
+            await addDeveloper("User D", user4Address);
             await instance.connect(user1Address).addContributionValidation(1, "justification");
             await instance.connect(user2Address).addContributionValidation(1, "justification");
+            await instance.connect(user4Address).addContributionValidation(1, "justification");
           });
 
           it("should return error message", async () => {
@@ -816,6 +868,7 @@ describe("ContributorRules", (accounts) => {
 
             await instance.connect(user1Address).addContributionValidation(1, "justification");
             await instance.connect(user2Address).addContributionValidation(1, "justification");
+            await instance.connect(user3Address).addContributionValidation(1, "justification");
           });
 
           it("set valid field to false", async () => {
@@ -900,14 +953,17 @@ describe("ContributorRules", (accounts) => {
 
       context("when contributor reach max maxPenalties", () => {
         beforeEach(async () => {
-          await addResearcher("User B", user2Address);
-          await addResearcher("User C", user3Address);
-          await addResearcher("User D", user4Address);
-          await addResearcher("User E", user5Address);
-          await addResearcher("User F", user6Address);
-          await addResearcher("User G", user7Address);
-          await addResearcher("User H", user8Address);
-          await addResearcher("User I", user9Address);
+          // Start at the beginning of an era, so every work of this context is voted in the same era.
+          await advanceBlock(Number(await instance.nextEraIn()));
+
+          await researcherRules.connect(user2Address).addResearcher("User B", "photoURL");
+          await researcherRules.connect(user3Address).addResearcher("User C", "photoURL");
+          await researcherRules.connect(user4Address).addResearcher("User D", "photoURL");
+          await researcherRules.connect(user5Address).addResearcher("User E", "photoURL");
+          await researcherRules.connect(user6Address).addResearcher("User F", "photoURL");
+          await researcherRules.connect(user7Address).addResearcher("User G", "photoURL");
+          await researcherRules.connect(user8Address).addResearcher("User H", "photoURL");
+          await researcherRules.connect(user9Address).addResearcher("User I", "photoURL");
 
           await instance.connect(contr1Address).addContribution("description", "contribution");
 
@@ -936,6 +992,7 @@ describe("ContributorRules", (accounts) => {
           await researcherRules.connect(user3Address).addResearch("description", "contribution", "file");
           await researcherRules.connect(user4Address).addResearch("description", "contribution", "file");
           await researcherRules.connect(user5Address).addResearch("description", "contribution", "file");
+          await researcherRules.connect(user6Address).addResearch("description", "contribution", "file");
 
           await advanceBlock(10);
 
@@ -944,18 +1001,22 @@ describe("ContributorRules", (accounts) => {
           await researcherRules.connect(user3Address).addResearch("description", "contribution", "file");
           await researcherRules.connect(user4Address).addResearch("description", "contribution", "file");
           await researcherRules.connect(user5Address).addResearch("description", "contribution", "file");
+          await researcherRules.connect(user6Address).addResearch("description", "contribution", "file");
 
           await instance.connect(user2Address).addContributionValidation(1, "justification");
           await instance.connect(user3Address).addContributionValidation(1, "justification");
+          await instance.connect(user5Address).addContributionValidation(1, "justification");
 
           await instance.connect(user1Address).addContributionValidation(2, "justification");
           await instance.connect(user4Address).addContributionValidation(2, "justification");
+          await instance.connect(user6Address).addContributionValidation(2, "justification");
 
           await advanceBlock(10);
           await communityRules.setContractCall(owner, validationRules.target);
 
           await instance.connect(user5Address).addContributionValidation(3, "justification");
           await instance.connect(user2Address).addContributionValidation(3, "justification");
+          await instance.connect(user3Address).addContributionValidation(3, "justification");
         });
 
         it("user type must be DENIED", async () => {
@@ -990,6 +1051,7 @@ describe("ContributorRules", (accounts) => {
 
             await instance.connect(user1Address).addContributionValidation(1, "justification");
             await instance.connect(user2Address).addContributionValidation(1, "justification");
+            await instance.connect(user4Address).addContributionValidation(1, "justification");
           });
 
           it("should return error message", async () => {
@@ -1026,16 +1088,21 @@ describe("ContributorRules", (accounts) => {
       });
 
       context("with valid contribution", () => {
+        // User A votes in these contexts.
+        beforeEach(async () => {
+          await giveVoterLevel(user1Address);
+        });
         context("when contribution must be invalidated", () => {
           beforeEach(async () => {
             await instance.connect(contr1Address).addContribution("description", "contribution");
 
-            await addContributor("User B", user2Address);
-            await addContributor("User C", user3Address);
-            await addContributor("User D", user4Address);
+            await addVoterContributor("User B", user2Address);
+            await addVoterContributor("User C", user3Address);
+            await addVoterContributor("User D", user4Address);
 
             await instance.connect(user1Address).addContributionValidation(1, "justification");
             await instance.connect(user2Address).addContributionValidation(1, "justification");
+            await instance.connect(contr1Address).addContributionValidation(1, "justification");
           });
 
           it("set valid field to false", async () => {
@@ -1086,7 +1153,7 @@ describe("ContributorRules", (accounts) => {
           beforeEach(async () => {
             await instance.connect(contr1Address).addContribution("description", "contribution");
 
-            await addContributor("User B", user2Address);
+            await addVoterContributor("User B", user2Address);
 
             await instance.connect(user1Address).addContributionValidation(1, "justification");
           });
@@ -1120,14 +1187,17 @@ describe("ContributorRules", (accounts) => {
 
       context("when contributor reach max maxPenalties", () => {
         beforeEach(async () => {
-          await addContributor("User B", user2Address);
-          await addContributor("User C", user3Address);
-          await addContributor("User D", user4Address);
-          await addContributor("User E", user5Address);
-          await addContributor("User F", user6Address);
-          await addContributor("User G", user7Address);
-          await addContributor("User H", user8Address);
-          await addContributor("User I", user9Address);
+          // Start at the beginning of an era, so every work of this context is voted in the same era.
+          await advanceBlock(Number(await instance.nextEraIn()));
+
+          await addVoterContributor("User B", user2Address);
+          await addVoterContributor("User C", user3Address);
+          await addVoterContributor("User D", user4Address);
+          await addVoterContributor("User E", user5Address);
+          await addVoterContributor("User F", user6Address);
+          await addVoterContributor("User G", user7Address);
+          await addVoterContributor("User H", user8Address);
+          await addVoterContributor("User I", user9Address);
 
           await instance.connect(contr1Address).addContribution("description", "contribution");
 
@@ -1156,6 +1226,7 @@ describe("ContributorRules", (accounts) => {
           await instance.connect(user3Address).addContribution("description", "contribution");
           await instance.connect(user4Address).addContribution("description", "contribution");
           await instance.connect(user5Address).addContribution("description", "contribution");
+          await instance.connect(user6Address).addContribution("description", "contribution");
 
           await advanceBlock(10);
 
@@ -1164,18 +1235,22 @@ describe("ContributorRules", (accounts) => {
           await instance.connect(user3Address).addContribution("description", "contribution");
           await instance.connect(user4Address).addContribution("description", "contribution");
           await instance.connect(user5Address).addContribution("description", "contribution");
+          await instance.connect(user6Address).addContribution("description", "contribution");
 
           await instance.connect(user2Address).addContributionValidation(1, "justification");
           await instance.connect(user3Address).addContributionValidation(1, "justification");
+          await instance.connect(user5Address).addContributionValidation(1, "justification");
 
           await instance.connect(user1Address).addContributionValidation(2, "justification");
           await instance.connect(user4Address).addContributionValidation(2, "justification");
+          await instance.connect(user6Address).addContributionValidation(2, "justification");
 
           await advanceBlock(10);
           await communityRules.setContractCall(owner, validationRules.target);
 
           await instance.connect(user5Address).addContributionValidation(3, "justification");
           await instance.connect(user2Address).addContributionValidation(3, "justification");
+          await instance.connect(user3Address).addContributionValidation(3, "justification");
         });
 
         it("user type must be DENIED", async () => {
@@ -1186,6 +1261,10 @@ describe("ContributorRules", (accounts) => {
       });
 
       context("with invalid contribution", () => {
+        // User A votes in these contexts.
+        beforeEach(async () => {
+          await giveVoterLevel(user1Address);
+        });
         context("when current era is different from contribution created era", () => {
           beforeEach(async () => {
             await instance.connect(contr1Address).addContribution("description", "contribution");
@@ -1204,12 +1283,13 @@ describe("ContributorRules", (accounts) => {
           beforeEach(async () => {
             await instance.connect(contr1Address).addContribution("description", "contribution");
 
-            await addContributor("User B", user2Address);
-            await addContributor("User C", user3Address);
-            await addContributor("User D", user4Address);
+            await addVoterContributor("User B", user2Address);
+            await addVoterContributor("User C", user3Address);
+            await addVoterContributor("User D", user4Address);
 
             await instance.connect(user1Address).addContributionValidation(1, "justification");
             await instance.connect(user2Address).addContributionValidation(1, "justification");
+            await instance.connect(contr1Address).addContributionValidation(1, "justification");
           });
 
           it("should return error message", async () => {
