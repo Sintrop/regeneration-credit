@@ -93,12 +93,12 @@ contract RegenerationCreditImpact {
   }
 
   /**
-   * @notice Calculates the total area in regeneration proccess of the system.
-   * @dev This directly returns the total regeneration area reported by regenerators.
-   * @return uint256 Area under regeneration [m²].
+   * @notice Calculates the verified area in regeneration process of the system.
+   * @dev Only the area of regenerators with at least one valid inspection that were not denied is counted.
+   * @return uint256 Verified area under regeneration [m²].
    */
   function totalAreaImpact() public view returns (uint256) {
-    return regeneratorRules.regenerationArea();
+    return regeneratorRules.verifiedArea();
   }
 
   /**

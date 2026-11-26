@@ -58,6 +58,15 @@ describe("RegenerationCreditImpact", () => {
     await inspectionRules.connect(from).realizeInspection(id, proofPhoto, report, treesResult, biodiversityResult);
   };
 
+  // A valid inspection verifies the regeneration area.
+  const verifyArea = async (regenerator, inspector) => {
+    await inspectionRules.connect(regenerator).requestInspection();
+    const id = await inspectionRules.inspectionsTotalCount();
+    await advanceBlock(5);
+    await inspectionRules.connect(inspector).acceptInspection(id);
+    await realizeInspection(id, "report", 100, 10, inspector);
+  };
+
   const nextEraRequestInspection = async (regeneratorAddress) => {
     await advanceBlock(500);
 
@@ -750,9 +759,25 @@ describe("RegenerationCreditImpact", () => {
 
       await addRegenerator("Regenerator A", regeneratorAddress);
       await addRegenerator("Regenerator B", regenerator2Address);
+
+      await invitationRules.onlyOwnerInvite(inspectorAddress, userTypes.Inspector);
+      await invitationRules.onlyOwnerInvite(inspector2Address, userTypes.Inspector);
+      await addInspector("Inspector A", inspectorAddress);
+      await addInspector("Inspector B", inspector2Address);
+    });
+
+    context("when the regenerators were not inspected", () => {
+      it("totalAreaImpact must be 0", async () => {
+        expect(await instance.totalAreaImpact()).to.equal(0);
+      });
     });
 
     context("when have two regenerators", () => {
+      beforeEach(async () => {
+        await verifyArea(regeneratorAddress, inspectorAddress);
+        await verifyArea(regenerator2Address, inspector2Address);
+      });
+
       context("when all regenerators are valids", async () => {
         it("totalAreaImpact must be 5000", async () => {
           const totalAreaImpact = await instance.totalAreaImpact();
@@ -1486,9 +1511,19 @@ describe("RegenerationCreditImpact", () => {
 
       await addRegenerator("Regenerator A", regeneratorAddress);
       await addRegenerator("Regenerator B", regenerator2Address);
+
+      await invitationRules.onlyOwnerInvite(inspectorAddress, userTypes.Inspector);
+      await invitationRules.onlyOwnerInvite(inspector2Address, userTypes.Inspector);
+      await addInspector("Inspector A", inspectorAddress);
+      await addInspector("Inspector B", inspector2Address);
     });
 
     context("when have two regenerators", () => {
+      beforeEach(async () => {
+        await verifyArea(regeneratorAddress, inspectorAddress);
+        await verifyArea(regenerator2Address, inspector2Address);
+      });
+
       context("when all regenerators are valids", async () => {
         context("when do not have tokens totalLocked_", () => {
           it("areaPerToken must be 3333333333333", async () => {

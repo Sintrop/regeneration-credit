@@ -116,6 +116,10 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
   /// @notice The address of the `InspectionRules` contract.
   address public validationRulesAddress;
 
+  /// @notice The regeneration area (in square meters [m²]) of the regenerators with at least one valid
+  /// inspection that were not denied. It is the area used as verified impact.
+  uint256 public verifiedArea;
+
   // --- Constructor ---
 
   /**
@@ -321,7 +325,8 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * @param addr The regenerator's wallet address.
    */
   function decrementInspections(address addr) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) {
-    uint256 totalInspections = regenerators[addr].totalInspections;
+    Regenerator storage regenerator = regenerators[addr];
+    uint256 totalInspections = regenerator.totalInspections;
 
     require(totalInspections > 0, "totalInspections invalid");
 
@@ -331,6 +336,9 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
         newCertificationRegenerators[era]--;
       }
       impactRegenerators[addr] = false;
+
+      // Without valid inspections, the area is no longer verified. A denied regenerator already lost it.
+      if (!regenerator.isFullyInvalidated) verifiedArea -= regenerator.totalArea;
     }
 
     if (totalInspections == MAXIMUM_INSPECTIONS) {
@@ -338,7 +346,7 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
       certifiedRegenerators[addr] = false;
     }
 
-    regenerators[addr].totalInspections--;
+    regenerator.totalInspections--;
   }
 
   /**
@@ -540,6 +548,8 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     // Mark as impact regenerator.
     if (!impactRegenerators[addr]) {
       impactRegenerators[addr] = true;
+      // The first valid inspection verifies the regeneration area.
+      verifiedArea += regenerator.totalArea;
       uint256 era = poolCurrentEra();
       newCertificationRegenerators[era]++;
     }
@@ -565,7 +575,8 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
 
   /**
    * @dev Private function to decrement the global `regenerationArea` when a regenerator's
-   * area is removed (due to invalidation).
+   * area is removed (due to invalidation). The area of a regenerator with valid inspections is
+   * also removed from `verifiedArea`.
    * @param addr The regenerator's wallet address whose area is to be decremented.
    *
    * Requirements:
@@ -573,7 +584,11 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
    * - The `totalArea` of the regenerator must be accurately reflected in `regenerationArea`.
    */
   function _decrementArea(address addr) private {
-    regenerationArea -= regenerators[addr].totalArea;
+    uint256 totalArea = regenerators[addr].totalArea;
+
+    regenerationArea -= totalArea;
+
+    if (impactRegenerators[addr]) verifiedArea -= totalArea;
   }
 
   // --- View Functions ---
