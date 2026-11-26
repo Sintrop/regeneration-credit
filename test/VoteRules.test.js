@@ -103,6 +103,18 @@ describe("VoteRules", () => {
           await communityRules.mock.getUser.returns(userTypes.Contributor);
         });
 
+        context("when totalUsers is 4 and userLevels is 0", () => {
+          beforeEach(async () => {
+            await contributorRules.mock.totalActiveLevels.returns(4);
+            await communityRules.mock.userTypesCount.returns(4);
+            await contributorRules.mock.getContributor.returns(contributorMockLevels(0));
+          });
+
+          it("returns false, a voter needs at least one valid work", async () => {
+            expect(await instance.canVote(user1Address)).to.eq(false);
+          });
+        });
+
         context("when totalLevels is 4, totalUsers is 4 and userLevels is 1", () => {
           beforeEach(async () => {
             await contributorRules.mock.totalActiveLevels.returns(4);
@@ -221,6 +233,18 @@ describe("VoteRules", () => {
           await communityRules.mock.getUser.returns(userTypes.Developer);
         });
 
+        context("when totalUsers is 4 and userLevels is 0", () => {
+          beforeEach(async () => {
+            await developerRules.mock.totalActiveLevels.returns(4);
+            await communityRules.mock.userTypesCount.returns(4);
+            await developerRules.mock.getDeveloper.returns(developerMockLevels(0));
+          });
+
+          it("returns false, a voter needs at least one valid work", async () => {
+            expect(await instance.canVote(user1Address)).to.eq(false);
+          });
+        });
+
         context("when totalLevels is 4, totalUsers is 4 and userLevels is 1", () => {
           beforeEach(async () => {
             await developerRules.mock.totalActiveLevels.returns(4);
@@ -337,6 +361,18 @@ describe("VoteRules", () => {
       context("with researcher", () => {
         beforeEach(async () => {
           await communityRules.mock.getUser.returns(userTypes.Researcher);
+        });
+
+        context("when totalUsers is 4 and userLevels is 0", () => {
+          beforeEach(async () => {
+            await researcherRules.mock.totalActiveLevels.returns(4);
+            await communityRules.mock.userTypesCount.returns(4);
+            await researcherRules.mock.getResearcher.returns(researcherMockLevels(0));
+          });
+
+          it("returns false, a voter needs at least one valid work", async () => {
+            expect(await instance.canVote(user1Address)).to.eq(false);
+          });
         });
 
         context("when totalLevels is 4, totalUsers is 4 and userLevels is 1", () => {

@@ -476,8 +476,8 @@ contract ContributorRules is Callable, Invitable, ReentrancyGuard {
   function canSendInvite(address addr) public view returns (bool) {
     Contributor memory contributor = contributors[addr];
 
-    // Return false if the address is not a registered contributor (id is 0).
-    if (contributor.id <= 0) return false;
+    // Return false if the address is not a registered contributor (id is 0) or has no valid contribution.
+    if (contributor.id <= 0 || contributor.pool.level == 0) return false;
 
     // Calls the inherited `canInvite` function from `Invitable` to calculate eligibility.
     // This depends on total contributions count, total contributor count, and the contributor's pool level.

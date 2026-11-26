@@ -475,7 +475,8 @@ contract ResearcherRules is Callable, Invitable, ReentrancyGuard {
   function canSendInvite(address addr) public view returns (bool) {
     Researcher memory researcher = getResearcher(addr);
 
-    if (researcher.id <= 0) return false;
+    // A researcher needs at least one valid research to invite.
+    if (researcher.id <= 0 || researcher.pool.level == 0) return false;
 
     return canInvite(totalActiveLevels, communityRules.userTypesCount(USER_TYPE), researcher.pool.level);
   }

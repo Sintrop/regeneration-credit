@@ -84,20 +84,20 @@ contract VoteRules {
 
   /**
    * @notice Determines voting eligibility based on user levels relative to type average.
-   * @dev Calculates if a user's levels meet or exceed the average levels of their user type.
-   * For user types with 5 or fewer total users, all are considered eligible.
+   * @dev A voter needs at least one valid work (a level), in any era. For user types with 5 or fewer total
+   * users, every user with a level is eligible; above that, the user's levels must exceed the type average.
    * @param totalTypeLevels Total levels for the specific user type across the system.
    * @param totalUsers Total number of users of the specific type registered in the system.
    * @param userLevels Total levels of the individual user.
    * @return bool True if the user meets the voting criteria, false otherwise.
    */
   function _canVoteRules(uint256 totalTypeLevels, uint256 totalUsers, uint256 userLevels) private pure returns (bool) {
-    // Edge case: If there are no users, no one can vote.
-    if (totalUsers == 0) {
+    // Edge case: If there are no users, no one can vote. A voter needs at least one valid work.
+    if (totalUsers == 0 || userLevels == 0) {
       return false;
     }
 
-    // Rule 1: Allow anyone to vote if the user type has few members.
+    // Rule 1: Allow any user with a level to vote if the user type has few members.
     if (totalUsers <= INITIAL_USER_COUNT_THRESHOLD) return true;
 
     // Rule 2: Check if the user's level is strictly greater than the average

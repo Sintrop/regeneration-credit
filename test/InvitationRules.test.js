@@ -824,6 +824,8 @@ describe("InvitationRules", () => {
       await addInvitation(owner, user1Address, userTypes.Regenerator, owner);
       await addInvitation(owner, user2Address, userTypes.Developer, owner);
       await addDeveloper("Developer A", user2Address);
+      // An inviter needs at least one valid report.
+      await developerRules.connect(user2Address).addReport("description", "report");
     });
 
     context("when the user never invited and was invited recently", () => {

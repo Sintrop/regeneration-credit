@@ -1,4 +1,5 @@
 const { userTypes } = require("./shared/user_types");
+const { addVoterLevel } = require("./shared/voter_level");
 const { expect } = require("chai");
 
 const { advanceBlock } = require("./shared/advance_block");
@@ -34,6 +35,17 @@ describe("DeveloperRules", (accounts) => {
     await instance.connect(from).addDeveloper(name, "photoURL");
   };
 
+  // A developer that votes needs one valid work. It gets a level without publishing, so the ids and
+  // counters of the works under test do not change.
+  const giveVoterLevel = async (from) => {
+    await addVoterLevel(instance, "getDeveloper", from.address ?? from);
+  };
+
+  const addVoterDeveloper = async (name, from) => {
+    await addDeveloper(name, from);
+    await giveVoterLevel(from);
+  };
+
   const addInvitation = async (inviter, invited, userType, from) => {
     await communityRules.setContractCall(from, owner);
     await communityRules.connect(from).addInvitation(inviter, invited, userType);
@@ -42,10 +54,14 @@ describe("DeveloperRules", (accounts) => {
 
   const addResearcher = async (name, from) => {
     await researcherRules.connect(from).addResearcher(name, "photoURL");
+    // A voter needs at least one valid work.
+    await researcherRules.connect(from).addResearch("title", "thesis", "file");
   };
 
   const addContributor = async (name, from) => {
     await contributorRules.connect(from).addContributor(name, "photoURL");
+    // A voter needs at least one valid work.
+    await contributorRules.connect(from).addContribution("description", "report");
   };
 
   const addActivist = async (name, from) => {
@@ -73,6 +89,12 @@ describe("DeveloperRules", (accounts) => {
     ] = await ethers.getSigners();
 
     const validatorRulesDeployed = await voteRulesDeployed();
+
+    // Voters of the other types publish a work when they register.
+    await validatorRulesDeployed.researcherPool.newAllowedCaller(validatorRulesDeployed.researcherRules.target);
+    await validatorRulesDeployed.researcherPool.setContractCall(validatorRulesDeployed.researcherRules.target);
+    await validatorRulesDeployed.contributorPool.newAllowedCaller(validatorRulesDeployed.contributorRules.target);
+    await validatorRulesDeployed.contributorPool.setContractCall(validatorRulesDeployed.contributorRules.target);
 
     regenerationCredit = validatorRulesDeployed.regenerationCredit;
     communityRules = validatorRulesDeployed.communityRules;
@@ -362,9 +384,9 @@ describe("DeveloperRules", (accounts) => {
         await addInvitation(owner, user1Address, userTypes.Developer, owner);
         await addInvitation(owner, user2Address, userTypes.Developer, owner);
         await addInvitation(owner, user3Address, userTypes.Developer, owner);
-        await addDeveloper("User A", user1Address);
-        await addDeveloper("User B", user2Address);
-        await addDeveloper("User C", user3Address);
+        await addVoterDeveloper("User A", user1Address);
+        await addVoterDeveloper("User B", user2Address);
+        await addVoterDeveloper("User C", user3Address);
 
         await instance.connect(user1Address).addReportValidation(1, "justification");
         await instance.connect(user2Address).addReportValidation(1, "justification");
@@ -395,13 +417,17 @@ describe("DeveloperRules", (accounts) => {
       });
 
       context("with valid report", () => {
+        // User A votes in these contexts.
+        beforeEach(async () => {
+          await giveVoterLevel(user1Address);
+        });
         context("when report must be invalidated", () => {
           beforeEach(async () => {
             await instance.connect(dev1Address).addReport("description", "report");
 
-            await addDeveloper("User B", user2Address);
-            await addDeveloper("User C", user3Address);
-            await addDeveloper("User D", user4Address);
+            await addVoterDeveloper("User B", user2Address);
+            await addVoterDeveloper("User C", user3Address);
+            await addVoterDeveloper("User D", user4Address);
 
             await instance.connect(user1Address).addReportValidation(1, "justification");
             await instance.connect(user2Address).addReportValidation(1, "justification");
@@ -466,7 +492,7 @@ describe("DeveloperRules", (accounts) => {
           beforeEach(async () => {
             await instance.connect(dev1Address).addReport("description", "report");
 
-            await addDeveloper("User B", user2Address);
+            await addVoterDeveloper("User B", user2Address);
 
             await instance.connect(user1Address).addReportValidation(1, "justification");
           });
@@ -612,6 +638,10 @@ describe("DeveloperRules", (accounts) => {
       });
 
       context("with invalid report", () => {
+        // User A votes in these contexts.
+        beforeEach(async () => {
+          await giveVoterLevel(user1Address);
+        });
         context("when current era is different from report created era", () => {
           beforeEach(async () => {
             await instance.connect(dev1Address).addReport("description", "report");
@@ -630,9 +660,9 @@ describe("DeveloperRules", (accounts) => {
           beforeEach(async () => {
             await instance.connect(dev1Address).addReport("description", "report");
 
-            await addDeveloper("User B", user2Address);
-            await addDeveloper("User C", user3Address);
-            await addDeveloper("User D", user4Address);
+            await addVoterDeveloper("User B", user2Address);
+            await addVoterDeveloper("User C", user3Address);
+            await addVoterDeveloper("User D", user4Address);
 
             await instance.connect(user1Address).addReportValidation(1, "justification");
             await instance.connect(user2Address).addReportValidation(1, "justification");
@@ -648,12 +678,12 @@ describe("DeveloperRules", (accounts) => {
 
         context("when do not wait waitedTimeBetweenVotes", () => {
           beforeEach(async () => {
-            await addDeveloper("User B", user2Address);
+            await addVoterDeveloper("User B", user2Address);
 
             await instance.connect(dev1Address).addReport("description", "report");
             await instance.connect(user2Address).addReport("description", "report");
 
-            await addDeveloper("User C", user3Address);
+            await addVoterDeveloper("User C", user3Address);
 
             await instance.connect(user3Address).addReportValidation(1, "justification");
           });
@@ -667,12 +697,12 @@ describe("DeveloperRules", (accounts) => {
 
         context("when wait waitedTimeBetweenVotes", () => {
           beforeEach(async () => {
-            await addDeveloper("User B", user2Address);
+            await addVoterDeveloper("User B", user2Address);
 
             await instance.connect(dev1Address).addReport("description", "report");
             await instance.connect(user2Address).addReport("description", "report");
 
-            await addDeveloper("User C", user3Address);
+            await addVoterDeveloper("User C", user3Address);
 
             await instance.connect(user3Address).addReportValidation(1, "justification");
             await advanceBlock(10);
@@ -1001,14 +1031,17 @@ describe("DeveloperRules", (accounts) => {
 
       context("when developer reach max maxPenalties", () => {
         beforeEach(async () => {
-          await addResearcher("User B", user2Address);
-          await addResearcher("User C", user3Address);
-          await addResearcher("User D", user4Address);
-          await addResearcher("User E", user5Address);
-          await addResearcher("User F", user6Address);
-          await addResearcher("User G", user7Address);
-          await addResearcher("User H", user8Address);
-          await addResearcher("User I", user9Address);
+          // Start at the beginning of an era, so every work of this context is voted in the same era.
+          await advanceBlock(Number(await instance.nextEraIn()));
+
+          await researcherRules.connect(user2Address).addResearcher("User B", "photoURL");
+          await researcherRules.connect(user3Address).addResearcher("User C", "photoURL");
+          await researcherRules.connect(user4Address).addResearcher("User D", "photoURL");
+          await researcherRules.connect(user5Address).addResearcher("User E", "photoURL");
+          await researcherRules.connect(user6Address).addResearcher("User F", "photoURL");
+          await researcherRules.connect(user7Address).addResearcher("User G", "photoURL");
+          await researcherRules.connect(user8Address).addResearcher("User H", "photoURL");
+          await researcherRules.connect(user9Address).addResearcher("User I", "photoURL");
 
           await instance.connect(dev1Address).addReport("description", "report");
 
@@ -1121,6 +1154,26 @@ describe("DeveloperRules", (accounts) => {
         await expect(instance.connect(owner).addReportValidation(1, "justification")).to.be.revertedWith(
           "Not a voter user"
         );
+      });
+    });
+  });
+
+  describe("#canSendInvite", () => {
+    beforeEach(async () => {
+      await addDeveloper("Developer A", dev1Address);
+    });
+
+    context("without a valid report", () => {
+      it("returns false", async () => {
+        expect(await instance.canSendInvite(dev1Address)).to.eq(false);
+      });
+    });
+
+    context("with a valid report", () => {
+      it("returns true", async () => {
+        await instance.connect(dev1Address).addReport("description", "report");
+
+        expect(await instance.canSendInvite(dev1Address)).to.eq(true);
       });
     });
   });

@@ -102,14 +102,20 @@ describe("ValidationRules", () => {
 
   const addDeveloper = async (name, from) => {
     await developerRules.connect(from).addDeveloper(name, "photoURL");
+    // A voter needs at least one valid work.
+    await developerRules.connect(from).addReport("description", "report");
   };
 
   const addResearcher = async (name, from) => {
     await researcherRules.connect(from).addResearcher(name, "photoURL");
+    // A voter needs at least one valid work.
+    await researcherRules.connect(from).addResearch("title", "thesis", "file");
   };
 
   const addContributor = async (name, from) => {
     await contributorRules.connect(from).addContributor(name, "photoURL");
+    // A voter needs at least one valid work.
+    await contributorRules.connect(from).addContribution("description", "report");
   };
 
   const addActivist = async (name, from) => {
@@ -604,13 +610,10 @@ describe("ValidationRules", () => {
             await addDeveloper("User  A", user1Address);
             await addDeveloper("User  B", user2Address);
             await addDeveloper("User  C", user3Address);
-            await addDeveloper("User  F", user4Address);
-            await addDeveloper("User  D", user5Address);
-            await addDeveloper("User  E", user6Address);
-
-            await developerRules.connect(user1Address).addReport("description", "report");
-            await developerRules.connect(user2Address).addReport("description", "report");
-            await developerRules.connect(user3Address).addReport("description", "report");
+            // Developers without reports keep the first three above the average.
+            await developerRules.connect(user4Address).addDeveloper("User  F", "photoURL");
+            await developerRules.connect(user5Address).addDeveloper("User  D", "photoURL");
+            await developerRules.connect(user6Address).addDeveloper("User  E", "photoURL");
           });
 
           context("when current era is 1", () => {
@@ -741,8 +744,6 @@ describe("ValidationRules", () => {
                 await addContributor("Contributor  A", contributor1Address);
                 await addContributor("Contributor  B", contributor2Address);
 
-                await contributorRules.connect(contributor1Address).addContribution("description", "contribution");
-
                 await instance.connect(user1Address).addUserValidation(contributor1Address, "my justification");
                 await instance.connect(user2Address).addUserValidation(contributor1Address, "my justification");
                 await instance.connect(user3Address).addUserValidation(contributor1Address, "my justification");
@@ -788,8 +789,6 @@ describe("ValidationRules", () => {
                 await addDeveloper("Developer  A", dev1Address);
                 await addDeveloper("Developer  A", dev2Address);
 
-                await developerRules.connect(dev1Address).addReport("description", "report");
-
                 await instance.connect(user1Address).addUserValidation(dev1Address, "my justification");
                 await instance.connect(user2Address).addUserValidation(dev1Address, "my justification");
                 await instance.connect(user3Address).addUserValidation(dev1Address, "my justification");
@@ -834,8 +833,6 @@ describe("ValidationRules", () => {
                 await addInvitation(owner, resea2Address, userTypes.Researcher, owner);
                 await addResearcher("Researcher  A", resea1Address);
                 await addResearcher("Researcher  B", resea2Address);
-
-                await addResearch(resea1Address);
 
                 await instance.connect(user1Address).addUserValidation(resea1Address, "my justification");
                 await instance.connect(user2Address).addUserValidation(resea1Address, "my justification");
