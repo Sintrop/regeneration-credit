@@ -699,6 +699,27 @@ describe("RegeneratorRules", () => {
       expect(await instance.verifiedArea()).to.equal(0);
       expect(await instance.regenerationArea()).to.equal(0);
     });
+
+    context("when an inspection accepted before the denial is realized after it", () => {
+      beforeEach(async () => {
+        await addRegenerator("Regenerator B", prod2Address);
+        await instance.afterRealizeInspection(prod2Address, 10, 10);
+
+        await instance.removePoolLevels(prod1Address);
+        await instance.afterRealizeInspection(prod1Address, 10, 1);
+      });
+
+      it("does not count the area of the denied regenerator", async () => {
+        expect(await instance.verifiedArea()).to.equal(2500);
+        expect(await instance.regenerationArea()).to.equal(2500);
+      });
+
+      it("keeps the area of other regenerators when that inspection is invalidated", async () => {
+        await instance.decrementInspections(prod1Address);
+
+        expect(await instance.verifiedArea()).to.equal(2500);
+      });
+    });
   });
 
   describe("#withdraw", () => {
