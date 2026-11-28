@@ -74,6 +74,12 @@ interface IRegeneratorRules {
   function regenerationArea() external view returns (uint256);
 
   /**
+   * @notice Returns the area of the regenerators with at least one valid inspection that were not denied.
+   * @return The verified regeneration area, in square meters.
+   */
+  function verifiedArea() external view returns (uint256);
+
+  /**
    * @notice Returns the total area under regeneration across all regenerators.
    * @param addr The address of the regenerator.
    * @param amountToRemove Levels/score to be removed.

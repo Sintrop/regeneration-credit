@@ -618,6 +618,89 @@ describe("RegeneratorRules", () => {
     });
   });
 
+  describe("#verifiedArea", () => {
+    beforeEach(async () => {
+      await addRegenerator("Regenerator A", prod1Address);
+    });
+
+    it("does not count the area at registration", async () => {
+      expect(await instance.regenerationArea()).to.equal(2500);
+      expect(await instance.verifiedArea()).to.equal(0);
+    });
+
+    it("does not count the area after a zero score inspection", async () => {
+      await instance.afterRealizeInspection(prod1Address, 0, 1);
+
+      expect(await instance.verifiedArea()).to.equal(0);
+    });
+
+    context("after the first valid inspection", () => {
+      beforeEach(async () => {
+        await instance.afterRealizeInspection(prod1Address, 10, 1);
+      });
+
+      it("counts the area", async () => {
+        expect(await instance.verifiedArea()).to.equal(2500);
+      });
+
+      it("counts the area once", async () => {
+        await instance.afterRealizeInspection(prod1Address, 10, 2);
+
+        expect(await instance.verifiedArea()).to.equal(2500);
+      });
+
+      it("removes the area when the only valid inspection is invalidated", async () => {
+        await instance.decrementInspections(prod1Address);
+
+        expect(await instance.verifiedArea()).to.equal(0);
+      });
+
+      it("keeps the area when another valid inspection remains", async () => {
+        await instance.afterRealizeInspection(prod1Address, 10, 2);
+        await instance.decrementInspections(prod1Address);
+
+        expect(await instance.verifiedArea()).to.equal(2500);
+      });
+
+      it("keeps the area when one of three valid inspections is invalidated", async () => {
+        await instance.afterRealizeInspection(prod1Address, 10, 2);
+        await instance.afterRealizeInspection(prod1Address, 10, 3);
+        await instance.decrementInspections(prod1Address);
+
+        expect(await instance.verifiedArea()).to.equal(2500);
+        expect((await instance.getRegenerator(prod1Address)).totalInspections).to.equal(2);
+      });
+
+      it("removes the area once when the regenerator is denied after its only valid inspection is invalidated", async () => {
+        await instance.decrementInspections(prod1Address);
+        await instance.removePoolLevels(prod1Address);
+
+        expect(await instance.verifiedArea()).to.equal(0);
+        expect(await instance.regenerationArea()).to.equal(0);
+      });
+
+      it("removes the area when the regenerator is denied", async () => {
+        await instance.removePoolLevels(prod1Address);
+
+        expect(await instance.verifiedArea()).to.equal(0);
+      });
+
+      it("removes the area once when an inspection of a denied regenerator is invalidated", async () => {
+        await instance.removePoolLevels(prod1Address);
+        await instance.decrementInspections(prod1Address);
+
+        expect(await instance.verifiedArea()).to.equal(0);
+      });
+    });
+
+    it("keeps the verified area when a regenerator without valid inspections is denied", async () => {
+      await instance.removePoolLevels(prod1Address);
+
+      expect(await instance.verifiedArea()).to.equal(0);
+      expect(await instance.regenerationArea()).to.equal(0);
+    });
+  });
+
   describe("#withdraw", () => {
     context("with regenerator", () => {
       beforeEach(async () => {
