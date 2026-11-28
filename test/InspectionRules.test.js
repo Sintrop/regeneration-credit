@@ -752,6 +752,26 @@ describe("InspectionRules", () => {
               });
             });
 
+            context("when have finished last inspection with zero score", () => {
+              beforeEach(async () => {
+                await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+                await realizeInspection(1, "", 0, 0, inspectorAddress);
+              });
+
+              it("should return error when try to accept another inspection before wait blocks", async () => {
+                await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Wait to accept");
+              });
+
+              it("should accept inspection with success after wait blocks", async () => {
+                await advanceBlock(sintropArgs.BLOCKS_TO_ACCEPT);
+                await acceptInspection(2, inspectorAddress);
+
+                const inspection = await instance.getInspection(2);
+
+                expect(inspection.status).to.equal(STATUS.accepted);
+              });
+            });
+
             context("when dont finished last inspection", () => {
               it("should return error message", async () => {
                 await expect(acceptInspection(2, inspectorAddress)).to.be.revertedWith("Already accepted");
@@ -1246,6 +1266,154 @@ describe("InspectionRules", () => {
         await expect(instance.connect(user3Address).addInspectionValidation(1, "justification")).to.be.revertedWith(
           "Penalties already applied"
         );
+      });
+    });
+
+    context("when a zero score inspection is invalidated", () => {
+      let inspectionsCountBefore;
+
+      beforeEach(async () => {
+        await requestInspection(regeneratorAddress);
+        await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+        await acceptInspection(1, inspectorAddress);
+        await realizeInspection(1, report, 0, 0, inspectorAddress);
+
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
+        await addDeveloper("User 1", user1Address);
+        await addDeveloper("User 2", user2Address);
+
+        inspectionsCountBefore = await instance.inspectionsCount();
+
+        await instance.connect(user1Address).addInspectionValidation(1, "justification");
+        await instance.connect(user2Address).addInspectionValidation(1, "justification");
+      });
+
+      it("should mark the inspection as invalidated", async () => {
+        const inspection = await instance.getInspection(1);
+
+        expect(inspection.regenerationScore).to.equal(0);
+        expect(inspection.status).to.equal(3);
+        expect(await instance.inspectionPenalized(1)).to.equal(true);
+      });
+
+      it("should add a penalty to the inspector", async () => {
+        expect(await inspectorRules.totalPenalties(inspectorAddress)).to.equal(1);
+      });
+
+      it("should decrement the inspections count", async () => {
+        expect(await instance.inspectionsCount()).to.equal(inspectionsCountBefore - 1n);
+      });
+
+      it("should keep the era impact unchanged", async () => {
+        const impactPerEra = await instance.impactPerEra(1);
+
+        expect(impactPerEra.trees).to.equal(0);
+        expect(impactPerEra.biodiversity).to.equal(0);
+        expect(impactPerEra.realizedInspections).to.equal(0);
+      });
+
+      it("should keep the regenerator and inspector counters unchanged", async () => {
+        const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+        const inspector = await inspectorRules.getInspector(inspectorAddress);
+
+        expect(regenerator.totalInspections).to.equal(0);
+        expect(regenerator.regenerationScore.score).to.equal(0);
+        expect(inspector.totalInspections).to.equal(0);
+      });
+    });
+
+    context("when a zero score inspection with trees and biodiversity is invalidated", () => {
+      let inspectorLevelBefore;
+
+      beforeEach(async () => {
+        await addInvitation(owner, regenerator2Address, userTypes.Regenerator, owner);
+        await addRegenerator("Regenerator B", 25000, regenerator2Address);
+
+        await requestInspection(regeneratorAddress);
+        await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+        await acceptInspection(1, inspectorAddress);
+        await realizeInspection(1, report, treesResultValue, biodiversityResultValue, inspectorAddress);
+
+        await requestInspection(regenerator2Address);
+        await advanceBlock(sintropArgs.BLOCKS_TO_ACCEPT + 1);
+        await acceptInspection(2, inspectorAddress);
+        // 19 trees and 4 species are below the score thresholds, so the score is zero.
+        await realizeInspection(2, report, 19, 4, inspectorAddress);
+
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
+        await addDeveloper("User 1", user1Address);
+        await addDeveloper("User 2", user2Address);
+
+        inspectorLevelBefore = (await inspectorRules.getInspector(inspectorAddress)).pool.level;
+
+        await instance.connect(user1Address).addInspectionValidation(2, "justification");
+        await instance.connect(user2Address).addInspectionValidation(2, "justification");
+      });
+
+      it("should invalidate the inspection and penalize the inspector", async () => {
+        const inspection = await instance.getInspection(2);
+
+        expect(inspection.regenerationScore).to.equal(0);
+        expect(inspection.status).to.equal(STATUS.invalidated);
+        expect(await inspectorRules.totalPenalties(inspectorAddress)).to.equal(1);
+      });
+
+      it("should not subtract the trees and biodiversity of the zero score inspection", async () => {
+        const positiveInspection = await instance.getInspection(1);
+        const zeroInspection = await instance.getInspection(2);
+        const positiveEraImpact = await instance.impactPerEra(positiveInspection.inspectedAtEra);
+        const zeroEraImpact = await instance.impactPerEra(zeroInspection.inspectedAtEra);
+
+        expect(positiveEraImpact.trees).to.equal(treesResultValue);
+        expect(positiveEraImpact.biodiversity).to.equal(biodiversityResultValue);
+        expect(positiveEraImpact.realizedInspections).to.equal(1);
+        expect(zeroEraImpact.trees).to.equal(0);
+        expect(zeroEraImpact.biodiversity).to.equal(0);
+        expect(zeroEraImpact.realizedInspections).to.equal(0);
+      });
+
+      it("should keep the counters and levels of the positive score inspection", async () => {
+        const inspector = await inspectorRules.getInspector(inspectorAddress);
+        const regenerator = await regeneratorRules.getRegenerator(regeneratorAddress);
+        const regenerator2 = await regeneratorRules.getRegenerator(regenerator2Address);
+
+        expect(inspector.totalInspections).to.equal(1);
+        expect(inspector.pool.level).to.equal(inspectorLevelBefore);
+        expect(regenerator.totalInspections).to.equal(1);
+        expect(regenerator2.totalInspections).to.equal(0);
+      });
+    });
+
+    context("when zero score inspections reach the max penalties", () => {
+      beforeEach(async () => {
+        await addInvitation(owner, regenerator2Address, userTypes.Regenerator, owner);
+        await addRegenerator("Regenerator B", 25000, regenerator2Address);
+
+        await addInvitation(owner, user1Address, userTypes.Developer, owner);
+        await addInvitation(owner, user2Address, userTypes.Developer, owner);
+        await addDeveloper("User 1", user1Address);
+        await addDeveloper("User 2", user2Address);
+
+        await requestInspection(regeneratorAddress);
+        await advanceBlock(sintropArgs.acceptInspectionDelayBlocks);
+        await acceptInspection(1, inspectorAddress);
+        await realizeInspection(1, report, 0, 0, inspectorAddress);
+        await instance.connect(user1Address).addInspectionValidation(1, "justification");
+        await instance.connect(user2Address).addInspectionValidation(1, "justification");
+
+        await requestInspection(regenerator2Address);
+        await advanceBlock(sintropArgs.BLOCKS_TO_ACCEPT + 1);
+        await acceptInspection(2, inspectorAddress);
+        await realizeInspection(2, report, 0, 0, inspectorAddress);
+        await instance.connect(user1Address).addInspectionValidation(2, "justification");
+        await instance.connect(user2Address).addInspectionValidation(2, "justification");
+      });
+
+      it("should deny the inspector", async () => {
+        expect(await inspectorRules.totalPenalties(inspectorAddress)).to.equal(await inspectorRules.maxPenalties());
+        expect(await communityRules.isDenied(inspectorAddress)).to.equal(true);
       });
     });
 

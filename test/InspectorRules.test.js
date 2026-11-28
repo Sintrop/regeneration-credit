@@ -147,6 +147,21 @@ describe("InspectorRules", () => {
 
           expect(inspector.totalInspections).to.equal(0);
         });
+
+        it("should record the realization block", async () => {
+          const inspector = await instance.getInspector(inspe1Address);
+          const blockNumber = await ethers.provider.getBlockNumber();
+
+          expect(inspector.lastRealizedAt).to.equal(blockNumber);
+        });
+
+        it("should apply the delay to accept the next inspection", async () => {
+          expect(await instance.canAcceptInspection(inspe1Address)).to.equal(false);
+
+          await advanceBlock(Number(await instance.BLOCKS_TO_ACCEPT()) + 1);
+
+          expect(await instance.canAcceptInspection(inspe1Address)).to.equal(true);
+        });
       });
 
       describe(".decreaseGiveUps", () => {

@@ -193,7 +193,8 @@ contract InspectorRules is Callable, ReentrancyGuard {
 
   /**
    * @dev MustBeAllowedCaller function to handle actions after an inspector successfully realizes (completes) an inspection.
-   * This decrements give-ups and increments total inspections.
+   * This decrements give-ups and records the realization block, whatever the score, so the delay to accept
+   * the next inspection also applies after a zero score inspection. Only positive scores increment total inspections.
    * @notice This function is called by the InspectionRules contract after an inspection is realized.
    * @param addr The inspector's wallet address.
    * @param score The inspection regenerationScore.
@@ -206,6 +207,8 @@ contract InspectorRules is Callable, ReentrancyGuard {
     uint64 inspectionId
   ) external mustBeAllowedCaller mustBeContractCall(inspectionRulesAddress) nonReentrant returns (uint256) {
     _decreaseGiveUps(addr);
+
+    inspectors[addr].lastRealizedAt = block.number;
 
     if (score > 0) {
       return _incrementInspections(addr, inspectionId);
@@ -284,8 +287,8 @@ contract InspectorRules is Callable, ReentrancyGuard {
   // --- Private functions (State modifying) ---
 
   /**
-   * @dev Private function to increase an inspector's total completed inspections count
-   * and update their `lastRealizedAt` block. Also triggers a level increase.
+   * @dev Private function to increase an inspector's total completed inspections count.
+   * Also triggers a level increase.
    * @param addr The inspector's wallet address.
    * @return uint256 The updated total number of inspections for the inspector.
    */
@@ -295,7 +298,6 @@ contract InspectorRules is Callable, ReentrancyGuard {
     require(inspector.id != 0, "Inspector does not exist");
 
     inspector.totalInspections++;
-    inspector.lastRealizedAt = block.number;
     inspector.pool.level++;
 
     _addLevel(inspector, inspectionId);
