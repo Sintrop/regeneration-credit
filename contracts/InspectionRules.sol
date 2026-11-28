@@ -458,10 +458,11 @@ contract InspectionRules is Ownable, ReentrancyGuard {
 
   /**
    * @dev Private function to execute the invalidation process for an inspection.
-   * Updates global impact counters, decreases `inspectionsCount` and `realizedInspectionsCount`,
-   * marks the inspection as `INVALIDATED`, and records the invalidation time.
-   * It also adds penalties to the involved regenerator and inspector.
+   * Decreases `inspectionsCount`, marks the inspection as `INVALIDATED`, and records the invalidation time.
+   * For a positive score inspection, it also reverts the era impact, the regenerator and inspector inspections,
+   * the regenerator score and the inspector pool level.
    * A zero score inspection recorded no impact, inspections or levels, so only its status is updated.
+   * The inspector penalty is applied by `addInspectionValidation` in both cases.
    * @param inspection A reference to the `Inspection` struct being invalidated.
    */
   function _invalidateInspection(Inspection storage inspection) private {
