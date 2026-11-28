@@ -548,9 +548,8 @@ contract RegeneratorRules is Callable, ReentrancyGuard {
     // Mark as impact regenerator.
     if (!impactRegenerators[addr]) {
       impactRegenerators[addr] = true;
-      // The first valid inspection verifies the regeneration area. An inspection accepted before the
-      // denial can still be realized after it, and the area of a denied regenerator is never verified.
-      if (!regenerator.isFullyInvalidated) verifiedArea += regenerator.totalArea;
+      // The first valid inspection verifies the regeneration area.
+      verifiedArea += regenerator.totalArea;
       uint256 era = poolCurrentEra();
       newCertificationRegenerators[era]++;
     }
